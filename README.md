@@ -1,7 +1,3 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # Tutor System Architecture
 
 Tutor is an AI-powered learning interface for reading PDFs, asking a tutor questions, building a persistent learning library, and reviewing knowledge over time. The app combines a document reader, streaming chat, voice tutoring, live search, learner modeling, a 3D brain map, revision flashcards, analytics, admin tracing, and the `/brain` architecture cognition system.
