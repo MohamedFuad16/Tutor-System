@@ -4,9 +4,10 @@ import { motion, useScroll, useTransform } from 'motion/react';
 interface AnimatedScrollTextProps {
   text: string;
   className?: string;
+  scrollContainerRef?: React.RefObject<HTMLElement>;
 }
 
-export function AnimatedScrollText({ text, className = "" }: AnimatedScrollTextProps) {
+export function AnimatedScrollText({ text, className = "", scrollContainerRef }: AnimatedScrollTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
   // We track the scroll progress of the container relative to the viewport.
@@ -14,6 +15,7 @@ export function AnimatedScrollText({ text, className = "" }: AnimatedScrollTextP
   // "end 40%" means animation ends when the bottom of container hits 40% of viewport height
   const { scrollYProgress } = useScroll({
     target: containerRef,
+    container: scrollContainerRef,
     offset: ["start 80%", "end 40%"]
   });
 

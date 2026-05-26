@@ -17,6 +17,7 @@ export function StudyView() {
   const [isDragging, setIsDragging] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -79,7 +80,7 @@ export function StudyView() {
             <PdfViewer />
           </>
         ) : (
-            <div className="flex-1 w-full h-full flex flex-col overflow-auto relative custom-scroll">
+            <div ref={scrollContainerRef} className="flex-1 w-full h-full flex flex-col overflow-auto relative custom-scroll">
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px', backgroundAttachment: 'local' }} />
               
               <div className="w-full flex-1 flex flex-col items-center justify-start z-10 p-6 md:p-12 lg:p-20 pt-[15vh] pb-[20vh] max-w-4xl mx-auto">
@@ -88,6 +89,7 @@ export function StudyView() {
                   <AnimatedScrollText 
                     text="Learning, redefined. Upload your documents to extract profound insights, map complex concepts into your personalized brain graph, and retain knowledge forever."
                     className="text-4xl md:text-5xl lg:text-6xl font-serif text-white/90 leading-[1.2] tracking-tight"
+                    scrollContainerRef={scrollContainerRef}
                   />
                 </div>
 
