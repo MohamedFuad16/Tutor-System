@@ -58,4 +58,4 @@ This project follows a **Bring Your Own Key (BYOK)** model. You will need API ke
    npm run dev
    ```
 
-5. Open your browser and navigate to `http://localhost:5173` to start learning!
+5. Open your browser and navigate to the local URL provided in your terminal (usually `http://localhost:5173` or similar) to start learning!
