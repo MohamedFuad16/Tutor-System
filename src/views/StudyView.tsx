@@ -11,8 +11,8 @@ import { motion, AnimatePresence } from 'motion/react';
 const CurvedArrow = ({ className }: { className?: string }) => (
   <motion.svg 
     width="40" 
-    height="80" 
-    viewBox="0 0 40 80" 
+    height="90" 
+    viewBox="0 0 40 90" 
     fill="none" 
     xmlns="http://www.w3.org/2000/svg"
     className={className}
@@ -20,9 +20,9 @@ const CurvedArrow = ({ className }: { className?: string }) => (
     transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
   >
     <motion.path 
-      d="M 10 10 C 45 10, 45 40, 20 50 C -5 60, -5 70, 20 80"
+      d="M 12 10 C 45 10, 50 40, 22 50 C -2 60, -2 75, 18 85"
       stroke="currentColor" 
-      strokeWidth="2.5" 
+      strokeWidth="3" 
       strokeLinecap="round" 
       strokeLinejoin="round"
       initial={{ pathLength: 0, opacity: 0 }}
@@ -30,9 +30,9 @@ const CurvedArrow = ({ className }: { className?: string }) => (
       transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
     />
     <motion.path 
-      d="M 12 72 L 20 80 L 28 72" 
+      d="M 8 75 L 18 85 L 28 75" 
       stroke="currentColor" 
-      strokeWidth="2.5" 
+      strokeWidth="3" 
       strokeLinecap="round" 
       strokeLinejoin="round"
       initial={{ opacity: 0, y: -5 }}
@@ -120,16 +120,109 @@ export function StudyView() {
               
               <div className="w-full flex-1 flex flex-col items-center justify-start z-10 p-6 md:p-12 lg:p-20 pt-[8vh] pb-[40vh] max-w-4xl mx-auto">
                 
-                <div className="w-full mb-12 text-center">
+                {/* Text 1: Automatic Reveal */}
+                <motion.div 
+                  initial={{ opacity: 0, filter: "blur(10px)", y: 20 }}
+                  animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="w-full mb-12 text-center"
+                >
+                  <h2 className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight flex flex-wrap justify-center gap-x-[0.25em]">
+                    {"Learning, redefined. Extract profound insights from any document.".split(" ").map((word, i) => (
+                      <motion.span 
+                        key={i}
+                        initial={{ opacity: 0, filter: "blur(8px)" }}
+                        animate={{ opacity: 1, filter: "blur(0px)" }}
+                        transition={{ duration: 0.8, delay: i * 0.08, ease: "easeOut" }}
+                      >
+                        {word}
+                      </motion.span>
+                    ))}
+                  </h2>
+                </motion.div>
+
+                {/* Card 1: Interactive Tutor */}
+                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center relative mb-8">
+                  <PatternCard
+                    bgClass={themes[2].bg}
+                    SvgComponent={themes[2].SvgComponent}
+                    bloomColor={themes[2].bloom}
+                    bloomOpacity={themes[2].bloomOpacity}
+                  >
+                    <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
+                      <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-white/10 text-white border border-white/20 shadow-lg">
+                        <MessageSquare className="w-5 h-5" />
+                      </div>
+                      <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
+                        Interactive<br/>Tutor
+                      </div>
+                      <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
+                        Chat with your document and test your knowledge.
+                      </div>
+                    </div>
+                  </PatternCard>
+
+                  {/* Scroll Indicator 1 */}
+                  <div className="absolute -bottom-36 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-80">
+                    <span className="text-[10px] uppercase tracking-[0.3em] font-mono text-[#ff6e00] mb-2 drop-shadow-[0_0_8px_rgba(255,110,0,0.5)]">Scroll Down</span>
+                    <CurvedArrow className="text-[#ff6e00] drop-shadow-[0_0_12px_rgba(255,110,0,0.6)]" />
+                  </div>
+                </div>
+
+                <div className="h-[40vh] w-full shrink-0" />
+
+                {/* Text 2: Brain Graph */}
+                <div className="w-full mb-16 text-center">
                   <AnimatedScrollText 
-                    text="Learning, redefined. Extract profound insights from any document."
+                    text="Map complex concepts into your personalized brain graph."
                     className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight justify-center"
                     scrollContainerRef={scrollContainerRef}
-                    fullRevealDistance={200}
+                    fullRevealDistance={300}
                   />
                 </div>
 
+                {/* Card 2: Knowledge Graph */}
                 <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center relative mb-8">
+                  <PatternCard
+                    bgClass={themes[3].bg}
+                    SvgComponent={themes[3].SvgComponent}
+                    bloomColor={themes[3].bloom}
+                    bloomOpacity={themes[3].bloomOpacity}
+                  >
+                    <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
+                      <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-white/10 text-white border border-white/20 shadow-lg">
+                        <RefreshCw className="w-5 h-5" />
+                      </div>
+                      <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
+                        Knowledge<br/>Graph
+                      </div>
+                      <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
+                        Visualize how concepts connect across all your documents.
+                      </div>
+                    </div>
+                  </PatternCard>
+
+                  {/* Scroll Indicator 2 */}
+                  <div className="absolute -bottom-36 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-80">
+                    <span className="text-[10px] uppercase tracking-[0.3em] font-mono text-[#ff6e00] mb-2 drop-shadow-[0_0_8px_rgba(255,110,0,0.5)]">Scroll Down</span>
+                    <CurvedArrow className="text-[#ff6e00] drop-shadow-[0_0_12px_rgba(255,110,0,0.6)]" />
+                  </div>
+                </div>
+
+                <div className="h-[40vh] w-full shrink-0" />
+
+                {/* Text 3: Upload Document */}
+                <div className="w-full text-center pb-16">
+                  <AnimatedScrollText 
+                    text="Upload your first document to retain knowledge forever."
+                    className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight justify-center"
+                    scrollContainerRef={scrollContainerRef}
+                    fullRevealDistance={300}
+                  />
+                </div>
+
+                {/* Card 3: Final Upload Button */}
+                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center">
                   <input 
                     type="file" 
                     accept="application/pdf" 
@@ -161,32 +254,6 @@ export function StudyView() {
                       </div>
                     </div>
                   </PatternCard>
-
-                  {/* Scroll Indicator */}
-                  <div className="absolute -bottom-36 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-80">
-                    <span className="text-[10px] uppercase tracking-[0.3em] font-mono text-[#ff6e00] mb-2 drop-shadow-[0_0_8px_rgba(255,110,0,0.5)]">Scroll Down</span>
-                    <CurvedArrow className="text-[#ff6e00] drop-shadow-[0_0_12px_rgba(255,110,0,0.6)]" />
-                  </div>
-                </div>
-
-                <div className="h-[40vh] w-full shrink-0" />
-
-                <div className="w-full mb-16 text-center">
-                  <AnimatedScrollText 
-                    text="Map complex concepts into your personalized brain graph."
-                    className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight justify-center"
-                    scrollContainerRef={scrollContainerRef}
-                    fullRevealDistance={300}
-                  />
-                </div>
-
-                <div className="w-full text-center pb-32">
-                  <AnimatedScrollText 
-                    text="Upload your first document to retain knowledge forever."
-                    className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight justify-center"
-                    scrollContainerRef={scrollContainerRef}
-                    fullRevealDistance={300}
-                  />
                 </div>
               </div>
             </div>
