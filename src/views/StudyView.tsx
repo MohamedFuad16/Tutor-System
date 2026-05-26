@@ -6,7 +6,41 @@ import { UploadCloud, MessageSquare, X, RefreshCw } from 'lucide-react';
 import { PatternCard, themes } from '../components/PatternCard';
 import { AnimatedScrollText } from '../components/AnimatedScrollText';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowDown } from 'lucide-react';
+
+
+const CurvedArrow = ({ className }: { className?: string }) => (
+  <motion.svg 
+    width="40" 
+    height="80" 
+    viewBox="0 0 40 80" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    animate={{ y: [0, 8, 0] }}
+    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+  >
+    <motion.path 
+      d="M 10 10 C 45 10, 45 40, 20 50 C -5 60, -5 70, 20 80"
+      stroke="currentColor" 
+      strokeWidth="2.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      initial={{ pathLength: 0, opacity: 0 }}
+      animate={{ pathLength: 1, opacity: 1 }}
+      transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+    />
+    <motion.path 
+      d="M 12 72 L 20 80 L 28 72" 
+      stroke="currentColor" 
+      strokeWidth="2.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      initial={{ opacity: 0, y: -5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 2 }}
+    />
+  </motion.svg>
+);
 
 export function StudyView() {
   const pdfUrl = useStore(state => state.pdfUrl);
@@ -129,9 +163,9 @@ export function StudyView() {
                   </PatternCard>
 
                   {/* Scroll Indicator */}
-                  <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-60 animate-bounce">
-                    <span className="text-[9px] uppercase tracking-widest font-mono text-zinc-400 mb-2">Scroll Down</span>
-                    <ArrowDown className="w-4 h-4 text-zinc-500" />
+                  <div className="absolute -bottom-36 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-80">
+                    <span className="text-[10px] uppercase tracking-[0.3em] font-mono text-[#ff6e00] mb-2 drop-shadow-[0_0_8px_rgba(255,110,0,0.5)]">Scroll Down</span>
+                    <CurvedArrow className="text-[#ff6e00] drop-shadow-[0_0_12px_rgba(255,110,0,0.6)]" />
                   </div>
                 </div>
 
