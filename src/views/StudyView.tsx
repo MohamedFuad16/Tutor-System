@@ -8,21 +8,21 @@ import { AnimatedScrollText } from '../components/AnimatedScrollText';
 import { motion, AnimatePresence } from 'motion/react';
 
 
-const CurvedArrow = ({ className }: { className?: string }) => (
+const CurvedArrow = ({ color }: { color: string }) => (
   <motion.svg 
-    width="40" 
-    height="90" 
-    viewBox="0 0 40 90" 
+    width="50" 
+    height="120" 
+    viewBox="0 0 50 120" 
     fill="none" 
     xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    animate={{ y: [0, 8, 0] }}
-    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+    style={{ filter: `drop-shadow(0px 0px 12px ${color}60)` }}
+    animate={{ y: [0, 10, 0] }}
+    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
   >
     <motion.path 
-      d="M 12 10 C 45 10, 50 40, 22 50 C -2 60, -2 75, 18 85"
-      stroke="currentColor" 
-      strokeWidth="3" 
+      d="M 25 10 C 60 30, 60 60, 25 75 C 5 85, 5 105, 25 115"
+      stroke={color}
+      strokeWidth="2.5" 
       strokeLinecap="round" 
       strokeLinejoin="round"
       initial={{ pathLength: 0, opacity: 0 }}
@@ -30,9 +30,9 @@ const CurvedArrow = ({ className }: { className?: string }) => (
       transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
     />
     <motion.path 
-      d="M 8 75 L 18 85 L 28 75" 
-      stroke="currentColor" 
-      strokeWidth="3" 
+      d="M 15 105 L 25 115 L 35 105" 
+      stroke={color} 
+      strokeWidth="2.5" 
       strokeLinecap="round" 
       strokeLinejoin="round"
       initial={{ opacity: 0, y: -5 }}
@@ -167,10 +167,15 @@ export function StudyView() {
                     </div>
                   </PatternCard>
 
-                  {/* Scroll Indicator 1 */}
-                  <div className="absolute -bottom-36 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-80">
-                    <span className="text-[10px] uppercase tracking-[0.3em] font-mono text-[#ff6e00] mb-2 drop-shadow-[0_0_8px_rgba(255,110,0,0.5)]">Scroll Down</span>
-                    <CurvedArrow className="text-[#ff6e00] drop-shadow-[0_0_12px_rgba(255,110,0,0.6)]" />
+                  {/* Scroll Indicator 1 (Beige card -> Orange accent) */}
+                  <div className="absolute -bottom-40 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-90">
+                    <span 
+                      className="text-[10px] uppercase tracking-[0.25em] font-medium mb-1"
+                      style={{ color: '#ff6e00', textShadow: '0 0 12px rgba(255,110,0,0.4)' }}
+                    >
+                      Scroll
+                    </span>
+                    <CurvedArrow color="#ff6e00" />
                   </div>
                 </div>
 
@@ -209,10 +214,15 @@ export function StudyView() {
                     </div>
                   </PatternCard>
 
-                  {/* Scroll Indicator 2 */}
-                  <div className="absolute -bottom-36 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-80">
-                    <span className="text-[10px] uppercase tracking-[0.3em] font-mono text-[#ff6e00] mb-2 drop-shadow-[0_0_8px_rgba(255,110,0,0.5)]">Scroll Down</span>
-                    <CurvedArrow className="text-[#ff6e00] drop-shadow-[0_0_12px_rgba(255,110,0,0.6)]" />
+                  {/* Scroll Indicator 2 (Dark card -> White accent) */}
+                  <div className="absolute -bottom-40 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-70">
+                    <span 
+                      className="text-[10px] uppercase tracking-[0.25em] font-medium mb-1"
+                      style={{ color: '#ffffff', textShadow: '0 0 12px rgba(255,255,255,0.4)' }}
+                    >
+                      Scroll
+                    </span>
+                    <CurvedArrow color="#ffffff" />
                   </div>
                 </div>
 
