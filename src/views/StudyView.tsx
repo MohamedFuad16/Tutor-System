@@ -4,6 +4,7 @@ import { ChatPanel, UsageAnalyticsStrip } from '../components/ChatPanel';
 import { useStore } from '../store';
 import { UploadCloud, MessageSquare, X, RefreshCw } from 'lucide-react';
 import { PatternCard, themes } from '../components/PatternCard';
+import { AnimatedScrollText } from '../components/AnimatedScrollText';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function StudyView() {
@@ -78,40 +79,51 @@ export function StudyView() {
             <PdfViewer />
           </>
         ) : (
-            <div className="flex-1 w-full h-full flex flex-col items-center justify-center overflow-auto p-4 md:p-8 relative custom-scroll">
-              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-              <div className="flex items-center gap-8 z-10 flex-col md:flex-row h-full pb-10 justify-center">
-                <input 
-                  type="file" 
-                  accept="application/pdf" 
-                  ref={fileInputRef}
-                  className="hidden" 
-                  onChange={handleFileChange}
-                />
+            <div className="flex-1 w-full h-full flex flex-col overflow-auto relative custom-scroll">
+              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px', backgroundAttachment: 'local' }} />
+              
+              <div className="w-full flex-1 flex flex-col items-center justify-start z-10 p-6 md:p-12 lg:p-20 pt-[15vh] pb-[20vh] max-w-4xl mx-auto">
                 
-                <PatternCard
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={handleDrop}
-                  isDragging={isDragging}
-                  bgClass={themes[1].bg} // Orange theme
-                  SvgComponent={themes[1].SvgComponent}
-                  bloomColor={themes[1].bloom}
-                  bloomOpacity={themes[1].bloomOpacity}
-                >
-                  <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
-                    <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-[#ff6e00]/20 text-white border border-white/20 shadow-lg">
-                      <UploadCloud className="w-5 h-5" />
+                <div className="w-full mb-[20vh]">
+                  <AnimatedScrollText 
+                    text="Learning, redefined. Upload your documents to extract profound insights, map complex concepts into your personalized brain graph, and retain knowledge forever."
+                    className="text-4xl md:text-5xl lg:text-6xl font-serif text-white/90 leading-[1.2] tracking-tight"
+                  />
+                </div>
+
+                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center">
+                  <input 
+                    type="file" 
+                    accept="application/pdf" 
+                    ref={fileInputRef}
+                    className="hidden" 
+                    onChange={handleFileChange}
+                  />
+                  
+                  <PatternCard
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleDrop}
+                    isDragging={isDragging}
+                    bgClass={themes[1].bg} // Orange theme
+                    SvgComponent={themes[1].SvgComponent}
+                    bloomColor={themes[1].bloom}
+                    bloomOpacity={themes[1].bloomOpacity}
+                  >
+                    <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
+                      <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-[#ff6e00]/20 text-white border border-white/20 shadow-lg">
+                        <UploadCloud className="w-5 h-5" />
+                      </div>
+                      <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
+                        Upload<br/>Document
+                      </div>
+                      <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
+                        Drag & drop your PDF here to begin learning.
+                      </div>
                     </div>
-                    <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
-                      Upload<br/>Document
-                    </div>
-                    <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
-                      Drag & drop your PDF here to begin learning.
-                    </div>
-                  </div>
-                </PatternCard>
+                  </PatternCard>
+                </div>
               </div>
             </div>
         )}
