@@ -28,7 +28,7 @@ You need Node.js installed on your system.
 This project follows a **Bring Your Own Key (BYOK)** model. You will need API keys for the following services to run all features:
 1. **LLM Key:** OpenRouter API Key (for the tutor intelligence)
 2. **Voice Key:** Deepgram API Key (for Voice-to-Text and Text-to-Speech)
-3. **Web Search Key:** Tavily API Key (for real-time web search capabilities)
+3. **Web Search Key:** Web Search API Key (for real-time web search capabilities)
 
 ### Installation
 
@@ -48,7 +48,7 @@ This project follows a **Bring Your Own Key (BYOK)** model. You will need API ke
    ```env
    OPENROUTER_API_KEY=your_openrouter_key_here
    DEEPGRAM_API_KEY=your_deepgram_key_here
-   TAVILY_API_KEY=your_tavily_key_here
+   WEB_SEARCH_API_KEY=your_web_search_key_here
    ```
    *(Note: You can also configure the OpenRouter API key directly in the app's settings UI).*
 
