@@ -7,6 +7,7 @@ interface AnimatedScrollTextProps {
   fullRevealDistance?: number;
   initialBlur?: number;
   initialOpacity?: number;
+  onRevealComplete?: (isComplete: boolean) => void;
 }
 
 export function AnimatedScrollText({ 
@@ -15,7 +16,8 @@ export function AnimatedScrollText({
   scrollContainerRef,
   fullRevealDistance = 600,
   initialBlur = 3,
-  initialOpacity = 0.1
+  initialOpacity = 0.1,
+  onRevealComplete
 }: AnimatedScrollTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const words = text.split(" ");
@@ -52,7 +54,12 @@ export function AnimatedScrollText({
       const visibleHeight = scroller.clientHeight - elementTop;
       
       const progress = (visibleHeight - containerHeight) / (fullRevealDistance - containerHeight);
-      setScrollProgress(Math.max(0, Math.min(1, progress)));
+      const clampedProgress = Math.max(0, Math.min(1, progress));
+      setScrollProgress(clampedProgress);
+      
+      if (onRevealComplete) {
+        onRevealComplete(clampedProgress >= 1);
+      }
     };
 
     scroller.addEventListener("scroll", handleScroll, { passive: true });

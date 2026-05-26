@@ -51,6 +51,8 @@ export function StudyView() {
   const setActiveView = useStore(state => state.setActiveView);
   const [isDragging, setIsDragging] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
+  const [card1DotsReady, setCard1DotsReady] = useState(false);
+  const [card2DotsReady, setCard2DotsReady] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -122,18 +124,20 @@ export function StudyView() {
                 
                 {/* Text 1: Automatic Reveal */}
                 <motion.div 
-                  initial={{ opacity: 0, filter: "blur(10px)", y: 20 }}
-                  animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   className="w-full mb-12 text-center"
                 >
                   <h2 className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight flex flex-wrap justify-center gap-x-[0.25em]">
-                    {"Learning, redefined. Extract profound insights from any document.".split(" ").map((word, i) => (
+                    {"Learning, redefined. Extract profound insights from any document.".split(" ").map((word, i, arr) => (
                       <motion.span 
                         key={i}
-                        initial={{ opacity: 0, filter: "blur(8px)" }}
-                        animate={{ opacity: 1, filter: "blur(0px)" }}
-                        transition={{ duration: 0.8, delay: i * 0.08, ease: "easeOut" }}
+                        initial={{ opacity: 0, filter: "blur(12px)", y: 10 }}
+                        animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+                        transition={{ duration: 0.8, delay: i * 0.15, ease: "easeOut" }}
+                        onAnimationComplete={() => {
+                          if (i === arr.length - 1) setCard1DotsReady(true);
+                        }}
                       >
                         {word}
                       </motion.span>
@@ -148,15 +152,16 @@ export function StudyView() {
                     SvgComponent={themes[2].SvgComponent}
                     bloomColor={themes[2].bloom}
                     bloomOpacity={themes[2].bloomOpacity}
+                    animateDots={card1DotsReady}
                   >
                     <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
-                      <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-white/10 text-white border border-white/20 shadow-lg">
+                      <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-black/10 text-black border border-black/10 shadow-lg">
                         <MessageSquare className="w-5 h-5" />
                       </div>
-                      <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
+                      <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-black">
                         Interactive<br/>Tutor
                       </div>
-                      <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
+                      <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-black">
                         Chat with your document and test your knowledge.
                       </div>
                     </div>
@@ -178,16 +183,18 @@ export function StudyView() {
                     className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight justify-center"
                     scrollContainerRef={scrollContainerRef}
                     fullRevealDistance={300}
+                    onRevealComplete={setCard2DotsReady}
                   />
                 </div>
 
                 {/* Card 2: Knowledge Graph */}
                 <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center relative mb-8">
                   <PatternCard
-                    bgClass={themes[0].bg}
+                    bgClass={`${themes[0].bg} border border-white/10`}
                     SvgComponent={themes[0].SvgComponent}
                     bloomColor={themes[0].bloom}
                     bloomOpacity={themes[0].bloomOpacity}
+                    animateDots={card2DotsReady}
                   >
                     <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
                       <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-white/10 text-white border border-white/20 shadow-lg">
