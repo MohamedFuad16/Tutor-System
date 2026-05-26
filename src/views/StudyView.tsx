@@ -83,17 +83,27 @@ export function StudyView() {
             <div ref={scrollContainerRef} className="flex-1 w-full h-full flex flex-col overflow-auto relative custom-scroll">
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px', backgroundAttachment: 'local' }} />
               
-              <div className="w-full flex-1 flex flex-col items-center justify-start z-10 p-6 md:p-12 lg:p-20 pt-[15vh] pb-[20vh] max-w-4xl mx-auto">
+              <div className="w-full flex-1 flex flex-col items-center justify-start z-10 p-6 md:p-12 lg:p-20 pt-[30vh] pb-[40vh] max-w-3xl mx-auto">
                 
-                <div className="w-full mb-[20vh]">
+                <div className="w-full mb-[30vh]">
                   <AnimatedScrollText 
-                    text="Learning, redefined. Upload your documents to extract profound insights, map complex concepts into your personalized brain graph, and retain knowledge forever."
-                    className="text-4xl md:text-5xl lg:text-6xl font-serif text-white/90 leading-[1.2] tracking-tight"
+                    text="Learning, redefined. Extract profound insights from any document."
+                    className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight"
                     scrollContainerRef={scrollContainerRef}
+                    fullRevealDistance={400}
                   />
                 </div>
 
-                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center">
+                <div className="w-full mb-[20vh] text-right">
+                  <AnimatedScrollText 
+                    text="Map complex concepts into your personalized brain graph."
+                    className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight"
+                    scrollContainerRef={scrollContainerRef}
+                    fullRevealDistance={400}
+                  />
+                </div>
+
+                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center mb-[20vh]">
                   <input 
                     type="file" 
                     accept="application/pdf" 
@@ -125,6 +135,15 @@ export function StudyView() {
                       </div>
                     </div>
                   </PatternCard>
+                </div>
+
+                <div className="w-full text-center">
+                  <AnimatedScrollText 
+                    text="Upload your first document to retain knowledge forever."
+                    className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight"
+                    scrollContainerRef={scrollContainerRef}
+                    fullRevealDistance={400}
+                  />
                 </div>
               </div>
             </div>
