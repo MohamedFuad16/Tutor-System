@@ -1,0 +1,3478 @@
+{
+  "metadata": {
+    "generatedAt": "2026-05-26T14:20:20.494Z",
+    "generator": "generate-brain.ts",
+    "generatorVersion": 2,
+    "sourceScope": [
+      "src/**/*",
+      "server.ts",
+      "generate-brain.ts",
+      "init-task-memory.ts",
+      "package.json",
+      "package-lock.json",
+      "tsconfig.json",
+      "brain/**/*.ts",
+      "scripts/**/*.ts"
+    ],
+    "excluded": [
+      "dist",
+      "node_modules",
+      "build",
+      "coverage",
+      "generated assets",
+      "temporary files"
+    ],
+    "commit": {
+      "commit": null,
+      "branch": null,
+      "dirty": null
+    },
+    "package": {
+      "name": "react-example",
+      "version": "0.0.0",
+      "react": "^19.0.1"
+    },
+    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84"
+  },
+  "files": {
+    "generate-brain.ts": {
+      "file": "generate-brain.ts",
+      "hash": "fe90eb18c04769dbf36988daa03adbdac31db07bc7dbddb47a19300b34834de4",
+      "imports": [
+        {
+          "specifier": "ts-morph",
+          "external": "ts-morph"
+        },
+        {
+          "specifier": "crypto",
+          "external": "crypto"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        },
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "ensureDirs",
+        "rel",
+        "sha256",
+        "readIfExists",
+        "getCommitMetadata",
+        "isSourceScoped",
+        "walk",
+        "resolveLocalImport",
+        "addNode",
+        "addEdge",
+        "lineOf",
+        "hasJsx",
+        "jsxTagName",
+        "normalizeEndpoint",
+        "endpointNodeId",
+        "websocketNodeId",
+        "fileNodeId",
+        "componentNodeId",
+        "hookNodeId",
+        "storeFieldNodeId",
+        "tableNodeId",
+        "routeNodeId",
+        "packageNodeId",
+        "extractStoreFields",
+        "extractFetchEndpoint",
+        "extractWebSocketEndpoint",
+        "extractDbOperation",
+        "extractServerRoutes",
+        "inferStoreWrites",
+        "extractRoutesFromApp",
+        "topTokens",
+        "chunkSource",
+        "analyzeSourceFile",
+        "writeJson",
+        "buildImpact",
+        "buildContracts",
+        "buildRouteMap",
+        "buildStateFlow",
+        "buildRenderGraph",
+        "buildContextPacks",
+        "buildCompressedSummaries",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "BRAIN_DIR",
+        "GENERATED_DIRS",
+        "SOURCE_ROOT_ALLOWLIST",
+        "EXCLUDE_PATHS",
+        "LOCAL_EXTENSIONS",
+        "DB_READ_OPS",
+        "DB_WRITE_OPS"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "init-task-memory.ts": {
+      "file": "init-task-memory.ts",
+      "hash": "4fb8129543b5e47521c030e64cf009c371e09356262376fc6654c9ed2ef681e6",
+      "imports": [
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [],
+      "variables": [
+        "brainDir",
+        "retrievalDir",
+        "tasksDir",
+        "baseTask"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "server.ts": {
+      "file": "server.ts",
+      "hash": "7811beebedc58f2e7bf68ab66626340121bc8a985f687ceba92b50b3e1883442",
+      "imports": [
+        {
+          "specifier": "dotenv",
+          "external": "dotenv"
+        },
+        {
+          "specifier": "express",
+          "external": "express"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        },
+        {
+          "specifier": "openai",
+          "external": "openai"
+        },
+        {
+          "specifier": "ws",
+          "external": "ws"
+        },
+        {
+          "specifier": "./server/web-search",
+          "external": "."
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "startServer"
+      ],
+      "variables": [
+        "DEEPGRAM_PRICING",
+        "pricingCache",
+        "PRICING_CACHE_TTL_MS",
+        "PCM16_MONO_48K_BYTES_PER_SECOND",
+        "LEARNING_AGENT_MODEL",
+        "roundCost",
+        "estimateTokensFromText",
+        "ttsCostForModel",
+        "voiceAgentCostForSeconds",
+        "rawByteLength",
+        "sanitizeApiKey",
+        "normalizeModelPricing",
+        "fetchOpenRouterPricing",
+        "openRouterCost",
+        "slugifyId",
+        "extractJsonObject",
+        "fallbackLearningUpdate"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [
+        "/api/v1/models"
+      ],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/drift-check.ts": {
+      "file": "brain/drift-check.ts",
+      "hash": "8b203172a6d8290a1f3791a40ef060868211e01eef344f670bc8449f171e88a7",
+      "imports": [
+        {
+          "specifier": "crypto",
+          "external": "crypto"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "rel",
+        "sha256",
+        "include",
+        "walk",
+        "currentFiles",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "SNAPSHOT_PATH",
+        "ALLOW",
+        "EXCLUDE"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/self-audit.ts": {
+      "file": "brain/self-audit.ts",
+      "hash": "88aa6dd1d7c36300902fc02057981e275ce7ccf66e3380101b3f842a12b1ca8a",
+      "imports": [
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "readJson",
+        "exists",
+        "write",
+        "score",
+        "runJson",
+        "retrievalBenchmark",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "THRESHOLD"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "scripts/install-brain-hooks.ts": {
+      "file": "scripts/install-brain-hooks.ts",
+      "hash": "88c7840f122d9bee1c5646f20fe8c3560728addfbf57651fad6626f84edd0fc4",
+      "imports": [
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "hooksPath",
+        "preCommit"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/App.tsx": {
+      "file": "src/App.tsx",
+      "hash": "72a420f7cd923999ade34be343a4b1727a8790afede19a0030b6cb0137e650e7",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "./store",
+          "resolved": "src/store/index.ts"
+        },
+        {
+          "specifier": "./components/Navigation",
+          "resolved": "src/components/Navigation.tsx"
+        },
+        {
+          "specifier": "./components/SettingsModal",
+          "resolved": "src/components/SettingsModal.tsx"
+        },
+        {
+          "specifier": "./views/StudyView",
+          "resolved": "src/views/StudyView.tsx"
+        },
+        {
+          "specifier": "./views/BrainView",
+          "resolved": "src/views/BrainView.tsx"
+        },
+        {
+          "specifier": "./views/AnalyticsView",
+          "resolved": "src/views/AnalyticsView.tsx"
+        },
+        {
+          "specifier": "./views/RevisionView",
+          "resolved": "src/views/RevisionView.tsx"
+        },
+        {
+          "specifier": "./views/AdminView",
+          "resolved": "src/views/AdminView.tsx"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "./brain-runtime/RenderProfiler",
+          "resolved": "src/brain-runtime/RenderProfiler.tsx"
+        },
+        {
+          "specifier": "./brain-runtime/runtimeTelemetry",
+          "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+        }
+      ],
+      "exports": [
+        "default"
+      ],
+      "functions": [
+        "App"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "App"
+      ],
+      "hooks": [],
+      "storeSelectors": [
+        {
+          "field": "activeView",
+          "selector": "state => state.activeView"
+        },
+        {
+          "field": "setActiveView",
+          "selector": "state => state.setActiveView"
+        }
+      ],
+      "storeWrites": [
+        "setActiveView"
+      ],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "AdminView",
+        "AnalyticsView",
+        "AnimatePresence",
+        "BrainRenderProfiler",
+        "BrainView",
+        "Navigation",
+        "RevisionView",
+        "SettingsButton",
+        "StudyView"
+      ],
+      "routes": [
+        {
+          "view": "study",
+          "component": "BrainRenderProfiler"
+        },
+        {
+          "view": "brain",
+          "component": "BrainRenderProfiler"
+        },
+        {
+          "view": "analytics",
+          "component": "BrainRenderProfiler"
+        },
+        {
+          "view": "revision",
+          "component": "BrainRenderProfiler"
+        },
+        {
+          "view": "admin",
+          "component": "BrainRenderProfiler"
+        }
+      ]
+    },
+    "src/audio.ts": {
+      "file": "src/audio.ts",
+      "hash": "6d6f6cabb8714a32b85ec0d9972273da33ac9fea6823fcfecb552b6085bd1357",
+      "imports": [],
+      "exports": [
+        "playClickSound",
+        "playHoverSound",
+        "startAmbientHum"
+      ],
+      "functions": [],
+      "variables": [
+        "audioCtx",
+        "getAudioContext",
+        "playHoverSound",
+        "playClickSound",
+        "ambientOsc",
+        "ambientGain",
+        "ambientLfo",
+        "isAmbientPlaying",
+        "startAmbientHum"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/main.tsx": {
+      "file": "src/main.tsx",
+      "hash": "855bd7960ab94daade740cf412d40f67ff6d7eaa20a1757077ddd1e8597feff2",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "react-dom/client",
+          "external": "react-dom"
+        },
+        {
+          "specifier": "./App.tsx",
+          "resolved": "src/App.tsx"
+        },
+        {
+          "specifier": "./index.css",
+          "resolved": "src/index.css"
+        },
+        {
+          "specifier": "./brain-runtime/installBrainRuntime",
+          "resolved": "src/brain-runtime/installBrainRuntime.ts"
+        }
+      ],
+      "exports": [],
+      "functions": [],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "App",
+        "StrictMode"
+      ],
+      "routes": []
+    },
+    "src/types.ts": {
+      "file": "src/types.ts",
+      "hash": "aff4afc7c95f9321bffae8a50f7851a43acecfc99b9f7b73c3b9263e7d07ade7",
+      "imports": [],
+      "exports": [
+        "ChatPhase",
+        "Message",
+        "MindMapLink",
+        "MindMapNode"
+      ],
+      "functions": [],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/embeddings/embedding-engine.ts": {
+      "file": "brain/embeddings/embedding-engine.ts",
+      "hash": "1745ef2e280acd21eb620bdafc969b5516ccd7f3bb6e9f2fd2918f73c3d99bda",
+      "imports": [
+        {
+          "specifier": "crypto",
+          "external": "crypto"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "readJson",
+        "writeJson",
+        "sha256",
+        "tokenize",
+        "sparseVector",
+        "fileText",
+        "snippet",
+        "conceptsFor",
+        "chunkText",
+        "docFiles",
+        "corpusHash",
+        "collectChunks",
+        "cosine",
+        "getEmbedder",
+        "embedText",
+        "loadCache",
+        "clusterChunks",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "MODEL",
+        "VECTOR_INDEX",
+        "CACHE_PATH"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/impact/analyze-impact.ts": {
+      "file": "brain/impact/analyze-impact.ts",
+      "hash": "87e10a2b02f9cf82ddfe4770cbdf3590a1536cc95aeef59776994d81bffb483f",
+      "imports": [
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "readJson",
+        "exists",
+        "loadRuntimeImpact",
+        "main"
+      ],
+      "variables": [
+        "ROOT"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/knowledge/query-engine.ts": {
+      "file": "brain/knowledge/query-engine.ts",
+      "hash": "2be7bcdc78f04f643234cfddc3e7fc14e684a8003813e3d60254363e2d312740",
+      "imports": [
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "readJson",
+        "loadGraph",
+        "nodeName",
+        "findNodes",
+        "relatedEdges",
+        "dependsOn",
+        "rerendersFrom",
+        "apiImpact",
+        "routeLayouts",
+        "stateFlow",
+        "coupledSystems",
+        "naturalQuery",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "GRAPH_PATH"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/retrieval/retrieve-context.ts": {
+      "file": "brain/retrieval/retrieve-context.ts",
+      "hash": "11fb93f26c43e7106a71fe41d6efdd814e19485eca341cf20f07b42b53708002",
+      "imports": [
+        {
+          "specifier": "./retrieve-semantic",
+          "resolved": "brain/retrieval/retrieve-semantic.ts"
+        }
+      ],
+      "exports": [],
+      "functions": [],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/retrieval/retrieve-semantic.ts": {
+      "file": "brain/retrieval/retrieve-semantic.ts",
+      "hash": "a4ef94db1bfb061e6e2c495e5d9de8886e8cc84274c87ef785e547879f2d68a6",
+      "imports": [
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        },
+        {
+          "specifier": "crypto",
+          "external": "crypto"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "readJson",
+        "sha256",
+        "tokenize",
+        "sparseVector",
+        "sparseCosine",
+        "vectorCosine",
+        "embedQuery",
+        "loadContextPacks",
+        "packScore",
+        "taskMemoryScore",
+        "graphNeighborScore",
+        "confidence",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "MODEL",
+        "CACHE_PATH"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/rules/validate-rules.ts": {
+      "file": "brain/rules/validate-rules.ts",
+      "hash": "532ad435082ae1c61731c414c65fd6bb55ef3734912302acf6b321444edcb7cb",
+      "imports": [
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        },
+        {
+          "specifier": "crypto",
+          "external": "crypto"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "readJson",
+        "exists",
+        "sha256",
+        "fileText",
+        "fail",
+        "retrievalDocFiles",
+        "expectedVectorCorpusHash",
+        "extractViewStateLiterals",
+        "extractServerEndpoints",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "requiredArtifacts"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/runtime/context-orchestrator.ts": {
+      "file": "brain/runtime/context-orchestrator.ts",
+      "hash": "40bd080746cf21cbee8f42468f08822786844fd761f77dfdd11ef794da769fcf",
+      "imports": [
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        }
+      ],
+      "exports": [
+        "RetrievedContext",
+        "retrieveContext"
+      ],
+      "functions": [
+        "retrieveContext"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/runtime/impact-orchestrator.ts": {
+      "file": "brain/runtime/impact-orchestrator.ts",
+      "hash": "9ea84f3965746c1f68897e18d1d9a5f7740f47b9c96fb5e70d9bdf58c1828546",
+      "imports": [
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [
+        "ImpactReport",
+        "analyzeImpactForFiles"
+      ],
+      "functions": [
+        "analyzeImpactForFiles"
+      ],
+      "variables": [
+        "ROOT"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/runtime/run-runtime-benchmark.ts": {
+      "file": "brain/runtime/run-runtime-benchmark.ts",
+      "hash": "0433f6f57dff87ac58aa9605ff0b869eb25aea22d32046e2406d5e8450705b00",
+      "imports": [
+        {
+          "specifier": "playwright",
+          "external": "playwright"
+        },
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "writeJson",
+        "waitForServer",
+        "ensureServer",
+        "summarize",
+        "runBenchmark"
+      ],
+      "variables": [
+        "ROOT",
+        "RUNTIME_DIR",
+        "SERVER_URL"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/runtime/task-executor.ts": {
+      "file": "brain/runtime/task-executor.ts",
+      "hash": "687649b71ebb606af7fd68751779b6c7c817104741c86996ad93dfeb004935fb",
+      "imports": [
+        {
+          "specifier": "openai",
+          "external": "openai"
+        },
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        },
+        {
+          "specifier": "crypto",
+          "external": "crypto"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        },
+        {
+          "specifier": "./impact-orchestrator",
+          "resolved": "brain/runtime/impact-orchestrator.ts"
+        },
+        {
+          "specifier": "./context-orchestrator",
+          "resolved": "brain/runtime/context-orchestrator.ts"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "arg",
+        "writeFile",
+        "taskId",
+        "run",
+        "safetyCheck",
+        "renderPlan",
+        "generatePatch",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "PLANS_DIR",
+        "FAILURE_DIR"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/tasks/task-memory.ts": {
+      "file": "brain/tasks/task-memory.ts",
+      "hash": "b7530e2bd9a6bc2b48281c2b6571a257f5b4d67b3361aae59641824b3f506d7f",
+      "imports": [
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "ensureDir",
+        "parseJson",
+        "normalizeList",
+        "parseList",
+        "normalizeTask",
+        "readMemory",
+        "writeJson",
+        "writeMemory",
+        "option",
+        "collectOption",
+        "optionListOr",
+        "append",
+        "linkTasks",
+        "addMapEntry",
+        "buildIndexes",
+        "rebuildIndexes",
+        "query",
+        "validate",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "TASK_DIR",
+        "MEMORY_PATH",
+        "DECISION_CHAINS_PATH",
+        "RISK_HISTORY_PATH",
+        "FRAGILE_SYSTEMS_PATH"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/brain-runtime/installBrainRuntime.ts": {
+      "file": "src/brain-runtime/installBrainRuntime.ts",
+      "hash": "5eacf49fc82f6ebc3c25e3627c65455695d08308fe851249c1033da63b9bc72d",
+      "imports": [
+        {
+          "specifier": "../memory/longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        },
+        {
+          "specifier": "./runtimeTelemetry",
+          "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+        },
+        {
+          "specifier": "./instrumentDexie",
+          "resolved": "src/brain-runtime/instrumentDexie.ts"
+        },
+        {
+          "specifier": "./instrumentFetch",
+          "resolved": "src/brain-runtime/instrumentFetch.ts"
+        },
+        {
+          "specifier": "./instrumentWebSocket",
+          "resolved": "src/brain-runtime/instrumentWebSocket.ts"
+        },
+        {
+          "specifier": "./instrumentZustand",
+          "resolved": "src/brain-runtime/instrumentZustand.ts"
+        }
+      ],
+      "exports": [
+        "installBrainRuntime"
+      ],
+      "functions": [
+        "installBrainRuntime"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/brain-runtime/instrumentDexie.ts": {
+      "file": "src/brain-runtime/instrumentDexie.ts",
+      "hash": "6dab7e67e6fe4dfd9e4970c45332079c440cd4275a08b44877d044c4ea389037",
+      "imports": [
+        {
+          "specifier": "./runtimeTelemetry",
+          "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+        }
+      ],
+      "exports": [
+        "instrumentDexie"
+      ],
+      "functions": [
+        "instrumentDexie"
+      ],
+      "variables": [
+        "READ_OPS",
+        "WRITE_OPS"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/brain-runtime/instrumentFetch.ts": {
+      "file": "src/brain-runtime/instrumentFetch.ts",
+      "hash": "a9b7ba86da472162cd4377c0119b970b7e33fa1211ed4cfbf3573496f8c93e59",
+      "imports": [
+        {
+          "specifier": "./runtimeTelemetry",
+          "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+        }
+      ],
+      "exports": [
+        "instrumentFetch"
+      ],
+      "functions": [
+        "instrumentFetch"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/brain-runtime/instrumentWebSocket.ts": {
+      "file": "src/brain-runtime/instrumentWebSocket.ts",
+      "hash": "b3ba7d13e68e367c9ba8252c56472d2108a8dca7f9a580cb6f50b559d0ae17e7",
+      "imports": [
+        {
+          "specifier": "./runtimeTelemetry",
+          "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+        }
+      ],
+      "exports": [
+        "instrumentWebSocket"
+      ],
+      "functions": [
+        "instrumentWebSocket"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/brain-runtime/instrumentZustand.ts": {
+      "file": "src/brain-runtime/instrumentZustand.ts",
+      "hash": "c9920e6821a64cae4251a75911fbe5a3b59a46a57d59d27186ba844fd692dee1",
+      "imports": [
+        {
+          "specifier": "./runtimeTelemetry",
+          "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+        }
+      ],
+      "exports": [
+        "instrumentZustand"
+      ],
+      "functions": [
+        "instrumentZustand"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/brain-runtime/RenderProfiler.tsx": {
+      "file": "src/brain-runtime/RenderProfiler.tsx",
+      "hash": "b60d2a2c2cac8e705a67f374ad3a4a4cdc27743efe02189993cbc58d9e7ad5dc",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "./runtimeTelemetry",
+          "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+        }
+      ],
+      "exports": [
+        "BrainRenderProfiler"
+      ],
+      "functions": [
+        "BrainRenderProfiler"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "BrainRenderProfiler"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "Profiler"
+      ],
+      "routes": []
+    },
+    "src/brain-runtime/runtimeTelemetry.ts": {
+      "file": "src/brain-runtime/runtimeTelemetry.ts",
+      "hash": "0c0e6f378c9b8c50e2aacf9a6eb2a3e5395b1587116274e33451ded76f7c83d5",
+      "imports": [],
+      "exports": [
+        "BrainRuntimeEvent",
+        "ensureBrainRuntime",
+        "isBrainRuntimeEnabled",
+        "recordBrainRuntime"
+      ],
+      "functions": [
+        "isBrainRuntimeEnabled",
+        "ensureBrainRuntime",
+        "recordBrainRuntime"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/components/ChatPanel.tsx": {
+      "file": "src/components/ChatPanel.tsx",
+      "hash": "2b7e0ca8ae305d0a9b3bd77b07d2936d9b132049c31eacc728d1e292f5144594",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "react-markdown",
+          "external": "react-markdown"
+        },
+        {
+          "specifier": "remark-gfm",
+          "external": "remark-gfm"
+        },
+        {
+          "specifier": "mermaid",
+          "external": "mermaid"
+        },
+        {
+          "specifier": "./ShikiHighlighter",
+          "resolved": "src/components/ShikiHighlighter.tsx"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "dexie-react-hooks",
+          "external": "dexie-react-hooks"
+        },
+        {
+          "specifier": "../lib/audio",
+          "resolved": "src/lib/audio.ts"
+        },
+        {
+          "specifier": "./SiriLiquidGlass",
+          "resolved": "src/components/SiriLiquidGlass.tsx"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        },
+        {
+          "specifier": "../memory/memory.orchestrator",
+          "resolved": "src/memory/memory.orchestrator.ts"
+        },
+        {
+          "specifier": "../memory/longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        },
+        {
+          "specifier": "../types",
+          "resolved": "src/types.ts"
+        },
+        {
+          "specifier": "./FloatingSkillsMenu",
+          "resolved": "src/components/FloatingSkillsMenu.tsx"
+        },
+        {
+          "specifier": "../brain-runtime/runtimeTelemetry",
+          "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+        }
+      ],
+      "exports": [
+        "ChatPanel",
+        "UsageAnalyticsStrip"
+      ],
+      "functions": [
+        "useAnimatedNumber",
+        "ChatPanel"
+      ],
+      "variables": [
+        "Mermaid",
+        "languageLabels",
+        "languageExtensions",
+        "codeLanguageLabel",
+        "codeFileName",
+        "PremiumCodeShell",
+        "RunnableJS",
+        "RunnablePython",
+        "InteractiveCodeBlock",
+        "INITIAL_MESSAGE",
+        "formatCurrency",
+        "formatCount",
+        "formatSeconds",
+        "compactModel",
+        "AnimatedNumberText",
+        "UsageAnalyticsStrip",
+        "GeminiVoicePill",
+        "SearchProgressIndicator",
+        "SourceCards",
+        "SearchActivityPanel",
+        "FinalSourcesPanel",
+        "thoughtStepMeta",
+        "phaseLabel",
+        "ThoughtStepIcon",
+        "ThinkingPanel",
+        "markdownComponents",
+        "AnimatedMarkdown",
+        "MessageItem"
+      ],
+      "classes": [],
+      "components": [
+        "AnimatedMarkdown",
+        "AnimatedNumberText",
+        "ChatPanel",
+        "FinalSourcesPanel",
+        "GeminiVoicePill",
+        "InteractiveCodeBlock",
+        "Mermaid",
+        "MessageItem",
+        "PremiumCodeShell",
+        "RunnableJS",
+        "RunnablePython",
+        "SearchActivityPanel",
+        "SearchProgressIndicator",
+        "SourceCards",
+        "ThinkingPanel",
+        "ThoughtStepIcon",
+        "UsageAnalyticsStrip"
+      ],
+      "hooks": [
+        "useAnimatedNumber"
+      ],
+      "storeSelectors": [
+        {
+          "field": "chatUsage",
+          "selector": "state => state.chatUsage"
+        },
+        {
+          "field": "voiceUsage",
+          "selector": "state => state.voiceUsage"
+        },
+        {
+          "field": "webUsage",
+          "selector": "state => state.webUsage"
+        },
+        {
+          "field": "pricing",
+          "selector": "state => state.pricing"
+        },
+        {
+          "field": "setPricing",
+          "selector": "state => state.setPricing"
+        },
+        {
+          "field": "resetUsageAnalytics",
+          "selector": "state => state.resetUsageAnalytics"
+        },
+        {
+          "field": "isVoiceActive",
+          "selector": "state => state.isVoiceActive"
+        },
+        {
+          "field": "apiKey",
+          "selector": "state => state.apiKey"
+        },
+        {
+          "field": "serperApiKey",
+          "selector": "state => state.serperApiKey"
+        },
+        {
+          "field": "learnerName",
+          "selector": "state => state.learnerName"
+        },
+        {
+          "field": "askTutorQuery",
+          "selector": "state => state.askTutorQuery"
+        },
+        {
+          "field": "setAskTutorQuery",
+          "selector": "state => state.setAskTutorQuery"
+        },
+        {
+          "field": "activeProject",
+          "selector": "state => state.activeProject"
+        },
+        {
+          "field": "setActiveProject",
+          "selector": "state => state.setActiveProject"
+        },
+        {
+          "field": "activeLearningBookId",
+          "selector": "state => state.activeLearningBookId"
+        },
+        {
+          "field": "setActiveLearningBookId",
+          "selector": "state => state.setActiveLearningBookId"
+        },
+        {
+          "field": "ttsVoice",
+          "selector": "state => state.ttsVoice"
+        },
+        {
+          "field": "setActiveView",
+          "selector": "state => state.setActiveView"
+        },
+        {
+          "field": "aiModel",
+          "selector": "state => state.aiModel"
+        },
+        {
+          "field": "animationsEnabled",
+          "selector": "state => state.animationsEnabled"
+        },
+        {
+          "field": "systemPrompt",
+          "selector": "state => state.systemPrompt"
+        },
+        {
+          "field": "recordChatUsage",
+          "selector": "state => state.recordChatUsage"
+        },
+        {
+          "field": "recordVoiceUsage",
+          "selector": "state => state.recordVoiceUsage"
+        },
+        {
+          "field": "recordWebUsage",
+          "selector": "state => state.recordWebUsage"
+        },
+        {
+          "field": "recordWebSearchEvent",
+          "selector": "state => state.recordWebSearchEvent"
+        },
+        {
+          "field": "cacheWebSources",
+          "selector": "state => state.cacheWebSources"
+        },
+        {
+          "field": "selectedTextContext",
+          "selector": "state => state.selectedTextContext"
+        },
+        {
+          "field": "setSelectedTextContext",
+          "selector": "state => state.setSelectedTextContext"
+        },
+        {
+          "field": "messages",
+          "selector": "state => state.messages"
+        },
+        {
+          "field": "setMessages",
+          "selector": "state => state.setMessages"
+        },
+        {
+          "field": "setIsVoiceActive",
+          "selector": "state => state.setIsVoiceActive"
+        }
+      ],
+      "storeWrites": [
+        "setActiveLearningBookId",
+        "setActiveProject",
+        "setAskTutorQuery",
+        "setIsVoiceActive",
+        "setMessages",
+        "setPricing",
+        "setSelectedTextContext"
+      ],
+      "apiCalls": [
+        "/api/chat",
+        "/api/generate-flashcards",
+        "/api/pricing",
+        "/api/tts"
+      ],
+      "websocketCalls": [
+        "/api/voice-agent"
+      ],
+      "databaseReads": [
+        {
+          "table": "learningBooks",
+          "operation": "orderBy"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "get"
+        }
+      ],
+      "databaseWrites": [
+        {
+          "table": "flashcards",
+          "operation": "add"
+        },
+        {
+          "table": "flashcards",
+          "operation": "add"
+        }
+      ],
+      "renders": [
+        "Activity",
+        "AnimatePresence",
+        "AnimatedMarkdown",
+        "AnimatedNumberText",
+        "ArrowUp",
+        "BookOpen",
+        "Check",
+        "ChevronDown",
+        "Copy",
+        "ExternalLink",
+        "FileCode2",
+        "FinalSourcesPanel",
+        "FloatingSkillsMenu",
+        "Folder",
+        "GeminiVoicePill",
+        "Globe2",
+        "Icon",
+        "LoaderCircle",
+        "Mermaid",
+        "MessageItem",
+        "Mic",
+        "Minus",
+        "Network",
+        "Play",
+        "Plus",
+        "PremiumCodeShell",
+        "ReactMarkdown",
+        "RotateCcw",
+        "RunnableJS",
+        "RunnablePython",
+        "Search",
+        "SearchActivityPanel",
+        "SearchProgressIndicator",
+        "ShikiHighlighter",
+        "SiriLiquidGlass",
+        "SourceCards",
+        "Sparkles",
+        "Square",
+        "Terminal",
+        "ThinkingPanel",
+        "ThoughtStepIcon",
+        "Volume2",
+        "X",
+        "Zap"
+      ],
+      "routes": []
+    },
+    "src/components/FloatingSkillsMenu.tsx": {
+      "file": "src/components/FloatingSkillsMenu.tsx",
+      "hash": "e3ea146e99f51c2154a7640adce10ccfe585ba1e566e9330f6487110efac3c60",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        }
+      ],
+      "exports": [
+        "FloatingSkillsMenu"
+      ],
+      "functions": [
+        "FloatingSkillsMenu"
+      ],
+      "variables": [
+        "SKILLS"
+      ],
+      "classes": [],
+      "components": [
+        "FloatingSkillsMenu"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "AnimatePresence",
+        "Minus",
+        "Sparkles"
+      ],
+      "routes": []
+    },
+    "src/components/Navigation.tsx": {
+      "file": "src/components/Navigation.tsx",
+      "hash": "d5a1222846e9189e5e4aa9a6df8467b5965bb876c8aae2331ef254401dd1e6be",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        }
+      ],
+      "exports": [
+        "Navigation"
+      ],
+      "functions": [
+        "Navigation"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "Navigation"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [
+        "setActiveView"
+      ],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "Activity",
+        "BookOpen",
+        "Brain",
+        "Zap"
+      ],
+      "routes": []
+    },
+    "src/components/PatternCard.tsx": {
+      "file": "src/components/PatternCard.tsx",
+      "hash": "ee6086e8ccd869679f31a251436758b06b170a837e64fcc7091faeb43973230f",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "./PatternSVGs",
+          "resolved": "src/components/PatternSVGs.tsx"
+        }
+      ],
+      "exports": [
+        "PatternCard",
+        "themes"
+      ],
+      "functions": [],
+      "variables": [
+        "themes",
+        "PatternCard"
+      ],
+      "classes": [],
+      "components": [
+        "PatternCard"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "SvgComponent"
+      ],
+      "routes": []
+    },
+    "src/components/PatternSVGs.tsx": {
+      "file": "src/components/PatternSVGs.tsx",
+      "hash": "b98e9620a86e81c7468bdb984231f7c37e3da84e0744538435109ebbaaa9a1b1",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        }
+      ],
+      "exports": [
+        "SvgBeige",
+        "SvgDark",
+        "SvgOrange"
+      ],
+      "functions": [],
+      "variables": [
+        "SvgDark",
+        "SvgOrange",
+        "SvgBeige"
+      ],
+      "classes": [],
+      "components": [
+        "SvgBeige",
+        "SvgDark",
+        "SvgOrange"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/components/PdfViewer.tsx": {
+      "file": "src/components/PdfViewer.tsx",
+      "hash": "92a634902c35781d835c8024435699597bdaa51a2b1690b7dea4b06eae05b284",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "react-pdf",
+          "external": "react-pdf"
+        },
+        {
+          "specifier": "react-pdf/dist/Page/AnnotationLayer.css",
+          "external": "react-pdf"
+        },
+        {
+          "specifier": "react-pdf/dist/Page/TextLayer.css",
+          "external": "react-pdf"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        },
+        {
+          "specifier": "../memory/memory.orchestrator",
+          "resolved": "src/memory/memory.orchestrator.ts"
+        }
+      ],
+      "exports": [
+        "PdfViewer"
+      ],
+      "functions": [
+        "PdfViewer"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "PdfViewer"
+      ],
+      "hooks": [],
+      "storeSelectors": [
+        {
+          "field": "pdfUrl",
+          "selector": "state => state.pdfUrl"
+        },
+        {
+          "field": "pdfScale",
+          "selector": "state => state.pdfScale"
+        },
+        {
+          "field": "setPdfScale",
+          "selector": "state => state.setPdfScale"
+        },
+        {
+          "field": "pdfPage",
+          "selector": "state => state.pdfPage"
+        },
+        {
+          "field": "setPdfPage",
+          "selector": "state => state.setPdfPage"
+        },
+        {
+          "field": "pdfTotalPages",
+          "selector": "state => state.pdfTotalPages"
+        },
+        {
+          "field": "setPdfTotalPages",
+          "selector": "state => state.setPdfTotalPages"
+        },
+        {
+          "field": "annotations",
+          "selector": "state => state.annotations"
+        },
+        {
+          "field": "addAnnotation",
+          "selector": "state => state.addAnnotation"
+        },
+        {
+          "field": "setAskTutorQuery",
+          "selector": "state => state.setAskTutorQuery"
+        },
+        {
+          "field": "setSelectedTextContext",
+          "selector": "state => state.setSelectedTextContext"
+        }
+      ],
+      "storeWrites": [
+        "setActiveProject",
+        "setAskTutorQuery",
+        "setPdfPage",
+        "setPdfTotalPages",
+        "setSelectedTextContext"
+      ],
+      "apiCalls": [
+        "/api/title"
+      ],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "AnimatePresence",
+        "ChevronLeft",
+        "ChevronRight",
+        "Document",
+        "Highlighter",
+        "Maximize",
+        "MessageSquare",
+        "Minimize",
+        "Page",
+        "React",
+        "StickyNote",
+        "Strikethrough",
+        "Underline"
+      ],
+      "routes": []
+    },
+    "src/components/PracticeMode.tsx": {
+      "file": "src/components/PracticeMode.tsx",
+      "hash": "134a509a8c52474fc7dd96c7371274311e61c213a3cab246173f102de3e4065c",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        }
+      ],
+      "exports": [
+        "PracticeMode"
+      ],
+      "functions": [
+        "PracticeMode"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "PracticeMode"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "Code2",
+        "Play"
+      ],
+      "routes": []
+    },
+    "src/components/SettingsModal.tsx": {
+      "file": "src/components/SettingsModal.tsx",
+      "hash": "57c02357227b054c2a22198c74446e1deda122ed7b89413e6fd9ba7ebccdbdd8",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        },
+        {
+          "specifier": "./SiriLiquidGlass",
+          "resolved": "src/components/SiriLiquidGlass.tsx"
+        }
+      ],
+      "exports": [
+        "SettingsButton"
+      ],
+      "functions": [
+        "SettingsButton"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "SettingsButton"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [
+        "setAiModel",
+        "setAnimationsEnabled",
+        "setApiKey",
+        "setLearnerName",
+        "setSerperApiKey",
+        "setSystemPrompt",
+        "setTtsVoice"
+      ],
+      "apiCalls": [
+        "/api/generate-persona",
+        "/api/v1/models"
+      ],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "AlertCircle",
+        "AnimatePresence",
+        "Globe2",
+        "Key",
+        "Loader2",
+        "Mic",
+        "Settings",
+        "SiriLiquidGlass",
+        "UserRound",
+        "X"
+      ],
+      "routes": []
+    },
+    "src/components/ShikiHighlighter.tsx": {
+      "file": "src/components/ShikiHighlighter.tsx",
+      "hash": "ba012c0041ad9820d556b46a5cacbc3560e3fb57a30f3587d9f60627d5b2cd8e",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "shiki",
+          "external": "shiki"
+        }
+      ],
+      "exports": [
+        "ShikiHighlighter"
+      ],
+      "functions": [
+        "ShikiHighlighter"
+      ],
+      "variables": [
+        "highlighterPromise"
+      ],
+      "classes": [],
+      "components": [
+        "ShikiHighlighter"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/components/Sidebar.tsx": {
+      "file": "src/components/Sidebar.tsx",
+      "hash": "0e13f6713f1430eaf7c36091e0dd7dad798cab4823295f8693740c0d8ffa712e",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        }
+      ],
+      "exports": [
+        "Sidebar"
+      ],
+      "functions": [
+        "Sidebar",
+        "SidebarItem"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "Sidebar",
+        "SidebarItem"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "BookOpen",
+        "Clock",
+        "Compass",
+        "FolderClosed",
+        "Plus",
+        "Settings",
+        "SidebarItem"
+      ],
+      "routes": []
+    },
+    "src/components/SiriLiquidGlass.tsx": {
+      "file": "src/components/SiriLiquidGlass.tsx",
+      "hash": "ce3e86ebe33c1387d73a402ee8a61fc0e8d57000a577985e9eecd3ce6d30137f",
+      "imports": [
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "react",
+          "external": "react"
+        }
+      ],
+      "exports": [
+        "SiriLiquidGlass"
+      ],
+      "functions": [
+        "SiriLiquidGlass"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "SiriLiquidGlass"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/lib/audio.ts": {
+      "file": "src/lib/audio.ts",
+      "hash": "b7224ce25576b559fffa1eda90c900e361c8de7d3af633f6d0cec48f2d93a84a",
+      "imports": [],
+      "exports": [
+        "AudioSystem",
+        "audio"
+      ],
+      "functions": [],
+      "variables": [
+        "audio"
+      ],
+      "classes": [
+        "AudioSystem"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/lib/tutorBook.json": {
+      "file": "src/lib/tutorBook.json",
+      "hash": "2a867792ba69eb5c84240743064cd3f6336a6e18d3030a86a4726a6bde8c9ee9",
+      "imports": [],
+      "exports": [],
+      "functions": [],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [
+        "/api/chat",
+        "/api/learning-book-update",
+        "/api/pricing",
+        "/api/title",
+        "/api/trace",
+        "/api/tts"
+      ],
+      "websocketCalls": [
+        "/api/voice-agent",
+        "/ws/debug"
+      ],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/bkt.engine.ts": {
+      "file": "src/memory/bkt.engine.ts",
+      "hash": "8769edf4442fbb7bb504da54370dfd2db8f34daba0b56b5f6fb1fe6c65f0b81b",
+      "imports": [
+        {
+          "specifier": "./longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        }
+      ],
+      "exports": [
+        "BKTEngine",
+        "bktEngine"
+      ],
+      "functions": [],
+      "variables": [
+        "DEFAULT_BKT",
+        "bktEngine"
+      ],
+      "classes": [
+        "BKTEngine"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [
+        {
+          "table": "concepts",
+          "operation": "get"
+        }
+      ],
+      "databaseWrites": [
+        {
+          "table": "concepts",
+          "operation": "put"
+        }
+      ],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/cognitive.load.ts": {
+      "file": "src/memory/cognitive.load.ts",
+      "hash": "2fbbbe550976b84f855d4223c2ee7cd6d0559d0e404a3b682e585e2c72e7fab8",
+      "imports": [],
+      "exports": [
+        "CognitiveLoadMonitor",
+        "CognitiveLoadState",
+        "cognitiveLoadMonitor"
+      ],
+      "functions": [],
+      "variables": [
+        "cognitiveLoadMonitor"
+      ],
+      "classes": [
+        "CognitiveLoadMonitor"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/illusion.detector.ts": {
+      "file": "src/memory/illusion.detector.ts",
+      "hash": "eed5246cfac71f3630c2da0e26237199189b709f21cd16dd3d2c065e9bc6b9a3",
+      "imports": [],
+      "exports": [
+        "IllusionDetector",
+        "illusionDetector"
+      ],
+      "functions": [],
+      "variables": [
+        "illusionDetector"
+      ],
+      "classes": [
+        "IllusionDetector"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/learner.model.ts": {
+      "file": "src/memory/learner.model.ts",
+      "hash": "e5cd96ab4f4be01d55c884808752e0c9e109e3a54742cc5f295dcd9a8f56a52b",
+      "imports": [
+        {
+          "specifier": "./longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        },
+        {
+          "specifier": "./zpd.calculator",
+          "resolved": "src/memory/zpd.calculator.ts"
+        },
+        {
+          "specifier": "./misconception.graph",
+          "resolved": "src/memory/misconception.graph.ts"
+        },
+        {
+          "specifier": "./scaffolding.engine",
+          "resolved": "src/memory/scaffolding.engine.ts"
+        },
+        {
+          "specifier": "./prerequisite.dag",
+          "resolved": "src/memory/prerequisite.dag.ts"
+        },
+        {
+          "specifier": "./bkt.engine",
+          "resolved": "src/memory/bkt.engine.ts"
+        },
+        {
+          "specifier": "./illusion.detector",
+          "resolved": "src/memory/illusion.detector.ts"
+        },
+        {
+          "specifier": "./cognitive.load",
+          "resolved": "src/memory/cognitive.load.ts"
+        }
+      ],
+      "exports": [
+        "LearnerModel",
+        "learnerModel"
+      ],
+      "functions": [],
+      "variables": [
+        "learnerModel"
+      ],
+      "classes": [
+        "LearnerModel"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [
+        {
+          "table": "concepts",
+          "operation": "get"
+        },
+        {
+          "table": "concepts",
+          "operation": "filter"
+        }
+      ],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/longterm.memory.ts": {
+      "file": "src/memory/longterm.memory.ts",
+      "hash": "e349a880282dcdc793f01fd98102e0d9ae6f0cadcb1709a607a4b425ce0767cb",
+      "imports": [
+        {
+          "specifier": "dexie",
+          "external": "dexie"
+        }
+      ],
+      "exports": [
+        "BrainDatabase",
+        "ConversationInteraction",
+        "Flashcard",
+        "LearningBook",
+        "LearningBookConcept",
+        "LearningChapter",
+        "LearningEntry",
+        "Misconception",
+        "PersistentConcept",
+        "SessionMemoryRecord",
+        "TraceLog",
+        "db"
+      ],
+      "functions": [],
+      "variables": [
+        "db"
+      ],
+      "classes": [
+        "BrainDatabase"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/memory.embeddings.ts": {
+      "file": "src/memory/memory.embeddings.ts",
+      "hash": "c7c315bf0c5ed1f370999898fec90acf8fafd8a1c3063b452f935069e4acd35c",
+      "imports": [
+        {
+          "specifier": "@xenova/transformers",
+          "external": "@xenova/transformers"
+        }
+      ],
+      "exports": [
+        "cosineSimilarity",
+        "generateEmbedding",
+        "initEmbeddings"
+      ],
+      "functions": [
+        "initEmbeddings",
+        "generateEmbedding",
+        "cosineSimilarity"
+      ],
+      "variables": [
+        "embedder"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/memory.orchestrator.ts": {
+      "file": "src/memory/memory.orchestrator.ts",
+      "hash": "483c0dafcc64944c22b6bc0529d3276cc311be3944163b510da49ae6f32cddf2",
+      "imports": [
+        {
+          "specifier": "./memory.embeddings",
+          "resolved": "src/memory/memory.embeddings.ts"
+        },
+        {
+          "specifier": "./longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        }
+      ],
+      "exports": [
+        "LearningBookUpdateInput",
+        "MemoryOrchestrator",
+        "brainOrchestrator"
+      ],
+      "functions": [
+        "generateId",
+        "slugify",
+        "clamp01",
+        "getStoredOpenRouterKey",
+        "getStoredLearnerName"
+      ],
+      "variables": [
+        "mergeUnique",
+        "compactText",
+        "announceActiveLearningBook",
+        "brainOrchestrator"
+      ],
+      "classes": [
+        "MemoryOrchestrator"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [
+        "/api/learning-book-update",
+        "/api/trace"
+      ],
+      "websocketCalls": [],
+      "databaseReads": [
+        {
+          "table": "concepts",
+          "operation": "toArray"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "get"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "get"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "get"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "orderBy"
+        },
+        {
+          "table": "learningBookConcepts",
+          "operation": "get"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "get"
+        },
+        {
+          "table": "concepts",
+          "operation": "get"
+        },
+        {
+          "table": "interactions",
+          "operation": "orderBy"
+        },
+        {
+          "table": "concepts",
+          "operation": "orderBy"
+        }
+      ],
+      "databaseWrites": [
+        {
+          "table": "sessions",
+          "operation": "add"
+        },
+        {
+          "table": "learningEntries",
+          "operation": "clear"
+        },
+        {
+          "table": "learningBookConcepts",
+          "operation": "clear"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "clear"
+        },
+        {
+          "table": "concepts",
+          "operation": "delete"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "put"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "put"
+        },
+        {
+          "table": "interactions",
+          "operation": "add"
+        },
+        {
+          "table": "learningBookConcepts",
+          "operation": "put"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "put"
+        },
+        {
+          "table": "learningEntries",
+          "operation": "add"
+        },
+        {
+          "table": "concepts",
+          "operation": "put"
+        },
+        {
+          "table": "concepts",
+          "operation": "put"
+        },
+        {
+          "table": "concepts",
+          "operation": "put"
+        },
+        {
+          "table": "traceLogs",
+          "operation": "add"
+        }
+      ],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/metacognition.tracker.ts": {
+      "file": "src/memory/metacognition.tracker.ts",
+      "hash": "f2b7550ee607db69867e12a25ad42c2ebf4894485491ea9df20b5a7646829894",
+      "imports": [],
+      "exports": [
+        "MetacognitionTracker",
+        "metacognitionTracker"
+      ],
+      "functions": [],
+      "variables": [
+        "metacognitionTracker"
+      ],
+      "classes": [
+        "MetacognitionTracker"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/misconception.graph.ts": {
+      "file": "src/memory/misconception.graph.ts",
+      "hash": "e1c52a969ce9c4a71ccd9e6d7dbd28f3532f105d31973006926d60e39fb636c3",
+      "imports": [
+        {
+          "specifier": "./longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        },
+        {
+          "specifier": "uuid",
+          "external": "uuid"
+        }
+      ],
+      "exports": [
+        "MisconceptionGraph",
+        "misconceptionGraph"
+      ],
+      "functions": [],
+      "variables": [
+        "misconceptionGraph"
+      ],
+      "classes": [
+        "MisconceptionGraph"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [
+        {
+          "table": "misconceptions",
+          "operation": "filter"
+        },
+        {
+          "table": "misconceptions",
+          "operation": "where"
+        },
+        {
+          "table": "misconceptions",
+          "operation": "get"
+        },
+        {
+          "table": "misconceptions",
+          "operation": "get"
+        }
+      ],
+      "databaseWrites": [
+        {
+          "table": "misconceptions",
+          "operation": "add"
+        },
+        {
+          "table": "misconceptions",
+          "operation": "put"
+        },
+        {
+          "table": "misconceptions",
+          "operation": "put"
+        }
+      ],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/prerequisite.dag.ts": {
+      "file": "src/memory/prerequisite.dag.ts",
+      "hash": "40e2261ba807e7d22dbf4e71ce3be0d9d673497720a6a937fc5da0712040549e",
+      "imports": [
+        {
+          "specifier": "./longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        }
+      ],
+      "exports": [
+        "PrerequisiteDAG",
+        "prerequisiteDAG"
+      ],
+      "functions": [],
+      "variables": [
+        "prerequisiteDAG"
+      ],
+      "classes": [
+        "PrerequisiteDAG"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [
+        {
+          "table": "concepts",
+          "operation": "get"
+        },
+        {
+          "table": "concepts",
+          "operation": "get"
+        },
+        {
+          "table": "concepts",
+          "operation": "get"
+        },
+        {
+          "table": "concepts",
+          "operation": "get"
+        }
+      ],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/productive.failure.ts": {
+      "file": "src/memory/productive.failure.ts",
+      "hash": "8465d76ee6b56ca84760652c653def606689d8f65b4ef35afa53b5f0115ea77f",
+      "imports": [
+        {
+          "specifier": "./longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        }
+      ],
+      "exports": [
+        "ProductiveFailureEngine",
+        "StruggleState",
+        "productiveFailureEngine"
+      ],
+      "functions": [],
+      "variables": [
+        "productiveFailureEngine"
+      ],
+      "classes": [
+        "ProductiveFailureEngine"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/revision.memory.ts": {
+      "file": "src/memory/revision.memory.ts",
+      "hash": "303b408a1c31a06d6b06c559dd8e9da9bbac4c99dcaf0356077d88a1509d7aa0",
+      "imports": [
+        {
+          "specifier": "./longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        }
+      ],
+      "exports": [
+        "computeNextRevision",
+        "getUrgentRevisions"
+      ],
+      "functions": [
+        "computeNextRevision",
+        "getUrgentRevisions"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [
+        {
+          "table": "concepts",
+          "operation": "toArray"
+        }
+      ],
+      "databaseWrites": [
+        {
+          "table": "concepts",
+          "operation": "put"
+        }
+      ],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/scaffolding.engine.ts": {
+      "file": "src/memory/scaffolding.engine.ts",
+      "hash": "1771a62b4daba5a11e6ba595b60abfb45a56ba56b790a1033b98f83e93280aff",
+      "imports": [
+        {
+          "specifier": "./longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        }
+      ],
+      "exports": [
+        "ScaffoldingEngine",
+        "scaffoldingEngine"
+      ],
+      "functions": [],
+      "variables": [
+        "scaffoldingEngine"
+      ],
+      "classes": [
+        "ScaffoldingEngine"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/memory/zpd.calculator.ts": {
+      "file": "src/memory/zpd.calculator.ts",
+      "hash": "a29ec2fee31aeae00b567dc369f736b7a2a0d3d4f29bf8a368c4d22f2a55bf54",
+      "imports": [
+        {
+          "specifier": "./longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        },
+        {
+          "specifier": "./prerequisite.dag",
+          "resolved": "src/memory/prerequisite.dag.ts"
+        }
+      ],
+      "exports": [
+        "ZPDCalculator",
+        "zpdCalculator"
+      ],
+      "functions": [],
+      "variables": [
+        "zpdCalculator"
+      ],
+      "classes": [
+        "ZPDCalculator"
+      ],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [
+        {
+          "table": "concepts",
+          "operation": "toArray"
+        }
+      ],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/store/index.ts": {
+      "file": "src/store/index.ts",
+      "hash": "f48e565c1cdd4b32d25ddd60e148e189ab0149d1554f0176006082d0126c0c66",
+      "imports": [
+        {
+          "specifier": "zustand",
+          "external": "zustand"
+        },
+        {
+          "specifier": "zustand/middleware",
+          "external": "zustand"
+        },
+        {
+          "specifier": "../types",
+          "resolved": "src/types.ts"
+        }
+      ],
+      "exports": [
+        "Annotation",
+        "ChatUsage",
+        "Concept",
+        "NormalizedWebSource",
+        "PricingState",
+        "ViewState",
+        "VoiceUsage",
+        "WebSearchEvent",
+        "WebSearchMode",
+        "WebUsage",
+        "useStore"
+      ],
+      "functions": [],
+      "variables": [
+        "emptyChatUsage",
+        "emptyWebUsage",
+        "emptyVoiceUsage",
+        "emptyPricing",
+        "usageStorageKey",
+        "readStoredUsage",
+        "persistUsage",
+        "storedUsage",
+        "useStore"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [
+        "useStore"
+      ],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/views/AdminView.tsx": {
+      "file": "src/views/AdminView.tsx",
+      "hash": "cf486d0d1a75df2437a8f934a14fbd78884e3a4e41b79fa19fecdb55435f695f",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "dexie-react-hooks",
+          "external": "dexie-react-hooks"
+        },
+        {
+          "specifier": "../memory/longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        }
+      ],
+      "exports": [
+        "AdminView"
+      ],
+      "functions": [
+        "AdminView"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "AdminView"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [
+        "setActiveView"
+      ],
+      "apiCalls": [],
+      "websocketCalls": [
+        "/ws/debug"
+      ],
+      "databaseReads": [
+        {
+          "table": "traceLogs",
+          "operation": "orderBy"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "orderBy"
+        },
+        {
+          "table": "learningBookConcepts",
+          "operation": "orderBy"
+        },
+        {
+          "table": "learningEntries",
+          "operation": "orderBy"
+        }
+      ],
+      "databaseWrites": [],
+      "renders": [
+        "Activity",
+        "AnimatePresence",
+        "BookOpen",
+        "ChevronRight",
+        "Clock",
+        "Menu",
+        "Network",
+        "Sparkles",
+        "Terminal"
+      ],
+      "routes": []
+    },
+    "src/views/AnalyticsView.tsx": {
+      "file": "src/views/AnalyticsView.tsx",
+      "hash": "df6a0cca785929236e1362dd19ec92bbb6b8861f24521b3186b19d3410acb5c6",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "recharts",
+          "external": "recharts"
+        },
+        {
+          "specifier": "../memory/longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        }
+      ],
+      "exports": [
+        "AnalyticsView"
+      ],
+      "functions": [
+        "AnalyticsView"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "AnalyticsView"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [
+        "setConcepts"
+      ],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [
+        {
+          "table": "concepts",
+          "operation": "toArray"
+        },
+        {
+          "table": "interactions",
+          "operation": "toArray"
+        },
+        {
+          "table": "sessions",
+          "operation": "toArray"
+        }
+      ],
+      "databaseWrites": [],
+      "renders": [
+        "Bar",
+        "BarChart",
+        "CartesianGrid",
+        "Cell",
+        "Pie",
+        "PieChart",
+        "RechartsTooltip",
+        "ResponsiveContainer",
+        "XAxis",
+        "YAxis"
+      ],
+      "routes": []
+    },
+    "src/views/BrainView.tsx": {
+      "file": "src/views/BrainView.tsx",
+      "hash": "4932831ce7b349640e5b988e163c5850172e1dd65870ffbb5d59d7ccaee00537",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "react-force-graph-3d",
+          "external": "react-force-graph-3d"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        },
+        {
+          "specifier": "three",
+          "external": "three"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "../memory/longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        },
+        {
+          "specifier": "dexie-react-hooks",
+          "external": "dexie-react-hooks"
+        }
+      ],
+      "exports": [
+        "BrainView"
+      ],
+      "functions": [
+        "createTextSprite",
+        "BrainView"
+      ],
+      "variables": [
+        "geometryCache",
+        "materialCache",
+        "textureCache",
+        "spriteMaterialCache",
+        "getGeometry",
+        "getMaterial"
+      ],
+      "classes": [],
+      "components": [
+        "BrainView"
+      ],
+      "hooks": [],
+      "storeSelectors": [
+        {
+          "field": "learnerName",
+          "selector": "state => state.learnerName"
+        }
+      ],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [
+        {
+          "table": "learningBooks",
+          "operation": "orderBy"
+        },
+        {
+          "table": "learningBookConcepts",
+          "operation": "orderBy"
+        },
+        {
+          "table": "concepts",
+          "operation": "orderBy"
+        }
+      ],
+      "databaseWrites": [],
+      "renders": [
+        "BookOpen",
+        "CircleDot",
+        "ForceGraph3D",
+        "Library",
+        "Target"
+      ],
+      "routes": []
+    },
+    "src/views/RevisionView.tsx": {
+      "file": "src/views/RevisionView.tsx",
+      "hash": "3c2e0a2f9a837827cbc0eb684619cb11f3e37f16e4550bfb70cfc6f8f401cb7d",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        },
+        {
+          "specifier": "dexie-react-hooks",
+          "external": "dexie-react-hooks"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "react-markdown",
+          "external": "react-markdown"
+        },
+        {
+          "specifier": "remark-gfm",
+          "external": "remark-gfm"
+        },
+        {
+          "specifier": "../memory/longterm.memory",
+          "resolved": "src/memory/longterm.memory.ts"
+        },
+        {
+          "specifier": "../components/PatternCard",
+          "resolved": "src/components/PatternCard.tsx"
+        },
+        {
+          "specifier": "../components/PatternSVGs",
+          "resolved": "src/components/PatternSVGs.tsx"
+        },
+        {
+          "specifier": "../lib/tutorBook.json",
+          "resolved": "src/lib/tutorBook.json"
+        }
+      ],
+      "exports": [
+        "RevisionView"
+      ],
+      "functions": [
+        "RevisionView"
+      ],
+      "variables": [
+        "createTutorBookConcept",
+        "LongPressWrapper",
+        "FlashcardUI"
+      ],
+      "classes": [],
+      "components": [
+        "FlashcardUI",
+        "LongPressWrapper",
+        "RevisionView"
+      ],
+      "hooks": [],
+      "storeSelectors": [
+        {
+          "field": "setActiveView",
+          "selector": "state => state.setActiveView"
+        }
+      ],
+      "storeWrites": [
+        "setActiveView"
+      ],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [
+        {
+          "table": "concepts",
+          "operation": "toArray"
+        },
+        {
+          "table": "learningBooks",
+          "operation": "orderBy"
+        },
+        {
+          "table": "learningBookConcepts",
+          "operation": "orderBy"
+        },
+        {
+          "table": "learningEntries",
+          "operation": "orderBy"
+        },
+        {
+          "table": "flashcards",
+          "operation": "toArray"
+        },
+        {
+          "table": "concepts",
+          "operation": "toArray"
+        }
+      ],
+      "databaseWrites": [
+        {
+          "table": "concepts",
+          "operation": "put"
+        },
+        {
+          "table": "concepts",
+          "operation": "delete"
+        },
+        {
+          "table": "flashcards",
+          "operation": "update"
+        },
+        {
+          "table": "concepts",
+          "operation": "delete"
+        }
+      ],
+      "renders": [
+        "AnimatePresence",
+        "BookOpen",
+        "FlashcardUI",
+        "LongPressWrapper",
+        "Menu",
+        "PatternCard",
+        "ReactMarkdown",
+        "Trash2",
+        "Zap"
+      ],
+      "routes": []
+    },
+    "src/views/StudyView.tsx": {
+      "file": "src/views/StudyView.tsx",
+      "hash": "028161232f01749af243dfb2636f0c1cef7aeee51162851169df78e3d6a9cf0a",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "../components/PdfViewer",
+          "resolved": "src/components/PdfViewer.tsx"
+        },
+        {
+          "specifier": "../components/ChatPanel",
+          "resolved": "src/components/ChatPanel.tsx"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        },
+        {
+          "specifier": "../components/PatternCard",
+          "resolved": "src/components/PatternCard.tsx"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        }
+      ],
+      "exports": [
+        "StudyView"
+      ],
+      "functions": [
+        "StudyView"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "StudyView"
+      ],
+      "hooks": [],
+      "storeSelectors": [
+        {
+          "field": "pdfUrl",
+          "selector": "state => state.pdfUrl"
+        },
+        {
+          "field": "setPdfUrl",
+          "selector": "state => state.setPdfUrl"
+        },
+        {
+          "field": "setPdfPage",
+          "selector": "state => state.setPdfPage"
+        },
+        {
+          "field": "setPdfTotalPages",
+          "selector": "state => state.setPdfTotalPages"
+        },
+        {
+          "field": "setSelectedTextContext",
+          "selector": "state => state.setSelectedTextContext"
+        },
+        {
+          "field": "setActiveView",
+          "selector": "state => state.setActiveView"
+        }
+      ],
+      "storeWrites": [
+        "setPdfPage",
+        "setPdfTotalPages",
+        "setPdfUrl",
+        "setSelectedTextContext"
+      ],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "AnimatePresence",
+        "ChatPanel",
+        "MessageSquare",
+        "PatternCard",
+        "PdfViewer",
+        "RefreshCw",
+        "UploadCloud",
+        "UsageAnalyticsStrip",
+        "X"
+      ],
+      "routes": []
+    },
+    "src/index.css": {
+      "file": "src/index.css",
+      "hash": "e66fa09825e438a0903e04f761fbbae36b8abe0a30bd06c44e2f6e910ee6ca3c",
+      "imports": [],
+      "exports": [],
+      "functions": [],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "package.json": {
+      "file": "package.json",
+      "hash": "395935794a7aaf85f745729c16738cf712fb52e252aa020a7aac60faae5127fa",
+      "imports": [],
+      "exports": [],
+      "functions": [],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "package-lock.json": {
+      "file": "package-lock.json",
+      "hash": "fd7451268f13a474f26c9e905aee0c2f49dc2434e93137bb6d7d0520233325fe",
+      "imports": [],
+      "exports": [],
+      "functions": [],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "tsconfig.json": {
+      "file": "tsconfig.json",
+      "hash": "bb90ecf058764422a4866e31a2da9bdc3d2fee80eaa849d72f6920d75eb54de2",
+      "imports": [],
+      "exports": [],
+      "functions": [],
+      "variables": [],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    }
+  }
+}

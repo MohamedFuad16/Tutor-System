@@ -1,0 +1,20 @@
+{
+  "zustand_store": {
+    "file": "src/store/index.ts",
+    "rule": "Global application state ONLY. Used for cross-view synchronization (e.g., activeView, user understanding metrics, theme toggles).",
+    "forbidden": "Do NOT put transient UI state (e.g., 'isDropdownOpen', 'typingBuffer') here to avoid massive app-wide rerenders."
+  },
+  "local_component_state": {
+    "rule": "Use React.useState for anything that only affects a single component or its immediate children.",
+    "examples": ["Animation triggers", "Hover states", "Input field buffers"]
+  },
+  "indexedDB_dexie": {
+    "file": "src/memory/longterm.memory.ts",
+    "rule": "Persistent knowledge and learning metrics ONLY.",
+    "forbidden": "Do NOT store large blobs (like PDFs) here unless chunked and explicitly required. Avoid blocking the main thread with large full-table scans. Use indexes."
+  },
+  "react_query_or_swr": {
+    "rule": "Not currently used. Server state is managed via direct fetch/SSE streams in components.",
+    "forbidden": "Do not introduce caching libraries without explicitly declaring an architectural transition."
+  }
+}

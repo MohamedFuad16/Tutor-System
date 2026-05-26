@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-05-26T14:21:55.300Z",
+  "generator": "generate-brain.ts",
+  "generatorVersion": 2,
+  "sourceScope": [
+    "src/**/*",
+    "server.ts",
+    "generate-brain.ts",
+    "init-task-memory.ts",
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
+    "brain/**/*.ts",
+    "scripts/**/*.ts"
+  ],
+  "excluded": [
+    "dist",
+    "node_modules",
+    "build",
+    "coverage",
+    "generated assets",
+    "temporary files"
+  ],
+  "commit": {
+    "commit": null,
+    "branch": null,
+    "dirty": null
+  },
+  "package": {
+    "name": "react-example",
+    "version": "0.0.0",
+    "react": "^19.0.1"
+  },
+  "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84",
+  "model": "Xenova/all-MiniLM-L6-v2",
+  "algorithm": "xenova-all-minilm-l6-v2-hybrid-v1",
+  "chunkCount": 338,
+  "vectorIndex": "brain/retrieval/vector-index.json"
+}

@@ -1,0 +1,509 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useStore } from '../store';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { Brain, Search, BookOpen, Layers, Zap, Clock, AlertTriangle, Code, Menu, X, ChevronRight, RefreshCw, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { db, PersistentConcept, Flashcard, LearningBook } from '../memory/longterm.memory';
+import { PatternCard, themes } from '../components/PatternCard';
+import { SvgBeige } from '../components/PatternSVGs';
+import tutorBook from '../lib/tutorBook.json';
+
+const createTutorBookConcept = (): PersistentConcept => ({
+  id: 'tutor-book',
+  name: 'Tutor System Architecture',
+  mastery: 0,
+  confidence: 0,
+  description: 'Complete guide to the underlying pedagogical models and technical architecture of the AI Tutor.',
+  p_learn: 0.2,
+  p_transit: 0.1,
+  p_slip: 0.1,
+  p_guess: 0.2,
+  attempt_history: [],
+  decay_factor: 1,
+  prerequisites: [],
+  relatedConcepts: [],
+  sourcePages: [],
+  revisionCount: 0,
+  lastReviewedAt: Date.now(),
+  firstLearnedAt: Date.now(),
+  linkedAnnotations: [],
+});
+
+const LongPressWrapper = ({ onLongPress, onClick, children }: { onLongPress: () => void, onClick: () => void, children: (pressing: boolean) => React.ReactNode }) => {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isLongPress = useRef(false);
+  const [pressing, setPressing] = useState(false);
+
+  const clearPress = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+    setPressing(false);
+  };
+
+  return (
+    <div
+      onPointerDown={() => {
+        isLongPress.current = false;
+        setPressing(true);
+        timer.current = setTimeout(() => {
+          isLongPress.current = true;
+          setPressing(false);
+          onLongPress();
+        }, 800);
+      }}
+      onPointerUp={clearPress}
+      onPointerLeave={clearPress}
+      onPointerCancel={clearPress}
+      onClick={() => {
+        if (!isLongPress.current) {
+          onClick();
+        }
+      }}
+      className="relative cursor-pointer select-none"
+    >
+      {children(pressing)}
+    </div>
+  );
+};
+
+const FlashcardUI = React.memo(({ card, onReview }: { card: Flashcard; onReview: (quality: number) => void }) => {
+  const [flipped, setFlipped] = useState(false);
+
+  return (
+    <div className="w-full max-w-sm mx-auto mb-8 h-[240px] relative perspective-[1000px]">
+      <motion.div
+        className="w-full h-full relative cursor-pointer"
+        animate={{ rotateY: flipped ? 180 : 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+        style={{ transformStyle: 'preserve-3d' }}
+        onClick={() => setFlipped(!flipped)}
+      >
+        {/* Front */}
+        <motion.div 
+          className="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-6 bg-[#0A0A0B] border border-white/10 rounded-2xl shadow-xl"
+          animate={{ opacity: flipped ? 0 : 1 }}
+          transition={{ duration: 0.1, delay: flipped ? 0 : 0.1 }}
+          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', pointerEvents: flipped ? 'none' : 'auto' }}
+        >
+          <div className="text-center overflow-y-auto">
+             <span className="text-xs font-mono text-zinc-500 mb-4 block">QUESTION</span>
+             <p className="text-lg font-serif text-white">{card.front}</p>
+          </div>
+        </motion.div>
+
+        {/* Back */}
+        <motion.div 
+          className="absolute inset-0 w-full h-full flex flex-col p-6 bg-white/5 border border-white/10 rounded-2xl shadow-xl bg-gradient-to-br from-[#1A1A1E] to-[#0A0A0B]"
+          animate={{ opacity: flipped ? 1 : 0 }}
+          transition={{ duration: 0.1, delay: flipped ? 0.1 : 0 }}
+          style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', pointerEvents: flipped ? 'auto' : 'none' }}
+        >
+          <div className="flex-1 flex items-center justify-center text-center mb-4 overflow-y-auto w-full">
+             <div className="w-full">
+               <span className="text-xs font-mono text-zinc-500 mb-2 block">ANSWER</span>
+               <p className="text-[15px] font-serif text-white leading-relaxed">{card.back}</p>
+             </div>
+          </div>
+          
+          <div className="grid grid-cols-4 gap-2 border-t border-white/5 pt-3 mt-auto shrink-0 relative z-10 w-full">
+            <button onClick={(e) => { e.stopPropagation(); setFlipped(false); onReview(0); }} className="text-[10px] font-mono py-2 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">AGAIN</button>
+            <button onClick={(e) => { e.stopPropagation(); setFlipped(false); onReview(2); }} className="text-[10px] font-mono py-2 rounded bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 transition-colors">HARD</button>
+            <button onClick={(e) => { e.stopPropagation(); setFlipped(false); onReview(4); }} className="text-[10px] font-mono py-2 rounded bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors">GOOD</button>
+            <button onClick={(e) => { e.stopPropagation(); setFlipped(false); onReview(5); }} className="text-[10px] font-mono py-2 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors">EASY</button>
+          </div>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+});
+
+export function RevisionView() {
+  const setActiveView = useStore(state => state.setActiveView);
+  
+  const concepts = useLiveQuery(async () => {
+    const tutorBookHidden = localStorage.getItem('tutor_book_hidden') === '1';
+    try {
+      const all = (await db.concepts.toArray()).filter(c => c.id === 'tutor-book');
+      if (!tutorBookHidden && (all.length === 0 || !all.find(c => c.id === 'tutor-book'))) {
+        const defaultConcept = createTutorBookConcept();
+        await db.concepts.put(defaultConcept);
+        all.push(defaultConcept);
+      }
+      return all;
+    } catch (error) {
+      console.warn('[RevisionView] Concept library unavailable, using local fallback:', error);
+      return tutorBookHidden ? [] : [createTutorBookConcept()];
+    }
+  }, []) || [];
+
+  const learningBooks = useLiveQuery(() => db.learningBooks.orderBy('updatedAt').reverse().toArray(), []) || [];
+  const learningBookConcepts = useLiveQuery(() => db.learningBookConcepts.orderBy('updatedAt').reverse().toArray(), []) || [];
+  const learningEntries = useLiveQuery(() => db.learningEntries.orderBy('timestamp').reverse().limit(50).toArray(), []) || [];
+
+  const flashcards = useLiveQuery(async () => {
+    try {
+      return await db.flashcards.toArray();
+    } catch (error) {
+      console.warn('[RevisionView] Flashcards unavailable:', error);
+      return [];
+    }
+  }, []) || [];
+
+  const [activeConceptId, setActiveConceptId] = useState<string | null>(null);
+  const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
+  const [deleteTarget, setDeleteTarget] = useState<PersistentConcept | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const cleanupBooks = async () => {
+      try {
+        const all = await db.concepts.toArray();
+        for (const concept of all) {
+          if (["AI Tutor Book", "ChatGPT", "Scientific Writing"].includes(concept.name)) {
+            await db.concepts.delete(concept.id);
+          }
+        }
+      } catch (error) {
+        console.warn('[RevisionView] Book cleanup skipped:', error);
+      }
+    };
+    cleanupBooks();
+  }, []);
+
+  const handleReview = async (card: Flashcard, quality: number) => {
+    const nextDays = quality >= 4 ? 3 * (quality - 2) : 1;
+    await db.flashcards.update(card.id, {
+      nextReviewAt: Date.now() + nextDays * 24 * 60 * 60 * 1000
+    });
+  };
+
+  const sampleNotes: Record<string, string> = {
+    'tutor-book': tutorBook.map(chapter => chapter.content).join('\n\n---\n\n')
+  };
+
+  const activeConcept = concepts.find(c => c.id === activeConceptId);
+  const activeLearningBook = learningBooks.find(book => book.id === activeConceptId);
+
+  const learningBookMarkdown = (book: LearningBook) => {
+    const conceptsForBook = learningBookConcepts.filter(concept => concept.bookId === book.id);
+    const entriesForBook = learningEntries.filter(entry => entry.bookId === book.id);
+    const chapterText = (book.chapters || []).length
+      ? book.chapters.map((chapter, index) => {
+          const chapterConcepts = conceptsForBook.filter(concept => chapter.conceptIds.includes(concept.id)).map(concept => concept.name);
+          return `### Chapter ${index + 1}: ${chapter.title}\n${chapter.summary || 'Chapter summary pending.'}${chapterConcepts.length ? `\n\nConcepts: ${chapterConcepts.join(', ')}` : ''}`;
+        }).join('\n\n')
+      : 'No chapters mapped yet.';
+    const conceptText = conceptsForBook.length
+      ? conceptsForBook.map(concept => {
+          const branches = concept.childConcepts.length ? `\n  - Branches: ${concept.childConcepts.join(', ')}` : '';
+          const parents = concept.parentConcepts.length ? `\n  - Parent concepts: ${concept.parentConcepts.join(', ')}` : '';
+          return `### ${concept.name}\n${concept.summary || 'Summary pending.'}${parents}${branches}`;
+        }).join('\n\n')
+      : 'No concepts mapped yet.';
+    const entryText = entriesForBook.slice(0, 5).map(entry => `- ${entry.conversationSummary || entry.assistantSummary}`).join('\n');
+    return `## Overview\n${book.overview || 'Overview pending.'}\n\n## Knowledge Summary\n${book.knowledgeSummary || book.summary || 'Summary pending.'}\n\n## Chapters\n${chapterText}\n\n## Mapped Concepts\n${conceptText}\n\n## Recent Learning Notes\n${entryText || 'No learning notes recorded yet.'}`;
+  };
+  const isTutorBook = activeConcept?.id === 'tutor-book';
+  const activeTitle = activeLearningBook?.title || activeConcept?.name || '';
+
+  const deleteConcept = async () => {
+    if (!deleteTarget) return;
+    if (deleteTarget.id === 'tutor-book') {
+      localStorage.setItem('tutor_book_hidden', '1');
+    }
+    try {
+      await db.concepts.delete(deleteTarget.id);
+    } catch (error) {
+      console.warn('[RevisionView] Book delete could not update IndexedDB:', error);
+    }
+    if (activeConceptId === deleteTarget.id) {
+      setActiveConceptId(null);
+    }
+    setDeleteTarget(null);
+  };
+
+  return (
+    <div ref={scrollRef} className="w-full h-full bg-[#faf9f6] text-zinc-900 flex flex-col overflow-y-auto custom-scroll pt-20 md:pt-0 relative">
+      {/* Subtle Paper Texture Overlay */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E")' }} />
+      {activeConcept || activeLearningBook ? (
+        <div className="min-h-full flex w-full relative z-10 pt-16 md:pt-20">
+          {/* Sidebar Navigation */}
+          {(isTutorBook || activeLearningBook) && (
+            <div className="w-64 border-r border-zinc-200/50 bg-[#faf9f6] hidden lg:block px-4 py-6 flex-shrink-0 sticky top-20 h-[calc(100vh-80px)] overflow-y-auto custom-scroll">
+              <div className="sticky top-0 bg-[#faf9f6] z-20 pb-4 pt-2 -mt-2 mb-4">
+                <button 
+                  onClick={() => { setActiveConceptId(null); setCurrentChapterIndex(0); }}
+                  className="flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-2"
+                >
+                  <Menu size={16} /> Back to Library
+                </button>
+              </div>
+              <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-6 px-3">Contents</div>
+              <nav className="flex flex-col gap-1">
+                {(isTutorBook ? tutorBook : (activeLearningBook?.chapters || [])).map((ch: any, idx: number) => (
+                  <button 
+                    key={idx}
+                    onClick={() => setCurrentChapterIndex(idx)}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${idx === currentChapterIndex ? 'bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent'}`}
+                  >
+                    <span className="line-clamp-2 leading-snug">{ch.title}</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+          )}
+
+          <div className="flex-1 flex flex-col w-full relative">
+            {/* Header for mobile or non-book views */}
+            <div className="sticky top-16 md:top-20 left-0 right-0 z-50 bg-[#faf9f6]/95 backdrop-blur-md border-b border-zinc-200/50 px-6 py-4 flex items-center justify-between shadow-sm lg:hidden">
+              <button 
+                onClick={() => { setActiveConceptId(null); setCurrentChapterIndex(0); }}
+                className="flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+              >
+                <Menu size={16} /> Back
+              </button>
+              <div className="text-sm font-semibold text-zinc-800 tracking-wide truncate max-w-[200px] md:max-w-md">{activeTitle}</div>
+              <div className="w-16"></div>
+            </div>
+            
+            <div className="flex-1 p-6 md:p-12 lg:p-16 xl:p-24 relative isolate w-full max-w-4xl mx-auto">
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={currentChapterIndex}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                  className="relative z-10 font-serif pb-12"
+                >
+                  <div className="mb-10 border-b border-zinc-200 pb-8 pt-4 font-sans cursor-default">
+                    <span className="text-[11px] uppercase tracking-[0.2em] font-mono text-zinc-400 mb-6 block font-medium">
+                      <span className="text-blue-500 mr-2">#</span> 
+                      {isTutorBook ? 'Documentation' : activeLearningBook ? 'Learning Book' : 'Concept Overview'}
+                    </span>
+                    <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-6 font-serif leading-[1.15]">
+                      {isTutorBook 
+                        ? tutorBook[currentChapterIndex].title 
+                        : activeLearningBook 
+                          ? (activeLearningBook.chapters?.[currentChapterIndex]?.title || activeTitle)
+                          : activeTitle}
+                    </h1>
+                  </div>
+                  
+                  <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-zinc-900 prose-li:leading-[1.8] prose-li:text-zinc-800 prose-li:font-light prose-ul:my-5 prose-pre:bg-zinc-100 prose-pre:text-zinc-800 prose-pre:border prose-pre:border-zinc-200 prose-pre:shadow-inner prose-pre:my-8 prose-code:text-blue-700 prose-code:bg-blue-50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-[0.85em] prose-strong:text-zinc-900 prose-strong:font-medium selection:bg-blue-200 selection:text-zinc-900">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {isTutorBook
+                        ? tutorBook[currentChapterIndex].content
+                        : activeLearningBook
+                          ? (activeLearningBook.chapters && activeLearningBook.chapters.length > 0)
+                            ? activeLearningBook.chapters[currentChapterIndex]?.summary || learningBookMarkdown(activeLearningBook)
+                            : learningBookMarkdown(activeLearningBook)
+                          : (sampleNotes[activeConcept!.id as keyof typeof sampleNotes] || activeConcept!.description || "Notes unavailable.")}
+                    </ReactMarkdown>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {isTutorBook && (
+                <div className="flex justify-between items-center mt-12 pt-8 border-t border-zinc-200/50 font-sans">
+                  <button 
+                    disabled={currentChapterIndex === 0}
+                    onClick={() => {
+                      setCurrentChapterIndex(c => Math.max(0, c - 1));
+                      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="px-5 py-2.5 rounded-full border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-2"
+                  >
+                    &larr; Previous
+                  </button>
+                  <button 
+                    disabled={currentChapterIndex === tutorBook.length - 1}
+                    onClick={() => {
+                      setCurrentChapterIndex(c => Math.min(tutorBook.length - 1, c + 1));
+                      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-2 shadow-sm"
+                  >
+                    Next &rarr;
+                  </button>
+                </div>
+              )}
+              
+              {flashcards.length > 0 && !isTutorBook && !activeLearningBook && (
+                <div className="mt-20 border-t border-zinc-200 pt-16 font-sans">
+                   <div className="flex items-center gap-3 mb-10">
+                     <Zap size={20} className="text-yellow-600" />
+                     <h2 className="text-2xl font-semibold text-zinc-900">Active Recall</h2>
+                   </div>
+                   <div className="space-y-6">
+                     <AnimatePresence>
+                       {flashcards.slice(0, 1).map((card) => (
+                          <motion.div key={card.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}>
+                            <FlashcardUI card={card} onReview={(q) => handleReview(card, q)} />
+                          </motion.div>
+                       ))}
+                     </AnimatePresence>
+                   </div>
+                   <div className="text-center mt-6 text-sm text-zinc-500 font-mono">
+                     {flashcards.length} cards remaining for review
+                   </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto w-full p-8 md:p-12 lg:p-16">
+          <div className="flex items-center justify-between mb-16">
+             <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 mb-2">Library</h1>
+             <div className="text-sm font-mono text-zinc-500">{learningBooks.length + concepts.length + 1} Books</div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {learningBooks.length === 0 && concepts.length === 0 && (
+              <div className="col-span-full h-64 flex items-center justify-center text-zinc-500 border border-white/10 border-dashed rounded-3xl">
+                 No books discovered yet. Start chatting to learn new concepts.
+              </div>
+            )}
+            {learningBooks.map((book, index) => {
+              const theme = themes[index % themes.length];
+              const conceptCount = learningBookConcepts.filter(concept => concept.bookId === book.id).length;
+              return (
+                <PatternCard
+                  key={book.id}
+                  layoutId={`card-${book.id}`}
+                  onClick={() => setActiveConceptId(book.id)}
+                  bgClass={theme.bg}
+                  SvgComponent={theme.SvgComponent}
+                  bloomColor={theme.bloom}
+                  bloomOpacity={theme.bloomOpacity}
+                  pressDotColor={theme.text.includes('1f1f1f') ? '#ff6e00' : '#fefefe'}
+                  pressRingColor={theme.text.includes('1f1f1f') ? 'rgba(255,110,0,0.58)' : 'rgba(254,254,254,0.58)'}
+                >
+                  <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
+                    <div className={`text-[11px] font-mono font-bold uppercase tracking-[0.16em] opacity-65 ${theme.text}`}>
+                      Learning Book · {conceptCount} concepts
+                    </div>
+                    <div className={`text-[25px] font-medium tracking-tight leading-[1.05] ${theme.text}`}>
+                      {book.title}
+                    </div>
+                    <div className={`text-[16px] font-light tracking-tight leading-[1.25] opacity-70 ${theme.text}`}>
+                      {book.overview || book.knowledgeSummary || book.summary || 'DeepSeek trace is building this map.'}
+                    </div>
+                  </div>
+                </PatternCard>
+              );
+            })}
+            {concepts.map((concept, index) => {
+              const theme = themes[(index + learningBooks.length) % themes.length];
+              return (
+                <LongPressWrapper
+                  key={concept.id}
+                  onLongPress={() => setDeleteTarget(concept)}
+                  onClick={() => setActiveConceptId(concept.id)}
+                >
+                  {(pressing) => (
+                    <PatternCard
+                      layoutId={`card-${concept.id}`}
+                      bgClass={theme.bg}
+                      SvgComponent={theme.SvgComponent}
+                      bloomColor={theme.bloom}
+                      bloomOpacity={theme.bloomOpacity}
+                      isPressing={pressing}
+                      pressDotColor={theme.text.includes('1f1f1f') ? '#ff6e00' : '#fefefe'}
+                      pressRingColor={theme.text.includes('1f1f1f') ? 'rgba(255,110,0,0.58)' : 'rgba(254,254,254,0.58)'}
+                    >
+                      <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
+                        <div className={`text-[25px] font-medium tracking-tight leading-[1.05] ${theme.text}`}>
+                          {concept.name}
+                        </div>
+                        <div className={`text-[16px] font-light tracking-tight leading-[1.25] opacity-70 ${theme.text}`}>
+                          {concept.description}
+                        </div>
+                      </div>
+                    </PatternCard>
+                  )}
+                </LongPressWrapper>
+              );
+            })}
+
+            {/* Admin Book */}
+            <PatternCard
+              layoutId="card-admin-dashboard"
+              onClick={() => setActiveView('admin')}
+              bgClass="bg-[#ecebe9]"
+              SvgComponent={SvgBeige}
+              bloomColor="rgb(255, 110, 0)"
+              bloomOpacity={0.18}
+            >
+              <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
+                <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-[#ff6e00]/10 text-[#ff6e00]">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#1f1f1f]">
+                  Admin<br/>Dashboard
+                </div>
+                <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#1f1f1f]">
+                  View live DeepSeek LLM traces and server console logs.
+                </div>
+              </div>
+            </PatternCard>
+          </div>
+        </div>
+      )}
+      <AnimatePresence>
+        {deleteTarget && (
+          <motion.div
+            className="fixed inset-0 z-[120] flex items-center justify-center bg-zinc-950/35 px-4 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 18, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 14, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+              className="relative w-full max-w-md overflow-hidden rounded-[28px] border border-zinc-900/10 bg-[#faf9f6] p-6 shadow-[0_30px_90px_rgba(46,36,22,0.28)]"
+            >
+              <div className="absolute inset-0 pointer-events-none opacity-[0.12]" style={{ backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(255,110,0,0.28), transparent 34%), radial-gradient(circle at 85% 100%, rgba(17,24,39,0.12), transparent 30%)' }} />
+              <div className="relative flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-[#faf9f6] shadow-[0_16px_34px_rgba(24,24,27,0.22)]">
+                  <Trash2 size={20} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-zinc-500">Delete book</div>
+                  <h2 className="mt-2 text-2xl font-serif font-medium leading-tight text-zinc-950">
+                    Remove "{deleteTarget.name}"?
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                    This removes the book from your revision library on this device. The action keeps the rest of your notes and chat history untouched.
+                  </p>
+                </div>
+              </div>
+              <div className="relative mt-6 flex justify-end gap-3 border-t border-zinc-900/10 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(null)}
+                  className="rounded-full border border-zinc-900/10 bg-white/60 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-white hover:text-zinc-950"
+                >
+                  Keep book
+                </button>
+                <button
+                  type="button"
+                  onClick={deleteConcept}
+                  className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-[#faf9f6] shadow-[0_14px_34px_rgba(24,24,27,0.22)] transition-colors hover:bg-red-950"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

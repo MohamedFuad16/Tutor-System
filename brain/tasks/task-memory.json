@@ -1,0 +1,793 @@
+[
+  {
+    "id": "task-001",
+    "timestamp": "1970-01-01T00:00:00.000Z",
+    "objective": "Build the /brain AI engineering intelligence platform",
+    "systemsAffected": [
+      "/brain",
+      "Entire Repository"
+    ],
+    "filesChanged": [
+      "brain/indexes/*",
+      "brain/impact/*",
+      "brain/retrieval/*",
+      "brain/tasks/*"
+    ],
+    "invariantsTouched": [],
+    "risksIntroduced": [],
+    "verificationResults": {},
+    "unresolvedIssues": [],
+    "regenerationStatus": "unknown",
+    "decisions": [],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-1779763635863",
+      "task-1779787129452",
+      "task-1779788117775",
+      "task-1779789928075",
+      "task-1779791051904",
+      "task-1779793822031",
+      "task-1779795496370",
+      "task-1779797142179"
+    ]
+  },
+  {
+    "id": "task-1779763635863",
+    "timestamp": "2026-05-26T02:47:15.863Z",
+    "objective": "Upgrade /brain operational cognition system",
+    "systemsAffected": [
+      "/brain",
+      "AST",
+      "knowledge graph",
+      "RAG",
+      "impact",
+      "rules",
+      "drift",
+      "task memory"
+    ],
+    "filesChanged": [
+      "generate-brain.ts",
+      "package.json",
+      "brain/knowledge/query-engine.ts",
+      "brain/retrieval/retrieve-context.ts",
+      "brain/rules/validate-rules.ts",
+      "brain/drift-check.ts",
+      "brain/impact/analyze-impact.ts",
+      "brain/tasks/task-memory.ts",
+      "brain/architecture.md",
+      "brain/context.md",
+      "brain/agent-protocol.md",
+      "src/components/ChatPanel.tsx",
+      "src/components/SettingsModal.tsx",
+      "src/views/RevisionView.tsx",
+      "src/vite-env.d.ts"
+    ],
+    "invariantsTouched": [
+      "source scope",
+      "API contracts",
+      "route-state consistency",
+      "Dexie boundary",
+      "drift freshness"
+    ],
+    "risksIntroduced": [
+      "remaining retrieval ranking is lexical sparse vectors",
+      "not neural embeddings; impact has no runtime render profiler"
+    ],
+    "verificationResults": {
+      "brain:generate": "pass",
+      "brain:verify": "pass",
+      "brain:drift-check": "pass",
+      "lint": "pass",
+      "build": "pass",
+      "simulationRecall": "1.00"
+    },
+    "unresolvedIssues": [
+      "No CI/pre-commit hook installed; no test suite added for brain tools"
+    ],
+    "regenerationStatus": "regenerated",
+    "decisions": [],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-001",
+      "task-1779765630278",
+      "task-1779787129452",
+      "task-1779788117775",
+      "task-1779789928075",
+      "task-1779791051904",
+      "task-1779792012574",
+      "task-1779793822031",
+      "task-1779795496370",
+      "task-1779797142179",
+      "task-1779805309946"
+    ]
+  },
+  {
+    "id": "task-1779765630278",
+    "timestamp": "2026-05-26T03:20:30.278Z",
+    "objective": "Finalize autonomous-ready brain upgrade",
+    "systemsAffected": [
+      "semantic retrieval",
+      "runtime impact",
+      "enforcement",
+      "self-audit",
+      "task memory",
+      "executor"
+    ],
+    "filesChanged": [
+      "brain/embeddings/embedding-engine.ts",
+      "brain/retrieval/retrieve-semantic.ts",
+      "src/brain-runtime/runtimeTelemetry.ts",
+      "src/brain-runtime/RenderProfiler.tsx",
+      "brain/runtime/run-runtime-benchmark.ts",
+      "brain/runtime/task-executor.ts",
+      "brain/self-audit.ts",
+      "brain/rules/validate-rules.ts",
+      ".github/workflows/brain-verify.yml",
+      ".githooks/pre-commit",
+      "scripts/install-brain-hooks.ts",
+      "package.json"
+    ],
+    "invariantsTouched": [
+      "source-scoped-generation",
+      "semantic-retrieval-freshness",
+      "plan-first-execution",
+      "drift-gated-verification"
+    ],
+    "risksIntroduced": [
+      "retrieval-confidence-calibration-needed"
+    ],
+    "verificationResults": {
+      "brainGenerate": true,
+      "brainEmbed": true,
+      "runtimeBenchmark": true,
+      "selfAuditScore": 92,
+      "brainVerify": true,
+      "driftCheck": true,
+      "lint": true,
+      "build": true
+    },
+    "unresolvedIssues": [
+      "Retrieval benchmark recall is 1.0 but confidence average is 0.48"
+    ],
+    "regenerationStatus": "complete",
+    "decisions": [
+      "local-xenova-minilm",
+      "plan-first-executor",
+      "ci-and-precommit-gates",
+      "corpus-hash-vector-freshness"
+    ],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-1779763635863",
+      "task-1779788117775"
+    ]
+  },
+  {
+    "id": "task-1779787129452",
+    "timestamp": "2026-05-26T09:18:49.452Z",
+    "objective": "Implement tutor PDF hover polish and tutor usage analytics",
+    "systemsAffected": [
+      "Tutor UI",
+      "PDF selection",
+      "ChatPanel usage analytics",
+      "OpenRouter pricing",
+      "Deepgram voice usage",
+      "/brain"
+    ],
+    "filesChanged": [
+      "src/components/PdfViewer.tsx",
+      "src/components/ChatPanel.tsx",
+      "src/components/SettingsModal.tsx",
+      "src/store/index.ts",
+      "src/views/StudyView.tsx",
+      "src/components/PatternCard.tsx",
+      "server.ts",
+      "brain/knowledge/graph.json",
+      "brain/retrieval/vector-index.json",
+      "brain/runtime/runtime-impact-map.json",
+      "brain/tasks/task-memory.json"
+    ],
+    "invariantsTouched": [
+      "SSE event compatibility",
+      "WebSocket route compatibility",
+      "Zustand state flow",
+      "generated brain freshness",
+      "settings remains focused"
+    ],
+    "risksIntroduced": [
+      "retrieval confidence remains low despite full benchmark recall",
+      "usage costs are estimates when providers omit usage"
+    ],
+    "verificationResults": {
+      "brainGenerate": true,
+      "brainEmbed": true,
+      "brainRetrieve": true,
+      "brainImpact": true,
+      "runtimeBenchmark": true,
+      "brainVerify": true,
+      "driftCheck": true,
+      "selfAuditScore": 92,
+      "lint": true,
+      "build": true,
+      "pricingEndpoint": "openrouter-live 357 models"
+    },
+    "unresolvedIssues": [
+      "Retrieval benchmark confidence average remains 0.48 and should be calibrated later"
+    ],
+    "regenerationStatus": "complete",
+    "decisions": [
+      "move usage analytics into ChatPanel",
+      "price OpenRouter dynamically via models API",
+      "use Deepgram billable units instead of fake voice tokens",
+      "replace Ask Tutor liquid layer with static glass sheen"
+    ],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-001",
+      "task-1779763635863",
+      "task-1779788117775",
+      "task-1779789928075",
+      "task-1779791051904",
+      "task-1779792012574",
+      "task-1779793822031",
+      "task-1779795496370",
+      "task-1779797142179",
+      "task-1779805309946"
+    ]
+  },
+  {
+    "id": "task-1779788117775",
+    "timestamp": "2026-05-26T09:35:17.775Z",
+    "objective": "Implement SERPER realtime web search in chatbot SSE reasoning",
+    "systemsAffected": [
+      "Chat SSE",
+      "SERPER web search",
+      "ThinkingPanel",
+      "Zustand web search cache",
+      "runtime telemetry",
+      "/brain"
+    ],
+    "filesChanged": [
+      "server.ts",
+      "server/web-search.ts",
+      "src/components/ChatPanel.tsx",
+      "src/store/index.ts",
+      "src/brain-runtime/runtimeTelemetry.ts",
+      "brain/knowledge/graph.json",
+      "brain/retrieval/vector-index.json",
+      "brain/runtime/runtime-impact-map.json",
+      "brain/tasks/task-memory.json"
+    ],
+    "invariantsTouched": [
+      "SSE event compatibility",
+      "environment-secret isolation",
+      "source citation integrity",
+      "runtime telemetry compatibility",
+      "generated brain freshness"
+    ],
+    "risksIntroduced": [
+      "SERPER live path not exercised with real key in browser",
+      "retrieval confidence remains low despite recall"
+    ],
+    "verificationResults": {
+      "brainGenerate": true,
+      "brainEmbed": true,
+      "brainRetrieve": "medium confidence after refresh",
+      "brainImpact": true,
+      "runtimeBenchmark": true,
+      "brainVerify": true,
+      "driftCheck": true,
+      "selfAuditScore": 92,
+      "lint": true,
+      "build": true,
+      "browserSmoke": "app shell loaded, no console errors"
+    },
+    "unresolvedIssues": [
+      "SERPER_API_KEY is not present in local .env; live search requires environment configuration",
+      "Browser screenshot capture timed out",
+      "retrieval benchmark confidence average remains low"
+    ],
+    "regenerationStatus": "complete",
+    "decisions": [
+      "keep SERPER inside existing /api/chat SSE loop",
+      "use env-only SERPER_API_KEY",
+      "deterministic freshness detection plus LLM web_search tool",
+      "source cards stay message-local"
+    ],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-001",
+      "task-1779763635863",
+      "task-1779765630278",
+      "task-1779787129452",
+      "task-1779789928075",
+      "task-1779791051904",
+      "task-1779792012574",
+      "task-1779793822031",
+      "task-1779795496370",
+      "task-1779797142179",
+      "task-1779805309946"
+    ]
+  },
+  {
+    "id": "task-1779789928075",
+    "timestamp": "2026-05-26T10:05:28.075Z",
+    "objective": "Fix tutor usage analytics, Serper settings, screen context, PDF removal, revision delete UX, and thought UI polish",
+    "systemsAffected": [
+      "Tutor UI",
+      "ChatPanel usage analytics",
+      "Settings",
+      "SERPER web search",
+      "PDF study flow",
+      "Revision library",
+      "/brain"
+    ],
+    "filesChanged": [
+      "src/components/ChatPanel.tsx",
+      "src/components/SettingsModal.tsx",
+      "src/store/index.ts",
+      "src/views/StudyView.tsx",
+      "src/views/RevisionView.tsx",
+      "server.ts",
+      "server/web-search.ts",
+      "brain/knowledge/graph.json",
+      "brain/retrieval/vector-index.json",
+      "brain/runtime/runtime-impact-map.json",
+      "brain/tasks/task-memory.json"
+    ],
+    "invariantsTouched": [
+      "SSE event compatibility",
+      "environment-secret isolation",
+      "Zustand state flow",
+      "PDF screen context",
+      "generated brain freshness",
+      "Dexie mutation boundary"
+    ],
+    "risksIntroduced": [
+      "usage totals are estimates until provider final usage arrives",
+      "retrieval confidence calibration remains low",
+      "screen context depends on current PDF canvas availability"
+    ],
+    "verificationResults": {
+      "brainGenerate": true,
+      "brainEmbed": true,
+      "brainRetrieve": "targeted relevant files with low calibrated confidence",
+      "brainImpact": true,
+      "runtimeBenchmark": "56 events",
+      "brainVerify": true,
+      "driftCheck": true,
+      "selfAuditScore": 92,
+      "lint": true,
+      "build": true,
+      "browserSmoke": "usage strip/settings Serper/model label/default greeting verified"
+    },
+    "unresolvedIssues": [
+      "Retrieval benchmark confidence remains low despite full recall",
+      "live OpenRouter/SERPER calls were not exercised with real user keys"
+    ],
+    "regenerationStatus": "complete",
+    "decisions": [
+      "store Serper key locally and send only to backend header",
+      "show Serper requests in usage strip",
+      "pre-read PDF screenshot with vision model for screen questions",
+      "move usage strip above chat container",
+      "replace confirm delete with animated book delete modal"
+    ],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-001",
+      "task-1779763635863",
+      "task-1779787129452",
+      "task-1779788117775",
+      "task-1779791051904",
+      "task-1779792012574",
+      "task-1779793822031",
+      "task-1779795496370",
+      "task-1779797142179",
+      "task-1779805309946"
+    ]
+  },
+  {
+    "id": "task-1779791051904",
+    "timestamp": "2026-05-26T10:24:11.905Z",
+    "objective": "Polish tutor usage strip, thinking panel, and revision card long-press delete animation",
+    "systemsAffected": [
+      "Tutor UI",
+      "ChatPanel thinking UI",
+      "Usage analytics",
+      "Revision library",
+      "Pattern cards",
+      "/brain"
+    ],
+    "filesChanged": [
+      "src/components/ChatPanel.tsx",
+      "src/components/PatternCard.tsx",
+      "src/views/RevisionView.tsx",
+      "brain/knowledge/graph.json",
+      "brain/retrieval/vector-index.json",
+      "brain/runtime/runtime-impact-map.json",
+      "brain/tasks/task-memory.json"
+    ],
+    "invariantsTouched": [
+      "Cosmic Obsidian visual system",
+      "Skills menu visual language",
+      "Dexie mutation boundary",
+      "generated brain freshness"
+    ],
+    "risksIntroduced": [
+      "Revision fallback hides Dexie failures with a local default book",
+      "thinking panel live API path not exercised with a real chat stream"
+    ],
+    "verificationResults": {
+      "lint": true,
+      "build": true,
+      "browserSmoke": "usage bar visual, revision library, card-dot long press, delete modal",
+      "brainGenerate": true,
+      "brainEmbed": true,
+      "runtimeBenchmark": "83 events",
+      "brainVerify": true,
+      "driftCheck": true,
+      "selfAuditScore": 92
+    },
+    "unresolvedIssues": [
+      "Retrieval benchmark confidence remains low despite full recall"
+    ],
+    "regenerationStatus": "complete",
+    "decisions": [
+      "animate long-press dots directly on PatternCard dot field",
+      "match usage strip to upload card orange/dark theme",
+      "restyle thinking panel using FloatingSkillsMenu dark rounded UI language",
+      "catch Revision Dexie failures and use a local tutor-book fallback"
+    ],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-001",
+      "task-1779763635863",
+      "task-1779787129452",
+      "task-1779788117775",
+      "task-1779789928075",
+      "task-1779792012574",
+      "task-1779793822031",
+      "task-1779795496370",
+      "task-1779797142179",
+      "task-1779805309946"
+    ]
+  },
+  {
+    "id": "task-1779792012574",
+    "timestamp": "2026-05-26T10:40:12.574Z",
+    "objective": "Polish chain-of-thought, code block, Serper search key flow, and ambient card animations",
+    "systemsAffected": [
+      "chat-ui",
+      "code-blocks",
+      "web-search",
+      "settings",
+      "pattern-cards"
+    ],
+    "filesChanged": [
+      "src/components/ChatPanel.tsx",
+      "src/components/ShikiHighlighter.tsx",
+      "src/components/PatternCard.tsx",
+      "src/components/SettingsModal.tsx",
+      "server.ts"
+    ],
+    "invariantsTouched": [
+      "SSE streaming remains data-prefixed",
+      "Serper keys are not hardcoded or exposed in source",
+      "generated brain artifacts are regenerated via brain:generate"
+    ],
+    "risksIntroduced": [
+      "Serper live success depends on a configured SERPER_API_KEY or Settings-stored key",
+      "retrieval benchmark confidence remains low by current scorer"
+    ],
+    "verificationResults": {
+      "playwright": "passed-no-page-errors",
+      "lint": "passed",
+      "runtimeBenchmark": "passed"
+    },
+    "unresolvedIssues": [],
+    "regenerationStatus": "pending-final-brain-gates",
+    "decisions": [],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-1779763635863",
+      "task-1779787129452",
+      "task-1779788117775",
+      "task-1779789928075",
+      "task-1779791051904",
+      "task-1779793822031",
+      "task-1779797142179"
+    ]
+  },
+  {
+    "id": "task-1779793822031",
+    "timestamp": "2026-05-26T11:10:22.031Z",
+    "objective": "Fix session learning book updates and virtual brain map styling",
+    "systemsAffected": [
+      "ChatPanel learning memory",
+      "Dexie long-term memory",
+      "Virtual Brain Map",
+      "Revision Library",
+      "Admin DeepSeek Trace",
+      "/brain"
+    ],
+    "filesChanged": [
+      "src/memory/longterm.memory.ts",
+      "src/memory/memory.orchestrator.ts",
+      "src/components/ChatPanel.tsx",
+      "src/views/BrainView.tsx",
+      "src/views/AdminView.tsx",
+      "src/views/RevisionView.tsx",
+      "server.ts",
+      "brain/knowledge/graph.json",
+      "brain/retrieval/vector-index.json",
+      "brain/runtime/runtime-impact-map.json",
+      "brain/tasks/task-memory.json"
+    ],
+    "invariantsTouched": [
+      "Dexie schema changes require migration planning",
+      "learning book writes stay session-scoped",
+      "generated brain artifacts regenerated via brain:generate"
+    ],
+    "risksIntroduced": [
+      "learning-book quality depends on OpenRouter availability; local fallback is lower semantic quality",
+      "retrieval confidence calibration remains low"
+    ],
+    "verificationResults": {
+      "brainGenerate": true,
+      "brainEmbed": true,
+      "runtimeBenchmark": "49 events",
+      "brainRetrieve": "medium confidence",
+      "brainImpact": true,
+      "learningBookEndpoint": "returned overview chapterTitle concepts and deepseek model",
+      "brainVerify": true,
+      "driftCheck": true,
+      "selfAuditScore": 92,
+      "lint": true,
+      "build": true
+    },
+    "unresolvedIssues": [
+      "Retrieval benchmark confidence remains low despite full recall"
+    ],
+    "regenerationStatus": "complete",
+    "decisions": [
+      "use one learning book per browser session",
+      "merge chapters by title",
+      "store overview knowledge summary chapters and concepts",
+      "restyle BrainView with Tutor System Architecture card language"
+    ],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-001",
+      "task-1779763635863",
+      "task-1779787129452",
+      "task-1779788117775",
+      "task-1779789928075",
+      "task-1779791051904",
+      "task-1779792012574",
+      "task-1779795496370",
+      "task-1779797142179",
+      "task-1779805309946"
+    ]
+  },
+  {
+    "id": "task-1779795496370",
+    "timestamp": "2026-05-26T11:38:16.370Z",
+    "objective": "Fix revision library session book reset and consolidation",
+    "systemsAffected": [
+      "Revision Library",
+      "Dexie learning memory",
+      "PDF title flow",
+      "/brain"
+    ],
+    "filesChanged": [
+      "src/memory/memory.orchestrator.ts",
+      "src/components/PdfViewer.tsx",
+      "src/views/RevisionView.tsx",
+      "brain/knowledge/graph.json",
+      "brain/retrieval/vector-index.json",
+      "brain/runtime/runtime-impact-map.json",
+      "brain/tasks/task-memory.json"
+    ],
+    "invariantsTouched": [
+      "learning book writes stay session-scoped",
+      "Dexie cleanup preserves system books",
+      "PDF title updates current session book"
+    ],
+    "risksIntroduced": [
+      "refresh now resets generated learning books to a single current session book",
+      "retrieval confidence calibration remains low"
+    ],
+    "verificationResults": {
+      "lint": true,
+      "build": true,
+      "brainGenerate": true,
+      "brainEmbed": true,
+      "runtimeBenchmark": "48 events",
+      "brainRetrieve": "medium confidence",
+      "brainImpact": true,
+      "brainVerify": true,
+      "driftCheck": true,
+      "selfAuditScore": 92,
+      "browserSmoke": "Revision Library shows 3 Books with General Study Tutor System Architecture and Admin Dashboard no extra topic cards"
+    },
+    "unresolvedIssues": [
+      "Retrieval benchmark confidence remains low despite full recall"
+    ],
+    "regenerationStatus": "complete",
+    "decisions": [
+      "clear generated learning library on each browser session",
+      "do not mirror learning-book concepts into standalone concept cards",
+      "bootstrap one General Study book per refresh",
+      "rename session book from PDF title"
+    ],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-001",
+      "task-1779763635863",
+      "task-1779787129452",
+      "task-1779788117775",
+      "task-1779789928075",
+      "task-1779791051904",
+      "task-1779793822031",
+      "task-1779797142179",
+      "task-1779805309946"
+    ]
+  },
+  {
+    "id": "task-1779797142179",
+    "timestamp": "2026-05-26T12:05:42.179Z",
+    "objective": "Map chatbot active context to persistent Library books",
+    "systemsAffected": [
+      "ChatPanel active context",
+      "Zustand state",
+      "Dexie learning books",
+      "MemoryOrchestrator",
+      "/brain"
+    ],
+    "filesChanged": [
+      "src/components/ChatPanel.tsx",
+      "src/store/index.ts",
+      "src/memory/memory.orchestrator.ts",
+      "generate-brain.ts",
+      "brain/drift-check.ts",
+      "brain/knowledge/graph.json",
+      "brain/retrieval/vector-index.json",
+      "brain/runtime/runtime-impact-map.json",
+      "brain/tasks/task-memory.json"
+    ],
+    "invariantsTouched": [
+      "active chat context must resolve to a learning book id",
+      "conversation updates write to selected learning book",
+      "Dexie learning book context is included in chat memory",
+      "OS metadata must not trigger brain drift"
+    ],
+    "risksIntroduced": [
+      "retrieval confidence calibration remains low",
+      "active context persistence is local-browser scoped"
+    ],
+    "verificationResults": {
+      "lint": true,
+      "build": true,
+      "brainGenerate": true,
+      "brainEmbed": true,
+      "runtimeBenchmark": "55 events",
+      "brainRetrieve": "low confidence targeted context",
+      "brainImpact": true,
+      "brainVerify": true,
+      "driftCheck": true,
+      "selfAuditScore": 92,
+      "browserSmoke": "Chat context dropdown shows Library Context General Study book metadata and rename input"
+    },
+    "unresolvedIssues": [
+      "Retrieval benchmark confidence remains low despite full recall"
+    ],
+    "regenerationStatus": "complete",
+    "decisions": [
+      "persist active_project and active_learning_book_id in Zustand localStorage",
+      "load ChatPanel context options from Dexie learningBooks",
+      "append active book summary chapters and concepts into chat memoryContext",
+      "route learning-book updates by selected book id",
+      "ignore .DS_Store and hidden metadata in brain drift checks"
+    ],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-001",
+      "task-1779763635863",
+      "task-1779787129452",
+      "task-1779788117775",
+      "task-1779789928075",
+      "task-1779791051904",
+      "task-1779792012574",
+      "task-1779793822031",
+      "task-1779795496370",
+      "task-1779805309946"
+    ]
+  },
+  {
+    "id": "task-1779805309946",
+    "timestamp": "2026-05-26T14:21:49.946Z",
+    "objective": "Update Tutor System Architecture documentation and in-app architecture book",
+    "systemsAffected": [
+      "Tutor architecture docs",
+      "/brain retrieval corpus",
+      "Revision library",
+      "Tutor system book"
+    ],
+    "filesChanged": [
+      "TUTOR_ARCHITECTURE.md",
+      "brain/architecture.md",
+      "src/lib/tutorBook.json",
+      "brain/knowledge/graph.json",
+      "brain/retrieval/vector-index.json",
+      "brain/runtime/runtime-impact-map.json",
+      "brain/tasks/task-memory.json"
+    ],
+    "invariantsTouched": [
+      "generated brain freshness",
+      "documentation matches source",
+      "model inventory accuracy",
+      "Dexie documentation only"
+    ],
+    "risksIntroduced": [
+      "retrieval confidence calibration remains low despite full recall",
+      "live provider behavior depends on configured API keys"
+    ],
+    "verificationResults": {
+      "brainGenerate": true,
+      "brainEmbed": true,
+      "runtimeBenchmark": "55 events",
+      "brainVerify": true,
+      "driftCheck": true,
+      "selfAuditScore": 92,
+      "lint": true,
+      "build": true,
+      "tutorBookJson": true
+    },
+    "unresolvedIssues": [
+      "Retrieval benchmark confidence average remains low though recall is 1.0"
+    ],
+    "regenerationStatus": "complete",
+    "decisions": [
+      "document React 19 current stack",
+      "document all current LLM and voice models",
+      "document session-scoped learning books",
+      "keep schema/API changes documentation-only"
+    ],
+    "failureModes": [],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-1779763635863",
+      "task-1779787129452",
+      "task-1779788117775",
+      "task-1779789928075",
+      "task-1779791051904",
+      "task-1779793822031",
+      "task-1779795496370",
+      "task-1779797142179"
+    ]
+  }
+]

@@ -1,0 +1,154 @@
+{
+  "metadata": {
+    "generatedAt": "2026-05-26T14:20:20.494Z",
+    "generator": "generate-brain.ts",
+    "generatorVersion": 2,
+    "sourceScope": [
+      "src/**/*",
+      "server.ts",
+      "generate-brain.ts",
+      "init-task-memory.ts",
+      "package.json",
+      "package-lock.json",
+      "tsconfig.json",
+      "brain/**/*.ts",
+      "scripts/**/*.ts"
+    ],
+    "excluded": [
+      "dist",
+      "node_modules",
+      "build",
+      "coverage",
+      "generated assets",
+      "temporary files"
+    ],
+    "commit": {
+      "commit": null,
+      "branch": null,
+      "dirty": null
+    },
+    "package": {
+      "name": "react-example",
+      "version": "0.0.0",
+      "react": "^19.0.1"
+    },
+    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84"
+  },
+  "contextPacks": [
+    {
+      "id": "state-zustand",
+      "title": "Zustand State Flow",
+      "sourceFiles": [
+        "src/store/index.ts",
+        "src/App.tsx",
+        "src/components/ChatPanel.tsx",
+        "src/components/Navigation.tsx",
+        "src/components/PdfViewer.tsx",
+        "src/components/SettingsModal.tsx",
+        "src/views/AdminView.tsx",
+        "src/views/AnalyticsView.tsx",
+        "src/views/BrainView.tsx",
+        "src/views/RevisionView.tsx",
+        "src/views/StudyView.tsx"
+      ],
+      "invariants": [
+        "Global state belongs in src/store/index.ts",
+        "Transient component state should stay local",
+        "Selectors should remain scoped to fields used by the component"
+      ]
+    },
+    {
+      "id": "api-streaming",
+      "title": "API, SSE, and WebSocket Coupling",
+      "sourceFiles": [
+        "server.ts",
+        "brain/contracts/api-contracts.json",
+        "server.ts",
+        "src/components/ChatPanel.tsx",
+        "src/components/PdfViewer.tsx",
+        "src/components/SettingsModal.tsx",
+        "src/lib/tutorBook.json",
+        "src/memory/memory.orchestrator.ts",
+        "src/views/AdminView.tsx"
+      ],
+      "invariants": [
+        "SSE events must remain data-prefixed and double-newline terminated",
+        "WebSocket paths must stay synchronized between client and server"
+      ]
+    },
+    {
+      "id": "routing-layout",
+      "title": "Active View Routing and Layout",
+      "sourceFiles": [
+        "src/App.tsx",
+        "src/components/Navigation.tsx",
+        "src/views/AdminView.tsx",
+        "src/views/AnalyticsView.tsx",
+        "src/views/BrainView.tsx",
+        "src/views/RevisionView.tsx",
+        "src/views/StudyView.tsx"
+      ],
+      "invariants": [
+        "activeView literals in App.tsx and ViewState must stay synchronized",
+        "Navigation must use valid ViewState values"
+      ]
+    },
+    {
+      "id": "navigation-dashboard",
+      "title": "Dashboard and Navigation Feature Surface",
+      "sourceFiles": [
+        "src/App.tsx",
+        "src/components/Navigation.tsx",
+        "src/store/index.ts",
+        "src/views/AdminView.tsx",
+        "src/views/AnalyticsView.tsx",
+        "src/views/BrainView.tsx",
+        "src/views/RevisionView.tsx",
+        "src/views/StudyView.tsx"
+      ],
+      "invariants": [
+        "New top-level features must be represented in ViewState, App view rendering, and Navigation items",
+        "Dashboard-like surfaces should not bypass activeView routing"
+      ]
+    },
+    {
+      "id": "ui-animation-system",
+      "title": "Shared UI Animation and Liquid Glass System",
+      "sourceFiles": [
+        "src/components/SiriLiquidGlass.tsx",
+        "src/components/SettingsModal.tsx",
+        "src/components/ChatPanel.tsx",
+        "src/components/PdfViewer.tsx",
+        "src/App.tsx",
+        "src/components/PatternCard.tsx"
+      ],
+      "invariants": [
+        "Shared animation primitives should preserve the Cosmic Obsidian visual system",
+        "Liquid glass changes affect every component that renders SiriLiquidGlass"
+      ]
+    },
+    {
+      "id": "memory-dexie",
+      "title": "Dexie Long-Term Memory",
+      "sourceFiles": [
+        "src/memory/longterm.memory.ts",
+        "src/components/ChatPanel.tsx",
+        "src/memory/bkt.engine.ts",
+        "src/memory/learner.model.ts",
+        "src/memory/memory.orchestrator.ts",
+        "src/memory/misconception.graph.ts",
+        "src/memory/prerequisite.dag.ts",
+        "src/memory/revision.memory.ts",
+        "src/memory/zpd.calculator.ts",
+        "src/views/AdminView.tsx",
+        "src/views/AnalyticsView.tsx",
+        "src/views/BrainView.tsx",
+        "src/views/RevisionView.tsx"
+      ],
+      "invariants": [
+        "Dexie schema changes require migration planning",
+        "Large full-table scans should be avoided or bounded"
+      ]
+    }
+  ]
+}

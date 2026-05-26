@@ -1,0 +1,875 @@
+{
+  "metadata": {
+    "generatedAt": "2026-05-26T14:21:02.749Z",
+    "source": "brain/runtime/run-runtime-benchmark.ts",
+    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84",
+    "url": "http://127.0.0.1:3000",
+    "eventCount": 55,
+    "confidence": 0.82
+  },
+  "events": [
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 26.100000023841858,
+      "metadata": {
+        "phase": "mount",
+        "baseDuration": 19.399999976158142,
+        "startTime": 292.5,
+        "commitTime": 318.9000000357628
+      },
+      "timestamp": 321.4000000357628
+    },
+    {
+      "type": "route",
+      "name": "study",
+      "metadata": {
+        "source": "App.activeView"
+      },
+      "timestamp": 355.7000000476837
+    },
+    {
+      "type": "route",
+      "name": "study",
+      "metadata": {
+        "source": "App.activeView"
+      },
+      "timestamp": 359.30000001192093
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 0.20000004768371582,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 19.399999976158142,
+        "startTime": 361.9000000357628,
+        "commitTime": 362.2000000476837
+      },
+      "timestamp": 362.80000001192093
+    },
+    {
+      "type": "fetch",
+      "name": "/api/pricing",
+      "durationMs": 26.5,
+      "metadata": {
+        "method": "GET",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8"
+      },
+      "timestamp": 380.4000000357628
+    },
+    {
+      "type": "fetch",
+      "name": "/api/pricing",
+      "durationMs": 22.100000023841858,
+      "metadata": {
+        "method": "GET",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8"
+      },
+      "timestamp": 380.7000000476837
+    },
+    {
+      "type": "state",
+      "name": "pricing",
+      "metadata": {
+        "previousType": "object",
+        "nextType": "object"
+      },
+      "timestamp": 383.5
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 3.5,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 20.19999998807907,
+        "startTime": 385.7000000476837,
+        "commitTime": 389.30000001192093
+      },
+      "timestamp": 390.30000001192093
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 3.600000023841858,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 17.99999988079071,
+        "startTime": 413.5,
+        "commitTime": 417.2000000476837
+      },
+      "timestamp": 417.7000000476837
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 3.399999976158142,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 17.899999916553497,
+        "startTime": 420.9000000357628,
+        "commitTime": 424.30000001192093
+      },
+      "timestamp": 424.7000000476837
+    },
+    {
+      "type": "state",
+      "name": "activeLearningBookId",
+      "metadata": {
+        "previousType": "object",
+        "nextType": "string"
+      },
+      "timestamp": 426.80000001192093
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 4,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 18.59999990463257,
+        "startTime": 428.60000002384186,
+        "commitTime": 432.60000002384186
+      },
+      "timestamp": 433.7000000476837
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 0.5,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 18.59999990463257,
+        "startTime": 741.1000000238419,
+        "commitTime": 741.6000000238419
+      },
+      "timestamp": 741.9000000357628
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 0.19999998807907104,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 18.79999989271164,
+        "startTime": 759.6000000238419,
+        "commitTime": 759.8000000119209
+      },
+      "timestamp": 759.8000000119209
+    },
+    {
+      "type": "state",
+      "name": "activeView",
+      "metadata": {
+        "previousType": "string",
+        "nextType": "string"
+      },
+      "timestamp": 1533.1000000238419
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 4.099999964237213,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 17.799999833106995,
+        "startTime": 1535.5,
+        "commitTime": 1539.9000000357628
+      },
+      "timestamp": 1541.9000000357628
+    },
+    {
+      "type": "route",
+      "name": "brain",
+      "metadata": {
+        "source": "App.activeView"
+      },
+      "timestamp": 1542.5
+    },
+    {
+      "type": "render",
+      "name": "route:brain",
+      "durationMs": 3.699999988079071,
+      "metadata": {
+        "phase": "mount",
+        "baseDuration": 3.2000001072883606,
+        "startTime": 1857.800000011921,
+        "commitTime": 1861.5
+      },
+      "timestamp": 1863.800000011921
+    },
+    {
+      "type": "render",
+      "name": "route:brain",
+      "durationMs": 2.199999988079071,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 2.199999988079071,
+        "startTime": 1865.6000000238419,
+        "commitTime": 1867.800000011921
+      },
+      "timestamp": 1868
+    },
+    {
+      "type": "render",
+      "name": "route:brain",
+      "durationMs": 2.099999964237213,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 1.899999976158142,
+        "startTime": 1868.4000000357628,
+        "commitTime": 1870.5
+      },
+      "timestamp": 1870.6000000238419
+    },
+    {
+      "type": "render",
+      "name": "route:brain",
+      "durationMs": 3.599999964237213,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 3.599999964237213,
+        "startTime": 1877.4000000357628,
+        "commitTime": 1881
+      },
+      "timestamp": 1911.5
+    },
+    {
+      "type": "render",
+      "name": "route:brain",
+      "durationMs": 0.30000001192092896,
+      "metadata": {
+        "phase": "nested-update",
+        "baseDuration": 2.800000011920929,
+        "startTime": 1911.800000011921,
+        "commitTime": 1912.1000000238419
+      },
+      "timestamp": 1912.1000000238419
+    },
+    {
+      "type": "state",
+      "name": "activeView",
+      "metadata": {
+        "previousType": "string",
+        "nextType": "string"
+      },
+      "timestamp": 2989.300000011921
+    },
+    {
+      "type": "render",
+      "name": "route:brain",
+      "durationMs": 1,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 2.699999988079071,
+        "startTime": 2993.300000011921,
+        "commitTime": 2994.300000011921
+      },
+      "timestamp": 2995.100000023842
+    },
+    {
+      "type": "route",
+      "name": "analytics",
+      "metadata": {
+        "source": "App.activeView"
+      },
+      "timestamp": 2995.300000011921
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 2.199999988079071,
+      "metadata": {
+        "phase": "mount",
+        "baseDuration": 2.099999964237213,
+        "startTime": 3426.2000000476837,
+        "commitTime": 3428.400000035763
+      },
+      "timestamp": 3428.600000023842
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 6.199999988079071,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 6.099999964237213,
+        "startTime": 3431.400000035763,
+        "commitTime": 3437.600000023842
+      },
+      "timestamp": 3437.900000035763
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 10.600000023841858,
+      "metadata": {
+        "phase": "nested-update",
+        "baseDuration": 13.799999952316284,
+        "startTime": 3439.800000011921,
+        "commitTime": 3451.300000011921
+      },
+      "timestamp": 3453.400000035763
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 6.700000107288361,
+      "metadata": {
+        "phase": "nested-update",
+        "baseDuration": 15.20000010728836,
+        "startTime": 3457.7000000476837,
+        "commitTime": 3464.900000035763
+      },
+      "timestamp": 3465.400000035763
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 0,
+      "metadata": {
+        "phase": "nested-update",
+        "baseDuration": 15.20000010728836,
+        "startTime": 3466.600000023842,
+        "commitTime": 3467.400000035763
+      },
+      "timestamp": 3467.400000035763
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 5.399999976158142,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 10.5,
+        "startTime": 3469.2000000476837,
+        "commitTime": 3474.7000000476837
+      },
+      "timestamp": 3475.100000023842
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 5.900000035762787,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 8.600000023841858,
+        "startTime": 3477.800000011921,
+        "commitTime": 3483.800000011921
+      },
+      "timestamp": 3484.100000023842
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 0,
+      "metadata": {
+        "phase": "nested-update",
+        "baseDuration": 8.600000023841858,
+        "startTime": 3485.600000023842,
+        "commitTime": 3486.600000023842
+      },
+      "timestamp": 3486.600000023842
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 5.100000083446503,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 8.800000071525574,
+        "startTime": 3488,
+        "commitTime": 3493.2000000476837
+      },
+      "timestamp": 3493.600000023842
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 0,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 8.5,
+        "startTime": 3494.900000035763,
+        "commitTime": 3495
+      },
+      "timestamp": 3495
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 5,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 8.600000023841858,
+        "startTime": 3495.600000023842,
+        "commitTime": 3500.600000023842
+      },
+      "timestamp": 3501
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 0.09999996423721313,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 8.400000035762787,
+        "startTime": 3501.900000035763,
+        "commitTime": 3502
+      },
+      "timestamp": 3502.100000023842
+    },
+    {
+      "type": "state",
+      "name": "activeView",
+      "metadata": {
+        "previousType": "string",
+        "nextType": "string"
+      },
+      "timestamp": 3894
+    },
+    {
+      "type": "render",
+      "name": "route:analytics",
+      "durationMs": 0,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 8.300000071525574,
+        "startTime": 3896.5,
+        "commitTime": 3896.600000023842
+      },
+      "timestamp": 3897.2000000476837
+    },
+    {
+      "type": "route",
+      "name": "revision",
+      "metadata": {
+        "source": "App.activeView"
+      },
+      "timestamp": 3897.300000011921
+    },
+    {
+      "type": "render",
+      "name": "route:revision",
+      "durationMs": 3.199999988079071,
+      "metadata": {
+        "phase": "mount",
+        "baseDuration": 2.600000023841858,
+        "startTime": 4206.100000023842,
+        "commitTime": 4209.300000011921
+      },
+      "timestamp": 4210.700000047684
+    },
+    {
+      "type": "render",
+      "name": "route:revision",
+      "durationMs": 3.599999964237213,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 3.200000047683716,
+        "startTime": 4216.700000047684,
+        "commitTime": 4220.300000011921
+      },
+      "timestamp": 4221.200000047684
+    },
+    {
+      "type": "render",
+      "name": "route:revision",
+      "durationMs": 4.800000011920929,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 4.500000059604645,
+        "startTime": 4229.800000011921,
+        "commitTime": 4234.600000023842
+      },
+      "timestamp": 4235.800000011921
+    },
+    {
+      "type": "state",
+      "name": "activeView",
+      "metadata": {
+        "previousType": "string",
+        "nextType": "string"
+      },
+      "timestamp": 4704.600000023842
+    },
+    {
+      "type": "render",
+      "name": "route:revision",
+      "durationMs": 2.5,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 4.599999964237213,
+        "startTime": 4707.5,
+        "commitTime": 4710
+      },
+      "timestamp": 4711.800000011921
+    },
+    {
+      "type": "route",
+      "name": "study",
+      "metadata": {
+        "source": "App.activeView"
+      },
+      "timestamp": 4712
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 12.700000047683716,
+      "metadata": {
+        "phase": "mount",
+        "baseDuration": 11.600000143051147,
+        "startTime": 5025,
+        "commitTime": 5037.800000011921
+      },
+      "timestamp": 5039.600000023842
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 0,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 11.50000011920929,
+        "startTime": 5050.600000023842,
+        "commitTime": 5050.700000047684
+      },
+      "timestamp": 5051.200000047684
+    },
+    {
+      "type": "fetch",
+      "name": "/api/pricing",
+      "durationMs": 5.699999988079071,
+      "metadata": {
+        "method": "GET",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8"
+      },
+      "timestamp": 5052
+    },
+    {
+      "type": "fetch",
+      "name": "/api/pricing",
+      "durationMs": 4,
+      "metadata": {
+        "method": "GET",
+        "status": 200,
+        "contentType": "application/json; charset=utf-8"
+      },
+      "timestamp": 5052.100000023842
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 4.399999976158142,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 12.500000059604645,
+        "startTime": 5052.100000023842,
+        "commitTime": 5056.5
+      },
+      "timestamp": 5057.300000011921
+    },
+    {
+      "type": "state",
+      "name": "pricing",
+      "metadata": {
+        "previousType": "object",
+        "nextType": "object"
+      },
+      "timestamp": 5062.300000011921
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 2,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 12.300000011920929,
+        "startTime": 5064.100000023842,
+        "commitTime": 5066.100000023842
+      },
+      "timestamp": 5066.600000023842
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 0.40000003576278687,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 12.300000071525574,
+        "startTime": 5373,
+        "commitTime": 5373.400000035763
+      },
+      "timestamp": 5373.5
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 0.19999998807907104,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 12.300000071525574,
+        "startTime": 5449.600000023842,
+        "commitTime": 5449.800000011921
+      },
+      "timestamp": 5449.800000011921
+    }
+  ],
+  "summary": {
+    "renderByName": [
+      {
+        "component": "route:study",
+        "count": 15,
+        "totalDurationMs": 65.30000007152557,
+        "maxDurationMs": 26.100000023841858,
+        "averageDurationMs": 4.353333338101705
+      },
+      {
+        "component": "route:brain",
+        "count": 6,
+        "totalDurationMs": 12.899999916553497,
+        "maxDurationMs": 3.699999988079071,
+        "averageDurationMs": 2.1499999860922494
+      },
+      {
+        "component": "route:analytics",
+        "count": 13,
+        "totalDurationMs": 47.200000166893005,
+        "maxDurationMs": 10.600000023841858,
+        "averageDurationMs": 3.6307692436071544
+      },
+      {
+        "component": "route:revision",
+        "count": 4,
+        "totalDurationMs": 14.099999964237213,
+        "maxDurationMs": 4.800000011920929,
+        "averageDurationMs": 3.5249999910593033
+      }
+    ],
+    "routeTransitions": [
+      {
+        "type": "route",
+        "name": "study",
+        "metadata": {
+          "source": "App.activeView"
+        },
+        "timestamp": 355.7000000476837
+      },
+      {
+        "type": "route",
+        "name": "study",
+        "metadata": {
+          "source": "App.activeView"
+        },
+        "timestamp": 359.30000001192093
+      },
+      {
+        "type": "route",
+        "name": "brain",
+        "metadata": {
+          "source": "App.activeView"
+        },
+        "timestamp": 1542.5
+      },
+      {
+        "type": "route",
+        "name": "analytics",
+        "metadata": {
+          "source": "App.activeView"
+        },
+        "timestamp": 2995.300000011921
+      },
+      {
+        "type": "route",
+        "name": "revision",
+        "metadata": {
+          "source": "App.activeView"
+        },
+        "timestamp": 3897.300000011921
+      },
+      {
+        "type": "route",
+        "name": "study",
+        "metadata": {
+          "source": "App.activeView"
+        },
+        "timestamp": 4712
+      }
+    ],
+    "fetchEvents": [
+      {
+        "type": "fetch",
+        "name": "/api/pricing",
+        "durationMs": 26.5,
+        "metadata": {
+          "method": "GET",
+          "status": 200,
+          "contentType": "application/json; charset=utf-8"
+        },
+        "timestamp": 380.4000000357628
+      },
+      {
+        "type": "fetch",
+        "name": "/api/pricing",
+        "durationMs": 22.100000023841858,
+        "metadata": {
+          "method": "GET",
+          "status": 200,
+          "contentType": "application/json; charset=utf-8"
+        },
+        "timestamp": 380.7000000476837
+      },
+      {
+        "type": "fetch",
+        "name": "/api/pricing",
+        "durationMs": 5.699999988079071,
+        "metadata": {
+          "method": "GET",
+          "status": 200,
+          "contentType": "application/json; charset=utf-8"
+        },
+        "timestamp": 5052
+      },
+      {
+        "type": "fetch",
+        "name": "/api/pricing",
+        "durationMs": 4,
+        "metadata": {
+          "method": "GET",
+          "status": 200,
+          "contentType": "application/json; charset=utf-8"
+        },
+        "timestamp": 5052.100000023842
+      }
+    ],
+    "websocketEvents": [],
+    "databaseEvents": [],
+    "propagation": [
+      {
+        "state": "pricing",
+        "timestamp": 383.5,
+        "nextRender": "route:study",
+        "lagMs": 6.800000011920929,
+        "metadata": {
+          "previousType": "object",
+          "nextType": "object"
+        }
+      },
+      {
+        "state": "activeLearningBookId",
+        "timestamp": 426.80000001192093,
+        "nextRender": "route:study",
+        "lagMs": 6.900000035762787,
+        "metadata": {
+          "previousType": "object",
+          "nextType": "string"
+        }
+      },
+      {
+        "state": "activeView",
+        "timestamp": 1533.1000000238419,
+        "nextRender": "route:study",
+        "lagMs": 8.800000011920929,
+        "metadata": {
+          "previousType": "string",
+          "nextType": "string"
+        }
+      },
+      {
+        "state": "activeView",
+        "timestamp": 2989.300000011921,
+        "nextRender": "route:brain",
+        "lagMs": 5.800000011920929,
+        "metadata": {
+          "previousType": "string",
+          "nextType": "string"
+        }
+      },
+      {
+        "state": "activeView",
+        "timestamp": 3894,
+        "nextRender": "route:analytics",
+        "lagMs": 3.200000047683716,
+        "metadata": {
+          "previousType": "string",
+          "nextType": "string"
+        }
+      },
+      {
+        "state": "activeView",
+        "timestamp": 4704.600000023842,
+        "nextRender": "route:revision",
+        "lagMs": 7.199999988079071,
+        "metadata": {
+          "previousType": "string",
+          "nextType": "string"
+        }
+      },
+      {
+        "state": "pricing",
+        "timestamp": 5062.300000011921,
+        "nextRender": "route:study",
+        "lagMs": 4.300000011920929,
+        "metadata": {
+          "previousType": "object",
+          "nextType": "object"
+        }
+      }
+    ],
+    "hotspots": [
+      {
+        "type": "render",
+        "name": "route:study",
+        "severity": 100,
+        "evidence": {
+          "component": "route:study",
+          "count": 15,
+          "totalDurationMs": 65.30000007152557,
+          "maxDurationMs": 26.100000023841858,
+          "averageDurationMs": 4.353333338101705
+        }
+      },
+      {
+        "type": "render",
+        "name": "route:analytics",
+        "severity": 100,
+        "evidence": {
+          "component": "route:analytics",
+          "count": 13,
+          "totalDurationMs": 47.200000166893005,
+          "maxDurationMs": 10.600000023841858,
+          "averageDurationMs": 3.6307692436071544
+        }
+      },
+      {
+        "type": "render",
+        "name": "route:brain",
+        "severity": 64,
+        "evidence": {
+          "component": "route:brain",
+          "count": 6,
+          "totalDurationMs": 12.899999916553497,
+          "maxDurationMs": 3.699999988079071,
+          "averageDurationMs": 2.1499999860922494
+        }
+      },
+      {
+        "type": "render",
+        "name": "route:revision",
+        "severity": 45,
+        "evidence": {
+          "component": "route:revision",
+          "count": 4,
+          "totalDurationMs": 14.099999964237213,
+          "maxDurationMs": 4.800000011920929,
+          "averageDurationMs": 3.5249999910593033
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,929 @@
+{
+  "metadata": {
+    "generatedAt": "2026-05-26T14:20:20.494Z",
+    "generator": "generate-brain.ts",
+    "generatorVersion": 2,
+    "sourceScope": [
+      "src/**/*",
+      "server.ts",
+      "generate-brain.ts",
+      "init-task-memory.ts",
+      "package.json",
+      "package-lock.json",
+      "tsconfig.json",
+      "brain/**/*.ts",
+      "scripts/**/*.ts"
+    ],
+    "excluded": [
+      "dist",
+      "node_modules",
+      "build",
+      "coverage",
+      "generated assets",
+      "temporary files"
+    ],
+    "commit": {
+      "commit": null,
+      "branch": null,
+      "dirty": null
+    },
+    "package": {
+      "name": "react-example",
+      "version": "0.0.0",
+      "react": "^19.0.1"
+    },
+    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84"
+  },
+  "dependencies": {
+    "generate-brain.ts": [
+      {
+        "specifier": "ts-morph",
+        "external": "ts-morph"
+      },
+      {
+        "specifier": "crypto",
+        "external": "crypto"
+      },
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      },
+      {
+        "specifier": "child_process",
+        "external": "child_process"
+      }
+    ],
+    "init-task-memory.ts": [
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      }
+    ],
+    "server.ts": [
+      {
+        "specifier": "dotenv",
+        "external": "dotenv"
+      },
+      {
+        "specifier": "express",
+        "external": "express"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      },
+      {
+        "specifier": "openai",
+        "external": "openai"
+      },
+      {
+        "specifier": "ws",
+        "external": "ws"
+      },
+      {
+        "specifier": "./server/web-search",
+        "external": "."
+      }
+    ],
+    "brain/drift-check.ts": [
+      {
+        "specifier": "crypto",
+        "external": "crypto"
+      },
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      }
+    ],
+    "brain/self-audit.ts": [
+      {
+        "specifier": "child_process",
+        "external": "child_process"
+      },
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      }
+    ],
+    "scripts/install-brain-hooks.ts": [
+      {
+        "specifier": "child_process",
+        "external": "child_process"
+      },
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      }
+    ],
+    "src/App.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "./store",
+        "resolved": "src/store/index.ts"
+      },
+      {
+        "specifier": "./components/Navigation",
+        "resolved": "src/components/Navigation.tsx"
+      },
+      {
+        "specifier": "./components/SettingsModal",
+        "resolved": "src/components/SettingsModal.tsx"
+      },
+      {
+        "specifier": "./views/StudyView",
+        "resolved": "src/views/StudyView.tsx"
+      },
+      {
+        "specifier": "./views/BrainView",
+        "resolved": "src/views/BrainView.tsx"
+      },
+      {
+        "specifier": "./views/AnalyticsView",
+        "resolved": "src/views/AnalyticsView.tsx"
+      },
+      {
+        "specifier": "./views/RevisionView",
+        "resolved": "src/views/RevisionView.tsx"
+      },
+      {
+        "specifier": "./views/AdminView",
+        "resolved": "src/views/AdminView.tsx"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "./brain-runtime/RenderProfiler",
+        "resolved": "src/brain-runtime/RenderProfiler.tsx"
+      },
+      {
+        "specifier": "./brain-runtime/runtimeTelemetry",
+        "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+      }
+    ],
+    "src/audio.ts": [],
+    "src/main.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "react-dom/client",
+        "external": "react-dom"
+      },
+      {
+        "specifier": "./App.tsx",
+        "resolved": "src/App.tsx"
+      },
+      {
+        "specifier": "./index.css",
+        "resolved": "src/index.css"
+      },
+      {
+        "specifier": "./brain-runtime/installBrainRuntime",
+        "resolved": "src/brain-runtime/installBrainRuntime.ts"
+      }
+    ],
+    "src/types.ts": [],
+    "brain/embeddings/embedding-engine.ts": [
+      {
+        "specifier": "crypto",
+        "external": "crypto"
+      },
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      }
+    ],
+    "brain/impact/analyze-impact.ts": [
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      }
+    ],
+    "brain/knowledge/query-engine.ts": [
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      }
+    ],
+    "brain/retrieval/retrieve-context.ts": [
+      {
+        "specifier": "./retrieve-semantic",
+        "resolved": "brain/retrieval/retrieve-semantic.ts"
+      }
+    ],
+    "brain/retrieval/retrieve-semantic.ts": [
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      },
+      {
+        "specifier": "crypto",
+        "external": "crypto"
+      }
+    ],
+    "brain/rules/validate-rules.ts": [
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      },
+      {
+        "specifier": "crypto",
+        "external": "crypto"
+      }
+    ],
+    "brain/runtime/context-orchestrator.ts": [
+      {
+        "specifier": "child_process",
+        "external": "child_process"
+      }
+    ],
+    "brain/runtime/impact-orchestrator.ts": [
+      {
+        "specifier": "child_process",
+        "external": "child_process"
+      },
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      }
+    ],
+    "brain/runtime/run-runtime-benchmark.ts": [
+      {
+        "specifier": "playwright",
+        "external": "playwright"
+      },
+      {
+        "specifier": "child_process",
+        "external": "child_process"
+      },
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      }
+    ],
+    "brain/runtime/task-executor.ts": [
+      {
+        "specifier": "openai",
+        "external": "openai"
+      },
+      {
+        "specifier": "child_process",
+        "external": "child_process"
+      },
+      {
+        "specifier": "crypto",
+        "external": "crypto"
+      },
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      },
+      {
+        "specifier": "./impact-orchestrator",
+        "resolved": "brain/runtime/impact-orchestrator.ts"
+      },
+      {
+        "specifier": "./context-orchestrator",
+        "resolved": "brain/runtime/context-orchestrator.ts"
+      }
+    ],
+    "brain/tasks/task-memory.ts": [
+      {
+        "specifier": "fs",
+        "external": "fs"
+      },
+      {
+        "specifier": "path",
+        "external": "path"
+      }
+    ],
+    "src/brain-runtime/installBrainRuntime.ts": [
+      {
+        "specifier": "../memory/longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
+      },
+      {
+        "specifier": "./runtimeTelemetry",
+        "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+      },
+      {
+        "specifier": "./instrumentDexie",
+        "resolved": "src/brain-runtime/instrumentDexie.ts"
+      },
+      {
+        "specifier": "./instrumentFetch",
+        "resolved": "src/brain-runtime/instrumentFetch.ts"
+      },
+      {
+        "specifier": "./instrumentWebSocket",
+        "resolved": "src/brain-runtime/instrumentWebSocket.ts"
+      },
+      {
+        "specifier": "./instrumentZustand",
+        "resolved": "src/brain-runtime/instrumentZustand.ts"
+      }
+    ],
+    "src/brain-runtime/instrumentDexie.ts": [
+      {
+        "specifier": "./runtimeTelemetry",
+        "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+      }
+    ],
+    "src/brain-runtime/instrumentFetch.ts": [
+      {
+        "specifier": "./runtimeTelemetry",
+        "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+      }
+    ],
+    "src/brain-runtime/instrumentWebSocket.ts": [
+      {
+        "specifier": "./runtimeTelemetry",
+        "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+      }
+    ],
+    "src/brain-runtime/instrumentZustand.ts": [
+      {
+        "specifier": "./runtimeTelemetry",
+        "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+      }
+    ],
+    "src/brain-runtime/RenderProfiler.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "./runtimeTelemetry",
+        "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+      }
+    ],
+    "src/brain-runtime/runtimeTelemetry.ts": [],
+    "src/components/ChatPanel.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "react-markdown",
+        "external": "react-markdown"
+      },
+      {
+        "specifier": "remark-gfm",
+        "external": "remark-gfm"
+      },
+      {
+        "specifier": "mermaid",
+        "external": "mermaid"
+      },
+      {
+        "specifier": "./ShikiHighlighter",
+        "resolved": "src/components/ShikiHighlighter.tsx"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "dexie-react-hooks",
+        "external": "dexie-react-hooks"
+      },
+      {
+        "specifier": "../lib/audio",
+        "resolved": "src/lib/audio.ts"
+      },
+      {
+        "specifier": "./SiriLiquidGlass",
+        "resolved": "src/components/SiriLiquidGlass.tsx"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
+      },
+      {
+        "specifier": "../memory/memory.orchestrator",
+        "resolved": "src/memory/memory.orchestrator.ts"
+      },
+      {
+        "specifier": "../memory/longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      },
+      {
+        "specifier": "../types",
+        "resolved": "src/types.ts"
+      },
+      {
+        "specifier": "./FloatingSkillsMenu",
+        "resolved": "src/components/FloatingSkillsMenu.tsx"
+      },
+      {
+        "specifier": "../brain-runtime/runtimeTelemetry",
+        "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+      }
+    ],
+    "src/components/FloatingSkillsMenu.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      }
+    ],
+    "src/components/Navigation.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      }
+    ],
+    "src/components/PatternCard.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "./PatternSVGs",
+        "resolved": "src/components/PatternSVGs.tsx"
+      }
+    ],
+    "src/components/PatternSVGs.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      }
+    ],
+    "src/components/PdfViewer.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "react-pdf",
+        "external": "react-pdf"
+      },
+      {
+        "specifier": "react-pdf/dist/Page/AnnotationLayer.css",
+        "external": "react-pdf"
+      },
+      {
+        "specifier": "react-pdf/dist/Page/TextLayer.css",
+        "external": "react-pdf"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      },
+      {
+        "specifier": "../memory/memory.orchestrator",
+        "resolved": "src/memory/memory.orchestrator.ts"
+      }
+    ],
+    "src/components/PracticeMode.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      }
+    ],
+    "src/components/SettingsModal.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
+      },
+      {
+        "specifier": "./SiriLiquidGlass",
+        "resolved": "src/components/SiriLiquidGlass.tsx"
+      }
+    ],
+    "src/components/ShikiHighlighter.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "shiki",
+        "external": "shiki"
+      }
+    ],
+    "src/components/Sidebar.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      }
+    ],
+    "src/components/SiriLiquidGlass.tsx": [
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "react",
+        "external": "react"
+      }
+    ],
+    "src/lib/audio.ts": [],
+    "src/lib/tutorBook.json": [],
+    "src/memory/bkt.engine.ts": [
+      {
+        "specifier": "./longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      }
+    ],
+    "src/memory/cognitive.load.ts": [],
+    "src/memory/illusion.detector.ts": [],
+    "src/memory/learner.model.ts": [
+      {
+        "specifier": "./longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      },
+      {
+        "specifier": "./zpd.calculator",
+        "resolved": "src/memory/zpd.calculator.ts"
+      },
+      {
+        "specifier": "./misconception.graph",
+        "resolved": "src/memory/misconception.graph.ts"
+      },
+      {
+        "specifier": "./scaffolding.engine",
+        "resolved": "src/memory/scaffolding.engine.ts"
+      },
+      {
+        "specifier": "./prerequisite.dag",
+        "resolved": "src/memory/prerequisite.dag.ts"
+      },
+      {
+        "specifier": "./bkt.engine",
+        "resolved": "src/memory/bkt.engine.ts"
+      },
+      {
+        "specifier": "./illusion.detector",
+        "resolved": "src/memory/illusion.detector.ts"
+      },
+      {
+        "specifier": "./cognitive.load",
+        "resolved": "src/memory/cognitive.load.ts"
+      }
+    ],
+    "src/memory/longterm.memory.ts": [
+      {
+        "specifier": "dexie",
+        "external": "dexie"
+      }
+    ],
+    "src/memory/memory.embeddings.ts": [
+      {
+        "specifier": "@xenova/transformers",
+        "external": "@xenova/transformers"
+      }
+    ],
+    "src/memory/memory.orchestrator.ts": [
+      {
+        "specifier": "./memory.embeddings",
+        "resolved": "src/memory/memory.embeddings.ts"
+      },
+      {
+        "specifier": "./longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      }
+    ],
+    "src/memory/metacognition.tracker.ts": [],
+    "src/memory/misconception.graph.ts": [
+      {
+        "specifier": "./longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      },
+      {
+        "specifier": "uuid",
+        "external": "uuid"
+      }
+    ],
+    "src/memory/prerequisite.dag.ts": [
+      {
+        "specifier": "./longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      }
+    ],
+    "src/memory/productive.failure.ts": [
+      {
+        "specifier": "./longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      }
+    ],
+    "src/memory/revision.memory.ts": [
+      {
+        "specifier": "./longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      }
+    ],
+    "src/memory/scaffolding.engine.ts": [
+      {
+        "specifier": "./longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      }
+    ],
+    "src/memory/zpd.calculator.ts": [
+      {
+        "specifier": "./longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      },
+      {
+        "specifier": "./prerequisite.dag",
+        "resolved": "src/memory/prerequisite.dag.ts"
+      }
+    ],
+    "src/store/index.ts": [
+      {
+        "specifier": "zustand",
+        "external": "zustand"
+      },
+      {
+        "specifier": "zustand/middleware",
+        "external": "zustand"
+      },
+      {
+        "specifier": "../types",
+        "resolved": "src/types.ts"
+      }
+    ],
+    "src/views/AdminView.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "dexie-react-hooks",
+        "external": "dexie-react-hooks"
+      },
+      {
+        "specifier": "../memory/longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
+      }
+    ],
+    "src/views/AnalyticsView.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "recharts",
+        "external": "recharts"
+      },
+      {
+        "specifier": "../memory/longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
+      }
+    ],
+    "src/views/BrainView.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "react-force-graph-3d",
+        "external": "react-force-graph-3d"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      },
+      {
+        "specifier": "three",
+        "external": "three"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "../memory/longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      },
+      {
+        "specifier": "dexie-react-hooks",
+        "external": "dexie-react-hooks"
+      }
+    ],
+    "src/views/RevisionView.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
+      },
+      {
+        "specifier": "dexie-react-hooks",
+        "external": "dexie-react-hooks"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "react-markdown",
+        "external": "react-markdown"
+      },
+      {
+        "specifier": "remark-gfm",
+        "external": "remark-gfm"
+      },
+      {
+        "specifier": "../memory/longterm.memory",
+        "resolved": "src/memory/longterm.memory.ts"
+      },
+      {
+        "specifier": "../components/PatternCard",
+        "resolved": "src/components/PatternCard.tsx"
+      },
+      {
+        "specifier": "../components/PatternSVGs",
+        "resolved": "src/components/PatternSVGs.tsx"
+      },
+      {
+        "specifier": "../lib/tutorBook.json",
+        "resolved": "src/lib/tutorBook.json"
+      }
+    ],
+    "src/views/StudyView.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "../components/PdfViewer",
+        "resolved": "src/components/PdfViewer.tsx"
+      },
+      {
+        "specifier": "../components/ChatPanel",
+        "resolved": "src/components/ChatPanel.tsx"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      },
+      {
+        "specifier": "../components/PatternCard",
+        "resolved": "src/components/PatternCard.tsx"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      }
+    ],
+    "src/index.css": [],
+    "package.json": [],
+    "package-lock.json": [],
+    "tsconfig.json": []
+  }
+}

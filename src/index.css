@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
+@import "tailwindcss";
+@import '@fontsource/geist-sans';
+@import '@fontsource/space-grotesk';
+
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Geist", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Lora", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --animate-caret-pulse: caret-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  
+  --animate-haptic-vibrate: haptic-vibrate 0.05s linear infinite;
+
+  --color-canvas-base: #0A0A0B;
+  --color-canvas-elevated: #14171D;
+  --color-canvas-glass: rgba(10, 10, 11, 0.7);
+  
+  --color-border-subtle: rgba(255, 255, 255, 0.04);
+  --color-border-strong: rgba(255, 255, 255, 0.1);
+  
+  --color-text-primary: #ECECEC;
+  --color-text-secondary: #8E8E93;
+  --color-text-tertiary: #555555;
+  
+  --shadow-elevation-low: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-elevation-high: 0 20px 40px -10px rgba(0, 0, 0, 0.8), 0 10px 20px -5px rgba(0, 0, 0, 0.6);
+  --shadow-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  
+  @keyframes caret-pulse {
+    0%, 100% { caret-color: rgba(255, 255, 255, 0.9); }
+    50% { caret-color: rgba(255, 255, 255, 0.1); }
+  }
+  
+  @keyframes haptic-vibrate {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-0.5px, 0.5px); }
+    50% { transform: translate(0.5px, -0.5px); }
+    75% { transform: translate(-0.5px, -0.5px); }
+  }
+
+  @keyframes pill-breathe {
+    0%   { border-radius: 999px; transform: scale(1.00); }
+    30%  { border-radius: 44px 52px 48px 44px / 22px 20px 24px 22px;
+           transform: scale(1.03); }
+    60%  { border-radius: 48px 44px 52px 48px / 24px 22px 20px 24px;
+           transform: scale(0.98); }
+    100% { border-radius: 999px; transform: scale(1.00); }
+  }
+
+  @keyframes spin-hue {
+    to { --angle: 360deg; }
+  }
+}
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.voice-pill {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.voice-pill::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: conic-gradient(
+    from var(--angle, 0deg),
+    #4285f4, #a78bfa, #f472b6, #4285f4
+  );
+  opacity: 0.35;
+  border-radius: 999px;
+  filter: blur(18px);
+  animation: spin-hue 3s linear infinite;
+}
+
+body {
+  background-color: var(--color-canvas-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  font-weight: 300;
+}
+
+@layer base {
+  * {
+    @apply tracking-[-0.01em];
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-[-0.02em] leading-tight font-medium;
+    font-family: "Geist", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  }
+  p, span, div, a {
+    @apply leading-relaxed;
+    font-family: "Geist", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  }
+}

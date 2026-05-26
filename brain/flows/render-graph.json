@@ -1,0 +1,420 @@
+{
+  "generatedFromSource": true,
+  "edges": [
+    {
+      "source": "route:analytics",
+      "target": "component:BrainRenderProfiler",
+      "type": "renders",
+      "confidence": 0.85,
+      "evidence": {
+        "file": "src/App.tsx",
+        "text": "activeView === analytics"
+      }
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "route:analytics",
+      "type": "wraps",
+      "confidence": 0.85,
+      "evidence": {
+        "file": "src/App.tsx",
+        "text": "activeView === analytics"
+      }
+    },
+    {
+      "source": "component:StudyView",
+      "target": "component:UsageAnalyticsStrip",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/StudyView.tsx"
+      }
+    },
+    {
+      "source": "component:SettingsButton",
+      "target": "component:SiriLiquidGlass",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/SettingsModal.tsx"
+      }
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "route:admin",
+      "type": "wraps",
+      "confidence": 0.85,
+      "evidence": {
+        "file": "src/App.tsx",
+        "text": "activeView === admin"
+      }
+    },
+    {
+      "source": "component:App",
+      "target": "component:BrainView",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
+      "source": "component:App",
+      "target": "component:StudyView",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:Mermaid",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "component:App",
+      "target": "component:BrainRenderProfiler",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "route:brain",
+      "type": "wraps",
+      "confidence": 0.85,
+      "evidence": {
+        "file": "src/App.tsx",
+        "text": "activeView === brain"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:AnimatedNumberText",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:RunnableJS",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "component:App",
+      "target": "component:AdminView",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
+      "source": "route:admin",
+      "target": "component:BrainRenderProfiler",
+      "type": "renders",
+      "confidence": 0.85,
+      "evidence": {
+        "file": "src/App.tsx",
+        "text": "activeView === admin"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:PremiumCodeShell",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "component:StudyView",
+      "target": "component:PdfViewer",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/StudyView.tsx"
+      }
+    },
+    {
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "component:PatternCard",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx"
+      }
+    },
+    {
+      "source": "route:brain",
+      "target": "component:BrainRenderProfiler",
+      "type": "renders",
+      "confidence": 0.85,
+      "evidence": {
+        "file": "src/App.tsx",
+        "text": "activeView === brain"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:ThinkingPanel",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "component:App",
+      "target": "component:SettingsButton",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
+      "source": "route:study",
+      "target": "component:BrainRenderProfiler",
+      "type": "renders",
+      "confidence": 0.85,
+      "evidence": {
+        "file": "src/App.tsx",
+        "text": "activeView === study"
+      }
+    },
+    {
+      "source": "component:StudyView",
+      "target": "component:ChatPanel",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/StudyView.tsx"
+      }
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "route:revision",
+      "type": "wraps",
+      "confidence": 0.85,
+      "evidence": {
+        "file": "src/App.tsx",
+        "text": "activeView === revision"
+      }
+    },
+    {
+      "source": "file:src/components/Sidebar.tsx",
+      "target": "component:SidebarItem",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/Sidebar.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:AnimatedMarkdown",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:SearchActivityPanel",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "component:LongPressWrapper",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:FloatingSkillsMenu",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:SearchProgressIndicator",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "component:App",
+      "target": "component:AnalyticsView",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "route:study",
+      "type": "wraps",
+      "confidence": 0.85,
+      "evidence": {
+        "file": "src/App.tsx",
+        "text": "activeView === study"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:FinalSourcesPanel",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:ShikiHighlighter",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "component:App",
+      "target": "component:Navigation",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:MessageItem",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:ThoughtStepIcon",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:RunnablePython",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:SiriLiquidGlass",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:SourceCards",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "route:revision",
+      "target": "component:BrainRenderProfiler",
+      "type": "renders",
+      "confidence": 0.85,
+      "evidence": {
+        "file": "src/App.tsx",
+        "text": "activeView === revision"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:GeminiVoicePill",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "component:App",
+      "target": "component:RevisionView",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
+      "source": "component:StudyView",
+      "target": "component:PatternCard",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/StudyView.tsx"
+      }
+    },
+    {
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "component:FlashcardUI",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx"
+      }
+    },
+    {
+      "source": "file:src/main.tsx",
+      "target": "component:App",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/main.tsx"
+      }
+    }
+  ]
+}

@@ -1,0 +1,472 @@
+{
+  "metadata": {
+    "generatedAt": "2026-05-26T14:21:49.950Z",
+    "taskCount": 12
+  },
+  "risks": [
+    {
+      "risk": "retrieval confidence calibration remains low",
+      "count": 4,
+      "tasks": [
+        {
+          "id": "task-1779789928075",
+          "timestamp": "2026-05-26T10:05:28.075Z",
+          "objective": "Fix tutor usage analytics, Serper settings, screen context, PDF removal, revision delete UX, and thought UI polish",
+          "systemsAffected": [
+            "Tutor UI",
+            "ChatPanel usage analytics",
+            "Settings",
+            "SERPER web search",
+            "PDF study flow",
+            "Revision library",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall",
+            "live OpenRouter/SERPER calls were not exercised with real user keys"
+          ]
+        },
+        {
+          "id": "task-1779793822031",
+          "timestamp": "2026-05-26T11:10:22.031Z",
+          "objective": "Fix session learning book updates and virtual brain map styling",
+          "systemsAffected": [
+            "ChatPanel learning memory",
+            "Dexie long-term memory",
+            "Virtual Brain Map",
+            "Revision Library",
+            "Admin DeepSeek Trace",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall"
+          ]
+        },
+        {
+          "id": "task-1779795496370",
+          "timestamp": "2026-05-26T11:38:16.370Z",
+          "objective": "Fix revision library session book reset and consolidation",
+          "systemsAffected": [
+            "Revision Library",
+            "Dexie learning memory",
+            "PDF title flow",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall"
+          ]
+        },
+        {
+          "id": "task-1779797142179",
+          "timestamp": "2026-05-26T12:05:42.179Z",
+          "objective": "Map chatbot active context to persistent Library books",
+          "systemsAffected": [
+            "ChatPanel active context",
+            "Zustand state",
+            "Dexie learning books",
+            "MemoryOrchestrator",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "remaining retrieval ranking is lexical sparse vectors",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779763635863",
+          "timestamp": "2026-05-26T02:47:15.863Z",
+          "objective": "Upgrade /brain operational cognition system",
+          "systemsAffected": [
+            "/brain",
+            "AST",
+            "knowledge graph",
+            "RAG",
+            "impact",
+            "rules",
+            "drift",
+            "task memory"
+          ],
+          "unresolvedIssues": [
+            "No CI/pre-commit hook installed; no test suite added for brain tools"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "not neural embeddings; impact has no runtime render profiler",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779763635863",
+          "timestamp": "2026-05-26T02:47:15.863Z",
+          "objective": "Upgrade /brain operational cognition system",
+          "systemsAffected": [
+            "/brain",
+            "AST",
+            "knowledge graph",
+            "RAG",
+            "impact",
+            "rules",
+            "drift",
+            "task memory"
+          ],
+          "unresolvedIssues": [
+            "No CI/pre-commit hook installed; no test suite added for brain tools"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "retrieval-confidence-calibration-needed",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779765630278",
+          "timestamp": "2026-05-26T03:20:30.278Z",
+          "objective": "Finalize autonomous-ready brain upgrade",
+          "systemsAffected": [
+            "semantic retrieval",
+            "runtime impact",
+            "enforcement",
+            "self-audit",
+            "task memory",
+            "executor"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark recall is 1.0 but confidence average is 0.48"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "retrieval confidence remains low despite full benchmark recall",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779787129452",
+          "timestamp": "2026-05-26T09:18:49.452Z",
+          "objective": "Implement tutor PDF hover polish and tutor usage analytics",
+          "systemsAffected": [
+            "Tutor UI",
+            "PDF selection",
+            "ChatPanel usage analytics",
+            "OpenRouter pricing",
+            "Deepgram voice usage",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence average remains 0.48 and should be calibrated later"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "usage costs are estimates when providers omit usage",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779787129452",
+          "timestamp": "2026-05-26T09:18:49.452Z",
+          "objective": "Implement tutor PDF hover polish and tutor usage analytics",
+          "systemsAffected": [
+            "Tutor UI",
+            "PDF selection",
+            "ChatPanel usage analytics",
+            "OpenRouter pricing",
+            "Deepgram voice usage",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence average remains 0.48 and should be calibrated later"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "SERPER live path not exercised with real key in browser",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779788117775",
+          "timestamp": "2026-05-26T09:35:17.775Z",
+          "objective": "Implement SERPER realtime web search in chatbot SSE reasoning",
+          "systemsAffected": [
+            "Chat SSE",
+            "SERPER web search",
+            "ThinkingPanel",
+            "Zustand web search cache",
+            "runtime telemetry",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "SERPER_API_KEY is not present in local .env; live search requires environment configuration",
+            "Browser screenshot capture timed out",
+            "retrieval benchmark confidence average remains low"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "retrieval confidence remains low despite recall",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779788117775",
+          "timestamp": "2026-05-26T09:35:17.775Z",
+          "objective": "Implement SERPER realtime web search in chatbot SSE reasoning",
+          "systemsAffected": [
+            "Chat SSE",
+            "SERPER web search",
+            "ThinkingPanel",
+            "Zustand web search cache",
+            "runtime telemetry",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "SERPER_API_KEY is not present in local .env; live search requires environment configuration",
+            "Browser screenshot capture timed out",
+            "retrieval benchmark confidence average remains low"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "usage totals are estimates until provider final usage arrives",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779789928075",
+          "timestamp": "2026-05-26T10:05:28.075Z",
+          "objective": "Fix tutor usage analytics, Serper settings, screen context, PDF removal, revision delete UX, and thought UI polish",
+          "systemsAffected": [
+            "Tutor UI",
+            "ChatPanel usage analytics",
+            "Settings",
+            "SERPER web search",
+            "PDF study flow",
+            "Revision library",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall",
+            "live OpenRouter/SERPER calls were not exercised with real user keys"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "screen context depends on current PDF canvas availability",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779789928075",
+          "timestamp": "2026-05-26T10:05:28.075Z",
+          "objective": "Fix tutor usage analytics, Serper settings, screen context, PDF removal, revision delete UX, and thought UI polish",
+          "systemsAffected": [
+            "Tutor UI",
+            "ChatPanel usage analytics",
+            "Settings",
+            "SERPER web search",
+            "PDF study flow",
+            "Revision library",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall",
+            "live OpenRouter/SERPER calls were not exercised with real user keys"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "Revision fallback hides Dexie failures with a local default book",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779791051904",
+          "timestamp": "2026-05-26T10:24:11.905Z",
+          "objective": "Polish tutor usage strip, thinking panel, and revision card long-press delete animation",
+          "systemsAffected": [
+            "Tutor UI",
+            "ChatPanel thinking UI",
+            "Usage analytics",
+            "Revision library",
+            "Pattern cards",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "thinking panel live API path not exercised with a real chat stream",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779791051904",
+          "timestamp": "2026-05-26T10:24:11.905Z",
+          "objective": "Polish tutor usage strip, thinking panel, and revision card long-press delete animation",
+          "systemsAffected": [
+            "Tutor UI",
+            "ChatPanel thinking UI",
+            "Usage analytics",
+            "Revision library",
+            "Pattern cards",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "Serper live success depends on a configured SERPER_API_KEY or Settings-stored key",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779792012574",
+          "timestamp": "2026-05-26T10:40:12.574Z",
+          "objective": "Polish chain-of-thought, code block, Serper search key flow, and ambient card animations",
+          "systemsAffected": [
+            "chat-ui",
+            "code-blocks",
+            "web-search",
+            "settings",
+            "pattern-cards"
+          ],
+          "unresolvedIssues": []
+        }
+      ]
+    },
+    {
+      "risk": "retrieval benchmark confidence remains low by current scorer",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779792012574",
+          "timestamp": "2026-05-26T10:40:12.574Z",
+          "objective": "Polish chain-of-thought, code block, Serper search key flow, and ambient card animations",
+          "systemsAffected": [
+            "chat-ui",
+            "code-blocks",
+            "web-search",
+            "settings",
+            "pattern-cards"
+          ],
+          "unresolvedIssues": []
+        }
+      ]
+    },
+    {
+      "risk": "learning-book quality depends on OpenRouter availability; local fallback is lower semantic quality",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779793822031",
+          "timestamp": "2026-05-26T11:10:22.031Z",
+          "objective": "Fix session learning book updates and virtual brain map styling",
+          "systemsAffected": [
+            "ChatPanel learning memory",
+            "Dexie long-term memory",
+            "Virtual Brain Map",
+            "Revision Library",
+            "Admin DeepSeek Trace",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "refresh now resets generated learning books to a single current session book",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779795496370",
+          "timestamp": "2026-05-26T11:38:16.370Z",
+          "objective": "Fix revision library session book reset and consolidation",
+          "systemsAffected": [
+            "Revision Library",
+            "Dexie learning memory",
+            "PDF title flow",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "active context persistence is local-browser scoped",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779797142179",
+          "timestamp": "2026-05-26T12:05:42.179Z",
+          "objective": "Map chatbot active context to persistent Library books",
+          "systemsAffected": [
+            "ChatPanel active context",
+            "Zustand state",
+            "Dexie learning books",
+            "MemoryOrchestrator",
+            "/brain"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence remains low despite full recall"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "retrieval confidence calibration remains low despite full recall",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779805309946",
+          "timestamp": "2026-05-26T14:21:49.946Z",
+          "objective": "Update Tutor System Architecture documentation and in-app architecture book",
+          "systemsAffected": [
+            "Tutor architecture docs",
+            "/brain retrieval corpus",
+            "Revision library",
+            "Tutor system book"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence average remains low though recall is 1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "live provider behavior depends on configured API keys",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779805309946",
+          "timestamp": "2026-05-26T14:21:49.946Z",
+          "objective": "Update Tutor System Architecture documentation and in-app architecture book",
+          "systemsAffected": [
+            "Tutor architecture docs",
+            "/brain retrieval corpus",
+            "Revision library",
+            "Tutor system book"
+          ],
+          "unresolvedIssues": [
+            "Retrieval benchmark confidence average remains low though recall is 1.0"
+          ]
+        }
+      ]
+    }
+  ]
+}

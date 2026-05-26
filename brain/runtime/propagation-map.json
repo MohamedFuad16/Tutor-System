@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "generatedAt": "2026-05-26T14:21:02.749Z",
+    "source": "brain/runtime/run-runtime-benchmark.ts",
+    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84",
+    "url": "http://127.0.0.1:3000",
+    "eventCount": 55,
+    "confidence": 0.82
+  },
+  "propagation": [
+    {
+      "state": "pricing",
+      "timestamp": 383.5,
+      "nextRender": "route:study",
+      "lagMs": 6.800000011920929,
+      "metadata": {
+        "previousType": "object",
+        "nextType": "object"
+      }
+    },
+    {
+      "state": "activeLearningBookId",
+      "timestamp": 426.80000001192093,
+      "nextRender": "route:study",
+      "lagMs": 6.900000035762787,
+      "metadata": {
+        "previousType": "object",
+        "nextType": "string"
+      }
+    },
+    {
+      "state": "activeView",
+      "timestamp": 1533.1000000238419,
+      "nextRender": "route:study",
+      "lagMs": 8.800000011920929,
+      "metadata": {
+        "previousType": "string",
+        "nextType": "string"
+      }
+    },
+    {
+      "state": "activeView",
+      "timestamp": 2989.300000011921,
+      "nextRender": "route:brain",
+      "lagMs": 5.800000011920929,
+      "metadata": {
+        "previousType": "string",
+        "nextType": "string"
+      }
+    },
+    {
+      "state": "activeView",
+      "timestamp": 3894,
+      "nextRender": "route:analytics",
+      "lagMs": 3.200000047683716,
+      "metadata": {
+        "previousType": "string",
+        "nextType": "string"
+      }
+    },
+    {
+      "state": "activeView",
+      "timestamp": 4704.600000023842,
+      "nextRender": "route:revision",
+      "lagMs": 7.199999988079071,
+      "metadata": {
+        "previousType": "string",
+        "nextType": "string"
+      }
+    },
+    {
+      "state": "pricing",
+      "timestamp": 5062.300000011921,
+      "nextRender": "route:study",
+      "lagMs": 4.300000011920929,
+      "metadata": {
+        "previousType": "object",
+        "nextType": "object"
+      }
+    }
+  ]
+}

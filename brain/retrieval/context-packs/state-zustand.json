@@ -1,0 +1,563 @@
+{
+  "id": "state-zustand",
+  "title": "Zustand State Flow",
+  "sourceFiles": [
+    "src/store/index.ts",
+    "src/App.tsx",
+    "src/components/ChatPanel.tsx",
+    "src/components/Navigation.tsx",
+    "src/components/PdfViewer.tsx",
+    "src/components/SettingsModal.tsx",
+    "src/views/AdminView.tsx",
+    "src/views/AnalyticsView.tsx",
+    "src/views/BrainView.tsx",
+    "src/views/RevisionView.tsx",
+    "src/views/StudyView.tsx"
+  ],
+  "invariants": [
+    "Global state belongs in src/store/index.ts",
+    "Transient component state should stay local",
+    "Selectors should remain scoped to fields used by the component"
+  ],
+  "graphRefs": [
+    "0d6823b603d52c2f2b5c",
+    "11c80bbf9e3bf58f9ebc",
+    "1868327baa710ca13607",
+    "24d08d1c3f196b5cd2db",
+    "261d46ecd80212354830",
+    "270cdc5f6c39480fecbf",
+    "29192846d3448231805e",
+    "2a391630a230db623dad",
+    "2a6bef00d218b1c295b1",
+    "2c9591d8d6437c0975ea",
+    "2e4d71d22ba4e39b2d02",
+    "346bf0190295fbbfe671",
+    "36c38238e2ecf7ea15de",
+    "38871e9248367c5fe9b6",
+    "3a9ed4c3a1792e1817d3",
+    "40a9b361442dd3c37890",
+    "42630af09f53deb74f96",
+    "43b326578715cd724c82",
+    "44fcc883c21d35609abd",
+    "452b589152d304feb02c",
+    "4534eab23d60b74ef4c0",
+    "48cc65b69c07fc339576",
+    "4a0259121936610cfd46",
+    "4a316d40ab10da84624d",
+    "4b22beca458b6acc7c5c",
+    "4bbd994f8a168f6eb402",
+    "4cce8d758b04ea0b311a",
+    "4d44ad0175fdd013736a",
+    "4d72a05745bc61743604",
+    "5327733274efaebac876",
+    "54909e41e71dd7d14d0c",
+    "55385f7cd5bb8cb54853",
+    "5566f218836f1489f510",
+    "572f652a5a53e0d51915",
+    "5a9b7b119d277f4abe07",
+    "5b0f8214d650965e5b57",
+    "5ce9ba3cd3aadd51e4d1",
+    "5fd68bcbaf5f46a2ad9e",
+    "641c051671e6600af8b7",
+    "66557aa263090d97bd31",
+    "67c565356308e6279efa",
+    "6a47c989a7fe9a97f328",
+    "6dabaf7748eae7d67584",
+    "6dc9d8ef7f511c090639",
+    "6e230842f40ca6428e7e",
+    "75ade50cbc07f2b8ad6b",
+    "7d2d320139e31d5b9780",
+    "8442a87e9f8aa1973a24",
+    "86bb2894daafed8751bc",
+    "88807fdd0ebe7179bc39",
+    "88d295ed2373a702b9f0",
+    "89d158fb81c056596e42",
+    "90b3fb0e69b338f302e4",
+    "96a10451c2ac30eb3dd1",
+    "987a1de9f549bea78f3f",
+    "9d2e42401390bce53bd9",
+    "a52f73f23d9ce1bbb31e",
+    "a55c4b34940472eca954",
+    "a7f3f9348fd04801fa61",
+    "aa06a9a9ef71d5d6e5cd",
+    "aa46208128e946c9fe60",
+    "acec87b7068b7c5f0b04",
+    "aeecd2997a119ba9302e",
+    "b2be7a9407a2f9ec6638",
+    "b3e29ea20f362ba8c8de",
+    "c08e85e4890d6feb78a5",
+    "c3dc125fa266d924a9c7",
+    "c45c213913ab28c885ba",
+    "c77e95844435d4b4bd1e",
+    "ce410753077324542a1f",
+    "dc075db807fdea99d548",
+    "e4a71fbba993daa21cc6",
+    "e5437f961717cee7a2e8",
+    "e6d4488201cdbe806afa",
+    "e86c0f92a7f056cd5ae1",
+    "eceab47d57430679a20d",
+    "f478ceaaa4c6ee502141",
+    "f55e02275ded00851009",
+    "fb942300f84aca023d4e",
+    "fe2ff38571508da7a12f"
+  ],
+  "confidence": 0.86,
+  "generatedAt": "2026-05-26T14:20:20.515Z",
+  "dependencyReferences": [
+    "0d6823b603d52c2f2b5c",
+    "11c80bbf9e3bf58f9ebc",
+    "1868327baa710ca13607",
+    "24d08d1c3f196b5cd2db",
+    "261d46ecd80212354830",
+    "270cdc5f6c39480fecbf",
+    "29192846d3448231805e",
+    "2a391630a230db623dad",
+    "2a6bef00d218b1c295b1",
+    "2c9591d8d6437c0975ea",
+    "2e4d71d22ba4e39b2d02",
+    "346bf0190295fbbfe671",
+    "36c38238e2ecf7ea15de",
+    "38871e9248367c5fe9b6",
+    "3a9ed4c3a1792e1817d3",
+    "40a9b361442dd3c37890",
+    "42630af09f53deb74f96",
+    "43b326578715cd724c82",
+    "44fcc883c21d35609abd",
+    "452b589152d304feb02c",
+    "4534eab23d60b74ef4c0",
+    "48cc65b69c07fc339576",
+    "4a0259121936610cfd46",
+    "4a316d40ab10da84624d",
+    "4b22beca458b6acc7c5c",
+    "4bbd994f8a168f6eb402",
+    "4cce8d758b04ea0b311a",
+    "4d44ad0175fdd013736a",
+    "4d72a05745bc61743604",
+    "5327733274efaebac876",
+    "54909e41e71dd7d14d0c",
+    "55385f7cd5bb8cb54853",
+    "5566f218836f1489f510",
+    "572f652a5a53e0d51915",
+    "5a9b7b119d277f4abe07",
+    "5b0f8214d650965e5b57",
+    "5ce9ba3cd3aadd51e4d1",
+    "5fd68bcbaf5f46a2ad9e",
+    "641c051671e6600af8b7",
+    "66557aa263090d97bd31",
+    "67c565356308e6279efa",
+    "6a47c989a7fe9a97f328",
+    "6dabaf7748eae7d67584",
+    "6dc9d8ef7f511c090639",
+    "6e230842f40ca6428e7e",
+    "75ade50cbc07f2b8ad6b",
+    "7d2d320139e31d5b9780",
+    "8442a87e9f8aa1973a24",
+    "86bb2894daafed8751bc",
+    "88807fdd0ebe7179bc39",
+    "88d295ed2373a702b9f0",
+    "89d158fb81c056596e42",
+    "90b3fb0e69b338f302e4",
+    "96a10451c2ac30eb3dd1",
+    "987a1de9f549bea78f3f",
+    "9d2e42401390bce53bd9",
+    "a52f73f23d9ce1bbb31e",
+    "a55c4b34940472eca954",
+    "a7f3f9348fd04801fa61",
+    "aa06a9a9ef71d5d6e5cd"
+  ],
+  "contractRefs": [],
+  "routeRefs": [],
+  "stateRefs": [
+    {
+      "field": "activeLearningBookId",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "activeProject",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "activeView",
+      "readers": [
+        "src/App.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "addAnnotation",
+      "readers": [
+        "src/components/PdfViewer.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "aiModel",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "animationsEnabled",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "annotations",
+      "readers": [
+        "src/components/PdfViewer.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "apiKey",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "askTutorQuery",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "cacheWebSources",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "chatUsage",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "isVoiceActive",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "learnerName",
+      "readers": [
+        "src/views/BrainView.tsx",
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "messages",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "pdfPage",
+      "readers": [
+        "src/components/PdfViewer.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "pdfScale",
+      "readers": [
+        "src/components/PdfViewer.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "pdfTotalPages",
+      "readers": [
+        "src/components/PdfViewer.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "pdfUrl",
+      "readers": [
+        "src/views/StudyView.tsx",
+        "src/components/PdfViewer.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "pricing",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "recordChatUsage",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "recordVoiceUsage",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "recordWebSearchEvent",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "recordWebUsage",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "resetUsageAnalytics",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "selectedTextContext",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "serperApiKey",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "setActiveLearningBookId",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": [
+        "src/components/ChatPanel.tsx"
+      ]
+    },
+    {
+      "field": "setActiveProject",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": [
+        "src/components/PdfViewer.tsx",
+        "src/components/ChatPanel.tsx"
+      ]
+    },
+    {
+      "field": "setActiveView",
+      "readers": [
+        "src/components/ChatPanel.tsx",
+        "src/views/RevisionView.tsx",
+        "src/views/StudyView.tsx",
+        "src/App.tsx"
+      ],
+      "writers": [
+        "src/views/RevisionView.tsx",
+        "src/App.tsx",
+        "src/components/Navigation.tsx",
+        "src/views/AdminView.tsx"
+      ]
+    },
+    {
+      "field": "setAiModel",
+      "readers": [],
+      "writers": [
+        "src/components/SettingsModal.tsx"
+      ]
+    },
+    {
+      "field": "setAnimationsEnabled",
+      "readers": [],
+      "writers": [
+        "src/components/SettingsModal.tsx"
+      ]
+    },
+    {
+      "field": "setApiKey",
+      "readers": [],
+      "writers": [
+        "src/components/SettingsModal.tsx"
+      ]
+    },
+    {
+      "field": "setAskTutorQuery",
+      "readers": [
+        "src/components/PdfViewer.tsx",
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": [
+        "src/components/ChatPanel.tsx",
+        "src/components/PdfViewer.tsx"
+      ]
+    },
+    {
+      "field": "setConcepts",
+      "readers": [],
+      "writers": [
+        "src/views/AnalyticsView.tsx"
+      ]
+    },
+    {
+      "field": "setIsVoiceActive",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": [
+        "src/components/ChatPanel.tsx"
+      ]
+    },
+    {
+      "field": "setLearnerName",
+      "readers": [],
+      "writers": [
+        "src/components/SettingsModal.tsx"
+      ]
+    },
+    {
+      "field": "setMessages",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": [
+        "src/components/ChatPanel.tsx"
+      ]
+    },
+    {
+      "field": "setPdfPage",
+      "readers": [
+        "src/views/StudyView.tsx",
+        "src/components/PdfViewer.tsx"
+      ],
+      "writers": [
+        "src/views/StudyView.tsx",
+        "src/components/PdfViewer.tsx"
+      ]
+    },
+    {
+      "field": "setPdfScale",
+      "readers": [
+        "src/components/PdfViewer.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "setPdfTotalPages",
+      "readers": [
+        "src/views/StudyView.tsx",
+        "src/components/PdfViewer.tsx"
+      ],
+      "writers": [
+        "src/views/StudyView.tsx",
+        "src/components/PdfViewer.tsx"
+      ]
+    },
+    {
+      "field": "setPdfUrl",
+      "readers": [
+        "src/views/StudyView.tsx"
+      ],
+      "writers": [
+        "src/views/StudyView.tsx"
+      ]
+    },
+    {
+      "field": "setPricing",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": [
+        "src/components/ChatPanel.tsx"
+      ]
+    },
+    {
+      "field": "setSelectedTextContext",
+      "readers": [
+        "src/components/ChatPanel.tsx",
+        "src/views/StudyView.tsx",
+        "src/components/PdfViewer.tsx"
+      ],
+      "writers": [
+        "src/components/PdfViewer.tsx",
+        "src/views/StudyView.tsx",
+        "src/components/ChatPanel.tsx"
+      ]
+    },
+    {
+      "field": "setSerperApiKey",
+      "readers": [],
+      "writers": [
+        "src/components/SettingsModal.tsx"
+      ]
+    },
+    {
+      "field": "setSystemPrompt",
+      "readers": [],
+      "writers": [
+        "src/components/SettingsModal.tsx"
+      ]
+    },
+    {
+      "field": "setTtsVoice",
+      "readers": [],
+      "writers": [
+        "src/components/SettingsModal.tsx"
+      ]
+    },
+    {
+      "field": "systemPrompt",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "ttsVoice",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "voiceUsage",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "webUsage",
+      "readers": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    }
+  ]
+}

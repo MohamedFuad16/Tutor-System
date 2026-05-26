@@ -1,0 +1,554 @@
+{
+  "metadata": {
+    "generatedAt": "2026-05-26T14:20:20.494Z",
+    "generator": "generate-brain.ts",
+    "generatorVersion": 2,
+    "sourceScope": [
+      "src/**/*",
+      "server.ts",
+      "generate-brain.ts",
+      "init-task-memory.ts",
+      "package.json",
+      "package-lock.json",
+      "tsconfig.json",
+      "brain/**/*.ts",
+      "scripts/**/*.ts"
+    ],
+    "excluded": [
+      "dist",
+      "node_modules",
+      "build",
+      "coverage",
+      "generated assets",
+      "temporary files"
+    ],
+    "commit": {
+      "commit": null,
+      "branch": null,
+      "dirty": null
+    },
+    "package": {
+      "name": "react-example",
+      "version": "0.0.0",
+      "react": "^19.0.1"
+    },
+    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84"
+  },
+  "subsystems": {
+    "frontend": {
+      "generatedAt": "2026-05-26T14:20:20.516Z",
+      "sourceFiles": [
+        "src/App.tsx",
+        "src/components/ChatPanel.tsx",
+        "src/components/FloatingSkillsMenu.tsx",
+        "src/components/Navigation.tsx",
+        "src/components/PatternCard.tsx",
+        "src/components/PatternSVGs.tsx",
+        "src/components/PdfViewer.tsx",
+        "src/components/PracticeMode.tsx",
+        "src/components/SettingsModal.tsx",
+        "src/components/ShikiHighlighter.tsx",
+        "src/components/Sidebar.tsx",
+        "src/components/SiriLiquidGlass.tsx",
+        "src/views/AdminView.tsx",
+        "src/views/AnalyticsView.tsx",
+        "src/views/BrainView.tsx",
+        "src/views/RevisionView.tsx",
+        "src/views/StudyView.tsx"
+      ],
+      "confidence": 0.82,
+      "dependencyReferences": [
+        "react",
+        "src/store/index.ts",
+        "src/components/Navigation.tsx",
+        "src/components/SettingsModal.tsx",
+        "src/views/StudyView.tsx",
+        "src/views/BrainView.tsx",
+        "src/views/AnalyticsView.tsx",
+        "src/views/RevisionView.tsx",
+        "src/views/AdminView.tsx",
+        "motion",
+        "src/brain-runtime/RenderProfiler.tsx",
+        "src/brain-runtime/runtimeTelemetry.ts",
+        "react",
+        "react-markdown",
+        "remark-gfm",
+        "mermaid",
+        "src/components/ShikiHighlighter.tsx",
+        "lucide-react",
+        "motion",
+        "dexie-react-hooks",
+        "src/lib/audio.ts",
+        "src/components/SiriLiquidGlass.tsx",
+        "src/store/index.ts",
+        "src/memory/memory.orchestrator.ts",
+        "src/memory/longterm.memory.ts",
+        "src/types.ts",
+        "src/components/FloatingSkillsMenu.tsx",
+        "src/brain-runtime/runtimeTelemetry.ts",
+        "react",
+        "motion",
+        "lucide-react",
+        "react",
+        "src/store/index.ts",
+        "lucide-react",
+        "motion",
+        "react",
+        "motion",
+        "src/components/PatternSVGs.tsx",
+        "react",
+        "react",
+        "react-pdf",
+        "react-pdf",
+        "react-pdf",
+        "src/store/index.ts",
+        "motion",
+        "lucide-react",
+        "src/memory/memory.orchestrator.ts",
+        "react",
+        "lucide-react",
+        "react",
+        "motion",
+        "lucide-react",
+        "src/store/index.ts",
+        "src/components/SiriLiquidGlass.tsx",
+        "react",
+        "shiki",
+        "react",
+        "motion",
+        "lucide-react",
+        "motion",
+        "react",
+        "react",
+        "dexie-react-hooks",
+        "src/memory/longterm.memory.ts",
+        "lucide-react",
+        "motion",
+        "src/store/index.ts",
+        "react",
+        "recharts",
+        "src/memory/longterm.memory.ts",
+        "motion",
+        "src/store/index.ts",
+        "react",
+        "react-force-graph-3d",
+        "src/store/index.ts",
+        "lucide-react",
+        "three",
+        "motion",
+        "src/memory/longterm.memory.ts",
+        "dexie-react-hooks",
+        "react",
+        "src/store/index.ts",
+        "dexie-react-hooks",
+        "lucide-react",
+        "motion",
+        "react-markdown",
+        "remark-gfm",
+        "src/memory/longterm.memory.ts",
+        "src/components/PatternCard.tsx",
+        "src/components/PatternSVGs.tsx",
+        "src/lib/tutorBook.json",
+        "react",
+        "src/components/PdfViewer.tsx",
+        "src/components/ChatPanel.tsx",
+        "src/store/index.ts",
+        "lucide-react",
+        "src/components/PatternCard.tsx",
+        "motion"
+      ],
+      "mutationRisk": [
+        {
+          "file": "src/components/ChatPanel.tsx",
+          "risk": 16
+        },
+        {
+          "file": "src/components/PatternCard.tsx",
+          "risk": 16
+        },
+        {
+          "file": "src/components/PatternSVGs.tsx",
+          "risk": 16
+        },
+        {
+          "file": "src/components/SiriLiquidGlass.tsx",
+          "risk": 16
+        },
+        {
+          "file": "src/views/RevisionView.tsx",
+          "risk": 16
+        },
+        {
+          "file": "src/App.tsx",
+          "risk": 8
+        },
+        {
+          "file": "src/components/FloatingSkillsMenu.tsx",
+          "risk": 8
+        },
+        {
+          "file": "src/components/Navigation.tsx",
+          "risk": 8
+        }
+      ],
+      "contextPacks": [
+        "state-zustand",
+        "api-streaming",
+        "routing-layout",
+        "navigation-dashboard",
+        "ui-animation-system",
+        "memory-dexie"
+      ]
+    },
+    "backend": {
+      "generatedAt": "2026-05-26T14:20:20.516Z",
+      "sourceFiles": [
+        "server.ts"
+      ],
+      "confidence": 0.82,
+      "dependencyReferences": [
+        "dotenv",
+        "express",
+        "path",
+        "openai",
+        "ws",
+        "."
+      ],
+      "mutationRisk": [
+        {
+          "file": "server.ts",
+          "risk": 100
+        }
+      ],
+      "contextPacks": [
+        "api-streaming"
+      ]
+    },
+    "state": {
+      "generatedAt": "2026-05-26T14:20:20.516Z",
+      "sourceFiles": [
+        "src/App.tsx",
+        "src/components/ChatPanel.tsx",
+        "src/components/Navigation.tsx",
+        "src/components/PdfViewer.tsx",
+        "src/components/SettingsModal.tsx",
+        "src/store/index.ts",
+        "src/views/AdminView.tsx",
+        "src/views/AnalyticsView.tsx",
+        "src/views/BrainView.tsx",
+        "src/views/RevisionView.tsx",
+        "src/views/StudyView.tsx"
+      ],
+      "confidence": 0.82,
+      "dependencyReferences": [
+        "react",
+        "src/store/index.ts",
+        "src/components/Navigation.tsx",
+        "src/components/SettingsModal.tsx",
+        "src/views/StudyView.tsx",
+        "src/views/BrainView.tsx",
+        "src/views/AnalyticsView.tsx",
+        "src/views/RevisionView.tsx",
+        "src/views/AdminView.tsx",
+        "motion",
+        "src/brain-runtime/RenderProfiler.tsx",
+        "src/brain-runtime/runtimeTelemetry.ts",
+        "react",
+        "react-markdown",
+        "remark-gfm",
+        "mermaid",
+        "src/components/ShikiHighlighter.tsx",
+        "lucide-react",
+        "motion",
+        "dexie-react-hooks",
+        "src/lib/audio.ts",
+        "src/components/SiriLiquidGlass.tsx",
+        "src/store/index.ts",
+        "src/memory/memory.orchestrator.ts",
+        "src/memory/longterm.memory.ts",
+        "src/types.ts",
+        "src/components/FloatingSkillsMenu.tsx",
+        "src/brain-runtime/runtimeTelemetry.ts",
+        "react",
+        "src/store/index.ts",
+        "lucide-react",
+        "motion",
+        "react",
+        "react-pdf",
+        "react-pdf",
+        "react-pdf",
+        "src/store/index.ts",
+        "motion",
+        "lucide-react",
+        "src/memory/memory.orchestrator.ts",
+        "react",
+        "motion",
+        "lucide-react",
+        "src/store/index.ts",
+        "src/components/SiriLiquidGlass.tsx",
+        "zustand",
+        "zustand",
+        "src/types.ts",
+        "react",
+        "dexie-react-hooks",
+        "src/memory/longterm.memory.ts",
+        "lucide-react",
+        "motion",
+        "src/store/index.ts",
+        "react",
+        "recharts",
+        "src/memory/longterm.memory.ts",
+        "motion",
+        "src/store/index.ts",
+        "react",
+        "react-force-graph-3d",
+        "src/store/index.ts",
+        "lucide-react",
+        "three",
+        "motion",
+        "src/memory/longterm.memory.ts",
+        "dexie-react-hooks",
+        "react",
+        "src/store/index.ts",
+        "dexie-react-hooks",
+        "lucide-react",
+        "motion",
+        "react-markdown",
+        "remark-gfm",
+        "src/memory/longterm.memory.ts",
+        "src/components/PatternCard.tsx",
+        "src/components/PatternSVGs.tsx",
+        "src/lib/tutorBook.json",
+        "react",
+        "src/components/PdfViewer.tsx",
+        "src/components/ChatPanel.tsx",
+        "src/store/index.ts",
+        "lucide-react",
+        "src/components/PatternCard.tsx",
+        "motion"
+      ],
+      "mutationRisk": [
+        {
+          "file": "src/store/index.ts",
+          "risk": 100
+        },
+        {
+          "file": "src/components/ChatPanel.tsx",
+          "risk": 16
+        },
+        {
+          "file": "src/views/RevisionView.tsx",
+          "risk": 16
+        },
+        {
+          "file": "src/App.tsx",
+          "risk": 8
+        },
+        {
+          "file": "src/components/Navigation.tsx",
+          "risk": 8
+        },
+        {
+          "file": "src/components/PdfViewer.tsx",
+          "risk": 8
+        },
+        {
+          "file": "src/components/SettingsModal.tsx",
+          "risk": 8
+        },
+        {
+          "file": "src/views/AdminView.tsx",
+          "risk": 8
+        }
+      ],
+      "contextPacks": [
+        "state-zustand",
+        "api-streaming",
+        "routing-layout",
+        "navigation-dashboard",
+        "ui-animation-system",
+        "memory-dexie"
+      ]
+    },
+    "memory": {
+      "generatedAt": "2026-05-26T14:20:20.516Z",
+      "sourceFiles": [
+        "src/memory/bkt.engine.ts",
+        "src/memory/cognitive.load.ts",
+        "src/memory/illusion.detector.ts",
+        "src/memory/learner.model.ts",
+        "src/memory/longterm.memory.ts",
+        "src/memory/memory.embeddings.ts",
+        "src/memory/memory.orchestrator.ts",
+        "src/memory/metacognition.tracker.ts",
+        "src/memory/misconception.graph.ts",
+        "src/memory/prerequisite.dag.ts",
+        "src/memory/productive.failure.ts",
+        "src/memory/revision.memory.ts",
+        "src/memory/scaffolding.engine.ts",
+        "src/memory/zpd.calculator.ts"
+      ],
+      "confidence": 0.82,
+      "dependencyReferences": [
+        "src/memory/longterm.memory.ts",
+        "src/memory/longterm.memory.ts",
+        "src/memory/zpd.calculator.ts",
+        "src/memory/misconception.graph.ts",
+        "src/memory/scaffolding.engine.ts",
+        "src/memory/prerequisite.dag.ts",
+        "src/memory/bkt.engine.ts",
+        "src/memory/illusion.detector.ts",
+        "src/memory/cognitive.load.ts",
+        "dexie",
+        "@xenova/transformers",
+        "src/memory/memory.embeddings.ts",
+        "src/memory/longterm.memory.ts",
+        "src/memory/longterm.memory.ts",
+        "uuid",
+        "src/memory/longterm.memory.ts",
+        "src/memory/longterm.memory.ts",
+        "src/memory/longterm.memory.ts",
+        "src/memory/longterm.memory.ts",
+        "src/memory/longterm.memory.ts",
+        "src/memory/prerequisite.dag.ts"
+      ],
+      "mutationRisk": [
+        {
+          "file": "src/memory/longterm.memory.ts",
+          "risk": 100
+        },
+        {
+          "file": "src/memory/memory.orchestrator.ts",
+          "risk": 16
+        },
+        {
+          "file": "src/memory/prerequisite.dag.ts",
+          "risk": 16
+        },
+        {
+          "file": "src/memory/bkt.engine.ts",
+          "risk": 8
+        },
+        {
+          "file": "src/memory/cognitive.load.ts",
+          "risk": 8
+        },
+        {
+          "file": "src/memory/illusion.detector.ts",
+          "risk": 8
+        },
+        {
+          "file": "src/memory/memory.embeddings.ts",
+          "risk": 8
+        },
+        {
+          "file": "src/memory/misconception.graph.ts",
+          "risk": 8
+        }
+      ],
+      "contextPacks": [
+        "api-streaming",
+        "memory-dexie"
+      ]
+    },
+    "brainTooling": {
+      "generatedAt": "2026-05-26T14:20:20.516Z",
+      "sourceFiles": [
+        "generate-brain.ts",
+        "brain/drift-check.ts",
+        "brain/self-audit.ts",
+        "brain/embeddings/embedding-engine.ts",
+        "brain/impact/analyze-impact.ts",
+        "brain/knowledge/query-engine.ts",
+        "brain/retrieval/retrieve-context.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/rules/validate-rules.ts",
+        "brain/runtime/context-orchestrator.ts",
+        "brain/runtime/impact-orchestrator.ts",
+        "brain/runtime/run-runtime-benchmark.ts",
+        "brain/runtime/task-executor.ts",
+        "brain/tasks/task-memory.ts"
+      ],
+      "confidence": 0.82,
+      "dependencyReferences": [
+        "ts-morph",
+        "crypto",
+        "fs",
+        "path",
+        "child_process",
+        "crypto",
+        "fs",
+        "path",
+        "child_process",
+        "fs",
+        "path",
+        "crypto",
+        "fs",
+        "path",
+        "fs",
+        "path",
+        "fs",
+        "path",
+        "brain/retrieval/retrieve-semantic.ts",
+        "fs",
+        "path",
+        "crypto",
+        "fs",
+        "path",
+        "crypto",
+        "child_process",
+        "child_process",
+        "fs",
+        "path",
+        "playwright",
+        "child_process",
+        "fs",
+        "path",
+        "openai",
+        "child_process",
+        "crypto",
+        "fs",
+        "path",
+        "brain/runtime/impact-orchestrator.ts",
+        "brain/runtime/context-orchestrator.ts",
+        "fs",
+        "path"
+      ],
+      "mutationRisk": [
+        {
+          "file": "brain/retrieval/retrieve-semantic.ts",
+          "risk": 8
+        },
+        {
+          "file": "brain/runtime/context-orchestrator.ts",
+          "risk": 8
+        },
+        {
+          "file": "brain/runtime/impact-orchestrator.ts",
+          "risk": 8
+        },
+        {
+          "file": "generate-brain.ts",
+          "risk": 0
+        },
+        {
+          "file": "brain/drift-check.ts",
+          "risk": 0
+        },
+        {
+          "file": "brain/self-audit.ts",
+          "risk": 0
+        },
+        {
+          "file": "brain/embeddings/embedding-engine.ts",
+          "risk": 0
+        },
+        {
+          "file": "brain/impact/analyze-impact.ts",
+          "risk": 0
+        }
+      ],
+      "contextPacks": []
+    }
+  }
+}

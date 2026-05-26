@@ -1,0 +1,533 @@
+import { generateEmbedding, cosineSimilarity } from './memory.embeddings';
+import { db, PersistentConcept, ConversationInteraction, LearningBook, LearningBookConcept } from './longterm.memory';
+
+function generateId() {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80) || 'general-study';
+}
+
+function clamp01(value: unknown, fallback: number) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.max(0, Math.min(1, numeric));
+}
+
+function getStoredOpenRouterKey() {
+  try {
+    const storeKey = JSON.parse(localStorage.getItem('NeuralNest_Store') || '{}')?.state?.apiKey;
+    return storeKey || localStorage.getItem('openrouter_api_key') || '';
+  } catch {
+    return localStorage.getItem('openrouter_api_key') || '';
+  }
+}
+
+function getStoredLearnerName() {
+  try {
+    const storeName = JSON.parse(localStorage.getItem('NeuralNest_Store') || '{}')?.state?.learnerName;
+    return String(storeName || localStorage.getItem('learner_name') || 'Learner').trim() || 'Learner';
+  } catch {
+    return localStorage.getItem('learner_name') || 'Learner';
+  }
+}
+
+export interface LearningBookUpdateInput {
+  userName: string;
+  activeProject: string;
+  activeBookId?: string | null;
+  userMessage: string;
+  assistantMessage: string;
+  apiKey?: string;
+}
+
+interface LearningAgentConcept {
+  name: string;
+  summary?: string;
+  mastery?: number;
+  confidence?: number;
+  parentConcepts?: string[];
+  childConcepts?: string[];
+  evidence?: string[];
+}
+
+const mergeUnique = (values: string[], limit = 12) => Array.from(new Set(values.filter(Boolean))).slice(0, limit);
+
+const compactText = (value: unknown, fallback = '') => {
+  const text = String(value || fallback || '').trim();
+  return text.replace(/\s+/g, ' ').slice(0, 1800);
+};
+
+const announceActiveLearningBook = (book: LearningBook) => {
+  localStorage.setItem('active_learning_book_id', book.id);
+  localStorage.setItem('active_project', book.title);
+  window.dispatchEvent(new CustomEvent('learning-book-updated', {
+    detail: { bookId: book.id, title: book.title }
+  }));
+};
+
+export class MemoryOrchestrator {
+  private currentSessionId: string;
+  private initialization: Promise<void>;
+
+  constructor() {
+    this.currentSessionId = generateId();
+    this.initialization = this.startSession();
+  }
+
+  private async startSession() {
+    await this.resetGeneratedLearningLibraryForSession();
+    await db.sessions.add({
+      id: this.currentSessionId,
+      startTime: Date.now(),
+      pagesVisited: [],
+      conceptsDiscussed: [],
+      solvedProblems: 0,
+      mistakes: []
+    });
+    const book = await this.upsertSessionLearningBook(getStoredLearnerName(), 'General Study');
+    announceActiveLearningBook(book);
+  }
+
+  private async resetGeneratedLearningLibraryForSession() {
+    try {
+      await db.learningEntries.clear();
+      await db.learningBookConcepts.clear();
+      await db.learningBooks.clear();
+      const concepts = await db.concepts.toArray();
+      await Promise.all(
+        concepts
+          .filter(concept => concept.id !== 'tutor-book')
+          .map(concept => db.concepts.delete(concept.id))
+      );
+    } catch (error) {
+      console.warn('[Memory] Learning library reset skipped:', error);
+    }
+  }
+
+  private sessionBookId(userName: string) {
+    return `book:${slugify(userName || 'Learner')}:session:${this.currentSessionId}`;
+  }
+
+  public getCurrentSessionId() {
+    return this.currentSessionId;
+  }
+
+  private async upsertSessionLearningBook(userName = 'Learner', title = 'General Study') {
+    const now = Date.now();
+    const safeUserName = userName.trim() || 'Learner';
+    const safeTitle = title.trim() || 'General Study';
+    const bookId = this.sessionBookId(safeUserName);
+    const existing = await db.learningBooks.get(bookId).catch(() => undefined);
+    if (existing) return existing;
+
+    const book: LearningBook = {
+      id: bookId,
+      sessionId: this.currentSessionId,
+      title: safeTitle,
+      userName: safeUserName,
+      source: safeTitle === 'General Study' ? 'chat' : 'pdf',
+      overview: 'A temporary session learning book. It will rename itself when a PDF or clear study topic is detected.',
+      summary: '',
+      knowledgeSummary: 'No tutor conversation has been added yet.',
+      chapters: [],
+      conceptIds: [],
+      conversationCount: 0,
+      createdAt: now,
+      updatedAt: now,
+      agentModel: 'session-bootstrap',
+    };
+    await db.learningBooks.put(book);
+    return book;
+  }
+
+  public async ensureSessionLearningBook(userName = 'Learner', title = 'General Study') {
+    await this.initialization;
+    return this.upsertSessionLearningBook(userName, title);
+  }
+
+  public async updateSessionBookTitle(title: string, userName = getStoredLearnerName(), source: LearningBook['source'] = 'pdf') {
+    await this.initialization;
+    const cleanTitle = compactText(title, 'General Study').replace(/[^a-zA-Z0-9 .:;,_-]/g, '').trim() || 'General Study';
+    const book = await this.upsertSessionLearningBook(userName, 'General Study');
+    const nextBook: LearningBook = {
+      ...book,
+      title: cleanTitle,
+      source,
+      overview: book.overview && !book.overview.startsWith('A temporary session learning book')
+        ? book.overview
+        : `A session learning book for ${cleanTitle}. Tutor conversations and extracted concepts are collected here.`,
+      updatedAt: Date.now(),
+    };
+    await db.learningBooks.put(nextBook);
+    announceActiveLearningBook(nextBook);
+    return nextBook;
+  }
+
+  public async trackInteraction(userMessage: string, assistantMessage: string, pageNumber?: number) {
+    await this.initialization;
+    const interactionId = generateId();
+    
+    // Very rudimentary concept extraction from text without AI call, 
+    // ideally should use AI, but for performance we can extract nouns or use exact match from existing graph
+    // We will leave the concept processing to a background task or rely on the AI response parsing.
+    
+    // Asynchronous background heavy processing
+    setTimeout(async () => {
+      let embedding: number[] | undefined;
+      try {
+         const combinedText = (userMessage + " " + assistantMessage).slice(0, 1500);
+         embedding = await generateEmbedding(combinedText);
+      } catch (e) {
+         console.warn("Embedding generation failed", e);
+      }
+      
+      const interaction: ConversationInteraction = {
+        id: interactionId,
+        sessionId: this.currentSessionId,
+        timestamp: Date.now(),
+        userMessage,
+        assistantMessage,
+        identifiedConcepts: [], // to be enriched
+        userConfusionDetected: userMessage.toLowerCase().includes('confused') || userMessage.toLowerCase().includes('dont understand') || userMessage.toLowerCase().includes('not sure'),
+        pageNumber,
+        embedding
+      };
+      
+      await db.interactions.add(interaction);
+      
+      // Log the conversation action to trace backend
+      await this.logTrace("Conversation Interaction", {
+        userMessage,
+        assistantMessageSnippet: assistantMessage.slice(0, 100) + '...',
+        confusionDetected: interaction.userConfusionDetected
+      });
+    }, 0);
+  }
+
+  public async updateLearningBookFromConversation(input: LearningBookUpdateInput) {
+    await this.initialization;
+    const userMessage = input.userMessage.trim();
+    const assistantMessage = input.assistantMessage.trim();
+    if (!userMessage && !assistantMessage) return null;
+
+    const apiKey = input.apiKey || getStoredOpenRouterKey();
+    const userName = (input.userName || 'Learner').trim() || 'Learner';
+    const selectedBook = input.activeBookId
+      ? await db.learningBooks.get(input.activeBookId).catch(() => undefined)
+      : undefined;
+    const sessionBook = selectedBook || await this.upsertSessionLearningBook(userName, 'General Study');
+    const bookId = sessionBook.id;
+    const existingSessionBook = await db.learningBooks.get(bookId).catch(() => sessionBook);
+    const recentBooks = await db.learningBooks.orderBy('updatedAt').reverse().limit(12).toArray().catch(() => []);
+    let update: any = null;
+
+    try {
+      const response = await fetch('/api/learning-book-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {})
+        },
+        body: JSON.stringify({
+          userName,
+          activeProject: input.activeProject || 'General Study',
+          currentSessionId: this.currentSessionId,
+          currentBook: existingSessionBook ? {
+            title: existingSessionBook.title,
+            overview: existingSessionBook.overview,
+            knowledgeSummary: existingSessionBook.knowledgeSummary,
+            chapters: existingSessionBook.chapters || [],
+            conversationCount: existingSessionBook.conversationCount,
+          } : null,
+          userMessage,
+          assistantMessage,
+          recentBookTitles: recentBooks.map(book => book.title)
+        })
+      });
+
+      if (response.ok) {
+        update = await response.json();
+      } else {
+        console.warn('[Memory] Learning book agent unavailable:', await response.text().catch(() => response.statusText));
+      }
+    } catch (error) {
+      console.warn('[Memory] Learning book agent request failed:', error);
+    }
+
+    if (!update) {
+      const fallbackTitle = existingSessionBook?.title || input.activeProject || 'Study Session';
+      update = {
+        userName,
+        bookTitle: fallbackTitle,
+        bookSource: 'chat',
+        overview: existingSessionBook?.overview || `A continuous learning book for this tutor session.`,
+        chapterTitle: fallbackTitle,
+        chapterSummary: assistantMessage.slice(0, 500) || userMessage.slice(0, 500),
+        conversationSummary: assistantMessage.slice(0, 500) || userMessage.slice(0, 500),
+        knowledgeSummary: existingSessionBook?.knowledgeSummary || `The learner is discussing ${fallbackTitle}.`,
+        conceptsLearned: [fallbackTitle],
+        risks: [],
+        confidence: 0.35,
+        concepts: [{
+          name: fallbackTitle,
+          summary: assistantMessage.slice(0, 320) || userMessage.slice(0, 320) || 'Learning topic discussed in chat.',
+          mastery: 0.3,
+          confidence: 0.35,
+          parentConcepts: [],
+          childConcepts: [],
+          evidence: [userMessage.slice(0, 160)].filter(Boolean),
+        }],
+        model: 'local-session-fallback'
+      };
+    }
+
+    const now = Date.now();
+    const proposedTitle = String(update.bookTitle || input.activeProject || 'Study Session').trim() || 'Study Session';
+    const title = existingSessionBook?.title && existingSessionBook.title !== 'General Study'
+      ? existingSessionBook.title
+      : proposedTitle;
+    const conversationId = generateId();
+    const agentConcepts: LearningAgentConcept[] = Array.isArray(update.concepts) ? update.concepts : [];
+    const conceptIds: string[] = [];
+
+    for (const concept of agentConcepts.slice(0, 12)) {
+      const name = String(concept.name || '').trim();
+      if (!name) continue;
+      const conceptId = `${bookId}:concept:${slugify(name)}`;
+      conceptIds.push(conceptId);
+      const existing = await db.learningBookConcepts.get(conceptId);
+      const nextConcept: LearningBookConcept = {
+        id: conceptId,
+        bookId,
+        name,
+        summary: String(concept.summary || existing?.summary || '').trim(),
+        mastery: clamp01(concept.mastery, existing?.mastery ?? 0.35),
+        confidence: clamp01(concept.confidence, existing?.confidence ?? 0.45),
+        parentConcepts: mergeUnique([
+          ...(existing?.parentConcepts || []),
+          ...(Array.isArray(concept.parentConcepts) ? concept.parentConcepts.map(String) : [])
+        ], 8),
+        childConcepts: mergeUnique([
+          ...(existing?.childConcepts || []),
+          ...(Array.isArray(concept.childConcepts) ? concept.childConcepts.map(String) : [])
+        ], 12),
+        evidence: [
+          ...(existing?.evidence || []),
+          ...(Array.isArray(concept.evidence) ? concept.evidence.map(String) : [])
+        ].filter(Boolean).slice(-8),
+        firstSeenAt: existing?.firstSeenAt || now,
+        updatedAt: now,
+      };
+      await db.learningBookConcepts.put(nextConcept);
+    }
+
+    const existingBook = existingSessionBook || await db.learningBooks.get(bookId);
+    const mergedConceptIds = Array.from(new Set([...(existingBook?.conceptIds || []), ...conceptIds]));
+    const chapterTitle = compactText(update.chapterTitle, title) || title;
+    const chapterId = `${bookId}:chapter:${slugify(chapterTitle)}`;
+    const existingChapters = existingBook?.chapters || [];
+    const chapterIndex = existingChapters.findIndex(chapter => chapter.id === chapterId || chapter.title.toLowerCase() === chapterTitle.toLowerCase());
+    const nextChapter = {
+      id: chapterIndex >= 0 ? existingChapters[chapterIndex].id : chapterId,
+      title: chapterTitle,
+      summary: compactText(update.chapterSummary || update.conversationSummary, existingChapters[chapterIndex]?.summary || ''),
+      conceptIds: mergeUnique([...(existingChapters[chapterIndex]?.conceptIds || []), ...conceptIds], 24),
+      conversationCount: (existingChapters[chapterIndex]?.conversationCount || 0) + 1,
+      createdAt: existingChapters[chapterIndex]?.createdAt || now,
+      updatedAt: now,
+    };
+    const chapters = chapterIndex >= 0
+      ? existingChapters.map((chapter, index) => index === chapterIndex ? nextChapter : chapter)
+      : [...existingChapters, nextChapter];
+    const book: LearningBook = {
+      id: bookId,
+      sessionId: this.currentSessionId,
+      title,
+      userName,
+      source: String(update.bookSource || existingBook?.source || 'chat'),
+      overview: compactText(update.overview, existingBook?.overview || `A continuous learning book for ${userName}'s current tutor session.`),
+      summary: compactText(update.conversationSummary, existingBook?.summary || ''),
+      knowledgeSummary: compactText(update.knowledgeSummary, existingBook?.knowledgeSummary || ''),
+      chapters,
+      conceptIds: mergedConceptIds,
+      conversationCount: (existingBook?.conversationCount || 0) + 1,
+      createdAt: existingBook?.createdAt || now,
+      updatedAt: now,
+      lastConversationId: conversationId,
+      agentModel: String(update.model || 'deepseek/deepseek-chat')
+    };
+    await db.learningBooks.put(book);
+    announceActiveLearningBook(book);
+
+    await db.learningEntries.add({
+      id: generateId(),
+      bookId,
+      conversationId,
+      timestamp: now,
+      userName,
+      userMessage,
+      assistantSummary: assistantMessage.slice(0, 1200),
+      conversationSummary: book.summary,
+      learnedConcepts: conceptIds,
+      risks: Array.isArray(update.risks) ? update.risks.map(String).slice(0, 8) : [],
+      model: book.agentModel || 'deepseek/deepseek-chat',
+      confidence: clamp01(update.confidence, 0.55),
+    });
+
+    await this.logTrace('Learning Book Update', {
+      userName,
+      bookTitle: title,
+      conceptCount: conceptIds.length,
+      summary: book.summary,
+      model: book.agentModel
+    });
+
+    return book;
+  }
+
+  public async addOrUpdateConcept(name: string, description: string, understandingDelta: number, sourcePage?: number) {
+    const id = name.toLowerCase().trim();
+    const existing = await db.concepts.get(id);
+    
+    if (existing) {
+      existing.mastery = Math.max(0, Math.min(1, existing.mastery + understandingDelta));
+      existing.confidence = Math.max(0, Math.min(1, existing.confidence + understandingDelta));
+      existing.lastReviewedAt = Date.now();
+      existing.revisionCount += 1;
+      if (sourcePage && !existing.sourcePages.includes(sourcePage)) {
+        existing.sourcePages.push(sourcePage);
+      }
+      await db.concepts.put(existing);
+    } else {
+      const newConcept: PersistentConcept = {
+        id,
+        name,
+        description,
+        mastery: Math.max(0, understandingDelta),
+        confidence: Math.max(0, understandingDelta),
+        
+        // Phase 5 defaults
+        p_learn: Math.max(0.2, understandingDelta), 
+        p_transit: 0.1,
+        p_slip: 0.1,
+        p_guess: 0.2,
+        attempt_history: [],
+        decay_factor: 1.0,
+        prerequisites: [],
+        
+        relatedConcepts: [],
+        sourcePages: sourcePage ? [sourcePage] : [],
+        revisionCount: 1,
+        lastReviewedAt: Date.now(),
+        firstLearnedAt: Date.now(),
+        linkedAnnotations: []
+      };
+      // generate embedding
+      generateEmbedding(name + " " + description).then(emb => {
+        newConcept.embedding = emb;
+        db.concepts.put(newConcept);
+      });
+      await db.concepts.put(newConcept);
+    }
+    
+    // Log the graph update to trace backend
+    await this.logTrace("Brain Graph Update", {
+      conceptName: name,
+      understandingDelta,
+      sourcePage
+    });
+  }
+
+  public async getRelevantContext(query: string, pageNumber?: number): Promise<string> {
+    try {
+      const queryEmbedding = await generateEmbedding(query);
+      
+      // Fetch recent interactions (optimized from full table scan)
+      const interactions = await db.interactions.orderBy('timestamp').reverse().limit(100).toArray();
+      const scoredInteractions = interactions
+        .filter(i => i.embedding)
+        .map(i => ({ i, score: cosineSimilarity(queryEmbedding, i.embedding!) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+        
+      // Fetch concepts (optimized to active concepts)
+      const concepts = await db.concepts.orderBy('lastReviewedAt').reverse().limit(200).toArray();
+      const scoredConcepts = concepts
+        .filter(c => c.embedding)
+        .map(c => ({ c, score: cosineSimilarity(queryEmbedding, c.embedding!) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+        
+      let contextStr = "### Persistent Memory Context\\n";
+      
+      if (scoredConcepts.length > 0) {
+         contextStr += "\\n**Related Learned Concepts:**\\n" + scoredConcepts.map(sc => 
+           `- ${sc.c.name} (Mastery: ${(sc.c.mastery * 100).toFixed(0)}%, Confidence: ${(sc.c.confidence * 100).toFixed(0)}%) - ${sc.c.description}`
+         ).join("\\n");
+      }
+      
+      if (scoredInteractions.length > 0) {
+         contextStr += "\\n\\n**Recent Relevant Discussion History:**\\n" + scoredInteractions.map(si => 
+           `User: ${si.i.userMessage}\\nTutor: ${si.i.assistantMessage.slice(0, 200)}...`
+         ).join("\\n");
+      }
+      
+      // Weak areas overall
+      // Phase 5 Learner Model Injection
+      const { learnerModel } = await import('./learner.model');
+      const snapshot = await learnerModel.getLearnerSnapshot(scoredConcepts[0]?.c.id);
+      const tutorInstructions = await learnerModel.getTutorInstructions(snapshot);
+      
+      contextStr += "\n\n" + tutorInstructions;
+      
+      return contextStr;
+    } catch (e) {
+      console.error(e);
+      return "";
+    }
+  }
+
+  public async logTrace(action: string, payload: any) {
+    try {
+      const traceId = generateId();
+      const apiKey = getStoredOpenRouterKey();
+      
+      if (!apiKey) return; // Silent skip if no API key
+
+      const response = await fetch('/api/trace', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({ action, payload })
+      });
+
+      if (!response.ok) {
+        console.error("Failed to fetch trace:", await response.text());
+        return;
+      }
+
+      const { explanation } = await response.json();
+      
+      await db.traceLogs.add({
+        id: traceId,
+        timestamp: Date.now(),
+        action,
+        payload,
+        llmExplanation: explanation
+      });
+      console.log(`[Trace] ${action} logged and explained by DeepSeek.`);
+    } catch (err) {
+      console.error("Trace logging failed", err);
+    }
+  }
+}
+
+export const brainOrchestrator = new MemoryOrchestrator();

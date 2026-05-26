@@ -1,0 +1,35 @@
+export type ChatPhase = "idle" | "retrieving" | "thinking" | "tool_execution" | "synthesizing" | "streaming" | "complete" | "web_search";
+
+export type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  isVoice?: boolean;
+  hasFlashcards?: boolean;
+  phase?: ChatPhase;
+  reasoningSteps?: { id: string, content: string }[];
+  webSearch?: {
+    active: boolean;
+    query?: string;
+    mode?: string;
+    status?: string;
+    sources: any[];
+    error?: string;
+  };
+  sources?: any[];
+};
+
+export type MindMapNode = {
+  id: string;
+  label: string;
+  x?: number;
+  y?: number;
+  fx?: number | null;
+  fy?: number | null;
+  learned?: boolean;
+};
+
+export type MindMapLink = {
+  source: string;
+  target: string;
+};

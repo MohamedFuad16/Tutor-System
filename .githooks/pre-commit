@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+set -eu
+
+npm run brain:generate
+npm run brain:embed
+npm run brain:runtime-benchmark
+npm run brain:self-audit
+npm run brain:verify
+npm run brain:drift-check
+npm run lint

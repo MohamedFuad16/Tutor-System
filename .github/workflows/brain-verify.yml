@@ -1,0 +1,42 @@
+name: Brain Verify
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  brain-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm run brain:generate
+
+      - run: npm run brain:embed
+
+      - run: npm run brain:runtime-benchmark
+
+      - run: npm run brain:self-audit
+
+      - run: npm run brain:verify
+
+      - run: npm run brain:drift-check
+
+      - name: Ensure generated brain artifacts are committed
+        run: git diff --exit-code -- brain package.json package-lock.json
+
+      - run: npm run lint
+
+      - run: npm run build

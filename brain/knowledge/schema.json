@@ -1,0 +1,53 @@
+{
+  "nodeTypes": [
+    "file",
+    "component",
+    "hook",
+    "store",
+    "storeField",
+    "endpoint",
+    "websocket",
+    "database",
+    "databaseTable",
+    "route",
+    "externalPackage",
+    "contextPack"
+  ],
+  "edgeTypes": [
+    "dependsOn",
+    "imports",
+    "exports",
+    "renders",
+    "wraps",
+    "usesState",
+    "readsStore",
+    "writesStore",
+    "callsEndpoint",
+    "listensTo",
+    "emits",
+    "readsDatabase",
+    "writesDatabase",
+    "mutates",
+    "servedBy",
+    "definedIn"
+  ],
+  "graphNode": [
+    "id",
+    "type",
+    "label",
+    "file",
+    "symbol",
+    "hash",
+    "loc",
+    "metadata"
+  ],
+  "graphEdge": [
+    "id",
+    "type",
+    "source",
+    "target",
+    "confidence",
+    "evidence",
+    "metadata"
+  ]
+}
