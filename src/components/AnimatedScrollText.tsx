@@ -1,65 +1,93 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'motion/react';
+import React, { useRef, useEffect, useState } from 'react';
 
 interface AnimatedScrollTextProps {
   text: string;
   className?: string;
   scrollContainerRef?: React.RefObject<HTMLElement>;
+  fullRevealDistance?: number;
+  initialBlur?: number;
+  initialOpacity?: number;
 }
 
-export function AnimatedScrollText({ text, className = "", scrollContainerRef }: AnimatedScrollTextProps) {
+export function AnimatedScrollText({ 
+  text = "", 
+  className = "", 
+  scrollContainerRef,
+  fullRevealDistance = 600,
+  initialBlur = 3,
+  initialOpacity = 0.1
+}: AnimatedScrollTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  // We track the scroll progress of the container relative to the viewport.
-  // "start 80%" means animation starts when the top of container hits 80% of viewport height
-  // "end 40%" means animation ends when the bottom of container hits 40% of viewport height
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    container: scrollContainerRef,
-    offset: ["start 80%", "end 40%"]
-  });
-
   const words = text.split(" ");
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const scroller = scrollContainerRef?.current;
+    if (!scroller || !containerRef.current) return;
+
+    let startPosition = 0;
+    let containerHeight = 0;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsVisible(true);
+        const rect = entry.boundingClientRect;
+        const scrollerRect = scroller.getBoundingClientRect();
+        
+        startPosition = scroller.scrollTop + (rect.top - scrollerRect.top);
+        containerHeight = rect.height;
+        handleScroll();
+      } else {
+        setIsVisible(false);
+      }
+    }, { threshold: [0], root: scroller });
+
+    observer.observe(containerRef.current);
+
+    const handleScroll = () => {
+      if (!isVisible || !containerRef.current) return;
+      const currentScroll = scroller.scrollTop;
+      const elementTop = startPosition - currentScroll;
+      const visibleHeight = scroller.clientHeight - elementTop;
+      
+      const progress = (visibleHeight - containerHeight) / (fullRevealDistance - containerHeight);
+      setScrollProgress(Math.max(0, Math.min(1, progress)));
+    };
+
+    scroller.addEventListener("scroll", handleScroll, { passive: true });
+    
+    return () => {
+      scroller.removeEventListener("scroll", handleScroll);
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current);
+      }
+    };
+  }, [scrollContainerRef, fullRevealDistance, isVisible]);
 
   return (
-    <div 
-      ref={containerRef} 
-      className={`flex flex-wrap ${className}`}
-    >
-      {words.map((word, i) => {
-        // Calculate the threshold for this specific word based on its index
-        const start = i / words.length;
-        const end = start + (1 / words.length);
+    <div ref={containerRef} className={`flex flex-wrap ${className}`}>
+      {words.map((word, index) => {
+        const wordProgress = (scrollProgress - index / words.length) * words.length;
+        const progress = Math.max(0, Math.min(1, wordProgress));
+        const blurAmount = initialBlur * (1 - progress);
+        const opacity = initialOpacity + (1 - initialOpacity) * progress;
         
-        // Map the scroll progress to this word's opacity and blur
-        // Wait, hook rules: we cannot call useTransform conditionally or in a loop like this IF the array size changes. 
-        // But since `text` is static, `words.length` is static. It's technically safe in React if `text` never changes, 
-        // but it's better to create a separate Word component to strictly follow hook rules.
         return (
-          <Word 
-            key={i} 
-            word={word} 
-            progress={scrollYProgress} 
-            start={start} 
-            end={end} 
-          />
+          <span
+            key={index}
+            style={{
+              display: "inline-block",
+              marginRight: "0.25em",
+              filter: `blur(${blurAmount}px)`,
+              opacity: opacity,
+              transition: "filter 0.2s ease-out, opacity 0.2s ease-out"
+            }}
+          >
+            {word}
+          </span>
         );
       })}
     </div>
-  );
-}
-
-function Word({ word, progress, start, end }: { word: string, progress: any, start: number, end: number }) {
-  const opacity = useTransform(progress, [start, end], [0.15, 1]);
-  const filter = useTransform(progress, [start, end], ["blur(12px)", "blur(0px)"]);
-  const y = useTransform(progress, [start, end], [10, 0]);
-
-  return (
-    <motion.span 
-      style={{ opacity, filter, y }} 
-      className="mr-[0.25em] inline-block last:mr-0"
-    >
-      {word}
-    </motion.span>
   );
 }
