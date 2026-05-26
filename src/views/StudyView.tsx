@@ -184,10 +184,10 @@ export function StudyView() {
                 {/* Card 2: Knowledge Graph */}
                 <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center relative mb-8">
                   <PatternCard
-                    bgClass={themes[3].bg}
-                    SvgComponent={themes[3].SvgComponent}
-                    bloomColor={themes[3].bloom}
-                    bloomOpacity={themes[3].bloomOpacity}
+                    bgClass={themes[0].bg}
+                    SvgComponent={themes[0].SvgComponent}
+                    bloomColor={themes[0].bloom}
+                    bloomOpacity={themes[0].bloomOpacity}
                   >
                     <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
                       <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-white/10 text-white border border-white/20 shadow-lg">
