@@ -6,6 +6,7 @@ import { UploadCloud, MessageSquare, X, RefreshCw } from 'lucide-react';
 import { PatternCard, themes } from '../components/PatternCard';
 import { AnimatedScrollText } from '../components/AnimatedScrollText';
 import { motion, AnimatePresence } from 'motion/react';
+import { ArrowDown } from 'lucide-react';
 
 export function StudyView() {
   const pdfUrl = useStore(state => state.pdfUrl);
@@ -83,9 +84,9 @@ export function StudyView() {
             <div ref={scrollContainerRef} className="flex-1 w-full h-full flex flex-col overflow-auto relative custom-scroll">
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px', backgroundAttachment: 'local' }} />
               
-              <div className="w-full flex-1 flex flex-col items-center justify-start z-10 p-6 md:p-12 lg:p-20 pt-[8vh] pb-[20vh] max-w-4xl mx-auto">
+              <div className="w-full flex-1 flex flex-col items-center justify-start z-10 p-6 md:p-12 lg:p-20 pt-[8vh] pb-[40vh] max-w-4xl mx-auto">
                 
-                <div className="w-full mb-8 text-center">
+                <div className="w-full mb-12 text-center">
                   <AnimatedScrollText 
                     text="Learning, redefined. Extract profound insights from any document."
                     className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight justify-center"
@@ -94,16 +95,7 @@ export function StudyView() {
                   />
                 </div>
 
-                <div className="w-full mb-16 text-center">
-                  <AnimatedScrollText 
-                    text="Map complex concepts into your personalized brain graph."
-                    className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight justify-center"
-                    scrollContainerRef={scrollContainerRef}
-                    fullRevealDistance={200}
-                  />
-                </div>
-
-                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center mb-32">
+                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center relative mb-8">
                   <input 
                     type="file" 
                     accept="application/pdf" 
@@ -135,6 +127,23 @@ export function StudyView() {
                       </div>
                     </div>
                   </PatternCard>
+
+                  {/* Scroll Indicator */}
+                  <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-60 animate-bounce">
+                    <span className="text-[9px] uppercase tracking-widest font-mono text-zinc-400 mb-2">Scroll Down</span>
+                    <ArrowDown className="w-4 h-4 text-zinc-500" />
+                  </div>
+                </div>
+
+                <div className="h-[40vh] w-full shrink-0" />
+
+                <div className="w-full mb-16 text-center">
+                  <AnimatedScrollText 
+                    text="Map complex concepts into your personalized brain graph."
+                    className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight justify-center"
+                    scrollContainerRef={scrollContainerRef}
+                    fullRevealDistance={300}
+                  />
                 </div>
 
                 <div className="w-full text-center pb-32">
