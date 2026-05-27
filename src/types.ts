@@ -1,4 +1,12 @@
-export type ChatPhase = "idle" | "retrieving" | "thinking" | "tool_execution" | "synthesizing" | "streaming" | "complete" | "web_search";
+export type ChatPhase =
+  | "idle"
+  | "retrieving"
+  | "thinking"
+  | "tool_execution"
+  | "synthesizing"
+  | "streaming"
+  | "complete"
+  | "web_search";
 
 export type Message = {
   id: string;
@@ -6,8 +14,16 @@ export type Message = {
   content: string;
   isVoice?: boolean;
   hasFlashcards?: boolean;
+  usage?: {
+    provider: string;
+    model: string;
+    inputTokens: number;
+    outputTokens: number;
+    cost: number;
+    estimated: boolean;
+  };
   phase?: ChatPhase;
-  reasoningSteps?: { id: string, content: string }[];
+  reasoningSteps?: { id: string; content: string }[];
   webSearch?: {
     active: boolean;
     query?: string;

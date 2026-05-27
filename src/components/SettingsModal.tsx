@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
+  BarChart3,
+  Coins,
   Settings,
   X,
   Key,
@@ -9,9 +11,223 @@ import {
   AlertCircle,
   Globe2,
   UserRound,
+  MessageSquare,
+  RotateCcw,
+  Search,
+  Volume2,
 } from "lucide-react";
 import { useStore } from "../store";
 import { SiriLiquidGlass } from "./SiriLiquidGlass";
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: value < 1 ? 4 : 2,
+  }).format(Number.isFinite(value) ? value : 0);
+
+const formatCount = (value: number) => {
+  const n = Math.max(0, Math.round(Number.isFinite(value) ? value : 0));
+  if (n >= 1_000_000)
+    return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+  return n.toString();
+};
+
+const UsageGraphBar = ({
+  label,
+  value,
+  max,
+  color,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  color: string;
+}) => {
+  const width = max > 0 ? Math.max(4, Math.min(100, (value / max) * 100)) : 4;
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+        <span>{label}</span>
+        <span className="font-mono text-zinc-300">{formatCount(value)}</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-white/[0.07]">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${width}%` }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          className={`h-full rounded-full ${color}`}
+        />
+      </div>
+    </div>
+  );
+};
+
+function UsageInsightsPanel() {
+  const chatUsage = useStore((state) => state.chatUsage);
+  const voiceUsage = useStore((state) => state.voiceUsage);
+  const webUsage = useStore((state) => state.webUsage);
+  const resetUsageAnalytics = useStore((state) => state.resetUsageAnalytics);
+
+  const inputTokens = chatUsage.inputTokens;
+  const outputTokens = chatUsage.outputTokens;
+  const chatTotal = inputTokens + outputTokens;
+  const voiceUnits =
+    voiceUsage.connectionSeconds + voiceUsage.ttsCharacters / 80;
+  const totalCost = chatUsage.cost + voiceUsage.cost + webUsage.cost;
+  const maxGraphValue = Math.max(
+    inputTokens,
+    outputTokens,
+    webUsage.requests,
+    1,
+  );
+  const costSegments = [
+    {
+      key: "chat",
+      label: "Chat",
+      value: chatUsage.cost,
+      color: "bg-[#ff6e00]",
+    },
+    {
+      key: "voice",
+      label: "Voice",
+      value: voiceUsage.cost,
+      color: "bg-violet-400",
+    },
+    {
+      key: "search",
+      label: "Search",
+      value: webUsage.cost,
+      color: "bg-cyan-300",
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
+        <div className="relative p-4">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_10%,rgba(255,110,0,0.22),transparent_34%),radial-gradient(circle_at_90%_110%,rgba(34,211,238,0.16),transparent_38%)]" />
+          <div className="relative flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+                <Coins size={13} className="text-[#ff6e00]" />
+                Session Cost
+              </div>
+              <div className="mt-2 text-3xl font-semibold tracking-tight text-white">
+                {formatCurrency(totalCost)}
+              </div>
+              <div className="mt-1 text-xs text-zinc-500">
+                {formatCount(chatTotal)} chat tokens ·{" "}
+                {formatCount(webUsage.requests)} web calls
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={resetUsageAnalytics}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-[11px] font-semibold text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <RotateCcw size={12} />
+              Reset
+            </button>
+          </div>
+
+          <div className="relative mt-4 h-2 overflow-hidden rounded-full bg-white/[0.08]">
+            <div className="flex h-full w-full">
+              {costSegments.map((segment) => (
+                <motion.div
+                  key={segment.key}
+                  initial={{ width: 0 }}
+                  animate={{
+                    width:
+                      totalCost > 0
+                        ? `${Math.max(3, (segment.value / totalCost) * 100)}%`
+                        : "33.333%",
+                  }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className={segment.color}
+                  title={`${segment.label}: ${formatCurrency(segment.value)}`}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="relative mt-3 flex flex-wrap gap-2 text-[10px] text-zinc-500">
+            {costSegments.map((segment) => (
+              <span
+                key={segment.key}
+                className="inline-flex items-center gap-1.5"
+              >
+                <span className={`h-2 w-2 rounded-full ${segment.color}`} />
+                {segment.label} {formatCurrency(segment.value)}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3">
+        <div className="rounded-2xl border border-white/10 bg-[#121214] p-4">
+          <div className="mb-3 flex items-center gap-2 text-sm font-medium text-white">
+            <MessageSquare size={15} className="text-[#ff6e00]" />
+            Chat Tokens
+          </div>
+          <div className="space-y-3">
+            <UsageGraphBar
+              label="Input"
+              value={inputTokens}
+              max={maxGraphValue}
+              color="bg-[#ff6e00] shadow-[0_0_18px_rgba(255,110,0,0.45)]"
+            />
+            <UsageGraphBar
+              label="Output"
+              value={outputTokens}
+              max={maxGraphValue}
+              color="bg-white/80"
+            />
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-zinc-500">
+            <div className="rounded-xl bg-white/[0.04] p-2">
+              Model
+              <div className="mt-1 truncate font-mono text-zinc-300">
+                {chatUsage.model || "unknown"}
+              </div>
+            </div>
+            <div className="rounded-xl bg-white/[0.04] p-2">
+              Requests
+              <div className="mt-1 font-mono text-zinc-300">
+                {formatCount(chatUsage.requests)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-white/10 bg-[#121214] p-4">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
+              <Volume2 size={15} className="text-violet-400" />
+              Voice
+            </div>
+            <div className="text-xl font-semibold text-white">
+              {formatCount(Math.round(voiceUnits))}
+            </div>
+            <div className="text-xs text-zinc-500">billable units</div>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-[#121214] p-4">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
+              <Search size={15} className="text-cyan-300" />
+              Search
+            </div>
+            <div className="text-xl font-semibold text-white">
+              {formatCount(webUsage.sourcesReviewed)}
+            </div>
+            <div className="text-xs text-zinc-500">sources reviewed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function SettingsButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,7 +257,9 @@ export function SettingsButton() {
   const [personaDesc, setPersonaDesc] = useState("");
   const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [activeTab, setActiveTab] = useState<"general" | "persona">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "persona" | "usage">(
+    "general",
+  );
 
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -195,7 +413,7 @@ export function SettingsButton() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-md px-4"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-2xl px-4"
             >
               <div className="bg-[#0A0A0B] border border-white/10 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,1)] flex flex-col gap-6">
                 <div className="flex justify-between items-center">
@@ -228,6 +446,18 @@ export function SettingsButton() {
                     General
                   </button>
                   <button
+                    onClick={() => setActiveTab("usage")}
+                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors relative z-20 ${activeTab === "usage" ? "text-[#ffb067]" : "text-zinc-500 hover:text-zinc-300"}`}
+                  >
+                    {activeTab === "usage" && (
+                      <motion.div
+                        layoutId="settings-tab-bg"
+                        className="absolute inset-0 bg-[#ff6e00]/15 rounded-md shadow border border-[#ff6e00]/25 z-[-1]"
+                      />
+                    )}
+                    Usage
+                  </button>
+                  <button
                     onClick={() => setActiveTab("persona")}
                     className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors relative z-20 ${activeTab === "persona" ? "text-emerald-400" : "text-zinc-500 hover:text-zinc-300"}`}
                   >
@@ -241,7 +471,7 @@ export function SettingsButton() {
                   </button>
                 </div>
 
-                <div className="flex flex-col gap-5 overflow-y-auto overflow-x-hidden h-[340px] pr-2 custom-scrollbar relative">
+                <div className="flex flex-col gap-5 overflow-y-auto overflow-x-hidden h-[420px] pr-2 custom-scrollbar relative">
                   <AnimatePresence mode="wait">
                     {activeTab === "general" && (
                       <motion.div
@@ -383,6 +613,29 @@ export function SettingsButton() {
                             <p>{validationError}</p>
                           </div>
                         )}
+                      </motion.div>
+                    )}
+
+                    {activeTab === "usage" && (
+                      <motion.div
+                        key="usage"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -12 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                      >
+                        <div className="mb-4 flex items-center gap-2">
+                          <BarChart3 size={16} className="text-[#ff6e00]" />
+                          <div>
+                            <div className="text-sm font-semibold text-white">
+                              Usage analytics
+                            </div>
+                            <div className="text-xs text-zinc-500">
+                              Tokens, requests, and cost for this browser.
+                            </div>
+                          </div>
+                        </div>
+                        <UsageInsightsPanel />
                       </motion.div>
                     )}
 

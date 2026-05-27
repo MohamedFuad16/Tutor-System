@@ -90,7 +90,9 @@ function extractViewStateLiterals() {
   const store = fs.readFileSync(path.join(ROOT, "src/store/index.ts"), "utf8");
   const match = store.match(/export\s+type\s+ViewState\s*=\s*([^;]+)/);
   if (!match) return [];
-  return [...match[1].matchAll(/'([^']+)'/g)].map((item) => item[1]).sort();
+  return [...match[1].matchAll(/["']([^"']+)["']/g)]
+    .map((item) => item[1])
+    .sort();
 }
 
 function extractServerEndpoints() {

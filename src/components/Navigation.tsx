@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useStore, ViewState } from "../store";
-import { BookOpen, Brain, Zap, Activity } from "lucide-react";
+import { BookOpen, Zap, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 export function Navigation() {
@@ -18,7 +18,6 @@ export function Navigation() {
 
   const navItems: { id: ViewState; label: string; icon: React.ReactNode }[] = [
     { id: "study", label: "Study", icon: <BookOpen size={16} /> },
-    { id: "brain", label: "Brain Map", icon: <Brain size={16} /> },
     { id: "analytics", label: "Analytics", icon: <Activity size={16} /> },
     { id: "revision", label: "Revision", icon: <Zap size={16} /> },
   ];

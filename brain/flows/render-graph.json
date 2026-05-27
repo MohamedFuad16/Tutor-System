@@ -31,15 +31,6 @@
       }
     },
     {
-      "source": "component:SettingsButton",
-      "target": "component:SiriLiquidGlass",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/components/SettingsModal.tsx"
-      }
-    },
-    {
       "source": "file:src/App.tsx",
       "target": "route:admin",
       "type": "wraps",
@@ -65,6 +56,15 @@
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/StatusBadge.tsx"
+      }
+    },
+    {
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "component:FlashcardDeck",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx"
       }
     },
     {
@@ -101,16 +101,6 @@
       "confidence": 0.8,
       "evidence": {
         "file": "src/App.tsx"
-      }
-    },
-    {
-      "source": "file:src/App.tsx",
-      "target": "route:brain",
-      "type": "wraps",
-      "confidence": 0.85,
-      "evidence": {
-        "file": "src/App.tsx",
-        "text": "activeView === brain"
       }
     },
     {
@@ -160,6 +150,15 @@
       }
     },
     {
+      "source": "file:src/components/SettingsModal.tsx",
+      "target": "component:UsageInsightsPanel",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/SettingsModal.tsx"
+      }
+    },
+    {
       "source": "file:src/views/RevisionView.tsx",
       "target": "component:PatternCard",
       "type": "renders",
@@ -169,22 +168,21 @@
       }
     },
     {
+      "source": "file:src/components/SettingsModal.tsx",
+      "target": "component:SiriLiquidGlass",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/SettingsModal.tsx"
+      }
+    },
+    {
       "source": "file:src/App.tsx",
       "target": "component:AnalyticsView",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
         "file": "src/App.tsx"
-      }
-    },
-    {
-      "source": "route:brain",
-      "target": "component:BrainRenderProfiler",
-      "type": "renders",
-      "confidence": 0.85,
-      "evidence": {
-        "file": "src/App.tsx",
-        "text": "activeView === brain"
       }
     },
     {
@@ -215,26 +213,8 @@
       }
     },
     {
-      "source": "file:src/views/StudyView.tsx",
-      "target": "component:UsageAnalyticsStrip",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/views/StudyView.tsx"
-      }
-    },
-    {
       "source": "file:src/App.tsx",
       "target": "component:StudyView",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/App.tsx"
-      }
-    },
-    {
-      "source": "file:src/App.tsx",
-      "target": "component:BrainView",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
@@ -390,6 +370,15 @@
     },
     {
       "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:MessageUsageFooter",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
       "target": "component:MessageItem",
       "type": "renders",
       "confidence": 0.8,
@@ -468,6 +457,15 @@
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/SettingsModal.tsx",
+      "target": "component:UsageGraphBar",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/SettingsModal.tsx"
       }
     },
     {

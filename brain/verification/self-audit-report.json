@@ -1,22 +1,22 @@
 {
   "ok": true,
-  "generatedAt": "2026-05-27T12:31:01.635Z",
+  "generatedAt": "2026-05-27T13:02:29.837Z",
   "threshold": 85,
-  "score": 98,
+  "score": 89,
   "checks": {
     "graphFreshness": 12,
     "vectorFreshness": 14,
-    "retrievalQuality": 14,
+    "retrievalQuality": 15,
     "runtimeCoverage": 14,
     "contractCoverage": 10,
-    "routeStateCoverage": 10,
+    "routeStateCoverage": 0,
     "ruleCompliance": 10,
     "taskMemoryContinuity": 7,
     "loaderCoverage": 7
   },
   "retrievalBenchmark": {
     "recall": 1,
-    "confidenceAverage": 0.8945166666666666,
+    "confidenceAverage": 0.9084666666666665,
     "results": [
       {
         "task": "add dashboard feature",
@@ -48,7 +48,7 @@
         ],
         "recall": 1,
         "confidence": "high",
-        "confidenceScore": 0.886
+        "confidenceScore": 0.8897
       },
       {
         "task": "modify route layout",
@@ -80,7 +80,7 @@
         ],
         "recall": 1,
         "confidence": "high",
-        "confidenceScore": 0.89
+        "confidenceScore": 0.97
       },
       {
         "task": "change shared UI animations",

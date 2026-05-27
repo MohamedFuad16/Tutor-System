@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T12:30:03.046Z",
+    "generatedAt": "2026-05-27T13:00:48.748Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "a1aa71570d41b07b207d4eb12e087a6f080a6b6d",
+      "commit": "862403b69f7085a38e255567cf1d4d9610f3477d",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "3aa2887a9ecde2983215c85a9f39ced96e0a85415e8ef542806292e4f6482c23"
+    "sourceHash": "e7c000c40d9bbe1f18fde44686f5fbfdb726a75d7993dd68ef50f6214b6c866e"
   },
   "files": {
     "generate-brain.ts": {
@@ -361,7 +361,7 @@
     },
     "src/App.tsx": {
       "file": "src/App.tsx",
-      "hash": "0d9f529c6608722dfdb2886c48507a17d82a12d3e39639d78687492e47c4f85a",
+      "hash": "6f3cb11c9e90420571369dbfcc1dde2efc42256c12a54d3eedd6d87952c1bb9b",
       "imports": [
         {
           "specifier": "react",
@@ -404,7 +404,6 @@
         "App"
       ],
       "variables": [
-        "BrainView",
         "AnalyticsView",
         "RevisionView",
         "AdminView"
@@ -437,7 +436,6 @@
         "AnalyticsView",
         "AnimatePresence",
         "BrainRenderProfiler",
-        "BrainView",
         "Navigation",
         "RevisionView",
         "RouteFallback",
@@ -448,10 +446,6 @@
       "routes": [
         {
           "view": "study",
-          "component": "BrainRenderProfiler"
-        },
-        {
-          "view": "brain",
           "component": "BrainRenderProfiler"
         },
         {
@@ -503,7 +497,7 @@
     },
     "src/main.tsx": {
       "file": "src/main.tsx",
-      "hash": "855bd7960ab94daade740cf412d40f67ff6d7eaa20a1757077ddd1e8597feff2",
+      "hash": "4e3e03611b3e8b497dbe571db36378aedf357e40a75ab2a8d282845890a5b220",
       "imports": [
         {
           "specifier": "react",
@@ -546,7 +540,7 @@
     },
     "src/types.ts": {
       "file": "src/types.ts",
-      "hash": "aff4afc7c95f9321bffae8a50f7851a43acecfc99b9f7b73c3b9263e7d07ade7",
+      "hash": "a34c71a9355c146f4008c52c87283f88a5ae16d8310831b9fbdb5c34540f1613",
       "imports": [],
       "exports": [
         "ChatPhase",
@@ -1084,7 +1078,7 @@
     },
     "brain/rules/validate-rules.ts": {
       "file": "brain/rules/validate-rules.ts",
-      "hash": "a4f9d9063d4c6d7cbc8cba662c00c0348d19c9a0c95db368c72c01de4546f07f",
+      "hash": "258d541e649d82623a3849222caa74baad4c8dbfc77fa32c4f4c00fac0798a51",
       "imports": [
         {
           "specifier": "fs",
@@ -1198,7 +1192,7 @@
     },
     "brain/runtime/run-runtime-benchmark.ts": {
       "file": "brain/runtime/run-runtime-benchmark.ts",
-      "hash": "b61ec741326516fb0abae35a65f49f446b75fbb7273dcbf80b3d865f8d61d7e4",
+      "hash": "5121bbde242c5eab9fe7c2b17f44ed3e1d996f01edf23dde18501d94e4c992e6",
       "imports": [
         {
           "specifier": "playwright",
@@ -1621,7 +1615,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "2f1a5ca59446daccc1a2a4eda48d0a309cd11e597884ae30059e2b7da2851875",
+      "hash": "eb4de4f9c4e350d1c6771b59f32b47144649e07eec060bae60fef5668ba71c8c",
       "imports": [
         {
           "specifier": "react",
@@ -1725,6 +1719,7 @@
         "ThinkingPanel",
         "markdownComponents",
         "AnimatedMarkdown",
+        "MessageUsageFooter",
         "MessageItem"
       ],
       "classes": [],
@@ -1737,6 +1732,7 @@
         "InteractiveCodeBlock",
         "Mermaid",
         "MessageItem",
+        "MessageUsageFooter",
         "PremiumCodeShell",
         "RunnableJS",
         "RunnablePython",
@@ -1899,16 +1895,23 @@
           "operation": "orderBy"
         }
       ],
-      "databaseWrites": [],
+      "databaseWrites": [
+        {
+          "table": "flashcards",
+          "operation": "add"
+        }
+      ],
       "renders": [
         "Activity",
         "AnimatePresence",
         "AnimatedMarkdown",
         "AnimatedNumberText",
         "ArrowUp",
+        "BarChart3",
         "BookOpen",
         "Check",
         "ChevronDown",
+        "Coins",
         "Copy",
         "ExternalLink",
         "FileCode2",
@@ -1921,6 +1924,7 @@
         "LoaderCircle",
         "Mermaid",
         "MessageItem",
+        "MessageUsageFooter",
         "Mic",
         "Minus",
         "Network",
@@ -1994,7 +1998,7 @@
     },
     "src/components/Navigation.tsx": {
       "file": "src/components/Navigation.tsx",
-      "hash": "4324d800ad4a2bc76f6a52c5a215cc586ec7e3c0eb46785b36dae290e094a831",
+      "hash": "0a8e69ce79396fc033e9f3a3363d21c852a7ba21a1098570db62698124e9ac1c",
       "imports": [
         {
           "specifier": "react",
@@ -2036,7 +2040,6 @@
       "renders": [
         "Activity",
         "BookOpen",
-        "Brain",
         "Zap"
       ],
       "routes": []
@@ -2326,7 +2329,7 @@
     },
     "src/components/SettingsModal.tsx": {
       "file": "src/components/SettingsModal.tsx",
-      "hash": "72c2cf37ce90483c1be2deef1a49f38cf54d63564e4720a4fbf392b99e7ac91e",
+      "hash": "dcae05c0225b2306fb1147430d61b8d4f294a56df137e7b8529ad27a46e0fa08",
       "imports": [
         {
           "specifier": "react",
@@ -2353,15 +2356,39 @@
         "SettingsButton"
       ],
       "functions": [
+        "UsageInsightsPanel",
         "SettingsButton"
       ],
-      "variables": [],
+      "variables": [
+        "formatCurrency",
+        "formatCount",
+        "UsageGraphBar"
+      ],
       "classes": [],
       "components": [
-        "SettingsButton"
+        "SettingsButton",
+        "UsageGraphBar",
+        "UsageInsightsPanel"
       ],
       "hooks": [],
-      "storeSelectors": [],
+      "storeSelectors": [
+        {
+          "field": "chatUsage",
+          "selector": "(state) => state.chatUsage"
+        },
+        {
+          "field": "voiceUsage",
+          "selector": "(state) => state.voiceUsage"
+        },
+        {
+          "field": "webUsage",
+          "selector": "(state) => state.webUsage"
+        },
+        {
+          "field": "resetUsageAnalytics",
+          "selector": "(state) => state.resetUsageAnalytics"
+        }
+      ],
       "storeWrites": [
         "setAiModel",
         "setAnimationsEnabled",
@@ -2381,13 +2408,21 @@
       "renders": [
         "AlertCircle",
         "AnimatePresence",
+        "BarChart3",
+        "Coins",
         "Globe2",
         "Key",
         "Loader2",
+        "MessageSquare",
         "Mic",
+        "RotateCcw",
+        "Search",
         "Settings",
         "SiriLiquidGlass",
+        "UsageGraphBar",
+        "UsageInsightsPanel",
         "UserRound",
+        "Volume2",
         "X"
       ],
       "routes": []
@@ -2568,7 +2603,7 @@
     },
     "src/lib/audio.ts": {
       "file": "src/lib/audio.ts",
-      "hash": "b7224ce25576b559fffa1eda90c900e361c8de7d3af633f6d0cec48f2d93a84a",
+      "hash": "9f3a2ceb0d744ffedbb59170ff2072044a324a1e1ad60c2ba926ec52f86d2346",
       "imports": [],
       "exports": [
         "AudioSystem",
@@ -2621,7 +2656,7 @@
     },
     "src/memory/bkt.engine.ts": {
       "file": "src/memory/bkt.engine.ts",
-      "hash": "8769edf4442fbb7bb504da54370dfd2db8f34daba0b56b5f6fb1fe6c65f0b81b",
+      "hash": "c05637bbb6e6a23c39043e37c0ca6bc2260d91fcbef3724f515b32b67dc244ee",
       "imports": [
         {
           "specifier": "./longterm.memory",
@@ -2663,7 +2698,7 @@
     },
     "src/memory/cognitive.load.ts": {
       "file": "src/memory/cognitive.load.ts",
-      "hash": "2fbbbe550976b84f855d4223c2ee7cd6d0559d0e404a3b682e585e2c72e7fab8",
+      "hash": "47fa6689411fa5debb4f6cc75d9da2e92cfbdb290c6b66198d6abcf6a10ef350",
       "imports": [],
       "exports": [
         "CognitiveLoadMonitor",
@@ -3290,7 +3325,7 @@
     },
     "src/store/index.ts": {
       "file": "src/store/index.ts",
-      "hash": "eeab2e565fc8cda04358429482f81562d5ddeb6466c909f1beb5a16f4f9849b6",
+      "hash": "8b143d2726791d01ed5570618f95a2a3f5ba575a0c79ea6f8423a2fb3ec95845",
       "imports": [
         {
           "specifier": "zustand",
@@ -3602,7 +3637,7 @@
     },
     "src/views/RevisionView.tsx": {
       "file": "src/views/RevisionView.tsx",
-      "hash": "f49df4bf3e26f9e832df586bf974ff96b2d7e755c0db6136675fa1aa304c52af",
+      "hash": "3935ccd63626cb360a212741be5944d50bcee4abfc71d3a62658697bf6ef1366",
       "imports": [
         {
           "specifier": "react",
@@ -3658,10 +3693,12 @@
       "variables": [
         "createTutorBookConcept",
         "LongPressWrapper",
-        "FlashcardUI"
+        "FlashcardUI",
+        "FlashcardDeck"
       ],
       "classes": [],
       "components": [
+        "FlashcardDeck",
         "FlashcardUI",
         "LongPressWrapper",
         "RevisionView"
@@ -3725,6 +3762,7 @@
       "renders": [
         "AnimatePresence",
         "BookOpen",
+        "FlashcardDeck",
         "FlashcardUI",
         "LongPressWrapper",
         "Menu",
@@ -3737,7 +3775,7 @@
     },
     "src/views/StudyView.tsx": {
       "file": "src/views/StudyView.tsx",
-      "hash": "b93428d39abc213b3b73d9facce3b60dca83cb4e2503613cd0973ec898d3fec8",
+      "hash": "0706f36219571233a230710af605c04d9ccf51ee5c46f15f2802a224022b05ab",
       "imports": [
         {
           "specifier": "react",
@@ -3790,27 +3828,27 @@
       "storeSelectors": [
         {
           "field": "pdfUrl",
-          "selector": "state => state.pdfUrl"
+          "selector": "(state) => state.pdfUrl"
         },
         {
           "field": "setPdfUrl",
-          "selector": "state => state.setPdfUrl"
+          "selector": "(state) => state.setPdfUrl"
         },
         {
           "field": "setPdfPage",
-          "selector": "state => state.setPdfPage"
+          "selector": "(state) => state.setPdfPage"
         },
         {
           "field": "setPdfTotalPages",
-          "selector": "state => state.setPdfTotalPages"
+          "selector": "(state) => state.setPdfTotalPages"
         },
         {
           "field": "setSelectedTextContext",
-          "selector": "state => state.setSelectedTextContext"
+          "selector": "(state) => state.setSelectedTextContext"
         },
         {
           "field": "setActiveView",
-          "selector": "state => state.setActiveView"
+          "selector": "(state) => state.setActiveView"
         }
       ],
       "storeWrites": [
@@ -3834,7 +3872,6 @@
         "PdfViewer",
         "RefreshCw",
         "UploadCloud",
-        "UsageAnalyticsStrip",
         "X"
       ],
       "routes": []

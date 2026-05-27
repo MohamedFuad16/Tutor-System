@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ShikiHighlighter } from "./ShikiHighlighter";
@@ -40,6 +40,8 @@ import {
   Terminal,
   Image as ImageIcon,
   Code2,
+  BarChart3,
+  Coins,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -1407,6 +1409,86 @@ const AnimatedMarkdown = React.memo(
   },
 );
 
+const MessageUsageFooter = ({
+  usage,
+}: {
+  usage: NonNullable<Message["usage"]>;
+}) => {
+  const input = Math.max(0, Math.round(usage.inputTokens || 0));
+  const output = Math.max(0, Math.round(usage.outputTokens || 0));
+  const total = input + output;
+  const inputWidth = total > 0 ? Math.max(8, (input / total) * 100) : 50;
+  const outputWidth = total > 0 ? Math.max(8, (output / total) * 100) : 50;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+      className="mt-4 overflow-hidden rounded-2xl border border-black/10 bg-white/70 shadow-[0_12px_30px_rgba(24,24,27,0.06)]"
+    >
+      <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-white shadow-[0_8px_20px_rgba(24,24,27,0.16)]">
+            <BarChart3 size={14} />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+              Response usage
+            </div>
+            <div className="truncate text-xs text-zinc-600">
+              {compactModel(usage.model)} ·{" "}
+              {usage.estimated ? "estimated" : "actual"}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid min-w-[210px] grid-cols-3 gap-2 text-right">
+          <div>
+            <div className="font-mono text-sm font-semibold tabular-nums text-zinc-900">
+              {formatCount(input)}
+            </div>
+            <div className="text-[10px] uppercase tracking-[0.14em] text-zinc-400">
+              input
+            </div>
+          </div>
+          <div>
+            <div className="font-mono text-sm font-semibold tabular-nums text-zinc-900">
+              {formatCount(output)}
+            </div>
+            <div className="text-[10px] uppercase tracking-[0.14em] text-zinc-400">
+              output
+            </div>
+          </div>
+          <div>
+            <div className="inline-flex items-center justify-end gap-1 font-mono text-sm font-semibold tabular-nums text-zinc-900">
+              <Coins size={12} className="text-[#ff6e00]" />
+              {formatCurrency(usage.cost || 0)}
+            </div>
+            <div className="text-[10px] uppercase tracking-[0.14em] text-zinc-400">
+              cost
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex h-1.5 w-full bg-zinc-200/70">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${inputWidth}%` }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          className="h-full bg-[#ff6e00]"
+        />
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${outputWidth}%` }}
+          transition={{ duration: 0.45, ease: "easeOut", delay: 0.05 }}
+          className="h-full bg-zinc-950"
+        />
+      </div>
+    </motion.div>
+  );
+};
+
 const MessageItem = React.memo(
   ({
     msg,
@@ -1418,6 +1500,7 @@ const MessageItem = React.memo(
     onHandleTTS,
     onSetActiveView,
     setMessages,
+    apiKey,
   }: {
     msg: any;
     sendState: string;
@@ -1428,6 +1511,7 @@ const MessageItem = React.memo(
     onHandleTTS: (id: string, content: string) => void;
     onSetActiveView: (view: string) => void;
     setMessages: React.Dispatch<React.SetStateAction<any[]>>;
+    apiKey: string;
   }) => {
     const [isGeneratingFlashcards, setIsGeneratingFlashcards] =
       React.useState(false);
@@ -1435,29 +1519,41 @@ const MessageItem = React.memo(
     const handleGenerateFlashcards = async () => {
       setIsGeneratingFlashcards(true);
       try {
-        const apiKey = localStorage.getItem("api_key") || "";
+        const openRouterKey =
+          apiKey ||
+          localStorage.getItem("openrouter_api_key") ||
+          localStorage.getItem("api_key") ||
+          "";
         const response = await fetch("/api/generate-flashcards", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: apiKey ? `Bearer ${apiKey}` : "",
+            Authorization: openRouterKey ? `Bearer ${openRouterKey}` : "",
           },
           body: JSON.stringify({ content: msg.content }),
         });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Flashcard generation failed");
+        }
         const data = await response.json();
 
-        if (data.cards && data.cards.length > 0) {
-          data.cards.forEach((card: any) => {
-            db.flashcards
-              .add({
-                id: Date.now().toString() + Math.random(),
+        const cards = Array.isArray(data.cards) ? data.cards : [];
+        const validCards = cards.filter(
+          (card: any) => card?.front && card?.back,
+        );
+        if (validCards.length > 0) {
+          await Promise.all(
+            validCards.map((card: any) =>
+              db.flashcards.add({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
                 conceptId: card.conceptId || "general",
-                front: card.front,
-                back: card.back,
+                front: String(card.front),
+                back: String(card.back),
                 nextReviewAt: Date.now(),
-              })
-              .catch(console.warn);
-          });
+              }),
+            ),
+          );
 
           setMessages((prev) => {
             const newM = [...prev];
@@ -1467,6 +1563,8 @@ const MessageItem = React.memo(
             }
             return newM;
           });
+        } else {
+          throw new Error("No flashcards were returned.");
         }
       } catch (e) {
         console.warn("Flashcard generation failed:", e);
@@ -1535,6 +1633,9 @@ const MessageItem = React.memo(
               <FinalSourcesPanel sources={msg.sources || []} />
             )}
           </div>
+          {msg.role === "assistant" && msg.usage && (
+            <MessageUsageFooter usage={msg.usage} />
+          )}
 
           {msg.hasFlashcards && (
             <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-between">
@@ -1609,7 +1710,8 @@ const MessageItem = React.memo(
       prevProps.msg === nextProps.msg &&
       prevProps.sendState === nextProps.sendState &&
       prevProps.animationsEnabled === nextProps.animationsEnabled &&
-      prevProps.isPlayingTTS === nextProps.isPlayingTTS
+      prevProps.isPlayingTTS === nextProps.isPlayingTTS &&
+      prevProps.apiKey === nextProps.apiKey
     );
   },
 );
@@ -1656,6 +1758,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const [isPlayingTTS, setIsPlayingTTS] = useState<string | null>(null);
   const [thinkingStep, setThinkingStep] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isAutoScrollPaused = useRef(false);
   const [isSkillsMenuOpen, setIsSkillsMenuOpen] = useState(false);
 
   const [voiceState, setVoiceState] = useState<
@@ -1667,6 +1770,20 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const nextPlayTimeRef = useRef<number>(0);
   const activeAudioNodesRef = useRef<AudioBufferSourceNode[]>([]);
+
+  const forceScrollToBottom = useCallback(
+    (behavior: ScrollBehavior = "smooth") => {
+      requestAnimationFrame(() => {
+        const scrollEl = scrollRef.current;
+        if (!scrollEl) return;
+        scrollEl.scrollTo({
+          top: scrollEl.scrollHeight,
+          behavior,
+        });
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     setIsVoiceActive(voiceState !== "idle" || isPlayingTTS !== null);
@@ -2130,6 +2247,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         sources: [],
       },
     ]);
+    isAutoScrollPaused.current = false;
+    forceScrollToBottom("smooth");
     setIsTyping(true);
 
     try {
@@ -2274,6 +2393,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       let lastUpdateTime = Date.now();
       const liveInputEstimate = estimateTokens(userMsgContent);
       let liveOutputEstimate = 0;
+      let messageUsage: NonNullable<Message["usage"]> = {
+        provider: "openrouter",
+        model: aiModel,
+        inputTokens: liveInputEstimate,
+        outputTokens: 0,
+        cost: 0,
+        estimated: true,
+      };
       recordChatUsage({
         provider: "openrouter",
         model: aiModel,
@@ -2303,6 +2430,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           return newM;
         });
       };
+      patchAssistantMessage((message) => ({
+        ...message,
+        usage: messageUsage,
+      }));
       const recordWebTelemetry = (
         name: string,
         metadata: Record<string, unknown>,
@@ -2347,6 +2478,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               const outputDelta = nextLiveOutputEstimate - liveOutputEstimate;
               if (outputDelta > 0) {
                 liveOutputEstimate = nextLiveOutputEstimate;
+                messageUsage = {
+                  ...messageUsage,
+                  outputTokens: liveOutputEstimate,
+                  estimated: true,
+                };
                 recordChatUsage({
                   provider: "openrouter",
                   model: aiModel,
@@ -2368,10 +2504,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     newM[msgIndex] = {
                       ...newM[msgIndex],
                       content: currentContent,
+                      usage: messageUsage,
                     };
                   }
                   return newM;
                 });
+                forceScrollToBottom("auto");
               }
             } else if (data.type === "web_search_started") {
               recordWebSearchEvent({
@@ -2509,6 +2647,22 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 []) as NormalizedWebSource[];
               if (finalSources.length) cacheWebSources(finalSources);
               if (data.usage) {
+                messageUsage = {
+                  provider: data.usage.provider || "openrouter",
+                  model:
+                    data.usage.usedModel ||
+                    data.usage.model ||
+                    data.usage.requestedModel ||
+                    aiModel,
+                  inputTokens: Number(
+                    data.usage.inputTokens || messageUsage.inputTokens || 0,
+                  ),
+                  outputTokens: Number(
+                    data.usage.outputTokens || messageUsage.outputTokens || 0,
+                  ),
+                  cost: Number(data.usage.cost || 0),
+                  estimated: Boolean(data.usage.estimated),
+                };
                 recordChatUsage({
                   provider: data.usage.provider || "openrouter",
                   model:
@@ -2524,6 +2678,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   estimated: Boolean(data.usage.estimated),
                   requests: 0,
                 });
+              } else {
+                messageUsage = {
+                  ...messageUsage,
+                  outputTokens:
+                    liveOutputEstimate || estimateTokens(data.content || ""),
+                  estimated: true,
+                };
               }
               setMessages((prev) => {
                 const newM = [...prev];
@@ -2534,6 +2695,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     content: data.content,
                     hasFlashcards: hasFlashcards,
                     phase: "complete",
+                    usage: messageUsage,
                     webSearch: newM[msgIndex].webSearch
                       ? {
                           ...newM[msgIndex].webSearch,
@@ -2676,7 +2838,26 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     }
   }, [selectedTextContext]);
 
-  const isAutoScrollPaused = useRef(false);
+  const lastMessage = messages[messages.length - 1];
+
+  useEffect(() => {
+    if (
+      sendState !== "idle" ||
+      (lastMessage?.role === "assistant" &&
+        lastMessage.id !== "1" &&
+        lastMessage.content.length > 0)
+    ) {
+      isAutoScrollPaused.current = false;
+      forceScrollToBottom(sendState === "sending" ? "smooth" : "auto");
+    }
+  }, [
+    forceScrollToBottom,
+    lastMessage?.content,
+    lastMessage?.id,
+    lastMessage?.phase,
+    lastMessage?.role,
+    sendState,
+  ]);
 
   useEffect(() => {
     const scrollEl = scrollRef.current;
@@ -2693,10 +2874,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
     // Use ResizeObserver to detect content height changes (like streaming text)
     const resizeObserver = new ResizeObserver(() => {
-      if (!isAutoScrollPaused.current) {
+      if (!isAutoScrollPaused.current || sendState !== "idle") {
         scrollEl.scrollTo({
           top: scrollEl.scrollHeight,
-          behavior: "smooth",
+          behavior: sendState === "idle" ? "smooth" : "auto",
         });
       }
     });
@@ -2711,7 +2892,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       scrollEl.removeEventListener("scroll", handleScroll);
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [sendState]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -2907,6 +3088,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               onHandleTTS={handleTTS}
               onSetActiveView={setActiveView}
               setMessages={setMessages}
+              apiKey={apiKey}
             />
           ))}
         </AnimatePresence>

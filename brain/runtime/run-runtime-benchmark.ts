@@ -160,12 +160,15 @@ async function runBenchmark() {
     await page.goto(SERVER_URL, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1200);
 
-    await page.getByRole("button", { name: /Brain/i }).click();
-    await page.waitForTimeout(800);
-    await page.getByRole("button", { name: /Analytics/i }).click();
-    await page.waitForTimeout(800);
-    await page.getByRole("button", { name: /Revision/i }).click();
-    await page.waitForTimeout(800);
+    for (const routeName of ["Brain", "Analytics", "Revision"]) {
+      const button = page
+        .getByRole("button", { name: new RegExp(routeName, "i") })
+        .first();
+      if ((await button.count()) > 0 && (await button.isVisible())) {
+        await button.click();
+        await page.waitForTimeout(800);
+      }
+    }
     await page.keyboard.press("1");
     await page.waitForTimeout(800);
     await page

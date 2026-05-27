@@ -8,11 +8,6 @@
       "file": "src/App.tsx"
     },
     {
-      "view": "brain",
-      "component": "BrainRenderProfiler",
-      "file": "src/App.tsx"
-    },
-    {
       "view": "analytics",
       "component": "BrainRenderProfiler",
       "file": "src/App.tsx"
@@ -37,11 +32,6 @@
     {
       "wrapper": "src/App.tsx",
       "route": "admin",
-      "file": "src/App.tsx"
-    },
-    {
-      "wrapper": "src/App.tsx",
-      "route": "brain",
       "file": "src/App.tsx"
     },
     {

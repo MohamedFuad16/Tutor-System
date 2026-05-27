@@ -206,6 +206,56 @@ const FlashcardUI = React.memo(
   },
 );
 
+const FlashcardDeck = ({
+  cards,
+  totalCount,
+  dueCount,
+  onReview,
+}: {
+  cards: Flashcard[];
+  totalCount: number;
+  dueCount: number;
+  onReview: (card: Flashcard, quality: number) => void;
+}) => {
+  if (cards.length === 0) return null;
+
+  return (
+    <div className="rounded-[28px] border border-zinc-900/10 bg-white/55 p-5 shadow-[0_24px_70px_rgba(46,36,22,0.14)] backdrop-blur-sm md:p-7">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-yellow-700">
+            <Zap size={16} />
+            Active Recall
+          </div>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">
+            Flashcards
+          </h2>
+        </div>
+        <div className="rounded-full border border-zinc-900/10 bg-[#faf9f6] px-3 py-1.5 text-xs font-medium text-zinc-600">
+          {dueCount > 0 ? `${dueCount} due now` : `Next review queued`} ·{" "}
+          {totalCount} total
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {cards.slice(0, 1).map((card) => (
+          <motion.div
+            key={card.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94 }}
+          >
+            <FlashcardUI
+              card={card}
+              onReview={(quality) => onReview(card, quality)}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 export function RevisionView() {
   const setActiveView = useStore((state) => state.setActiveView);
 
@@ -260,6 +310,13 @@ export function RevisionView() {
         return [];
       }
     }, []) || [];
+  const dueFlashcards = flashcards
+    .filter((card) => card.nextReviewAt <= Date.now())
+    .sort((a, b) => a.nextReviewAt - b.nextReviewAt);
+  const reviewQueue =
+    dueFlashcards.length > 0
+      ? dueFlashcards
+      : [...flashcards].sort((a, b) => a.nextReviewAt - b.nextReviewAt);
 
   const [activeConceptId, setActiveConceptId] = useState<string | null>(null);
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
@@ -541,32 +598,12 @@ export function RevisionView() {
 
               {flashcards.length > 0 && !isTutorBook && !activeLearningBook && (
                 <div className="mt-20 border-t border-zinc-200 pt-16 font-sans">
-                  <div className="flex items-center gap-3 mb-10">
-                    <Zap size={20} className="text-yellow-600" />
-                    <h2 className="text-2xl font-semibold text-zinc-900">
-                      Active Recall
-                    </h2>
-                  </div>
-                  <div className="space-y-6">
-                    <AnimatePresence>
-                      {flashcards.slice(0, 1).map((card) => (
-                        <motion.div
-                          key={card.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                        >
-                          <FlashcardUI
-                            card={card}
-                            onReview={(q) => handleReview(card, q)}
-                          />
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                  <div className="text-center mt-6 text-sm text-zinc-500 font-mono">
-                    {flashcards.length} cards remaining for review
-                  </div>
+                  <FlashcardDeck
+                    cards={reviewQueue}
+                    totalCount={flashcards.length}
+                    dueCount={dueFlashcards.length}
+                    onReview={handleReview}
+                  />
                 </div>
               )}
             </div>
@@ -582,6 +619,17 @@ export function RevisionView() {
               {learningBooks.length + concepts.length + 1} Books
             </div>
           </div>
+
+          {flashcards.length > 0 && (
+            <div className="mb-12 max-w-xl">
+              <FlashcardDeck
+                cards={reviewQueue}
+                totalCount={flashcards.length}
+                dueCount={dueFlashcards.length}
+                onReview={handleReview}
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {learningBooks.length === 0 && concepts.length === 0 && (

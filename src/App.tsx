@@ -7,9 +7,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { BrainRenderProfiler } from "./brain-runtime/RenderProfiler";
 import { recordBrainRuntime } from "./brain-runtime/runtimeTelemetry";
 
-const BrainView = React.lazy(() =>
-  import("./views/BrainView").then((module) => ({ default: module.BrainView })),
-);
 const AnalyticsView = React.lazy(() =>
   import("./views/AnalyticsView").then((module) => ({
     default: module.AnalyticsView,
@@ -37,6 +34,12 @@ export default function App() {
   const setActiveView = useStore((state) => state.setActiveView);
 
   useEffect(() => {
+    if ((activeView as string) === "brain") {
+      setActiveView("study");
+    }
+  }, [activeView, setActiveView]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger if user is typing in an input, textarea, or contenteditable
       const target = e.target as HTMLElement;
@@ -52,9 +55,8 @@ export default function App() {
       }
 
       if (e.key === "1") setActiveView("study");
-      if (e.key === "2") setActiveView("brain");
-      if (e.key === "3") setActiveView("analytics");
-      if (e.key === "4") setActiveView("revision");
+      if (e.key === "2") setActiveView("analytics");
+      if (e.key === "3") setActiveView("revision");
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -91,22 +93,6 @@ export default function App() {
             >
               <BrainRenderProfiler id="route:study">
                 <StudyView />
-              </BrainRenderProfiler>
-            </motion.div>
-          )}
-          {activeView === "brain" && (
-            <motion.div
-              key="brain"
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="absolute inset-0"
-            >
-              <BrainRenderProfiler id="route:brain">
-                <Suspense fallback={<RouteFallback />}>
-                  <BrainView />
-                </Suspense>
               </BrainRenderProfiler>
             </motion.div>
           )}

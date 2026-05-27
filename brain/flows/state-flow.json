@@ -75,7 +75,8 @@
     {
       "field": "chatUsage",
       "readers": [
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/components/SettingsModal.tsx"
       ],
       "writers": []
     },
@@ -89,8 +90,8 @@
     {
       "field": "learnerName",
       "readers": [
-        "src/views/BrainView.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/views/BrainView.tsx"
       ],
       "writers": []
     },
@@ -125,8 +126,8 @@
     {
       "field": "pdfUrl",
       "readers": [
-        "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx"
+        "src/views/StudyView.tsx",
+        "src/components/PdfViewer.tsx"
       ],
       "writers": []
     },
@@ -168,7 +169,8 @@
     {
       "field": "resetUsageAnalytics",
       "readers": [
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/components/SettingsModal.tsx"
       ],
       "writers": []
     },
@@ -208,10 +210,10 @@
     {
       "field": "setActiveView",
       "readers": [
-        "src/views/StudyView.tsx",
         "src/components/ChatPanel.tsx",
-        "src/App.tsx",
-        "src/views/RevisionView.tsx"
+        "src/views/StudyView.tsx",
+        "src/views/RevisionView.tsx",
+        "src/App.tsx"
       ],
       "writers": [
         "src/views/RevisionView.tsx",
@@ -288,8 +290,8 @@
     {
       "field": "setPdfPage",
       "readers": [
-        "src/views/StudyView.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfViewer.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": [
         "src/views/StudyView.tsx",
@@ -336,8 +338,8 @@
       "field": "setSelectedTextContext",
       "readers": [
         "src/components/ChatPanel.tsx",
-        "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx"
+        "src/views/StudyView.tsx",
+        "src/components/PdfViewer.tsx"
       ],
       "writers": [
         "src/components/PdfViewer.tsx",
@@ -383,13 +385,15 @@
     {
       "field": "voiceUsage",
       "readers": [
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/components/SettingsModal.tsx"
       ],
       "writers": []
     },
     {
       "field": "webUsage",
       "readers": [
+        "src/components/SettingsModal.tsx",
         "src/components/ChatPanel.tsx"
       ],
       "writers": []
@@ -617,6 +621,26 @@
       "selector": "(state) => state.setSelectedTextContext"
     },
     {
+      "file": "src/components/SettingsModal.tsx",
+      "field": "chatUsage",
+      "selector": "(state) => state.chatUsage"
+    },
+    {
+      "file": "src/components/SettingsModal.tsx",
+      "field": "voiceUsage",
+      "selector": "(state) => state.voiceUsage"
+    },
+    {
+      "file": "src/components/SettingsModal.tsx",
+      "field": "webUsage",
+      "selector": "(state) => state.webUsage"
+    },
+    {
+      "file": "src/components/SettingsModal.tsx",
+      "field": "resetUsageAnalytics",
+      "selector": "(state) => state.resetUsageAnalytics"
+    },
+    {
       "file": "src/views/BrainView.tsx",
       "field": "learnerName",
       "selector": "state => state.learnerName"
@@ -629,32 +653,32 @@
     {
       "file": "src/views/StudyView.tsx",
       "field": "pdfUrl",
-      "selector": "state => state.pdfUrl"
+      "selector": "(state) => state.pdfUrl"
     },
     {
       "file": "src/views/StudyView.tsx",
       "field": "setPdfUrl",
-      "selector": "state => state.setPdfUrl"
+      "selector": "(state) => state.setPdfUrl"
     },
     {
       "file": "src/views/StudyView.tsx",
       "field": "setPdfPage",
-      "selector": "state => state.setPdfPage"
+      "selector": "(state) => state.setPdfPage"
     },
     {
       "file": "src/views/StudyView.tsx",
       "field": "setPdfTotalPages",
-      "selector": "state => state.setPdfTotalPages"
+      "selector": "(state) => state.setPdfTotalPages"
     },
     {
       "file": "src/views/StudyView.tsx",
       "field": "setSelectedTextContext",
-      "selector": "state => state.setSelectedTextContext"
+      "selector": "(state) => state.setSelectedTextContext"
     },
     {
       "file": "src/views/StudyView.tsx",
       "field": "setActiveView",
-      "selector": "state => state.setActiveView"
+      "selector": "(state) => state.setActiveView"
     }
   ]
 }
