@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:08:00.093Z",
+    "generatedAt": "2026-05-27T08:11:35.381Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "c372e72c620fc9980c862005ac65dac0fd43661c",
+      "commit": "51ba5a32cfe8d9f0b0b7edb3f39ecba8eb0d6743",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "3b5937f3d727ce6ee55fb0b0858183b0182fe7808f1d8f7e76875c445ed0f509"
+    "sourceHash": "a25c8ef1044ec178b3c37f68428d2266051260fe041bf300d3e6a954f93a574b"
   },
   "files": {
     "generate-brain.ts": {
@@ -1561,7 +1561,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "c26d8ef176b4bbcb535d7a61b50fbf50fe7c5f052e6809bfd9cf6766720e276f",
+      "hash": "338df4f9011a9cdbe3875f092e872a23e78b40762dc25e5c85b0d8a86617aa18",
       "imports": [
         {
           "specifier": "react",
@@ -1626,6 +1626,10 @@
         {
           "specifier": "../brain-runtime/runtimeTelemetry",
           "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+        },
+        {
+          "specifier": "./StatusBadge",
+          "resolved": "src/components/StatusBadge.tsx"
         }
       ],
       "exports": [
@@ -1659,7 +1663,7 @@
         "SearchActivityPanel",
         "FinalSourcesPanel",
         "thoughtStepMeta",
-        "phaseLabel",
+        "getStatusBadge",
         "ThoughtStepIcon",
         "ThinkingPanel",
         "markdownComponents",
@@ -1892,6 +1896,7 @@
         "SourceCards",
         "Sparkles",
         "Square",
+        "StatusBadge",
         "Terminal",
         "ThinkingPanel",
         "ThoughtStepIcon",
@@ -2418,6 +2423,58 @@
       "databaseReads": [],
       "databaseWrites": [],
       "renders": [],
+      "routes": []
+    },
+    "src/components/StatusBadge.tsx": {
+      "file": "src/components/StatusBadge.tsx",
+      "hash": "228036278f12b34caab361f6b021bd77a43d7f4fbc77ae2fc344060701fd56a7",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        }
+      ],
+      "exports": [
+        "StatusBadge"
+      ],
+      "functions": [],
+      "variables": [
+        "StatusBadge",
+        "PendingIcon",
+        "ProgressIcon",
+        "SubmittedIcon",
+        "ReviewIcon",
+        "SuccessIcon",
+        "FailedIcon",
+        "ExpiredIcon"
+      ],
+      "classes": [],
+      "components": [
+        "ExpiredIcon",
+        "FailedIcon",
+        "PendingIcon",
+        "ProgressIcon",
+        "ReviewIcon",
+        "StatusBadge",
+        "SubmittedIcon",
+        "SuccessIcon"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "ExpiredIcon",
+        "FailedIcon",
+        "PendingIcon",
+        "ProgressIcon",
+        "ReviewIcon",
+        "SubmittedIcon",
+        "SuccessIcon"
+      ],
       "routes": []
     },
     "src/lib/audio.ts": {

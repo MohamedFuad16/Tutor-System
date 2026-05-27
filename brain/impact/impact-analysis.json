@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:08:00.093Z",
+    "generatedAt": "2026-05-27T08:11:35.381Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "c372e72c620fc9980c862005ac65dac0fd43661c",
+      "commit": "51ba5a32cfe8d9f0b0b7edb3f39ecba8eb0d6743",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "3b5937f3d727ce6ee55fb0b0858183b0182fe7808f1d8f7e76875c445ed0f509"
+    "sourceHash": "a25c8ef1044ec178b3c37f68428d2266051260fe041bf300d3e6a954f93a574b"
   },
   "files": {
     "generate-brain.ts": {
@@ -735,6 +735,25 @@
       },
       "affectedTests": []
     },
+    "src/components/StatusBadge.tsx": {
+      "riskScore": 16,
+      "blastRadius": [
+        "src/components/ChatPanel.tsx",
+        "src/components/StatusBadge.tsx"
+      ],
+      "semanticFactors": {
+        "directImportDependents": [
+          "src/components/ChatPanel.tsx"
+        ],
+        "renderedBy": [
+          "file:src/components/StatusBadge.tsx"
+        ],
+        "clientCallers": [],
+        "storeReaders": [],
+        "databaseUsers": []
+      },
+      "affectedTests": []
+    },
     "src/lib/audio.ts": {
       "riskScore": 8,
       "blastRadius": [
@@ -1308,6 +1327,13 @@
       }
     },
     "src/components/PatternCard.tsx <-> src/views/RevisionView.tsx": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
+    "src/components/ChatPanel.tsx <-> src/components/StatusBadge.tsx": {
       "score": 2,
       "edgeTypes": {
         "imports": 1,

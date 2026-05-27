@@ -788,13 +788,13 @@ const FinalSourcesPanel = ({ sources }: { sources: NormalizedWebSource[] }) => {
 
 const thoughtStepMeta = (content: string, phase: string) => {
   const value = content.toLowerCase();
-  if (value.includes('web') || value.includes('source') || value.includes('search')) return { icon: Search, label: 'Search', accent: '#0a84ff' };
-  if (value.includes('page') || value.includes('screen') || value.includes('screenshot') || value.includes('visual')) return { icon: ImageIcon, label: 'Vision', accent: '#8b5cf6' };
-  if (value.includes('tool') || value.includes('execut')) return { icon: Code2, label: 'Tool', accent: '#22c55e' };
-  if (value.includes('graph') || value.includes('concept')) return { icon: Network, label: 'Graph', accent: '#ff6e00' };
-  if (value.includes('flashcard') || value.includes('revision')) return { icon: BookOpen, label: 'Recall', accent: '#facc15' };
-  if (value.includes('synth') || phase === 'synthesizing') return { icon: Sparkles, label: 'Synthesis', accent: '#ff6e00' };
-  return { icon: Brain, label: 'Reasoning', accent: '#a1a1aa' };
+  if (value.includes('web') || value.includes('source') || value.includes('search')) return { icon: Search, label: 'Search', bg: 'bg-[#E7F3FF]', text: 'text-[#0A7DFF]' };
+  if (value.includes('page') || value.includes('screen') || value.includes('screenshot') || value.includes('visual')) return { icon: ImageIcon, label: 'Vision', bg: 'bg-[#F1EAFC]', text: 'text-[#6929F4]' };
+  if (value.includes('tool') || value.includes('execut')) return { icon: Code2, label: 'Tool', bg: 'bg-[#E6F8EA]', text: 'text-[#36AA55]' };
+  if (value.includes('graph') || value.includes('concept')) return { icon: Network, label: 'Graph', bg: 'bg-[#FDF1E8]', text: 'text-[#D87A2C]' };
+  if (value.includes('flashcard') || value.includes('revision')) return { icon: BookOpen, label: 'Recall', bg: 'bg-[#FDF4DD]', text: 'text-[#D49B23]' };
+  if (value.includes('synth') || phase === 'synthesizing') return { icon: Sparkles, label: 'Synthesis', bg: 'bg-[#FEEDED]', text: 'text-[#EF4C43]' };
+  return { icon: Brain, label: 'Reasoning', bg: 'bg-[#F3F3F3]', text: 'text-[#6A6A6A]' };
 };
 
 import { StatusBadge } from './StatusBadge';
@@ -807,29 +807,7 @@ const getStatusBadge = (phase: string, isComplete: boolean, hasError?: boolean) 
   return "progress";
 };
 
-const ThoughtStepIcon = ({ Icon, accent, active, complete }: { Icon: React.ElementType; accent: string; active: boolean; complete: boolean }) => (
-  <motion.div
-    className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/5 bg-zinc-50"
-    animate={active ? { scale: [1, 1.06, 1] } : { scale: 1 }}
-    transition={{ repeat: active ? Infinity : 0, duration: 1.6, ease: "easeInOut" }}
-  >
-    {active && (
-      <motion.div
-        className="absolute inset-[-4px] rounded-full border"
-        style={{ borderColor: accent }}
-        animate={{ opacity: [0.15, 0.5, 0.15], scale: [0.92, 1.14, 0.92] }}
-        transition={{ repeat: Infinity, duration: 1.7, ease: "easeInOut" }}
-      />
-    )}
-    <motion.div
-      animate={active ? { rotate: [0, -6, 6, 0], y: [0, -1, 0] } : { rotate: 0, y: 0 }}
-      transition={{ repeat: active ? Infinity : 0, duration: 1.45, ease: "easeInOut" }}
-      style={{ color: complete ? '#a1a1aa' : accent }}
-    >
-      <Icon size={15} strokeWidth={2.1} />
-    </motion.div>
-  </motion.div>
-);
+
 
 const ThinkingPanel = ({ phase, steps, isComplete, webSearch, hasError }: { phase: string, steps: any[], isComplete: boolean, webSearch?: Message['webSearch'], hasError?: boolean }) => {
   const [userExpanded, setUserExpanded] = useState<boolean | null>(null);
@@ -886,59 +864,62 @@ const ThinkingPanel = ({ phase, steps, isComplete, webSearch, hasError }: { phas
                      initial={{ opacity: 0, y: -8, filter: "blur(4px)" }}
                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                      transition={{ delay: idx * 0.045, duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
-                     className="group/step relative flex items-start gap-3 rounded-2xl px-2 py-2.5 transition-colors hover:bg-zinc-50"
+                     className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
                    >
                      {idx < steps.length - 1 && (
                        <motion.div 
                          initial={{ scaleY: 0 }} 
                          animate={{ scaleY: 1 }} 
                          transition={{ duration: 0.4, ease: "easeOut" }}
-                         className="absolute left-[25px] top-11 bottom-[-5px] w-px bg-black/10 origin-top" 
+                         className="absolute left-[26px] top-10 bottom-[-12px] w-px bg-black/10 origin-top" 
                        />
                      )}
-                     <ThoughtStepIcon Icon={meta.icon} accent={meta.accent} active={active} complete={complete} />
-                     <div className="min-w-0 flex-1">
-                       <div className="flex items-center gap-2">
-                         <span className={`text-[10px] font-bold uppercase tracking-[0.15em] ${active ? 'text-zinc-800' : 'text-zinc-500'}`}>{meta.label}</span>
-                         {active && <span className="h-1.5 w-1.5 rounded-full bg-zinc-800 shadow-sm" />}
+                     
+                     <div className="flex items-center gap-2">
+                       <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-[11px] font-semibold tracking-tight ${meta.bg} ${meta.text}`}>
+                         <meta.icon size={12} strokeWidth={2.5} />
+                         {meta.label}
                        </div>
-                       <div className="mt-1 leading-relaxed tracking-tight text-zinc-600 transition-colors group-hover/step:text-zinc-900">{step.content}</div>
+                       {active && <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-pulse shadow-sm" />}
+                     </div>
+                     
+                     <div className="pl-1 mt-0.5 text-[12px] leading-relaxed tracking-tight text-zinc-600 transition-colors group-hover/step:text-zinc-900">
+                       {step.content}
                      </div>
                    </motion.div>
                  );})}
                  <SearchActivityPanel webSearch={webSearch} />
                  
                  {!isComplete && (
-                   <motion.div 
-                     initial={{ opacity: 0, y: -8, filter: "blur(4px)" }}
-                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                     className="group/step relative flex items-start gap-3 rounded-2xl px-2 py-2.5 transition-colors hover:bg-zinc-50"
-                   >
-                     {steps.length > 0 && (
-                       <motion.div 
-                         initial={{ scaleY: 0 }} 
-                         animate={{ scaleY: 1 }} 
-                         transition={{ duration: 0.4, ease: "easeOut" }}
-                         className="absolute left-[25px] top-[-5px] bottom-[30px] w-px bg-black/10 origin-top" 
-                       />
-                     )}
-                     <div className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/5 bg-zinc-50">
-                       <motion.div
-                         className="h-2 w-2 rounded-full bg-zinc-400 ring-4 ring-zinc-400/20"
-                         animate={{ scale: [1, 1.35, 1], opacity: [0.7, 1, 0.7] }}
-                         transition={{ repeat: Infinity, duration: 1.1 }}
-                       />
-                     </div>
-                     <div className="min-w-0 flex-1 mt-1.5">
-                       <span className="text-zinc-500 italic">
-                         {phase === "retrieving" ? "Searching..." : 
-                          phase === "web_search" ? "Reviewing live sources..." :
-                          phase === "tool_execution" ? "Running tools..." : 
-                          phase === "synthesizing" ? "Synthesizing..." : "Thinking..."}
-                       </span>
-                     </div>
-                   </motion.div>
-                 )}
+                    <motion.div 
+                      initial={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
+                    >
+                      {steps.length > 0 && (
+                        <motion.div 
+                          initial={{ scaleY: 0 }} 
+                          animate={{ scaleY: 1 }} 
+                          transition={{ duration: 0.4, ease: "easeOut" }}
+                          className="absolute left-[26px] top-[-12px] bottom-[30px] w-px bg-black/10 origin-top" 
+                        />
+                      )}
+                      
+                      <div className="flex items-center gap-2">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-[11px] font-semibold tracking-tight bg-[#E7F3FF] text-[#0A7DFF]">
+                          <LoaderCircle size={12} strokeWidth={2.5} className="animate-spin" />
+                          {phase === "retrieving" ? "Searching" : 
+                           phase === "web_search" ? "Reviewing" :
+                           phase === "tool_execution" ? "Running" : 
+                           phase === "synthesizing" ? "Synthesizing" : "Thinking"}
+                        </div>
+                      </div>
+                      
+                      <div className="pl-1 mt-0.5 text-[12px] italic tracking-tight text-zinc-500 transition-colors">
+                        Loading...
+                      </div>
+                    </motion.div>
+                  )}
                  </div>
                </div>
             </motion.div>

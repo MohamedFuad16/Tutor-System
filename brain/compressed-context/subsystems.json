@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:08:00.093Z",
+    "generatedAt": "2026-05-27T08:11:35.381Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "c372e72c620fc9980c862005ac65dac0fd43661c",
+      "commit": "51ba5a32cfe8d9f0b0b7edb3f39ecba8eb0d6743",
       "branch": "main",
       "dirty": true
     },
@@ -32,11 +32,11 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "3b5937f3d727ce6ee55fb0b0858183b0182fe7808f1d8f7e76875c445ed0f509"
+    "sourceHash": "a25c8ef1044ec178b3c37f68428d2266051260fe041bf300d3e6a954f93a574b"
   },
   "subsystems": {
     "frontend": {
-      "generatedAt": "2026-05-27T08:08:00.126Z",
+      "generatedAt": "2026-05-27T08:11:35.417Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/AnimatedScrollText.tsx",
@@ -51,6 +51,7 @@
         "src/components/ShikiHighlighter.tsx",
         "src/components/Sidebar.tsx",
         "src/components/SiriLiquidGlass.tsx",
+        "src/components/StatusBadge.tsx",
         "src/views/AdminView.tsx",
         "src/views/AnalyticsView.tsx",
         "src/views/BrainView.tsx",
@@ -88,6 +89,7 @@
         "src/types.ts",
         "src/components/FloatingSkillsMenu.tsx",
         "src/brain-runtime/runtimeTelemetry.ts",
+        "src/components/StatusBadge.tsx",
         "react",
         "motion",
         "lucide-react",
@@ -120,6 +122,7 @@
         "motion",
         "lucide-react",
         "motion",
+        "react",
         "react",
         "react",
         "dexie-react-hooks",
@@ -178,6 +181,10 @@
           "risk": 16
         },
         {
+          "file": "src/components/StatusBadge.tsx",
+          "risk": 16
+        },
+        {
           "file": "src/views/RevisionView.tsx",
           "risk": 16
         },
@@ -187,10 +194,6 @@
         },
         {
           "file": "src/App.tsx",
-          "risk": 8
-        },
-        {
-          "file": "src/components/AnimatedScrollText.tsx",
           "risk": 8
         }
       ],
@@ -204,7 +207,7 @@
       ]
     },
     "backend": {
-      "generatedAt": "2026-05-27T08:08:00.127Z",
+      "generatedAt": "2026-05-27T08:11:35.417Z",
       "sourceFiles": [
         "server.ts"
       ],
@@ -230,7 +233,7 @@
       ]
     },
     "state": {
-      "generatedAt": "2026-05-27T08:08:00.127Z",
+      "generatedAt": "2026-05-27T08:11:35.417Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/ChatPanel.tsx",
@@ -274,6 +277,7 @@
         "src/types.ts",
         "src/components/FloatingSkillsMenu.tsx",
         "src/brain-runtime/runtimeTelemetry.ts",
+        "src/components/StatusBadge.tsx",
         "react",
         "src/store/index.ts",
         "lucide-react",
@@ -377,7 +381,7 @@
       ]
     },
     "memory": {
-      "generatedAt": "2026-05-27T08:08:00.127Z",
+      "generatedAt": "2026-05-27T08:11:35.417Z",
       "sourceFiles": [
         "src/memory/bkt.engine.ts",
         "src/memory/cognitive.load.ts",
@@ -458,7 +462,7 @@
       ]
     },
     "brainTooling": {
-      "generatedAt": "2026-05-27T08:08:00.127Z",
+      "generatedAt": "2026-05-27T08:11:35.417Z",
       "sourceFiles": [
         "generate-brain.ts",
         "brain/drift-check.ts",

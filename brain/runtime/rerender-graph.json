@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:09:10.016Z",
+    "generatedAt": "2026-05-27T08:13:24.372Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "3b5937f3d727ce6ee55fb0b0858183b0182fe7808f1d8f7e76875c445ed0f509",
+    "sourceHash": "a25c8ef1044ec178b3c37f68428d2266051260fe041bf300d3e6a954f93a574b",
     "url": "http://127.0.0.1:3000",
     "eventCount": 56,
     "confidence": 0.82
@@ -11,30 +11,30 @@
     {
       "component": "route:study",
       "count": 16,
-      "totalDurationMs": 125.49999988079071,
-      "maxDurationMs": 42.80000001192093,
-      "averageDurationMs": 7.843749992549419
+      "totalDurationMs": 87.89999997615814,
+      "maxDurationMs": 30.30000001192093,
+      "averageDurationMs": 5.493749998509884
     },
     {
       "component": "route:brain",
       "count": 6,
-      "totalDurationMs": 17.000000059604645,
-      "maxDurationMs": 4.399999976158142,
-      "averageDurationMs": 2.833333343267441
+      "totalDurationMs": 10.79999989271164,
+      "maxDurationMs": 3.099999964237213,
+      "averageDurationMs": 1.7999999821186066
     },
     {
       "component": "route:analytics",
       "count": 12,
-      "totalDurationMs": 54.60000002384186,
-      "maxDurationMs": 12.300000011920929,
-      "averageDurationMs": 4.550000001986821
+      "totalDurationMs": 46.39999985694885,
+      "maxDurationMs": 10.400000035762787,
+      "averageDurationMs": 3.8666666547457376
     },
     {
       "component": "route:revision",
       "count": 4,
-      "totalDurationMs": 17.30000001192093,
+      "totalDurationMs": 14.199999988079071,
       "maxDurationMs": 5.800000011920929,
-      "averageDurationMs": 4.325000002980232
+      "averageDurationMs": 3.5499999970197678
     }
   ]
 }

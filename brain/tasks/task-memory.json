@@ -167,7 +167,8 @@
     "linkedTaskIds": [
       "task-1779763635863",
       "task-1779788117775",
-      "task-1779869457311"
+      "task-1779869457311",
+      "task-1779869477373"
     ]
   },
   {
@@ -726,7 +727,8 @@
       "task-1779793822031",
       "task-1779795496370",
       "task-1779805309946",
-      "task-1779869457311"
+      "task-1779869457311",
+      "task-1779869477373"
     ]
   },
   {
@@ -857,7 +859,60 @@
     "linkedTaskIds": [
       "task-1779763635863",
       "task-1779765630278",
-      "task-1779797142179"
+      "task-1779797142179",
+      "task-1779869477373"
+    ]
+  },
+  {
+    "id": "task-1779869477373",
+    "timestamp": "2026-05-27T08:11:17.373Z",
+    "objective": "Correction for retrieval calibration task memory",
+    "systemsAffected": [
+      "brain retrieval",
+      "brain self-audit",
+      "debug orchestrator"
+    ],
+    "filesChanged": [
+      "brain/retrieval/retrieve-semantic.ts",
+      "brain/self-audit.ts",
+      "brain/debug/debug-runner.ts",
+      "brain/autonomy/postchange.ts",
+      "generate-brain.ts",
+      "brain/drift-check.ts",
+      "package.json",
+      ".prettierignore"
+    ],
+    "invariantsTouched": [
+      "previous task record parser artifact should be ignored",
+      "retrieval confidence calibration fixed",
+      "tutor-debug scoped runs completed"
+    ],
+    "risksIntroduced": [
+      "none"
+    ],
+    "verificationResults": {
+      "correction": true,
+      "unresolvedIssues": "none",
+      "brainSelfAuditScore": 98,
+      "retrievalConfidenceAverage": 0.8811166666666667
+    },
+    "unresolvedIssues": [
+      "none"
+    ],
+    "regenerationStatus": "pending-embed-refresh",
+    "decisions": [
+      "ignore-previous-parser-artifact-unresolved-invariants"
+    ],
+    "failureModes": [
+      "task-memory-empty-unresolved-option-parser-artifact"
+    ],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-1779763635863",
+      "task-1779765630278",
+      "task-1779797142179",
+      "task-1779869457311"
     ]
   }
 ]

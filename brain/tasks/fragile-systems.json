@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:10:57.315Z",
-    "taskCount": 13
+    "generatedAt": "2026-05-27T08:11:17.376Z",
+    "taskCount": 14
   },
   "systems": [
     {
@@ -317,6 +317,116 @@
       ]
     },
     {
+      "system": "generate-brain.ts",
+      "score": 62,
+      "taskCount": 4,
+      "riskCount": 6,
+      "failureCount": 4,
+      "unresolvedCount": 4,
+      "files": [
+        ".prettierignore",
+        "brain/agent-protocol.md",
+        "brain/architecture.md",
+        "brain/autonomy/postchange.ts",
+        "brain/context.md",
+        "brain/debug/debug-runner.ts",
+        "brain/drift-check.ts",
+        "brain/impact/analyze-impact.ts",
+        "brain/knowledge/graph.json",
+        "brain/knowledge/query-engine.ts",
+        "brain/retrieval/retrieve-context.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/retrieval/vector-index.json",
+        "brain/rules/validate-rules.ts",
+        "brain/runtime/runtime-impact-map.json",
+        "brain/self-audit.ts",
+        "brain/tasks/task-memory.json",
+        "brain/tasks/task-memory.ts",
+        "generate-brain.ts",
+        "package.json",
+        "src/components/ChatPanel.tsx",
+        "src/components/SettingsModal.tsx",
+        "src/memory/memory.orchestrator.ts",
+        "src/store/index.ts",
+        "src/views/RevisionView.tsx",
+        "src/vite-env.d.ts"
+      ]
+    },
+    {
+      "system": "brain/drift-check.ts",
+      "score": 62,
+      "taskCount": 4,
+      "riskCount": 6,
+      "failureCount": 4,
+      "unresolvedCount": 4,
+      "files": [
+        ".prettierignore",
+        "brain/agent-protocol.md",
+        "brain/architecture.md",
+        "brain/autonomy/postchange.ts",
+        "brain/context.md",
+        "brain/debug/debug-runner.ts",
+        "brain/drift-check.ts",
+        "brain/impact/analyze-impact.ts",
+        "brain/knowledge/graph.json",
+        "brain/knowledge/query-engine.ts",
+        "brain/retrieval/retrieve-context.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/retrieval/vector-index.json",
+        "brain/rules/validate-rules.ts",
+        "brain/runtime/runtime-impact-map.json",
+        "brain/self-audit.ts",
+        "brain/tasks/task-memory.json",
+        "brain/tasks/task-memory.ts",
+        "generate-brain.ts",
+        "package.json",
+        "src/components/ChatPanel.tsx",
+        "src/components/SettingsModal.tsx",
+        "src/memory/memory.orchestrator.ts",
+        "src/store/index.ts",
+        "src/views/RevisionView.tsx",
+        "src/vite-env.d.ts"
+      ]
+    },
+    {
+      "system": "package.json",
+      "score": 59,
+      "taskCount": 4,
+      "riskCount": 5,
+      "failureCount": 4,
+      "unresolvedCount": 4,
+      "files": [
+        ".githooks/pre-commit",
+        ".github/workflows/brain-verify.yml",
+        ".prettierignore",
+        "brain/agent-protocol.md",
+        "brain/architecture.md",
+        "brain/autonomy/postchange.ts",
+        "brain/context.md",
+        "brain/debug/debug-runner.ts",
+        "brain/drift-check.ts",
+        "brain/embeddings/embedding-engine.ts",
+        "brain/impact/analyze-impact.ts",
+        "brain/knowledge/query-engine.ts",
+        "brain/retrieval/retrieve-context.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/rules/validate-rules.ts",
+        "brain/runtime/run-runtime-benchmark.ts",
+        "brain/runtime/task-executor.ts",
+        "brain/self-audit.ts",
+        "brain/tasks/task-memory.ts",
+        "generate-brain.ts",
+        "package.json",
+        "scripts/install-brain-hooks.ts",
+        "src/brain-runtime/RenderProfiler.tsx",
+        "src/brain-runtime/runtimeTelemetry.ts",
+        "src/components/ChatPanel.tsx",
+        "src/components/SettingsModal.tsx",
+        "src/views/RevisionView.tsx",
+        "src/vite-env.d.ts"
+      ]
+    },
+    {
       "system": "src/components/SettingsModal.tsx",
       "score": 55,
       "taskCount": 4,
@@ -349,78 +459,6 @@
         "src/store/index.ts",
         "src/views/RevisionView.tsx",
         "src/views/StudyView.tsx",
-        "src/vite-env.d.ts"
-      ]
-    },
-    {
-      "system": "generate-brain.ts",
-      "score": 48,
-      "taskCount": 3,
-      "riskCount": 5,
-      "failureCount": 3,
-      "unresolvedCount": 3,
-      "files": [
-        ".prettierignore",
-        "brain/agent-protocol.md",
-        "brain/architecture.md",
-        "brain/autonomy/postchange.ts",
-        "brain/context.md",
-        "brain/debug/debug-runner.ts",
-        "brain/drift-check.ts",
-        "brain/impact/analyze-impact.ts",
-        "brain/knowledge/graph.json",
-        "brain/knowledge/query-engine.ts",
-        "brain/retrieval/retrieve-context.ts",
-        "brain/retrieval/retrieve-semantic.ts",
-        "brain/retrieval/vector-index.json",
-        "brain/rules/validate-rules.ts",
-        "brain/runtime/runtime-impact-map.json",
-        "brain/self-audit.ts",
-        "brain/tasks/task-memory.json",
-        "brain/tasks/task-memory.ts",
-        "generate-brain.ts",
-        "package.json",
-        "src/components/ChatPanel.tsx",
-        "src/components/SettingsModal.tsx",
-        "src/memory/memory.orchestrator.ts",
-        "src/store/index.ts",
-        "src/views/RevisionView.tsx",
-        "src/vite-env.d.ts"
-      ]
-    },
-    {
-      "system": "brain/drift-check.ts",
-      "score": 48,
-      "taskCount": 3,
-      "riskCount": 5,
-      "failureCount": 3,
-      "unresolvedCount": 3,
-      "files": [
-        ".prettierignore",
-        "brain/agent-protocol.md",
-        "brain/architecture.md",
-        "brain/autonomy/postchange.ts",
-        "brain/context.md",
-        "brain/debug/debug-runner.ts",
-        "brain/drift-check.ts",
-        "brain/impact/analyze-impact.ts",
-        "brain/knowledge/graph.json",
-        "brain/knowledge/query-engine.ts",
-        "brain/retrieval/retrieve-context.ts",
-        "brain/retrieval/retrieve-semantic.ts",
-        "brain/retrieval/vector-index.json",
-        "brain/rules/validate-rules.ts",
-        "brain/runtime/runtime-impact-map.json",
-        "brain/self-audit.ts",
-        "brain/tasks/task-memory.json",
-        "brain/tasks/task-memory.ts",
-        "generate-brain.ts",
-        "package.json",
-        "src/components/ChatPanel.tsx",
-        "src/components/SettingsModal.tsx",
-        "src/memory/memory.orchestrator.ts",
-        "src/store/index.ts",
-        "src/views/RevisionView.tsx",
         "src/vite-env.d.ts"
       ]
     },
@@ -473,41 +511,57 @@
       ]
     },
     {
-      "system": "package.json",
-      "score": 45,
+      "system": "brain/retrieval/retrieve-semantic.ts",
+      "score": 46,
       "taskCount": 3,
-      "riskCount": 4,
-      "failureCount": 3,
+      "riskCount": 3,
+      "failureCount": 4,
       "unresolvedCount": 3,
       "files": [
         ".githooks/pre-commit",
         ".github/workflows/brain-verify.yml",
         ".prettierignore",
-        "brain/agent-protocol.md",
-        "brain/architecture.md",
         "brain/autonomy/postchange.ts",
-        "brain/context.md",
         "brain/debug/debug-runner.ts",
         "brain/drift-check.ts",
         "brain/embeddings/embedding-engine.ts",
-        "brain/impact/analyze-impact.ts",
-        "brain/knowledge/query-engine.ts",
-        "brain/retrieval/retrieve-context.ts",
         "brain/retrieval/retrieve-semantic.ts",
         "brain/rules/validate-rules.ts",
         "brain/runtime/run-runtime-benchmark.ts",
         "brain/runtime/task-executor.ts",
         "brain/self-audit.ts",
-        "brain/tasks/task-memory.ts",
         "generate-brain.ts",
         "package.json",
         "scripts/install-brain-hooks.ts",
         "src/brain-runtime/RenderProfiler.tsx",
-        "src/brain-runtime/runtimeTelemetry.ts",
-        "src/components/ChatPanel.tsx",
-        "src/components/SettingsModal.tsx",
-        "src/views/RevisionView.tsx",
-        "src/vite-env.d.ts"
+        "src/brain-runtime/runtimeTelemetry.ts"
+      ]
+    },
+    {
+      "system": "brain/self-audit.ts",
+      "score": 46,
+      "taskCount": 3,
+      "riskCount": 3,
+      "failureCount": 4,
+      "unresolvedCount": 3,
+      "files": [
+        ".githooks/pre-commit",
+        ".github/workflows/brain-verify.yml",
+        ".prettierignore",
+        "brain/autonomy/postchange.ts",
+        "brain/debug/debug-runner.ts",
+        "brain/drift-check.ts",
+        "brain/embeddings/embedding-engine.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/rules/validate-rules.ts",
+        "brain/runtime/run-runtime-benchmark.ts",
+        "brain/runtime/task-executor.ts",
+        "brain/self-audit.ts",
+        "generate-brain.ts",
+        "package.json",
+        "scripts/install-brain-hooks.ts",
+        "src/brain-runtime/RenderProfiler.tsx",
+        "src/brain-runtime/runtimeTelemetry.ts"
       ]
     },
     {
@@ -577,6 +631,114 @@
         "src/views/AdminView.tsx",
         "src/views/BrainView.tsx",
         "src/views/RevisionView.tsx"
+      ]
+    },
+    {
+      "system": "brain retrieval",
+      "score": 36,
+      "taskCount": 2,
+      "riskCount": 2,
+      "failureCount": 4,
+      "unresolvedCount": 2,
+      "files": [
+        ".prettierignore",
+        "brain/autonomy/postchange.ts",
+        "brain/debug/debug-runner.ts",
+        "brain/drift-check.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/self-audit.ts",
+        "generate-brain.ts",
+        "package.json"
+      ]
+    },
+    {
+      "system": "brain self-audit",
+      "score": 36,
+      "taskCount": 2,
+      "riskCount": 2,
+      "failureCount": 4,
+      "unresolvedCount": 2,
+      "files": [
+        ".prettierignore",
+        "brain/autonomy/postchange.ts",
+        "brain/debug/debug-runner.ts",
+        "brain/drift-check.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/self-audit.ts",
+        "generate-brain.ts",
+        "package.json"
+      ]
+    },
+    {
+      "system": "debug orchestrator",
+      "score": 36,
+      "taskCount": 2,
+      "riskCount": 2,
+      "failureCount": 4,
+      "unresolvedCount": 2,
+      "files": [
+        ".prettierignore",
+        "brain/autonomy/postchange.ts",
+        "brain/debug/debug-runner.ts",
+        "brain/drift-check.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/self-audit.ts",
+        "generate-brain.ts",
+        "package.json"
+      ]
+    },
+    {
+      "system": "brain/autonomy/postchange.ts",
+      "score": 36,
+      "taskCount": 2,
+      "riskCount": 2,
+      "failureCount": 4,
+      "unresolvedCount": 2,
+      "files": [
+        ".prettierignore",
+        "brain/autonomy/postchange.ts",
+        "brain/debug/debug-runner.ts",
+        "brain/drift-check.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/self-audit.ts",
+        "generate-brain.ts",
+        "package.json"
+      ]
+    },
+    {
+      "system": "brain/debug/debug-runner.ts",
+      "score": 36,
+      "taskCount": 2,
+      "riskCount": 2,
+      "failureCount": 4,
+      "unresolvedCount": 2,
+      "files": [
+        ".prettierignore",
+        "brain/autonomy/postchange.ts",
+        "brain/debug/debug-runner.ts",
+        "brain/drift-check.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/self-audit.ts",
+        "generate-brain.ts",
+        "package.json"
+      ]
+    },
+    {
+      "system": ".prettierignore",
+      "score": 36,
+      "taskCount": 2,
+      "riskCount": 2,
+      "failureCount": 4,
+      "unresolvedCount": 2,
+      "files": [
+        ".prettierignore",
+        "brain/autonomy/postchange.ts",
+        "brain/debug/debug-runner.ts",
+        "brain/drift-check.ts",
+        "brain/retrieval/retrieve-semantic.ts",
+        "brain/self-audit.ts",
+        "generate-brain.ts",
+        "package.json"
       ]
     },
     {
@@ -676,60 +838,6 @@
         "src/brain-runtime/runtimeTelemetry.ts",
         "src/components/ChatPanel.tsx",
         "src/store/index.ts"
-      ]
-    },
-    {
-      "system": "brain/retrieval/retrieve-semantic.ts",
-      "score": 32,
-      "taskCount": 2,
-      "riskCount": 2,
-      "failureCount": 3,
-      "unresolvedCount": 2,
-      "files": [
-        ".githooks/pre-commit",
-        ".github/workflows/brain-verify.yml",
-        ".prettierignore",
-        "brain/autonomy/postchange.ts",
-        "brain/debug/debug-runner.ts",
-        "brain/drift-check.ts",
-        "brain/embeddings/embedding-engine.ts",
-        "brain/retrieval/retrieve-semantic.ts",
-        "brain/rules/validate-rules.ts",
-        "brain/runtime/run-runtime-benchmark.ts",
-        "brain/runtime/task-executor.ts",
-        "brain/self-audit.ts",
-        "generate-brain.ts",
-        "package.json",
-        "scripts/install-brain-hooks.ts",
-        "src/brain-runtime/RenderProfiler.tsx",
-        "src/brain-runtime/runtimeTelemetry.ts"
-      ]
-    },
-    {
-      "system": "brain/self-audit.ts",
-      "score": 32,
-      "taskCount": 2,
-      "riskCount": 2,
-      "failureCount": 3,
-      "unresolvedCount": 2,
-      "files": [
-        ".githooks/pre-commit",
-        ".github/workflows/brain-verify.yml",
-        ".prettierignore",
-        "brain/autonomy/postchange.ts",
-        "brain/debug/debug-runner.ts",
-        "brain/drift-check.ts",
-        "brain/embeddings/embedding-engine.ts",
-        "brain/retrieval/retrieve-semantic.ts",
-        "brain/rules/validate-rules.ts",
-        "brain/runtime/run-runtime-benchmark.ts",
-        "brain/runtime/task-executor.ts",
-        "brain/self-audit.ts",
-        "generate-brain.ts",
-        "package.json",
-        "scripts/install-brain-hooks.ts",
-        "src/brain-runtime/RenderProfiler.tsx",
-        "src/brain-runtime/runtimeTelemetry.ts"
       ]
     },
     {
@@ -955,42 +1063,6 @@
       ]
     },
     {
-      "system": "brain retrieval",
-      "score": 22,
-      "taskCount": 1,
-      "riskCount": 1,
-      "failureCount": 3,
-      "unresolvedCount": 1,
-      "files": [
-        ".prettierignore",
-        "brain/autonomy/postchange.ts",
-        "brain/debug/debug-runner.ts",
-        "brain/drift-check.ts",
-        "brain/retrieval/retrieve-semantic.ts",
-        "brain/self-audit.ts",
-        "generate-brain.ts",
-        "package.json"
-      ]
-    },
-    {
-      "system": "brain self-audit",
-      "score": 22,
-      "taskCount": 1,
-      "riskCount": 1,
-      "failureCount": 3,
-      "unresolvedCount": 1,
-      "files": [
-        ".prettierignore",
-        "brain/autonomy/postchange.ts",
-        "brain/debug/debug-runner.ts",
-        "brain/drift-check.ts",
-        "brain/retrieval/retrieve-semantic.ts",
-        "brain/self-audit.ts",
-        "generate-brain.ts",
-        "package.json"
-      ]
-    },
-    {
       "system": "brain autonomy",
       "score": 22,
       "taskCount": 1,
@@ -1009,79 +1081,7 @@
       ]
     },
     {
-      "system": "debug orchestrator",
-      "score": 22,
-      "taskCount": 1,
-      "riskCount": 1,
-      "failureCount": 3,
-      "unresolvedCount": 1,
-      "files": [
-        ".prettierignore",
-        "brain/autonomy/postchange.ts",
-        "brain/debug/debug-runner.ts",
-        "brain/drift-check.ts",
-        "brain/retrieval/retrieve-semantic.ts",
-        "brain/self-audit.ts",
-        "generate-brain.ts",
-        "package.json"
-      ]
-    },
-    {
       "system": "format gates",
-      "score": 22,
-      "taskCount": 1,
-      "riskCount": 1,
-      "failureCount": 3,
-      "unresolvedCount": 1,
-      "files": [
-        ".prettierignore",
-        "brain/autonomy/postchange.ts",
-        "brain/debug/debug-runner.ts",
-        "brain/drift-check.ts",
-        "brain/retrieval/retrieve-semantic.ts",
-        "brain/self-audit.ts",
-        "generate-brain.ts",
-        "package.json"
-      ]
-    },
-    {
-      "system": "brain/autonomy/postchange.ts",
-      "score": 22,
-      "taskCount": 1,
-      "riskCount": 1,
-      "failureCount": 3,
-      "unresolvedCount": 1,
-      "files": [
-        ".prettierignore",
-        "brain/autonomy/postchange.ts",
-        "brain/debug/debug-runner.ts",
-        "brain/drift-check.ts",
-        "brain/retrieval/retrieve-semantic.ts",
-        "brain/self-audit.ts",
-        "generate-brain.ts",
-        "package.json"
-      ]
-    },
-    {
-      "system": "brain/debug/debug-runner.ts",
-      "score": 22,
-      "taskCount": 1,
-      "riskCount": 1,
-      "failureCount": 3,
-      "unresolvedCount": 1,
-      "files": [
-        ".prettierignore",
-        "brain/autonomy/postchange.ts",
-        "brain/debug/debug-runner.ts",
-        "brain/drift-check.ts",
-        "brain/retrieval/retrieve-semantic.ts",
-        "brain/self-audit.ts",
-        "generate-brain.ts",
-        "package.json"
-      ]
-    },
-    {
-      "system": ".prettierignore",
       "score": 22,
       "taskCount": 1,
       "riskCount": 1,

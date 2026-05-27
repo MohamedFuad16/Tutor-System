@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:10:57.315Z",
-    "taskCount": 13
+    "generatedAt": "2026-05-27T08:11:17.376Z",
+    "taskCount": 14
   },
   "risks": [
     {
@@ -548,6 +548,44 @@
           ],
           "unresolvedIssues": [
             "--invariants"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "none",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779869477373",
+          "timestamp": "2026-05-27T08:11:17.373Z",
+          "objective": "Correction for retrieval calibration task memory",
+          "systemsAffected": [
+            "brain retrieval",
+            "brain self-audit",
+            "debug orchestrator"
+          ],
+          "unresolvedIssues": [
+            "none"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "failure:task-memory-empty-unresolved-option-parser-artifact",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779869477373",
+          "timestamp": "2026-05-27T08:11:17.373Z",
+          "objective": "Correction for retrieval calibration task memory",
+          "systemsAffected": [
+            "brain retrieval",
+            "brain self-audit",
+            "debug orchestrator"
+          ],
+          "unresolvedIssues": [
+            "none"
           ]
         }
       ]

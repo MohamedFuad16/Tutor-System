@@ -12,6 +12,15 @@
       }
     },
     {
+      "source": "file:src/components/StatusBadge.tsx",
+      "target": "component:SuccessIcon",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/StatusBadge.tsx"
+      }
+    },
+    {
       "source": "file:src/App.tsx",
       "target": "route:analytics",
       "type": "wraps",
@@ -50,6 +59,15 @@
       }
     },
     {
+      "source": "file:src/components/StatusBadge.tsx",
+      "target": "component:ReviewIcon",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/StatusBadge.tsx"
+      }
+    },
+    {
       "source": "component:App",
       "target": "component:StudyView",
       "type": "renders",
@@ -74,6 +92,15 @@
       "confidence": 0.8,
       "evidence": {
         "file": "src/App.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/StatusBadge.tsx",
+      "target": "component:FailedIcon",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/StatusBadge.tsx"
       }
     },
     {
@@ -102,6 +129,15 @@
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/StatusBadge.tsx",
+      "target": "component:SubmittedIcon",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/StatusBadge.tsx"
       }
     },
     {
@@ -219,6 +255,15 @@
     {
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:AnimatedMarkdown",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:StatusBadge",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
@@ -362,12 +407,30 @@
       }
     },
     {
+      "source": "file:src/components/StatusBadge.tsx",
+      "target": "component:PendingIcon",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/StatusBadge.tsx"
+      }
+    },
+    {
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:SourceCards",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/StatusBadge.tsx",
+      "target": "component:ExpiredIcon",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/StatusBadge.tsx"
       }
     },
     {
@@ -423,6 +486,15 @@
       "confidence": 0.8,
       "evidence": {
         "file": "src/views/RevisionView.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/StatusBadge.tsx",
+      "target": "component:ProgressIcon",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/StatusBadge.tsx"
       }
     },
     {

@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:10:57.314Z",
-    "taskCount": 13
+    "generatedAt": "2026-05-27T08:11:17.376Z",
+    "taskCount": 14
   },
   "chains": [
     {
@@ -2264,6 +2264,98 @@
           ],
           "risksIntroduced": [
             "confidence thresholds may need future real-world calibration as retrieval tasks diversify"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ignore-previous-parser-artifact-unresolved-invariants",
+      "tasks": [
+        {
+          "id": "task-1779869477373",
+          "timestamp": "2026-05-27T08:11:17.373Z",
+          "objective": "Correction for retrieval calibration task memory",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/debug/debug-runner.ts",
+            "brain/autonomy/postchange.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "none"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "previous task record parser artifact should be ignored",
+      "tasks": [
+        {
+          "id": "task-1779869477373",
+          "timestamp": "2026-05-27T08:11:17.373Z",
+          "objective": "Correction for retrieval calibration task memory",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/debug/debug-runner.ts",
+            "brain/autonomy/postchange.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "none"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "retrieval confidence calibration fixed",
+      "tasks": [
+        {
+          "id": "task-1779869477373",
+          "timestamp": "2026-05-27T08:11:17.373Z",
+          "objective": "Correction for retrieval calibration task memory",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/debug/debug-runner.ts",
+            "brain/autonomy/postchange.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "none"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "tutor-debug scoped runs completed",
+      "tasks": [
+        {
+          "id": "task-1779869477373",
+          "timestamp": "2026-05-27T08:11:17.373Z",
+          "objective": "Correction for retrieval calibration task memory",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/debug/debug-runner.ts",
+            "brain/autonomy/postchange.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "none"
           ]
         }
       ]
