@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T13:22:52.955Z",
+    "generatedAt": "2026-05-27T13:35:56.539Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "efd5b47481c0e7fa2fb5bc1f9f73961e3a773b50",
+      "commit": "0b99f864c79d5d5dafb2659758c3c5fdc45428a4",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "1936f028ec2992f39e59d817cf65987e4c3a6c5a6441a0458b8433e2f6bd3274"
+    "sourceHash": "121f22c03a8e3049c9b11fafa87a283a11efe280b667920e6a8ef7eb4e057faf"
   },
   "nodes": [
     {
@@ -999,9 +999,9 @@
       "type": "file",
       "label": "brain/debug/debug-runner.ts",
       "file": "brain/debug/debug-runner.ts",
-      "hash": "13a4f44fc91fa458a7844e983c2404a01d3b154f8cced31497d674f56f32ccd9",
+      "hash": "48408e282b886d81f1d4835e209b229e2e94e60e534537100493967ede4fdd5c",
       "metadata": {
-        "lines": 1249
+        "lines": 1278
       }
     },
     {

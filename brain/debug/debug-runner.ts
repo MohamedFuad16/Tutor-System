@@ -324,6 +324,44 @@ function discoverSourceTargets(): ComponentTarget[] {
     }));
 }
 
+function targetPriority(target: ComponentTarget) {
+  if (target.id.startsWith("file:")) return 10;
+  if (target.id.startsWith("source:")) return 30;
+  if (target.kind === "file") return 20;
+  return 40;
+}
+
+function bestTargetForFile(
+  current: ComponentTarget | undefined,
+  candidate: ComponentTarget,
+) {
+  if (!current) return candidate;
+  const currentPriority = targetPriority(current);
+  const candidatePriority = targetPriority(candidate);
+  if (candidatePriority !== currentPriority) {
+    return candidatePriority > currentPriority ? candidate : current;
+  }
+  const currentHasFriendlyName = current.name !== current.file;
+  const candidateHasFriendlyName = candidate.name !== candidate.file;
+  if (candidateHasFriendlyName !== currentHasFriendlyName) {
+    return candidateHasFriendlyName ? candidate : current;
+  }
+  return candidate.name.length < current.name.length ? candidate : current;
+}
+
+function dedupeTargetsByFile(targets: ComponentTarget[]) {
+  const byFile = new Map<string, ComponentTarget>();
+  for (const target of targets) {
+    byFile.set(target.file, bestTargetForFile(byFile.get(target.file), target));
+  }
+  return [...byFile.values()].sort(
+    (a, b) =>
+      a.file.localeCompare(b.file) ||
+      a.kind.localeCompare(b.kind) ||
+      a.name.localeCompare(b.name),
+  );
+}
+
 function discoverTargets(scope: string): ComponentTarget[] {
   const graph = readJson<{
     nodes: Array<{ id: string; type: string; label: string; file?: string }>;
@@ -354,19 +392,10 @@ function discoverTargets(scope: string): ComponentTarget[] {
           ? targetKindForFile(node.file as string)
           : node.type,
     }));
-  const unique = [
-    ...new Map(
-      [...fromGraph, ...discoverSourceTargets()].map((target) => [
-        `${target.kind}:${target.name}:${target.file}`,
-        target,
-      ]),
-    ).values(),
-  ].sort(
-    (a, b) =>
-      a.file.localeCompare(b.file) ||
-      a.kind.localeCompare(b.kind) ||
-      a.name.localeCompare(b.name),
-  );
+  const unique = dedupeTargetsByFile([
+    ...fromGraph,
+    ...discoverSourceTargets(),
+  ]);
   if (scope === "all") return unique;
   const normalized = scope.replace(/^component:/, "").replace(/^file:/, "");
   return unique.filter(
