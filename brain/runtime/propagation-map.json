@@ -1,18 +1,18 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T13:37:04.023Z",
+    "generatedAt": "2026-05-27T13:50:19.264Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "121f22c03a8e3049c9b11fafa87a283a11efe280b667920e6a8ef7eb4e057faf",
+    "sourceHash": "603cee70ccec0c565b0332c8fae3e1acb4b4e8242cad8c1eb923ad2231a71d0c",
     "url": "http://127.0.0.1:3000",
-    "eventCount": 43,
+    "eventCount": 42,
     "confidence": 0.82
   },
   "propagation": [
     {
       "state": "messages",
-      "timestamp": 219.69999998807907,
+      "timestamp": 319.60000002384186,
       "nextRender": "route:study",
-      "lagMs": 11.200000047683716,
+      "lagMs": 16.600000023841858,
       "metadata": {
         "previousType": "object",
         "nextType": "object"
@@ -20,9 +20,9 @@
     },
     {
       "state": "activeLearningBookId",
-      "timestamp": 264.4000000357628,
+      "timestamp": 378.5,
       "nextRender": "route:study",
-      "lagMs": 9.5,
+      "lagMs": 12.400000035762787,
       "metadata": {
         "previousType": "object",
         "nextType": "string"
@@ -30,9 +30,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 1404.800000011921,
+      "timestamp": 1465.300000011921,
       "nextRender": "route:study",
-      "lagMs": 6.5,
+      "lagMs": 10.400000035762787,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -40,9 +40,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 2281.300000011921,
+      "timestamp": 2372,
       "nextRender": "route:analytics",
-      "lagMs": 2.800000011920929,
+      "lagMs": 3.900000035762787,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -50,9 +50,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 3089.900000035763,
+      "timestamp": 3182.2000000476837,
       "nextRender": "route:revision",
-      "lagMs": 7.5,
+      "lagMs": 9.599999964237213,
       "metadata": {
         "previousType": "string",
         "nextType": "string"

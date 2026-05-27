@@ -495,6 +495,12 @@ function detectIssues(target: ComponentTarget, text: string): DetectorReport {
     accessibility: [],
   };
   const browserSource = /^src\//.test(target.file);
+  const jsxSource = /\.(tsx|jsx)$/.test(target.file);
+  const reactSurface =
+    jsxSource ||
+    target.kind === "component" ||
+    target.kind === "route" ||
+    /from ['"]react['"]|React\./.test(text);
 
   pushIf(
     report,
@@ -526,7 +532,7 @@ function detectIssues(target: ComponentTarget, text: string): DetectorReport {
   pushIf(
     report,
     "responsiveness",
-    /\.tsx?$/.test(target.file) &&
+    jsxSource &&
       /(?:w|h)-\[\d+(?:px|rem)\]/.test(text) &&
       !/\b(max-w|min-w|sm:|md:|lg:|xl:)/.test(text),
     "Fixed dimensions appear without nearby responsive constraints.",
@@ -534,14 +540,16 @@ function detectIssues(target: ComponentTarget, text: string): DetectorReport {
   pushIf(
     report,
     "staleState",
-    /useEffect\(\s*\(\)\s*=>[\s\S]*?,\s*\[\s*\]\s*\)/.test(text) &&
+    reactSurface &&
+      /useEffect\(\s*\(\)\s*=>[\s\S]*?,\s*\[\s*\]\s*\)/.test(text) &&
       /useStore|props|active|current|selected/.test(text),
     "Empty dependency effect references app state signals; verify it cannot go stale.",
   );
   pushIf(
     report,
     "render",
-    /\.map\([\s\S]{0,220}=>[\s\S]{0,220}<[^>]+>/.test(text) &&
+    jsxSource &&
+      /\.map\([\s\S]{0,220}=>[\s\S]{0,220}<[^>]+>/.test(text) &&
       !/\bkey=/.test(text),
     "Mapped JSX without an obvious key prop can cause unstable React reconciliation.",
   );
@@ -578,14 +586,15 @@ function detectIssues(target: ComponentTarget, text: string): DetectorReport {
   pushIf(
     report,
     "animation",
-    /motion\./.test(text) &&
+    reactSurface &&
+      /motion\./.test(text) &&
       !/useReducedMotion|prefers-reduced-motion/.test(text),
     "Motion usage lacks an obvious reduced-motion path.",
   );
   pushIf(
     report,
     "smoothness",
-    /transition-all/.test(text),
+    jsxSource && /transition-all/.test(text),
     "transition-all can animate expensive layout properties; prefer scoped transition properties.",
   );
   pushIf(
@@ -597,15 +606,16 @@ function detectIssues(target: ComponentTarget, text: string): DetectorReport {
   pushIf(
     report,
     "accessibility",
-    /<img\b(?![^>]*\balt=)/.test(text),
+    jsxSource && /<img\b(?![^>]*\balt=)/.test(text),
     "Image element without an alt attribute detected.",
   );
   pushIf(
     report,
     "accessibility",
-    /<button\b(?![^>]*(aria-label|aria-labelledby|title=))[^>]*>\s*<([A-Z]\w*)\b/.test(
-      text,
-    ),
+    jsxSource &&
+      /<button\b(?![^>]*(aria-label|aria-labelledby|title=))[^>]*>\s*<([A-Z]\w*)\b/.test(
+        text,
+      ),
     "Icon-first button may need an accessible label.",
   );
 

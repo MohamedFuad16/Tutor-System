@@ -1,56 +1,32 @@
 {
   "ok": true,
-  "staleBeforeRefresh": true,
-  "reason": "debug-queue-dedupe",
-  "startedAt": "2026-05-27T13:35:53.654Z",
-  "finishedAt": "2026-05-27T13:37:08.706Z",
-  "snapshotGeneratedAt": "2026-05-27T13:22:52.955Z",
-  "regenerationTargets": [
-    "brain-tooling"
-  ],
+  "staleBeforeRefresh": false,
+  "reason": "debug-preflight:debug-2026-05-27T13-49-16-434Z",
+  "startedAt": "2026-05-27T13:49:16.718Z",
+  "finishedAt": "2026-05-27T13:49:20.257Z",
+  "snapshotGeneratedAt": "2026-05-27T13:47:24.406Z",
+  "regenerationTargets": [],
   "steps": [
     {
       "name": "brain:drift-check",
-      "ok": false,
-      "startedAt": "2026-05-27T13:35:53.655Z",
-      "finishedAt": "2026-05-27T13:35:53.902Z",
-      "exitCode": 1,
-      "output": "{\n  \"ok\": false,\n  \"stale\": true,\n  \"checkedAt\": \"2026-05-27T13:35:53.895Z\",\n  \"snapshotGeneratedAt\": \"2026-05-27T13:22:52.955Z\",\n  \"changed\": [\n    \"brain/debug/debug-runner.ts\"\n  ],\n  \"added\": [],\n  \"deleted\": [],\n  \"regenerationTargets\": [\n    \"brain-tooling\"\n  ]\n}\n"
-    },
-    {
-      "name": "brain:generate",
       "ok": true,
-      "startedAt": "2026-05-27T13:35:53.902Z",
-      "finishedAt": "2026-05-27T13:35:56.630Z",
-      "output": "Brain generated: 74 source files, 258 nodes, 837 edges, 396 retrieval chunks.\n"
-    },
-    {
-      "name": "brain:embed",
-      "ok": true,
-      "startedAt": "2026-05-27T13:35:56.630Z",
-      "finishedAt": "2026-05-27T13:36:28.801Z",
-      "output": "Semantic vector index generated: 445 chunks with 384 dimensions.\n"
-    },
-    {
-      "name": "brain:runtime-benchmark",
-      "ok": true,
-      "startedAt": "2026-05-27T13:36:28.802Z",
-      "finishedAt": "2026-05-27T13:37:04.066Z",
-      "output": "Runtime benchmark complete: 43 events.\n"
+      "startedAt": "2026-05-27T13:49:16.718Z",
+      "finishedAt": "2026-05-27T13:49:17.011Z",
+      "output": "{\n  \"ok\": true,\n  \"stale\": false,\n  \"checkedAt\": \"2026-05-27T13:49:17.001Z\",\n  \"snapshotGeneratedAt\": \"2026-05-27T13:47:24.406Z\",\n  \"changed\": [],\n  \"added\": [],\n  \"deleted\": [],\n  \"regenerationTargets\": []\n}\n"
     },
     {
       "name": "brain:verify",
       "ok": true,
-      "startedAt": "2026-05-27T13:37:04.066Z",
-      "finishedAt": "2026-05-27T13:37:04.470Z",
-      "output": "{\n  \"ok\": true,\n  \"generatedAt\": \"2026-05-27T13:37:04.461Z\",\n  \"failures\": [],\n  \"warnings\": []\n}\n"
+      "startedAt": "2026-05-27T13:49:17.011Z",
+      "finishedAt": "2026-05-27T13:49:17.319Z",
+      "output": "{\n  \"ok\": true,\n  \"generatedAt\": \"2026-05-27T13:49:17.310Z\",\n  \"failures\": [],\n  \"warnings\": []\n}\n"
     },
     {
       "name": "brain:self-audit",
       "ok": true,
-      "startedAt": "2026-05-27T13:37:04.470Z",
-      "finishedAt": "2026-05-27T13:37:08.706Z",
-      "output": "{\n  \"ok\": true,\n  \"generatedAt\": \"2026-05-27T13:37:08.689Z\",\n  \"threshold\": 85,\n  \"score\": 89,\n  \"checks\": {\n    \"graphFreshness\": 12,\n    \"vectorFreshness\": 14,\n    \"retrievalQuality\": 15,\n    \"runtimeCoverage\": 14,\n    \"contractCoverage\": 10,\n    \"routeStateCoverage\": 0,\n    \"ruleCompliance\": 10,\n    \"taskMemoryContinuity\": 7,\n    \"loaderCoverage\": 7\n  },\n  \"retrievalBenchmark\": {\n    \"recall\": 1,\n    \"confidenceAverage\": 0.9087833333333332,\n    \"results\": [\n      {\n        \"task\": \"add dashboard feature\",\n        \"expected\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/store/index.ts\"\n        ],\n        \"hits\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/store/index.ts\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.85\n      },\n      {\n        \"task\": \"refactor Zustand store\",\n        \"expected\": [\n          \"src/store/index.ts\",\n          \"src/App.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"hits\": [\n          \"src/store/index.ts\",\n          \"src/App.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.8897\n      },\n      {\n        \"task\": \"modify route layout\",\n        \"expected\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/views/StudyView.tsx\"\n        ],\n        \"hits\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/views/StudyView.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.97\n      },\n      {\n        \"task\": \"modify SSE streaming\",\n        \"expected\": [\n          \"server.ts\",\n          \"src/components/ChatPanel.tsx\",\n          \"brain/contracts/api-contracts.json\"\n        ],\n        \"hits\": [\n          \"server.ts\",\n          \"src/components/ChatPanel.tsx\",\n          \"brain/contracts/api-contracts.json\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.9664\n      },\n      {\n        \"task\": \"change shared UI animations\",\n        \"expected\": [\n          \"src/components/SiriLiquidGlass.tsx\",\n          \"src/components/SettingsModal.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"hits\": [\n          \"src/components/SiriLiquidGlass.tsx\",\n          \"src/components/SettingsModal.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.85\n      },\n      {\n        \"task\": \"modify Dexie schema\",\n        \"expected\": [\n          \"src/memory/longterm.memory.ts\",\n          \"src/memory/memory.orchestrator.ts\",\n          \"src/views/RevisionView.tsx\"\n        ],\n        \"hits\": [\n          \"src/memory/longterm.memory.ts\",\n          \"src/memory/memory.orchestrator.ts\",\n          \"src/views/RevisionView.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.9266\n      }\n    ]\n  },\n  \"unresolvedWeaknesses\": []\n}\n"
+      "startedAt": "2026-05-27T13:49:17.319Z",
+      "finishedAt": "2026-05-27T13:49:20.257Z",
+      "output": "{\n  \"ok\": true,\n  \"generatedAt\": \"2026-05-27T13:49:20.240Z\",\n  \"threshold\": 85,\n  \"score\": 89,\n  \"checks\": {\n    \"graphFreshness\": 12,\n    \"vectorFreshness\": 14,\n    \"retrievalQuality\": 15,\n    \"runtimeCoverage\": 14,\n    \"contractCoverage\": 10,\n    \"routeStateCoverage\": 0,\n    \"ruleCompliance\": 10,\n    \"taskMemoryContinuity\": 7,\n    \"loaderCoverage\": 7\n  },\n  \"retrievalBenchmark\": {\n    \"recall\": 1,\n    \"confidenceAverage\": 0.9087833333333332,\n    \"results\": [\n      {\n        \"task\": \"add dashboard feature\",\n        \"expected\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/store/index.ts\"\n        ],\n        \"hits\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/store/index.ts\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.85\n      },\n      {\n        \"task\": \"refactor Zustand store\",\n        \"expected\": [\n          \"src/store/index.ts\",\n          \"src/App.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"hits\": [\n          \"src/store/index.ts\",\n          \"src/App.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.8897\n      },\n      {\n        \"task\": \"modify route layout\",\n        \"expected\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/views/StudyView.tsx\"\n        ],\n        \"hits\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/views/StudyView.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.97\n      },\n      {\n        \"task\": \"modify SSE streaming\",\n        \"expected\": [\n          \"server.ts\",\n          \"src/components/ChatPanel.tsx\",\n          \"brain/contracts/api-contracts.json\"\n        ],\n        \"hits\": [\n          \"server.ts\",\n          \"src/components/ChatPanel.tsx\",\n          \"brain/contracts/api-contracts.json\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.9664\n      },\n      {\n        \"task\": \"change shared UI animations\",\n        \"expected\": [\n          \"src/components/SiriLiquidGlass.tsx\",\n          \"src/components/SettingsModal.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"hits\": [\n          \"src/components/SiriLiquidGlass.tsx\",\n          \"src/components/SettingsModal.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.85\n      },\n      {\n        \"task\": \"modify Dexie schema\",\n        \"expected\": [\n          \"src/memory/longterm.memory.ts\",\n          \"src/memory/memory.orchestrator.ts\",\n          \"src/views/RevisionView.tsx\"\n        ],\n        \"hits\": [\n          \"src/memory/longterm.memory.ts\",\n          \"src/memory/memory.orchestrator.ts\",\n          \"src/views/RevisionView.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.9266\n      }\n    ]\n  },\n  \"unresolvedWeaknesses\": []\n}\n"
     }
   ]
 }
