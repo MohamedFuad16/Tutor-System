@@ -354,6 +354,7 @@ export function RevisionView() {
               )}
             </div>
           </div>
+        </div>
       ) : (
         <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 md:p-12 lg:p-16">
           <div className="flex items-center justify-between mb-16">
