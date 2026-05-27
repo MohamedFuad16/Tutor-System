@@ -293,21 +293,21 @@ export function AdminView() {
           <nav className="flex flex-col gap-1">
             <button
               onClick={() => setActiveTab("traces")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all duration-200 flex items-center gap-2 ${activeTab === "traces" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "traces" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
             >
               <Activity size={16} />
               <span className="line-clamp-1 leading-snug">DeepSeek Trace</span>
             </button>
             <button
               onClick={() => setActiveTab("console")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all duration-200 flex items-center gap-2 ${activeTab === "console" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "console" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
             >
               <Terminal size={16} />
               <span className="line-clamp-1 leading-snug">Server Console</span>
             </button>
             <button
               onClick={() => setActiveTab("debug")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all duration-200 flex items-center gap-2 ${activeTab === "debug" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "debug" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
             >
               <Bug size={16} />
               <span className="line-clamp-1 leading-snug">Debug Runs</span>
@@ -715,7 +715,7 @@ export function AdminView() {
                                 key={run.id}
                                 type="button"
                                 onClick={() => setActiveDebugRunId(run.id)}
-                                className={`w-full rounded-2xl border p-3 text-left transition-all ${activeDebugRunId === run.id ? "border-blue-200 bg-blue-50 shadow-sm" : "border-zinc-200 bg-white hover:bg-zinc-50"}`}
+                                className={`w-full rounded-2xl border p-3 text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ${activeDebugRunId === run.id ? "border-blue-200 bg-blue-50 shadow-sm" : "border-zinc-200 bg-white hover:bg-zinc-50"}`}
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <span className="truncate font-mono text-[11px] font-semibold text-zinc-800">

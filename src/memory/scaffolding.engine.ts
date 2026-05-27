@@ -1,4 +1,4 @@
-import { PersistentConcept } from './longterm.memory';
+import { PersistentConcept } from "./longterm.memory";
 
 export class ScaffoldingEngine {
   /**
@@ -10,24 +10,27 @@ export class ScaffoldingEngine {
    * 1: "Try it — I'm here if you need me"
    * 0 (fade out): student works fully independently
    */
-  public calculateScaffoldLevel(concept?: PersistentConcept, misconceptionCount: number = 0): number {
+  public calculateScaffoldLevel(
+    concept?: PersistentConcept,
+    misconceptionCount: number = 0,
+  ): number {
     if (!concept) return 5; // Default to max for new concepts
-    
+
     let level = 5;
-    
+
     // Higher P(L) = lower scaffold
     if (concept.p_learn > 0.85) level = 0;
-    else if (concept.p_learn > 0.70) level = 1;
-    else if (concept.p_learn > 0.50) level = 2;
-    else if (concept.p_learn > 0.30) level = 3;
+    else if (concept.p_learn > 0.7) level = 1;
+    else if (concept.p_learn > 0.5) level = 2;
+    else if (concept.p_learn > 0.3) level = 3;
     else if (concept.p_learn > 0.15) level = 4;
-    
+
     // Recent struggle history pushes it back up
     const recentAttempts = concept.attempt_history.slice(-3);
-    const recentFails = recentAttempts.filter(a => !a.correct).length;
-    
+    const recentFails = recentAttempts.filter((a) => !a.correct).length;
+
     level += recentFails;
-    
+
     // Misconceptions strongly indicate need for scaffolding (but specific types, like Socratic)
     if (misconceptionCount > 0) {
       level = Math.max(level, 3);

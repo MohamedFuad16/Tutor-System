@@ -107,7 +107,7 @@ export const PatternCard = ({
       onDrop={onDrop}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className={`group cursor-pointer shrink-0 w-[324px] h-[414px] max-w-[calc(100vw-2rem)] mx-auto transition-all duration-400 ease-[cubic-bezier(0.22,0.61,0.36,1)] relative overflow-hidden rounded-[44.875px] sm:scale-100 scale-[0.85] origin-top ${bgClass} ${isDragging ? "ring-4 ring-blue-500/50 scale-[1.02]" : ""}`}
+      className={`group cursor-pointer shrink-0 w-[324px] h-[414px] max-w-[calc(100vw-2rem)] mx-auto transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-400 ease-[cubic-bezier(0.22,0.61,0.36,1)] relative overflow-hidden rounded-[44.875px] sm:scale-100 scale-[0.85] origin-top ${bgClass} ${isDragging ? "ring-4 ring-blue-500/50 scale-[1.02]" : ""}`}
     >
       {/* Background Bloom Layer from reference */}
       <div
@@ -196,7 +196,7 @@ export const PatternCard = ({
         style={{ borderRadius: "44.875px" }}
       >
         <div
-          className="absolute opacity-0 group-hover:opacity-100 group-hover:translate-x-[50%] transition-all duration-[800ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]"
+          className="absolute opacity-0 group-hover:opacity-100 group-hover:translate-x-[50%] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-[800ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]"
           style={{
             left: 0,
             top: "-50%",

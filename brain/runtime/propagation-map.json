@@ -1,18 +1,18 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T14:59:40.575Z",
+    "generatedAt": "2026-05-27T17:41:44.759Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "31a027861891e45d04aae40330ee5fa728578068f4eccce8acdce5883fa2cfb6",
+    "sourceHash": "84537541dceb18694bf726e7d1506b24c3e90aca62bd01368f072a6d23408c2e",
     "url": "http://127.0.0.1:3000",
-    "eventCount": 21,
+    "eventCount": 44,
     "confidence": 0.82
   },
   "propagation": [
     {
       "state": "messages",
-      "timestamp": 335.0999999642372,
+      "timestamp": 188.4000000357628,
       "nextRender": "route:study",
-      "lagMs": 18.80000001192093,
+      "lagMs": 10.399999976158142,
       "metadata": {
         "previousType": "object",
         "nextType": "object"
@@ -20,9 +20,9 @@
     },
     {
       "state": "activeLearningBookId",
-      "timestamp": 444.39999997615814,
+      "timestamp": 229.70000004768372,
       "nextRender": "route:study",
-      "lagMs": 15.600000023841858,
+      "lagMs": 7.199999988079071,
       "metadata": {
         "previousType": "object",
         "nextType": "string"
@@ -30,9 +30,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 1771.2999999523163,
+      "timestamp": 1379.300000011921,
       "nextRender": "route:study",
-      "lagMs": 27.700000047683716,
+      "lagMs": 5.600000023841858,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -40,9 +40,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 2964,
-      "nextRender": "route:study",
-      "lagMs": 26.599999964237213,
+      "timestamp": 2241,
+      "nextRender": "route:analytics",
+      "lagMs": 4,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -50,9 +50,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 3813.599999964237,
-      "nextRender": "route:study",
-      "lagMs": 27.400000035762787,
+      "timestamp": 3050,
+      "nextRender": "route:revision",
+      "lagMs": 7.800000011920929,
       "metadata": {
         "previousType": "string",
         "nextType": "string"

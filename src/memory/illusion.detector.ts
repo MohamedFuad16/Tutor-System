@@ -1,7 +1,10 @@
 export class IllusionDetector {
-  public detectIllusionOfKnowing(selfConfidence: number, actualPerformance: number): boolean {
+  public detectIllusionOfKnowing(
+    selfConfidence: number,
+    actualPerformance: number,
+  ): boolean {
     const illusionScore = selfConfidence - actualPerformance;
-    return illusionScore > 0.30;
+    return illusionScore > 0.3;
   }
 }
 

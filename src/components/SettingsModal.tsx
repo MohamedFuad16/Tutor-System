@@ -361,7 +361,7 @@ export function SettingsButton() {
         onClick={() => setIsOpen(true)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="fixed top-8 right-8 z-50 rounded-full w-[46px] h-[46px] flex items-center justify-center p-[1px] transition-all shadow-[0_8px_32px_rgba(0,0,0,0.8)] focus:outline-none group overflow-visible"
+        className="fixed top-8 right-8 z-50 rounded-full w-[46px] h-[46px] flex items-center justify-center p-[1px] transition-[color,background-color,border-color,box-shadow,transform,opacity] shadow-[0_8px_32px_rgba(0,0,0,0.8)] focus:outline-none group overflow-visible"
       >
         {/* Animated Liquid Metal Border */}
         <div
@@ -495,7 +495,7 @@ export function SettingsButton() {
                             }
                             placeholder="Your name"
                             disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-all disabled:opacity-50"
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] disabled:opacity-50"
                           />
                           <p className="text-xs text-zinc-500 leading-relaxed">
                             Used as the root node of your virtual brain map and
@@ -514,7 +514,7 @@ export function SettingsButton() {
                             onChange={(e) => setInputKey(e.target.value)}
                             placeholder="sk-or-v1-..."
                             disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono disabled:opacity-50"
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
                           />
                           <p className="text-xs text-zinc-500 leading-relaxed">
                             Your key is stored locally in your browser's
@@ -534,7 +534,7 @@ export function SettingsButton() {
                             onChange={(e) => setInputSerperKey(e.target.value)}
                             placeholder="SERPER_API_KEY"
                             disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all font-mono disabled:opacity-50"
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
                           />
                           <p className="text-xs text-zinc-500 leading-relaxed">
                             Stored locally and sent only to this app's backend
@@ -552,7 +552,7 @@ export function SettingsButton() {
                             value={inputVoice}
                             onChange={(e) => setInputVoice(e.target.value)}
                             disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {TTS_VOICES.map((voice) => (
                               <option key={voice.id} value={voice.id}>
@@ -571,7 +571,7 @@ export function SettingsButton() {
                             value={inputModel}
                             onChange={(e) => setInputModel(e.target.value)}
                             disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <option value="gpt-4o-mini">
                               GPT-4o Mini (Fast/Cheap)
@@ -669,7 +669,7 @@ export function SettingsButton() {
                               value={personaDesc}
                               onChange={(e) => setPersonaDesc(e.target.value)}
                               placeholder="I want an AI tutor specialized in..."
-                              className="flex-1 bg-[#121214] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-all"
+                              className="flex-1 bg-[#121214] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity]"
                             />
                             <button
                               onClick={async () => {
@@ -709,7 +709,7 @@ export function SettingsButton() {
                             value={inputPrompt}
                             onChange={(e) => setInputPrompt(e.target.value)}
                             placeholder="You are a strict, Socratic tutor who NEVER gives direct answers. Ask questions."
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-mono min-h-[120px]"
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono min-h-[120px]"
                           />
                         </div>
                       </motion.div>

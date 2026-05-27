@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T14:58:58.302Z",
+    "generatedAt": "2026-05-27T17:40:37.164Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "9abf5b4139cc5ec1007a632efa4dbb2dea4bdfba",
+      "commit": "2ed6b035bd30f5c512e4502b73df81eaac8dc180",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "31a027861891e45d04aae40330ee5fa728578068f4eccce8acdce5883fa2cfb6"
+    "sourceHash": "84537541dceb18694bf726e7d1506b24c3e90aca62bd01368f072a6d23408c2e"
   },
   "files": {
     "generate-brain.ts": {
@@ -700,7 +700,7 @@
     },
     "brain/debug/debug-runner.ts": {
       "file": "brain/debug/debug-runner.ts",
-      "hash": "32651423d8fab2e028ac9056db4d737a755858fa37154e289bf38c6d047041cb",
+      "hash": "5e7aedc34dd4968b0af570d374ae8ee19c311c68280bf8c08fb0575638ffa78a",
       "imports": [
         {
           "specifier": "child_process",
@@ -728,6 +728,8 @@
         "writeJson",
         "appendNdjson",
         "run",
+        "labelCommand",
+        "runUiRegressionWithRetry",
         "sourceFilesFromGit",
         "isAuditableSourceFile",
         "targetKindForFile",
@@ -1622,7 +1624,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "719d0c6983a9ce4a22904e88c801dbe7d85935fa7565fb4d9502ae572d7ad659",
+      "hash": "7aa9a5b12dda20511a9dc4ac6c5c3d71c8c9172fdb7794f3f506c07f8a5d46d1",
       "imports": [
         {
           "specifier": "react",
@@ -2011,7 +2013,7 @@
     },
     "src/components/Navigation.tsx": {
       "file": "src/components/Navigation.tsx",
-      "hash": "0a8e69ce79396fc033e9f3a3363d21c852a7ba21a1098570db62698124e9ac1c",
+      "hash": "3e7a7f53319c594b312117593ee4186d183a0d3e9a530b8bbce908ddd7f4e626",
       "imports": [
         {
           "specifier": "react",
@@ -2059,7 +2061,7 @@
     },
     "src/components/PatternCard.tsx": {
       "file": "src/components/PatternCard.tsx",
-      "hash": "562ed80965cbdc40c0c0d26765de1c9fd08428f7b44b5a29a6e582320dc1abaa",
+      "hash": "aee92a39eeda7f3426a33e41be809fb755b0664bf28d0b1f031fe1e851005912",
       "imports": [
         {
           "specifier": "react",
@@ -2137,7 +2139,7 @@
     },
     "src/components/PdfToolbar.tsx": {
       "file": "src/components/PdfToolbar.tsx",
-      "hash": "ab31b8309b53316edc652c91c72801f960184998cd2a458e23a74cadcfb64e18",
+      "hash": "0883c2350018add2f7bbf826208cea8eaa18d61506a7c2743c9345adf2832afd",
       "imports": [
         {
           "specifier": "react",
@@ -2180,7 +2182,7 @@
     },
     "src/components/PdfViewer.tsx": {
       "file": "src/components/PdfViewer.tsx",
-      "hash": "21eb4f99e2ce677a219f40855875bafd3c27a2fbcc298bde87bca31c5eeeca0e",
+      "hash": "454060d0d24916b7ba952572a96e4bca06ebad17007ed9b1c354da6a5196342c",
       "imports": [
         {
           "specifier": "react",
@@ -2342,7 +2344,7 @@
     },
     "src/components/SettingsModal.tsx": {
       "file": "src/components/SettingsModal.tsx",
-      "hash": "dcae05c0225b2306fb1147430d61b8d4f294a56df137e7b8529ad27a46e0fa08",
+      "hash": "8564956f8edc24ece5b69c64f9fa66bad74ad11ce21d81ff45ee68a9db2ef2b4",
       "imports": [
         {
           "specifier": "react",
@@ -2738,7 +2740,7 @@
     },
     "src/memory/illusion.detector.ts": {
       "file": "src/memory/illusion.detector.ts",
-      "hash": "eed5246cfac71f3630c2da0e26237199189b709f21cd16dd3d2c065e9bc6b9a3",
+      "hash": "e8db0b938a5a2b1ca798bb8cba55c5a28564d208c2f15d4fa1c90ca419f3223b",
       "imports": [],
       "exports": [
         "IllusionDetector",
@@ -2764,7 +2766,7 @@
     },
     "src/memory/learner.model.ts": {
       "file": "src/memory/learner.model.ts",
-      "hash": "e5cd96ab4f4be01d55c884808752e0c9e109e3a54742cc5f295dcd9a8f56a52b",
+      "hash": "2b28a4b93498f045e49fec81c9ecf12b77883de84ca230dfcd08a61926f9956d",
       "imports": [
         {
           "specifier": "./longterm.memory",
@@ -2820,10 +2822,6 @@
         {
           "table": "concepts",
           "operation": "get"
-        },
-        {
-          "table": "concepts",
-          "operation": "filter"
         }
       ],
       "databaseWrites": [],
@@ -2906,7 +2904,7 @@
     },
     "src/memory/memory.orchestrator.ts": {
       "file": "src/memory/memory.orchestrator.ts",
-      "hash": "483c0dafcc64944c22b6bc0529d3276cc311be3944163b510da49ae6f32cddf2",
+      "hash": "048539724c890ea1cb5aefa0a73d5a320ae3ed843b78263729602828da34cdad",
       "imports": [
         {
           "specifier": "./memory.embeddings",
@@ -2961,14 +2959,6 @@
           "operation": "get"
         },
         {
-          "table": "learningBooks",
-          "operation": "get"
-        },
-        {
-          "table": "learningBooks",
-          "operation": "orderBy"
-        },
-        {
           "table": "learningBookConcepts",
           "operation": "get"
         },
@@ -2979,14 +2969,6 @@
         {
           "table": "concepts",
           "operation": "get"
-        },
-        {
-          "table": "interactions",
-          "operation": "orderBy"
-        },
-        {
-          "table": "concepts",
-          "operation": "orderBy"
         }
       ],
       "databaseWrites": [
@@ -3082,7 +3064,7 @@
     },
     "src/memory/misconception.graph.ts": {
       "file": "src/memory/misconception.graph.ts",
-      "hash": "e1c52a969ce9c4a71ccd9e6d7dbd28f3532f105d31973006926d60e39fb636c3",
+      "hash": "56f8f439003717ce1e33876ce6c46a743a393127f20e641712896d71cfc14fc5",
       "imports": [
         {
           "specifier": "./longterm.memory",
@@ -3117,10 +3099,6 @@
         },
         {
           "table": "misconceptions",
-          "operation": "where"
-        },
-        {
-          "table": "misconceptions",
           "operation": "get"
         },
         {
@@ -3147,7 +3125,7 @@
     },
     "src/memory/prerequisite.dag.ts": {
       "file": "src/memory/prerequisite.dag.ts",
-      "hash": "40e2261ba807e7d22dbf4e71ce3be0d9d673497720a6a937fc5da0712040549e",
+      "hash": "d4faa23df4bc6253e9bcb262d4a795df0ed76dc02bc5a492b3203b3645c5eabb",
       "imports": [
         {
           "specifier": "./longterm.memory",
@@ -3195,7 +3173,7 @@
     },
     "src/memory/productive.failure.ts": {
       "file": "src/memory/productive.failure.ts",
-      "hash": "8465d76ee6b56ca84760652c653def606689d8f65b4ef35afa53b5f0115ea77f",
+      "hash": "898c178d1b4b3ba254fa37b526ff81d5ac0a7500d1db4d8e2bf740d24b20f47d",
       "imports": [
         {
           "specifier": "./longterm.memory",
@@ -3227,7 +3205,7 @@
     },
     "src/memory/revision.memory.ts": {
       "file": "src/memory/revision.memory.ts",
-      "hash": "303b408a1c31a06d6b06c559dd8e9da9bbac4c99dcaf0356077d88a1509d7aa0",
+      "hash": "b5828620625917acb16c4fd05c57dbad94ee4302b9a99624c5f1a51b8a1aff8c",
       "imports": [
         {
           "specifier": "./longterm.memory",
@@ -3267,7 +3245,7 @@
     },
     "src/memory/scaffolding.engine.ts": {
       "file": "src/memory/scaffolding.engine.ts",
-      "hash": "1771a62b4daba5a11e6ba595b60abfb45a56ba56b790a1033b98f83e93280aff",
+      "hash": "f702c33e47b7eb69ffa070ad9d95ab919957dec2d599d2b90b9b330cb038b6d0",
       "imports": [
         {
           "specifier": "./longterm.memory",
@@ -3298,7 +3276,7 @@
     },
     "src/memory/zpd.calculator.ts": {
       "file": "src/memory/zpd.calculator.ts",
-      "hash": "a29ec2fee31aeae00b567dc369f736b7a2a0d3d4f29bf8a368c4d22f2a55bf54",
+      "hash": "056a922372102c1f2e2f0b076e207858eeabd6c58dad6f934269f3484f5ad8cc",
       "imports": [
         {
           "specifier": "./longterm.memory",
@@ -3394,7 +3372,7 @@
     },
     "src/views/AdminView.tsx": {
       "file": "src/views/AdminView.tsx",
-      "hash": "fa5989f672f4c65dacd6953838d2fc147b0cc1ce2fd55ecb8bc928c733a8b9da",
+      "hash": "a345797a9548660867c9f789c6ccf7db367e8db9ecaca9903139223336e5dba0",
       "imports": [
         {
           "specifier": "react",
@@ -3488,7 +3466,7 @@
     },
     "src/views/AnalyticsView.tsx": {
       "file": "src/views/AnalyticsView.tsx",
-      "hash": "c825c8570900021dccf92f5ab8eb515a45c28c016b291cd61eb0a1289d3a8350",
+      "hash": "41599004cae621c523b77f50fb4b991375b65a068c90e69eb8667522ceadbf8b",
       "imports": [
         {
           "specifier": "react",
@@ -3560,7 +3538,7 @@
     },
     "src/views/BrainView.tsx": {
       "file": "src/views/BrainView.tsx",
-      "hash": "4932831ce7b349640e5b988e163c5850172e1dd65870ffbb5d59d7ccaee00537",
+      "hash": "6e88d36e92568751c8d33996112478a4966e72e0ae232fdb12a8b1a6aa96bde1",
       "imports": [
         {
           "specifier": "react",
@@ -3618,7 +3596,7 @@
       "storeSelectors": [
         {
           "field": "learnerName",
-          "selector": "state => state.learnerName"
+          "selector": "(state) => state.learnerName"
         }
       ],
       "storeWrites": [],
@@ -3650,7 +3628,7 @@
     },
     "src/views/RevisionView.tsx": {
       "file": "src/views/RevisionView.tsx",
-      "hash": "19633d425ac1ec36b4c547466f5531a1e7f0b67d77a26aa97e88be00cd4e1ddd",
+      "hash": "153184736ac49a72bf0d117d71b43f229c8545fdadf53e9b5828d339c493e0bb",
       "imports": [
         {
           "specifier": "react",
@@ -3788,7 +3766,7 @@
     },
     "src/views/StudyView.tsx": {
       "file": "src/views/StudyView.tsx",
-      "hash": "0706f36219571233a230710af605c04d9ccf51ee5c46f15f2802a224022b05ab",
+      "hash": "4d5945f4eab005acfabe544fa45d77fbc1dfd64d7997d5cfebe3c1fee9b3985d",
       "imports": [
         {
           "specifier": "react",

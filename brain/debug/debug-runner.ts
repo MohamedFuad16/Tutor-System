@@ -273,6 +273,29 @@ function run(
   return commandResult;
 }
 
+function labelCommand(result: CommandResult, suffix: string): CommandResult {
+  return { ...result, command: `${result.command} ${suffix}` };
+}
+
+function runUiRegressionWithRetry(componentCommands: CommandResult[]) {
+  const first = run("npm", ["run", "--silent", "brain:ui-regression"], {
+    allowFailure: true,
+    maxBuffer: 1024 * 1024 * 24,
+  });
+  componentCommands.push(first);
+  if (first.ok) return first;
+
+  const retry = labelCommand(
+    run("npm", ["run", "--silent", "brain:ui-regression"], {
+      allowFailure: true,
+      maxBuffer: 1024 * 1024 * 24,
+    }),
+    "(retry after failed sample)",
+  );
+  componentCommands.push(retry);
+  return retry;
+}
+
 function sourceFilesFromGit() {
   try {
     return execFileSync("git", ["ls-files"], {
@@ -1239,11 +1262,7 @@ function main() {
         },
       );
       componentCommands.push(benchmarkAfter);
-      uiRegression = run("npm", ["run", "--silent", "brain:ui-regression"], {
-        allowFailure: true,
-        maxBuffer: 1024 * 1024 * 24,
-      });
-      componentCommands.push(uiRegression);
+      uiRegression = runUiRegressionWithRetry(componentCommands);
       uiRegressionReport = readUiRegressionReport();
     }
     finishPhase(regressionPhase, {

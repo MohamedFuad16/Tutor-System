@@ -15,7 +15,7 @@ export const PdfToolbar = () => {
     <div className="flex items-center bg-white/95 backdrop-blur-xl rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.02)] p-2 gap-2 relative select-none">
       {/* Ask AI Button */}
       <button
-        className="flex items-center gap-1.5 pl-3 pr-4 py-2.5 rounded-[18px] text-white font-semibold text-[15px] transition-all shadow-[0_4px_14px_rgba(255,59,140,0.3)] hover:shadow-[0_6px_20px_rgba(255,59,140,0.4)] hover:scale-[1.02] active:scale-[0.98]"
+        className="flex items-center gap-1.5 pl-3 pr-4 py-2.5 rounded-[18px] text-white font-semibold text-[15px] transition-[color,background-color,border-color,box-shadow,transform,opacity] shadow-[0_4px_14px_rgba(255,59,140,0.3)] hover:shadow-[0_6px_20px_rgba(255,59,140,0.4)] hover:scale-[1.02] active:scale-[0.98]"
         style={{
           background: "linear-gradient(135deg, #FF3B8C 0%, #FFA07A 100%)",
         }}
@@ -54,13 +54,13 @@ export const PdfToolbar = () => {
 
       {/* Text Formatting Group */}
       <div className="flex items-center gap-1">
-        <button className="w-[42px] h-[42px] flex items-center justify-center rounded-[14px] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.02)] text-[#18181B] transition-all">
+        <button className="w-[42px] h-[42px] flex items-center justify-center rounded-[14px] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.02)] text-[#18181B] transition-[color,background-color,border-color,box-shadow,transform,opacity]">
           <Bold size={18} strokeWidth={2.5} />
         </button>
-        <button className="w-[42px] h-[42px] flex items-center justify-center rounded-[14px] text-[#71717A] hover:bg-[#F4F4F5] hover:text-[#18181B] transition-all">
+        <button className="w-[42px] h-[42px] flex items-center justify-center rounded-[14px] text-[#71717A] hover:bg-[#F4F4F5] hover:text-[#18181B] transition-[color,background-color,border-color,box-shadow,transform,opacity]">
           <Italic size={18} strokeWidth={2.5} />
         </button>
-        <button className="w-[42px] h-[42px] flex items-center justify-center rounded-[14px] text-[#71717A] hover:bg-[#F4F4F5] hover:text-[#18181B] transition-all">
+        <button className="w-[42px] h-[42px] flex items-center justify-center rounded-[14px] text-[#71717A] hover:bg-[#F4F4F5] hover:text-[#18181B] transition-[color,background-color,border-color,box-shadow,transform,opacity]">
           <Underline size={18} strokeWidth={2.5} />
         </button>
       </div>
@@ -69,13 +69,13 @@ export const PdfToolbar = () => {
 
       {/* Alignment Group */}
       <div className="flex items-center bg-[#F4F4F5] rounded-[16px] p-1 gap-1">
-        <button className="w-9 h-9 flex items-center justify-center rounded-[12px] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.02)] text-[#18181B] transition-all">
+        <button className="w-9 h-9 flex items-center justify-center rounded-[12px] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.02)] text-[#18181B] transition-[color,background-color,border-color,box-shadow,transform,opacity]">
           <AlignLeft size={16} strokeWidth={2.5} />
         </button>
-        <button className="w-9 h-9 flex items-center justify-center rounded-[12px] text-[#71717A] hover:bg-white/50 hover:text-[#18181B] transition-all">
+        <button className="w-9 h-9 flex items-center justify-center rounded-[12px] text-[#71717A] hover:bg-white/50 hover:text-[#18181B] transition-[color,background-color,border-color,box-shadow,transform,opacity]">
           <AlignCenter size={16} strokeWidth={2.5} />
         </button>
-        <button className="w-9 h-9 flex items-center justify-center rounded-[12px] text-[#71717A] hover:bg-white/50 hover:text-[#18181B] transition-all">
+        <button className="w-9 h-9 flex items-center justify-center rounded-[12px] text-[#71717A] hover:bg-white/50 hover:text-[#18181B] transition-[color,background-color,border-color,box-shadow,transform,opacity]">
           <AlignRight size={16} strokeWidth={2.5} />
         </button>
       </div>

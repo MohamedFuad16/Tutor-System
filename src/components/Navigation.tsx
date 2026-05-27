@@ -28,7 +28,7 @@ export function Navigation() {
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHoveringContainer(true)}
         onMouseLeave={() => setIsHoveringContainer(false)}
-        className="relative flex items-center gap-1 p-1.5 rounded-full overflow-hidden shadow-2xl transition-all duration-300"
+        className="relative flex items-center gap-1 p-1.5 rounded-full overflow-hidden shadow-2xl transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300"
         style={{
           background:
             activeView === "revision"

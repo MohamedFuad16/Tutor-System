@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T14:58:58.302Z",
+    "generatedAt": "2026-05-27T17:40:37.164Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "9abf5b4139cc5ec1007a632efa4dbb2dea4bdfba",
+      "commit": "2ed6b035bd30f5c512e4502b73df81eaac8dc180",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "31a027861891e45d04aae40330ee5fa728578068f4eccce8acdce5883fa2cfb6"
+    "sourceHash": "84537541dceb18694bf726e7d1506b24c3e90aca62bd01368f072a6d23408c2e"
   },
   "nodes": [
     {
@@ -53,7 +53,7 @@
       "file": "src/views/AnalyticsView.tsx",
       "symbol": "AnalyticsView",
       "loc": {
-        "line": 7,
+        "line": 25,
         "column": 1
       }
     },
@@ -119,7 +119,7 @@
       "file": "src/views/BrainView.tsx",
       "symbol": "BrainView",
       "loc": {
-        "line": 76,
+        "line": 80,
         "column": 1
       }
     },
@@ -999,9 +999,9 @@
       "type": "file",
       "label": "brain/debug/debug-runner.ts",
       "file": "brain/debug/debug-runner.ts",
-      "hash": "32651423d8fab2e028ac9056db4d737a755858fa37154e289bf38c6d047041cb",
+      "hash": "5e7aedc34dd4968b0af570d374ae8ee19c311c68280bf8c08fb0575638ffa78a",
       "metadata": {
-        "lines": 1400
+        "lines": 1419
       }
     },
     {
@@ -1321,7 +1321,7 @@
       "type": "file",
       "label": "src/components/ChatPanel.tsx",
       "file": "src/components/ChatPanel.tsx",
-      "hash": "719d0c6983a9ce4a22904e88c801dbe7d85935fa7565fb4d9502ae572d7ad659",
+      "hash": "7aa9a5b12dda20511a9dc4ac6c5c3d71c8c9172fdb7794f3f506c07f8a5d46d1",
       "metadata": {
         "lines": 3681
       }
@@ -1341,7 +1341,7 @@
       "type": "file",
       "label": "src/components/Navigation.tsx",
       "file": "src/components/Navigation.tsx",
-      "hash": "0a8e69ce79396fc033e9f3a3363d21c852a7ba21a1098570db62698124e9ac1c",
+      "hash": "3e7a7f53319c594b312117593ee4186d183a0d3e9a530b8bbce908ddd7f4e626",
       "metadata": {
         "lines": 115
       }
@@ -1351,7 +1351,7 @@
       "type": "file",
       "label": "src/components/PatternCard.tsx",
       "file": "src/components/PatternCard.tsx",
-      "hash": "562ed80965cbdc40c0c0d26765de1c9fd08428f7b44b5a29a6e582320dc1abaa",
+      "hash": "aee92a39eeda7f3426a33e41be809fb755b0664bf28d0b1f031fe1e851005912",
       "metadata": {
         "lines": 220
       }
@@ -1371,7 +1371,7 @@
       "type": "file",
       "label": "src/components/PdfToolbar.tsx",
       "file": "src/components/PdfToolbar.tsx",
-      "hash": "ab31b8309b53316edc652c91c72801f960184998cd2a458e23a74cadcfb64e18",
+      "hash": "0883c2350018add2f7bbf826208cea8eaa18d61506a7c2743c9345adf2832afd",
       "metadata": {
         "lines": 92
       }
@@ -1381,7 +1381,7 @@
       "type": "file",
       "label": "src/components/PdfViewer.tsx",
       "file": "src/components/PdfViewer.tsx",
-      "hash": "21eb4f99e2ce677a219f40855875bafd3c27a2fbcc298bde87bca31c5eeeca0e",
+      "hash": "454060d0d24916b7ba952572a96e4bca06ebad17007ed9b1c354da6a5196342c",
       "metadata": {
         "lines": 725
       }
@@ -1401,7 +1401,7 @@
       "type": "file",
       "label": "src/components/SettingsModal.tsx",
       "file": "src/components/SettingsModal.tsx",
-      "hash": "dcae05c0225b2306fb1147430d61b8d4f294a56df137e7b8529ad27a46e0fa08",
+      "hash": "8564956f8edc24ece5b69c64f9fa66bad74ad11ce21d81ff45ee68a9db2ef2b4",
       "metadata": {
         "lines": 747
       }
@@ -1512,9 +1512,9 @@
       "type": "file",
       "label": "src/memory/illusion.detector.ts",
       "file": "src/memory/illusion.detector.ts",
-      "hash": "eed5246cfac71f3630c2da0e26237199189b709f21cd16dd3d2c065e9bc6b9a3",
+      "hash": "e8db0b938a5a2b1ca798bb8cba55c5a28564d208c2f15d4fa1c90ca419f3223b",
       "metadata": {
-        "lines": 9
+        "lines": 12
       }
     },
     {
@@ -1522,9 +1522,9 @@
       "type": "file",
       "label": "src/memory/learner.model.ts",
       "file": "src/memory/learner.model.ts",
-      "hash": "e5cd96ab4f4be01d55c884808752e0c9e109e3a54742cc5f295dcd9a8f56a52b",
+      "hash": "2b28a4b93498f045e49fec81c9ecf12b77883de84ca230dfcd08a61926f9956d",
       "metadata": {
-        "lines": 106
+        "lines": 152
       }
     },
     {
@@ -1552,9 +1552,9 @@
       "type": "file",
       "label": "src/memory/memory.orchestrator.ts",
       "file": "src/memory/memory.orchestrator.ts",
-      "hash": "483c0dafcc64944c22b6bc0529d3276cc311be3944163b510da49ae6f32cddf2",
+      "hash": "048539724c890ea1cb5aefa0a73d5a320ae3ed843b78263729602828da34cdad",
       "metadata": {
-        "lines": 534
+        "lines": 707
       }
     },
     {
@@ -1572,9 +1572,9 @@
       "type": "file",
       "label": "src/memory/misconception.graph.ts",
       "file": "src/memory/misconception.graph.ts",
-      "hash": "e1c52a969ce9c4a71ccd9e6d7dbd28f3532f105d31973006926d60e39fb636c3",
+      "hash": "56f8f439003717ce1e33876ce6c46a743a393127f20e641712896d71cfc14fc5",
       "metadata": {
-        "lines": 47
+        "lines": 54
       }
     },
     {
@@ -1582,9 +1582,9 @@
       "type": "file",
       "label": "src/memory/prerequisite.dag.ts",
       "file": "src/memory/prerequisite.dag.ts",
-      "hash": "40e2261ba807e7d22dbf4e71ce3be0d9d673497720a6a937fc5da0712040549e",
+      "hash": "d4faa23df4bc6253e9bcb262d4a795df0ed76dc02bc5a492b3203b3645c5eabb",
       "metadata": {
-        "lines": 33
+        "lines": 44
       }
     },
     {
@@ -1592,9 +1592,9 @@
       "type": "file",
       "label": "src/memory/productive.failure.ts",
       "file": "src/memory/productive.failure.ts",
-      "hash": "8465d76ee6b56ca84760652c653def606689d8f65b4ef35afa53b5f0115ea77f",
+      "hash": "898c178d1b4b3ba254fa37b526ff81d5ac0a7500d1db4d8e2bf740d24b20f47d",
       "metadata": {
-        "lines": 42
+        "lines": 45
       }
     },
     {
@@ -1602,9 +1602,9 @@
       "type": "file",
       "label": "src/memory/revision.memory.ts",
       "file": "src/memory/revision.memory.ts",
-      "hash": "303b408a1c31a06d6b06c559dd8e9da9bbac4c99dcaf0356077d88a1509d7aa0",
+      "hash": "b5828620625917acb16c4fd05c57dbad94ee4302b9a99624c5f1a51b8a1aff8c",
       "metadata": {
-        "lines": 41
+        "lines": 51
       }
     },
     {
@@ -1612,9 +1612,9 @@
       "type": "file",
       "label": "src/memory/scaffolding.engine.ts",
       "file": "src/memory/scaffolding.engine.ts",
-      "hash": "1771a62b4daba5a11e6ba595b60abfb45a56ba56b790a1033b98f83e93280aff",
+      "hash": "f702c33e47b7eb69ffa070ad9d95ab919957dec2d599d2b90b9b330cb038b6d0",
       "metadata": {
-        "lines": 41
+        "lines": 44
       }
     },
     {
@@ -1622,9 +1622,9 @@
       "type": "file",
       "label": "src/memory/zpd.calculator.ts",
       "file": "src/memory/zpd.calculator.ts",
-      "hash": "a29ec2fee31aeae00b567dc369f736b7a2a0d3d4f29bf8a368c4d22f2a55bf54",
+      "hash": "056a922372102c1f2e2f0b076e207858eeabd6c58dad6f934269f3484f5ad8cc",
       "metadata": {
-        "lines": 36
+        "lines": 38
       }
     },
     {
@@ -1652,7 +1652,7 @@
       "type": "file",
       "label": "src/views/AdminView.tsx",
       "file": "src/views/AdminView.tsx",
-      "hash": "fa5989f672f4c65dacd6953838d2fc147b0cc1ce2fd55ecb8bc928c733a8b9da",
+      "hash": "a345797a9548660867c9f789c6ccf7db367e8db9ecaca9903139223336e5dba0",
       "metadata": {
         "lines": 1225
       }
@@ -1662,9 +1662,9 @@
       "type": "file",
       "label": "src/views/AnalyticsView.tsx",
       "file": "src/views/AnalyticsView.tsx",
-      "hash": "c825c8570900021dccf92f5ab8eb515a45c28c016b291cd61eb0a1289d3a8350",
+      "hash": "41599004cae621c523b77f50fb4b991375b65a068c90e69eb8667522ceadbf8b",
       "metadata": {
-        "lines": 116
+        "lines": 220
       }
     },
     {
@@ -1672,9 +1672,9 @@
       "type": "file",
       "label": "src/views/BrainView.tsx",
       "file": "src/views/BrainView.tsx",
-      "hash": "4932831ce7b349640e5b988e163c5850172e1dd65870ffbb5d59d7ccaee00537",
+      "hash": "6e88d36e92568751c8d33996112478a4966e72e0ae232fdb12a8b1a6aa96bde1",
       "metadata": {
-        "lines": 381
+        "lines": 550
       }
     },
     {
@@ -1682,7 +1682,7 @@
       "type": "file",
       "label": "src/views/RevisionView.tsx",
       "file": "src/views/RevisionView.tsx",
-      "hash": "19633d425ac1ec36b4c547466f5531a1e7f0b67d77a26aa97e88be00cd4e1ddd",
+      "hash": "153184736ac49a72bf0d117d71b43f229c8545fdadf53e9b5828d339c493e0bb",
       "metadata": {
         "lines": 829
       }
@@ -1692,7 +1692,7 @@
       "type": "file",
       "label": "src/views/StudyView.tsx",
       "file": "src/views/StudyView.tsx",
-      "hash": "0706f36219571233a230710af605c04d9ccf51ee5c46f15f2802a224022b05ab",
+      "hash": "4d5945f4eab005acfabe544fa45d77fbc1dfd64d7997d5cfebe3c1fee9b3985d",
       "metadata": {
         "lines": 460
       }
@@ -2345,6 +2345,18 @@
       "id": "01d68f8324a7ea846362"
     },
     {
+      "type": "exports",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "file:src/memory/memory.orchestrator.ts:export:brainOrchestrator",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 706,
+        "text": "brainOrchestrator"
+      },
+      "id": "01dedbdfdc5a36a91779"
+    },
+    {
       "type": "wraps",
       "source": "file:src/App.tsx",
       "target": "route:analytics",
@@ -2354,18 +2366,6 @@
         "text": "activeView === analytics"
       },
       "id": "02183df120da6f232606"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/memory/prerequisite.dag.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/prerequisite.dag.ts",
-        "line": 23,
-        "text": "db.concepts.get(prereqId)"
-      },
-      "id": "0246cc88bbb594c5fd98"
     },
     {
       "type": "definedIn",
@@ -2389,18 +2389,6 @@
         "text": "import { retrieveContext } from \"./context-orchestrator\";"
       },
       "id": "02d81bd4d726cb021baf"
-    },
-    {
-      "type": "dependsOn",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "package:motion",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 4,
-        "text": "import { motion } from 'motion/react';"
-      },
-      "id": "03015105708e0cd1e47b"
     },
     {
       "type": "mutates",
@@ -2473,6 +2461,18 @@
       "id": "052311018305bb797d6c"
     },
     {
+      "type": "exports",
+      "source": "file:src/memory/illusion.detector.ts",
+      "target": "file:src/memory/illusion.detector.ts:export:illusionDetector",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/illusion.detector.ts",
+        "line": 11,
+        "text": "illusionDetector"
+      },
+      "id": "055411ffb2bb2ec00749"
+    },
+    {
       "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:pricing",
@@ -2483,6 +2483,18 @@
         "text": "(state) => state.pricing"
       },
       "id": "05ba54b28f649d57db22"
+    },
+    {
+      "type": "exports",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "file:src/views/AnalyticsView.tsx:export:AnalyticsView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 25,
+        "text": "AnalyticsView"
+      },
+      "id": "060550ec6437bae96074"
     },
     {
       "type": "imports",
@@ -2497,18 +2509,6 @@
       "id": "0630f42a2b3316f87b0f"
     },
     {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 106,
-        "text": "db.concepts.delete(concept.id)"
-      },
-      "id": "06402f86ec52ce91e042"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/memory/learner.model.ts",
       "target": "file:src/memory/scaffolding.engine.ts",
@@ -2516,21 +2516,9 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 4,
-        "text": "import { scaffoldingEngine } from './scaffolding.engine';"
+        "text": "import { scaffoldingEngine } from \"./scaffolding.engine\";"
       },
       "id": "06e92c98a1d5bfd4de72"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "endpoint:ANY /api/trace",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 503,
-        "text": "fetch('/api/trace', {\n        method: 'POST',\n        headers: {\n          'Content-Type': 'application/json',\n          'Authorization': `Bearer ${apiKey}`\n        },\n        body"
-      },
-      "id": "06f4c23c4c0b156d896a"
     },
     {
       "type": "wraps",
@@ -2542,6 +2530,18 @@
         "text": "activeView === admin"
       },
       "id": "0753a3c22ae0cb2b0538"
+    },
+    {
+      "type": "exports",
+      "source": "file:src/memory/productive.failure.ts",
+      "target": "file:src/memory/productive.failure.ts:export:ProductiveFailureEngine",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/productive.failure.ts",
+        "line": 9,
+        "text": "ProductiveFailureEngine"
+      },
+      "id": "0762ae43d299bc082d12"
     },
     {
       "type": "servedBy",
@@ -2667,7 +2667,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 2,
-        "text": "import { zpdCalculator } from './zpd.calculator';"
+        "text": "import { zpdCalculator } from \"./zpd.calculator\";"
       },
       "id": "0994d98ebfcafdadaa19"
     },
@@ -2694,6 +2694,18 @@
         "text": "(state) => state.chatUsage"
       },
       "id": "0a173aa6213dff8ff2bf"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:sessions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 107,
+        "text": "db.sessions.add({\n      id: this.currentSessionId,\n      startTime: Date.now(),\n      pagesVisited: [],\n      conceptsDiscussed: [],\n      solvedProblems: 0,\n  "
+      },
+      "id": "0a330317a38324818488"
     },
     {
       "type": "exports",
@@ -2814,16 +2826,16 @@
       "id": "0c6aee2c59402da2d018"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/memory/misconception.graph.ts",
-      "target": "databaseTable:misconceptions",
+      "type": "exports",
+      "source": "file:src/memory/revision.memory.ts",
+      "target": "file:src/memory/revision.memory.ts:export:getUrgentRevisions",
       "confidence": 0.9,
       "evidence": {
-        "file": "src/memory/misconception.graph.ts",
-        "line": 38,
-        "text": "db.misconceptions.get(id)"
+        "file": "src/memory/revision.memory.ts",
+        "line": 40,
+        "text": "getUrgentRevisions"
       },
-      "id": "0c7fffdab5dff9326758"
+      "id": "0c7afe627162641c08ca"
     },
     {
       "type": "dependsOn",
@@ -2845,7 +2857,7 @@
       "evidence": {
         "file": "src/memory/misconception.graph.ts",
         "line": 1,
-        "text": "import { db, Misconception } from './longterm.memory';"
+        "text": "import { db, Misconception } from \"./longterm.memory\";"
       },
       "id": "0d529c6ad9842c9779fb"
     },
@@ -2920,18 +2932,6 @@
       "id": "0eea2170a0ba542a8039"
     },
     {
-      "type": "mutates",
-      "source": "file:src/memory/misconception.graph.ts",
-      "target": "databaseTable:misconceptions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/misconception.graph.ts",
-        "line": 34,
-        "text": "db.misconceptions.put(m)"
-      },
-      "id": "0f3cf59a6ebb544abb3e"
-    },
-    {
       "type": "readsDatabase",
       "source": "file:src/views/RevisionView.tsx",
       "target": "databaseTable:learningEntries",
@@ -2978,6 +2978,18 @@
         "text": "db.concepts.toArray()"
       },
       "id": "10698b4cb2e57d132a7f"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningEntries",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 498,
+        "text": "db.learningEntries.add({\n      id: generateId(),\n      bookId,\n      conversationId,\n      timestamp: now,\n      userName,\n      userMessage,\n      assistantSum"
+      },
+      "id": "1078636999fd8a21905c"
     },
     {
       "type": "usesState",
@@ -3084,6 +3096,18 @@
         "line": 528
       },
       "id": "124b4020fcc1005c7a8f"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 174,
+        "text": "db.learningBooks.put(book)"
+      },
+      "id": "127238fd58960d999833"
     },
     {
       "type": "mutates",
@@ -3203,54 +3227,6 @@
       "id": "15731873c68bd6ceba5e"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "databaseTable:sessions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 16,
-        "text": "db.sessions.toArray()"
-      },
-      "id": "15d88f4db5b89b7adac1"
-    },
-    {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 101,
-        "text": "db.learningBooks.clear()"
-      },
-      "id": "160dff0a7cc56b4ab013"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/memory/scaffolding.engine.ts",
-      "target": "file:src/memory/scaffolding.engine.ts:export:scaffoldingEngine",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/scaffolding.engine.ts",
-        "line": 40,
-        "text": "scaffoldingEngine"
-      },
-      "id": "16a06ceffac71ba7805c"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "file:src/views/BrainView.tsx:export:BrainView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 76,
-        "text": "BrainView"
-      },
-      "id": "16f354c862eff8f9b368"
-    },
-    {
       "type": "definedIn",
       "source": "hook:useStore",
       "target": "file:src/store/index.ts",
@@ -3280,21 +3256,21 @@
       "evidence": {
         "file": "src/memory/prerequisite.dag.ts",
         "line": 1,
-        "text": "import { db } from './longterm.memory';"
+        "text": "import { db } from \"./longterm.memory\";"
       },
       "id": "1770129372d2e12a7dec"
     },
     {
-      "type": "exports",
-      "source": "file:src/memory/learner.model.ts",
-      "target": "file:src/memory/learner.model.ts:export:learnerModel",
+      "type": "readsDatabase",
+      "source": "file:src/views/BrainView.tsx",
+      "target": "databaseTable:learningBooks",
       "confidence": 0.9,
       "evidence": {
-        "file": "src/memory/learner.model.ts",
-        "line": 105,
-        "text": "learnerModel"
+        "file": "src/views/BrainView.tsx",
+        "line": 87,
+        "text": "db.learningBooks.orderBy(\"updatedAt\")"
       },
-      "id": "187b90817df17a4a6cbb"
+      "id": "177d8cb7d3ea7d72d0ef"
     },
     {
       "type": "usesState",
@@ -3353,6 +3329,18 @@
         "line": 1482
       },
       "id": "1a034f90368f8a0fe62d"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 577,
+        "text": "db.concepts.put(newConcept)"
+      },
+      "id": "1a1098cad8421ed11e5b"
     },
     {
       "type": "dependsOn",
@@ -3414,6 +3402,18 @@
       "id": "1c30bdc19b5d51754369"
     },
     {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningEntries",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 124,
+        "text": "db.learningEntries.clear()"
+      },
+      "id": "1db130d76150234c9860"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/rules/validate-rules.ts",
       "target": "package:path",
@@ -3433,7 +3433,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 6,
-        "text": "import { bktEngine } from './bkt.engine';"
+        "text": "import { bktEngine } from \"./bkt.engine\";"
       },
       "id": "1ecc2190838b754ea6bc"
     },
@@ -3460,6 +3460,18 @@
       "id": "1f75519d4a6486e3012c"
     },
     {
+      "type": "exports",
+      "source": "file:src/memory/scaffolding.engine.ts",
+      "target": "file:src/memory/scaffolding.engine.ts:export:scaffoldingEngine",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/scaffolding.engine.ts",
+        "line": 43,
+        "text": "scaffoldingEngine"
+      },
+      "id": "1f7b178a278aac631add"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "package:react-pdf",
@@ -3470,6 +3482,30 @@
         "text": "import \"react-pdf/dist/Page/TextLayer.css\";"
       },
       "id": "1f93331fe13174a838a9"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 154,
+        "text": "db.learningBooks.get(bookId)"
+      },
+      "id": "2085509d3b80b46216cf"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/memory/revision.memory.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/revision.memory.ts",
+        "line": 36,
+        "text": "db.concepts.put(concept)"
+      },
+      "id": "20fc75d09a88de5e5994"
     },
     {
       "type": "imports",
@@ -3484,16 +3520,16 @@
       "id": "21cd777c3aa08faa42b6"
     },
     {
-      "type": "exports",
-      "source": "file:src/memory/prerequisite.dag.ts",
-      "target": "file:src/memory/prerequisite.dag.ts:export:prerequisiteDAG",
+      "type": "readsStore",
+      "source": "file:src/views/BrainView.tsx",
+      "target": "storeField:learnerName",
       "confidence": 0.9,
       "evidence": {
-        "file": "src/memory/prerequisite.dag.ts",
-        "line": 32,
-        "text": "prerequisiteDAG"
+        "file": "src/views/BrainView.tsx",
+        "line": 81,
+        "text": "(state) => state.learnerName"
       },
-      "id": "21e0f8ce130ac3427aa2"
+      "id": "21f79f7115ec5330ef1a"
     },
     {
       "type": "dependsOn",
@@ -3544,18 +3580,6 @@
       "id": "2289269b4cfcfe588074"
     },
     {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:traceLogs",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 519,
-        "text": "db.traceLogs.add({\n        id: traceId,\n        timestamp: Date.now(),\n        action,\n        payload,\n        llmExplanation: explanation\n      })"
-      },
-      "id": "228e45a19551a915944c"
-    },
-    {
       "type": "exports",
       "source": "file:src/components/SiriLiquidGlass.tsx",
       "target": "file:src/components/SiriLiquidGlass.tsx:export:SiriLiquidGlass",
@@ -3578,6 +3602,18 @@
         "text": "import { recordBrainRuntime } from \"./runtimeTelemetry\";"
       },
       "id": "22f462192abf828d8a94"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/memory/misconception.graph.ts",
+      "target": "databaseTable:misconceptions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/misconception.graph.ts",
+        "line": 48,
+        "text": "db.misconceptions.put(m)"
+      },
+      "id": "2324e5b0c179c85a1976"
     },
     {
       "type": "definedIn",
@@ -3621,7 +3657,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 7,
-        "text": "import { illusionDetector } from './illusion.detector';"
+        "text": "import { illusionDetector } from \"./illusion.detector\";"
       },
       "id": "24bd94b5c8896ac8a50b"
     },
@@ -3707,18 +3743,6 @@
       "id": "270cdc5f6c39480fecbf"
     },
     {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBookConcepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 327,
-        "text": "db.learningBookConcepts.put(nextConcept)"
-      },
-      "id": "275426be03081c6758f1"
-    },
-    {
       "type": "dependsOn",
       "source": "file:generate-brain.ts",
       "target": "package:fs",
@@ -3786,18 +3810,6 @@
         "text": "(state) => state.setPdfTotalPages"
       },
       "id": "284f943c16994865955c"
-    },
-    {
-      "type": "writesDatabase",
-      "source": "file:src/memory/revision.memory.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/revision.memory.ts",
-        "line": 26,
-        "text": "db.concepts.put(concept)"
-      },
-      "id": "28d6fd170f671bd748a6"
     },
     {
       "type": "exports",
@@ -3882,18 +3894,6 @@
     },
     {
       "type": "mutates",
-      "source": "file:src/memory/misconception.graph.ts",
-      "target": "databaseTable:misconceptions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/misconception.graph.ts",
-        "line": 16,
-        "text": "db.misconceptions.add(misconception)"
-      },
-      "id": "2b3502420436d4638912"
-    },
-    {
-      "type": "mutates",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "storeField:setSerperApiKey",
       "confidence": 0.65,
@@ -3971,18 +3971,6 @@
       "id": "2dbab31ca2cdde713953"
     },
     {
-      "type": "exports",
-      "source": "file:src/memory/productive.failure.ts",
-      "target": "file:src/memory/productive.failure.ts:export:productiveFailureEngine",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/productive.failure.ts",
-        "line": 41,
-        "text": "productiveFailureEngine"
-      },
-      "id": "2de96e12c2ac1b8ba5b6"
-    },
-    {
       "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:recordWebSearchEvent",
@@ -4009,14 +3997,14 @@
     {
       "type": "readsDatabase",
       "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
+      "target": "databaseTable:concepts",
       "confidence": 0.9,
       "evidence": {
         "file": "src/memory/memory.orchestrator.ts",
-        "line": 222,
-        "text": "db.learningBooks.get(input.activeBookId)"
+        "line": 533,
+        "text": "db.concepts.get(id)"
       },
-      "id": "2f7924d20721c8367f00"
+      "id": "2e3bbec2168bf065ef52"
     },
     {
       "type": "mutates",
@@ -4145,7 +4133,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 6,
-        "text": "import { bktEngine } from './bkt.engine';"
+        "text": "import { bktEngine } from \"./bkt.engine\";"
       },
       "id": "32137abd81d8d604c616"
     },
@@ -4204,7 +4192,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 8,
-        "text": "import { cognitiveLoadMonitor } from './cognitive.load';"
+        "text": "import { cognitiveLoadMonitor } from \"./cognitive.load\";"
       },
       "id": "3319e996e864af7b6ae6"
     },
@@ -4332,16 +4320,16 @@
       "id": "348856dd9c81a5ce361d"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/memory/prerequisite.dag.ts",
-      "target": "databaseTable:concepts",
+      "type": "exports",
+      "source": "file:src/memory/misconception.graph.ts",
+      "target": "file:src/memory/misconception.graph.ts:export:misconceptionGraph",
       "confidence": 0.9,
       "evidence": {
-        "file": "src/memory/prerequisite.dag.ts",
-        "line": 18,
-        "text": "db.concepts.get(conceptId)"
+        "file": "src/memory/misconception.graph.ts",
+        "line": 53,
+        "text": "misconceptionGraph"
       },
-      "id": "353731363a433551858c"
+      "id": "34ebc6220c4366ffa0bb"
     },
     {
       "type": "exports",
@@ -4401,18 +4389,6 @@
       "id": "36279533b4b1407a1782"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 226,
-        "text": "db.learningBooks.get(bookId)"
-      },
-      "id": "369b57eab58e345fdd28"
-    },
-    {
       "type": "exports",
       "source": "file:src/brain-runtime/instrumentDexie.ts",
       "target": "file:src/brain-runtime/instrumentDexie.ts:export:instrumentDexie",
@@ -4433,18 +4409,6 @@
         "file": "src/components/ChatPanel.tsx"
       },
       "id": "37183a1da0ca996e72eb"
-    },
-    {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningEntries",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 99,
-        "text": "db.learningEntries.clear()"
-      },
-      "id": "37286a8697c7cbd0da01"
     },
     {
       "type": "exports",
@@ -4494,14 +4458,14 @@
     {
       "type": "mutates",
       "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
+      "target": "databaseTable:learningBookConcepts",
       "confidence": 0.9,
       "evidence": {
         "file": "src/memory/memory.orchestrator.ts",
-        "line": 145,
-        "text": "db.learningBooks.put(book)"
+        "line": 125,
+        "text": "db.learningBookConcepts.clear()"
       },
-      "id": "37ccf698a26bc34e8c2d"
+      "id": "37ece39638562bc0393c"
     },
     {
       "type": "exports",
@@ -4599,6 +4563,18 @@
       "id": "398375746dc9781b7358"
     },
     {
+      "type": "exports",
+      "source": "file:src/views/BrainView.tsx",
+      "target": "file:src/views/BrainView.tsx:export:BrainView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/BrainView.tsx",
+        "line": 80,
+        "text": "BrainView"
+      },
+      "id": "399298e64aeaa2d96333"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/autonomy/source-scope.ts",
       "target": "package:fs",
@@ -4609,18 +4585,6 @@
         "text": "import * as fs from \"fs\";"
       },
       "id": "39a6f0fdbf30b3d4f95f"
-    },
-    {
-      "type": "writesDatabase",
-      "source": "file:src/memory/misconception.graph.ts",
-      "target": "databaseTable:misconceptions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/misconception.graph.ts",
-        "line": 34,
-        "text": "db.misconceptions.put(m)"
-      },
-      "id": "39f70807e6145ec40537"
     },
     {
       "type": "exports",
@@ -4683,18 +4647,6 @@
       "id": "3b7b6d57ef9a9a584e33"
     },
     {
-      "type": "imports",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "file:src/store/index.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 5,
-        "text": "import { useStore } from '../store';"
-      },
-      "id": "3b8883ce2d83f79d54b4"
-    },
-    {
       "type": "servedBy",
       "source": "endpoint:POST /api/generate-persona",
       "target": "file:server.ts",
@@ -4718,17 +4670,6 @@
       "id": "3c09168c144eb8e6ece5"
     },
     {
-      "type": "definedIn",
-      "source": "component:AnalyticsView",
-      "target": "file:src/views/AnalyticsView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 7
-      },
-      "id": "3c3428794943d026468f"
-    },
-    {
       "type": "callsEndpoint",
       "source": "file:src/views/AdminView.tsx",
       "target": "endpoint:ANY /api/debug/runs/",
@@ -4738,18 +4679,6 @@
         "text": "/api/debug/runs/"
       },
       "id": "3c4a5d64dd2a7128ed6a"
-    },
-    {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 167,
-        "text": "db.learningBooks.put(nextBook)"
-      },
-      "id": "3c77cf3a51643a0b5aaa"
     },
     {
       "type": "dependsOn",
@@ -4822,18 +4751,6 @@
         "text": "import { recordBrainRuntime } from \"./runtimeTelemetry\";"
       },
       "id": "401604fa94eea56b420d"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "file:src/memory/memory.orchestrator.ts:export:MemoryOrchestrator",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 74,
-        "text": "MemoryOrchestrator"
-      },
-      "id": "401b4cc5d197175ef9d7"
     },
     {
       "type": "dependsOn",
@@ -4932,6 +4849,54 @@
       "id": "4379031c89112c5657d3"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 278,
+        "text": "db.learningBooks.get(input.activeBookId)"
+      },
+      "id": "43b2c428bd40129333cd"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "endpoint:ANY /api/trace",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 676,
+        "text": "fetch(\"/api/trace\", {\n        method: \"POST\",\n        headers: {\n          \"Content-Type\": \"application/json\",\n          Authorization: `Bearer ${apiKey}`,\n        },\n        body:"
+      },
+      "id": "43e6a852e642fab165c1"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningEntries",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 124,
+        "text": "db.learningEntries.clear()"
+      },
+      "id": "444ab9b718490eea55ce"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 211,
+        "text": "db.learningBooks.put(nextBook)"
+      },
+      "id": "448788f33b55f9600308"
+    },
+    {
       "type": "writesStore",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:setMessages",
@@ -4952,6 +4917,29 @@
         "text": "setActiveView"
       },
       "id": "4534eab23d60b74ef4c0"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBookConcepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 125,
+        "text": "db.learningBookConcepts.clear()"
+      },
+      "id": "456e55b5bad61e11c526"
+    },
+    {
+      "type": "definedIn",
+      "source": "component:AnalyticsView",
+      "target": "file:src/views/AnalyticsView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 25
+      },
+      "id": "45d3c73f42af97955737"
     },
     {
       "type": "usesState",
@@ -4989,18 +4977,6 @@
       "id": "46871f01f03f46cb0b4d"
     },
     {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:interactions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 202,
-        "text": "db.interactions.add(interaction)"
-      },
-      "id": "46b15691c4372d928567"
-    },
-    {
       "type": "imports",
       "source": "file:src/memory/learner.model.ts",
       "target": "file:src/memory/misconception.graph.ts",
@@ -5008,7 +4984,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 3,
-        "text": "import { misconceptionGraph } from './misconception.graph';"
+        "text": "import { misconceptionGraph } from \"./misconception.graph\";"
       },
       "id": "46d9cb522d2fcfb987fa"
     },
@@ -5022,18 +4998,6 @@
         "text": "activeView === admin"
       },
       "id": "47590b3d5600e5d48250"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/memory/zpd.calculator.ts",
-      "target": "file:src/memory/zpd.calculator.ts:export:zpdCalculator",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/zpd.calculator.ts",
-        "line": 35,
-        "text": "zpdCalculator"
-      },
-      "id": "475e81cffaa249e7bc1c"
     },
     {
       "type": "readsStore",
@@ -5186,18 +5150,6 @@
       "id": "4a6f1d39f1312af7cec2"
     },
     {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:sessions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 85,
-        "text": "db.sessions.add({\n      id: this.currentSessionId,\n      startTime: Date.now(),\n      pagesVisited: [],\n      conceptsDiscussed: [],\n      solvedProblems: 0,\n  "
-      },
-      "id": "4a8aac7817b54dd0c534"
-    },
-    {
       "type": "renders",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "component:UsageInsightsPanel",
@@ -5227,7 +5179,7 @@
       "evidence": {
         "file": "src/views/BrainView.tsx",
         "line": 7,
-        "text": "import { db } from '../memory/longterm.memory';"
+        "text": "import { db } from \"../memory/longterm.memory\";"
       },
       "id": "4bc043ad3af7e4021eb0"
     },
@@ -5266,6 +5218,18 @@
         "text": "(state) => state.cacheWebSources"
       },
       "id": "4c88223e95e861571728"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/memory/revision.memory.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/revision.memory.ts",
+        "line": 41,
+        "text": "db.concepts.toArray()"
+      },
+      "id": "4c92265228deb307566d"
     },
     {
       "type": "writesStore",
@@ -5337,30 +5301,6 @@
       "id": "4d8aee1ca261f7d5aac9"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/memory/prerequisite.dag.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/prerequisite.dag.ts",
-        "line": 9,
-        "text": "db.concepts.get(prereqId)"
-      },
-      "id": "4dad941677d0d980f4f9"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 396,
-        "text": "db.concepts.get(id)"
-      },
-      "id": "4e07db6d7b22bcb92edb"
-    },
-    {
       "type": "imports",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "file:src/memory/memory.orchestrator.ts",
@@ -5383,18 +5323,6 @@
         "text": "ConversationInteraction"
       },
       "id": "4e826083928f08064ec8"
-    },
-    {
-      "type": "writesDatabase",
-      "source": "file:src/memory/misconception.graph.ts",
-      "target": "databaseTable:misconceptions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/misconception.graph.ts",
-        "line": 16,
-        "text": "db.misconceptions.add(misconception)"
-      },
-      "id": "4f05789bd37b9f80677f"
     },
     {
       "type": "dependsOn",
@@ -5428,7 +5356,7 @@
       "evidence": {
         "file": "src/memory/productive.failure.ts",
         "line": 1,
-        "text": "import { PersistentConcept } from './longterm.memory';"
+        "text": "import { PersistentConcept } from \"./longterm.memory\";"
       },
       "id": "4fc5ff987085130da917"
     },
@@ -5442,6 +5370,18 @@
         "text": "setMessages"
       },
       "id": "4fc946d8e4e315484d0a"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 549,
+        "text": "db.concepts.put(existing)"
+      },
+      "id": "4fe19f70df05d16b9cca"
     },
     {
       "type": "exports",
@@ -5487,7 +5427,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 4,
-        "text": "import { scaffoldingEngine } from './scaffolding.engine';"
+        "text": "import { scaffoldingEngine } from \"./scaffolding.engine\";"
       },
       "id": "503dfcdb054a002f59ce"
     },
@@ -5540,6 +5480,18 @@
       "id": "5163a4b889c9c5ff9f58"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/memory/misconception.graph.ts",
+      "target": "databaseTable:misconceptions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/misconception.graph.ts",
+        "line": 36,
+        "text": "db.misconceptions.get(id)"
+      },
+      "id": "51691e11f097eca44323"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "package:lucide-react",
@@ -5552,18 +5504,6 @@
       "id": "518a588b041891ccd471"
     },
     {
-      "type": "exports",
-      "source": "file:src/memory/revision.memory.ts",
-      "target": "file:src/memory/revision.memory.ts:export:getUrgentRevisions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/revision.memory.ts",
-        "line": 30,
-        "text": "getUrgentRevisions"
-      },
-      "id": "51d5f5a78f4d1c037335"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "file:src/components/ShikiHighlighter.tsx",
@@ -5574,18 +5514,6 @@
         "text": "import { ShikiHighlighter } from \"./ShikiHighlighter\";"
       },
       "id": "5247f87cf93fbc8d7ddb"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "storeField:learnerName",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 77,
-        "text": "state => state.learnerName"
-      },
-      "id": "524b405766d00ce50955"
     },
     {
       "type": "dependsOn",
@@ -5648,18 +5576,6 @@
       "id": "532c760308a795142f62"
     },
     {
-      "type": "dependsOn",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "file:src/memory/longterm.memory.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 3,
-        "text": "import { db, PersistentConcept, SessionMemoryRecord, ConversationInteraction } from '../memory/longterm.memory';"
-      },
-      "id": "535d9c3eaf22f076ba78"
-    },
-    {
       "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:resetUsageAnalytics",
@@ -5680,18 +5596,6 @@
         "file": "src/views/RevisionView.tsx"
       },
       "id": "54351646139a3dfdd9bd"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "databaseTable:learningBookConcepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 82,
-        "text": "db.learningBookConcepts.orderBy('updatedAt')"
-      },
-      "id": "543ed14a3ab9f1fabd6f"
     },
     {
       "type": "dependsOn",
@@ -5727,18 +5631,6 @@
         "text": "setPdfPage"
       },
       "id": "55537b7a2eb02dfb8f82"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "storeField:learnerName",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 77,
-        "text": "state => state.learnerName"
-      },
-      "id": "5566f218836f1489f510"
     },
     {
       "type": "renders",
@@ -5821,18 +5713,6 @@
       "id": "560a6e8607395d16fd82"
     },
     {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 106,
-        "text": "db.concepts.delete(concept.id)"
-      },
-      "id": "56955c98e25de7bca090"
-    },
-    {
       "type": "mutates",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "storeField:setPdfPage",
@@ -5885,7 +5765,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 7,
-        "text": "import { illusionDetector } from './illusion.detector';"
+        "text": "import { illusionDetector } from \"./illusion.detector\";"
       },
       "id": "577b42a2ec8905afa28a"
     },
@@ -5957,7 +5837,7 @@
       "evidence": {
         "file": "src/views/BrainView.tsx",
         "line": 4,
-        "text": "import { BookOpen, CircleDot, Library, Target } from 'lucide-react';"
+        "text": "import { BookOpen, CircleDot, Library, Target } from \"lucide-react\";"
       },
       "id": "594fe38613072e78996a"
     },
@@ -6100,16 +5980,16 @@
       "id": "5e1fd2078054b3f09829"
     },
     {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
+      "type": "readsDatabase",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "databaseTable:interactions",
       "confidence": 0.9,
       "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 365,
-        "text": "db.learningBooks.put(book)"
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 35,
+        "text": "db.interactions.toArray()"
       },
-      "id": "5ef470d6bdf7aaa628f9"
+      "id": "5e9e87fc4d458d991009"
     },
     {
       "type": "dependsOn",
@@ -6122,6 +6002,18 @@
         "text": "import * as path from \"path\";"
       },
       "id": "5efe90c8822b47eb8417"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/memory/prerequisite.dag.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/prerequisite.dag.ts",
+        "line": 34,
+        "text": "db.concepts.get(prereqId)"
+      },
+      "id": "5f11740d276dff5a1a47"
     },
     {
       "type": "dependsOn",
@@ -6156,18 +6048,6 @@
       "id": "5fca760aed8e7eeb4f8a"
     },
     {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:traceLogs",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 519,
-        "text": "db.traceLogs.add({\n        id: traceId,\n        timestamp: Date.now(),\n        action,\n        payload,\n        llmExplanation: explanation\n      })"
-      },
-      "id": "5fcfd18b6e8e9fbd2386"
-    },
-    {
       "type": "imports",
       "source": "file:src/brain-runtime/instrumentDexie.ts",
       "target": "file:src/brain-runtime/runtimeTelemetry.ts",
@@ -6199,21 +6079,9 @@
       "evidence": {
         "file": "src/memory/zpd.calculator.ts",
         "line": 2,
-        "text": "import { prerequisiteDAG } from './prerequisite.dag';"
+        "text": "import { prerequisiteDAG } from \"./prerequisite.dag\";"
       },
       "id": "6049a3dd0a2ff739773f"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/memory/revision.memory.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/revision.memory.ts",
-        "line": 31,
-        "text": "db.concepts.toArray()"
-      },
-      "id": "609e71496d0fd4b3dd4c"
     },
     {
       "type": "readsStore",
@@ -6276,6 +6144,18 @@
       "id": "63835b4cd9dfbeeccdf6"
     },
     {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 131,
+        "text": "db.concepts.delete(concept.id)"
+      },
+      "id": "6384165c56351fe7ec92"
+    },
+    {
       "type": "definedIn",
       "source": "component:Mermaid",
       "target": "file:src/components/ChatPanel.tsx",
@@ -6309,6 +6189,18 @@
         "text": "(state) => state.setActiveView"
       },
       "id": "63cd9bb6b1a3379baf30"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 131,
+        "text": "db.concepts.delete(concept.id)"
+      },
+      "id": "645875927e4c7d804f70"
     },
     {
       "type": "exports",
@@ -6357,6 +6249,30 @@
       "id": "66557aa263090d97bd31"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/memory/prerequisite.dag.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/prerequisite.dag.ts",
+        "line": 8,
+        "text": "db.concepts.get(conceptId)"
+      },
+      "id": "667c6d2aa88aaf75f27a"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/revision.memory.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/revision.memory.ts",
+        "line": 36,
+        "text": "db.concepts.put(concept)"
+      },
+      "id": "66e8e7211da850b5da25"
+    },
+    {
       "type": "imports",
       "source": "file:src/App.tsx",
       "target": "file:src/brain-runtime/RenderProfiler.tsx",
@@ -6369,16 +6285,16 @@
       "id": "67420a26bc7613961085"
     },
     {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
+      "type": "exports",
+      "source": "file:src/memory/productive.failure.ts",
+      "target": "file:src/memory/productive.failure.ts:export:productiveFailureEngine",
       "confidence": 0.9,
       "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 434,
-        "text": "db.concepts.put(newConcept)"
+        "file": "src/memory/productive.failure.ts",
+        "line": 44,
+        "text": "productiveFailureEngine"
       },
-      "id": "68ff1fd0e1a37b8397ad"
+      "id": "67c55b851b3cc8150663"
     },
     {
       "type": "dependsOn",
@@ -6400,7 +6316,7 @@
       "evidence": {
         "file": "src/views/BrainView.tsx",
         "line": 5,
-        "text": "import * as THREE from 'three';"
+        "text": "import * as THREE from \"three\";"
       },
       "id": "69a610c8d809536dd703"
     },
@@ -6412,9 +6328,21 @@
       "evidence": {
         "file": "src/views/AnalyticsView.tsx",
         "line": 1,
-        "text": "import React, { useEffect, useState } from 'react';"
+        "text": "import React, { useEffect, useState } from \"react\";"
       },
       "id": "69f30955f2adc78ca1c1"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "endpoint:ANY /api/learning-book-update",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 296,
+        "text": "fetch(\"/api/learning-book-update\", {\n        method: \"POST\",\n        headers: {\n          \"Content-Type\": \"application/json\",\n          ...(apiKey ? { Authorization: `Bearer ${apiK"
+      },
+      "id": "6a048a97063e91c2a687"
     },
     {
       "type": "usesState",
@@ -6528,9 +6456,33 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 3,
-        "text": "import { misconceptionGraph } from './misconception.graph';"
+        "text": "import { misconceptionGraph } from \"./misconception.graph\";"
       },
       "id": "6b8f65b3c84510738586"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 579,
+        "text": "db.concepts.put(newConcept)"
+      },
+      "id": "6bbf54918123c17c76bf"
+    },
+    {
+      "type": "dependsOn",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "package:motion",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 22,
+        "text": "import { motion } from \"motion/react\";"
+      },
+      "id": "6c017b9abb451d538f53"
     },
     {
       "type": "servedBy",
@@ -6565,18 +6517,6 @@
         "text": "/api/debug/runs"
       },
       "id": "6c652b9ad2764498dc5d"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "endpoint:ANY /api/learning-book-update",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 231,
-        "text": "fetch('/api/learning-book-update', {\n        method: 'POST',\n        headers: {\n          'Content-Type': 'application/json',\n          ...(apiKey ? { 'Authorization': `Bearer ${ap"
-      },
-      "id": "6c79ce2243abfc15c52a"
     },
     {
       "type": "exports",
@@ -6644,7 +6584,7 @@
       "evidence": {
         "file": "src/memory/memory.orchestrator.ts",
         "line": 2,
-        "text": "import { db, PersistentConcept, ConversationInteraction, LearningBook, LearningBookConcept } from './longterm.memory';"
+        "text": "import {\n  db,\n  PersistentConcept,\n  ConversationInteraction,\n  LearningBook,\n  LearningBookConcept,\n} from \"./longterm.memory\";"
       },
       "id": "6e0020d524ce50107762"
     },
@@ -6658,6 +6598,18 @@
         "text": "setAiModel"
       },
       "id": "6e230842f40ca6428e7e"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 127,
+        "text": "db.concepts.toArray()"
+      },
+      "id": "6eb5db2d4b51d79a4fc6"
     },
     {
       "type": "usesState",
@@ -6778,18 +6730,6 @@
       "id": "7169ffb126d71520fd76"
     },
     {
-      "type": "exports",
-      "source": "file:src/memory/misconception.graph.ts",
-      "target": "file:src/memory/misconception.graph.ts:export:misconceptionGraph",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/misconception.graph.ts",
-        "line": 46,
-        "text": "misconceptionGraph"
-      },
-      "id": "71ecc646efdbb8575ae9"
-    },
-    {
       "type": "imports",
       "source": "file:src/memory/learner.model.ts",
       "target": "file:src/memory/cognitive.load.ts",
@@ -6797,7 +6737,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 8,
-        "text": "import { cognitiveLoadMonitor } from './cognitive.load';"
+        "text": "import { cognitiveLoadMonitor } from \"./cognitive.load\";"
       },
       "id": "73c49884533434e3a200"
     },
@@ -6833,7 +6773,7 @@
       "evidence": {
         "file": "src/memory/zpd.calculator.ts",
         "line": 1,
-        "text": "import { db } from './longterm.memory';"
+        "text": "import { db } from \"./longterm.memory\";"
       },
       "id": "742e4e1338c3ca713427"
     },
@@ -6850,6 +6790,18 @@
       "id": "74324babfbe06d96f029"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/memory/learner.model.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/learner.model.ts",
+        "line": 25,
+        "text": "db.concepts.get(currentConceptId)"
+      },
+      "id": "74b47f5516ce7bd6685d"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/views/AnalyticsView.tsx",
       "target": "package:recharts",
@@ -6857,7 +6809,7 @@
       "evidence": {
         "file": "src/views/AnalyticsView.tsx",
         "line": 2,
-        "text": "import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';"
+        "text": "import {\n  ResponsiveContainer,\n  BarChart,\n  Bar,\n  XAxis,\n  YAxis,\n  Tooltip as RechartsTooltip,\n  CartesianGrid,\n  AreaChart,\n  Area,\n  PieChart,\n  Pie,\n  Cell,\n} from \"recharts\";"
       },
       "id": "74cd84351ee6019adeec"
     },
@@ -6895,6 +6847,18 @@
         "text": "activeView === study"
       },
       "id": "75c447a47460b833378c"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 495,
+        "text": "db.learningBooks.put(book)"
+      },
+      "id": "7619babbf2ed962e4794"
     },
     {
       "type": "emits",
@@ -6962,18 +6926,6 @@
         "text": "setMessages"
       },
       "id": "793036f12117c4f9798b"
-    },
-    {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningEntries",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 99,
-        "text": "db.learningEntries.clear()"
-      },
-      "id": "7946518c15fcfe50f2cc"
     },
     {
       "type": "dependsOn",
@@ -7044,30 +6996,6 @@
         "text": "db.concepts.delete(concept.id)"
       },
       "id": "7addd8abbe299cabc2af"
-    },
-    {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningEntries",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 368,
-        "text": "db.learningEntries.add({\n      id: generateId(),\n      bookId,\n      conversationId,\n      timestamp: now,\n      userName,\n      userMessage,\n      assistantSum"
-      },
-      "id": "7b0e2138b708abc8866d"
-    },
-    {
-      "type": "mutates",
-      "source": "file:src/memory/revision.memory.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/revision.memory.ts",
-        "line": 26,
-        "text": "db.concepts.put(concept)"
-      },
-      "id": "7b7b6a3e5c0356aa052d"
     },
     {
       "type": "usesState",
@@ -7153,18 +7081,6 @@
       "id": "7cbb7c78e26e28d8dfdd"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 102,
-        "text": "db.concepts.toArray()"
-      },
-      "id": "7cd5aa29bc011346531e"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/views/RevisionView.tsx",
       "target": "file:src/lib/tutorBook.json",
@@ -7236,18 +7152,6 @@
       "id": "7d9808babf1a46b2e9fb"
     },
     {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 145,
-        "text": "db.learningBooks.put(book)"
-      },
-      "id": "7e283cb4bad8b7c60596"
-    },
-    {
       "type": "exports",
       "source": "file:src/store/index.ts",
       "target": "file:src/store/index.ts:export:PricingState",
@@ -7270,6 +7174,18 @@
         "text": "import { FloatingSkillsMenu } from \"./FloatingSkillsMenu\";"
       },
       "id": "7eff0257ae858839a06c"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 126,
+        "text": "db.learningBooks.clear()"
+      },
+      "id": "7f56821a0a22afcd3f9a"
     },
     {
       "type": "renders",
@@ -7440,7 +7356,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 1,
-        "text": "import { db } from './longterm.memory';"
+        "text": "import { db } from \"./longterm.memory\";"
       },
       "id": "82f4b5f6dc67b23f5893"
     },
@@ -7477,6 +7393,18 @@
       "id": "837a3cf478ed2e628540"
     },
     {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 577,
+        "text": "db.concepts.put(newConcept)"
+      },
+      "id": "843de35776ba8ec3a727"
+    },
+    {
       "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:aiModel",
@@ -7496,21 +7424,9 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 5,
-        "text": "import { prerequisiteDAG } from './prerequisite.dag';"
+        "text": "import { prerequisiteDAG } from \"./prerequisite.dag\";"
       },
       "id": "845dfa5ac412cbe82df2"
-    },
-    {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 406,
-        "text": "db.concepts.put(existing)"
-      },
-      "id": "845f975b36aefc1d2f38"
     },
     {
       "type": "renders",
@@ -7530,9 +7446,33 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 5,
-        "text": "import { prerequisiteDAG } from './prerequisite.dag';"
+        "text": "import { prerequisiteDAG } from \"./prerequisite.dag\";"
       },
       "id": "85bf626ef15e6f2656b1"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/memory/prerequisite.dag.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/prerequisite.dag.ts",
+        "line": 17,
+        "text": "db.concepts.get(prereqId)"
+      },
+      "id": "85eac041e467c0efadd4"
+    },
+    {
+      "type": "imports",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "file:src/store/index.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 23,
+        "text": "import { useStore } from \"../store\";"
+      },
+      "id": "86b32959f2cecd875598"
     },
     {
       "type": "writesStore",
@@ -7639,17 +7579,6 @@
       "id": "88c7933d6197d59759e1"
     },
     {
-      "type": "definedIn",
-      "source": "component:BrainView",
-      "target": "file:src/views/BrainView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 76
-      },
-      "id": "88ce46ecabb13f2fd6f1"
-    },
-    {
       "type": "readsDatabase",
       "source": "file:src/memory/misconception.graph.ts",
       "target": "databaseTable:misconceptions",
@@ -7657,7 +7586,7 @@
       "evidence": {
         "file": "src/memory/misconception.graph.ts",
         "line": 25,
-        "text": "db.misconceptions.where('concept_id')"
+        "text": "db.misconceptions.filter((m) => !m.resolved)"
       },
       "id": "89081081fe80e08e70ac"
     },
@@ -7743,6 +7672,18 @@
       "id": "8b1cd93f061293461c55"
     },
     {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBookConcepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 430,
+        "text": "db.learningBookConcepts.put(nextConcept)"
+      },
+      "id": "8b2f96b7389b5e6075d6"
+    },
+    {
       "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:setSelectedTextContext",
@@ -7790,18 +7731,6 @@
       "id": "8be745e09ac49ef4aa74"
     },
     {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBookConcepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 327,
-        "text": "db.learningBookConcepts.put(nextConcept)"
-      },
-      "id": "8bfb7609d3fc57c94ec2"
-    },
-    {
       "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:webUsage",
@@ -7831,7 +7760,7 @@
       "evidence": {
         "file": "src/memory/zpd.calculator.ts",
         "line": 2,
-        "text": "import { prerequisiteDAG } from './prerequisite.dag';"
+        "text": "import { prerequisiteDAG } from \"./prerequisite.dag\";"
       },
       "id": "8c813de15a9e3a876a84"
     },
@@ -7917,6 +7846,18 @@
       "id": "8e56a8316bf6e71f5837"
     },
     {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:interactions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 256,
+        "text": "db.interactions.add(interaction)"
+      },
+      "id": "8ea74c4cb717cbb02e72"
+    },
+    {
       "type": "wraps",
       "source": "file:src/App.tsx",
       "target": "route:study",
@@ -7995,6 +7936,18 @@
       "id": "90e0d7c83804e1990552"
     },
     {
+      "type": "exports",
+      "source": "file:src/memory/zpd.calculator.ts",
+      "target": "file:src/memory/zpd.calculator.ts:export:zpdCalculator",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/zpd.calculator.ts",
+        "line": 37,
+        "text": "zpdCalculator"
+      },
+      "id": "90f102215772b92b654e"
+    },
+    {
       "type": "readsStore",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "storeField:pdfPage",
@@ -8053,6 +8006,18 @@
         "text": "(state) => state.setIsVoiceActive"
       },
       "id": "92d7cecc3017e224abed"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 174,
+        "text": "db.learningBooks.put(book)"
+      },
+      "id": "92f1f21f80449fca323b"
     },
     {
       "type": "exports",
@@ -8138,16 +8103,16 @@
       "id": "95e9d8e043e0113bbea8"
     },
     {
-      "type": "writesDatabase",
+      "type": "mutates",
       "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:interactions",
+      "target": "databaseTable:traceLogs",
       "confidence": 0.9,
       "evidence": {
         "file": "src/memory/memory.orchestrator.ts",
-        "line": 202,
-        "text": "db.interactions.add(interaction)"
+        "line": 692,
+        "text": "db.traceLogs.add({\n        id: traceId,\n        timestamp: Date.now(),\n        action,\n        payload,\n        llmExplanation: explanation,\n      })"
       },
-      "id": "95ef3079c5b58504d6b2"
+      "id": "96534230a8e2014c5f97"
     },
     {
       "type": "dependsOn",
@@ -8185,6 +8150,18 @@
       "id": "96aebb9d1eaeae2f5e4f"
     },
     {
+      "type": "imports",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "file:src/memory/longterm.memory.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 16,
+        "text": "import {\n  db,\n  PersistentConcept,\n  SessionMemoryRecord,\n  ConversationInteraction,\n} from \"../memory/longterm.memory\";"
+      },
+      "id": "971473290b7514e65acf"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/debug/docs-sync.ts",
       "target": "package:fs",
@@ -8204,7 +8181,7 @@
       "evidence": {
         "file": "src/memory/prerequisite.dag.ts",
         "line": 1,
-        "text": "import { db } from './longterm.memory';"
+        "text": "import { db } from \"./longterm.memory\";"
       },
       "id": "97a6f63b16359fe01cf0"
     },
@@ -8231,18 +8208,6 @@
         "text": "import express from \"express\";"
       },
       "id": "9845385087d38360a803"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:interactions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 452,
-        "text": "db.interactions.orderBy('timestamp')"
-      },
-      "id": "98690fa98c016c3a5e30"
     },
     {
       "type": "writesStore",
@@ -8324,18 +8289,6 @@
       "id": "9a9610f2b9e8fc2d3157"
     },
     {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBookConcepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 100,
-        "text": "db.learningBookConcepts.clear()"
-      },
-      "id": "9a9a077b2981fec8c368"
-    },
-    {
       "type": "definedIn",
       "source": "component:FlashcardUI",
       "target": "file:src/views/RevisionView.tsx",
@@ -8357,18 +8310,6 @@
         "text": "CognitiveLoadMonitor"
       },
       "id": "9ac6d5fba7ca4c28e562"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 126,
-        "text": "db.learningBooks.get(bookId)"
-      },
-      "id": "9ae4e94a5509e5d3a812"
     },
     {
       "type": "dependsOn",
@@ -8395,6 +8336,18 @@
       "id": "9b813a9dadcd7ebfc584"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 34,
+        "text": "db.concepts.toArray()"
+      },
+      "id": "9b9b8f92b73c8b24253b"
+    },
+    {
       "type": "usesState",
       "source": "file:src/App.tsx",
       "target": "storeField:activeView",
@@ -8416,18 +8369,6 @@
         "text": "setActiveView"
       },
       "id": "9c79d265bef6c65cc4f3"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 460,
-        "text": "db.concepts.orderBy('lastReviewedAt')"
-      },
-      "id": "9ca9e73d6a7f477673cf"
     },
     {
       "type": "emits",
@@ -8498,18 +8439,6 @@
       "id": "9ddfec9829bed1440178"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 83,
-        "text": "db.concepts.orderBy('lastReviewedAt')"
-      },
-      "id": "9de4a1aa6f521946f302"
-    },
-    {
       "type": "servedBy",
       "source": "endpoint:POST /api/debug/runs/:id/cancel",
       "target": "file:server.ts",
@@ -8543,6 +8472,18 @@
         "text": "(state) => state.setActiveLearningBookId"
       },
       "id": "9e8e4b06429e38287511"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/memory/misconception.graph.ts",
+      "target": "databaseTable:misconceptions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/misconception.graph.ts",
+        "line": 45,
+        "text": "db.misconceptions.get(id)"
+      },
+      "id": "9f008d2d7268b29f42d1"
     },
     {
       "type": "dependsOn",
@@ -8678,7 +8619,7 @@
       "evidence": {
         "file": "src/memory/zpd.calculator.ts",
         "line": 1,
-        "text": "import { db } from './longterm.memory';"
+        "text": "import { db } from \"./longterm.memory\";"
       },
       "id": "a2c52080badfea0a8edc"
     },
@@ -8800,6 +8741,17 @@
       "id": "a561cffeebac185286d3"
     },
     {
+      "type": "definedIn",
+      "source": "component:BrainView",
+      "target": "file:src/views/BrainView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/BrainView.tsx",
+        "line": 80
+      },
+      "id": "a58d72625c23ece22c02"
+    },
+    {
       "type": "readsDatabase",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "databaseTable:learningBooks",
@@ -8881,18 +8833,6 @@
       "id": "a75a554d0619444231a9"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 14,
-        "text": "db.concepts.toArray()"
-      },
-      "id": "a792dc4137bc23621a76"
-    },
-    {
       "type": "imports",
       "source": "file:src/views/RevisionView.tsx",
       "target": "file:src/components/PatternSVGs.tsx",
@@ -8959,7 +8899,7 @@
       "evidence": {
         "file": "src/memory/revision.memory.ts",
         "line": 1,
-        "text": "import { db, PersistentConcept } from './longterm.memory';"
+        "text": "import { db, PersistentConcept } from \"./longterm.memory\";"
       },
       "id": "a81d93cec4813dcfe434"
     },
@@ -9023,18 +8963,6 @@
       "id": "ab2acc980f8308e32b36"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "databaseTable:interactions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 15,
-        "text": "db.interactions.toArray()"
-      },
-      "id": "ab5e2625215cb3d0c42d"
-    },
-    {
       "type": "imports",
       "source": "file:src/views/RevisionView.tsx",
       "target": "file:src/store/index.ts",
@@ -9080,6 +9008,18 @@
       "id": "ac2a3428de81603ffc25"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBookConcepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 393,
+        "text": "db.learningBookConcepts.get(conceptId)"
+      },
+      "id": "ac43bfae2ca7a6c65a6f"
+    },
+    {
       "type": "definedIn",
       "source": "component:ThinkingPanel",
       "target": "file:src/components/ChatPanel.tsx",
@@ -9089,18 +9029,6 @@
         "line": 1261
       },
       "id": "ac6e0d978d18b6b4d770"
-    },
-    {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 436,
-        "text": "db.concepts.put(newConcept)"
-      },
-      "id": "ac8ca55c8b88f7d16be6"
     },
     {
       "type": "mutates",
@@ -9123,6 +9051,18 @@
         "text": "setAskTutorQuery"
       },
       "id": "acdf6d799af52407832f"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBookConcepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 430,
+        "text": "db.learningBookConcepts.put(nextConcept)"
+      },
+      "id": "ace78ca7cee010e9ee68"
     },
     {
       "type": "definedIn",
@@ -9160,6 +9100,18 @@
       "id": "aef6202e9b845f09c955"
     },
     {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:sessions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 107,
+        "text": "db.sessions.add({\n      id: this.currentSessionId,\n      startTime: Date.now(),\n      pagesVisited: [],\n      conceptsDiscussed: [],\n      solvedProblems: 0,\n  "
+      },
+      "id": "af4a203bc9c24c1786be"
+    },
+    {
       "type": "callsEndpoint",
       "source": "file:src/views/AdminView.tsx",
       "target": "endpoint:ANY /api/debug/runs",
@@ -9182,18 +9134,6 @@
         "text": "ChatUsage"
       },
       "id": "b03eba86c9df6c3291c1"
-    },
-    {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningEntries",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 368,
-        "text": "db.learningEntries.add({\n      id: generateId(),\n      bookId,\n      conversationId,\n      timestamp: now,\n      userName,\n      userMessage,\n      assistantSum"
-      },
-      "id": "b05da833d07372655a2c"
     },
     {
       "type": "dependsOn",
@@ -9303,6 +9243,18 @@
       "id": "b20ffd85e7dbc1f79a15"
     },
     {
+      "type": "mutates",
+      "source": "file:src/memory/misconception.graph.ts",
+      "target": "databaseTable:misconceptions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/misconception.graph.ts",
+        "line": 20,
+        "text": "db.misconceptions.add(misconception)"
+      },
+      "id": "b31c04ce69df5d628875"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/runtime/task-executor.ts",
       "target": "package:child_process",
@@ -9313,18 +9265,6 @@
         "text": "import { execFileSync } from \"child_process\";"
       },
       "id": "b3859bab957c202f5422"
-    },
-    {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 406,
-        "text": "db.concepts.put(existing)"
-      },
-      "id": "b38b8ec864d8bdc04011"
     },
     {
       "type": "usesState",
@@ -9456,6 +9396,18 @@
       "id": "b6a4d2b69b89530b3c63"
     },
     {
+      "type": "dependsOn",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "file:src/memory/longterm.memory.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 16,
+        "text": "import {\n  db,\n  PersistentConcept,\n  SessionMemoryRecord,\n  ConversationInteraction,\n} from \"../memory/longterm.memory\";"
+      },
+      "id": "b6a60df05eedf11678a0"
+    },
+    {
       "type": "imports",
       "source": "file:src/main.tsx",
       "target": "file:src/brain-runtime/installBrainRuntime.ts",
@@ -9537,6 +9489,18 @@
       "id": "b88de535bdd53092b275"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/memory/prerequisite.dag.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/prerequisite.dag.ts",
+        "line": 29,
+        "text": "db.concepts.get(conceptId)"
+      },
+      "id": "b92240d23d7f98f987e0"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/brain-runtime/installBrainRuntime.ts",
       "target": "file:src/memory/longterm.memory.ts",
@@ -9559,6 +9523,18 @@
         "text": "(state) => state.recordWebSearchEvent"
       },
       "id": "b9d80b4f90d61b6fc6bb"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 549,
+        "text": "db.concepts.put(existing)"
+      },
+      "id": "ba18ac0bc5c91163d0c2"
     },
     {
       "type": "dependsOn",
@@ -9595,30 +9571,6 @@
         "text": "import * as path from \"path\";"
       },
       "id": "bc285b6386957cbf0b6a"
-    },
-    {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 434,
-        "text": "db.concepts.put(newConcept)"
-      },
-      "id": "bca1e0f8492aeee965a7"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/memory/productive.failure.ts",
-      "target": "file:src/memory/productive.failure.ts:export:ProductiveFailureEngine",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/productive.failure.ts",
-        "line": 5,
-        "text": "ProductiveFailureEngine"
-      },
-      "id": "bca4bf28e82e31a50015"
     },
     {
       "type": "renders",
@@ -9711,6 +9663,18 @@
       "id": "be9821218e9ff2558c1d"
     },
     {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningEntries",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 498,
+        "text": "db.learningEntries.add({\n      id: generateId(),\n      bookId,\n      conversationId,\n      timestamp: now,\n      userName,\n      userMessage,\n      assistantSum"
+      },
+      "id": "bf179e8f3a02d8f98d77"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "file:src/memory/longterm.memory.ts",
@@ -9718,7 +9682,7 @@
       "evidence": {
         "file": "src/memory/memory.orchestrator.ts",
         "line": 2,
-        "text": "import { db, PersistentConcept, ConversationInteraction, LearningBook, LearningBookConcept } from './longterm.memory';"
+        "text": "import {\n  db,\n  PersistentConcept,\n  ConversationInteraction,\n  LearningBook,\n  LearningBookConcept,\n} from \"./longterm.memory\";"
       },
       "id": "bf221cb1dcfa78b0c3f0"
     },
@@ -9771,16 +9735,28 @@
       "id": "bfa7cb0c0bc5b5ba903a"
     },
     {
-      "type": "writesDatabase",
+      "type": "exports",
       "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBookConcepts",
+      "target": "file:src/memory/memory.orchestrator.ts:export:LearningBookUpdateInput",
       "confidence": 0.9,
       "evidence": {
         "file": "src/memory/memory.orchestrator.ts",
-        "line": 100,
-        "text": "db.learningBookConcepts.clear()"
+        "line": 59,
+        "text": "LearningBookUpdateInput"
       },
-      "id": "c087e49c89c5015d610e"
+      "id": "bfeaadadf95c816d52f8"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:interactions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 256,
+        "text": "db.interactions.add(interaction)"
+      },
+      "id": "c0188ded364116aa1373"
     },
     {
       "type": "imports",
@@ -9901,18 +9877,6 @@
       "id": "c28b98cfd145ce6262db"
     },
     {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 436,
-        "text": "db.concepts.put(newConcept)"
-      },
-      "id": "c3378eddf4b92e9706fc"
-    },
-    {
       "type": "exports",
       "source": "file:src/memory/productive.failure.ts",
       "target": "file:src/memory/productive.failure.ts:export:StruggleState",
@@ -9934,18 +9898,6 @@
         "text": "setPdfTotalPages"
       },
       "id": "c3c5900000c649833d79"
-    },
-    {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 167,
-        "text": "db.learningBooks.put(nextBook)"
-      },
-      "id": "c429bb83033483c6ac7b"
     },
     {
       "type": "callsEndpoint",
@@ -10013,7 +9965,7 @@
       "evidence": {
         "file": "src/views/BrainView.tsx",
         "line": 1,
-        "text": "import React, { useRef, useEffect, useState } from 'react';"
+        "text": "import React, { useRef, useEffect, useState } from \"react\";"
       },
       "id": "c6653f85293a043ce4bb"
     },
@@ -10106,7 +10058,7 @@
       "evidence": {
         "file": "src/memory/scaffolding.engine.ts",
         "line": 1,
-        "text": "import { PersistentConcept } from './longterm.memory';"
+        "text": "import { PersistentConcept } from \"./longterm.memory\";"
       },
       "id": "c81c994e9b78b7c5e8e7"
     },
@@ -10169,6 +10121,30 @@
       "id": "c965d8d6b6b2da7e6b11"
     },
     {
+      "type": "writesDatabase",
+      "source": "file:src/memory/misconception.graph.ts",
+      "target": "databaseTable:misconceptions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/misconception.graph.ts",
+        "line": 20,
+        "text": "db.misconceptions.add(misconception)"
+      },
+      "id": "c9c1d2e09b99c6a83960"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:traceLogs",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 692,
+        "text": "db.traceLogs.add({\n        id: traceId,\n        timestamp: Date.now(),\n        action,\n        payload,\n        llmExplanation: explanation,\n      })"
+      },
+      "id": "ca4c9651a704ae969931"
+    },
+    {
       "type": "definedIn",
       "source": "component:ShikiHighlighter",
       "target": "file:src/components/ShikiHighlighter.tsx",
@@ -10202,30 +10178,6 @@
         "text": "db.concepts.delete(deleteTarget.id)"
       },
       "id": "cb0b075774eaf92e892d"
-    },
-    {
-      "type": "mutates",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 365,
-        "text": "db.learningBooks.put(book)"
-      },
-      "id": "cb22b13830a905f1c6e1"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/memory/illusion.detector.ts",
-      "target": "file:src/memory/illusion.detector.ts:export:illusionDetector",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/illusion.detector.ts",
-        "line": 8,
-        "text": "illusionDetector"
-      },
-      "id": "cb85f0ccbe986d728c0d"
     },
     {
       "type": "dependsOn",
@@ -10288,18 +10240,6 @@
       "id": "cc66575325d5a3e1a015"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBookConcepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 304,
-        "text": "db.learningBookConcepts.get(conceptId)"
-      },
-      "id": "cc78aaa671ffa6cb0e8a"
-    },
-    {
       "type": "usesState",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "storeField:pdfPage",
@@ -10322,18 +10262,6 @@
         "text": "(state) => state.resetUsageAnalytics"
       },
       "id": "cdcd25e89c4f7df7f2b6"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "file:src/memory/memory.orchestrator.ts:export:brainOrchestrator",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 533,
-        "text": "brainOrchestrator"
-      },
-      "id": "ce3e0f13af63c351dff1"
     },
     {
       "type": "renders",
@@ -10453,6 +10381,18 @@
       "id": "d0b85cff83b3672f5881"
     },
     {
+      "type": "dependsOn",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "file:src/store/index.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 23,
+        "text": "import { useStore } from \"../store\";"
+      },
+      "id": "d0bc466921885f6d1a92"
+    },
+    {
       "type": "exports",
       "source": "file:src/store/index.ts",
       "target": "file:src/store/index.ts:export:WebUsage",
@@ -10476,6 +10416,18 @@
       "id": "d1a941a0e9c52d743a71"
     },
     {
+      "type": "mutates",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 211,
+        "text": "db.learningBooks.put(nextBook)"
+      },
+      "id": "d1c4099903546b3e690d"
+    },
+    {
       "type": "imports",
       "source": "file:src/memory/bkt.engine.ts",
       "target": "file:src/memory/longterm.memory.ts",
@@ -10488,16 +10440,16 @@
       "id": "d211c0851771b5dd115b"
     },
     {
-      "type": "readsDatabase",
+      "type": "exports",
       "source": "file:src/memory/learner.model.ts",
-      "target": "databaseTable:concepts",
+      "target": "file:src/memory/learner.model.ts:export:learnerModel",
       "confidence": 0.9,
       "evidence": {
         "file": "src/memory/learner.model.ts",
-        "line": 43,
-        "text": "db.concepts.filter(c => c.p_learn < 0.6 && c.attempt_history.length > 0)"
+        "line": 151,
+        "text": "learnerModel"
       },
-      "id": "d27e20ef46c537d79340"
+      "id": "d246e3c5aa96d712f7fb"
     },
     {
       "type": "mutates",
@@ -10619,6 +10571,18 @@
       "id": "d4e010067747a518a0b5"
     },
     {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 495,
+        "text": "db.learningBooks.put(book)"
+      },
+      "id": "d519bc931b834f659325"
+    },
+    {
       "type": "exports",
       "source": "file:brain/autonomy/source-scope.ts",
       "target": "file:brain/autonomy/source-scope.ts:export:watchRoots",
@@ -10663,6 +10627,18 @@
       "id": "d5f6f6d600a5a35e8d8a"
     },
     {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 126,
+        "text": "db.learningBooks.clear()"
+      },
+      "id": "d648d8366d16d369c7bd"
+    },
+    {
       "type": "imports",
       "source": "file:src/views/BrainView.tsx",
       "target": "file:src/store/index.ts",
@@ -10670,9 +10646,21 @@
       "evidence": {
         "file": "src/views/BrainView.tsx",
         "line": 3,
-        "text": "import { useStore } from '../store';"
+        "text": "import { useStore } from \"../store\";"
       },
       "id": "d6c832b3c0a45880f9b5"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 434,
+        "text": "db.learningBooks.get(bookId)"
+      },
+      "id": "d6ccb74fb1024628870a"
     },
     {
       "type": "dependsOn",
@@ -10717,7 +10705,7 @@
       "evidence": {
         "file": "src/views/BrainView.tsx",
         "line": 8,
-        "text": "import { useLiveQuery } from 'dexie-react-hooks';"
+        "text": "import { useLiveQuery } from \"dexie-react-hooks\";"
       },
       "id": "d771c0f94b8b2ffe6bca"
     },
@@ -10752,7 +10740,7 @@
       "evidence": {
         "file": "src/memory/memory.orchestrator.ts",
         "line": 1,
-        "text": "import { generateEmbedding, cosineSimilarity } from './memory.embeddings';"
+        "text": "import { generateEmbedding, cosineSimilarity } from \"./memory.embeddings\";"
       },
       "id": "d8499144b8ca5e1b7fd6"
     },
@@ -10764,7 +10752,7 @@
       "evidence": {
         "file": "src/memory/misconception.graph.ts",
         "line": 1,
-        "text": "import { db, Misconception } from './longterm.memory';"
+        "text": "import { db, Misconception } from \"./longterm.memory\";"
       },
       "id": "d8581290b9ed267f751d"
     },
@@ -10788,21 +10776,21 @@
       "evidence": {
         "file": "src/memory/memory.orchestrator.ts",
         "line": 1,
-        "text": "import { generateEmbedding, cosineSimilarity } from './memory.embeddings';"
+        "text": "import { generateEmbedding, cosineSimilarity } from \"./memory.embeddings\";"
       },
       "id": "d8c427c34b08d9714668"
     },
     {
-      "type": "writesDatabase",
+      "type": "exports",
       "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:sessions",
+      "target": "file:src/memory/memory.orchestrator.ts:export:MemoryOrchestrator",
       "confidence": 0.9,
       "evidence": {
         "file": "src/memory/memory.orchestrator.ts",
-        "line": 85,
-        "text": "db.sessions.add({\n      id: this.currentSessionId,\n      startTime: Date.now(),\n      pagesVisited: [],\n      conceptsDiscussed: [],\n      solvedProblems: 0,\n  "
+        "line": 96,
+        "text": "MemoryOrchestrator"
       },
-      "id": "d8f94c2a4613cf37faa1"
+      "id": "d8dd7061c3af08c779fd"
     },
     {
       "type": "dependsOn",
@@ -10918,7 +10906,7 @@
       "evidence": {
         "file": "src/views/BrainView.tsx",
         "line": 2,
-        "text": "import ForceGraph3D from 'react-force-graph-3d';"
+        "text": "import ForceGraph3D from \"react-force-graph-3d\";"
       },
       "id": "dc4249d216e5dcafce72"
     },
@@ -10932,6 +10920,18 @@
         "line": 891
       },
       "id": "dc64c5be0c8afbb6ae27"
+    },
+    {
+      "type": "exports",
+      "source": "file:src/memory/prerequisite.dag.ts",
+      "target": "file:src/memory/prerequisite.dag.ts:export:prerequisiteDAG",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/prerequisite.dag.ts",
+        "line": 43,
+        "text": "prerequisiteDAG"
+      },
+      "id": "dcf5e68d91c904c889b8"
     },
     {
       "type": "dependsOn",
@@ -11003,18 +11003,6 @@
       "id": "df00612de441ae377fed"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 227,
-        "text": "db.learningBooks.orderBy('updatedAt')"
-      },
-      "id": "dfa7c153287e84a48d2d"
-    },
-    {
       "type": "servedBy",
       "source": "websocket:/ws/debug",
       "target": "file:server.ts",
@@ -11024,18 +11012,6 @@
         "line": 1562
       },
       "id": "dfb75746202648314c4f"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/memory/learner.model.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/learner.model.ts",
-        "line": 22,
-        "text": "db.concepts.get(currentConceptId)"
-      },
-      "id": "dfbcd0b6c12802bf26ec"
     },
     {
       "type": "dependsOn",
@@ -11092,7 +11068,7 @@
       "evidence": {
         "file": "src/memory/productive.failure.ts",
         "line": 1,
-        "text": "import { PersistentConcept } from './longterm.memory';"
+        "text": "import { PersistentConcept } from \"./longterm.memory\";"
       },
       "id": "e1dcf25c3fe4109e16bb"
     },
@@ -11104,33 +11080,9 @@
       "evidence": {
         "file": "src/memory/misconception.graph.ts",
         "line": 2,
-        "text": "import { v4 as uuidv4 } from 'uuid';"
+        "text": "import { v4 as uuidv4 } from \"uuid\";"
       },
       "id": "e1e7ef09bc58da4d6307"
-    },
-    {
-      "type": "writesDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 101,
-        "text": "db.learningBooks.clear()"
-      },
-      "id": "e1ee5825e1e4cb2f861c"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "file:src/memory/memory.orchestrator.ts:export:LearningBookUpdateInput",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 40,
-        "text": "LearningBookUpdateInput"
-      },
-      "id": "e1f1d56ec4799a0b0b4b"
     },
     {
       "type": "dependsOn",
@@ -11216,6 +11168,18 @@
       "id": "e4a71fbba993daa21cc6"
     },
     {
+      "type": "writesDatabase",
+      "source": "file:src/memory/memory.orchestrator.ts",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/memory.orchestrator.ts",
+        "line": 579,
+        "text": "db.concepts.put(newConcept)"
+      },
+      "id": "e50b529a1b8decf40aea"
+    },
+    {
       "type": "exports",
       "source": "file:src/components/StatusBadge.tsx",
       "target": "file:src/components/StatusBadge.tsx:export:ExpiredIcon",
@@ -11251,6 +11215,18 @@
       "id": "e5aefea78b9c7d3d953e"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "databaseTable:sessions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 36,
+        "text": "db.sessions.toArray()"
+      },
+      "id": "e6352eb9cca3d0abfa98"
+    },
+    {
       "type": "imports",
       "source": "file:src/memory/revision.memory.ts",
       "target": "file:src/memory/longterm.memory.ts",
@@ -11258,21 +11234,9 @@
       "evidence": {
         "file": "src/memory/revision.memory.ts",
         "line": 1,
-        "text": "import { db, PersistentConcept } from './longterm.memory';"
+        "text": "import { db, PersistentConcept } from \"./longterm.memory\";"
       },
       "id": "e65d3a8be6804b2578b2"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/memory/memory.orchestrator.ts",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/memory.orchestrator.ts",
-        "line": 330,
-        "text": "db.learningBooks.get(bookId)"
-      },
-      "id": "e7170986eaa463e6dfe6"
     },
     {
       "type": "dependsOn",
@@ -11321,18 +11285,6 @@
         "text": "import { useLiveQuery } from \"dexie-react-hooks\";"
       },
       "id": "e86fa9339ca79aa7df99"
-    },
-    {
-      "type": "imports",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "file:src/memory/longterm.memory.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 3,
-        "text": "import { db, PersistentConcept, SessionMemoryRecord, ConversationInteraction } from '../memory/longterm.memory';"
-      },
-      "id": "e8b704837ece71312fc5"
     },
     {
       "type": "dependsOn",
@@ -11390,7 +11342,7 @@
       "evidence": {
         "file": "src/views/BrainView.tsx",
         "line": 6,
-        "text": "import { motion } from 'motion/react';"
+        "text": "import { motion } from \"motion/react\";"
       },
       "id": "eab1a18684809ab40ff7"
     },
@@ -11453,6 +11405,18 @@
       "id": "ed413b0d28a5f34d5517"
     },
     {
+      "type": "usesState",
+      "source": "file:src/views/BrainView.tsx",
+      "target": "storeField:learnerName",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/BrainView.tsx",
+        "line": 81,
+        "text": "(state) => state.learnerName"
+      },
+      "id": "edaf5498dc564a23f125"
+    },
+    {
       "type": "renders",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "component:UsageGraphBar",
@@ -11506,21 +11470,9 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 1,
-        "text": "import { db } from './longterm.memory';"
+        "text": "import { db } from \"./longterm.memory\";"
       },
       "id": "ef5592453757f945df3b"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/memory/misconception.graph.ts",
-      "target": "databaseTable:misconceptions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/misconception.graph.ts",
-        "line": 21,
-        "text": "db.misconceptions.filter(m => !m.resolved)"
-      },
-      "id": "efbc543960f9710d72fa"
     },
     {
       "type": "exports",
@@ -11566,18 +11518,6 @@
         "line": 456
       },
       "id": "f0ed49374479479c4071"
-    },
-    {
-      "type": "dependsOn",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "file:src/store/index.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 5,
-        "text": "import { useStore } from '../store';"
-      },
-      "id": "f11f48dc2a545185f313"
     },
     {
       "type": "dependsOn",
@@ -11660,6 +11600,30 @@
       "id": "f3c4cc5d84896d7a2312"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/views/BrainView.tsx",
+      "target": "databaseTable:learningBookConcepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/BrainView.tsx",
+        "line": 92,
+        "text": "db.learningBookConcepts.orderBy(\"updatedAt\")"
+      },
+      "id": "f3fc52b459a644dfcb09"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/memory/misconception.graph.ts",
+      "target": "databaseTable:misconceptions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/memory/misconception.graph.ts",
+        "line": 48,
+        "text": "db.misconceptions.put(m)"
+      },
+      "id": "f40869f2379331d530ba"
+    },
+    {
       "type": "readsStore",
       "source": "file:src/App.tsx",
       "target": "storeField:setActiveView",
@@ -11695,18 +11659,6 @@
       "id": "f4e14a54c6c33136b09a"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/memory/prerequisite.dag.ts",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/prerequisite.dag.ts",
-        "line": 5,
-        "text": "db.concepts.get(conceptId)"
-      },
-      "id": "f4e91fb91512fd6cc8f4"
-    },
-    {
       "type": "writesStore",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:setIsVoiceActive",
@@ -11716,6 +11668,18 @@
         "text": "setIsVoiceActive"
       },
       "id": "f55e02275ded00851009"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/BrainView.tsx",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/BrainView.tsx",
+        "line": 97,
+        "text": "db.concepts.orderBy(\"lastReviewedAt\")"
+      },
+      "id": "f65614e56120227da016"
     },
     {
       "type": "definedIn",
@@ -11760,7 +11724,7 @@
       "evidence": {
         "file": "src/memory/scaffolding.engine.ts",
         "line": 1,
-        "text": "import { PersistentConcept } from './longterm.memory';"
+        "text": "import { PersistentConcept } from \"./longterm.memory\";"
       },
       "id": "f82d51f9ffd0070e8b3f"
     },
@@ -11772,7 +11736,7 @@
       "evidence": {
         "file": "src/memory/learner.model.ts",
         "line": 2,
-        "text": "import { zpdCalculator } from './zpd.calculator';"
+        "text": "import { zpdCalculator } from \"./zpd.calculator\";"
       },
       "id": "f926edf75bc1d37f024e"
     },
@@ -11787,18 +11751,6 @@
         "text": "SvgDark"
       },
       "id": "f948b323824a03932256"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/memory/misconception.graph.ts",
-      "target": "databaseTable:misconceptions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/memory/misconception.graph.ts",
-        "line": 29,
-        "text": "db.misconceptions.get(id)"
-      },
-      "id": "f96a337656985f0c5a38"
     },
     {
       "type": "imports",
@@ -11820,7 +11772,7 @@
       "evidence": {
         "file": "src/views/BrainView.tsx",
         "line": 3,
-        "text": "import { useStore } from '../store';"
+        "text": "import { useStore } from \"../store\";"
       },
       "id": "fa630f7a579cab0d2466"
     },
@@ -11929,18 +11881,6 @@
       "id": "fd3103b33e017023c9e9"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 81,
-        "text": "db.learningBooks.orderBy('updatedAt')"
-      },
-      "id": "fd7e4a8660fae22fed73"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/brain-runtime/instrumentDexie.ts",
       "target": "file:src/brain-runtime/runtimeTelemetry.ts",
@@ -11951,18 +11891,6 @@
         "text": "import { recordBrainRuntime } from \"./runtimeTelemetry\";"
       },
       "id": "fd9cc27f9e87e1cf53d8"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "file:src/views/AnalyticsView.tsx:export:AnalyticsView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 7,
-        "text": "AnalyticsView"
-      },
-      "id": "fdb4d6da2847d30ab9a7"
     },
     {
       "type": "usesState",
@@ -12006,7 +11934,7 @@
       "evidence": {
         "file": "src/views/BrainView.tsx",
         "line": 7,
-        "text": "import { db } from '../memory/longterm.memory';"
+        "text": "import { db } from \"../memory/longterm.memory\";"
       },
       "id": "fec57b6658e91071ef2f"
     },

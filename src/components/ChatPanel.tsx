@@ -3592,7 +3592,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     className="absolute z-20 flex items-center justify-center"
                   >
                     <ArrowUp
-                      className="w-[18px] h-[18px] transition-all duration-300"
+                      className="w-[18px] h-[18px] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300"
                       color={isActive && isValid ? "#ECECEC" : "#555555"}
                       style={{
                         filter:

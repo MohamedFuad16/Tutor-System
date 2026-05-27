@@ -319,7 +319,7 @@ export function PdfViewer() {
           onMouseMove={handleMouseMove}
           onMouseEnter={() => setIsHoveringContainer(true)}
           onMouseLeave={() => setIsHoveringContainer(false)}
-          className="relative flex items-center gap-1 p-1.5 rounded-full overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-all duration-300"
+          className="relative flex items-center gap-1 p-1.5 rounded-full overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300"
           style={{
             background: "rgba(20, 20, 22, 0.85)",
             backdropFilter: "blur(24px)",
@@ -421,7 +421,7 @@ export function PdfViewer() {
           }}
         />
         <div
-          className="relative z-10 transition-all duration-300 preserve-3d"
+          className="relative z-10 transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 preserve-3d"
           onDoubleClick={handleDoubleClick}
           onMouseUp={handleSelection}
         >
@@ -628,7 +628,7 @@ export function PdfViewer() {
                         window.getSelection()?.removeAllRanges();
                       }
                     }}
-                    className="flex items-center justify-center px-3 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-all text-[10px] font-semibold gap-1 ml-1 relative z-10 focus:outline-none focus:ring-2 ring-indigo-500/50 uppercase tracking-wide whitespace-nowrap group border border-indigo-400/30"
+                    className="flex items-center justify-center px-3 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-[color,background-color,border-color,box-shadow,transform,opacity] text-[10px] font-semibold gap-1 ml-1 relative z-10 focus:outline-none focus:ring-2 ring-indigo-500/50 uppercase tracking-wide whitespace-nowrap group border border-indigo-400/30"
                     style={{ transform: "translateZ(0)", overflow: "hidden" }}
                   >
                     <span className="absolute inset-0 z-0 rounded-lg bg-[linear-gradient(135deg,rgba(255,255,255,0.24),rgba(255,255,255,0.04)_42%,rgba(129,140,248,0.32))] opacity-70 transition-opacity group-hover:opacity-100 pointer-events-none" />

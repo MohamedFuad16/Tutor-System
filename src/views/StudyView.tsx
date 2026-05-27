@@ -253,7 +253,7 @@ export function StudyView() {
                   style={{ opacity: arrow1Opacity }}
                 >
                   <span
-                    className="text-[10px] uppercase tracking-[0.25em] font-semibold mb-1 transition-all duration-300 group-hover:scale-110 group-hover:text-orange-400"
+                    className="text-[10px] uppercase tracking-[0.25em] font-semibold mb-1 transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 group-hover:scale-110 group-hover:text-orange-400"
                     style={{
                       color: "#ff6e00",
                       textShadow: "0 0 12px rgba(255,110,0,0.4)",
@@ -313,7 +313,7 @@ export function StudyView() {
                   style={{ opacity: arrow2Opacity }}
                 >
                   <span
-                    className="text-[10px] uppercase tracking-[0.25em] font-semibold mb-1 transition-all duration-300 group-hover:scale-110 group-hover:text-zinc-200"
+                    className="text-[10px] uppercase tracking-[0.25em] font-semibold mb-1 transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 group-hover:scale-110 group-hover:text-zinc-200"
                     style={{
                       color: "#ffffff",
                       textShadow: "0 0 12px rgba(255,255,255,0.4)",
@@ -418,7 +418,7 @@ export function StudyView() {
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setIsChatOpen(true)}
-              className="group relative flex min-h-[92px] items-center justify-between overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] px-5 py-4 text-left text-white shadow-[0_18px_54px_rgba(0,0,0,0.34)] transition-all duration-300 hover:border-white/20 hover:shadow-[0_22px_60px_rgba(255,110,0,0.1)]"
+              className="group relative flex min-h-[92px] items-center justify-between overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] px-5 py-4 text-left text-white shadow-[0_18px_54px_rgba(0,0,0,0.34)] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 hover:border-white/20 hover:shadow-[0_22px_60px_rgba(255,110,0,0.1)]"
             >
               {/* Radial Gradients matching Usage UI */}
               <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_16%_0%,rgba(255,110,0,0.24),transparent_36%),radial-gradient(circle_at_90%_110%,rgba(255,255,255,0.08),transparent_38%)] transition-opacity duration-300 group-hover:opacity-100 opacity-80" />
@@ -434,7 +434,7 @@ export function StudyView() {
 
               <div className="relative z-10 flex items-center justify-between w-full">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#ff6e00]/20 bg-[#ff6e00]/10 text-[#ff6e00] shadow-[0_0_15px_rgba(255,110,0,0.15)] transition-all duration-300 group-hover:scale-105 group-hover:border-[#ff6e00]/40 group-hover:bg-[#ff6e00]/20 group-hover:shadow-[0_0_22px_rgba(255,110,0,0.3)]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#ff6e00]/20 bg-[#ff6e00]/10 text-[#ff6e00] shadow-[0_0_15px_rgba(255,110,0,0.15)] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 group-hover:scale-105 group-hover:border-[#ff6e00]/40 group-hover:bg-[#ff6e00]/20 group-hover:shadow-[0_0_22px_rgba(255,110,0,0.3)]">
                     <MessageSquare size={18} />
                   </div>
                   <div>
@@ -446,7 +446,7 @@ export function StudyView() {
                     </div>
                   </div>
                 </div>
-                <div className="rounded-full border border-[#ff6e00]/30 bg-[#ff6e00]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#ff6e00] transition-all duration-300 group-hover:scale-105 group-hover:border-[#ff6e00]/50 group-hover:bg-[#ff6e00]/20 group-hover:text-white group-hover:shadow-[0_0_15px_rgba(255,110,0,0.4)]">
+                <div className="rounded-full border border-[#ff6e00]/30 bg-[#ff6e00]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#ff6e00] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 group-hover:scale-105 group-hover:border-[#ff6e00]/50 group-hover:bg-[#ff6e00]/20 group-hover:text-white group-hover:shadow-[0_0_15px_rgba(255,110,0,0.4)]">
                   Open
                 </div>
               </div>

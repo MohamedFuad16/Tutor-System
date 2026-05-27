@@ -482,7 +482,7 @@ export function RevisionView() {
                   <button
                     key={idx}
                     onClick={() => setCurrentChapterIndex(idx)}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${idx === currentChapterIndex ? "bg-zinc-900 text-white font-medium shadow-sm border border-zinc-900" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 ${idx === currentChapterIndex ? "bg-zinc-900 text-white font-medium shadow-sm border border-zinc-900" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
                   >
                     <span className="line-clamp-2 leading-snug">
                       {ch.title}
@@ -593,7 +593,7 @@ export function RevisionView() {
                         behavior: "smooth",
                       });
                     }}
-                    className="px-5 py-2.5 rounded-full border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-2"
+                    className="px-5 py-2.5 rounded-full border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-40 disabled:pointer-events-none transition-[color,background-color,border-color,box-shadow,transform,opacity] flex items-center gap-2"
                   >
                     &larr; Previous
                   </button>
@@ -608,7 +608,7 @@ export function RevisionView() {
                         behavior: "smooth",
                       });
                     }}
-                    className="px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-2 shadow-sm"
+                    className="px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 disabled:opacity-40 disabled:pointer-events-none transition-[color,background-color,border-color,box-shadow,transform,opacity] flex items-center gap-2 shadow-sm"
                   >
                     Next &rarr;
                   </button>

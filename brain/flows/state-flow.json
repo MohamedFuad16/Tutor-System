@@ -643,7 +643,7 @@
     {
       "file": "src/views/BrainView.tsx",
       "field": "learnerName",
-      "selector": "state => state.learnerName"
+      "selector": "(state) => state.learnerName"
     },
     {
       "file": "src/views/RevisionView.tsx",
