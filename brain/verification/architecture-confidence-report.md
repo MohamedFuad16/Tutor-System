@@ -1,11 +1,11 @@
 # Architecture Confidence Report
 
-Generated: 2026-05-26T14:22:06.085Z
+Generated: 2026-05-27T08:09:46.886Z
 
-- Graph nodes: 229
-- Graph edges: 756
-- Vector chunks: 338
-- Runtime events: 55
+- Graph nodes: 246
+- Graph edges: 804
+- Vector chunks: 391
+- Runtime events: 56
 - Retrieval benchmark recall: 1.00
-- Retrieval confidence average: 0.52
-- Overall autonomous-readiness score: 92
+- Retrieval confidence average: 0.88
+- Overall autonomous-readiness score: 98

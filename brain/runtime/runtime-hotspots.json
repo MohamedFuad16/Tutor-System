@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-26T14:21:02.749Z",
+    "generatedAt": "2026-05-27T08:09:10.016Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84",
+    "sourceHash": "3b5937f3d727ce6ee55fb0b0858183b0182fe7808f1d8f7e76875c445ed0f509",
     "url": "http://127.0.0.1:3000",
-    "eventCount": 55,
+    "eventCount": 56,
     "confidence": 0.82
   },
   "hotspots": [
@@ -14,10 +14,10 @@
       "severity": 100,
       "evidence": {
         "component": "route:study",
-        "count": 15,
-        "totalDurationMs": 65.30000007152557,
-        "maxDurationMs": 26.100000023841858,
-        "averageDurationMs": 4.353333338101705
+        "count": 16,
+        "totalDurationMs": 125.49999988079071,
+        "maxDurationMs": 42.80000001192093,
+        "averageDurationMs": 7.843749992549419
       }
     },
     {
@@ -26,10 +26,10 @@
       "severity": 100,
       "evidence": {
         "component": "route:analytics",
-        "count": 13,
-        "totalDurationMs": 47.200000166893005,
-        "maxDurationMs": 10.600000023841858,
-        "averageDurationMs": 3.6307692436071544
+        "count": 12,
+        "totalDurationMs": 54.60000002384186,
+        "maxDurationMs": 12.300000011920929,
+        "averageDurationMs": 4.550000001986821
       }
     },
     {
@@ -39,21 +39,21 @@
       "evidence": {
         "component": "route:brain",
         "count": 6,
-        "totalDurationMs": 12.899999916553497,
-        "maxDurationMs": 3.699999988079071,
-        "averageDurationMs": 2.1499999860922494
+        "totalDurationMs": 17.000000059604645,
+        "maxDurationMs": 4.399999976158142,
+        "averageDurationMs": 2.833333343267441
       }
     },
     {
       "type": "render",
       "name": "route:revision",
-      "severity": 45,
+      "severity": 46,
       "evidence": {
         "component": "route:revision",
         "count": 4,
-        "totalDurationMs": 14.099999964237213,
-        "maxDurationMs": 4.800000011920929,
-        "averageDurationMs": 3.5249999910593033
+        "totalDurationMs": 17.30000001192093,
+        "maxDurationMs": 5.800000011920929,
+        "averageDurationMs": 4.325000002980232
       }
     }
   ]

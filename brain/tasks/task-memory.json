@@ -102,7 +102,8 @@
       "task-1779793822031",
       "task-1779795496370",
       "task-1779797142179",
-      "task-1779805309946"
+      "task-1779805309946",
+      "task-1779869457311"
     ]
   },
   {
@@ -165,7 +166,8 @@
     "rollbackNotes": [],
     "linkedTaskIds": [
       "task-1779763635863",
-      "task-1779788117775"
+      "task-1779788117775",
+      "task-1779869457311"
     ]
   },
   {
@@ -723,7 +725,8 @@
       "task-1779792012574",
       "task-1779793822031",
       "task-1779795496370",
-      "task-1779805309946"
+      "task-1779805309946",
+      "task-1779869457311"
     ]
   },
   {
@@ -787,6 +790,73 @@
       "task-1779791051904",
       "task-1779793822031",
       "task-1779795496370",
+      "task-1779797142179"
+    ]
+  },
+  {
+    "id": "task-1779869457311",
+    "timestamp": "2026-05-27T08:10:57.311Z",
+    "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+    "systemsAffected": [
+      "brain retrieval",
+      "brain self-audit",
+      "brain autonomy",
+      "debug orchestrator",
+      "format gates"
+    ],
+    "filesChanged": [
+      "brain/retrieval/retrieve-semantic.ts",
+      "brain/self-audit.ts",
+      "brain/autonomy/postchange.ts",
+      "brain/debug/debug-runner.ts",
+      "generate-brain.ts",
+      "brain/drift-check.ts",
+      "package.json",
+      ".prettierignore"
+    ],
+    "invariantsTouched": [
+      "source-scoped brain artifacts exclude generated debug backups",
+      "retrieval confidence must reflect corroborating evidence not raw weighted score",
+      "brain postchange should exit successfully after repairing stale drift"
+    ],
+    "risksIntroduced": [
+      "confidence thresholds may need future real-world calibration as retrieval tasks diversify"
+    ],
+    "verificationResults": {
+      "brainPostchange": true,
+      "brainVerify": true,
+      "brainDriftCheck": true,
+      "brainSelfAuditScore": 98,
+      "retrievalRecall": 1,
+      "retrievalConfidenceAverage": 0.8811166666666667,
+      "formatCheck": true,
+      "lint": true,
+      "build": true,
+      "tutorDebugRuns": [
+        "debug-2026-05-27T07-55-47-140Z",
+        "debug-2026-05-27T07-59-08-079Z"
+      ]
+    },
+    "unresolvedIssues": [
+      "--invariants"
+    ],
+    "regenerationStatus": "complete",
+    "decisions": [
+      "exact-token-context-pack-scoring",
+      "numeric-evidence-confidence-score",
+      "ignore-debug-run-backups-in-brain-source-scope",
+      "format-all-brain-ts"
+    ],
+    "failureModes": [
+      "substring-pack-score-matched-low-inside-flow",
+      "postchange-treated-repaired-stale-drift-as-failure",
+      "debug-backups-were-indexed-before-scope-exclusion"
+    ],
+    "migrations": [],
+    "rollbackNotes": [],
+    "linkedTaskIds": [
+      "task-1779763635863",
+      "task-1779765630278",
       "task-1779797142179"
     ]
   }

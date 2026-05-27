@@ -797,13 +797,14 @@ const thoughtStepMeta = (content: string, phase: string) => {
   return { icon: Brain, label: 'Reasoning', accent: '#a1a1aa' };
 };
 
-const phaseLabel = (phase: string, isComplete: boolean) => {
-  if (isComplete) return 'Ready';
-  if (phase === "retrieving") return "Reading knowledge base";
-  if (phase === "web_search") return "Searching live web";
-  if (phase === "tool_execution") return "Executing tools";
-  if (phase === "synthesizing") return "Synthesizing answer";
-  return "Thinking";
+import { StatusBadge } from './StatusBadge';
+
+const getStatusBadge = (phase: string, isComplete: boolean, hasError?: boolean) => {
+  if (hasError) return 'failed';
+  if (isComplete) return 'success';
+  if (phase === "retrieving" || phase === "web_search") return "review";
+  if (phase === "idle" && !isComplete) return "pending";
+  return "progress";
 };
 
 const ThoughtStepIcon = ({ Icon, accent, active, complete }: { Icon: React.ElementType; accent: string; active: boolean; complete: boolean }) => (
@@ -829,7 +830,8 @@ const ThoughtStepIcon = ({ Icon, accent, active, complete }: { Icon: React.Eleme
     </motion.div>
   </motion.div>
 );
-const ThinkingPanel = ({ phase, steps, isComplete, webSearch }: { phase: string, steps: any[], isComplete: boolean, webSearch?: Message['webSearch'] }) => {
+
+const ThinkingPanel = ({ phase, steps, isComplete, webSearch, hasError }: { phase: string, steps: any[], isComplete: boolean, webSearch?: Message['webSearch'], hasError?: boolean }) => {
   const [userExpanded, setUserExpanded] = useState<boolean | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const expanded = userExpanded !== null ? userExpanded : false;
@@ -854,29 +856,13 @@ const ThinkingPanel = ({ phase, steps, isComplete, webSearch }: { phase: string,
     <div ref={panelRef} className="not-prose mb-5 mt-2 overflow-hidden font-sans transition-all duration-300">
        <button 
          onClick={() => setUserExpanded(!expanded)} 
-         className="group relative flex w-full items-center gap-3 overflow-hidden bg-transparent py-2.5 text-left text-[13px] font-medium text-zinc-500 transition-all hover:bg-zinc-50/50 focus:outline-none rounded-xl px-2"
+         className="group relative flex w-full items-center gap-3 overflow-hidden bg-transparent py-2 text-left transition-all focus:outline-none"
        >
-          <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black/5">
-            {isComplete ? (
-              <Check size={14} className="text-zinc-400 group-hover:text-zinc-600 transition-colors" />
-            ) : (
-              <motion.div
-                className="relative"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 3.2, ease: "linear", repeat: Infinity }}
-              >
-                <LoaderCircle size={15} className="text-zinc-500" />
-              </motion.div>
-            )}
-          </div>
           <div className="relative min-w-0 flex-1">
-            <div className="text-[10px] uppercase tracking-[0.15em] font-bold text-zinc-400">Thought Process</div>
-            <div className={`mt-0.5 truncate tracking-tight transition-colors ${isComplete ? "text-zinc-500" : "text-zinc-800"}`}>
-              {phaseLabel(phase, isComplete)}
-            </div>
+            <StatusBadge status={getStatusBadge(phase, isComplete, hasError)} />
           </div>
           <motion.div className="relative ml-auto" animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2, type: "spring", stiffness: 300, damping: 20 }}>
-            <ChevronDown size={14} className="text-zinc-400 opacity-70 group-hover:text-zinc-600 group-hover:opacity-100" />
+            <ChevronDown size={18} className="text-zinc-400 opacity-70 group-hover:text-zinc-600 group-hover:opacity-100" />
           </motion.div>
        </button>
        
@@ -1098,6 +1084,7 @@ const MessageItem = React.memo(({
                steps={msg.reasoningSteps} 
                isComplete={sendState === "success" || (msg.phase !== undefined && msg.phase === 'complete' && msg.content.length > 0)} 
                webSearch={msg.webSearch}
+               hasError={!!msg.error}
              />
           )}
           <AnimatedMarkdown content={msg.content} isVoice={msg.isVoice} animationsEnabled={animationsEnabled} isStreaming={isLast && sendState !== 'success' && sendState !== 'idle'} />

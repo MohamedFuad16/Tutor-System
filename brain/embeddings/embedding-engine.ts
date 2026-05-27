@@ -34,8 +34,29 @@ function sha256(value: string | Buffer) {
 }
 
 function tokenize(text: string) {
-  const stop = new Set(["the", "and", "for", "with", "from", "this", "that", "into", "must", "should", "when", "where", "what", "const", "return", "import", "export"]);
-  return text.toLowerCase().split(/[^a-z0-9_/-]+/).filter((token) => token.length > 2 && !stop.has(token));
+  const stop = new Set([
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "this",
+    "that",
+    "into",
+    "must",
+    "should",
+    "when",
+    "where",
+    "what",
+    "const",
+    "return",
+    "import",
+    "export",
+  ]);
+  return text
+    .toLowerCase()
+    .split(/[^a-z0-9_/-]+/)
+    .filter((token) => token.length > 2 && !stop.has(token));
 }
 
 function sparseVector(text: string) {
@@ -51,11 +72,17 @@ function fileText(file: string) {
 }
 
 function snippet(file: string, startLine: number, endLine: number) {
-  return fileText(file).split(/\r?\n/).slice(startLine - 1, endLine).join("\n");
+  return fileText(file)
+    .split(/\r?\n/)
+    .slice(startLine - 1, endLine)
+    .join("\n");
 }
 
 function conceptsFor(text: string) {
-  const tokens = Object.entries(sparseVector(text)).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([token]) => token);
+  const tokens = Object.entries(sparseVector(text))
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12)
+    .map(([token]) => token);
   return tokens;
 }
 
@@ -91,37 +118,81 @@ function docFiles() {
     "brain/rules/mutation-boundaries.json",
     "brain/rules/ui-invariants.json",
     "brain/tasks/task-memory.json",
-    ...(fs.existsSync(contextPackDir) ? fs.readdirSync(contextPackDir).filter((file) => file.endsWith(".json")).map((file) => `brain/retrieval/context-packs/${file}`) : []),
+    ...(fs.existsSync(contextPackDir)
+      ? fs
+          .readdirSync(contextPackDir)
+          .filter((file) => file.endsWith(".json"))
+          .map((file) => `brain/retrieval/context-packs/${file}`)
+      : []),
   ].filter((file) => fs.existsSync(path.join(ROOT, file)));
 }
 
-function corpusHash(sourceChunks: Array<{ file: string; startLine: number; endLine: number; hash: string }>, docs: string[]) {
-  const sourcePart = sourceChunks.map((chunk) => `${chunk.file}:${chunk.startLine}:${chunk.endLine}:${chunk.hash}`).sort();
-  const docPart = docs.map((file) => `${file}:${sha256(fileText(file))}`).sort();
+function corpusHash(
+  sourceChunks: Array<{
+    file: string;
+    startLine: number;
+    endLine: number;
+    hash: string;
+  }>,
+  docs: string[],
+) {
+  const sourcePart = sourceChunks
+    .map(
+      (chunk) =>
+        `${chunk.file}:${chunk.startLine}:${chunk.endLine}:${chunk.hash}`,
+    )
+    .sort();
+  const docPart = docs
+    .map((file) => `${file}:${sha256(fileText(file))}`)
+    .sort();
   return sha256([...sourcePart, ...docPart].join("\n"));
 }
 
 function collectChunks() {
-  const sourceChunks = readJson<{ metadata: Record<string, unknown>; chunks: Array<{ file: string; startLine: number; endLine: number; hash: string; tokenWeights: Record<string, number> }> }>("brain/embeddings/chunks.json");
-  const chunks: Array<Omit<VectorChunk, "embedding">> = sourceChunks.chunks.map((chunk) => {
-    const text = snippet(chunk.file, chunk.startLine, chunk.endLine);
-    return {
-      id: chunk.hash.slice(0, 20),
-      file: chunk.file,
-      startLine: chunk.startLine,
-      endLine: chunk.endLine,
-      hash: chunk.hash,
-      kind: "source",
-      text,
-      tokenWeights: chunk.tokenWeights,
-      concepts: conceptsFor(text),
-    };
-  });
+  const sourceChunks = readJson<{
+    metadata: Record<string, unknown>;
+    chunks: Array<{
+      file: string;
+      startLine: number;
+      endLine: number;
+      hash: string;
+      tokenWeights: Record<string, number>;
+    }>;
+  }>("brain/embeddings/chunks.json");
+  const chunks: Array<Omit<VectorChunk, "embedding">> = sourceChunks.chunks.map(
+    (chunk) => {
+      const text = snippet(chunk.file, chunk.startLine, chunk.endLine);
+      return {
+        id: chunk.hash.slice(0, 20),
+        file: chunk.file,
+        startLine: chunk.startLine,
+        endLine: chunk.endLine,
+        hash: chunk.hash,
+        kind: "source",
+        text,
+        tokenWeights: chunk.tokenWeights,
+        concepts: conceptsFor(text),
+      };
+    },
+  );
 
   const docs = docFiles();
 
-  docs.forEach((file) => chunks.push(...chunkText(file, fileText(file), file.endsWith(".json") ? "generated-artifact" : "brain-doc", 70)));
-  return { metadata: sourceChunks.metadata, chunks, corpusHash: corpusHash(sourceChunks.chunks, docs) };
+  docs.forEach((file) =>
+    chunks.push(
+      ...chunkText(
+        file,
+        fileText(file),
+        file.endsWith(".json") ? "generated-artifact" : "brain-doc",
+        70,
+      ),
+    ),
+  );
+  return {
+    metadata: sourceChunks.metadata,
+    chunks,
+    corpusHash: corpusHash(sourceChunks.chunks, docs),
+  };
 }
 
 function cosine(a: number[], b: number[]) {
@@ -144,23 +215,37 @@ async function getEmbedder() {
 
 async function embedText(embedder: any, text: string) {
   const normalized = text.replace(/\s+/g, " ").trim().slice(0, 4000);
-  const output = await embedder(normalized || "empty", { pooling: "mean", normalize: true });
-  return Array.from(output.data as Float32Array).map((value) => Number(value.toFixed(6)));
+  const output = await embedder(normalized || "empty", {
+    pooling: "mean",
+    normalize: true,
+  });
+  return Array.from(output.data as Float32Array).map((value) =>
+    Number(value.toFixed(6)),
+  );
 }
 
 function loadCache(): Record<string, number[]> {
-  return fs.existsSync(CACHE_PATH) ? readJson<Record<string, number[]>>(CACHE_PATH) : {};
+  return fs.existsSync(CACHE_PATH)
+    ? readJson<Record<string, number[]>>(CACHE_PATH)
+    : {};
 }
 
 function clusterChunks(chunks: VectorChunk[]) {
   const buckets = new Map<string, VectorChunk[]>();
   chunks.forEach((chunk) => {
-    const key = chunk.file.startsWith("src/memory/") ? "memory" :
-      chunk.file.startsWith("src/components/") ? "components" :
-      chunk.file.startsWith("src/views/") ? "views" :
-      chunk.file.startsWith("brain/") ? "brain" :
-      chunk.file === "server.ts" ? "backend" :
-      chunk.file.includes("store") ? "state" : "core";
+    const key = chunk.file.startsWith("src/memory/")
+      ? "memory"
+      : chunk.file.startsWith("src/components/")
+        ? "components"
+        : chunk.file.startsWith("src/views/")
+          ? "views"
+          : chunk.file.startsWith("brain/")
+            ? "brain"
+            : chunk.file === "server.ts"
+              ? "backend"
+              : chunk.file.includes("store")
+                ? "state"
+                : "core";
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key)!.push(chunk);
   });
@@ -168,7 +253,9 @@ function clusterChunks(chunks: VectorChunk[]) {
     id,
     size: items.length,
     files: [...new Set(items.map((item) => item.file))].sort(),
-    topConcepts: conceptsFor(items.flatMap((item) => item.concepts).join(" ")).slice(0, 16),
+    topConcepts: conceptsFor(
+      items.flatMap((item) => item.concepts).join(" "),
+    ).slice(0, 16),
   }));
 }
 
@@ -181,7 +268,12 @@ async function main() {
 
   for (const chunk of chunks) {
     const cacheKey = sha256(`${MODEL}:${sourceHash}:${chunk.hash}`);
-    const embedding = cache[cacheKey] ?? await embedText(embedder, `${chunk.file}\n${chunk.kind}\n${chunk.text}`);
+    const embedding =
+      cache[cacheKey] ??
+      (await embedText(
+        embedder,
+        `${chunk.file}\n${chunk.kind}\n${chunk.text}`,
+      ));
     cache[cacheKey] = embedding;
     vectorChunks.push({ ...chunk, embedding });
   }
@@ -191,7 +283,11 @@ async function main() {
     file: chunk.file,
     nearest: vectorChunks
       .filter((candidate) => candidate.id !== chunk.id)
-      .map((candidate) => ({ id: candidate.id, file: candidate.file, score: Number(cosine(chunk.embedding, candidate.embedding).toFixed(4)) }))
+      .map((candidate) => ({
+        id: candidate.id,
+        file: candidate.file,
+        score: Number(cosine(chunk.embedding, candidate.embedding).toFixed(4)),
+      }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 5),
   }));
@@ -220,7 +316,9 @@ async function main() {
     vectorIndex: "brain/retrieval/vector-index.json",
   });
 
-  console.log(`Semantic vector index generated: ${vectorChunks.length} chunks with ${vectorChunks[0]?.embedding.length ?? 0} dimensions.`);
+  console.log(
+    `Semantic vector index generated: ${vectorChunks.length} chunks with ${vectorChunks[0]?.embedding.length ?? 0} dimensions.`,
+  );
 }
 
 main().catch((error) => {

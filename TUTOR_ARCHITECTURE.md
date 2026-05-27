@@ -1,256 +1,96 @@
 # Tutor System Architecture
 
-Updated: 2026-05-26
+This document is the human-readable architecture book for Tutor. The generated `/brain` artifacts remain the executable source of truth for graph, route, state, API, retrieval, runtime, and verification data.
 
-This is the human-readable architecture document for the Tutor system. The generated `/brain` artifacts remain the executable source of truth for graph, route, state, contract, retrieval, runtime, and verification data. This document explains the product, the cognitive system, the LLM model map, the user-facing features, and the current implementation boundaries.
+## 1. Product Purpose
 
-## 1. System Purpose
+Tutor is an AI-powered learning interface for reading academic papers and textbooks, asking a streaming tutor questions, building a personal learning library, and reviewing knowledge over time. The product combines a PDF study surface, AI chat, voice tutoring, web search, a 3D learner brain, revision notebooks, analytics, admin diagnostics, and the `/brain` architecture cognition layer.
 
-Tutor is a React, Vite, TypeScript learning interface for reading papers, textbooks, and technical material with an AI tutor beside the document. The product combines a PDF study surface, streaming chat, voice tutoring, live web search, a persistent learner memory, a 3D virtual brain map, a revision library, and an agent-facing `/brain` architecture layer.
-
-The visual language is "Cosmic Obsidian": near-black surfaces, neon blue/violet/orange accents, glass overlays, motion-heavy controls, and a contrasting paper notebook aesthetic inside the revision and admin reading spaces.
-
-The current application is a single-page app without URL routing. `src/App.tsx` renders the active view from `src/store/index.ts` through the `ViewState` union:
-
-- `study`
-- `brain`
-- `analytics`
-- `revision`
-- `admin`
-
-Top-level feature boundaries are intentionally strict:
-
-- `PdfViewer`
-- `ChatPanel`
-- `BrainView`
-- `RevisionView`
+The design language is **Cosmic Obsidian** for the main app: near-black surfaces, neon violet/blue/orange accents, glass panels, motion-heavy transitions, and liquid AI details. Revision and Admin intentionally use a `#faf9f6` paper style to make review and diagnostics feel like a readable notebook.
 
 ## 2. Runtime Stack
 
-Frontend:
+The frontend uses React 19, Vite 6, TypeScript 5.8, Tailwind CSS 4, Zustand, `motion/react`, Dexie, `react-pdf`, `react-force-graph-3d`, Three.js, Recharts, React Markdown, Remark GFM, Mermaid, Shiki, and Lucide icons.
 
-- React 19
-- Vite 6
-- TypeScript
-- Tailwind CSS 4
-- `motion/react`
-- Zustand
-- Dexie and `dexie-react-hooks`
-- `react-pdf`
-- `react-force-graph-3d` and Three.js
-- React Markdown, Remark GFM, Mermaid, Shiki, Recharts, Lucide icons
+The backend is `server.ts`, an Express server with API routes, SSE chat streaming, WebSocket debug logs, a Deepgram Voice Agent proxy, Deepgram TTS, Serper web/news search, and the OpenAI SDK pointed at OpenRouter or OpenAI-compatible providers.
 
-Backend:
-
-- Node.js and Express
-- OpenAI SDK pointed at OpenRouter
-- WebSockets through `ws`
-- Server-Sent Events from `/api/chat`
-- Deepgram HTTP TTS and Deepgram Voice Agent proxying
-- Serper web search and news search
-
-Persistence:
-
-- Browser IndexedDB through Dexie database `NeuralNestBrain`
-- Zustand persisted state in local storage
-- Local usage analytics stored under `usage_analytics_v1`
-
-Architecture cognition:
-
-- `/brain` generated architecture graph, retrieval index, route map, state flow, API contracts, runtime maps, impact analysis, drift checks, self-audit reports, and task memory.
+The app has no URL router. `src/App.tsx` renders from `activeView` in `src/store/index.ts`: `study`, `brain`, `analytics`, `revision`, and `admin`.
 
 ## 3. Model Inventory
 
-All cloud LLM calls are brokered by `server.ts`. User-provided OpenRouter keys are read from Settings and sent as Bearer tokens. Server environment fallbacks use `OPENROUTER_API_KEY`, `DEEPGRAM_API_KEY`, and `SERPER_API_KEY`.
+All cloud LLM calls are brokered by `server.ts`. The browser sends the user OpenRouter key from Settings as a bearer token, with `OPENROUTER_API_KEY`, `DEEPGRAM_API_KEY`, and `SERPER_API_KEY` as environment fallbacks.
 
-| Capability | Provider | Model or service | Source |
-| --- | --- | --- | --- |
-| Default chat | OpenRouter | `deepseek/deepseek-chat` | Zustand default `aiModel` |
-| User-selectable chat | OpenRouter | `anthropic/claude-3.5-sonnet`, `google/gemini-1.5-pro`, `deepseek/deepseek-chat` | Settings model selector |
-| Chat fallback chain | OpenRouter | `google/gemini-2.5-flash`, `anthropic/claude-3.5-haiku`, `openai/gpt-4o-mini`, `meta-llama/llama-4-maverick` | `/api/chat` retry path |
-| PDF title extraction | OpenRouter | `qwen/qwen2.5-vl-72b-instruct` | `/api/title` |
-| Persona prompt generation | OpenRouter | `anthropic/claude-3.5-sonnet` | `/api/generate-persona` |
-| Trace explanation | OpenRouter | `deepseek/deepseek-chat` | `/api/trace` |
-| Learning book update agent | OpenRouter | `deepseek/deepseek-chat` | `/api/learning-book-update` |
-| Flashcard extraction | OpenRouter | `deepseek/deepseek-chat` | `/api/generate-flashcards` |
-| Page vision tool inside chat | OpenRouter | `openai/gpt-4o-mini` | `look_at_current_page` tool |
-| Voice listen | Deepgram Voice Agent | `flux-general-en` | `/api/voice-agent` settings |
-| Voice think | Deepgram Voice Agent via OpenAI-compatible provider | `gpt-4o-mini` | `/api/voice-agent` settings |
-| Voice speak | Deepgram Voice Agent | `aura-asteria-en` | `/api/voice-agent` settings |
-| Chat read-aloud TTS | Deepgram Speak API | default `aura-asteria-en`, any valid `aura-*-en` voice from Settings | `/api/tts` |
-| Semantic memory embeddings | Xenova Transformers | `Xenova/all-MiniLM-L6-v2` | browser memory embeddings |
-| `/brain` retrieval embeddings | Xenova Transformers | 384-dimensional MiniLM vector index | `brain:embed` |
-| Live search | Serper | Google Search and Google News endpoints | `server/web-search.ts` |
+| Use                                      | Provider                   | Model                                                                                                        |
+| ---------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Default tutor chat                       | OpenRouter                 | `deepseek/deepseek-chat`                                                                                     |
+| Settings chat options                    | OpenRouter                 | `anthropic/claude-3.5-sonnet`, `google/gemini-1.5-pro`, `deepseek/deepseek-chat`                             |
+| Chat fallback chain                      | OpenRouter                 | `google/gemini-2.5-flash`, `anthropic/claude-3.5-haiku`, `openai/gpt-4o-mini`, `meta-llama/llama-4-maverick` |
+| PDF title extraction                     | OpenRouter                 | `qwen/qwen2.5-vl-72b-instruct`                                                                               |
+| Persona prompt generation                | OpenRouter                 | `anthropic/claude-3.5-sonnet`                                                                                |
+| Trace explanation                        | OpenRouter                 | `deepseek/deepseek-chat`                                                                                     |
+| Learning book updates                    | OpenRouter                 | `deepseek/deepseek-chat`                                                                                     |
+| Flashcard extraction                     | OpenRouter                 | `deepseek/deepseek-chat`                                                                                     |
+| Page vision tool                         | OpenRouter                 | `openai/gpt-4o-mini`                                                                                         |
+| Voice Agent listen                       | Deepgram                   | `flux-general-en`                                                                                            |
+| Voice Agent think                        | Deepgram/OpenAI-compatible | `gpt-4o-mini`                                                                                                |
+| Voice Agent speak                        | Deepgram                   | `aura-asteria-en`                                                                                            |
+| Read-aloud TTS                           | Deepgram                   | `aura-asteria-en` by default                                                                                 |
+| Browser memory embeddings                | Local Xenova               | `Xenova/all-MiniLM-L6-v2`                                                                                    |
+| `/brain` retrieval embeddings            | Local Xenova               | MiniLM 384-dimensional chunks                                                                                |
+| Brain debug auto-fix model, when enabled | OpenAI/OpenRouter          | `BRAIN_DEBUG_MODEL`, then `BRAIN_EXECUTOR_MODEL`, then `gpt-4o-mini`/`openai/gpt-4o-mini`                    |
 
-Pricing is tracked by `/api/pricing`. OpenRouter model pricing is fetched live from `https://openrouter.ai/api/v1/models` and cached for six hours. Deepgram prices are maintained as fallback constants in `server.ts`.
+`GET /api/pricing` fetches live OpenRouter pricing and caches it for six hours. Deepgram pricing constants are maintained in `server.ts`.
 
-## 4. Main User Features
+## 4. User Features
 
-Study View:
+**Study View** is the main workspace. It contains PDF upload, reading, annotation, selected-text context, usage analytics, and the chat panel.
 
-- Upload or replace a PDF.
-- Read in a dark, glass-framed study layout.
-- Navigate pages with buttons and arrow keys.
-- Fit-width and zoom controls.
-- Keep the chat panel beside the document.
-- Use the usage strip to see chat, voice, and search activity.
+**PDF Viewer** uses `react-pdf`. It supports zoom, fit-width, page navigation, highlights, underlines, strikethrough, sticky notes, selected text capture, and normalized annotation rectangles. Page images can be passed to Qwen for title extraction and to `openai/gpt-4o-mini` for visual page questions.
 
-PDF Viewer:
+**Chat Panel** streams `/api/chat` via SSE. It supports memory context, active book context, selected PDF text, current page image context, web search, graph updates, flashcard generation, Markdown, Mermaid, code highlighting, runnable JavaScript/Python snippets, TTS, and voice mode.
 
-- Renders documents with `react-pdf`.
-- Creates normalized page annotations so highlights survive resizing.
-- Supports highlight, underline, strikethrough, and sticky-note annotations.
-- Captures selected text into `selectedTextContext` for direct "Ask Tutor" prompts.
-- Captures the rendered page canvas when a query likely needs visual context.
-- Calls `/api/title` after page render to rename the active project and session learning book from the document.
+**Brain View** renders a Three.js concept graph with `react-force-graph-3d`. It roots the learner, links to learning books, links books to concepts, and falls back to legacy concepts when needed.
 
-Chat Panel:
+**Revision View** is the library and active recall surface. It shows the built-in Tutor System Architecture book, generated learning books, concepts, notes, and flashcards in a paper-style notebook.
 
-- Streams chat over `/api/chat` using SSE events.
-- Shows live phases such as retrieving, thinking, web search, synthesizing, and complete.
-- Streams markdown, Mermaid, code blocks, source cards, and final answer content.
-- Supports an explicit Web Search skill plus automatic freshness detection.
-- Can call server tools for graph updates, flashcard creation, live web search, and page vision.
-- Injects persistent memory context, active learning book context, selected PDF text, custom system prompt, learner name, active project, and current page image when available.
-- Writes completed interactions back to the memory orchestrator and learning book system.
+**Analytics View** reads Dexie concepts, interactions, and sessions and renders mastery, confidence, session, and distribution charts with Recharts.
 
-Voice:
-
-- Browser microphone audio is converted to PCM16 at 48 kHz and streamed to `/api/voice-agent`.
-- The server proxies audio to Deepgram Voice Agent.
-- Deepgram handles listen, think, and speak stages.
-- Voice transcript messages are written into the same chat and learning book memory flow.
-- Read-aloud TTS calls `/api/tts` and streams MP3 audio from Deepgram.
-
-Brain View:
-
-- Shows the learner as the root node.
-- Shows current session learning books as book nodes.
-- Shows extracted learning concepts as concept nodes.
-- Links learner to books, books to concepts, and concept parent/child relationships.
-- Falls back to legacy `concepts` records if no learning books exist.
-- Uses cached Three.js geometries, materials, textures, and sprite materials to avoid WebGL leaks.
-
-Revision View:
-
-- Presents the Tutor System Architecture as the built-in system book.
-- Shows generated learning books, chapters, mapped concepts, recent learning notes, and flashcards.
-- Uses a paper notebook aesthetic with serif typography and texture.
-- Supports long-press deletion for the built-in system book card.
-- Uses flashcard self-rating buttons: Again, Hard, Good, Easy.
-- Reschedules flashcards with a simple quality-based interval.
-
-Analytics View:
-
-- Reads concepts, interactions, and sessions from Dexie.
-- Visualizes mastery and confidence with Recharts bar and pie charts.
-- Shows total concepts, interactions, and study sessions.
-
-Admin View:
-
-- Shows DeepSeek trace logs from Dexie.
-- Shows learning books, chapters, concepts, confidence, and latest entries.
-- Connects to `/ws/debug` for live server console logs.
-- Uses the same paper reading language as the revision system.
+**Admin View** now has three diagnostics surfaces: DeepSeek Trace, Server Console, and Debug Runs.
 
 ## 5. Learning Memory And Library
 
-The persistent browser database is `NeuralNestBrain` in `src/memory/longterm.memory.ts`. Version 6 contains these stores:
+The persistent database is Dexie database `NeuralNestBrain` in `src/memory/longterm.memory.ts`. Version 6 contains `concepts`, `misconceptions`, `sessions`, `interactions`, `flashcards`, `traceLogs`, `learningBooks`, `learningBookConcepts`, and `learningEntries`.
 
-- `concepts`: legacy and BKT-backed concepts.
-- `misconceptions`: unresolved and resolved misconception records.
-- `sessions`: study session metadata.
-- `interactions`: user and assistant message history with optional embeddings.
-- `flashcards`: active recall cards with next review timestamps.
-- `traceLogs`: LLM explanations of internal system actions.
-- `learningBooks`: current session learning books.
-- `learningBookConcepts`: concepts extracted into a learning book.
-- `learningEntries`: conversation-level summaries, risks, and confidence.
+`MemoryOrchestrator` creates a browser session, clears generated session learning records, preserves the built-in Tutor System Architecture concept, creates a General Study learning book, and announces the active book through local storage plus a `learning-book-updated` event.
 
-`MemoryOrchestrator` is the central browser-side coordinator. On startup it creates a new session, clears generated session learning library records while preserving the built-in Tutor System Architecture concept, creates a General Study session book, and announces that book through local storage plus the `learning-book-updated` browser event.
-
-After a completed chat or voice exchange, the orchestrator:
-
-1. Stores an embedded `ConversationInteraction`.
-2. Calls `/api/learning-book-update`.
-3. Merges the returned book title, overview, knowledge summary, chapter, concepts, evidence, risks, and confidence into Dexie.
-4. Updates the active book id and active project.
-5. Writes a `LearningEntry`.
-6. Sends an optional trace log through `/api/trace`.
-
-The learning library is session-scoped by design. Refreshing starts a clean generated learning book set for the new session, while the built-in Tutor System Architecture book remains available unless the user hides it.
+After chat or voice responses, it stores embedded interactions, asks `/api/learning-book-update` for book/chapter/concept summaries, merges those records into Dexie, writes `learningEntries`, updates active context, and optionally logs trace explanations through `/api/trace`.
 
 ## 6. Learner Model
 
-The cognitive model is implemented in `src/memory/` and injected into chat prompts by `MemoryOrchestrator.getRelevantContext()`.
+The Phase 5 learner model lives under `src/memory/` and is injected into chat prompts by `MemoryOrchestrator.getRelevantContext()`.
 
-Bayesian Knowledge Tracing:
+Core subsystems:
 
-- Default `P(L0)` is `0.2`.
-- `P(T)` is `0.1`.
-- `P(S)` is `0.1`.
-- `P(G)` is `0.2`.
-- Correct and incorrect attempts update `p_learn` through Bayes' theorem.
-- Recognition tasks cap mastery at `0.70`.
-- Generation tasks cap mastery at `0.85`.
-- Transfer tasks can rise toward `0.95`.
+- Bayesian Knowledge Tracing through `BKTEngine`.
+- ZPD zones through `ZPDCalculator`.
+- Adaptive scaffolding through `ScaffoldingEngine`.
+- Misconception tracking through `MisconceptionGraph`.
+- Prerequisite analysis through `PrerequisiteDAG`.
+- Illusion-of-knowing detection.
+- Cognitive-load monitoring.
+- Productive-failure classification.
 
-Zone of Proximal Development:
+The resulting tutor directives tell the model when to correct misconceptions, reinforce prerequisites, test transfer, reduce load, interleave weak concepts, or raise difficulty.
 
-- Independent zone: `p_learn >= 0.90`.
-- ZPD zone: `0.40 <= p_learn < 0.90`.
-- Not-yet zone: `p_learn < 0.40`.
-- A ZPD candidate is only ready if prerequisites exceed the configured threshold.
+## 7. `/brain` Architecture Cognition
 
-Scaffolding:
+`/brain` is a generated architecture cognition layer for coding agents. It contains source-scoped architecture graphs, semantic retrieval indexes, runtime impact telemetry, route/state/render/API/WebSocket/database maps, architecture rules, mutation boundaries, drift checks, self-audit reports, and task memory.
 
-- Level 5: full worked example.
-- Level 4: worked example with one blank.
-- Level 3: partial hint and Socratic question.
-- Level 2: Socratic question only.
-- Level 1: minimal intervention.
-- Level 0: independent work.
+Required agent flow:
 
-Additional cognitive subsystems:
-
-- Misconception graph: tracks active misconceptions and resolution strategy.
-- Prerequisite DAG: checks weak prerequisites before advancing.
-- Illusion detector: flags confidence that exceeds measured performance by more than `0.30`.
-- Cognitive load monitor: uses latency, retries, and duration to recommend challenge, continuation, simplification, or break.
-- Productive failure engine: separates productive struggle from destructive frustration.
-
-## 7. Chat, Search, And Tool Contracts
-
-`/api/chat` is an SSE endpoint. Every event is data-prefixed and double-newline terminated. The client expects event types such as:
-
-- `status`
-- `chunk`
-- `reasoning_summary`
-- `info`
-- `web_search_started`
-- `web_search_progress`
-- `web_result`
-- `web_sources_complete`
-- `done`
-- `error`
-
-Server-side chat tools:
-
-- `update_graph`: emits concept updates for the memory graph.
-- `generate_flashcards`: returns flashcards for Dexie storage.
-- `web_search`: queries Serper search or news.
-- `look_at_current_page`: uses `openai/gpt-4o-mini` on the current PDF page image when supplied.
-
-Search behavior:
-
-- Explicit web/search/browse requests trigger search.
-- Freshness-sensitive words such as latest, current, recent, today, price, release, ranking, score, election, and weather trigger search.
-- Serper results are normalized with stable ids, canonical URLs, domain names, snippets, optional dates, favicons, and positions.
-- Search results are cached for 10 minutes in the server process.
-
-## 8. `/brain` Architecture Cognition
-
-The `/brain` directory is the generated architecture cognition layer for agents. It is decision support, not hand-authored application logic.
+```text
+LOAD -> RETRIEVE -> IMPACT ANALYSIS -> VERIFY RULES -> PLAN -> MODIFY -> VERIFY -> REGENERATE -> UPDATE MEMORY
+```
 
 Core commands:
 
@@ -262,88 +102,73 @@ Core commands:
 - `npm run brain:drift-check`
 - `npm run brain:runtime-benchmark`
 - `npm run brain:self-audit`
-- `npm run brain:memory -- append ...`
+- `npm run brain:memory`
 
-Generated or maintained artifacts include:
+## 8. Brain Autonomy
 
-- `brain/knowledge/graph.json`: typed architecture graph.
-- `brain/contracts/api-contracts.json`: Express and WebSocket contracts.
-- `brain/flows/route-map.json`: active view to component mapping.
-- `brain/flows/state-flow.json`: Zustand readers and writers.
-- `brain/flows/render-graph.json`: React render relationships.
-- `brain/impact/impact-analysis.json`: static impact map.
-- `brain/retrieval/vector-index.json`: semantic retrieval index.
-- `brain/runtime/runtime-impact-map.json`: observed runtime event map.
-- `brain/snapshots/file-hashes.json`: drift baseline.
-- `brain/tasks/task-memory.json`: task history and decision continuity.
+The stale-brain issue is handled by a deliberate autonomous refresh layer:
 
-Runtime telemetry is installed through `src/brain-runtime/installBrainRuntime.ts` when `VITE_BRAIN_RUNTIME=true` or local storage `brain_runtime=1`. It instruments fetch, WebSocket, Zustand, Dexie, route changes, render profiling, and web search events. The runtime benchmark currently captures route render, pricing fetch, state, and navigation events across study, brain, analytics, and revision surfaces.
+- `npm run brain:postchange` runs after completed source changes.
+- `npm run brain:auto` starts a debounced watcher for source-scoped files.
+- `brain/autonomy/status.json` records freshness, timestamps, failures, source hashes, regeneration targets, and watcher state.
 
-The required agent workflow is:
+`brain:postchange` runs `brain:drift-check`; if stale, it regenerates the brain and embeddings, then runs verification and self-audit. The watcher ignores generated artifacts, docs packs, debug run logs, backups, `dist`, `node_modules`, caches, snapshots, hidden files, and temporary files.
 
-1. Load instructions.
-2. Run drift check.
-3. Regenerate if stale.
-4. Retrieve focused context.
-5. Run impact analysis on mutation targets.
-6. Verify rules.
-7. Plan.
-8. Modify only source or hand-maintained docs.
-9. Verify.
-10. Regenerate brain artifacts after source or retrieval-corpus changes.
-11. Update task memory.
+The debug tool calls `brain:postchange` after applied component patches so future agents do not use stale `/brain` artifacts.
 
-## 9. Current Audit Findings
+## 9. Debug Skill And Orchestrator
 
-This audit was performed from the generated graph, retrieval packs, impact analysis, and directly connected source files.
+The long-horizon debugging tool is separate from the tutor chat. It is invoked through the `tutor-debug` skill copied into:
 
-Confirmed current behavior:
+- `skills/tutor-debug/SKILL.md`
+- `/Users/mfuad16/.codex/skills/tutor-debug/SKILL.md`
+- `/Users/mfuad16/antigravity-skills/skills/tutor-debug/SKILL.md`
+- `/Users/mfuad16/.gemini/config/skills/tutor-debug/SKILL.md`
 
-- The package stack is React 19, not React 18.
-- `/api/chat` streams with SSE and has a model fallback chain.
-- The default chat and learning agents use `deepseek/deepseek-chat`.
-- PDF title extraction uses Qwen vision.
-- The in-chat page vision tool uses `openai/gpt-4o-mini`.
-- Voice Agent listen/speak uses Deepgram `flux-general-en` and `aura-asteria-en`, with `gpt-4o-mini` as the voice thinking model.
-- The Library is now based on session-scoped `learningBooks`, `learningBookConcepts`, and `learningEntries`.
-- Brain View uses learning books first and legacy concepts only as fallback.
-- The `/brain` system includes graph generation, vector retrieval, runtime benchmarking, verification, self-audit, drift check, and task memory.
+The repo-side tool is under `brain/debug/` and is invoked with:
 
-Known risks:
+```bash
+npm run brain:debug -- --mode fix --scope all
+```
 
-- Retrieval benchmark recall is strong, but confidence calibration remains low in self-audit.
-- Live OpenRouter, Deepgram, and Serper paths depend on user or environment API keys.
-- Chat usage can begin as estimated during streaming and is corrected when provider usage arrives.
-- Learning-book quality depends on OpenRouter availability; local fallback is intentionally simpler.
-- The built-in `brain:execute --mode plan` safety gate can over-block broad documentation tasks that mention generated brain artifacts.
+It builds a resumable queue from the brain graph, audits each UI/code component, retrieves context, runs impact analysis, checks format/lint/build gates, compares source to local official docs packs, applies deterministic fixes with source-hash checks and backups, runs post-change brain refresh, records findings, and appends a machine-readable debug memory graph.
 
-## 10. Maintenance Boundaries
+Run artifacts are append-only under `brain/debug/runs/<run-id>/`. The memory graph is `brain/debug/memory-graph.json`.
 
-Safe documentation update targets:
+## 10. Official Docs Packs
 
-- `TUTOR_ARCHITECTURE.md`
-- `src/lib/tutorBook.json`
-- `brain/architecture.md`
-- `brain/context.md`
+`npm run brain:docs:sync` downloads curated official documentation into `brain/reference-docs/`. Official docs are primary evidence; live web search is allowed only as secondary best-practice evidence and must be recorded separately.
 
-Generated artifacts must not be edited by hand. Regenerate them with the relevant brain commands.
+Current docs packs include TypeScript, React, Vite, Tailwind, Motion/Framer, Dexie, Zustand, Playwright, Three.js, react-force-graph/react-pdf related sources, Express, Node, and Python for future Python audits.
 
-High-risk mutation boundaries:
+## 11. Admin Debug Runs
 
-- `src/memory/longterm.memory.ts`: Dexie schema and migrations.
-- `server.ts`: API, SSE, and WebSocket contracts.
-- `src/store/index.ts`: app-wide Zustand state.
-- `src/components/ChatPanel.tsx`: SSE, tool parsing, usage, voice, learning memory.
-- `src/views/BrainView.tsx`: WebGL objects and Dexie learning graph.
-- `src/views/RevisionView.tsx`: Dexie-backed library, built-in Tutor book, and deletion flow.
+Admin now exposes a Debug Runs page. It reads server-backed debug artifacts through:
 
-Final documentation verification should include:
+- `GET /api/debug/runs`
+- `GET /api/debug/runs/:id`
+- `GET /api/debug/runs/:id/events`
+- `POST /api/debug/run`
+- `POST /api/debug/runs/:id/cancel`
 
-- `npm run brain:generate`
-- `npm run brain:embed`
-- `npm run brain:runtime-benchmark`
-- `npm run brain:verify`
-- `npm run brain:drift-check`
-- `npm run brain:self-audit`
-- `npm run lint`
-- `npm run build`
+The UI shows run history, status, component queue progress, changed files, bugs/findings, why the agent changed code, how the code should behave, official-doc evidence, command results, and final verification gates.
+
+## 12. Maintenance Boundaries
+
+High-risk mutation boundaries remain Dexie schema, server API/SSE/WebSocket contracts, Zustand store shape, routing, shared layout primitives, ChatPanel stream parsing, and generated `/brain` artifacts.
+
+Generated graph, flow, contract, vector, impact, runtime, snapshot, and verification outputs must be regenerated by commands rather than manually edited.
+
+Before reporting architecture work done, run:
+
+```bash
+npm run brain:generate
+npm run brain:embed
+npm run brain:runtime-benchmark
+npm run brain:verify
+npm run brain:drift-check
+npm run brain:self-audit
+npm run format:check
+npm run lint
+npm run build
+```

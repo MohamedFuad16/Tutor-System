@@ -89,8 +89,8 @@
     {
       "field": "learnerName",
       "readers": [
-        "src/views/BrainView.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/views/BrainView.tsx"
       ],
       "writers": []
     },
@@ -125,8 +125,8 @@
     {
       "field": "pdfUrl",
       "readers": [
-        "src/views/StudyView.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfViewer.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": []
     },
@@ -208,10 +208,10 @@
     {
       "field": "setActiveView",
       "readers": [
-        "src/components/ChatPanel.tsx",
         "src/views/RevisionView.tsx",
         "src/views/StudyView.tsx",
-        "src/App.tsx"
+        "src/App.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": [
         "src/views/RevisionView.tsx",
@@ -281,7 +281,8 @@
         "src/components/ChatPanel.tsx"
       ],
       "writers": [
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/views/StudyView.tsx"
       ]
     },
     {
@@ -305,8 +306,8 @@
     {
       "field": "setPdfTotalPages",
       "readers": [
-        "src/views/StudyView.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfViewer.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": [
         "src/views/StudyView.tsx",
@@ -335,8 +336,8 @@
       "field": "setSelectedTextContext",
       "readers": [
         "src/components/ChatPanel.tsx",
-        "src/views/StudyView.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfViewer.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": [
         "src/components/PdfViewer.tsx",

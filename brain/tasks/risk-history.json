@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-26T14:21:49.950Z",
-    "taskCount": 12
+    "generatedAt": "2026-05-27T08:10:57.315Z",
+    "taskCount": 13
   },
   "risks": [
     {
@@ -464,6 +464,90 @@
           ],
           "unresolvedIssues": [
             "Retrieval benchmark confidence average remains low though recall is 1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "confidence thresholds may need future real-world calibration as retrieval tasks diversify",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "systemsAffected": [
+            "brain retrieval",
+            "brain self-audit",
+            "brain autonomy",
+            "debug orchestrator",
+            "format gates"
+          ],
+          "unresolvedIssues": [
+            "--invariants"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "failure:substring-pack-score-matched-low-inside-flow",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "systemsAffected": [
+            "brain retrieval",
+            "brain self-audit",
+            "brain autonomy",
+            "debug orchestrator",
+            "format gates"
+          ],
+          "unresolvedIssues": [
+            "--invariants"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "failure:postchange-treated-repaired-stale-drift-as-failure",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "systemsAffected": [
+            "brain retrieval",
+            "brain self-audit",
+            "brain autonomy",
+            "debug orchestrator",
+            "format gates"
+          ],
+          "unresolvedIssues": [
+            "--invariants"
+          ]
+        }
+      ]
+    },
+    {
+      "risk": "failure:debug-backups-were-indexed-before-scope-exclusion",
+      "count": 1,
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "systemsAffected": [
+            "brain retrieval",
+            "brain self-audit",
+            "brain autonomy",
+            "debug orchestrator",
+            "format gates"
+          ],
+          "unresolvedIssues": [
+            "--invariants"
           ]
         }
       ]

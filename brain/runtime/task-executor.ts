@@ -12,7 +12,7 @@ const FAILURE_DIR = path.join(ROOT, "brain/runtime/failures");
 
 function arg(name: string, fallback = "") {
   const index = process.argv.indexOf(`--${name}`);
-  return index >= 0 ? process.argv[index + 1] ?? fallback : fallback;
+  return index >= 0 ? (process.argv[index + 1] ?? fallback) : fallback;
 }
 
 function writeFile(file: string, content: string) {
@@ -25,23 +25,50 @@ function taskId(task: string) {
 }
 
 function run(command: string, args: string[]) {
-  return execFileSync(command, args, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  return execFileSync(command, args, {
+    cwd: ROOT,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
 }
 
 function safetyCheck(task: string, files: string[]) {
   const lower = task.toLowerCase();
-  if (files.some((file) => file.includes("longterm.memory")) && !/(schema|migration|dexie|database)/.test(lower)) {
-    throw new Error("Blocked: Dexie schema-sensitive work requires task text to explicitly mention schema, migration, Dexie, or database.");
+  if (
+    files.some((file) => file.includes("longterm.memory")) &&
+    !/(schema|migration|dexie|database)/.test(lower)
+  ) {
+    throw new Error(
+      "Blocked: Dexie schema-sensitive work requires task text to explicitly mention schema, migration, Dexie, or database.",
+    );
   }
-  if (files.includes("server.ts") && !/(api|endpoint|sse|stream|websocket|server)/.test(lower)) {
-    throw new Error("Blocked: server contract work requires explicit API/server intent.");
+  if (
+    files.includes("server.ts") &&
+    !/(api|endpoint|sse|stream|websocket|server)/.test(lower)
+  ) {
+    throw new Error(
+      "Blocked: server contract work requires explicit API/server intent.",
+    );
   }
-  if (files.some((file) => /^brain\/(knowledge|flows|contracts|impact|embeddings|retrieval\/vector-index)/.test(file))) {
-    throw new Error("Blocked: generated brain artifacts may only be changed through brain:generate/brain:embed/runtime benchmark.");
+  if (
+    files.some((file) =>
+      /^brain\/(knowledge|flows|contracts|impact|embeddings|retrieval\/vector-index)/.test(
+        file,
+      ),
+    )
+  ) {
+    throw new Error(
+      "Blocked: generated brain artifacts may only be changed through brain:generate/brain:embed/runtime benchmark.",
+    );
   }
 }
 
-function renderPlan(id: string, task: string, context: ReturnType<typeof retrieveContext>, impacts: ReturnType<typeof analyzeImpactForFiles>) {
+function renderPlan(
+  id: string,
+  task: string,
+  context: ReturnType<typeof retrieveContext>,
+  impacts: ReturnType<typeof analyzeImpactForFiles>,
+) {
   return `# Autonomous Task Plan: ${task}
 
 Task ID: ${id}
@@ -75,15 +102,29 @@ ${context.chunks.map((chunk) => `### ${chunk.file}:${chunk.startLine}\n\n\`\`\`\
 
 async function generatePatch(task: string, plan: string) {
   const apiKey = process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("Execute mode requires OPENAI_API_KEY or OPENROUTER_API_KEY.");
+  if (!apiKey)
+    throw new Error(
+      "Execute mode requires OPENAI_API_KEY or OPENROUTER_API_KEY.",
+    );
   const client = new OpenAI({
     apiKey,
-    baseURL: process.env.OPENROUTER_API_KEY && !process.env.OPENAI_API_KEY ? "https://openrouter.ai/api/v1" : undefined,
+    baseURL:
+      process.env.OPENROUTER_API_KEY && !process.env.OPENAI_API_KEY
+        ? "https://openrouter.ai/api/v1"
+        : undefined,
   });
   const response = await client.chat.completions.create({
-    model: process.env.BRAIN_EXECUTOR_MODEL || (process.env.OPENROUTER_API_KEY && !process.env.OPENAI_API_KEY ? "openai/gpt-4o-mini" : "gpt-4o-mini"),
+    model:
+      process.env.BRAIN_EXECUTOR_MODEL ||
+      (process.env.OPENROUTER_API_KEY && !process.env.OPENAI_API_KEY
+        ? "openai/gpt-4o-mini"
+        : "gpt-4o-mini"),
     messages: [
-      { role: "system", content: "Return only a valid unified diff patch. Do not include prose. Do not edit generated brain artifacts directly." },
+      {
+        role: "system",
+        content:
+          "Return only a valid unified diff patch. Do not include prose. Do not edit generated brain artifacts directly.",
+      },
       { role: "user", content: `Task:\n${task}\n\nPlan and context:\n${plan}` },
     ],
   });
@@ -93,7 +134,10 @@ async function generatePatch(task: string, plan: string) {
 async function main() {
   const task = arg("task");
   const mode = arg("mode", "plan");
-  if (!task) throw new Error('Usage: npm run brain:execute -- --task "<task>" --mode plan|execute');
+  if (!task)
+    throw new Error(
+      'Usage: npm run brain:execute -- --task "<task>" --mode plan|execute',
+    );
   const id = taskId(task);
   const context = retrieveContext(task);
   safetyCheck(task, context.dependencyAwareFiles);
@@ -104,13 +148,25 @@ async function main() {
   writeFile(planPath, plan);
 
   if (mode !== "execute") {
-    console.log(JSON.stringify({ ok: true, mode: "plan", planPath, contextFiles: context.dependencyAwareFiles }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          ok: true,
+          mode: "plan",
+          planPath,
+          contextFiles: context.dependencyAwareFiles,
+        },
+        null,
+        2,
+      ),
+    );
     return;
   }
 
   try {
     const patch = await generatePatch(task, plan);
-    if (!patch.startsWith("diff --git")) throw new Error("Model did not return a unified git diff.");
+    if (!patch.startsWith("diff --git"))
+      throw new Error("Model did not return a unified git diff.");
     const patchPath = path.join(PLANS_DIR, `${id}.patch`);
     writeFile(patchPath, `${patch}\n`);
     run("git", ["apply", "--check", patchPath]);
@@ -139,16 +195,34 @@ async function main() {
       "--risks",
       "model-generated-patch-risk",
       "--verification",
-      JSON.stringify({ brainGenerate: true, brainEmbed: true, runtimeBenchmark: true, selfAudit: true, brainVerify: true, driftCheck: true, lint: true, build: true }),
+      JSON.stringify({
+        brainGenerate: true,
+        brainEmbed: true,
+        runtimeBenchmark: true,
+        selfAudit: true,
+        brainVerify: true,
+        driftCheck: true,
+        lint: true,
+        build: true,
+      }),
       "--regeneration",
       "complete",
       "--decisions",
       "append-memory-only-after-verification",
     ]);
-    console.log(JSON.stringify({ ok: true, mode: "execute", planPath, patchPath }, null, 2));
+    console.log(
+      JSON.stringify(
+        { ok: true, mode: "execute", planPath, patchPath },
+        null,
+        2,
+      ),
+    );
   } catch (error) {
     const failurePath = path.join(FAILURE_DIR, `${id}.json`);
-    writeFile(failurePath, `${JSON.stringify({ task, planPath, error: error instanceof Error ? error.message : String(error), generatedAt: new Date().toISOString() }, null, 2)}\n`);
+    writeFile(
+      failurePath,
+      `${JSON.stringify({ task, planPath, error: error instanceof Error ? error.message : String(error), generatedAt: new Date().toISOString() }, null, 2)}\n`,
+    );
     throw error;
   }
 }

@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+coverage
+server.mjs
+brain/compressed-context
+brain/contracts
+brain/diffs
+brain/flows
+brain/indexes
+brain/reference-docs
+brain/snapshots
+brain/verification
+brain/debug/runs
+brain/debug/backups
+package-lock.json

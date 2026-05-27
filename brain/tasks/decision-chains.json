@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-26T14:21:49.949Z",
-    "taskCount": 12
+    "generatedAt": "2026-05-27T08:10:57.314Z",
+    "taskCount": 13
   },
   "chains": [
     {
@@ -2103,6 +2103,167 @@
           "risksIntroduced": [
             "retrieval confidence calibration remains low despite full recall",
             "live provider behavior depends on configured API keys"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "exact-token-context-pack-scoring",
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/autonomy/postchange.ts",
+            "brain/debug/debug-runner.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "confidence thresholds may need future real-world calibration as retrieval tasks diversify"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "numeric-evidence-confidence-score",
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/autonomy/postchange.ts",
+            "brain/debug/debug-runner.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "confidence thresholds may need future real-world calibration as retrieval tasks diversify"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ignore-debug-run-backups-in-brain-source-scope",
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/autonomy/postchange.ts",
+            "brain/debug/debug-runner.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "confidence thresholds may need future real-world calibration as retrieval tasks diversify"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "format-all-brain-ts",
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/autonomy/postchange.ts",
+            "brain/debug/debug-runner.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "confidence thresholds may need future real-world calibration as retrieval tasks diversify"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "source-scoped brain artifacts exclude generated debug backups",
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/autonomy/postchange.ts",
+            "brain/debug/debug-runner.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "confidence thresholds may need future real-world calibration as retrieval tasks diversify"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "retrieval confidence must reflect corroborating evidence not raw weighted score",
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/autonomy/postchange.ts",
+            "brain/debug/debug-runner.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "confidence thresholds may need future real-world calibration as retrieval tasks diversify"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "brain postchange should exit successfully after repairing stale drift",
+      "tasks": [
+        {
+          "id": "task-1779869457311",
+          "timestamp": "2026-05-27T08:10:57.311Z",
+          "objective": "Fix brain retrieval confidence calibration and run tutor-debug skill",
+          "filesChanged": [
+            "brain/retrieval/retrieve-semantic.ts",
+            "brain/self-audit.ts",
+            "brain/autonomy/postchange.ts",
+            "brain/debug/debug-runner.ts",
+            "generate-brain.ts",
+            "brain/drift-check.ts",
+            "package.json",
+            ".prettierignore"
+          ],
+          "risksIntroduced": [
+            "confidence thresholds may need future real-world calibration as retrieval tasks diversify"
           ]
         }
       ]

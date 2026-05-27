@@ -1,6 +1,6 @@
 # Cognition Health Report
 
-Score: 92 / 100
+Score: 98 / 100
 
 Status: PASS
 
@@ -8,7 +8,7 @@ Status: PASS
 
 - graphFreshness: 12
 - vectorFreshness: 14
-- retrievalQuality: 8
+- retrievalQuality: 14
 - runtimeCoverage: 14
 - contractCoverage: 10
 - routeStateCoverage: 10

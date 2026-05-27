@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-26T14:20:20.494Z",
+    "generatedAt": "2026-05-27T08:08:00.093Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,16 +23,16 @@
       "temporary files"
     ],
     "commit": {
-      "commit": null,
-      "branch": null,
-      "dirty": null
+      "commit": "c372e72c620fc9980c862005ac65dac0fd43661c",
+      "branch": "main",
+      "dirty": true
     },
     "package": {
       "name": "react-example",
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84"
+    "sourceHash": "3b5937f3d727ce6ee55fb0b0858183b0182fe7808f1d8f7e76875c445ed0f509"
   },
   "files": {
     "generate-brain.ts": {
@@ -66,7 +66,8 @@
         "src/components/PdfViewer.tsx",
         "src/components/SettingsModal.tsx",
         "src/lib/tutorBook.json",
-        "src/memory/memory.orchestrator.ts"
+        "src/memory/memory.orchestrator.ts",
+        "src/views/AdminView.tsx"
       ],
       "semanticFactors": {
         "directImportDependents": [],
@@ -76,7 +77,8 @@
           "src/components/PdfViewer.tsx",
           "src/components/SettingsModal.tsx",
           "src/lib/tutorBook.json",
-          "src/memory/memory.orchestrator.ts"
+          "src/memory/memory.orchestrator.ts",
+          "src/views/AdminView.tsx"
         ],
         "storeReaders": [],
         "databaseUsers": []
@@ -172,6 +174,72 @@
           "src/components/ChatPanel.tsx",
           "src/store/index.ts"
         ],
+        "renderedBy": [],
+        "clientCallers": [],
+        "storeReaders": [],
+        "databaseUsers": []
+      },
+      "affectedTests": []
+    },
+    "brain/autonomy/postchange.ts": {
+      "riskScore": 0,
+      "blastRadius": [],
+      "semanticFactors": {
+        "directImportDependents": [],
+        "renderedBy": [],
+        "clientCallers": [],
+        "storeReaders": [],
+        "databaseUsers": []
+      },
+      "affectedTests": []
+    },
+    "brain/autonomy/source-scope.ts": {
+      "riskScore": 16,
+      "blastRadius": [
+        "brain/autonomy/postchange.ts",
+        "brain/autonomy/watch.ts"
+      ],
+      "semanticFactors": {
+        "directImportDependents": [
+          "brain/autonomy/postchange.ts",
+          "brain/autonomy/watch.ts"
+        ],
+        "renderedBy": [],
+        "clientCallers": [],
+        "storeReaders": [],
+        "databaseUsers": []
+      },
+      "affectedTests": []
+    },
+    "brain/autonomy/watch.ts": {
+      "riskScore": 0,
+      "blastRadius": [],
+      "semanticFactors": {
+        "directImportDependents": [],
+        "renderedBy": [],
+        "clientCallers": [],
+        "storeReaders": [],
+        "databaseUsers": []
+      },
+      "affectedTests": []
+    },
+    "brain/debug/debug-runner.ts": {
+      "riskScore": 0,
+      "blastRadius": [],
+      "semanticFactors": {
+        "directImportDependents": [],
+        "renderedBy": [],
+        "clientCallers": [],
+        "storeReaders": [],
+        "databaseUsers": []
+      },
+      "affectedTests": []
+    },
+    "brain/debug/docs-sync.ts": {
+      "riskScore": 0,
+      "blastRadius": [],
+      "semanticFactors": {
+        "directImportDependents": [],
         "renderedBy": [],
         "clientCallers": [],
         "storeReaders": [],
@@ -456,6 +524,24 @@
       },
       "affectedTests": []
     },
+    "src/components/AnimatedScrollText.tsx": {
+      "riskScore": 8,
+      "blastRadius": [
+        "src/views/StudyView.tsx"
+      ],
+      "semanticFactors": {
+        "directImportDependents": [
+          "src/views/StudyView.tsx"
+        ],
+        "renderedBy": [
+          "file:src/views/StudyView.tsx"
+        ],
+        "clientCallers": [],
+        "storeReaders": [],
+        "databaseUsers": []
+      },
+      "affectedTests": []
+    },
     "src/components/ChatPanel.tsx": {
       "riskScore": 16,
       "blastRadius": [
@@ -524,7 +610,7 @@
         ],
         "renderedBy": [
           "file:src/views/RevisionView.tsx",
-          "component:StudyView"
+          "file:src/views/StudyView.tsx"
         ],
         "clientCallers": [],
         "storeReaders": [],
@@ -560,7 +646,7 @@
           "src/views/StudyView.tsx"
         ],
         "renderedBy": [
-          "component:StudyView"
+          "file:src/views/StudyView.tsx"
         ],
         "clientCallers": [],
         "storeReaders": [],
@@ -1051,16 +1137,17 @@
       "affectedTests": []
     },
     "src/views/StudyView.tsx": {
-      "riskScore": 8,
+      "riskScore": 16,
       "blastRadius": [
-        "src/App.tsx"
+        "src/App.tsx",
+        "src/views/StudyView.tsx"
       ],
       "semanticFactors": {
         "directImportDependents": [
           "src/App.tsx"
         ],
         "renderedBy": [
-          "component:App"
+          "file:src/views/StudyView.tsx"
         ],
         "clientCallers": [],
         "storeReaders": [],
@@ -1179,6 +1266,13 @@
       }
     },
     "src/store/index.ts <-> src/types.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
+    "brain/autonomy/source-scope.ts <-> brain/autonomy/watch.ts": {
       "score": 2,
       "edgeTypes": {
         "imports": 1,
@@ -1374,18 +1468,18 @@
         "dependsOn": 1
       }
     },
-    "src/store/index.ts <-> src/views/AdminView.tsx": {
+    "src/memory/longterm.memory.ts <-> src/views/BrainView.tsx": {
       "score": 2,
       "edgeTypes": {
         "dependsOn": 1,
         "imports": 1
       }
     },
-    "src/memory/longterm.memory.ts <-> src/views/BrainView.tsx": {
+    "src/store/index.ts <-> src/views/AdminView.tsx": {
       "score": 2,
       "edgeTypes": {
-        "dependsOn": 1,
-        "imports": 1
+        "imports": 1,
+        "dependsOn": 1
       }
     },
     "src/index.css <-> src/main.tsx": {
@@ -1521,6 +1615,13 @@
         "imports": 1
       }
     },
+    "brain/autonomy/postchange.ts <-> brain/autonomy/source-scope.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
     "src/memory/learner.model.ts <-> src/memory/longterm.memory.ts": {
       "score": 2,
       "edgeTypes": {
@@ -1533,6 +1634,13 @@
       "edgeTypes": {
         "dependsOn": 1,
         "imports": 1
+      }
+    },
+    "src/components/AnimatedScrollText.tsx <-> src/views/StudyView.tsx": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
       }
     },
     "src/memory/bkt.engine.ts <-> src/memory/longterm.memory.ts": {

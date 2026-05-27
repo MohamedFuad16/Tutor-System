@@ -1,12 +1,12 @@
 {
   "ok": true,
-  "generatedAt": "2026-05-26T14:22:06.085Z",
+  "generatedAt": "2026-05-27T08:09:46.886Z",
   "threshold": 85,
-  "score": 92,
+  "score": 98,
   "checks": {
     "graphFreshness": 12,
     "vectorFreshness": 14,
-    "retrievalQuality": 8,
+    "retrievalQuality": 14,
     "runtimeCoverage": 14,
     "contractCoverage": 10,
     "routeStateCoverage": 10,
@@ -16,7 +16,7 @@
   },
   "retrievalBenchmark": {
     "recall": 1,
-    "confidenceAverage": 0.5199999999999999,
+    "confidenceAverage": 0.8811166666666667,
     "results": [
       {
         "task": "add dashboard feature",
@@ -31,7 +31,8 @@
           "src/store/index.ts"
         ],
         "recall": 1,
-        "confidence": "low"
+        "confidence": "high",
+        "confidenceScore": 0.85
       },
       {
         "task": "refactor Zustand store",
@@ -46,7 +47,8 @@
           "src/components/ChatPanel.tsx"
         ],
         "recall": 1,
-        "confidence": "low"
+        "confidence": "high",
+        "confidenceScore": 0.886
       },
       {
         "task": "modify route layout",
@@ -61,7 +63,8 @@
           "src/views/StudyView.tsx"
         ],
         "recall": 1,
-        "confidence": "low"
+        "confidence": "high",
+        "confidenceScore": 0.89
       },
       {
         "task": "modify SSE streaming",
@@ -76,7 +79,8 @@
           "brain/contracts/api-contracts.json"
         ],
         "recall": 1,
-        "confidence": "low"
+        "confidence": "high",
+        "confidenceScore": 0.8896
       },
       {
         "task": "change shared UI animations",
@@ -91,7 +95,8 @@
           "src/components/ChatPanel.tsx"
         ],
         "recall": 1,
-        "confidence": "medium"
+        "confidence": "high",
+        "confidenceScore": 0.85
       },
       {
         "task": "modify Dexie schema",
@@ -106,11 +111,10 @@
           "src/views/RevisionView.tsx"
         ],
         "recall": 1,
-        "confidence": "low"
+        "confidence": "high",
+        "confidenceScore": 0.9211
       }
     ]
   },
-  "unresolvedWeaknesses": [
-    "Retrieval benchmark hit expected files but confidence remains low; ranking calibration needs real-world tuning."
-  ]
+  "unresolvedWeaknesses": []
 }

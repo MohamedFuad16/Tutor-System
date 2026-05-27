@@ -22,15 +22,6 @@
       }
     },
     {
-      "source": "component:StudyView",
-      "target": "component:UsageAnalyticsStrip",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/views/StudyView.tsx"
-      }
-    },
-    {
       "source": "component:SettingsButton",
       "target": "component:SiriLiquidGlass",
       "type": "renders",
@@ -142,15 +133,6 @@
       }
     },
     {
-      "source": "component:StudyView",
-      "target": "component:PdfViewer",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/views/StudyView.tsx"
-      }
-    },
-    {
       "source": "file:src/views/RevisionView.tsx",
       "target": "component:PatternCard",
       "type": "renders",
@@ -170,12 +152,30 @@
       }
     },
     {
+      "source": "file:src/views/StudyView.tsx",
+      "target": "component:ChatPanel",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/StudyView.tsx"
+      }
+    },
+    {
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:ThinkingPanel",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/views/StudyView.tsx",
+      "target": "component:UsageAnalyticsStrip",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/StudyView.tsx"
       }
     },
     {
@@ -195,15 +195,6 @@
       "evidence": {
         "file": "src/App.tsx",
         "text": "activeView === study"
-      }
-    },
-    {
-      "source": "component:StudyView",
-      "target": "component:ChatPanel",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/views/StudyView.tsx"
       }
     },
     {
@@ -262,12 +253,30 @@
       }
     },
     {
+      "source": "file:src/views/StudyView.tsx",
+      "target": "component:CurvedArrow",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/StudyView.tsx"
+      }
+    },
+    {
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:SearchProgressIndicator",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/views/StudyView.tsx",
+      "target": "component:AnimatedScrollText",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/StudyView.tsx"
       }
     },
     {
@@ -362,6 +371,15 @@
       }
     },
     {
+      "source": "file:src/views/StudyView.tsx",
+      "target": "component:PdfViewer",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/StudyView.tsx"
+      }
+    },
+    {
       "source": "route:revision",
       "target": "component:BrainRenderProfiler",
       "type": "renders",
@@ -390,7 +408,7 @@
       }
     },
     {
-      "source": "component:StudyView",
+      "source": "file:src/views/StudyView.tsx",
       "target": "component:PatternCard",
       "type": "renders",
       "confidence": 0.8,

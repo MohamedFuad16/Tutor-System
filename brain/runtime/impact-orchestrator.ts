@@ -12,9 +12,18 @@ export type ImpactReport = {
 
 export function analyzeImpactForFiles(files: string[]): ImpactReport[] {
   return files.slice(0, 8).map((file) => {
-    const staticOutput = execFileSync("npm", ["run", "--silent", "brain:impact", "--", file], { encoding: "utf8" });
-    const runtimePath = path.join(ROOT, "brain/runtime/runtime-impact-map.json");
-    const runtimeImpact = fs.existsSync(runtimePath) ? JSON.parse(fs.readFileSync(runtimePath, "utf8")) : null;
+    const staticOutput = execFileSync(
+      "npm",
+      ["run", "--silent", "brain:impact", "--", file],
+      { encoding: "utf8" },
+    );
+    const runtimePath = path.join(
+      ROOT,
+      "brain/runtime/runtime-impact-map.json",
+    );
+    const runtimeImpact = fs.existsSync(runtimePath)
+      ? JSON.parse(fs.readFileSync(runtimePath, "utf8"))
+      : null;
     return {
       target: file,
       staticImpact: JSON.parse(staticOutput),

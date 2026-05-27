@@ -1,0 +1,14 @@
+[
+  {
+    "id": "file:brain/retrieval/retrieve-context.ts",
+    "name": "brain/retrieval/retrieve-context.ts",
+    "file": "brain/retrieval/retrieve-context.ts",
+    "kind": "file"
+  },
+  {
+    "id": "file:brain/retrieval/retrieve-semantic.ts",
+    "name": "brain/retrieval/retrieve-semantic.ts",
+    "file": "brain/retrieval/retrieve-semantic.ts",
+    "kind": "file"
+  }
+]

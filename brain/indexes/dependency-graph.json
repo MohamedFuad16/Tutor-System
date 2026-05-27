@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-26T14:20:20.494Z",
+    "generatedAt": "2026-05-27T08:08:00.093Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,16 +23,16 @@
       "temporary files"
     ],
     "commit": {
-      "commit": null,
-      "branch": null,
-      "dirty": null
+      "commit": "c372e72c620fc9980c862005ac65dac0fd43661c",
+      "branch": "main",
+      "dirty": true
     },
     "package": {
       "name": "react-example",
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84"
+    "sourceHash": "3b5937f3d727ce6ee55fb0b0858183b0182fe7808f1d8f7e76875c445ed0f509"
   },
   "dependencies": {
     "generate-brain.ts": [
@@ -49,7 +49,9 @@
     "server.ts": [
       "dotenv",
       "express",
+      "fs",
       "path",
+      "child_process",
       "openai",
       "ws",
       "."
@@ -92,6 +94,32 @@
       "src/brain-runtime/installBrainRuntime.ts"
     ],
     "src/types.ts": [],
+    "brain/autonomy/postchange.ts": [
+      "child_process",
+      "fs",
+      "path",
+      "brain/autonomy/source-scope.ts"
+    ],
+    "brain/autonomy/source-scope.ts": [
+      "fs",
+      "path"
+    ],
+    "brain/autonomy/watch.ts": [
+      "child_process",
+      "fs",
+      "path",
+      "brain/autonomy/source-scope.ts"
+    ],
+    "brain/debug/debug-runner.ts": [
+      "child_process",
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "brain/debug/docs-sync.ts": [
+      "fs",
+      "path"
+    ],
     "brain/embeddings/embedding-engine.ts": [
       "crypto",
       "fs",
@@ -171,6 +199,9 @@
       "src/brain-runtime/runtimeTelemetry.ts"
     ],
     "src/brain-runtime/runtimeTelemetry.ts": [],
+    "src/components/AnimatedScrollText.tsx": [
+      "react"
+    ],
     "src/components/ChatPanel.tsx": [
       "react",
       "react-markdown",
@@ -340,6 +371,7 @@
       "src/store/index.ts",
       "lucide-react",
       "src/components/PatternCard.tsx",
+      "src/components/AnimatedScrollText.tsx",
       "motion"
     ],
     "src/index.css": [],

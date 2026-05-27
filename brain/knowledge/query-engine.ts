@@ -33,7 +33,9 @@ function readJson<T>(file: string): T {
 
 function loadGraph(): Graph {
   if (!fs.existsSync(GRAPH_PATH)) {
-    throw new Error("Missing brain/knowledge/graph.json. Run npm run brain:generate first.");
+    throw new Error(
+      "Missing brain/knowledge/graph.json. Run npm run brain:generate first.",
+    );
   }
   return readJson<Graph>(GRAPH_PATH);
 }
@@ -67,11 +69,27 @@ function dependsOn(graph: Graph, query: string) {
   const nodes = findNodes(graph, query);
   const ids = nodes.map((node) => node.id);
   const dependents = graph.edges
-    .filter((edge) => ["imports", "dependsOn"].includes(edge.type) && ids.includes(edge.target))
-    .map((edge) => ({ dependent: nodeName(graph, edge.source), edge: edge.type, evidence: edge.evidence }));
+    .filter(
+      (edge) =>
+        ["imports", "dependsOn"].includes(edge.type) &&
+        ids.includes(edge.target),
+    )
+    .map((edge) => ({
+      dependent: nodeName(graph, edge.source),
+      edge: edge.type,
+      evidence: edge.evidence,
+    }));
   const dependencies = graph.edges
-    .filter((edge) => ["imports", "dependsOn"].includes(edge.type) && ids.includes(edge.source))
-    .map((edge) => ({ dependency: nodeName(graph, edge.target), edge: edge.type, evidence: edge.evidence }));
+    .filter(
+      (edge) =>
+        ["imports", "dependsOn"].includes(edge.type) &&
+        ids.includes(edge.source),
+    )
+    .map((edge) => ({
+      dependency: nodeName(graph, edge.target),
+      edge: edge.type,
+      evidence: edge.evidence,
+    }));
   return { query, matchedNodes: nodes, dependencies, dependents };
 }
 
@@ -79,7 +97,11 @@ function rerendersFrom(graph: Graph, query: string) {
   const nodes = findNodes(graph, query);
   const ids = nodes.map((node) => node.id);
   const readers = graph.edges
-    .filter((edge) => ["readsStore", "usesState"].includes(edge.type) && ids.includes(edge.target))
+    .filter(
+      (edge) =>
+        ["readsStore", "usesState"].includes(edge.type) &&
+        ids.includes(edge.target),
+    )
     .map((edge) => nodeName(graph, edge.source));
   const renderParents = graph.edges
     .filter((edge) => edge.type === "renders" && ids.includes(edge.target))
@@ -99,46 +121,91 @@ function apiImpact(graph: Graph, query: string) {
   const nodes = findNodes(graph, query);
   const ids = nodes.map((node) => node.id);
   const calls = graph.edges
-    .filter((edge) => edge.type === "callsEndpoint" && ids.includes(edge.source))
-    .map((edge) => ({ endpoint: nodeName(graph, edge.target), client: nodeName(graph, edge.source), evidence: edge.evidence }));
+    .filter(
+      (edge) => edge.type === "callsEndpoint" && ids.includes(edge.source),
+    )
+    .map((edge) => ({
+      endpoint: nodeName(graph, edge.target),
+      client: nodeName(graph, edge.source),
+      evidence: edge.evidence,
+    }));
   const served = graph.edges
     .filter((edge) => edge.type === "servedBy" && ids.includes(edge.target))
-    .map((edge) => ({ endpoint: nodeName(graph, edge.source), server: nodeName(graph, edge.target), evidence: edge.evidence }));
+    .map((edge) => ({
+      endpoint: nodeName(graph, edge.source),
+      server: nodeName(graph, edge.target),
+      evidence: edge.evidence,
+    }));
   const clientsOfServed = served.flatMap((servedEndpoint) => {
-    const endpoint = graph.nodes.find((node) => nodeName(graph, node.id) === servedEndpoint.endpoint);
+    const endpoint = graph.nodes.find(
+      (node) => nodeName(graph, node.id) === servedEndpoint.endpoint,
+    );
     if (!endpoint) return [];
     const pathValue = endpoint.metadata?.path;
     return graph.edges
       .filter((edge) => edge.type === "callsEndpoint")
-      .filter((edge) => edge.target === endpoint.id || graph.nodes.find((node) => node.id === edge.target)?.label.includes(String(pathValue)))
-      .map((edge) => ({ endpoint: servedEndpoint.endpoint, client: nodeName(graph, edge.source), evidence: edge.evidence }));
+      .filter(
+        (edge) =>
+          edge.target === endpoint.id ||
+          graph.nodes
+            .find((node) => node.id === edge.target)
+            ?.label.includes(String(pathValue)),
+      )
+      .map((edge) => ({
+        endpoint: servedEndpoint.endpoint,
+        client: nodeName(graph, edge.source),
+        evidence: edge.evidence,
+      }));
   });
   return { query, matchedNodes: nodes, calls, served, clientsOfServed };
 }
 
 function routeLayouts(graph: Graph, query = "") {
-  const routeNodes = query ? findNodes(graph, query).filter((node) => node.type === "route") : graph.nodes.filter((node) => node.type === "route");
+  const routeNodes = query
+    ? findNodes(graph, query).filter((node) => node.type === "route")
+    : graph.nodes.filter((node) => node.type === "route");
   const ids = routeNodes.map((node) => node.id);
   return routeNodes.map((route) => ({
     route: route.label,
-    wrappers: graph.edges.filter((edge) => edge.type === "wraps" && edge.target === route.id).map((edge) => nodeName(graph, edge.source)),
-    renders: graph.edges.filter((edge) => edge.type === "renders" && edge.source === route.id).map((edge) => nodeName(graph, edge.target)),
-    evidence: graph.edges.find((edge) => edge.target === route.id || edge.source === route.id)?.evidence,
+    wrappers: graph.edges
+      .filter((edge) => edge.type === "wraps" && edge.target === route.id)
+      .map((edge) => nodeName(graph, edge.source)),
+    renders: graph.edges
+      .filter((edge) => edge.type === "renders" && edge.source === route.id)
+      .map((edge) => nodeName(graph, edge.target)),
+    evidence: graph.edges.find(
+      (edge) => edge.target === route.id || edge.source === route.id,
+    )?.evidence,
   }));
 }
 
 function stateFlow(graph: Graph, query = "") {
-  const stateNodes = graph.nodes.filter((node) => node.type === "storeField" && (!query || node.label.toLowerCase().includes(query.toLowerCase())));
+  const stateNodes = graph.nodes.filter(
+    (node) =>
+      node.type === "storeField" &&
+      (!query || node.label.toLowerCase().includes(query.toLowerCase())),
+  );
   return stateNodes.map((node) => ({
     field: node.label,
-    readers: graph.edges.filter((edge) => edge.type === "readsStore" && edge.target === node.id).map((edge) => nodeName(graph, edge.source)),
-    writers: graph.edges.filter((edge) => edge.type === "writesStore" && edge.target === node.id).map((edge) => nodeName(graph, edge.source)),
+    readers: graph.edges
+      .filter((edge) => edge.type === "readsStore" && edge.target === node.id)
+      .map((edge) => nodeName(graph, edge.source)),
+    writers: graph.edges
+      .filter((edge) => edge.type === "writesStore" && edge.target === node.id)
+      .map((edge) => nodeName(graph, edge.source)),
   }));
 }
 
 function coupledSystems(graph: Graph) {
   const impactPath = path.join(ROOT, "brain/impact/impact-analysis.json");
-  const impact = fs.existsSync(impactPath) ? readJson<{ couplingScores?: Record<string, { score: number; edgeTypes: Record<string, number> }> }>(impactPath) : {};
+  const impact = fs.existsSync(impactPath)
+    ? readJson<{
+        couplingScores?: Record<
+          string,
+          { score: number; edgeTypes: Record<string, number> }
+        >;
+      }>(impactPath)
+    : {};
   return Object.entries(impact.couplingScores ?? {})
     .sort((a, b) => b[1].score - a[1].score)
     .slice(0, 20)
@@ -146,18 +213,35 @@ function coupledSystems(graph: Graph) {
 }
 
 function naturalQuery(graph: Graph, query: string) {
-  const terms = query.toLowerCase().split(/[^a-z0-9_/-]+/).filter(Boolean);
+  const terms = query
+    .toLowerCase()
+    .split(/[^a-z0-9_/-]+/)
+    .filter(Boolean);
   const scoredNodes = graph.nodes
     .map((node) => {
-      const haystack = [node.id, node.type, node.label, node.file, JSON.stringify(node.metadata ?? {})].join(" ").toLowerCase();
-      const score = terms.reduce((sum, term) => sum + (haystack.includes(term) ? 1 : 0), 0);
+      const haystack = [
+        node.id,
+        node.type,
+        node.label,
+        node.file,
+        JSON.stringify(node.metadata ?? {}),
+      ]
+        .join(" ")
+        .toLowerCase();
+      const score = terms.reduce(
+        (sum, term) => sum + (haystack.includes(term) ? 1 : 0),
+        0,
+      );
       return { node, score };
     })
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 12)
     .map((item) => item.node);
-  const edges = relatedEdges(graph, scoredNodes.map((node) => node.id)).slice(0, 30);
+  const edges = relatedEdges(
+    graph,
+    scoredNodes.map((node) => node.id),
+  ).slice(0, 30);
   return { query, matchedNodes: scoredNodes, edges };
 }
 

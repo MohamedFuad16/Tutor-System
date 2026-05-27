@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-26T14:20:20.494Z",
+    "generatedAt": "2026-05-27T08:08:00.093Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,22 +23,23 @@
       "temporary files"
     ],
     "commit": {
-      "commit": null,
-      "branch": null,
-      "dirty": null
+      "commit": "c372e72c620fc9980c862005ac65dac0fd43661c",
+      "branch": "main",
+      "dirty": true
     },
     "package": {
       "name": "react-example",
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84"
+    "sourceHash": "3b5937f3d727ce6ee55fb0b0858183b0182fe7808f1d8f7e76875c445ed0f509"
   },
   "subsystems": {
     "frontend": {
-      "generatedAt": "2026-05-26T14:20:20.516Z",
+      "generatedAt": "2026-05-27T08:08:00.126Z",
       "sourceFiles": [
         "src/App.tsx",
+        "src/components/AnimatedScrollText.tsx",
         "src/components/ChatPanel.tsx",
         "src/components/FloatingSkillsMenu.tsx",
         "src/components/Navigation.tsx",
@@ -70,6 +71,7 @@
         "motion",
         "src/brain-runtime/RenderProfiler.tsx",
         "src/brain-runtime/runtimeTelemetry.ts",
+        "react",
         "react",
         "react-markdown",
         "remark-gfm",
@@ -155,6 +157,7 @@
         "src/store/index.ts",
         "lucide-react",
         "src/components/PatternCard.tsx",
+        "src/components/AnimatedScrollText.tsx",
         "motion"
       ],
       "mutationRisk": [
@@ -179,15 +182,15 @@
           "risk": 16
         },
         {
+          "file": "src/views/StudyView.tsx",
+          "risk": 16
+        },
+        {
           "file": "src/App.tsx",
           "risk": 8
         },
         {
-          "file": "src/components/FloatingSkillsMenu.tsx",
-          "risk": 8
-        },
-        {
-          "file": "src/components/Navigation.tsx",
+          "file": "src/components/AnimatedScrollText.tsx",
           "risk": 8
         }
       ],
@@ -201,7 +204,7 @@
       ]
     },
     "backend": {
-      "generatedAt": "2026-05-26T14:20:20.516Z",
+      "generatedAt": "2026-05-27T08:08:00.127Z",
       "sourceFiles": [
         "server.ts"
       ],
@@ -209,7 +212,9 @@
       "dependencyReferences": [
         "dotenv",
         "express",
+        "fs",
         "path",
+        "child_process",
         "openai",
         "ws",
         "."
@@ -225,7 +230,7 @@
       ]
     },
     "state": {
-      "generatedAt": "2026-05-26T14:20:20.516Z",
+      "generatedAt": "2026-05-27T08:08:00.127Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/ChatPanel.tsx",
@@ -325,6 +330,7 @@
         "src/store/index.ts",
         "lucide-react",
         "src/components/PatternCard.tsx",
+        "src/components/AnimatedScrollText.tsx",
         "motion"
       ],
       "mutationRisk": [
@@ -338,6 +344,10 @@
         },
         {
           "file": "src/views/RevisionView.tsx",
+          "risk": 16
+        },
+        {
+          "file": "src/views/StudyView.tsx",
           "risk": 16
         },
         {
@@ -355,10 +365,6 @@
         {
           "file": "src/components/SettingsModal.tsx",
           "risk": 8
-        },
-        {
-          "file": "src/views/AdminView.tsx",
-          "risk": 8
         }
       ],
       "contextPacks": [
@@ -371,7 +377,7 @@
       ]
     },
     "memory": {
-      "generatedAt": "2026-05-26T14:20:20.516Z",
+      "generatedAt": "2026-05-27T08:08:00.127Z",
       "sourceFiles": [
         "src/memory/bkt.engine.ts",
         "src/memory/cognitive.load.ts",
@@ -452,11 +458,16 @@
       ]
     },
     "brainTooling": {
-      "generatedAt": "2026-05-26T14:20:20.516Z",
+      "generatedAt": "2026-05-27T08:08:00.127Z",
       "sourceFiles": [
         "generate-brain.ts",
         "brain/drift-check.ts",
         "brain/self-audit.ts",
+        "brain/autonomy/postchange.ts",
+        "brain/autonomy/source-scope.ts",
+        "brain/autonomy/watch.ts",
+        "brain/debug/debug-runner.ts",
+        "brain/debug/docs-sync.ts",
         "brain/embeddings/embedding-engine.ts",
         "brain/impact/analyze-impact.ts",
         "brain/knowledge/query-engine.ts",
@@ -480,6 +491,22 @@
         "fs",
         "path",
         "child_process",
+        "fs",
+        "path",
+        "child_process",
+        "fs",
+        "path",
+        "brain/autonomy/source-scope.ts",
+        "fs",
+        "path",
+        "child_process",
+        "fs",
+        "path",
+        "brain/autonomy/source-scope.ts",
+        "child_process",
+        "crypto",
+        "fs",
+        "path",
         "fs",
         "path",
         "crypto",
@@ -516,6 +543,10 @@
       ],
       "mutationRisk": [
         {
+          "file": "brain/autonomy/source-scope.ts",
+          "risk": 16
+        },
+        {
           "file": "brain/retrieval/retrieve-semantic.ts",
           "risk": 8
         },
@@ -540,11 +571,7 @@
           "risk": 0
         },
         {
-          "file": "brain/embeddings/embedding-engine.ts",
-          "risk": 0
-        },
-        {
-          "file": "brain/impact/analyze-impact.ts",
+          "file": "brain/autonomy/postchange.ts",
           "risk": 0
         }
       ],

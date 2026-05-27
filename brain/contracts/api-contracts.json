@@ -9,6 +9,33 @@
       "responseFormat": "application/json",
       "generatedFromSource": true
     },
+    "GET /api/debug/runs": {
+      "method": "GET",
+      "path": "/api/debug/runs",
+      "serverFile": "server.ts",
+      "clients": [
+        "src/lib/tutorBook.json",
+        "src/views/AdminView.tsx"
+      ],
+      "responseFormat": "application/json",
+      "generatedFromSource": true
+    },
+    "GET /api/debug/runs/:id": {
+      "method": "GET",
+      "path": "/api/debug/runs/:id",
+      "serverFile": "server.ts",
+      "clients": [],
+      "responseFormat": "application/json",
+      "generatedFromSource": true
+    },
+    "GET /api/debug/runs/:id/events": {
+      "method": "GET",
+      "path": "/api/debug/runs/:id/events",
+      "serverFile": "server.ts",
+      "clients": [],
+      "responseFormat": "application/json",
+      "generatedFromSource": true
+    },
     "GET /api/pricing": {
       "method": "GET",
       "path": "/api/pricing",
@@ -25,8 +52,7 @@
       "path": "/api/tts",
       "serverFile": "server.ts",
       "clients": [
-        "src/components/ChatPanel.tsx",
-        "src/lib/tutorBook.json"
+        "src/components/ChatPanel.tsx"
       ],
       "responseFormat": "audio/mpeg",
       "generatedFromSource": true
@@ -40,6 +66,25 @@
         "src/lib/tutorBook.json"
       ],
       "responseFormat": "text/event-stream",
+      "generatedFromSource": true
+    },
+    "POST /api/debug/run": {
+      "method": "POST",
+      "path": "/api/debug/run",
+      "serverFile": "server.ts",
+      "clients": [
+        "src/lib/tutorBook.json",
+        "src/views/AdminView.tsx"
+      ],
+      "responseFormat": "application/json",
+      "generatedFromSource": true
+    },
+    "POST /api/debug/runs/:id/cancel": {
+      "method": "POST",
+      "path": "/api/debug/runs/:id/cancel",
+      "serverFile": "server.ts",
+      "clients": [],
+      "responseFormat": "application/json",
       "generatedFromSource": true
     },
     "POST /api/generate-flashcards": {
@@ -78,8 +123,7 @@
       "path": "/api/title",
       "serverFile": "server.ts",
       "clients": [
-        "src/components/PdfViewer.tsx",
-        "src/lib/tutorBook.json"
+        "src/components/PdfViewer.tsx"
       ],
       "responseFormat": "application/json",
       "generatedFromSource": true
@@ -101,7 +145,6 @@
       "path": "/api/voice-agent",
       "serverFile": "server.ts",
       "clients": [
-        "src/lib/tutorBook.json",
         "src/components/ChatPanel.tsx"
       ],
       "generatedFromSource": true
@@ -110,7 +153,6 @@
       "path": "/ws/debug",
       "serverFile": "server.ts",
       "clients": [
-        "src/lib/tutorBook.json",
         "src/views/AdminView.tsx"
       ],
       "generatedFromSource": true
@@ -155,6 +197,18 @@
     },
     {
       "file": "src/lib/tutorBook.json",
+      "endpoint": "/api/debug/run"
+    },
+    {
+      "file": "src/lib/tutorBook.json",
+      "endpoint": "/api/debug/runs"
+    },
+    {
+      "file": "src/lib/tutorBook.json",
+      "endpoint": "/api/debug/runs/"
+    },
+    {
+      "file": "src/lib/tutorBook.json",
       "endpoint": "/api/learning-book-update"
     },
     {
@@ -163,15 +217,7 @@
     },
     {
       "file": "src/lib/tutorBook.json",
-      "endpoint": "/api/title"
-    },
-    {
-      "file": "src/lib/tutorBook.json",
       "endpoint": "/api/trace"
-    },
-    {
-      "file": "src/lib/tutorBook.json",
-      "endpoint": "/api/tts"
     },
     {
       "file": "src/memory/memory.orchestrator.ts",
@@ -180,6 +226,18 @@
     {
       "file": "src/memory/memory.orchestrator.ts",
       "endpoint": "/api/trace"
+    },
+    {
+      "file": "src/views/AdminView.tsx",
+      "endpoint": "/api/debug/runs"
+    },
+    {
+      "file": "src/views/AdminView.tsx",
+      "endpoint": "/api/debug/runs/"
+    },
+    {
+      "file": "src/views/AdminView.tsx",
+      "endpoint": "/api/debug/runs/$%7BencodeURIComponent(activeDebugRunId)%7D"
     }
   ]
 }

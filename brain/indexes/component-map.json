@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-26T14:20:20.494Z",
+    "generatedAt": "2026-05-27T08:08:00.093Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,21 +23,21 @@
       "temporary files"
     ],
     "commit": {
-      "commit": null,
-      "branch": null,
-      "dirty": null
+      "commit": "c372e72c620fc9980c862005ac65dac0fd43661c",
+      "branch": "main",
+      "dirty": true
     },
     "package": {
       "name": "react-example",
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "89f379eb6b455e1db0d7ce0979dd9f777db76e652fdc16bdbac933065a727a84"
+    "sourceHash": "3b5937f3d727ce6ee55fb0b0858183b0182fe7808f1d8f7e76875c445ed0f509"
   },
   "files": {
     "generate-brain.ts": {
       "file": "generate-brain.ts",
-      "hash": "fe90eb18c04769dbf36988daa03adbdac31db07bc7dbddb47a19300b34834de4",
+      "hash": "69ac65dacb90446a80c9feac0cfdbcac41008bcd742acb8d43b86a484c016b93",
       "imports": [
         {
           "specifier": "ts-morph",
@@ -162,7 +162,7 @@
     },
     "server.ts": {
       "file": "server.ts",
-      "hash": "7811beebedc58f2e7bf68ab66626340121bc8a985f687ceba92b50b3e1883442",
+      "hash": "75b54f7f2eb8836bd09a9d93cf8f8c93628733ca3b9d75b36b66b5b754a335d1",
       "imports": [
         {
           "specifier": "dotenv",
@@ -173,8 +173,16 @@
           "external": "express"
         },
         {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
           "specifier": "path",
           "external": "path"
+        },
+        {
+          "specifier": "child_process",
+          "external": "child_process"
         },
         {
           "specifier": "openai",
@@ -228,7 +236,7 @@
     },
     "brain/drift-check.ts": {
       "file": "brain/drift-check.ts",
-      "hash": "8b203172a6d8290a1f3791a40ef060868211e01eef344f670bc8449f171e88a7",
+      "hash": "3bed9fe3cc91b2741e998ec975c9930016f11119cd96d475a013deff394a511b",
       "imports": [
         {
           "specifier": "crypto",
@@ -272,7 +280,7 @@
     },
     "brain/self-audit.ts": {
       "file": "brain/self-audit.ts",
-      "hash": "88aa6dd1d7c36300902fc02057981e275ce7ccf66e3380101b3f842a12b1ca8a",
+      "hash": "f719c3d0bb0f5decb9a868bbaf0421a8e8b3f28aa9dbc2c3fa761f3a5a84ad91",
       "imports": [
         {
           "specifier": "child_process",
@@ -315,7 +323,7 @@
     },
     "scripts/install-brain-hooks.ts": {
       "file": "scripts/install-brain-hooks.ts",
-      "hash": "88c7840f122d9bee1c5646f20fe8c3560728addfbf57651fad6626f84edd0fc4",
+      "hash": "65cdcac7754ce334e3e0f66e2be9182905d50580a90aa68a6b98740fb5a7f452",
       "imports": [
         {
           "specifier": "child_process",
@@ -353,7 +361,7 @@
     },
     "src/App.tsx": {
       "file": "src/App.tsx",
-      "hash": "72a420f7cd923999ade34be343a4b1727a8790afede19a0030b6cb0137e650e7",
+      "hash": "acb0c02d3ab7d4789ea7758bea11b00130125cbd99b1056e3434528f512749ed",
       "imports": [
         {
           "specifier": "react",
@@ -567,9 +575,241 @@
       "renders": [],
       "routes": []
     },
+    "brain/autonomy/postchange.ts": {
+      "file": "brain/autonomy/postchange.ts",
+      "hash": "2c7dafc397fdca8f205fd048f1947a7c6f6e4954ad138b546fe894854f363dd8",
+      "imports": [
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        },
+        {
+          "specifier": "./source-scope",
+          "resolved": "brain/autonomy/source-scope.ts"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "arg",
+        "ensureDir",
+        "writeStatus",
+        "runStep",
+        "parseJsonOutput",
+        "main"
+      ],
+      "variables": [
+        "STATUS_PATH"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/autonomy/source-scope.ts": {
+      "file": "brain/autonomy/source-scope.ts",
+      "hash": "1107fe70ed9247269cccf9ef863499479b3d5bc5efbd9a1f5c50ba1c28d809c7",
+      "imports": [
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [
+        "ROOT",
+        "isIgnored",
+        "isSourceScoped",
+        "rel",
+        "watchRoots"
+      ],
+      "functions": [
+        "rel",
+        "isSourceScoped",
+        "isIgnored",
+        "watchRoots"
+      ],
+      "variables": [
+        "ROOT",
+        "ALLOW",
+        "EXCLUDE"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/autonomy/watch.ts": {
+      "file": "brain/autonomy/watch.ts",
+      "hash": "cc1c0093020b54fb36226887d44053e4acb6aee527fee746f7e55de3f4cc691c",
+      "imports": [
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        },
+        {
+          "specifier": "./source-scope",
+          "resolved": "brain/autonomy/source-scope.ts"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "writeStatus",
+        "queueRefresh",
+        "runRefresh",
+        "shouldHandle",
+        "main"
+      ],
+      "variables": [
+        "STATUS_PATH",
+        "DEBOUNCE_MS",
+        "timer",
+        "running",
+        "pendingReason"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/debug/debug-runner.ts": {
+      "file": "brain/debug/debug-runner.ts",
+      "hash": "6c8bc4c4ba85df1250f8d14847ab79b65e242ca3678510d5a7656df3be76da7f",
+      "imports": [
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        },
+        {
+          "specifier": "crypto",
+          "external": "crypto"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "arg",
+        "hasFlag",
+        "sha256",
+        "readJson",
+        "writeJson",
+        "appendNdjson",
+        "run",
+        "discoverTargets",
+        "docsForFile",
+        "ensureDocs",
+        "backupFile",
+        "loadMemoryGraph",
+        "appendMemoryGraph",
+        "loadQueue",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "DEBUG_DIR",
+        "RUNS_DIR",
+        "BACKUP_DIR",
+        "MEMORY_GRAPH_PATH",
+        "DOCS_DIR"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/debug/docs-sync.ts": {
+      "file": "brain/debug/docs-sync.ts",
+      "hash": "7e825d861cd6fa15ed9a70368a481844a6031402933ce823c6c099960067cdf7",
+      "imports": [
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "stripHtml",
+        "fetchDoc",
+        "writeJson",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "DOCS_DIR",
+        "SOURCES"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
     "brain/embeddings/embedding-engine.ts": {
       "file": "brain/embeddings/embedding-engine.ts",
-      "hash": "1745ef2e280acd21eb620bdafc969b5516ccd7f3bb6e9f2fd2918f73c3d99bda",
+      "hash": "f3a281a05c8bc1022c61f9732d04dfead1fce9a81b15bdb1bd96afdd50c4703a",
       "imports": [
         {
           "specifier": "crypto",
@@ -625,7 +865,7 @@
     },
     "brain/impact/analyze-impact.ts": {
       "file": "brain/impact/analyze-impact.ts",
-      "hash": "87e10a2b02f9cf82ddfe4770cbdf3590a1536cc95aeef59776994d81bffb483f",
+      "hash": "34d94a044540c1fdb81a4b8e0b2278d57d150db9073096052afec6e50d869e1c",
       "imports": [
         {
           "specifier": "fs",
@@ -660,7 +900,7 @@
     },
     "brain/knowledge/query-engine.ts": {
       "file": "brain/knowledge/query-engine.ts",
-      "hash": "2be7bcdc78f04f643234cfddc3e7fc14e684a8003813e3d60254363e2d312740",
+      "hash": "0445a0c365534f02d00e626995cba0a1381b180e4fafa2b4f10256c741807045",
       "imports": [
         {
           "specifier": "fs",
@@ -729,7 +969,7 @@
     },
     "brain/retrieval/retrieve-semantic.ts": {
       "file": "brain/retrieval/retrieve-semantic.ts",
-      "hash": "a4ef94db1bfb061e6e2c495e5d9de8886e8cc84274c87ef785e547879f2d68a6",
+      "hash": "05165eb6272f26cd12acbf4dce0a4876548c33ded4317e500e4084fa648c1538",
       "imports": [
         {
           "specifier": "fs",
@@ -749,6 +989,9 @@
         "readJson",
         "sha256",
         "tokenize",
+        "searchablePath",
+        "hasToken",
+        "clamp",
         "sparseVector",
         "sparseCosine",
         "vectorCosine",
@@ -758,6 +1001,8 @@
         "taskMemoryScore",
         "graphNeighborScore",
         "confidence",
+        "evidenceConfidenceScore",
+        "retrievalConfidenceScore",
         "main"
       ],
       "variables": [
@@ -779,7 +1024,7 @@
     },
     "brain/rules/validate-rules.ts": {
       "file": "brain/rules/validate-rules.ts",
-      "hash": "532ad435082ae1c61731c414c65fd6bb55ef3734912302acf6b321444edcb7cb",
+      "hash": "a4f9d9063d4c6d7cbc8cba662c00c0348d19c9a0c95db368c72c01de4546f07f",
       "imports": [
         {
           "specifier": "fs",
@@ -825,7 +1070,7 @@
     },
     "brain/runtime/context-orchestrator.ts": {
       "file": "brain/runtime/context-orchestrator.ts",
-      "hash": "40bd080746cf21cbee8f42468f08822786844fd761f77dfdd11ef794da769fcf",
+      "hash": "d3af62db34dcd797a9e5e336202c376f01bc7d253c23fdd53da7c2744071694c",
       "imports": [
         {
           "specifier": "child_process",
@@ -854,7 +1099,7 @@
     },
     "brain/runtime/impact-orchestrator.ts": {
       "file": "brain/runtime/impact-orchestrator.ts",
-      "hash": "9ea84f3965746c1f68897e18d1d9a5f7740f47b9c96fb5e70d9bdf58c1828546",
+      "hash": "619ba554659407d72194e14c19419dd188b685d97d6f91034a5b8cbf290624c9",
       "imports": [
         {
           "specifier": "child_process",
@@ -893,7 +1138,7 @@
     },
     "brain/runtime/run-runtime-benchmark.ts": {
       "file": "brain/runtime/run-runtime-benchmark.ts",
-      "hash": "0433f6f57dff87ac58aa9605ff0b869eb25aea22d32046e2406d5e8450705b00",
+      "hash": "b61ec741326516fb0abae35a65f49f446b75fbb7273dcbf80b3d865f8d61d7e4",
       "imports": [
         {
           "specifier": "playwright",
@@ -939,7 +1184,7 @@
     },
     "brain/runtime/task-executor.ts": {
       "file": "brain/runtime/task-executor.ts",
-      "hash": "687649b71ebb606af7fd68751779b6c7c817104741c86996ad93dfeb004935fb",
+      "hash": "6890e27143ae04cc6be229700b3723e8caed9a231b66dece9542518994f8bd23",
       "imports": [
         {
           "specifier": "openai",
@@ -1000,7 +1245,7 @@
     },
     "brain/tasks/task-memory.ts": {
       "file": "brain/tasks/task-memory.ts",
-      "hash": "b7530e2bd9a6bc2b48281c2b6571a257f5b4d67b3361aae59641824b3f506d7f",
+      "hash": "aef513b8984ea0a7eb2161eedcdde178351f9db9056dd9d70e27baa473284cc2",
       "imports": [
         {
           "specifier": "fs",
@@ -1284,9 +1529,39 @@
       "renders": [],
       "routes": []
     },
+    "src/components/AnimatedScrollText.tsx": {
+      "file": "src/components/AnimatedScrollText.tsx",
+      "hash": "65ca2a375253c97de6157fa51c9ca9ca16fe61cc4d4f5abc53120551fcca5051",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        }
+      ],
+      "exports": [
+        "AnimatedScrollText"
+      ],
+      "functions": [
+        "AnimatedScrollText"
+      ],
+      "variables": [],
+      "classes": [],
+      "components": [
+        "AnimatedScrollText"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "2b7e0ca8ae305d0a9b3bd77b07d2936d9b132049c31eacc728d1e292f5144594",
+      "hash": "c26d8ef176b4bbcb535d7a61b50fbf50fe7c5f052e6809bfd9cf6766720e276f",
       "imports": [
         {
           "specifier": "react",
@@ -1628,7 +1903,7 @@
     },
     "src/components/FloatingSkillsMenu.tsx": {
       "file": "src/components/FloatingSkillsMenu.tsx",
-      "hash": "e3ea146e99f51c2154a7640adce10ccfe585ba1e566e9330f6487110efac3c60",
+      "hash": "7904a5627e021e5bfe83ea9d132678b06549b15a467f9105af0d8bba12cf437b",
       "imports": [
         {
           "specifier": "react",
@@ -1721,7 +1996,7 @@
     },
     "src/components/PatternCard.tsx": {
       "file": "src/components/PatternCard.tsx",
-      "hash": "ee6086e8ccd869679f31a251436758b06b170a837e64fcc7091faeb43973230f",
+      "hash": "41cea00c6a483c26a3a4b02283d5ac0a06147b6b21392d5e6b230431c679e8b4",
       "imports": [
         {
           "specifier": "react",
@@ -1799,7 +2074,7 @@
     },
     "src/components/PdfViewer.tsx": {
       "file": "src/components/PdfViewer.tsx",
-      "hash": "92a634902c35781d835c8024435699597bdaa51a2b1690b7dea4b06eae05b284",
+      "hash": "327fb4bacd6f1edd2fdadbeb981fd57460a67c11ac971ebd7f2f4087905ff436",
       "imports": [
         {
           "specifier": "react",
@@ -1961,7 +2236,7 @@
     },
     "src/components/SettingsModal.tsx": {
       "file": "src/components/SettingsModal.tsx",
-      "hash": "57c02357227b054c2a22198c74446e1deda122ed7b89413e6fd9ba7ebccdbdd8",
+      "hash": "4db4e83d3871db6b9b12731aa13a69cb604c64d8561da889257d2bbe539d92da",
       "imports": [
         {
           "specifier": "react",
@@ -2173,7 +2448,7 @@
     },
     "src/lib/tutorBook.json": {
       "file": "src/lib/tutorBook.json",
-      "hash": "2a867792ba69eb5c84240743064cd3f6336a6e18d3030a86a4726a6bde8c9ee9",
+      "hash": "a1d38411dd51578568a33c6c59bf91868a97f4ef1095c32a83b4b1fc69a4aeed",
       "imports": [],
       "exports": [],
       "functions": [],
@@ -2185,16 +2460,14 @@
       "storeWrites": [],
       "apiCalls": [
         "/api/chat",
+        "/api/debug/run",
+        "/api/debug/runs",
+        "/api/debug/runs/",
         "/api/learning-book-update",
         "/api/pricing",
-        "/api/title",
-        "/api/trace",
-        "/api/tts"
+        "/api/trace"
       ],
-      "websocketCalls": [
-        "/api/voice-agent",
-        "/ws/debug"
-      ],
+      "websocketCalls": [],
       "databaseReads": [],
       "databaseWrites": [],
       "renders": [],
@@ -2872,7 +3145,7 @@
     },
     "src/store/index.ts": {
       "file": "src/store/index.ts",
-      "hash": "f48e565c1cdd4b32d25ddd60e148e189ab0149d1554f0176006082d0126c0c66",
+      "hash": "eeab2e565fc8cda04358429482f81562d5ddeb6466c909f1beb5a16f4f9849b6",
       "imports": [
         {
           "specifier": "zustand",
@@ -2928,7 +3201,7 @@
     },
     "src/views/AdminView.tsx": {
       "file": "src/views/AdminView.tsx",
-      "hash": "cf486d0d1a75df2437a8f934a14fbd78884e3a4e41b79fa19fecdb55435f695f",
+      "hash": "03d64ebb8892f483377e6a20840abbeb60803d6a7fd3f7941dc9a24cfe047225",
       "imports": [
         {
           "specifier": "react",
@@ -2971,7 +3244,11 @@
       "storeWrites": [
         "setActiveView"
       ],
-      "apiCalls": [],
+      "apiCalls": [
+        "/api/debug/runs",
+        "/api/debug/runs/",
+        "/api/debug/runs/$%7BencodeURIComponent(activeDebugRunId)%7D"
+      ],
       "websocketCalls": [
         "/ws/debug"
       ],
@@ -2996,12 +3273,16 @@
       "databaseWrites": [],
       "renders": [
         "Activity",
+        "AlertTriangle",
         "AnimatePresence",
         "BookOpen",
+        "Bug",
+        "CheckCircle2",
         "ChevronRight",
         "Clock",
         "Menu",
         "Network",
+        "RefreshCw",
         "Sparkles",
         "Terminal"
       ],
@@ -3009,7 +3290,7 @@
     },
     "src/views/AnalyticsView.tsx": {
       "file": "src/views/AnalyticsView.tsx",
-      "hash": "df6a0cca785929236e1362dd19ec92bbb6b8861f24521b3186b19d3410acb5c6",
+      "hash": "c825c8570900021dccf92f5ab8eb515a45c28c016b291cd61eb0a1289d3a8350",
       "imports": [
         {
           "specifier": "react",
@@ -3171,7 +3452,7 @@
     },
     "src/views/RevisionView.tsx": {
       "file": "src/views/RevisionView.tsx",
-      "hash": "3c2e0a2f9a837827cbc0eb684619cb11f3e37f16e4550bfb70cfc6f8f401cb7d",
+      "hash": "73a5a030fdf5e665fa33955cf58f0fa7f6046c59cf8f7f434eec58ffbcadf3ea",
       "imports": [
         {
           "specifier": "react",
@@ -3306,7 +3587,7 @@
     },
     "src/views/StudyView.tsx": {
       "file": "src/views/StudyView.tsx",
-      "hash": "028161232f01749af243dfb2636f0c1cef7aeee51162851169df78e3d6a9cf0a",
+      "hash": "b93428d39abc213b3b73d9facce3b60dca83cb4e2503613cd0973ec898d3fec8",
       "imports": [
         {
           "specifier": "react",
@@ -3333,6 +3614,10 @@
           "resolved": "src/components/PatternCard.tsx"
         },
         {
+          "specifier": "../components/AnimatedScrollText",
+          "resolved": "src/components/AnimatedScrollText.tsx"
+        },
+        {
           "specifier": "motion/react",
           "external": "motion"
         }
@@ -3343,9 +3628,12 @@
       "functions": [
         "StudyView"
       ],
-      "variables": [],
+      "variables": [
+        "CurvedArrow"
+      ],
       "classes": [],
       "components": [
+        "CurvedArrow",
         "StudyView"
       ],
       "hooks": [],
@@ -3376,6 +3664,7 @@
         }
       ],
       "storeWrites": [
+        "setMessages",
         "setPdfPage",
         "setPdfTotalPages",
         "setPdfUrl",
@@ -3387,7 +3676,9 @@
       "databaseWrites": [],
       "renders": [
         "AnimatePresence",
+        "AnimatedScrollText",
         "ChatPanel",
+        "CurvedArrow",
         "MessageSquare",
         "PatternCard",
         "PdfViewer",
@@ -3419,7 +3710,7 @@
     },
     "package.json": {
       "file": "package.json",
-      "hash": "395935794a7aaf85f745729c16738cf712fb52e252aa020a7aac60faae5127fa",
+      "hash": "0144d166564637c48c6d7b872ce3749c2c6acc12da1d648aa6eafab450a378ae",
       "imports": [],
       "exports": [],
       "functions": [],
@@ -3438,7 +3729,7 @@
     },
     "package-lock.json": {
       "file": "package-lock.json",
-      "hash": "fd7451268f13a474f26c9e905aee0c2f49dc2434e93137bb6d7d0520233325fe",
+      "hash": "04194de561413599d14479d64cfa3516985a97829bd277d0ea324dbd6fb2b22b",
       "imports": [],
       "exports": [],
       "functions": [],
@@ -3457,7 +3748,7 @@
     },
     "tsconfig.json": {
       "file": "tsconfig.json",
-      "hash": "bb90ecf058764422a4866e31a2da9bdc3d2fee80eaa849d72f6920d75eb54de2",
+      "hash": "75de51e59cd7eb7c175c2dd93d8de644c2c85664ae0c00ac320800af9bf0e888",
       "imports": [],
       "exports": [],
       "functions": [],

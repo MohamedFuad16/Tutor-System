@@ -227,8 +227,8 @@ var fallbackLearningUpdate = (body) => {
   const project = String(body?.activeProject || "").trim();
   const userMessage = String(body?.userMessage || "").trim();
   const assistantMessage = String(body?.assistantMessage || "").trim();
-  const title = project && project !== "General Study" ? project : userMessage.match(/\b(Python|JavaScript|React|TypeScript|Algorithms|System Design|Concurrency|Networking)\b/i)?.[0] || "General Study";
-  const conceptName = title === "General Study" ? "Conversation Summary" : title;
+  const title = project && project !== "General Study" ? project : userMessage.match(/\b(Python|JavaScript|React|TypeScript|Algorithms|System Design|Concurrency|Networking|Machine Learning|Calculus|History)\b/i)?.[0] || "General Study";
+  const conceptName = title === "General Study" ? "General Conversation" : title;
   return {
     userName: String(body?.userName || "Learner").trim() || "Learner",
     bookTitle: title,
@@ -488,7 +488,8 @@ Schema:
     }
   ]
 }
-Maintain one learning book for the current session. Use bookTitle as the broad session title, not a new title for every chat. Use chapterTitle to organize each conversation into chapters. If the current book already exists, prefer continuing it and adding/refining chapters. Do not invent advanced concepts absent from the conversation.`
+Maintain one learning book for the current session. Use bookTitle as the broad session title (e.g. "Python Programming"). 
+CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapterTitle\` based strictly on what the user actually asked about in this message (e.g. "List Comprehensions", "Promises and Async/Await", "Calculus Integrals"). DO NOT use generic chapter titles like "Conversation Notes". If the current book already exists, prefer continuing it and adding/refining chapters. Do not invent advanced concepts absent from the conversation.`
           },
           {
             role: "user",
@@ -515,6 +516,89 @@ Maintain one learning book for the current session. Use bookTitle as the broad s
     } catch (error) {
       console.warn("[LEARNING_BOOK] DeepSeek update failed, using safe fallback:", error instanceof Error ? error.message : error);
       res.json(fallbackLearningUpdate(body));
+    }
+  });
+  app.post("/api/generate-flashcards", async (req, res) => {
+    const authHeader = req.headers.authorization || "";
+    const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+    const headerKey = bearerMatch ? bearerMatch[1].trim() : "";
+    const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
+    const body = req.body || {};
+    if (!apiKey) {
+      return res.status(401).json({ error: "API key is required." });
+    }
+    const content = String(body.content || "").slice(0, 8e3);
+    if (!content) {
+      return res.status(400).json({ error: "Content is required." });
+    }
+    try {
+      const openai = new OpenAI({
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey
+      });
+      const response = await openai.chat.completions.create({
+        model: LEARNING_AGENT_MODEL,
+        temperature: 0.2,
+        messages: [
+          {
+            role: "system",
+            content: "You are an AI study assistant. Extract the key educational concepts from the provided text and generate 1-3 flashcards. Return ONLY a valid JSON object matching the schema. No markdown."
+          },
+          {
+            role: "user",
+            content: `Please generate flashcards from this text:
+
+${content}`
+          }
+        ],
+        response_format: { type: "json_object" },
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "generate_flashcards",
+              description: "Generates study flashcards based on the text.",
+              parameters: {
+                type: "object",
+                properties: {
+                  cards: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        front: { type: "string" },
+                        back: { type: "string" }
+                      },
+                      required: ["front", "back"]
+                    }
+                  }
+                },
+                required: ["cards"]
+              }
+            }
+          }
+        ],
+        tool_choice: { type: "function", function: { name: "generate_flashcards" } }
+      });
+      const message = response.choices[0]?.message;
+      let cards = [];
+      if (message?.tool_calls && message.tool_calls.length > 0) {
+        const toolCall = message.tool_calls[0];
+        if (toolCall.function && toolCall.function.arguments) {
+          const args = JSON.parse(toolCall.function.arguments);
+          if (args.cards) cards = args.cards;
+        }
+      } else if (message?.content) {
+        try {
+          const parsed = JSON.parse(message.content);
+          if (parsed.cards) cards = parsed.cards;
+        } catch (e) {
+        }
+      }
+      res.json({ cards });
+    } catch (error) {
+      console.warn("[FLASHCARDS] Generation failed:", error);
+      res.status(500).json({ error: "Failed to generate flashcards" });
     }
   });
   app.get("/api/tts", async (req, res) => {
