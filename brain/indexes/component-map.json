@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T13:49:40.196Z",
+    "generatedAt": "2026-05-27T14:05:57.125Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "48e88401ceb2a740f7fab9e20f7ada00f72ea9f5",
+      "commit": "6d444982a760aad2dcda1cc12389d5d67d0a44b1",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "603cee70ccec0c565b0332c8fae3e1acb4b4e8242cad8c1eb923ad2231a71d0c"
+    "sourceHash": "aaaad77e48968790695157df7ea1695dd50cfdb9ef5b774dc1b07c903e8b3b2d"
   },
   "files": {
     "generate-brain.ts": {
@@ -700,7 +700,7 @@
     },
     "brain/debug/debug-runner.ts": {
       "file": "brain/debug/debug-runner.ts",
-      "hash": "56b65e305b919c674af9f767575051fb31ecc455cfb8392837c8d579cc4f41e6",
+      "hash": "27b3d68e82f55c6058f19f15bd9fd269ae4cf57d235fd8a893ecbd965cfc0c45",
       "imports": [
         {
           "specifier": "child_process",
@@ -745,6 +745,9 @@
         "flattenFindings",
         "summarizeDocsComparison",
         "generateImprovements",
+        "hasDetectorFinding",
+        "addMissingImageAlt",
+        "applyDeterministicFixes",
         "readUiRegressionReport",
         "ensureDocs",
         "backupFile",

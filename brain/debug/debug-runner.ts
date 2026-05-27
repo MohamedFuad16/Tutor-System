@@ -48,6 +48,15 @@ type PhaseStatus = DebugPhase & {
 
 type DetectorReport = Record<string, string[]>;
 
+type DeterministicFixResult = {
+  text: string;
+  changes: string[];
+  rules: Array<{
+    id: string;
+    evidence: string;
+  }>;
+};
+
 type RunEvent = {
   timestamp: string;
   type: string;
@@ -678,6 +687,78 @@ function generateImprovements(report: DetectorReport, changed: boolean) {
   return improvements;
 }
 
+function hasDetectorFinding(
+  report: DetectorReport,
+  category: string,
+  phrase: string,
+) {
+  return (report[category] || []).some((finding) => finding.includes(phrase));
+}
+
+function addMissingImageAlt(source: string) {
+  return source.replace(/<img\b([^>]*)>/g, (match, rawAttrs: string) => {
+    if (/\balt\s*=/.test(rawAttrs)) return match;
+
+    const selfClosing = /\/\s*$/.test(rawAttrs);
+    const attrs = selfClosing
+      ? rawAttrs.replace(/\/\s*$/, "").trimEnd()
+      : rawAttrs;
+    const suffix = selfClosing ? " />" : ">";
+    return `<img alt=""${attrs}${suffix}`;
+  });
+}
+
+function applyDeterministicFixes(
+  target: ComponentTarget,
+  source: string,
+  report: DetectorReport,
+): DeterministicFixResult {
+  const isJsx = /\.(tsx|jsx)$/.test(target.file);
+  let text = source;
+  const changes: string[] = [];
+  const rules: DeterministicFixResult["rules"] = [];
+
+  if (
+    isJsx &&
+    hasDetectorFinding(report, "smoothness", "transition-all") &&
+    /\btransition-all\b/.test(text)
+  ) {
+    text = text.replace(
+      /\btransition-all\b/g,
+      "transition-[color,background-color,border-color,box-shadow,transform,opacity]",
+    );
+    changes.push(
+      "Replaced broad Tailwind transition-all usage with a scoped transition property list to avoid animating layout-heavy properties.",
+    );
+    rules.push({
+      id: "tailwind-scoped-transition-properties",
+      evidence:
+        "Local smoothness rule backed by the Tailwind reference docs: transition utilities should name the properties the UI actually animates.",
+    });
+  }
+
+  if (
+    isJsx &&
+    hasDetectorFinding(report, "accessibility", "Image element without") &&
+    /<img\b/.test(text)
+  ) {
+    const before = text;
+    text = addMissingImageAlt(text);
+    if (text !== before) {
+      changes.push(
+        'Added alt="" to image elements without an explicit accessible text contract.',
+      );
+      rules.push({
+        id: "jsx-image-alt-contract",
+        evidence:
+          "Accessibility rule backed by React and HTML practice: every image needs an alt contract; decorative or unknown-purpose images use an empty alt string.",
+      });
+    }
+  }
+
+  return { text, changes, rules };
+}
+
 function readUiRegressionReport() {
   return readJson<Record<string, unknown> | null>(UI_REGRESSION_REPORT, null);
 }
@@ -1050,6 +1131,11 @@ function main() {
     finishPhase(improvementsPhase, { plannedImprovements });
 
     const patchPhase = startPhase("apply-patch");
+    let deterministicFix: DeterministicFixResult = {
+      text: fs.readFileSync(filePath, "utf8"),
+      changes: [],
+      rules: [],
+    };
     const formatCheck = run("npx", ["prettier", "--check", target.file], {
       allowFailure: true,
     });
@@ -1057,16 +1143,32 @@ function main() {
 
     if (!formatCheck.ok) findings.push("Prettier reported formatting drift.");
 
-    if (mode === "fix" && !formatCheck.ok) {
+    if (mode === "fix") {
       const currentHash = sha256(fs.readFileSync(filePath));
       if (currentHash !== beforeHash)
         throw new Error(`Source hash changed before fix for ${target.file}`);
-      componentCommands.push(run("npx", ["prettier", "--write", target.file]));
+
+      deterministicFix = applyDeterministicFixes(
+        target,
+        fs.readFileSync(filePath, "utf8"),
+        detectorReport,
+      );
+      if (deterministicFix.changes.length > 0) {
+        fs.writeFileSync(filePath, deterministicFix.text);
+        changes.push(...deterministicFix.changes);
+      }
+
+      if (!formatCheck.ok || deterministicFix.changes.length > 0) {
+        componentCommands.push(
+          run("npx", ["prettier", "--write", target.file]),
+        );
+      }
       const afterHash = sha256(fs.readFileSync(filePath));
       if (afterHash !== beforeHash) {
-        changes.push(
-          "Applied Prettier formatting to match the repository formatting gate.",
-        );
+        if (!formatCheck.ok)
+          changes.push(
+            "Applied Prettier formatting to match the repository formatting gate.",
+          );
         componentCommands.push(
           run(
             "npm",
@@ -1086,6 +1188,7 @@ function main() {
     finishPhase(patchPhase, {
       changed: changes.length > 0,
       changes,
+      deterministicRules: deterministicFix.rules,
       backupPath,
       hashGuard: { beforeHash, currentHash: sha256(fs.readFileSync(filePath)) },
     });
@@ -1180,15 +1283,16 @@ function main() {
             ]
           : ["No source patch was applied during this target pass."],
       reason: changes.length
-        ? "The debug runner changed the file because a deterministic verification gate failed."
+        ? "The debug runner changed the file because deterministic local evidence and official-doc comparison identified a safe cleanup rule."
         : findings.length
           ? "The debug runner found review-worthy issues, but none matched a safe deterministic auto-fix rule for this target."
           : "No deterministic source change was needed for this component pass.",
       whyChanged: changes.length
-        ? "A deterministic repository gate failed and the guarded patch was limited to the affected file."
+        ? "The guarded patch was limited to the affected file, protected by a source hash check, rollback backup, formatting, lint, build, runtime benchmark, and UI regression verification."
         : findings.length
           ? "Findings were preserved in the ledger instead of patched blindly. Add or enable a safe refactor rule before changing this source automatically."
           : "Current source matched the active debug rules and verification gates.",
+      deterministicRules: deterministicFix.rules,
       improvements: plannedImprovements,
       improvementSummary: plannedImprovements.join(" "),
       benchmarkBefore,
