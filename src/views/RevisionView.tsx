@@ -310,13 +310,6 @@ export function RevisionView() {
         return [];
       }
     }, []) || [];
-  const dueFlashcards = flashcards
-    .filter((card) => card.nextReviewAt <= Date.now())
-    .sort((a, b) => a.nextReviewAt - b.nextReviewAt);
-  const reviewQueue =
-    dueFlashcards.length > 0
-      ? dueFlashcards
-      : [...flashcards].sort((a, b) => a.nextReviewAt - b.nextReviewAt);
 
   const [activeConceptId, setActiveConceptId] = useState<string | null>(null);
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
@@ -362,6 +355,32 @@ export function RevisionView() {
   const activeLearningBook = learningBooks.find(
     (book) => book.id === activeConceptId,
   );
+  const flashcardsForBook = (book: LearningBook) =>
+    flashcards.filter(
+      (card) =>
+        card.bookId === book.id ||
+        (!card.bookId && book.title.toLowerCase() === "general study"),
+    );
+  const activeBookFlashcards = activeLearningBook
+    ? flashcardsForBook(activeLearningBook)
+    : [];
+  const activeDueFlashcards = activeBookFlashcards
+    .filter((card) => card.nextReviewAt <= Date.now())
+    .sort((a, b) => a.nextReviewAt - b.nextReviewAt);
+  const activeReviewQueue =
+    activeDueFlashcards.length > 0
+      ? activeDueFlashcards
+      : [...activeBookFlashcards].sort(
+          (a, b) => a.nextReviewAt - b.nextReviewAt,
+        );
+
+  useEffect(() => {
+    const pendingBookId = localStorage.getItem("revision_open_book_id");
+    if (!pendingBookId) return;
+    if (!learningBooks.some((book) => book.id === pendingBookId)) return;
+    setActiveConceptId(pendingBookId);
+    localStorage.removeItem("revision_open_book_id");
+  }, [learningBooks]);
 
   const learningBookMarkdown = (book: LearningBook) => {
     const conceptsForBook = learningBookConcepts.filter(
@@ -596,12 +615,12 @@ export function RevisionView() {
                 </div>
               )}
 
-              {flashcards.length > 0 && !isTutorBook && !activeLearningBook && (
+              {activeLearningBook && activeBookFlashcards.length > 0 && (
                 <div className="mt-20 border-t border-zinc-200 pt-16 font-sans">
                   <FlashcardDeck
-                    cards={reviewQueue}
-                    totalCount={flashcards.length}
-                    dueCount={dueFlashcards.length}
+                    cards={activeReviewQueue}
+                    totalCount={activeBookFlashcards.length}
+                    dueCount={activeDueFlashcards.length}
                     onReview={handleReview}
                   />
                 </div>
@@ -620,17 +639,6 @@ export function RevisionView() {
             </div>
           </div>
 
-          {flashcards.length > 0 && (
-            <div className="mb-12 max-w-xl">
-              <FlashcardDeck
-                cards={reviewQueue}
-                totalCount={flashcards.length}
-                dueCount={dueFlashcards.length}
-                onReview={handleReview}
-              />
-            </div>
-          )}
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {learningBooks.length === 0 && concepts.length === 0 && (
               <div className="col-span-full h-64 flex items-center justify-center text-zinc-500 border border-white/10 border-dashed rounded-3xl">
@@ -642,6 +650,7 @@ export function RevisionView() {
               const conceptCount = learningBookConcepts.filter(
                 (concept) => concept.bookId === book.id,
               ).length;
+              const cardCount = flashcardsForBook(book).length;
               return (
                 <PatternCard
                   key={book.id}
@@ -665,6 +674,7 @@ export function RevisionView() {
                       className={`text-[11px] font-mono font-bold uppercase tracking-[0.16em] opacity-65 ${theme.text}`}
                     >
                       Learning Book · {conceptCount} concepts
+                      {cardCount > 0 ? ` · ${cardCount} cards` : ""}
                     </div>
                     <div
                       className={`text-[25px] font-medium tracking-tight leading-[1.05] ${theme.text}`}

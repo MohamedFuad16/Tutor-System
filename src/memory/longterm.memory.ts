@@ -1,20 +1,24 @@
-import Dexie, { type Table } from 'dexie';
+import Dexie, { type Table } from "dexie";
 
 export interface PersistentConcept {
   id: string; // Typically lowercase string like 'monkey patching'
   name: string;
   description: string;
-  
+
   // Phase 4 leftovers (migrating to Phase 5)
-  mastery: number; 
-  confidence: number; 
+  mastery: number;
+  confidence: number;
 
   // Phase 5: BKT Engine
-  p_learn: number;        // probability student knows it
-  p_transit: number;      // learning rate
-  p_slip: number;         // probability of slip
-  p_guess: number;        // probability of guess
-  attempt_history: { correct: boolean; type: "recognition" | "generation" | "transfer"; timestamp: number }[];
+  p_learn: number; // probability student knows it
+  p_transit: number; // learning rate
+  p_slip: number; // probability of slip
+  p_guess: number; // probability of guess
+  attempt_history: {
+    correct: boolean;
+    type: "recognition" | "generation" | "transfer";
+    timestamp: number;
+  }[];
   decay_factor: number;
 
   // Phase 5: Prerequisite DAG
@@ -70,6 +74,8 @@ export interface Flashcard {
   front: string;
   back: string;
   conceptId?: string;
+  bookId?: string;
+  bookTitle?: string;
   nextReviewAt: number;
 }
 
@@ -150,36 +156,36 @@ export class BrainDatabase extends Dexie {
   learningEntries!: Table<LearningEntry, string>;
 
   constructor() {
-    super('NeuralNestBrain');
+    super("NeuralNestBrain");
     this.version(4).stores({
-      concepts: 'id, name, p_learn, lastReviewedAt',
-      misconceptions: 'id, concept_id, resolved',
-      sessions: 'id, startTime',
-      interactions: 'id, sessionId, timestamp',
-      flashcards: 'id, front, nextReviewAt, conceptId',
-      traceLogs: 'id, timestamp, action'
+      concepts: "id, name, p_learn, lastReviewedAt",
+      misconceptions: "id, concept_id, resolved",
+      sessions: "id, startTime",
+      interactions: "id, sessionId, timestamp",
+      flashcards: "id, front, nextReviewAt, conceptId",
+      traceLogs: "id, timestamp, action",
     });
     this.version(5).stores({
-      concepts: 'id, name, p_learn, lastReviewedAt',
-      misconceptions: 'id, concept_id, resolved',
-      sessions: 'id, startTime',
-      interactions: 'id, sessionId, timestamp',
-      flashcards: 'id, front, nextReviewAt, conceptId',
-      traceLogs: 'id, timestamp, action',
-      learningBooks: 'id, title, userName, source, updatedAt',
-      learningBookConcepts: 'id, bookId, name, updatedAt',
-      learningEntries: 'id, bookId, conversationId, timestamp, userName'
+      concepts: "id, name, p_learn, lastReviewedAt",
+      misconceptions: "id, concept_id, resolved",
+      sessions: "id, startTime",
+      interactions: "id, sessionId, timestamp",
+      flashcards: "id, front, nextReviewAt, conceptId",
+      traceLogs: "id, timestamp, action",
+      learningBooks: "id, title, userName, source, updatedAt",
+      learningBookConcepts: "id, bookId, name, updatedAt",
+      learningEntries: "id, bookId, conversationId, timestamp, userName",
     });
     this.version(6).stores({
-      concepts: 'id, name, p_learn, lastReviewedAt',
-      misconceptions: 'id, concept_id, resolved',
-      sessions: 'id, startTime',
-      interactions: 'id, sessionId, timestamp',
-      flashcards: 'id, front, nextReviewAt, conceptId',
-      traceLogs: 'id, timestamp, action',
-      learningBooks: 'id, sessionId, title, userName, source, updatedAt',
-      learningBookConcepts: 'id, bookId, name, updatedAt',
-      learningEntries: 'id, bookId, conversationId, timestamp, userName'
+      concepts: "id, name, p_learn, lastReviewedAt",
+      misconceptions: "id, concept_id, resolved",
+      sessions: "id, startTime",
+      interactions: "id, sessionId, timestamp",
+      flashcards: "id, front, nextReviewAt, conceptId",
+      traceLogs: "id, timestamp, action",
+      learningBooks: "id, sessionId, title, userName, source, updatedAt",
+      learningBookConcepts: "id, bookId, name, updatedAt",
+      learningEntries: "id, bookId, conversationId, timestamp, userName",
     });
   }
 }

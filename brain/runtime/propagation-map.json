@@ -1,18 +1,18 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T13:04:37.335Z",
+    "generatedAt": "2026-05-27T13:13:20.030Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "e7c000c40d9bbe1f18fde44686f5fbfdb726a75d7993dd68ef50f6214b6c866e",
+    "sourceHash": "18199a43c4507f3ffe29dcd5d6fb9c279bf4e9c07199301361aa267025e135a6",
     "url": "http://127.0.0.1:3000",
-    "eventCount": 44,
+    "eventCount": 43,
     "confidence": 0.82
   },
   "propagation": [
     {
       "state": "messages",
-      "timestamp": 308.19999998807907,
+      "timestamp": 222.19999998807907,
       "nextRender": "route:study",
-      "lagMs": 17.100000023841858,
+      "lagMs": 12,
       "metadata": {
         "previousType": "object",
         "nextType": "object"
@@ -20,9 +20,9 @@
     },
     {
       "state": "activeLearningBookId",
-      "timestamp": 374.80000001192093,
+      "timestamp": 266.80000001192093,
       "nextRender": "route:study",
-      "lagMs": 11.800000011920929,
+      "lagMs": 8.100000023841858,
       "metadata": {
         "previousType": "object",
         "nextType": "string"
@@ -30,9 +30,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 1459.1000000238419,
+      "timestamp": 1400.699999988079,
       "nextRender": "route:study",
-      "lagMs": 8.399999976158142,
+      "lagMs": 6.5,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -40,9 +40,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 2335.899999976158,
+      "timestamp": 2294.400000035763,
       "nextRender": "route:analytics",
-      "lagMs": 3.800000011920929,
+      "lagMs": 4.199999988079071,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -50,9 +50,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 3145.800000011921,
+      "timestamp": 3104.100000023842,
       "nextRender": "route:revision",
-      "lagMs": 9.5,
+      "lagMs": 8.300000011920929,
       "metadata": {
         "previousType": "string",
         "nextType": "string"

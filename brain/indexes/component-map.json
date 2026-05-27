@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T13:00:48.748Z",
+    "generatedAt": "2026-05-27T13:12:10.569Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "862403b69f7085a38e255567cf1d4d9610f3477d",
+      "commit": "41b56010fac13961b9a5e4d577e5e591579967ef",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "e7c000c40d9bbe1f18fde44686f5fbfdb726a75d7993dd68ef50f6214b6c866e"
+    "sourceHash": "18199a43c4507f3ffe29dcd5d6fb9c279bf4e9c07199301361aa267025e135a6"
   },
   "files": {
     "generate-brain.ts": {
@@ -1615,7 +1615,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "eb4de4f9c4e350d1c6771b59f32b47144649e07eec060bae60fef5668ba71c8c",
+      "hash": "630ef214451c4dd892186ae5891f5f4c6c86157e2ded65a41d9934ec2f16ca00",
       "imports": [
         {
           "specifier": "react",
@@ -1907,11 +1907,9 @@
         "AnimatedMarkdown",
         "AnimatedNumberText",
         "ArrowUp",
-        "BarChart3",
         "BookOpen",
         "Check",
         "ChevronDown",
-        "Coins",
         "Copy",
         "ExternalLink",
         "FileCode2",
@@ -2819,7 +2817,7 @@
     },
     "src/memory/longterm.memory.ts": {
       "file": "src/memory/longterm.memory.ts",
-      "hash": "e349a880282dcdc793f01fd98102e0d9ae6f0cadcb1709a607a4b425ce0767cb",
+      "hash": "50f0c0def9962e6c90a468a31779f8abce7470f2a56f6836aebe70d6f44f5927",
       "imports": [
         {
           "specifier": "dexie",
@@ -3637,7 +3635,7 @@
     },
     "src/views/RevisionView.tsx": {
       "file": "src/views/RevisionView.tsx",
-      "hash": "3935ccd63626cb360a212741be5944d50bcee4abfc71d3a62658697bf6ef1366",
+      "hash": "19633d425ac1ec36b4c547466f5531a1e7f0b67d77a26aa97e88be00cd4e1ddd",
       "imports": [
         {
           "specifier": "react",

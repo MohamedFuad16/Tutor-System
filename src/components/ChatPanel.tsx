@@ -40,8 +40,6 @@ import {
   Terminal,
   Image as ImageIcon,
   Code2,
-  BarChart3,
-  Coins,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -1296,16 +1294,38 @@ const ThinkingPanel = ({
                     className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
                   >
                     {idx < steps.length - 1 && (
-                      <div className="absolute bottom-[-12px] left-[26px] top-10 w-px bg-black/10" />
+                      <motion.div
+                        variants={{
+                          hidden: { scaleY: 0, opacity: 0 },
+                          show: { scaleY: 1, opacity: 1 },
+                        }}
+                        transition={{
+                          duration: 0.34,
+                          ease: [0.16, 1, 0.3, 1],
+                          delay: 0.08,
+                        }}
+                        className="absolute bottom-[-12px] left-[26px] top-10 w-px origin-top bg-black/10"
+                      />
                     )}
 
                     <div className="flex items-center gap-2">
                       <div
                         className={`inline-flex items-center gap-1.5 rounded-[12px] px-3 py-1.5 text-[11px] font-medium tracking-tight ${meta.bg} ${meta.text}`}
                       >
-                        <div className="-mx-1 flex origin-center scale-[0.6] items-center justify-center">
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, scale: 0.45, rotate: -10 },
+                            show: { opacity: 1, scale: 0.6, rotate: 0 },
+                          }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 420,
+                            damping: 24,
+                          }}
+                          className="-mx-1 flex origin-center items-center justify-center"
+                        >
                           <meta.icon />
-                        </div>
+                        </motion.div>
                         {meta.label}
                       </div>
                       {active && (
@@ -1332,9 +1352,20 @@ const ThinkingPanel = ({
                 >
                   <div className="flex items-center gap-2">
                     <div className="inline-flex items-center gap-1.5 rounded-[12px] bg-[#E7F3FF] px-3 py-1.5 text-[11px] font-medium tracking-tight text-[#0A7DFF]">
-                      <div className="-mx-1 flex origin-center scale-[0.6] items-center justify-center">
+                      <motion.div
+                        variants={{
+                          hidden: { opacity: 0, scale: 0.45, rotate: -10 },
+                          show: { opacity: 1, scale: 0.6, rotate: 0 },
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 420,
+                          damping: 24,
+                        }}
+                        className="-mx-1 flex origin-center items-center justify-center"
+                      >
                         <ProgressIcon />
-                      </div>
+                      </motion.div>
                       {activeLabel}
                     </div>
                   </div>
@@ -1417,74 +1448,17 @@ const MessageUsageFooter = ({
   const input = Math.max(0, Math.round(usage.inputTokens || 0));
   const output = Math.max(0, Math.round(usage.outputTokens || 0));
   const total = input + output;
-  const inputWidth = total > 0 ? Math.max(8, (input / total) * 100) : 50;
-  const outputWidth = total > 0 ? Math.max(8, (output / total) * 100) : 50;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
-      className="mt-4 overflow-hidden rounded-2xl border border-black/10 bg-white/70 shadow-[0_12px_30px_rgba(24,24,27,0.06)]"
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      className="not-prose mt-2 flex justify-end text-[10px] font-medium tracking-tight text-zinc-400"
     >
-      <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-2">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-white shadow-[0_8px_20px_rgba(24,24,27,0.16)]">
-            <BarChart3 size={14} />
-          </div>
-          <div className="min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
-              Response usage
-            </div>
-            <div className="truncate text-xs text-zinc-600">
-              {compactModel(usage.model)} ·{" "}
-              {usage.estimated ? "estimated" : "actual"}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid min-w-[210px] grid-cols-3 gap-2 text-right">
-          <div>
-            <div className="font-mono text-sm font-semibold tabular-nums text-zinc-900">
-              {formatCount(input)}
-            </div>
-            <div className="text-[10px] uppercase tracking-[0.14em] text-zinc-400">
-              input
-            </div>
-          </div>
-          <div>
-            <div className="font-mono text-sm font-semibold tabular-nums text-zinc-900">
-              {formatCount(output)}
-            </div>
-            <div className="text-[10px] uppercase tracking-[0.14em] text-zinc-400">
-              output
-            </div>
-          </div>
-          <div>
-            <div className="inline-flex items-center justify-end gap-1 font-mono text-sm font-semibold tabular-nums text-zinc-900">
-              <Coins size={12} className="text-[#ff6e00]" />
-              {formatCurrency(usage.cost || 0)}
-            </div>
-            <div className="text-[10px] uppercase tracking-[0.14em] text-zinc-400">
-              cost
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="flex h-1.5 w-full bg-zinc-200/70">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${inputWidth}%` }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
-          className="h-full bg-[#ff6e00]"
-        />
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${outputWidth}%` }}
-          transition={{ duration: 0.45, ease: "easeOut", delay: 0.05 }}
-          className="h-full bg-zinc-950"
-        />
-      </div>
+      <span className="rounded-full bg-zinc-50/80 px-2 py-1 tabular-nums">
+        {formatCount(total)} tokens · {formatCurrency(usage.cost || 0)}
+      </span>
     </motion.div>
   );
 };
@@ -1501,6 +1475,8 @@ const MessageItem = React.memo(
     onSetActiveView,
     setMessages,
     apiKey,
+    activeBookId,
+    activeBookTitle,
   }: {
     msg: any;
     sendState: string;
@@ -1512,6 +1488,8 @@ const MessageItem = React.memo(
     onSetActiveView: (view: string) => void;
     setMessages: React.Dispatch<React.SetStateAction<any[]>>;
     apiKey: string;
+    activeBookId: string | null;
+    activeBookTitle: string;
   }) => {
     const [isGeneratingFlashcards, setIsGeneratingFlashcards] =
       React.useState(false);
@@ -1548,6 +1526,8 @@ const MessageItem = React.memo(
               db.flashcards.add({
                 id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
                 conceptId: card.conceptId || "general",
+                bookId: activeBookId || undefined,
+                bookTitle: activeBookTitle || undefined,
                 front: String(card.front),
                 back: String(card.back),
                 nextReviewAt: Date.now(),
@@ -1646,10 +1626,15 @@ const MessageItem = React.memo(
                 </span>
               </div>
               <button
-                onClick={() => onSetActiveView("revision")}
+                onClick={() => {
+                  if (activeBookId) {
+                    localStorage.setItem("revision_open_book_id", activeBookId);
+                  }
+                  onSetActiveView("revision");
+                }}
                 className="text-xs font-semibold px-3 py-1.5 bg-purple-500 hover:bg-purple-400 text-white rounded-lg transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)]"
               >
-                View Deck
+                View Book
               </button>
             </div>
           )}
@@ -1711,7 +1696,9 @@ const MessageItem = React.memo(
       prevProps.sendState === nextProps.sendState &&
       prevProps.animationsEnabled === nextProps.animationsEnabled &&
       prevProps.isPlayingTTS === nextProps.isPlayingTTS &&
-      prevProps.apiKey === nextProps.apiKey
+      prevProps.apiKey === nextProps.apiKey &&
+      prevProps.activeBookId === nextProps.activeBookId &&
+      prevProps.activeBookTitle === nextProps.activeBookTitle
     );
   },
 );
@@ -2747,6 +2734,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   db.flashcards
                     .add({
                       id: Math.random().toString(36).substring(2, 15),
+                      conceptId: card.conceptId || "general",
+                      bookId: activeLearningBookId || undefined,
+                      bookTitle:
+                        activeLearningBook?.title || activeProject || undefined,
                       front: card.front,
                       back: card.back,
                       nextReviewAt: Date.now(),
@@ -3089,6 +3080,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               onSetActiveView={setActiveView}
               setMessages={setMessages}
               apiKey={apiKey}
+              activeBookId={activeLearningBookId}
+              activeBookTitle={activeLearningBook?.title || activeProject}
             />
           ))}
         </AnimatePresence>

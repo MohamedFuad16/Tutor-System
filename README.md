@@ -4,16 +4,18 @@
 
 # Tutor System Architecture
 
-Tutor is an AI-powered learning interface for reading PDFs, asking a tutor questions, building a persistent learning library, and reviewing knowledge over time. The app combines a document reader, streaming chat, voice tutoring, live search, learner modeling, a 3D brain map, revision flashcards, analytics, admin tracing, and the `/brain` architecture cognition system.
+Tutor is an AI-powered learning interface for reading PDFs, asking a tutor questions, building a persistent learning library, and reviewing knowledge over time. The app combines a document reader, streaming chat, voice tutoring, live search, learner modeling, book-scoped revision flashcards, analytics, admin tracing, and the `/brain` architecture cognition system.
 
 ## Core Surfaces
 
-- **Study View:** PDF upload, document reading, annotation, usage analytics, and chat.
-- **Chat Panel:** Streaming SSE tutor responses, web search, PDF page vision, graph updates, flashcard generation, markdown, Mermaid, code blocks, TTS, and voice.
-- **Brain View:** A Three.js 3D graph of the learner, learning books, and extracted concepts.
-- **Revision View:** A paper-style library with the built-in Tutor System Architecture book, generated learning books, mapped concepts, notes, and flashcards.
+- **Study View:** PDF upload, document reading, annotation, and chat.
+- **Chat Panel:** Streaming SSE tutor responses, web search, PDF page vision, graph updates, book-scoped flashcard generation, markdown, Mermaid, code blocks, TTS, voice, animated reasoning traces, and small per-response token/cost summaries.
+- **Settings:** API keys, model/persona controls, animation preferences, and usage analytics with token, voice, search, and cost graphs.
+- **Revision View:** A paper-style library with the built-in Tutor System Architecture book, generated learning books, mapped concepts, notes, and flashcards stored inside their respective learning books.
 - **Analytics View:** Dexie-backed concept, interaction, and session charts.
 - **Admin View:** DeepSeek trace cards, learning book inspection, and live server console logs.
+
+The older standalone Brain Map route is currently hidden from navigation while the learning-book library remains the primary user-facing memory surface. The `/brain` architecture cognition system still powers agent retrieval, impact analysis, verification, runtime benchmarking, and debug tooling.
 
 ## Design System
 
@@ -23,9 +25,10 @@ The main product uses the **Cosmic Obsidian** theme: `#030303` and `#0A0A0B` bac
 
 ### Prerequisites
 
-You need Node.js installed on your system. 
+You need Node.js installed on your system.
 
 This project follows a **Bring Your Own Key (BYOK)** model. You will need API keys for the following services to run all features:
+
 1. **LLM Key:** OpenRouter API Key (for the tutor intelligence)
 2. **Voice Key:** Deepgram API Key (for Voice-to-Text and Text-to-Speech)
 3. **Web Search Key:** Web Search API Key (for real-time web search capabilities)
@@ -33,27 +36,32 @@ This project follows a **Bring Your Own Key (BYOK)** model. You will need API ke
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/MohamedFuad16/Tutor-System-Architecture-.git
    cd Tutor-System-Architecture-
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Environment Setup:
    Create a `.env` file in the root of the project and add your API keys:
+
    ```env
    OPENROUTER_API_KEY=your_openrouter_key_here
    DEEPGRAM_API_KEY=your_deepgram_key_here
    WEB_SEARCH_API_KEY=your_web_search_key_here
    ```
-   *(Note: You can also configure the OpenRouter API key directly in the app's settings UI).*
+
+   _(Note: You can also configure the OpenRouter API key directly in the app's settings UI)._
 
 4. Run the development servers:
    You will need to run the frontend and backend concurrently. In your terminal, start the app:
+
    ```bash
    npm run dev
    ```
