@@ -30,7 +30,8 @@ export default function App() {
       
       if (e.key === '1') setActiveView('study');
       if (e.key === '2') setActiveView('brain');
-      if (e.key === '3') setActiveView('revision');
+      if (e.key === '3') setActiveView('analytics');
+      if (e.key === '4') setActiveView('revision');
     };
 
     window.addEventListener('keydown', handleKeyDown);

@@ -360,7 +360,7 @@ export const useStore = create<AppState>()(
       inputTokens: state.chatUsage.inputTokens + (usage.inputTokens || 0),
       outputTokens: state.chatUsage.outputTokens + (usage.outputTokens || 0),
       cost: state.chatUsage.cost + (usage.cost || 0),
-      estimated: Boolean(usage.estimated || state.chatUsage.estimated),
+      estimated: Boolean(usage.estimated ?? state.chatUsage.estimated),
       requests: state.chatUsage.requests + (usage.requests ?? 1),
     };
     const totalTokens = chatUsage.inputTokens + chatUsage.outputTokens;
@@ -381,7 +381,7 @@ export const useStore = create<AppState>()(
       outputAudioSeconds: Math.max(state.voiceUsage.outputAudioSeconds, usage.outputAudioSeconds || 0),
       ttsCharacters: state.voiceUsage.ttsCharacters + (usage.ttsCharacters || 0),
       cost: state.voiceUsage.cost + (usage.cost || 0),
-      estimated: Boolean(usage.estimated || state.voiceUsage.estimated),
+      estimated: Boolean(usage.estimated ?? state.voiceUsage.estimated),
       sessions: state.voiceUsage.sessions + (usage.sessions || 0),
     };
     const estimatedCost = state.chatUsage.cost + voiceUsage.cost + state.webUsage.cost;

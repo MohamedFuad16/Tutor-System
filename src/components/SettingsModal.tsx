@@ -148,7 +148,7 @@ export function SettingsButton() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-md"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-md px-4"
             >
               <div className="bg-[#0A0A0B] border border-white/10 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,1)] flex flex-col gap-6">
                 <div className="flex justify-between items-center">

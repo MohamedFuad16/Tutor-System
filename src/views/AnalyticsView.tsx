@@ -34,7 +34,7 @@ export function AnalyticsView() {
   const COLORS = ['#3b82f6', '#a855f7', '#f97316'];
 
   return (
-    <div className="w-full h-full bg-[#030303] overflow-y-auto custom-scroll pt-24 px-8 pb-12 text-white">
+    <div className="w-full h-full bg-[#030303] overflow-y-auto custom-scroll pt-24 px-4 md:px-8 pb-12 text-white">
       <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="max-w-6xl mx-auto space-y-12">
         <header>
           <h1 className="text-3xl font-semibold tracking-tight mb-2 text-white">Cognitive Analytics</h1>

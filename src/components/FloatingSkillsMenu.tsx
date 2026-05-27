@@ -35,7 +35,7 @@ export function FloatingSkillsMenu({ isOpen, onClose, onSelectSkill }: { isOpen:
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95, transition: { duration: 0.2 } }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          className="absolute bottom-full mb-4 left-0 w-[320px] bg-[#fdfdfd] text-[#050505] dark:bg-[#121214] dark:text-zinc-100 rounded-3xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/10 overflow-hidden z-50 origin-bottom-left"
+          className="absolute bottom-full mb-4 left-0 w-[280px] sm:w-[320px] max-w-[calc(100vw-32px)] bg-[#fdfdfd] text-[#050505] dark:bg-[#121214] dark:text-zinc-100 rounded-3xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/10 overflow-hidden z-50 origin-bottom-left"
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">

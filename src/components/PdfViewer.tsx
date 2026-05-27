@@ -129,9 +129,12 @@ export function PdfViewer() {
     const pageRect = pageWrapperRef.current.getBoundingClientRect();
     const lastRect = rects[rects.length - 1];
 
+    const containerNode = pageWrapperRef.current.closest('.preserve-3d');
+    const containerRect = containerNode ? containerNode.getBoundingClientRect() : pageRect;
+
     setSelectionTooltip({
-      x: (lastRect.left + lastRect.right) / 2 - pageRect.left,
-      y: lastRect.bottom - pageRect.top + 5,
+      x: (lastRect.left + lastRect.right) / 2 - containerRect.left,
+      y: lastRect.bottom - containerRect.top + 5,
       text,
       rawRects: rects,
     });
