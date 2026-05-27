@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T17:40:37.164Z",
+    "generatedAt": "2026-05-27T18:15:38.826Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "2ed6b035bd30f5c512e4502b73df81eaac8dc180",
+      "commit": "f94cc1a6b6a357de5deeebce04bd36b315b3666d",
       "branch": "main",
       "dirty": true
     },
@@ -32,11 +32,11 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "84537541dceb18694bf726e7d1506b24c3e90aca62bd01368f072a6d23408c2e"
+    "sourceHash": "5dc49f924aafa926801cf00d64b47e212a5c2eda153660f26b53037583219e5b"
   },
   "subsystems": {
     "frontend": {
-      "generatedAt": "2026-05-27T17:40:37.220Z",
+      "generatedAt": "2026-05-27T18:15:38.863Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/AnimatedScrollText.tsx",
@@ -204,7 +204,7 @@
       ]
     },
     "backend": {
-      "generatedAt": "2026-05-27T17:40:37.220Z",
+      "generatedAt": "2026-05-27T18:15:38.863Z",
       "sourceFiles": [
         "server.ts"
       ],
@@ -215,6 +215,7 @@
         "fs",
         "path",
         "child_process",
+        "compression",
         "openai",
         "ws",
         "."
@@ -230,7 +231,7 @@
       ]
     },
     "state": {
-      "generatedAt": "2026-05-27T17:40:37.220Z",
+      "generatedAt": "2026-05-27T18:15:38.863Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/ChatPanel.tsx",
@@ -373,7 +374,7 @@
       ]
     },
     "memory": {
-      "generatedAt": "2026-05-27T17:40:37.220Z",
+      "generatedAt": "2026-05-27T18:15:38.863Z",
       "sourceFiles": [
         "src/memory/bkt.engine.ts",
         "src/memory/cognitive.load.ts",
@@ -453,7 +454,7 @@
       ]
     },
     "brainTooling": {
-      "generatedAt": "2026-05-27T17:40:37.220Z",
+      "generatedAt": "2026-05-27T18:15:38.863Z",
       "sourceFiles": [
         "generate-brain.ts",
         "brain/drift-check.ts",

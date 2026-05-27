@@ -4,6 +4,7 @@ import express from "express";
 import * as fs from "fs";
 import path from "path";
 import { spawn, type ChildProcessWithoutNullStreams } from "child_process";
+import compression from "compression";
 import OpenAI from "openai";
 import { WebSocketServer, WebSocket as WSWebSocket } from "ws";
 import {
@@ -200,6 +201,7 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT || 3000);
 
+  app.use(compression());
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "100mb", extended: true }));
 
@@ -413,7 +415,12 @@ async function startServer() {
     const { events: _events, ...persistable } = current;
     const finished = {
       ...persistable,
-      status: code === 0 ? "completed" : "failed-process",
+      status:
+        code === 0
+          ? "completed"
+          : code === null
+            ? "cancelled"
+            : "failed-process",
       finishedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       activeTarget: null,
@@ -451,6 +458,23 @@ async function startServer() {
       activeRunId: activeDebugJob?.id || null,
       runs: listDebugRuns(),
     });
+  });
+
+  app.delete("/api/debug/runs", (_req, res) => {
+    if (activeDebugJob) {
+      activeDebugJob.child.kill("SIGTERM");
+      persistDebugExit(activeDebugJob.id, null);
+      activeDebugJob = null;
+    }
+    if (fs.existsSync(debugRunsDir)) {
+      for (const entry of fs.readdirSync(debugRunsDir)) {
+        fs.rmSync(path.join(debugRunsDir, entry), {
+          recursive: true,
+          force: true,
+        });
+      }
+    }
+    res.json({ ok: true, deleted: true });
   });
 
   app.get("/api/debug/runs/:id", (req, res) => {
@@ -523,6 +547,15 @@ async function startServer() {
     activeDebugJob.child.kill("SIGTERM");
     activeDebugJob = null;
     res.json({ ok: true, cancelled: safeId });
+  });
+
+  app.post("/api/debug/stop", (_req, res) => {
+    if (!activeDebugJob) return res.json({ ok: true, stopped: null });
+    const stopped = activeDebugJob.id;
+    activeDebugJob.child.kill("SIGTERM");
+    persistDebugExit(stopped, null);
+    activeDebugJob = null;
+    res.json({ ok: true, stopped });
   });
 
   app.get("/api/pricing", async (_req, res) => {

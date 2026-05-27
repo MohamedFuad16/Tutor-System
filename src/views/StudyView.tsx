@@ -76,6 +76,7 @@ export function StudyView() {
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [card1DotsReady, setCard1DotsReady] = useState(false);
   const [card2DotsReady, setCard2DotsReady] = useState(false);
+  const [card3DotsReady, setCard3DotsReady] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -143,8 +144,8 @@ export function StudyView() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-[100dvh] w-full bg-[#030303] overflow-hidden pt-16 md:pt-24 pb-4 md:pb-8 px-3 md:px-6 lg:px-8 gap-3 md:gap-6 lg:gap-8">
-      <div className="w-full flex-1 md:h-full min-h-[30vh] border border-[#1a1a1a] rounded-2xl flex flex-col shrink relative bg-[#0A0A0B] overflow-hidden shadow-2xl">
+    <div className="flex h-[100dvh] w-full flex-col gap-3 overflow-hidden bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:flex-row xl:gap-8 xl:px-8 xl:pb-8 xl:pt-24">
+      <div className="relative flex min-h-[38vh] w-full flex-1 shrink flex-col overflow-hidden rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B] shadow-2xl xl:h-full xl:min-h-0">
         {pdfUrl ? (
           <>
             <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
@@ -188,14 +189,14 @@ export function StudyView() {
               }}
             />
 
-            <div className="w-full flex-1 flex flex-col items-center justify-start z-10 p-6 md:p-12 lg:p-20 pt-[12vh] pb-[20vh] max-w-4xl mx-auto overflow-visible">
+            <div className="z-10 mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-start overflow-visible p-5 pb-[12vh] pt-[6vh] sm:p-6 md:p-10 lg:p-12 xl:p-10">
               {/* Text 1: Automatic Reveal */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="w-full mb-12 py-3 text-center overflow-visible"
+                className="mb-6 w-full overflow-visible py-3 text-center md:mb-8"
               >
-                <h2 className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.35] tracking-tight flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 overflow-visible">
+                <h2 className="flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 overflow-visible font-serif text-2xl leading-[1.35] tracking-tight text-white/90 sm:text-3xl lg:text-4xl">
                   {"Learning, redefined. Extract profound insights from any document."
                     .split(" ")
                     .map((word, i, arr) => (
@@ -271,7 +272,7 @@ export function StudyView() {
               <div className="w-full mb-16 text-center">
                 <AnimatedScrollText
                   text="Map complex concepts into your personalized brain graph."
-                  className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight justify-center"
+                  className="justify-center font-serif text-2xl leading-[1.4] tracking-tight text-white/90 sm:text-3xl lg:text-4xl"
                   scrollContainerRef={scrollContainerRef}
                   fullRevealDistance={300}
                   onRevealComplete={setCard2DotsReady}
@@ -331,9 +332,10 @@ export function StudyView() {
               <div className="w-full text-center pb-16">
                 <AnimatedScrollText
                   text="Upload your first document to retain knowledge forever."
-                  className="text-3xl md:text-4xl font-serif text-white/90 leading-[1.4] tracking-tight justify-center"
+                  className="justify-center font-serif text-2xl leading-[1.4] tracking-tight text-white/90 sm:text-3xl lg:text-4xl"
                   scrollContainerRef={scrollContainerRef}
                   fullRevealDistance={300}
+                  onRevealComplete={setCard3DotsReady}
                 />
               </div>
 
@@ -360,6 +362,7 @@ export function StudyView() {
                   SvgComponent={themes[1].SvgComponent}
                   bloomColor={themes[1].bloom}
                   bloomOpacity={themes[1].bloomOpacity}
+                  animateDots={card3DotsReady}
                 >
                   <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
                     <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-[#ff6e00]/20 text-white border border-white/20 shadow-lg">
@@ -384,7 +387,7 @@ export function StudyView() {
       <motion.aside
         layout
         transition={{ type: "spring", stiffness: 360, damping: 30 }}
-        className="flex w-full min-h-0 origin-bottom-right flex-col gap-2 md:gap-3 md:w-[44%] md:max-w-[560px] md:self-center lg:w-[40%] xl:w-[36%] flex-1 md:flex-none md:h-[calc(100%-0.5rem)]"
+        className="flex min-h-0 w-full flex-1 origin-bottom-right flex-col gap-2 md:gap-3 xl:h-[calc(100%-0.5rem)] xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center"
       >
         <AnimatePresence mode="wait">
           {isChatOpen ? (

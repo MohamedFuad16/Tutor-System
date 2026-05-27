@@ -460,7 +460,7 @@ export function RevisionView() {
           {/* Sidebar Navigation */}
           {(isTutorBook || activeLearningBook) && (
             <div className="w-64 border-r border-zinc-200/50 bg-[#faf9f6] hidden lg:block px-4 py-6 flex-shrink-0 sticky top-20 h-[calc(100vh-80px)] overflow-y-auto custom-scroll">
-              <div className="sticky top-0 bg-[#faf9f6]/95 backdrop-blur-md z-20 pb-4 pt-2 -mt-2 mb-4 border-b border-zinc-200/60">
+              <div className="sticky top-0 z-20 -mt-2 mb-4 border-b border-zinc-200/70 bg-[#faf9f6] pb-4 pt-2 shadow-[0_14px_28px_rgba(250,249,246,0.96)]">
                 <button
                   onClick={() => {
                     setActiveConceptId(null);
@@ -495,7 +495,7 @@ export function RevisionView() {
 
           <div className="flex-1 flex flex-col w-full relative">
             {/* Header for mobile or non-book views */}
-            <div className="sticky top-16 md:top-20 left-0 right-0 z-50 bg-[#faf9f6]/95 backdrop-blur-md border-b border-zinc-200/50 px-6 py-4 flex items-center justify-between shadow-sm lg:hidden">
+            <div className="sticky left-0 right-0 top-16 z-50 flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/70 bg-[#faf9f6] px-4 py-3 shadow-[0_14px_28px_rgba(250,249,246,0.98)] md:top-20 md:px-6 md:py-4 lg:hidden">
               <button
                 onClick={() => {
                   setActiveConceptId(null);
@@ -505,13 +505,13 @@ export function RevisionView() {
               >
                 <Menu size={16} /> Back
               </button>
-              <div className="text-sm font-semibold text-zinc-800 tracking-wide truncate max-w-[200px] md:max-w-md">
+              <div className="min-w-0 flex-1 truncate text-center text-sm font-semibold tracking-wide text-zinc-800 md:max-w-md">
                 {activeTitle}
               </div>
               <div className="w-16"></div>
             </div>
             {(isTutorBook || activeLearningBook) && (
-              <div className="sticky top-[129px] md:top-[145px] z-40 border-b border-zinc-200/60 bg-[#faf9f6]/95 px-4 py-3 backdrop-blur-md lg:hidden">
+              <div className="sticky top-[121px] z-40 border-b border-zinc-200/70 bg-[#faf9f6] px-4 py-3 shadow-[0_14px_28px_rgba(250,249,246,0.96)] md:top-[141px] lg:hidden">
                 <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
                   Contents
                 </div>
@@ -523,7 +523,7 @@ export function RevisionView() {
                     <button
                       key={idx}
                       onClick={() => setCurrentChapterIndex(idx)}
-                      className={`max-w-[220px] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors ${idx === currentChapterIndex ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 bg-white/70 text-zinc-600 hover:bg-zinc-100"}`}
+                      className={`max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors ${idx === currentChapterIndex ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100"}`}
                     >
                       <span className="line-clamp-1">{ch.title}</span>
                     </button>
@@ -532,7 +532,7 @@ export function RevisionView() {
               </div>
             )}
 
-            <div className="flex-1 p-6 md:p-12 lg:p-16 xl:p-24 relative isolate w-full max-w-4xl mx-auto">
+            <div className="relative isolate mx-auto w-full max-w-4xl flex-1 p-5 sm:p-6 md:p-10 lg:p-16 xl:p-20">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentChapterIndex}
@@ -630,7 +630,7 @@ export function RevisionView() {
         </div>
       ) : (
         <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 md:p-12 lg:p-16">
-          <div className="flex items-center justify-between mb-16">
+          <div className="mb-10 flex flex-wrap items-end justify-between gap-3 md:mb-16">
             <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900 mb-2">
               Library
             </h1>

@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   RefreshCw,
+  Square,
+  Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useStore } from "../store";
@@ -144,10 +146,14 @@ export function AdminView() {
     { type: string; msg: string; time: number }[]
   >([]);
   const [debugRuns, setDebugRuns] = useState<DebugRunSummary[]>([]);
+  const [activeDebugJobId, setActiveDebugJobId] = useState<string | null>(null);
   const [activeDebugRunId, setActiveDebugRunId] = useState<string | null>(null);
   const [debugRunDetails, setDebugRunDetails] =
     useState<DebugRunDetails | null>(null);
   const [debugRunsLoading, setDebugRunsLoading] = useState(false);
+  const [debugActionPending, setDebugActionPending] = useState<
+    "stop" | "delete" | null
+  >(null);
   const consoleRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll console
@@ -206,6 +212,7 @@ export function AdminView() {
       const data = await response.json();
       const runs = (data.runs || []) as DebugRunSummary[];
       setDebugRuns(runs);
+      setActiveDebugJobId(data.activeRunId || null);
       setActiveDebugRunId((current) => {
         if (data.activeRunId) return data.activeRunId;
         if (current && runs.some((run) => run.id === current)) return current;
@@ -682,17 +689,80 @@ export function AdminView() {
                               Version Tracker
                             </h2>
                           </div>
-                          <button
-                            type="button"
-                            onClick={loadDebugRuns}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-600 transition-colors hover:bg-zinc-100"
-                            aria-label="Refresh debug runs"
-                          >
-                            <RefreshCw
-                              size={15}
-                              className={debugRunsLoading ? "animate-spin" : ""}
-                            />
-                          </button>
+                          <div className="flex flex-wrap items-center justify-end gap-2">
+                            <motion.button
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={async () => {
+                                if (
+                                  window.confirm(
+                                    "Are you sure you want to delete all debug history?",
+                                  )
+                                ) {
+                                  setDebugActionPending("delete");
+                                  try {
+                                    await fetch("/api/debug/runs", {
+                                      method: "DELETE",
+                                    });
+                                    setDebugRuns([]);
+                                    setActiveDebugRunId(null);
+                                    setDebugRunDetails(null);
+                                    setActiveDebugJobId(null);
+                                  } catch (e) {
+                                    console.error(
+                                      "Failed to delete debug runs:",
+                                      e,
+                                    );
+                                  } finally {
+                                    setDebugActionPending(null);
+                                  }
+                                }
+                              }}
+                              disabled={debugActionPending !== null}
+                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 text-[11px] font-semibold text-red-600 transition-colors hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
+                            >
+                              <Trash2 size={13} />
+                              Delete History
+                            </motion.button>
+                            <motion.button
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={async () => {
+                                setDebugActionPending("stop");
+                                try {
+                                  await fetch("/api/debug/stop", {
+                                    method: "POST",
+                                  });
+                                  loadDebugRuns();
+                                } catch (e) {
+                                  console.error("Failed to stop debugging:", e);
+                                } finally {
+                                  setDebugActionPending(null);
+                                }
+                              }}
+                              disabled={
+                                !activeDebugJobId || debugActionPending !== null
+                              }
+                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3 text-[11px] font-semibold text-amber-700 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <Square size={12} />
+                              Stop Debugging
+                            </motion.button>
+                            <motion.button
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={loadDebugRuns}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-600 transition-colors hover:bg-zinc-100"
+                              aria-label="Refresh debug runs"
+                            >
+                              <RefreshCw
+                                size={15}
+                                className={
+                                  debugRunsLoading ? "animate-spin" : ""
+                                }
+                              />
+                            </motion.button>
+                          </div>
                         </div>
 
                         {debugRuns.length === 0 ? (
@@ -709,10 +779,36 @@ export function AdminView() {
                             .
                           </div>
                         ) : (
-                          <div className="space-y-2">
-                            {debugRuns.map((run) => (
-                              <button
+                          <motion.div
+                            initial="hidden"
+                            animate="show"
+                            variants={{
+                              hidden: {},
+                              show: { transition: { staggerChildren: 0.05 } },
+                            }}
+                            className="space-y-2"
+                          >
+                            {debugRuns.map((run, index) => (
+                              <motion.button
                                 key={run.id}
+                                custom={index}
+                                variants={{
+                                  hidden: {
+                                    opacity: 0,
+                                    y: 10,
+                                    filter: "blur(4px)",
+                                  },
+                                  show: {
+                                    opacity: 1,
+                                    y: 0,
+                                    filter: "blur(0px)",
+                                    transition: {
+                                      type: "spring",
+                                      stiffness: 300,
+                                      damping: 24,
+                                    },
+                                  },
+                                }}
                                 type="button"
                                 onClick={() => setActiveDebugRunId(run.id)}
                                 className={`w-full rounded-2xl border p-3 text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ${activeDebugRunId === run.id ? "border-blue-200 bg-blue-50 shadow-sm" : "border-zinc-200 bg-white hover:bg-zinc-50"}`}
@@ -738,9 +834,9 @@ export function AdminView() {
                                     {run.mode || "fix"}
                                   </span>
                                 </div>
-                              </button>
+                              </motion.button>
                             ))}
-                          </div>
+                          </motion.div>
                         )}
                       </section>
 

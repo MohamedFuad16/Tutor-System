@@ -210,9 +210,9 @@
     {
       "field": "setActiveView",
       "readers": [
-        "src/components/ChatPanel.tsx",
         "src/views/StudyView.tsx",
         "src/views/RevisionView.tsx",
+        "src/components/ChatPanel.tsx",
         "src/App.tsx"
       ],
       "writers": [

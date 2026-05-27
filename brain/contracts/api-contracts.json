@@ -1,6 +1,17 @@
 {
   "generatedFromSource": true,
   "endpoints": {
+    "DELETE /api/debug/runs": {
+      "method": "DELETE",
+      "path": "/api/debug/runs",
+      "serverFile": "server.ts",
+      "clients": [
+        "src/lib/tutorBook.json",
+        "src/views/AdminView.tsx"
+      ],
+      "responseFormat": "application/json",
+      "generatedFromSource": true
+    },
     "GET *": {
       "method": "GET",
       "path": "*",
@@ -84,6 +95,16 @@
       "path": "/api/debug/runs/:id/cancel",
       "serverFile": "server.ts",
       "clients": [],
+      "responseFormat": "application/json",
+      "generatedFromSource": true
+    },
+    "POST /api/debug/stop": {
+      "method": "POST",
+      "path": "/api/debug/stop",
+      "serverFile": "server.ts",
+      "clients": [
+        "src/views/AdminView.tsx"
+      ],
       "responseFormat": "application/json",
       "generatedFromSource": true
     },
@@ -238,6 +259,10 @@
     {
       "file": "src/views/AdminView.tsx",
       "endpoint": "/api/debug/runs/$%7BencodeURIComponent(activeDebugRunId)%7D"
+    },
+    {
+      "file": "src/views/AdminView.tsx",
+      "endpoint": "/api/debug/stop"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T17:40:37.164Z",
+    "generatedAt": "2026-05-27T18:15:38.826Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "2ed6b035bd30f5c512e4502b73df81eaac8dc180",
+      "commit": "f94cc1a6b6a357de5deeebce04bd36b315b3666d",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "84537541dceb18694bf726e7d1506b24c3e90aca62bd01368f072a6d23408c2e"
+    "sourceHash": "5dc49f924aafa926801cf00d64b47e212a5c2eda153660f26b53037583219e5b"
   },
   "files": {
     "generate-brain.ts": {
@@ -162,7 +162,7 @@
     },
     "server.ts": {
       "file": "server.ts",
-      "hash": "b917cd667edf32cea4cab391352e9aac7dc03dd6e366bf0fb1ef92891e4925ba",
+      "hash": "6c8089499889c6a6e87ab568bd5a78cb273124bb2d5fa99a6b51d088def135f4",
       "imports": [
         {
           "specifier": "dotenv",
@@ -183,6 +183,10 @@
         {
           "specifier": "child_process",
           "external": "child_process"
+        },
+        {
+          "specifier": "compression",
+          "external": "compression"
         },
         {
           "specifier": "openai",
@@ -825,7 +829,7 @@
     },
     "brain/debug/ui-regression-probe.ts": {
       "file": "brain/debug/ui-regression-probe.ts",
-      "hash": "2a753da0d2a4869f8528e538ac49478967f78b32ed8baacd43b6eb5025cdac2c",
+      "hash": "0a8fe83949529143df9a5e8a1f1a8af212f10ad6bbfd384d825c44ddb1c7df46",
       "imports": [
         {
           "specifier": "child_process",
@@ -1624,7 +1628,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "7aa9a5b12dda20511a9dc4ac6c5c3d71c8c9172fdb7794f3f506c07f8a5d46d1",
+      "hash": "a3b53885931c0dfdd5e065eb64ab110575ae9ad5c0e0408faa7e7463f0c20f91",
       "imports": [
         {
           "specifier": "react",
@@ -1719,6 +1723,8 @@
         "AnimatedNumberText",
         "UsageAnalyticsStrip",
         "GeminiVoicePill",
+        "sourceToneForDomain",
+        "SourceGlyph",
         "SearchProgressIndicator",
         "SourceCards",
         "SearchActivityPanel",
@@ -1756,6 +1762,7 @@
         "SearchActivityPanel",
         "SearchProgressIndicator",
         "SourceCards",
+        "SourceGlyph",
         "ThinkingPanel",
         "UsageAnalyticsStrip"
       ],
@@ -1935,6 +1942,7 @@
         "Folder",
         "GeminiVoicePill",
         "Globe2",
+        "Icon",
         "LatestIcon",
         "LoaderCircle",
         "Mermaid",
@@ -1957,6 +1965,7 @@
         "ShikiHighlighter",
         "SiriLiquidGlass",
         "SourceCards",
+        "SourceGlyph",
         "Sparkles",
         "Square",
         "Terminal",
@@ -2013,7 +2022,7 @@
     },
     "src/components/Navigation.tsx": {
       "file": "src/components/Navigation.tsx",
-      "hash": "3e7a7f53319c594b312117593ee4186d183a0d3e9a530b8bbce908ddd7f4e626",
+      "hash": "1886b627d39b162d0f0d99e5a35cbc2e9f68655eeccb51ba9aef63d8fb5b3932",
       "imports": [
         {
           "specifier": "react",
@@ -2061,7 +2070,7 @@
     },
     "src/components/PatternCard.tsx": {
       "file": "src/components/PatternCard.tsx",
-      "hash": "aee92a39eeda7f3426a33e41be809fb755b0664bf28d0b1f031fe1e851005912",
+      "hash": "37a4c5589a104d28e703528cba97e6768c3572e6f7968ac7ca0f98e9e21ce1eb",
       "imports": [
         {
           "specifier": "react",
@@ -2344,7 +2353,7 @@
     },
     "src/components/SettingsModal.tsx": {
       "file": "src/components/SettingsModal.tsx",
-      "hash": "8564956f8edc24ece5b69c64f9fa66bad74ad11ce21d81ff45ee68a9db2ef2b4",
+      "hash": "e035c6d55d417bf1284be08f3b7f1182b077788aac4f570896c76644d5cfe3d9",
       "imports": [
         {
           "specifier": "react",
@@ -2525,7 +2534,7 @@
     },
     "src/components/SiriLiquidGlass.tsx": {
       "file": "src/components/SiriLiquidGlass.tsx",
-      "hash": "7c8d3a22f6e472ce1d01505e35087918aa6d3daf3690bc96cb7f13c5f76e4de6",
+      "hash": "4dc8d39c0de430a32ac72cdbe27ca4559d101d641cd0a9086c0ab7a91e72cc52",
       "imports": [
         {
           "specifier": "motion/react",
@@ -3372,7 +3381,7 @@
     },
     "src/views/AdminView.tsx": {
       "file": "src/views/AdminView.tsx",
-      "hash": "a345797a9548660867c9f789c6ccf7db367e8db9ecaca9903139223336e5dba0",
+      "hash": "0e200c20f0de9c762a678913ca07cb3446df516427e096f938b3e2eb16a3f5b3",
       "imports": [
         {
           "specifier": "react",
@@ -3423,7 +3432,8 @@
       "apiCalls": [
         "/api/debug/runs",
         "/api/debug/runs/",
-        "/api/debug/runs/$%7BencodeURIComponent(activeDebugRunId)%7D"
+        "/api/debug/runs/$%7BencodeURIComponent(activeDebugRunId)%7D",
+        "/api/debug/stop"
       ],
       "websocketCalls": [
         "/ws/debug"
@@ -3460,7 +3470,9 @@
         "Network",
         "RefreshCw",
         "Sparkles",
-        "Terminal"
+        "Square",
+        "Terminal",
+        "Trash2"
       ],
       "routes": []
     },
@@ -3628,7 +3640,7 @@
     },
     "src/views/RevisionView.tsx": {
       "file": "src/views/RevisionView.tsx",
-      "hash": "153184736ac49a72bf0d117d71b43f229c8545fdadf53e9b5828d339c493e0bb",
+      "hash": "1d0d230c3f0e65f48815d50ed598b2e214828ab5437fe2ef3d42a67344f08e57",
       "imports": [
         {
           "specifier": "react",
@@ -3766,7 +3778,7 @@
     },
     "src/views/StudyView.tsx": {
       "file": "src/views/StudyView.tsx",
-      "hash": "4d5945f4eab005acfabe544fa45d77fbc1dfd64d7997d5cfebe3c1fee9b3985d",
+      "hash": "93d7c7a2b57e2236615cbce7afbc58856678fbb39cc3636142107b7c552fc58f",
       "imports": [
         {
           "specifier": "react",
@@ -3888,7 +3900,7 @@
     },
     "package.json": {
       "file": "package.json",
-      "hash": "6b99ee6c7e5f6604382cf728f0a6146239c9675f9b2e1140da7d7d16be498f2e",
+      "hash": "86a0430f010701b87a60aec6ccc3ca29e21c482b8aefd8eb7ad0a0278dbd1f43",
       "imports": [],
       "exports": [],
       "functions": [],
@@ -3907,7 +3919,7 @@
     },
     "package-lock.json": {
       "file": "package-lock.json",
-      "hash": "04194de561413599d14479d64cfa3516985a97829bd277d0ea324dbd6fb2b22b",
+      "hash": "4e90f8ac2019de2da29f748af5d97b37f4dce944c356d72791a8703359e17c8d",
       "imports": [],
       "exports": [],
       "functions": [],

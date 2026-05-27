@@ -3,6 +3,14 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig } from "vite";
 
+const deferredPreloadChunks = [
+  /vendor-mermaid/,
+  /vendor-pdf/,
+  /vendor-charts/,
+  /vendor-shiki/,
+  /vendor-graph3d/,
+];
+
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
@@ -20,6 +28,15 @@ export default defineConfig(() => {
     },
     build: {
       chunkSizeWarningLimit: 3000,
+      modulePreload: {
+        resolveDependencies: (_filename, deps) =>
+          deps.filter(
+            (dependency) =>
+              !deferredPreloadChunks.some((pattern) =>
+                pattern.test(dependency),
+              ),
+          ),
+      },
       rollupOptions: {
         output: {
           manualChunks(id: string) {

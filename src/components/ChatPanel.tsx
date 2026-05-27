@@ -439,12 +439,12 @@ What would you like to learn today?`;
 // ─── Smooth animated counter ──────────────────────────────────────────────────
 function useAnimatedNumber(target: number, duration = 600): number {
   const [displayed, setDisplayed] = useState(target);
+  const displayedRef = useRef(target);
   const rafRef = useRef<number | null>(null);
-  const fromRef = useRef(target);
   const startRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const from = fromRef.current;
+    const from = displayedRef.current;
     const to = target;
     if (from === to) return;
     startRef.current = null;
@@ -453,11 +453,13 @@ function useAnimatedNumber(target: number, duration = 600): number {
       if (startRef.current === null) startRef.current = ts;
       const progress = Math.min((ts - startRef.current) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-      setDisplayed(Math.round(from + (to - from) * eased));
+      const next = Math.round(from + (to - from) * eased);
+      displayedRef.current = next;
+      setDisplayed(next);
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(animate);
       } else {
-        fromRef.current = to;
+        displayedRef.current = to;
       }
     };
     rafRef.current = requestAnimationFrame(animate);
@@ -504,9 +506,11 @@ const AnimatedNumberText = ({
   className?: string;
 }) => (
   <motion.span
-    animate={{ opacity: 1 }}
-    transition={{ duration: 0.16, ease: "easeOut" }}
-    className={`inline-block min-w-[3ch] tabular-nums ${className}`}
+    layout
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+    className={`inline-block min-w-[3ch] text-right tabular-nums will-change-transform ${className}`}
+    style={{ fontVariantNumeric: "tabular-nums" }}
   >
     {children}
   </motion.span>
@@ -888,12 +892,75 @@ const GeminiVoicePill = ({
   );
 };
 
-const SearchProgressIndicator = ({ active }: { active: boolean }) => (
-  <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.07] text-white border border-white/10 shadow-[0_10px_28px_rgba(0,0,0,0.18)]">
-    <Globe2 size={14} className="relative z-10" />
+const sourceToneForDomain = (domain = "") => {
+  const value = domain.toLowerCase();
+  if (value.includes("youtube"))
+    return {
+      label: "YT",
+      className: "bg-[#ff0033] text-white",
+      icon: Play,
+    };
+  if (value.includes("reddit"))
+    return { label: "R", className: "bg-[#ff4500] text-white", icon: null };
+  if (value.includes("ncbi") || value.includes("nih") || value.includes("pmc"))
+    return {
+      label: "P",
+      className: "bg-slate-800 text-white",
+      icon: BookOpen,
+    };
+  if (value.includes("investopedia"))
+    return {
+      label: "I",
+      className: "bg-[#29364f] text-white",
+      icon: Activity,
+    };
+  return {
+    label: (domain || "?").slice(0, 1).toUpperCase(),
+    className: "bg-zinc-900 text-white",
+    icon: Globe2,
+  };
+};
+
+const SourceGlyph = ({
+  domain,
+  className = "h-5 w-5",
+}: {
+  domain: string;
+  className?: string;
+}) => {
+  const tone = sourceToneForDomain(domain);
+  const Icon = tone.icon;
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center rounded-md text-[10px] font-black shadow-sm ${tone.className} ${className}`}
+      aria-hidden="true"
+    >
+      {Icon ? <Icon size={12} strokeWidth={2.5} /> : tone.label}
+    </span>
+  );
+};
+
+const SearchProgressIndicator = ({
+  active,
+  error,
+}: {
+  active: boolean;
+  error?: boolean;
+}) => (
+  <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-900 shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
+    {active ? (
+      <LoaderCircle
+        size={15}
+        className="relative z-10 animate-spin text-[#ff6e00]"
+      />
+    ) : error ? (
+      <X size={15} className="relative z-10 text-red-500" />
+    ) : (
+      <Check size={15} className="relative z-10 text-[#36AA55]" />
+    )}
     {active && (
       <motion.div
-        className="absolute inset-[-3px] rounded-[14px] border border-[#ff6e00]/55"
+        className="absolute inset-[-3px] rounded-[18px] border border-[#ff6e00]/55"
         animate={{ rotate: 360, opacity: [0.25, 0.8, 0.25] }}
         transition={{
           rotate: { repeat: Infinity, duration: 2.4, ease: "linear" },
@@ -929,12 +996,7 @@ const SourceCards = ({
           className={`group block rounded-xl p-3 transition-colors ${dark ? "border border-white/10 bg-white/[0.06] hover:bg-white/[0.09]" : "border border-black/5 bg-white/80 shadow-[0_10px_24px_rgba(0,0,0,0.06)] hover:bg-white"}`}
         >
           <div className="flex items-start gap-2.5">
-            <img
-              src={source.faviconUrl}
-              alt=""
-              className="mt-0.5 h-4 w-4 rounded-sm"
-              loading="lazy"
-            />
+            <SourceGlyph domain={source.domain} className="mt-0.5 h-5 w-5" />
             <div className="min-w-0 flex-1">
               <div
                 className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] ${dark ? "text-zinc-500" : "text-zinc-400"}`}
@@ -980,27 +1042,43 @@ const SearchActivityPanel = ({
     (!webSearch.query && webSearch.sources.length === 0 && !webSearch.status)
   )
     return null;
+  const completed = !webSearch.active && !webSearch.error;
+  const status =
+    webSearch.error ||
+    (completed
+      ? webSearch.status ||
+        `Reviewed ${webSearch.sources.length} source${webSearch.sources.length === 1 ? "" : "s"}`
+      : webSearch.status || "Searching web...");
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"
+      transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+      className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3 shadow-[0_12px_34px_rgba(0,0,0,0.05)]"
     >
       <div className="flex items-start gap-3">
-        <SearchProgressIndicator active={webSearch.active} />
+        <SearchProgressIndicator
+          active={webSearch.active}
+          error={Boolean(webSearch.error)}
+        />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#ff6e00]">
               Web Search
             </span>
             {webSearch.mode && (
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-zinc-400">
+              <span className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase text-zinc-500">
                 {webSearch.mode}
+              </span>
+            )}
+            {completed && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-700">
+                <Check size={11} /> Done
               </span>
             )}
           </div>
           {webSearch.query && (
-            <div className="mt-1 text-[13px] font-semibold leading-snug text-zinc-200">
+            <div className="mt-1 text-[13px] font-semibold leading-snug text-zinc-800">
               "{webSearch.query}"
             </div>
           )}
@@ -1014,32 +1092,25 @@ const SearchActivityPanel = ({
                   rel="noreferrer"
                   initial={{ opacity: 0, scale: 0.92 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-white/[0.09] px-2.5 py-1 text-[11px] text-zinc-300 transition-colors hover:bg-white/[0.14] hover:text-white"
+                  className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] text-zinc-600 transition-colors hover:border-zinc-300 hover:text-zinc-950"
                 >
-                  <img
-                    src={source.faviconUrl}
-                    alt=""
-                    className="h-3.5 w-3.5 rounded-sm"
-                    loading="lazy"
-                  />
+                  <SourceGlyph domain={source.domain} className="h-4 w-4" />
                   <span className="truncate">{source.domain}</span>
                 </motion.a>
               ))}
             </div>
           )}
-          <div className="mt-1 flex items-center gap-2 text-[12px] text-zinc-500">
-            {webSearch.active && (
+          <div className="mt-2 flex items-center gap-2 text-[12px] text-zinc-500">
+            {webSearch.active ? (
               <LoaderCircle size={12} className="animate-spin text-[#ff6e00]" />
-            )}
-            <span>
-              {webSearch.error ||
-                webSearch.status ||
-                "Preparing live retrieval..."}
-            </span>
+            ) : completed ? (
+              <Check size={12} className="text-[#36AA55]" />
+            ) : null}
+            <span>{status}</span>
           </div>
           {webSearch.sources.length > 0 && (
             <div className="mt-3">
-              <SourceCards sources={webSearch.sources} tone="dark" />
+              <SourceCards sources={webSearch.sources} tone="light" />
             </div>
           )}
         </div>
@@ -1428,7 +1499,14 @@ const ThinkingPanel = ({
                   </motion.div>
                 );
               })}
-              <SearchActivityPanel webSearch={webSearch} />
+              {webSearch && (
+                <motion.div
+                  custom={steps.length}
+                  variants={reasoningStepVariants}
+                >
+                  <SearchActivityPanel webSearch={webSearch} />
+                </motion.div>
+              )}
 
               {!isComplete && (
                 <motion.div
@@ -1468,7 +1546,11 @@ const ThinkingPanel = ({
 };
 
 const markdownComponents = {
-  p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
+  p: ({ children, ...props }: any) => (
+    <div className="mb-2 last:mb-0" {...props}>
+      {children}
+    </div>
+  ),
   li: ({ children, ...props }: any) => <li {...props}>{children}</li>,
   h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
   h2: ({ children, ...props }: any) => <h2 {...props}>{children}</h2>,
@@ -1532,6 +1614,7 @@ const MessageUsageFooter = ({
   const input = Math.max(0, Math.round(usage.inputTokens || 0));
   const output = Math.max(0, Math.round(usage.outputTokens || 0));
   const total = input + output;
+  const animatedTotal = useAnimatedNumber(total, 1100);
 
   return (
     <motion.div
@@ -1540,8 +1623,11 @@ const MessageUsageFooter = ({
       transition={{ duration: 0.18, ease: "easeOut" }}
       className="not-prose mt-2 flex justify-end text-[10px] font-medium tracking-tight text-zinc-400"
     >
-      <span className="rounded-full bg-zinc-50/80 px-2 py-1 tabular-nums">
-        {formatCount(total)} tokens · {formatCurrency(usage.cost || 0)}
+      <span className="flex min-w-[9.5rem] items-center justify-end gap-1 rounded-full bg-zinc-50/95 px-2 py-1 tabular-nums">
+        <AnimatedNumberText className="min-w-[4ch]">
+          {formatCount(animatedTotal)}
+        </AnimatedNumberText>{" "}
+        tokens · {formatCurrency(usage.cost || 0)}
       </span>
     </motion.div>
   );
@@ -2771,6 +2857,16 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       ? {
                           ...newM[msgIndex].webSearch,
                           active: false,
+                          status:
+                            finalSources.length ||
+                            newM[msgIndex].webSearch.sources.length
+                              ? `Reviewed ${
+                                  mergeSources(
+                                    newM[msgIndex].webSearch.sources,
+                                    finalSources,
+                                  ).length
+                                } sources`
+                              : newM[msgIndex].webSearch.status,
                           sources: mergeSources(
                             newM[msgIndex].webSearch.sources,
                             finalSources,
@@ -3028,7 +3124,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -5, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute top-full left-0 mt-2 w-[260px] p-1 bg-white/95 backdrop-blur-xl border border-black/5 rounded-2xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden z-50 origin-top-left"
+                  className="absolute top-full left-0 mt-2 w-[280px] sm:w-[320px] p-2 bg-white border border-black/10 rounded-2xl shadow-[0_16px_50px_-10px_rgba(0,0,0,0.3)] overflow-hidden z-50 origin-top-left"
                 >
                   <div className="px-3 py-2 border-b border-black/5 mb-1">
                     <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">

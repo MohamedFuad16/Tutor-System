@@ -361,7 +361,7 @@ export function SettingsButton() {
         onClick={() => setIsOpen(true)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="fixed top-8 right-8 z-50 rounded-full w-[46px] h-[46px] flex items-center justify-center p-[1px] transition-[color,background-color,border-color,box-shadow,transform,opacity] shadow-[0_8px_32px_rgba(0,0,0,0.8)] focus:outline-none group overflow-visible"
+        className="fixed right-4 top-[4.35rem] z-50 flex h-[42px] w-[42px] items-center justify-center overflow-visible rounded-full p-[1px] shadow-[0_8px_32px_rgba(0,0,0,0.8)] transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:outline-none group sm:right-8 sm:top-8 sm:h-[46px] sm:w-[46px]"
       >
         {/* Animated Liquid Metal Border */}
         <div

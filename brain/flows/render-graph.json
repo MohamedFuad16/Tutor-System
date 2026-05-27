@@ -460,6 +460,15 @@
       }
     },
     {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:SourceGlyph",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
       "source": "file:src/components/SettingsModal.tsx",
       "target": "component:UsageGraphBar",
       "type": "renders",

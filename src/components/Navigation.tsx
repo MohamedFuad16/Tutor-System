@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import { useStore, ViewState } from "../store";
 import { BookOpen, Zap, Activity } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, useMotionValue, useMotionTemplate } from "motion/react";
 
 export function Navigation() {
   const { activeView, setActiveView } = useStore();
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHoveringContainer, setIsHoveringContainer] = useState(false);
 
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (window.matchMedia?.("(pointer: coarse)").matches) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+    mouseX.set(e.clientX - rect.left);
+    mouseY.set(e.clientY - rect.top);
   };
 
   const navItems: { id: ViewState; label: string; icon: React.ReactNode }[] = [
@@ -23,12 +24,12 @@ export function Navigation() {
   ];
 
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+    <div className="absolute left-1/2 top-4 z-50 w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 pointer-events-auto sm:w-auto">
       <motion.div
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHoveringContainer(true)}
         onMouseLeave={() => setIsHoveringContainer(false)}
-        className="relative flex items-center gap-1 p-1.5 rounded-full overflow-hidden shadow-2xl transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300"
+        className="relative flex w-full items-center justify-between gap-1 overflow-hidden rounded-full p-1.5 shadow-2xl transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 sm:justify-center"
         style={{
           background:
             activeView === "revision"
@@ -69,14 +70,14 @@ export function Navigation() {
             className="absolute inset-0 transition-opacity duration-300 mix-blend-screen"
             animate={{ opacity: isHoveringContainer ? 1 : 0 }}
             style={{
-              background: `radial-gradient(150px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,255,255,0.15), transparent 100%)`,
+              background: useMotionTemplate`radial-gradient(150px circle at ${mouseX}px ${mouseY}px, rgba(255,255,255,0.15), transparent 100%)`,
             }}
           />
           <motion.div
             className="absolute inset-0 transition-opacity duration-300 mix-blend-overlay"
             animate={{ opacity: isHoveringContainer ? 1 : 0 }}
             style={{
-              background: `radial-gradient(100px circle at ${mousePos.x}px ${mousePos.y}px, rgba(10,61,207,0.4), transparent 100%)`,
+              background: useMotionTemplate`radial-gradient(100px circle at ${mouseX}px ${mouseY}px, rgba(10,61,207,0.4), transparent 100%)`,
             }}
           />
         </div>
@@ -85,22 +86,24 @@ export function Navigation() {
           const isActive = activeView === item.id;
           return (
             <button
+              type="button"
               key={item.id}
               onClick={() => setActiveView(item.id)}
-              className={`relative z-10 flex items-center gap-2 px-3 sm:px-5 py-2 rounded-full text-[12px] sm:text-[13px] font-medium transition-colors focus:outline-none ${
+              className={`relative z-10 flex min-w-[5.7rem] flex-1 transform-gpu select-none items-center justify-center gap-1 rounded-full px-2.5 py-2 text-[11px] font-medium transition-colors focus:outline-none sm:min-w-[7.1rem] sm:flex-none sm:gap-2 sm:px-4 sm:text-[13px] ${
                 isActive
                   ? "text-white shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
                   : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
               }`}
+              style={{ contain: "layout paint" }}
             >
               {isActive && (
                 <motion.div
-                  layoutId="nav-bg"
+                  layoutId="navigation-active-pill"
                   className="absolute inset-0 bg-white/10 border border-white/10 rounded-full mix-blend-screen"
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               )}
-              <span className="relative z-[15] flex items-center gap-1.5 sm:gap-2">
+              <span className="relative z-[15] flex items-center justify-center gap-1.5 sm:gap-2">
                 {item.icon}
                 <span className="hidden sm:inline-block">{item.label}</span>
                 <span className="sm:hidden">{item.label.split(" ")[0]}</span>
