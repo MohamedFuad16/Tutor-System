@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T14:07:19.492Z",
+    "generatedAt": "2026-05-27T14:59:40.575Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "aaaad77e48968790695157df7ea1695dd50cfdb9ef5b774dc1b07c903e8b3b2d",
+    "sourceHash": "31a027861891e45d04aae40330ee5fa728578068f4eccce8acdce5883fa2cfb6",
     "url": "http://127.0.0.1:3000",
-    "eventCount": 44,
+    "eventCount": 21,
     "confidence": 0.82
   },
   "hotspots": [
@@ -14,34 +14,10 @@
       "severity": 100,
       "evidence": {
         "component": "route:study",
-        "count": 14,
-        "totalDurationMs": 109.09999984502792,
-        "maxDurationMs": 37.799999952316284,
-        "averageDurationMs": 7.7928571317877084
-      }
-    },
-    {
-      "type": "render",
-      "name": "route:analytics",
-      "severity": 100,
-      "evidence": {
-        "component": "route:analytics",
-        "count": 15,
-        "totalDurationMs": 108.99999988079071,
-        "maxDurationMs": 23.5,
-        "averageDurationMs": 7.266666658719381
-      }
-    },
-    {
-      "type": "render",
-      "name": "route:revision",
-      "severity": 59,
-      "evidence": {
-        "component": "route:revision",
-        "count": 5,
-        "totalDurationMs": 27.600000023841858,
-        "maxDurationMs": 9.300000011920929,
-        "averageDurationMs": 5.520000004768372
+        "count": 11,
+        "totalDurationMs": 159.0999999642372,
+        "maxDurationMs": 44.19999998807907,
+        "averageDurationMs": 14.463636360385202
       }
     }
   ]

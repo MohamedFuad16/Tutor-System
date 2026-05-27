@@ -565,8 +565,8 @@ function detectIssues(target: ComponentTarget, text: string): DetectorReport {
   pushIf(
     report,
     "memoryLeaks",
-    /addEventListener\(/.test(text) && !/removeEventListener\(/.test(text),
-    "Event listener registration found without matching removal in the same file.",
+    hasPotentialLeakyEventListener(text),
+    "Global or external event listener registration found without matching removal in the same file.",
   );
   pushIf(
     report,
@@ -757,6 +757,14 @@ function applyDeterministicFixes(
   }
 
   return { text, changes, rules };
+}
+
+function hasPotentialLeakyEventListener(text: string) {
+  if (/removeEventListener\(/.test(text)) return false;
+  return [...text.matchAll(/\baddEventListener\(/g)].some((match) => {
+    const prefix = text.slice(Math.max(0, match.index - 5), match.index);
+    return prefix !== "this.";
+  });
 }
 
 function readUiRegressionReport() {

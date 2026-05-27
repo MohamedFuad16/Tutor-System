@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T14:05:57.125Z",
+    "generatedAt": "2026-05-27T14:58:58.302Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "6d444982a760aad2dcda1cc12389d5d67d0a44b1",
+      "commit": "9abf5b4139cc5ec1007a632efa4dbb2dea4bdfba",
       "branch": "main",
       "dirty": true
     },
@@ -32,11 +32,11 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "aaaad77e48968790695157df7ea1695dd50cfdb9ef5b774dc1b07c903e8b3b2d"
+    "sourceHash": "31a027861891e45d04aae40330ee5fa728578068f4eccce8acdce5883fa2cfb6"
   },
   "subsystems": {
     "frontend": {
-      "generatedAt": "2026-05-27T14:05:57.158Z",
+      "generatedAt": "2026-05-27T14:58:58.369Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/AnimatedScrollText.tsx",
@@ -204,7 +204,7 @@
       ]
     },
     "backend": {
-      "generatedAt": "2026-05-27T14:05:57.158Z",
+      "generatedAt": "2026-05-27T14:58:58.370Z",
       "sourceFiles": [
         "server.ts"
       ],
@@ -230,7 +230,7 @@
       ]
     },
     "state": {
-      "generatedAt": "2026-05-27T14:05:57.158Z",
+      "generatedAt": "2026-05-27T14:58:58.370Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/ChatPanel.tsx",
@@ -373,7 +373,7 @@
       ]
     },
     "memory": {
-      "generatedAt": "2026-05-27T14:05:57.158Z",
+      "generatedAt": "2026-05-27T14:58:58.370Z",
       "sourceFiles": [
         "src/memory/bkt.engine.ts",
         "src/memory/cognitive.load.ts",
@@ -453,7 +453,7 @@
       ]
     },
     "brainTooling": {
-      "generatedAt": "2026-05-27T14:05:57.158Z",
+      "generatedAt": "2026-05-27T14:58:58.370Z",
       "sourceFiles": [
         "generate-brain.ts",
         "brain/drift-check.ts",
