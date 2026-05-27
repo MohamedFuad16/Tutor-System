@@ -2,7 +2,7 @@
 
 _Date: 2026-05-27_
 
-This document is an audited, in‑depth summary of the Tutor System Architecture repository after a focused pass through the core runtime, UI, memory, and server layers. It is grounded in the current source tree and highlights the live data flows, key modules, and operational boundaries.
+This document is an audited, in-depth summary of the Tutor System Architecture repository after a focused pass through the core runtime, UI, memory, and server layers. It is grounded in the current source tree and highlights the live data flows, key modules, and operational boundaries.
 
 ## 1) Scope of Review
 
@@ -75,10 +75,10 @@ This document is an audited, in‑depth summary of the Tutor System Architecture
 
 ### 4.4 Revision & Library
 - **Location:** `src/views/RevisionView.tsx`
-- **Purpose:** paper‑style library for learning books, concepts, and active‑recall flashcards.
+- **Purpose:** paper-style library for learning books, concepts, and active-recall flashcards.
 - **Notable details:**
-  - Flashcard review UX with spaced‑repetition scoring.
-  - Built‑in Tutor System Architecture book seeded into Dexie (`tutorBook.json`).
+  - Flashcard review UX with spaced-repetition scoring.
+  - Built-in Tutor System Architecture book seeded into Dexie (`tutorBook.json`).
 
 ### 4.5 Analytics
 - **Location:** `src/views/AnalyticsView.tsx`
@@ -108,22 +108,22 @@ This document is an audited, in‑depth summary of the Tutor System Architecture
 ### 5.2 Memory orchestration
 - **Location:** `src/memory/memory.orchestrator.ts`
 - **Key responsibilities:**
-  - Creates sessions and a per‑session learning book.
-  - Clears generated session library data (while preserving the built‑in tutor book).
+  - Creates sessions and a per-session learning book.
+  - Clears generated session library data (while preserving the built-in tutor book).
   - Logs interactions with embeddings and trace explanations (`/api/trace`).
   - Requests `/api/learning-book-update` to expand books, chapters, and concepts.
   - Writes `learningEntries` for each conversation and announces active book changes.
 
 ### 5.3 Embeddings and retrieval
 - **Location:** `src/memory/memory.embeddings.ts`
-- **Approach:** deterministic 384‑dimensional hashed embeddings (no browser ML runtime).
+- **Approach:** deterministic 384-dimensional hashed embeddings (no browser ML runtime).
 - **Retrieval:** `MemoryOrchestrator.getRelevantContext()` scores interactions and concepts with cosine similarity and injects learner model directives.
 
 ### 5.4 Learner model pipeline
 - **Location:** `src/memory/learner.model.ts` + related subsystems
-- **Sub‑modules:**
+- **Sub-modules:**
   - **BKT:** `bkt.engine.ts` updates P(L) per concept.
-  - **ZPD:** `zpd.calculator.ts` computes independent / ZPD / not‑yet zones.
+  - **ZPD:** `zpd.calculator.ts` computes independent / ZPD / not-yet zones.
   - **Scaffolding:** `scaffolding.engine.ts` maps mastery to support level.
   - **Misconceptions:** `misconception.graph.ts` tracks unresolved misunderstandings.
   - **Prerequisites:** `prerequisite.dag.ts` enforces prerequisite readiness.
@@ -161,19 +161,19 @@ This document is an audited, in‑depth summary of the Tutor System Architecture
   - Converts raw actions into a readable trace paragraph for Admin logs.
 
 - **/api/learning-book-update (POST):**
-  - Uses a learning‑book agent to update session books, chapters, concepts.
+  - Uses a learning-book agent to update session books, chapters, concepts.
   - Returns JSON schema; has a safe fallback path.
 
 - **/api/generate-flashcards (POST):**
-  - Generates flashcards using tool‑call constraints.
+  - Generates flashcards using tool-call constraints.
 
 - **/api/debug/* (GET/POST):**
-  - Orchestrates long‑horizon debug runs and returns progress artifacts.
+  - Orchestrates long-horizon debug runs and returns progress artifacts.
 
 ### 6.3 Web search normalization
 - **Location:** `server/web-search.ts`
 - **Serper integration:** normalizes organic/news/topStories rows, dedupes by canonical URL, assigns stable IDs.
-- **Freshness detection:** regex‑based triggers for news/current queries.
+- **Freshness detection:** regex-based triggers for news/current queries.
 
 ### 6.4 Voice agent proxy
 - **WebSocket:** `/api/voice-agent`
@@ -192,10 +192,10 @@ This document is an audited, in‑depth summary of the Tutor System Architecture
 
 ## 8) Operational Boundaries & Notes
 
-- **High‑risk mutation boundaries:** Dexie schema, server API contracts, Zustand store shape, chat streaming format, and `/brain` generated artifacts.
+- **High-risk mutation boundaries:** Dexie schema, server API contracts, Zustand store shape, chat streaming format, and `/brain` generated artifacts.
 - **Environment keys:** `OPENROUTER_API_KEY`, `DEEPGRAM_API_KEY`, `SERPER_API_KEY` (with UI overrides).
 - **Build & lint:** `npm run lint`, `npm run build`.
 
 ---
 
-**Output:** This audit document is intended to be the human‑readable summary for stakeholders, onboarding, and future architectural reviews. It complements (but does not replace) the `/brain` artifacts and the existing `TUTOR_ARCHITECTURE.md` book.
+**Output:** This audit document is intended to be the human-readable summary for stakeholders, onboarding, and future architectural reviews. It complements (but does not replace) the `/brain` artifacts and the existing `TUTOR_ARCHITECTURE.md` book.
