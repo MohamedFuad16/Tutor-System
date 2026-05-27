@@ -2185,6 +2185,23 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         </div>
         
         <div className="flex gap-2 pointer-events-auto">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm("Are you sure you want to clear the chat history?")) {
+                setMessages([{
+                  id: '1',
+                  role: 'assistant',
+                  content: INITIAL_MESSAGE
+                }]);
+              }
+            }}
+            title="Clear Chat History"
+            className="p-1.5 rounded-full hover:bg-black/5 text-[#9a9a9f] hover:text-zinc-800 transition-colors focus:outline-none"
+          >
+            <RotateCcw size={15} />
+          </button>
+
           {onClose && (
             <button
               onClick={onClose}

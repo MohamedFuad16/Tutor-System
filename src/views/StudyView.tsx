@@ -1,45 +1,62 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PdfViewer } from '../components/PdfViewer';
 import { ChatPanel, UsageAnalyticsStrip } from '../components/ChatPanel';
 import { useStore } from '../store';
 import { UploadCloud, MessageSquare, X, RefreshCw } from 'lucide-react';
 import { PatternCard, themes } from '../components/PatternCard';
 import { AnimatedScrollText } from '../components/AnimatedScrollText';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 
 
 const CurvedArrow = ({ color }: { color: string }) => (
-  <motion.svg 
-    width="50" 
-    height="120" 
-    viewBox="0 0 50 120" 
+  <svg 
+    width="60" 
+    height="220"
+    viewBox="0 0 60 220" 
     fill="none" 
     xmlns="http://www.w3.org/2000/svg"
-    style={{ filter: `drop-shadow(0px 0px 12px ${color}60)` }}
-    animate={{ y: [0, 10, 0] }}
-    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+    style={{ filter: `drop-shadow(0px 0px 12px ${color}80)` }}
   >
-    <motion.path 
-      d="M 25 10 C 60 30, 60 60, 25 75 C 5 85, 5 105, 25 115"
+    {/* Background faint path */}
+    <path 
+      d="M 30 10 C 30 50, 50 70, 30 120 S 10 170, 30 205 L 30 215"
       stroke={color}
-      strokeWidth="2.5" 
+      strokeOpacity="0.2"
+      strokeWidth="3" 
       strokeLinecap="round" 
       strokeLinejoin="round"
-      initial={{ pathLength: 0, opacity: 0 }}
-      animate={{ pathLength: 1, opacity: 1 }}
-      transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+    />
+    <path 
+      d="M 30 215 L 20 205 M 30 215 L 40 205" 
+      stroke={color}
+      strokeOpacity="0.2"
+      strokeWidth="3" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    />
+
+    {/* Animated glowing path */}
+    <motion.path 
+      d="M 30 10 C 30 50, 50 70, 30 120 S 10 170, 30 205 L 30 215"
+      stroke={color}
+      strokeWidth="3" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      initial={{ pathLength: 0, pathOffset: 0 }}
+      animate={{ pathLength: [0, 0.4, 0], pathOffset: [0, 0.6, 1] }}
+      transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
     />
     <motion.path 
-      d="M 15 105 L 25 115 L 35 105" 
+      d="M 30 215 L 20 205 M 30 215 L 40 205" 
       stroke={color} 
-      strokeWidth="2.5" 
+      strokeWidth="3" 
       strokeLinecap="round" 
       strokeLinejoin="round"
-      initial={{ opacity: 0, y: -5 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 2 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 0] }}
+      transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", times: [0, 0.8, 1] }}
     />
-  </motion.svg>
+  </svg>
 );
 
 export function StudyView() {
@@ -55,6 +72,34 @@ export function StudyView() {
   const [card2DotsReady, setCard2DotsReady] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    container: scrollContainerRef
+  });
+
+  const arrow1Opacity = useTransform(scrollYProgress, [0.3, 0.45], [0.9, 0]);
+  const arrow2Opacity = useTransform(scrollYProgress, [0.3, 0.45, 0.75, 0.9], [0, 0.7, 0.7, 0]);
+
+  useEffect(() => {
+    // Clear the chat automatically as requested
+    if (localStorage.getItem('chat_cleared_by_bot') !== 'true') {
+      useStore.getState().setMessages([{ 
+        id: '1', 
+        role: 'assistant', 
+        content: `**Hello. I'm your AI Tutor.**\n\nI'm ready to help you explore concepts, discuss code, and break down complex subjects. Here are a few things we can do:\n- **Analyze Documents:** Upload a PDF and ask me questions about specific pages.\n- **Discuss Code:** Paste code snippets and we can debug or refactor them.\n- **Learn Concepts:** Ask me general programming and computer science questions.\n\nWhat would you like to learn today?` 
+      }]);
+      localStorage.setItem('chat_cleared_by_bot', 'true');
+    }
+  }, []);
+
+  const handleScrollToNext = (pageIndex: number) => {
+    if (!scrollContainerRef.current) return;
+    const scroller = scrollContainerRef.current;
+    scroller.scrollTo({
+      top: pageIndex * scroller.clientHeight * 0.72,
+      behavior: 'smooth'
+    });
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -120,7 +165,7 @@ export function StudyView() {
             <div ref={scrollContainerRef} className="flex-1 w-full h-full flex flex-col overflow-auto relative custom-scroll">
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px', backgroundAttachment: 'local' }} />
               
-              <div className="w-full flex-1 flex flex-col items-center justify-start z-10 p-6 md:p-12 lg:p-20 pt-[8vh] pb-[40vh] max-w-4xl mx-auto">
+              <div className="w-full flex-1 flex flex-col items-center justify-start z-10 p-6 md:p-12 lg:p-20 pt-[8vh] pb-[20vh] max-w-4xl mx-auto">
                 
                 {/* Text 1: Automatic Reveal */}
                 <motion.div 
@@ -145,41 +190,48 @@ export function StudyView() {
                   </h2>
                 </motion.div>
 
-                {/* Card 1: Interactive Tutor */}
-                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center relative mb-8">
-                  <PatternCard
-                    bgClass={themes[2].bg}
-                    SvgComponent={themes[2].SvgComponent}
-                    bloomColor={themes[2].bloom}
-                    bloomOpacity={themes[2].bloomOpacity}
-                    animateDots={card1DotsReady}
-                  >
-                    <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
-                      <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-black/10 text-black border border-black/10 shadow-lg">
-                        <MessageSquare className="w-5 h-5" />
+                {/* Card 1: Interactive Tutor Container */}
+                <div className="flex flex-col items-center w-full justify-center relative mb-8">
+                  <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center">
+                    <PatternCard
+                      bgClass={themes[2].bg}
+                      SvgComponent={themes[2].SvgComponent}
+                      bloomColor={themes[2].bloom}
+                      bloomOpacity={themes[2].bloomOpacity}
+                      animateDots={card1DotsReady}
+                    >
+                      <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
+                        <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-black/10 text-black border border-black/10 shadow-lg">
+                          <MessageSquare className="w-5 h-5" />
+                        </div>
+                        <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-black">
+                          Interactive<br/>Tutor
+                        </div>
+                        <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-black">
+                          Chat with your document and test your knowledge.
+                        </div>
                       </div>
-                      <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-black">
-                        Interactive<br/>Tutor
-                      </div>
-                      <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-black">
-                        Chat with your document and test your knowledge.
-                      </div>
-                    </div>
-                  </PatternCard>
+                    </PatternCard>
+                  </div>
 
-                  {/* Scroll Indicator 1 (Beige card -> Orange accent) */}
-                  <div className="absolute -bottom-40 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-90">
+                  {/* Scroll Indicator 1 (Beige card -> Orange accent) in normal flow */}
+                  <motion.button 
+                    type="button"
+                    onClick={() => handleScrollToNext(1)}
+                    className="mt-12 flex flex-col items-center group focus:outline-none cursor-pointer z-30"
+                    style={{ opacity: arrow1Opacity }}
+                  >
                     <span 
-                      className="text-[10px] uppercase tracking-[0.25em] font-medium mb-1"
+                      className="text-[10px] uppercase tracking-[0.25em] font-semibold mb-1 transition-all duration-300 group-hover:scale-110 group-hover:text-orange-400"
                       style={{ color: '#ff6e00', textShadow: '0 0 12px rgba(255,110,0,0.4)' }}
                     >
                       Scroll
                     </span>
                     <CurvedArrow color="#ff6e00" />
-                  </div>
+                  </motion.button>
                 </div>
 
-                <div className="h-[40vh] w-full shrink-0" />
+                <div className="h-[8vh] w-full shrink-0" />
 
                 {/* Text 2: Brain Graph */}
                 <div className="w-full mb-16 text-center">
@@ -192,41 +244,48 @@ export function StudyView() {
                   />
                 </div>
 
-                {/* Card 2: Knowledge Graph */}
-                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center relative mb-8">
-                  <PatternCard
-                    bgClass={`${themes[0].bg} border border-white/10`}
-                    SvgComponent={themes[0].SvgComponent}
-                    bloomColor={themes[0].bloom}
-                    bloomOpacity={themes[0].bloomOpacity}
-                    animateDots={card2DotsReady}
-                  >
-                    <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
-                      <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-white/10 text-white border border-white/20 shadow-lg">
-                        <RefreshCw className="w-5 h-5" />
+                {/* Card 2: Knowledge Graph Container */}
+                <div className="flex flex-col items-center w-full justify-center relative mb-8">
+                  <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center">
+                    <PatternCard
+                      bgClass={`${themes[0].bg} border border-white/10`}
+                      SvgComponent={themes[0].SvgComponent}
+                      bloomColor={themes[0].bloom}
+                      bloomOpacity={themes[0].bloomOpacity}
+                      animateDots={card2DotsReady}
+                    >
+                      <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
+                        <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-white/10 text-white border border-white/20 shadow-lg">
+                          <RefreshCw className="w-5 h-5" />
+                        </div>
+                        <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
+                          Knowledge<br/>Graph
+                        </div>
+                        <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
+                          Visualize how concepts connect across all your documents.
+                        </div>
                       </div>
-                      <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
-                        Knowledge<br/>Graph
-                      </div>
-                      <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
-                        Visualize how concepts connect across all your documents.
-                      </div>
-                    </div>
-                  </PatternCard>
+                    </PatternCard>
+                  </div>
 
-                  {/* Scroll Indicator 2 (Dark card -> White accent) */}
-                  <div className="absolute -bottom-40 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-70">
+                  {/* Scroll Indicator 2 (Dark card -> White accent) in normal flow */}
+                  <motion.button 
+                    type="button"
+                    onClick={() => handleScrollToNext(2)}
+                    className="mt-12 flex flex-col items-center group focus:outline-none cursor-pointer z-30"
+                    style={{ opacity: arrow2Opacity }}
+                  >
                     <span 
-                      className="text-[10px] uppercase tracking-[0.25em] font-medium mb-1"
+                      className="text-[10px] uppercase tracking-[0.25em] font-semibold mb-1 transition-all duration-300 group-hover:scale-110 group-hover:text-zinc-200"
                       style={{ color: '#ffffff', textShadow: '0 0 12px rgba(255,255,255,0.4)' }}
                     >
                       Scroll
                     </span>
                     <CurvedArrow color="#ffffff" />
-                  </div>
+                  </motion.button>
                 </div>
 
-                <div className="h-[40vh] w-full shrink-0" />
+                <div className="h-[8vh] w-full shrink-0" />
 
                 {/* Text 3: Upload Document */}
                 <div className="w-full text-center pb-16">
@@ -307,19 +366,26 @@ export function StudyView() {
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setIsChatOpen(true)}
-              className="group flex min-h-[92px] items-center justify-between rounded-[28px] border border-white/10 bg-[#0a0a0a] px-5 py-4 text-left text-white shadow-[0_18px_54px_rgba(0,0,0,0.34)] transition-colors hover:bg-[#111]"
+              className="group relative flex min-h-[92px] items-center justify-between overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] px-5 py-4 text-left text-white shadow-[0_18px_54px_rgba(0,0,0,0.34)] transition-all duration-300 hover:border-white/20 hover:shadow-[0_22px_60px_rgba(255,110,0,0.1)]"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-white shadow-[0_12px_30px_rgba(255,255,255,0.08)]">
-                  <MessageSquare size={18} />
+              {/* Radial Gradients matching Usage UI */}
+              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_16%_0%,rgba(255,110,0,0.24),transparent_36%),radial-gradient(circle_at_90%_110%,rgba(255,255,255,0.08),transparent_38%)] transition-opacity duration-300 group-hover:opacity-100 opacity-80" />
+              {/* Dot Grid matching Usage UI */}
+              <div className="absolute inset-0 pointer-events-none opacity-[0.1]" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(255,255,255,0.2) 1px, transparent 1px)', backgroundSize: '22px 22px' }} />
+
+              <div className="relative z-10 flex items-center justify-between w-full">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#ff6e00]/20 bg-[#ff6e00]/10 text-[#ff6e00] shadow-[0_0_15px_rgba(255,110,0,0.15)] transition-all duration-300 group-hover:scale-105 group-hover:border-[#ff6e00]/40 group-hover:bg-[#ff6e00]/20 group-hover:shadow-[0_0_22px_rgba(255,110,0,0.3)]">
+                    <MessageSquare size={18} />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold tracking-tight text-white group-hover:text-[#ff6e00] transition-colors duration-300">Tutor minimized</div>
+                    <div className="text-xs text-white/45">Open without resizing the document.</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm font-semibold">Tutor minimized</div>
-                  <div className="text-xs text-white/45">Open without resizing the document.</div>
+                <div className="rounded-full border border-[#ff6e00]/30 bg-[#ff6e00]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#ff6e00] transition-all duration-300 group-hover:scale-105 group-hover:border-[#ff6e00]/50 group-hover:bg-[#ff6e00]/20 group-hover:text-white group-hover:shadow-[0_0_15px_rgba(255,110,0,0.4)]">
+                  Open
                 </div>
-              </div>
-              <div className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white/65 transition-colors group-hover:text-white">
-                Open
               </div>
             </motion.button>
           )}
