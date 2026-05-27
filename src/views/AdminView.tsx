@@ -714,6 +714,40 @@ export function AdminView() {
                                 <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
                                   {debugRunDetails.id}
                                 </h2>
+                                <div className="mt-3 flex flex-wrap items-center gap-2">
+                                  <span
+                                    className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${
+                                      debugRunDetails.status === "completed"
+                                        ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
+                                        : debugRunDetails.status?.includes(
+                                              "fail",
+                                            )
+                                          ? "border border-red-100 bg-red-50 text-red-700"
+                                          : "border border-amber-100 bg-amber-50 text-amber-700"
+                                    }`}
+                                  >
+                                    {debugRunDetails.status || "unknown"}
+                                  </span>
+                                  {debugRunDetails.activeTarget && (
+                                    <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 font-mono text-[11px] text-blue-700">
+                                      Auditing{" "}
+                                      {debugRunDetails.activeTarget.name ||
+                                        debugRunDetails.activeTarget.file}
+                                    </span>
+                                  )}
+                                  {debugRunDetails.updatedAt && (
+                                    <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 font-mono text-[11px] text-zinc-500">
+                                      {new Date(
+                                        debugRunDetails.updatedAt,
+                                      ).toLocaleTimeString([], {
+                                        hour12: false,
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        second: "2-digit",
+                                      })}
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="mt-2 text-sm leading-relaxed text-zinc-600 font-serif">
                                   The ledger records which files changed, what
                                   deterministic bugs or gates were found, why
@@ -749,12 +783,53 @@ export function AdminView() {
                               </div>
                             </div>
 
+                            {(debugRunDetails.events || []).length > 0 && (
+                              <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
+                                <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700">
+                                  <Activity size={13} /> Live Audit Events
+                                </div>
+                                <div className="max-h-48 space-y-2 overflow-y-auto pr-1 custom-scroll">
+                                  {(debugRunDetails.events || [])
+                                    .slice(-10)
+                                    .reverse()
+                                    .map((event, index) => (
+                                      <div
+                                        key={`${event.timestamp}-${event.type}-${index}`}
+                                        className="rounded-xl border border-white/70 bg-white/80 px-3 py-2"
+                                      >
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                          <span className="font-mono text-[11px] font-semibold text-blue-800">
+                                            {event.type || "event"}
+                                          </span>
+                                          <span className="font-mono text-[10px] text-zinc-500">
+                                            {event.timestamp
+                                              ? new Date(
+                                                  event.timestamp,
+                                                ).toLocaleTimeString([], {
+                                                  hour12: false,
+                                                  hour: "2-digit",
+                                                  minute: "2-digit",
+                                                  second: "2-digit",
+                                                })
+                                              : ""}
+                                          </span>
+                                        </div>
+                                        <div className="mt-1 text-sm text-zinc-700">
+                                          {event.message}
+                                        </div>
+                                      </div>
+                                    ))}
+                                </div>
+                              </div>
+                            )}
+
                             <div className="space-y-4">
                               {(debugRunDetails.components || []).length ===
                               0 ? (
                                 <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
-                                  This run has not written component summaries
-                                  yet.
+                                  {debugRunDetails.activeTarget
+                                    ? `Currently auditing ${debugRunDetails.activeTarget.name || debugRunDetails.activeTarget.file}. The first completed component will appear here automatically.`
+                                    : "This run has not written component summaries yet."}
                                 </div>
                               ) : (
                                 (debugRunDetails.components || []).map(
@@ -847,11 +922,88 @@ export function AdminView() {
                                           )}
                                         </div>
                                       )}
+
+                                      {(component.commands || []).length >
+                                        0 && (
+                                        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                                          {(component.commands || [])
+                                            .slice(-6)
+                                            .map((command, commandIndex) => (
+                                              <div
+                                                key={`${component.file}-${command.command}-${commandIndex}`}
+                                                className={`rounded-xl border px-3 py-2 ${
+                                                  command.ok
+                                                    ? "border-emerald-100 bg-white text-zinc-700"
+                                                    : "border-red-100 bg-red-50 text-red-800"
+                                                }`}
+                                              >
+                                                <div className="flex items-center justify-between gap-2">
+                                                  <span className="font-mono text-[11px] font-semibold">
+                                                    {compactCommand(
+                                                      command.command,
+                                                    )}
+                                                  </span>
+                                                  <span
+                                                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                                      command.ok
+                                                        ? "bg-emerald-50 text-emerald-700"
+                                                        : "bg-red-100 text-red-700"
+                                                    }`}
+                                                  >
+                                                    {command.ok
+                                                      ? "pass"
+                                                      : `exit ${command.exitCode}`}
+                                                  </span>
+                                                </div>
+                                              </div>
+                                            ))}
+                                        </div>
+                                      )}
                                     </article>
                                   ),
                                 )
                               )}
                             </div>
+
+                            {(debugRunDetails.finalCommands || []).length >
+                              0 && (
+                              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                                <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-600">
+                                  <CheckCircle2 size={13} /> Final Gates
+                                </div>
+                                <div className="grid gap-2 md:grid-cols-2">
+                                  {(debugRunDetails.finalCommands || []).map(
+                                    (command, index) => (
+                                      <div
+                                        key={`${command.command}-${index}`}
+                                        className={`rounded-xl border bg-white px-3 py-2 ${
+                                          command.ok
+                                            ? "border-emerald-100"
+                                            : "border-red-100"
+                                        }`}
+                                      >
+                                        <div className="flex items-center justify-between gap-2">
+                                          <span className="font-mono text-[11px] font-semibold text-zinc-700">
+                                            {compactCommand(command.command)}
+                                          </span>
+                                          <span
+                                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                              command.ok
+                                                ? "bg-emerald-50 text-emerald-700"
+                                                : "bg-red-50 text-red-700"
+                                            }`}
+                                          >
+                                            {command.ok
+                                              ? "pass"
+                                              : `exit ${command.exitCode}`}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </section>

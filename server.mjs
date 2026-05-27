@@ -1,7 +1,9 @@
 // server.ts
 import dotenv from "dotenv";
 import express from "express";
+import * as fs from "fs";
 import path from "path";
+import { spawn } from "child_process";
 import OpenAI from "openai";
 import { WebSocketServer, WebSocket as WSWebSocket } from "ws";
 
@@ -158,7 +160,8 @@ var voiceAgentCostForSeconds = (seconds) => roundCost(Math.max(0, seconds) / 60 
 var rawByteLength = (data) => {
   if (Buffer.isBuffer(data)) return data.length;
   if (data instanceof ArrayBuffer) return data.byteLength;
-  if (Array.isArray(data)) return data.reduce((sum, chunk) => sum + rawByteLength(chunk), 0);
+  if (Array.isArray(data))
+    return data.reduce((sum, chunk) => sum + rawByteLength(chunk), 0);
   if (typeof data === "string") return Buffer.byteLength(data);
   return Buffer.byteLength(Buffer.from(data));
 };
@@ -188,7 +191,8 @@ var fetchOpenRouterPricing = async (force = false) => {
   }
   try {
     const response = await fetch("https://openrouter.ai/api/v1/models");
-    if (!response.ok) throw new Error(`OpenRouter pricing failed: ${response.status}`);
+    if (!response.ok)
+      throw new Error(`OpenRouter pricing failed: ${response.status}`);
     const payload = await response.json();
     pricingCache = {
       fetchedAt: now,
@@ -206,7 +210,9 @@ var fetchOpenRouterPricing = async (force = false) => {
 var openRouterCost = (pricing, model, inputTokens, outputTokens) => {
   const modelPricing = pricing[model] || pricing[model.replace(/^openai\//, "")] || pricing[`openai/${model}`];
   if (!modelPricing) return 0;
-  return roundCost(inputTokens * modelPricing.prompt + outputTokens * modelPricing.completion);
+  return roundCost(
+    inputTokens * modelPricing.prompt + outputTokens * modelPricing.completion
+  );
 };
 var extractJsonObject = (value) => {
   const trimmed = value.trim();
@@ -227,7 +233,9 @@ var fallbackLearningUpdate = (body) => {
   const project = String(body?.activeProject || "").trim();
   const userMessage = String(body?.userMessage || "").trim();
   const assistantMessage = String(body?.assistantMessage || "").trim();
-  const title = project && project !== "General Study" ? project : userMessage.match(/\b(Python|JavaScript|React|TypeScript|Algorithms|System Design|Concurrency|Networking|Machine Learning|Calculus|History)\b/i)?.[0] || "General Study";
+  const title = project && project !== "General Study" ? project : userMessage.match(
+    /\b(Python|JavaScript|React|TypeScript|Algorithms|System Design|Concurrency|Networking|Machine Learning|Calculus|History)\b/i
+  )?.[0] || "General Study";
   const conceptName = title === "General Study" ? "General Conversation" : title;
   return {
     userName: String(body?.userName || "Learner").trim() || "Learner",
@@ -314,6 +322,210 @@ async function startServer() {
     broadcastLog("warn", args);
     originalWarn.apply(console, args);
   };
+  const debugRunsDir = path.join(process.cwd(), "brain/debug/runs");
+  let activeDebugJob = null;
+  const readJsonFile = (file) => {
+    try {
+      return JSON.parse(fs.readFileSync(file, "utf8"));
+    } catch {
+      return null;
+    }
+  };
+  const writeJsonFile = (file, value) => {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}
+`);
+  };
+  const readDebugEvents = (runDir) => {
+    const eventsPath = path.join(runDir, "events.ndjson");
+    if (!fs.existsSync(eventsPath)) return [];
+    return fs.readFileSync(eventsPath, "utf8").split("\n").filter(Boolean).map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch {
+        return null;
+      }
+    }).filter(Boolean);
+  };
+  const readDebugComponents = (runDir, summary = {}) => {
+    const componentsDir = path.join(runDir, "components");
+    const componentFiles = fs.existsSync(componentsDir) ? fs.readdirSync(componentsDir).filter((file) => file.endsWith(".json")).map((file) => readJsonFile(path.join(componentsDir, file))).filter(Boolean) : [];
+    const storedComponents = Array.isArray(summary.components) ? summary.components : [];
+    return (componentFiles.length ? componentFiles : storedComponents).sort(
+      (a, b) => String(a.finishedAt || a.timestamp || "").localeCompare(
+        String(b.finishedAt || b.timestamp || "")
+      )
+    );
+  };
+  const summarizeDebugRun = (id) => {
+    const runDir = path.join(debugRunsDir, id);
+    const summary = readJsonFile(path.join(runDir, "summary.json")) || readJsonFile(path.join(runDir, "run.json")) || {};
+    const events = readDebugEvents(runDir);
+    const components = readDebugComponents(runDir, summary);
+    const startEvent = events.find(
+      (event) => event.type === "run-started"
+    );
+    const completeEvent = [...events].reverse().find((event) => event.type === "run-completed");
+    const active = activeDebugJob?.id === id;
+    const status = active ? "running" : summary.status || completeEvent?.data?.status || (completeEvent ? "completed" : "unknown");
+    return {
+      ...summary,
+      id,
+      status,
+      startedAt: summary.startedAt || startEvent?.timestamp || null,
+      finishedAt: summary.finishedAt || completeEvent?.timestamp || null,
+      mode: summary.mode || startEvent?.data?.mode || null,
+      scope: summary.scope || startEvent?.data?.scope || null,
+      targetCount: Number(summary.targetCount || 0),
+      completedCount: Number(summary.completedCount ?? components.length),
+      changedCount: Number(
+        summary.changedCount ?? components.filter((item) => item.changed).length
+      ),
+      activeTarget: active ? summary.activeTarget || null : null,
+      components,
+      events: events.slice(-160)
+    };
+  };
+  const seedDebugRun = (runId, mode, scope) => {
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const runDir = path.join(debugRunsDir, runId);
+    fs.mkdirSync(path.join(runDir, "components"), { recursive: true });
+    const seed = {
+      id: runId,
+      status: "running",
+      startedAt: now,
+      finishedAt: null,
+      updatedAt: now,
+      mode,
+      scope,
+      targetCount: 0,
+      completedCount: 0,
+      changedCount: 0,
+      activeTarget: null,
+      components: [],
+      finalCommands: [],
+      unresolvedRisks: []
+    };
+    writeJsonFile(path.join(runDir, "summary.json"), seed);
+    writeJsonFile(path.join(runDir, "run.json"), seed);
+    fs.appendFileSync(
+      path.join(runDir, "events.ndjson"),
+      `${JSON.stringify({
+        timestamp: now,
+        type: "run-queued",
+        message: `Debug run ${runId} queued by Admin`,
+        data: { id: runId, mode, scope }
+      })}
+`
+    );
+  };
+  const persistDebugExit = (runId, code) => {
+    const runDir = path.join(debugRunsDir, runId);
+    if (!fs.existsSync(runDir)) return;
+    const current = summarizeDebugRun(runId);
+    if (current.status !== "running" && current.status !== "unknown") return;
+    const { events: _events, ...persistable } = current;
+    const finished = {
+      ...persistable,
+      status: code === 0 ? "completed" : "failed-process",
+      finishedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      activeTarget: null
+    };
+    writeJsonFile(path.join(runDir, "summary.json"), finished);
+    writeJsonFile(path.join(runDir, "run.json"), finished);
+  };
+  const listDebugRuns = () => {
+    if (!fs.existsSync(debugRunsDir)) return [];
+    return fs.readdirSync(debugRunsDir, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => {
+      const summary = summarizeDebugRun(entry.name);
+      return {
+        id: entry.name,
+        status: summary.status,
+        startedAt: summary.startedAt || null,
+        finishedAt: summary.finishedAt || null,
+        mode: summary.mode || null,
+        scope: summary.scope || null,
+        targetCount: summary.targetCount || 0,
+        completedCount: summary.completedCount || 0,
+        changedCount: summary.changedCount || 0
+      };
+    }).sort(
+      (a, b) => String(b.startedAt || b.id).localeCompare(String(a.startedAt || a.id))
+    );
+  };
+  app.get("/api/debug/runs", (_req, res) => {
+    res.json({
+      activeRunId: activeDebugJob?.id || null,
+      runs: listDebugRuns()
+    });
+  });
+  app.get("/api/debug/runs/:id", (req, res) => {
+    const safeId = path.basename(req.params.id);
+    const runDir = path.join(debugRunsDir, safeId);
+    if (!fs.existsSync(runDir))
+      return res.status(404).json({ error: "Debug run not found." });
+    res.json(summarizeDebugRun(safeId));
+  });
+  app.get("/api/debug/runs/:id/events", (req, res) => {
+    const safeId = path.basename(req.params.id);
+    const runDir = path.join(debugRunsDir, safeId);
+    res.json({ events: readDebugEvents(runDir) });
+  });
+  app.post("/api/debug/run", (req, res) => {
+    if (activeDebugJob)
+      return res.status(409).json({
+        error: "A debug run is already active.",
+        activeRunId: activeDebugJob.id
+      });
+    const mode = req.body?.mode === "audit" ? "audit" : "fix";
+    const scope = String(req.body?.scope || "all").replace(/[^a-zA-Z0-9_./:-]/g, "") || "all";
+    const runId = `debug-${(/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-")}`;
+    seedDebugRun(runId, mode, scope);
+    const child = spawn(
+      "npm",
+      [
+        "run",
+        "brain:debug",
+        "--",
+        "--mode",
+        mode,
+        "--scope",
+        scope,
+        "--resume",
+        runId
+      ],
+      {
+        cwd: process.cwd(),
+        env: process.env,
+        stdio: ["ignore", "pipe", "pipe"]
+      }
+    );
+    activeDebugJob = { id: runId, child };
+    console.log(`[DEBUG] Started ${runId} (${mode}, ${scope})`);
+    child.stdout.on(
+      "data",
+      (data) => console.log(`[DEBUG:${runId}] ${String(data).trim()}`)
+    );
+    child.stderr.on(
+      "data",
+      (data) => console.warn(`[DEBUG:${runId}] ${String(data).trim()}`)
+    );
+    child.on("exit", (code) => {
+      console.log(`[DEBUG] ${runId} exited with code ${code}`);
+      if (activeDebugJob?.id === runId) activeDebugJob = null;
+      persistDebugExit(runId, code);
+    });
+    res.status(202).json({ ok: true, runId, mode, scope });
+  });
+  app.post("/api/debug/runs/:id/cancel", (req, res) => {
+    const safeId = path.basename(req.params.id);
+    if (!activeDebugJob || activeDebugJob.id !== safeId)
+      return res.status(404).json({ error: "No active debug run with that id." });
+    activeDebugJob.child.kill("SIGTERM");
+    activeDebugJob = null;
+    res.json({ ok: true, cancelled: safeId });
+  });
   app.get("/api/pricing", async (_req, res) => {
     const openRouter = await fetchOpenRouterPricing();
     const fetchedAt = new Date(openRouter.fetchedAt).toISOString();
@@ -357,7 +569,10 @@ async function startServer() {
           {
             role: "user",
             content: [
-              { type: "text", text: "Look at this page from a document. Generate a very short (2-4 words) specific topic or title for what this document is about. Output ONLY the title." },
+              {
+                type: "text",
+                text: "Look at this page from a document. Generate a very short (2-4 words) specific topic or title for what this document is about. Output ONLY the title."
+              },
               { type: "image_url", image_url: { url: image } }
             ]
           }
@@ -376,13 +591,15 @@ async function startServer() {
       const bearerMatch = (authHeader || "").match(/^Bearer\s+(.+)$/i);
       const headerKey = bearerMatch ? bearerMatch[1].trim() : "";
       const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
-      if (!apiKey) return res.status(401).json({ error: "OpenRouter API key is required." });
+      if (!apiKey)
+        return res.status(401).json({ error: "OpenRouter API key is required." });
       const openai = new OpenAI({
         baseURL: "https://openrouter.ai/api/v1",
         apiKey
       });
       const { description } = req.body;
-      if (!description) return res.status(400).json({ error: "Description is required." });
+      if (!description)
+        return res.status(400).json({ error: "Description is required." });
       const response = await openai.chat.completions.create({
         model: "anthropic/claude-3.5-sonnet",
         // Use Sonnet for high-quality prompt generation
@@ -409,7 +626,8 @@ async function startServer() {
       const bearerMatch = (authHeader || "").match(/^Bearer\s+(.+)$/i);
       const headerKey = bearerMatch ? bearerMatch[1].trim() : "";
       const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
-      if (!apiKey) return res.status(401).json({ error: "OpenRouter API key is required." });
+      if (!apiKey)
+        return res.status(401).json({ error: "OpenRouter API key is required." });
       const openai = new OpenAI({
         baseURL: "https://openrouter.ai/api/v1",
         apiKey
@@ -442,10 +660,15 @@ Payload: ${JSON.stringify(payload)}`
     const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
     const body = req.body || {};
     if (!apiKey) {
-      return res.status(401).json({ error: "OpenRouter API key is required for learning book updates." });
+      return res.status(401).json({
+        error: "OpenRouter API key is required for learning book updates."
+      });
     }
     const userMessage = String(body.userMessage || "").slice(0, 8e3);
-    const assistantMessage = String(body.assistantMessage || "").slice(0, 12e3);
+    const assistantMessage = String(body.assistantMessage || "").slice(
+      0,
+      12e3
+    );
     if (!userMessage && !assistantMessage) {
       return res.status(400).json({ error: "Conversation text is required." });
     }
@@ -514,7 +737,10 @@ CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapt
         model: LEARNING_AGENT_MODEL
       });
     } catch (error) {
-      console.warn("[LEARNING_BOOK] DeepSeek update failed, using safe fallback:", error instanceof Error ? error.message : error);
+      console.warn(
+        "[LEARNING_BOOK] DeepSeek update failed, using safe fallback:",
+        error instanceof Error ? error.message : error
+      );
       res.json(fallbackLearningUpdate(body));
     }
   });
@@ -578,7 +804,10 @@ ${content}`
             }
           }
         ],
-        tool_choice: { type: "function", function: { name: "generate_flashcards" } }
+        tool_choice: {
+          type: "function",
+          function: { name: "generate_flashcards" }
+        }
       });
       const message = response.choices[0]?.message;
       let cards = [];
@@ -615,16 +844,19 @@ ${content}`
       const estimatedCost = ttsCostForModel(ttsModel, inputCharacters);
       const deepgramKey = process.env.DEEPGRAM_API_KEY;
       if (!deepgramKey) throw new Error("Deepgram API Key is missing");
-      const response = await fetch(`https://api.deepgram.com/v1/speak?model=${ttsModel}&encoding=mp3`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Token ${deepgramKey}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          text: billedText
-        })
-      });
+      const response = await fetch(
+        `https://api.deepgram.com/v1/speak?model=${ttsModel}&encoding=mp3`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Token ${deepgramKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            text: billedText
+          })
+        }
+      );
       console.log(`[TTS] Deepgram response status: ${response.status}`);
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
@@ -674,10 +906,19 @@ ${content}`
       const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
       const headerKey = bearerMatch ? bearerMatch[1].trim() : "";
       const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
-      const { messages, currentPageImage, memoryContext, aiModel, customPrompt, serperApiKey: bodySerperKey } = req.body;
+      const {
+        messages,
+        currentPageImage,
+        memoryContext,
+        aiModel,
+        customPrompt,
+        serperApiKey: bodySerperKey
+      } = req.body;
       const serperRuntimeKey = sanitizeApiKey(req.headers["x-serper-api-key"]) || sanitizeApiKey(bodySerperKey) || sanitizeApiKey(process.env.SERPER_API_KEY);
       if (!apiKey) {
-        sendEvent("error", { error: "OpenRouter API key is required. Please set it in Settings." });
+        sendEvent("error", {
+          error: "OpenRouter API key is required. Please set it in Settings."
+        });
         return res.end();
       }
       const openai = new OpenAI({
@@ -701,11 +942,24 @@ ${content}`
         const searchId = `web_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         sendEvent("status", { phase: "web_search" });
         sendEvent("web_search_started", { searchId, query, mode });
-        sendEvent("web_search_progress", { searchId, status: "Searching web..." });
+        sendEvent("web_search_progress", {
+          searchId,
+          status: "Searching web..."
+        });
         try {
-          const sources = await searchSerper({ query, mode, maxResults, apiKey: serperRuntimeKey || void 0 });
-          sendEvent("web_search_progress", { searchId, status: sources.length ? "Reviewing sources..." : "No recent sources found." });
-          sources.forEach((source) => sendEvent("web_result", { searchId, source }));
+          const sources = await searchSerper({
+            query,
+            mode,
+            maxResults,
+            apiKey: serperRuntimeKey || void 0
+          });
+          sendEvent("web_search_progress", {
+            searchId,
+            status: sources.length ? "Reviewing sources..." : "No recent sources found."
+          });
+          sources.forEach(
+            (source) => sendEvent("web_result", { searchId, source })
+          );
           mergeWebSources(sources);
           sendEvent("web_sources_complete", { searchId, sources });
           sendEvent("reasoning_summary", {
@@ -713,10 +967,21 @@ ${content}`
           });
           return sources;
         } catch (error) {
-          console.warn("[WEB_SEARCH] Search unavailable:", error instanceof Error ? error.message : error);
-          sendEvent("info", { message: "Search temporarily unavailable \u2014 continuing with internal knowledge." });
-          sendEvent("web_sources_complete", { searchId, sources: [], error: "Search temporarily unavailable" });
-          sendEvent("reasoning_summary", { content: "Web search was unavailable, so I am continuing with internal knowledge" });
+          console.warn(
+            "[WEB_SEARCH] Search unavailable:",
+            error instanceof Error ? error.message : error
+          );
+          sendEvent("info", {
+            message: "Search temporarily unavailable \u2014 continuing with internal knowledge."
+          });
+          sendEvent("web_sources_complete", {
+            searchId,
+            sources: [],
+            error: "Search temporarily unavailable"
+          });
+          sendEvent("reasoning_summary", {
+            content: "Web search was unavailable, so I am continuing with internal knowledge"
+          });
           return [];
         }
       };
@@ -742,8 +1007,14 @@ ${memoryContext}`;
       }
       const freshnessSearch = detectFreshnessSearch(latestUserContent);
       if (freshnessSearch) {
-        sendEvent("reasoning_summary", { content: "Detecting freshness requirement" });
-        const sources = await runWebSearch(freshnessSearch.query, freshnessSearch.mode, 6);
+        sendEvent("reasoning_summary", {
+          content: "Detecting freshness requirement"
+        });
+        const sources = await runWebSearch(
+          freshnessSearch.query,
+          freshnessSearch.mode,
+          6
+        );
         if (sources.length > 0) {
           systemInstruction += `
 
@@ -799,8 +1070,14 @@ Use these sources for current factual claims and cite them with bracketed source
                   items: {
                     type: "object",
                     properties: {
-                      front: { type: "string", description: "Front side of the flashcard (the question or concept)" },
-                      back: { type: "string", description: "Back side of the flashcard (the answer or explanation)" }
+                      front: {
+                        type: "string",
+                        description: "Front side of the flashcard (the question or concept)"
+                      },
+                      back: {
+                        type: "string",
+                        description: "Back side of the flashcard (the answer or explanation)"
+                      }
                     },
                     required: ["front", "back"]
                   }
@@ -870,7 +1147,10 @@ Use these sources for current factual claims and cite them with bracketed source
       while (iterations < MAX_ITERATIONS) {
         if (iterations === 0) sendEvent("status", { phase: "thinking" });
         const primaryModel = requestedModel;
-        const modelsToTry = [primaryModel, ...FALLBACK_MODELS.filter((m) => m !== primaryModel)];
+        const modelsToTry = [
+          primaryModel,
+          ...FALLBACK_MODELS.filter((m) => m !== primaryModel)
+        ];
         let stream = null;
         let usedModel = primaryModel;
         for (const model of modelsToTry) {
@@ -885,28 +1165,43 @@ Use these sources for current factual claims and cite them with bracketed source
             usedModel = model;
             usedModelForUsage = model;
             if (iterations === 0 && model !== primaryModel) {
-              console.log(`[CHAT] Primary model "${primaryModel}" unavailable, fell back to "${model}"`);
-              sendEvent("info", { message: `Model ${primaryModel} unavailable \u2014 using ${model}` });
+              console.log(
+                `[CHAT] Primary model "${primaryModel}" unavailable, fell back to "${model}"`
+              );
+              sendEvent("info", {
+                message: `Model ${primaryModel} unavailable \u2014 using ${model}`
+              });
             }
             break;
           } catch (modelErr) {
             const status = modelErr?.status || modelErr?.code;
-            const isRetryable = [401, 402, 403, 429, 500, 502, 503].includes(status);
-            console.warn(`[CHAT] Model "${model}" failed (${status}): ${modelErr.message}`);
+            const isRetryable = [401, 402, 403, 429, 500, 502, 503].includes(
+              status
+            );
+            console.warn(
+              `[CHAT] Model "${model}" failed (${status}): ${modelErr.message}`
+            );
             if (!isRetryable || model === modelsToTry[modelsToTry.length - 1]) {
               throw modelErr;
             }
           }
         }
-        if (!stream) throw new Error("All models failed. Please check your API key and try again.");
+        if (!stream)
+          throw new Error(
+            "All models failed. Please check your API key and try again."
+          );
         let isToolCall = false;
         let currentToolCalls = [];
         let assistantContent = "";
         for await (const chunk of stream) {
           const usage = chunk.usage;
           if (usage) {
-            inputTokens += Number(usage.prompt_tokens ?? usage.input_tokens ?? 0);
-            outputTokens += Number(usage.completion_tokens ?? usage.output_tokens ?? 0);
+            inputTokens += Number(
+              usage.prompt_tokens ?? usage.input_tokens ?? 0
+            );
+            outputTokens += Number(
+              usage.completion_tokens ?? usage.output_tokens ?? 0
+            );
             usageEstimated = false;
           }
           const delta = chunk.choices?.[0]?.delta;
@@ -940,7 +1235,9 @@ Use these sources for current factual claims and cite them with bracketed source
         sendEvent("status", { phase: "tool_execution" });
         const validToolCalls = currentToolCalls.filter(Boolean);
         validToolCalls.forEach((t) => {
-          sendEvent("reasoning_summary", { content: `Using tool: ${t.function.name}` });
+          sendEvent("reasoning_summary", {
+            content: `Using tool: ${t.function.name}`
+          });
         });
         formattedMessages.push({
           role: "assistant",
@@ -952,7 +1249,9 @@ Use these sources for current factual claims and cite them with bracketed source
           const functionArguments = toolCall.function.arguments;
           if (functionName === "look_at_current_page" && currentPageImage) {
             try {
-              sendEvent("reasoning_summary", { content: "Looking at current page" });
+              sendEvent("reasoning_summary", {
+                content: "Looking at current page"
+              });
               const args = JSON.parse(functionArguments);
               const visionResponse = await openai.chat.completions.create({
                 model: "openai/gpt-4o-mini",
@@ -960,23 +1259,41 @@ Use these sources for current factual claims and cite them with bracketed source
                   {
                     role: "user",
                     content: [
-                      { type: "text", text: args.query || "Describe this page." },
-                      { type: "image_url", image_url: { url: currentPageImage } }
+                      {
+                        type: "text",
+                        text: args.query || "Describe this page."
+                      },
+                      {
+                        type: "image_url",
+                        image_url: { url: currentPageImage }
+                      }
                     ]
                   }
                 ]
               });
               const visionText = visionResponse.choices[0]?.message?.content || "Empty response from vision model.";
-              formattedMessages.push({ role: "tool", tool_call_id: toolCall.id, content: visionText });
+              formattedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: visionText
+              });
             } catch (err) {
               console.error("Vision Error:", err);
-              formattedMessages.push({ role: "tool", tool_call_id: toolCall.id, content: "Error: Could not analyze the page image." });
+              formattedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: "Error: Could not analyze the page image."
+              });
             }
           } else if (functionName === "web_search") {
             try {
-              sendEvent("reasoning_summary", { content: "Searching live web sources" });
+              sendEvent("reasoning_summary", {
+                content: "Searching live web sources"
+              });
               const args = JSON.parse(functionArguments || "{}");
-              const query = String(args.query || latestUserContent || "").trim();
+              const query = String(
+                args.query || latestUserContent || ""
+              ).trim();
               const requestedMode = args.mode === "news" ? "news" : "search";
               const maxResults = Number.isFinite(Number(args.maxResults)) ? Number(args.maxResults) : 6;
               const sources = query ? await runWebSearch(query, requestedMode, maxResults) : [];
@@ -986,28 +1303,56 @@ Use these sources for current factual claims and cite them with bracketed source
                 content: formatSourcesForPrompt(sources)
               });
             } catch (e) {
-              formattedMessages.push({ role: "tool", tool_call_id: toolCall.id, content: "Search temporarily unavailable." });
+              formattedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: "Search temporarily unavailable."
+              });
             }
           } else if (functionName === "update_graph") {
             try {
-              sendEvent("reasoning_summary", { content: "Updating learning knowledge graph" });
+              sendEvent("reasoning_summary", {
+                content: "Updating learning knowledge graph"
+              });
               const args = JSON.parse(functionArguments);
               graphUpdates.push(args);
-              formattedMessages.push({ role: "tool", tool_call_id: toolCall.id, content: "Graph updated successfully." });
+              formattedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: "Graph updated successfully."
+              });
             } catch (e) {
-              formattedMessages.push({ role: "tool", tool_call_id: toolCall.id, content: "Error parsing arguments." });
+              formattedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: "Error parsing arguments."
+              });
             }
           } else if (functionName === "generate_flashcards") {
             try {
-              sendEvent("reasoning_summary", { content: "Generating flashcards" });
+              sendEvent("reasoning_summary", {
+                content: "Generating flashcards"
+              });
               const args = JSON.parse(functionArguments);
               if (args && args.cards) flashcardsUpdates.push(...args.cards);
-              formattedMessages.push({ role: "tool", tool_call_id: toolCall.id, content: "Flashcards created successfully." });
+              formattedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: "Flashcards created successfully."
+              });
             } catch (e) {
-              formattedMessages.push({ role: "tool", tool_call_id: toolCall.id, content: "Error parsing arguments." });
+              formattedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: "Error parsing arguments."
+              });
             }
           } else {
-            formattedMessages.push({ role: "tool", tool_call_id: toolCall.id, content: "Unsupported tool." });
+            formattedMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: "Unsupported tool."
+            });
           }
         }
         iterations++;
@@ -1021,7 +1366,12 @@ Use these sources for current factual claims and cite them with bracketed source
         usageEstimated = true;
       }
       const pricing = await fetchOpenRouterPricing();
-      const cost = openRouterCost(pricing.models, usedModelForUsage, inputTokens, outputTokens);
+      const cost = openRouterCost(
+        pricing.models,
+        usedModelForUsage,
+        inputTokens,
+        outputTokens
+      );
       sendEvent("status", { phase: "streaming" });
       sendEvent("done", {
         content: finalContent,
@@ -1042,9 +1392,11 @@ Use these sources for current factual claims and cite them with bracketed source
       res.end();
     } catch (error) {
       console.error("Chat API Error:", error);
-      res.write(`data: ${JSON.stringify({ type: "error", error: error.message || "Failed to generate response" })}
+      res.write(
+        `data: ${JSON.stringify({ type: "error", error: error.message || "Failed to generate response" })}
 
-`);
+`
+      );
       res.end();
     }
   });
@@ -1068,7 +1420,10 @@ Use these sources for current factual claims and cite them with bracketed source
   });
   const wss = new WebSocketServer({ noServer: true });
   server.on("upgrade", (request, socket, head) => {
-    const pathname = new URL(request.url || "", `http://${request.headers.host}`).pathname;
+    const pathname = new URL(
+      request.url || "",
+      `http://${request.headers.host}`
+    ).pathname;
     if (pathname === "/api/voice-agent") {
       wss.handleUpgrade(request, socket, head, (ws) => {
         wss.emit("connection", ws, request);
@@ -1106,22 +1461,24 @@ Use these sources for current factual claims and cite them with bracketed source
       const deltaSeconds = Math.max(0, (now - lastUsageAt) / 1e3);
       const connectionSeconds = Math.max(0, (now - voiceStartedAt) / 1e3);
       lastUsageAt = now;
-      ws.send(JSON.stringify({
-        type: "usage",
-        usage: {
-          provider: "deepgram",
-          voiceAgentModel: "Deepgram Voice Agent Standard",
-          listenModel: "flux-general-en",
-          speakModel: "aura-asteria-en",
-          ttsModel: "aura-asteria-en",
-          connectionSeconds,
-          inputAudioSeconds: clientInputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
-          outputAudioSeconds: deepgramOutputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
-          cost: voiceAgentCostForSeconds(deltaSeconds),
-          estimated: false,
-          sessions
-        }
-      }));
+      ws.send(
+        JSON.stringify({
+          type: "usage",
+          usage: {
+            provider: "deepgram",
+            voiceAgentModel: "Deepgram Voice Agent Standard",
+            listenModel: "flux-general-en",
+            speakModel: "aura-asteria-en",
+            ttsModel: "aura-asteria-en",
+            connectionSeconds,
+            inputAudioSeconds: clientInputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
+            outputAudioSeconds: deepgramOutputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
+            cost: voiceAgentCostForSeconds(deltaSeconds),
+            estimated: false,
+            sessions
+          }
+        })
+      );
     };
     const usageInterval = setInterval(() => sendVoiceUsage(0), 1e3);
     try {
@@ -1134,50 +1491,60 @@ Use these sources for current factual claims and cite them with bracketed source
       });
       dgWs.on("open", () => {
         const config = {
-          "type": "Settings",
-          "audio": {
-            "input": {
-              "encoding": "linear16",
-              "sample_rate": 48e3
+          type: "Settings",
+          audio: {
+            input: {
+              encoding: "linear16",
+              sample_rate: 48e3
             },
-            "output": {
-              "encoding": "linear16",
-              "sample_rate": 48e3,
-              "container": "none"
+            output: {
+              encoding: "linear16",
+              sample_rate: 48e3,
+              container: "none"
             }
           },
-          "agent": {
-            "listen": {
-              "provider": {
-                "type": "deepgram",
-                "model": "flux-general-en",
-                "version": "v2"
+          agent: {
+            listen: {
+              provider: {
+                type: "deepgram",
+                model: "flux-general-en",
+                version: "v2"
               }
             },
-            "think": {
-              "provider": {
-                "type": "open_ai",
-                "model": "gpt-4o-mini"
+            think: {
+              provider: {
+                type: "open_ai",
+                model: "gpt-4o-mini"
               },
-              "prompt": "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks \u2014 you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate."
+              prompt: "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks \u2014 you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate."
             },
-            "speak": {
-              "provider": {
-                "type": "deepgram",
-                "model": "aura-asteria-en"
+            speak: {
+              provider: {
+                type: "deepgram",
+                model: "aura-asteria-en"
               }
             },
-            "greeting": "Hello! I am Aria, your CS tutor. What are you studying today?"
+            greeting: "Hello! I am Aria, your CS tutor. What are you studying today?"
           }
         };
-        console.log("Sending Deepgram settings config:", JSON.stringify(config, null, 2));
+        console.log(
+          "Sending Deepgram settings config:",
+          JSON.stringify(config, null, 2)
+        );
         dgWs?.send(JSON.stringify(config));
       });
       dgWs.on("unexpected-response", (req2, res) => {
-        console.error(`Deepgram WS Unexpected Response: ${res.statusCode} ${res.statusMessage}`);
-        console.error("Deepgram Headers:", JSON.stringify(res.headers, null, 2));
+        console.error(
+          `Deepgram WS Unexpected Response: ${res.statusCode} ${res.statusMessage}`
+        );
+        console.error(
+          "Deepgram Headers:",
+          JSON.stringify(res.headers, null, 2)
+        );
         if (res.statusCode === 404) {
-          console.error("This usually means the Deepgram API key does not have access to the Voice Agent API, or the endpoint is incorrect.");
+          console.error(
+            "This usually means the Deepgram API key does not have access to the Voice Agent API, or the endpoint is incorrect."
+          );
         }
         let body = "";
         res.on("data", (chunk) => {

@@ -210,8 +210,8 @@
       "readers": [
         "src/views/RevisionView.tsx",
         "src/views/StudyView.tsx",
-        "src/App.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/App.tsx"
       ],
       "writers": [
         "src/views/RevisionView.tsx",
@@ -335,8 +335,8 @@
     {
       "field": "setSelectedTextContext",
       "readers": [
-        "src/components/ChatPanel.tsx",
         "src/components/PdfViewer.tsx",
+        "src/components/ChatPanel.tsx",
         "src/views/StudyView.tsx"
       ],
       "writers": [
@@ -399,167 +399,167 @@
     {
       "file": "src/App.tsx",
       "field": "activeView",
-      "selector": "state => state.activeView"
+      "selector": "(state) => state.activeView"
     },
     {
       "file": "src/App.tsx",
       "field": "setActiveView",
-      "selector": "state => state.setActiveView"
+      "selector": "(state) => state.setActiveView"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "chatUsage",
-      "selector": "state => state.chatUsage"
+      "selector": "(state) => state.chatUsage"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "voiceUsage",
-      "selector": "state => state.voiceUsage"
+      "selector": "(state) => state.voiceUsage"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "webUsage",
-      "selector": "state => state.webUsage"
+      "selector": "(state) => state.webUsage"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "pricing",
-      "selector": "state => state.pricing"
+      "selector": "(state) => state.pricing"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "setPricing",
-      "selector": "state => state.setPricing"
+      "selector": "(state) => state.setPricing"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "resetUsageAnalytics",
-      "selector": "state => state.resetUsageAnalytics"
+      "selector": "(state) => state.resetUsageAnalytics"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "isVoiceActive",
-      "selector": "state => state.isVoiceActive"
+      "selector": "(state) => state.isVoiceActive"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "apiKey",
-      "selector": "state => state.apiKey"
+      "selector": "(state) => state.apiKey"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "serperApiKey",
-      "selector": "state => state.serperApiKey"
+      "selector": "(state) => state.serperApiKey"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "learnerName",
-      "selector": "state => state.learnerName"
+      "selector": "(state) => state.learnerName"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "askTutorQuery",
-      "selector": "state => state.askTutorQuery"
+      "selector": "(state) => state.askTutorQuery"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "setAskTutorQuery",
-      "selector": "state => state.setAskTutorQuery"
+      "selector": "(state) => state.setAskTutorQuery"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "activeProject",
-      "selector": "state => state.activeProject"
+      "selector": "(state) => state.activeProject"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "setActiveProject",
-      "selector": "state => state.setActiveProject"
+      "selector": "(state) => state.setActiveProject"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "activeLearningBookId",
-      "selector": "state => state.activeLearningBookId"
+      "selector": "(state) => state.activeLearningBookId"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "setActiveLearningBookId",
-      "selector": "state => state.setActiveLearningBookId"
+      "selector": "(state) => state.setActiveLearningBookId"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "ttsVoice",
-      "selector": "state => state.ttsVoice"
+      "selector": "(state) => state.ttsVoice"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "setActiveView",
-      "selector": "state => state.setActiveView"
+      "selector": "(state) => state.setActiveView"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "aiModel",
-      "selector": "state => state.aiModel"
+      "selector": "(state) => state.aiModel"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "animationsEnabled",
-      "selector": "state => state.animationsEnabled"
+      "selector": "(state) => state.animationsEnabled"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "systemPrompt",
-      "selector": "state => state.systemPrompt"
+      "selector": "(state) => state.systemPrompt"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "recordChatUsage",
-      "selector": "state => state.recordChatUsage"
+      "selector": "(state) => state.recordChatUsage"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "recordVoiceUsage",
-      "selector": "state => state.recordVoiceUsage"
+      "selector": "(state) => state.recordVoiceUsage"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "recordWebUsage",
-      "selector": "state => state.recordWebUsage"
+      "selector": "(state) => state.recordWebUsage"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "recordWebSearchEvent",
-      "selector": "state => state.recordWebSearchEvent"
+      "selector": "(state) => state.recordWebSearchEvent"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "cacheWebSources",
-      "selector": "state => state.cacheWebSources"
+      "selector": "(state) => state.cacheWebSources"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "selectedTextContext",
-      "selector": "state => state.selectedTextContext"
+      "selector": "(state) => state.selectedTextContext"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "setSelectedTextContext",
-      "selector": "state => state.setSelectedTextContext"
+      "selector": "(state) => state.setSelectedTextContext"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "messages",
-      "selector": "state => state.messages"
+      "selector": "(state) => state.messages"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "setMessages",
-      "selector": "state => state.setMessages"
+      "selector": "(state) => state.setMessages"
     },
     {
       "file": "src/components/ChatPanel.tsx",
       "field": "setIsVoiceActive",
-      "selector": "state => state.setIsVoiceActive"
+      "selector": "(state) => state.setIsVoiceActive"
     },
     {
       "file": "src/components/PdfViewer.tsx",

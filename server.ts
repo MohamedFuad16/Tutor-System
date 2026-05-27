@@ -339,17 +339,18 @@ async function startServer() {
       {};
     const events = readDebugEvents(runDir);
     const components = readDebugComponents(runDir, summary);
-    const startEvent = events.find((event: any) => event.type === "run-started");
+    const startEvent = events.find(
+      (event: any) => event.type === "run-started",
+    );
     const completeEvent = [...events]
       .reverse()
       .find((event: any) => event.type === "run-completed");
     const active = activeDebugJob?.id === id;
-    const status =
-      active
-        ? "running"
-        : summary.status ||
-          completeEvent?.data?.status ||
-          (completeEvent ? "completed" : "unknown");
+    const status = active
+      ? "running"
+      : summary.status ||
+        completeEvent?.data?.status ||
+        (completeEvent ? "completed" : "unknown");
 
     return {
       ...summary,
@@ -362,7 +363,8 @@ async function startServer() {
       targetCount: Number(summary.targetCount || 0),
       completedCount: Number(summary.completedCount ?? components.length),
       changedCount: Number(
-        summary.changedCount ?? components.filter((item: any) => item.changed).length,
+        summary.changedCount ??
+          components.filter((item: any) => item.changed).length,
       ),
       activeTarget: active ? summary.activeTarget || null : null,
       components,

@@ -10,7 +10,7 @@ The design language is **Cosmic Obsidian** for the main app: near-black surfaces
 
 ## 2. Runtime Stack
 
-The frontend uses React 19, Vite 6, TypeScript 5.8, Tailwind CSS 4, Zustand, `motion/react`, Dexie, `react-pdf`, `react-force-graph-3d`, Three.js, Recharts, React Markdown, Remark GFM, Mermaid, Shiki, and Lucide icons.
+The frontend uses React 19, Vite 6, TypeScript 5.8, Tailwind CSS 4, Zustand, `motion/react`, Dexie, `react-pdf`, `react-force-graph-3d`, Three.js, Recharts, React Markdown, Remark GFM, Mermaid, Shiki, and Lucide icons. Heavy routes and renderers are split by Vite chunks: Brain/Admin/Analytics/Revision load on demand, while Mermaid, Shiki, and the 3D graph stack are lazy-loaded only when their surfaces render.
 
 The backend is `server.ts`, an Express server with API routes, SSE chat streaming, WebSocket debug logs, a Deepgram Voice Agent proxy, Deepgram TTS, Serper web/news search, and the OpenAI SDK pointed at OpenRouter or OpenAI-compatible providers.
 
@@ -35,7 +35,7 @@ All cloud LLM calls are brokered by `server.ts`. The browser sends the user Open
 | Voice Agent think                        | Deepgram/OpenAI-compatible | `gpt-4o-mini`                                                                                                |
 | Voice Agent speak                        | Deepgram                   | `aura-asteria-en`                                                                                            |
 | Read-aloud TTS                           | Deepgram                   | `aura-asteria-en` by default                                                                                 |
-| Browser memory embeddings                | Local Xenova               | `Xenova/all-MiniLM-L6-v2`                                                                                    |
+| Browser memory embeddings                | Local deterministic        | 384-dimensional hashed text vectors, no browser `onnxruntime-web` bundle                                     |
 | `/brain` retrieval embeddings            | Local Xenova               | MiniLM 384-dimensional chunks                                                                                |
 | Brain debug auto-fix model, when enabled | OpenAI/OpenRouter          | `BRAIN_DEBUG_MODEL`, then `BRAIN_EXECUTOR_MODEL`, then `gpt-4o-mini`/`openai/gpt-4o-mini`                    |
 
@@ -63,7 +63,7 @@ The persistent database is Dexie database `NeuralNestBrain` in `src/memory/longt
 
 `MemoryOrchestrator` creates a browser session, clears generated session learning records, preserves the built-in Tutor System Architecture concept, creates a General Study learning book, and announces the active book through local storage plus a `learning-book-updated` event.
 
-After chat or voice responses, it stores embedded interactions, asks `/api/learning-book-update` for book/chapter/concept summaries, merges those records into Dexie, writes `learningEntries`, updates active context, and optionally logs trace explanations through `/api/trace`.
+After chat or voice responses, it stores locally embedded interactions, asks `/api/learning-book-update` for book/chapter/concept summaries, merges those records into Dexie, writes `learningEntries`, updates active context, and optionally logs trace explanations through `/api/trace`. Browser embeddings use deterministic 384-dimensional hashed vectors so memory retrieval stays local without loading `onnxruntime-web`.
 
 ## 6. Learner Model
 
@@ -133,7 +133,7 @@ npm run brain:debug -- --mode fix --scope all
 
 It builds a resumable queue from the brain graph, audits each UI/code component, retrieves context, runs impact analysis, checks format/lint/build gates, compares source to local official docs packs, applies deterministic fixes with source-hash checks and backups, runs post-change brain refresh, records findings, and appends a machine-readable debug memory graph.
 
-Run artifacts are append-only under `brain/debug/runs/<run-id>/`. The memory graph is `brain/debug/memory-graph.json`.
+Run artifacts are append-only under `brain/debug/runs/<run-id>/`. `run.json` and `summary.json` are written when the run starts and refreshed after each completed component so Admin can show the audit immediately during long runs. The memory graph is `brain/debug/memory-graph.json`.
 
 ## 10. Official Docs Packs
 
@@ -151,7 +151,7 @@ Admin now exposes a Debug Runs page. It reads server-backed debug artifacts thro
 - `POST /api/debug/run`
 - `POST /api/debug/runs/:id/cancel`
 
-The UI shows run history, status, component queue progress, changed files, bugs/findings, why the agent changed code, how the code should behave, official-doc evidence, command results, and final verification gates.
+The UI shows run history, status, live event flow, component queue progress, changed files, bugs/findings, why the agent changed code, how the code should behave, official-doc evidence, component command results, and final verification gates while the run is still active.
 
 ## 12. Maintenance Boundaries
 

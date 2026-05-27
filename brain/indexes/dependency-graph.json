@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:20:27.069Z",
+    "generatedAt": "2026-05-27T08:32:31.677Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,16 +23,16 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "3a26cf9c4dc6f4767dc48596c92aa228205745cb",
+      "commit": "ec24e6ad030a3bfccaa30fed3cb549c886b40be1",
       "branch": "main",
-      "dirty": false
+      "dirty": true
     },
     "package": {
       "name": "react-example",
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "45b05af83cbb47d51431b360e76b53a3bb31aa38bff76179d2ea985ced9a7467"
+    "sourceHash": "02aca1c8e0379e1aab8929ae0e45ea18bfa082cea93ba8a6e888b4df635a4aa9"
   },
   "dependencies": {
     "generate-brain.ts": [
@@ -77,10 +77,6 @@
       "src/components/Navigation.tsx",
       "src/components/SettingsModal.tsx",
       "src/views/StudyView.tsx",
-      "src/views/BrainView.tsx",
-      "src/views/AnalyticsView.tsx",
-      "src/views/RevisionView.tsx",
-      "src/views/AdminView.tsx",
       "motion",
       "src/brain-runtime/RenderProfiler.tsx",
       "src/brain-runtime/runtimeTelemetry.ts"
@@ -206,7 +202,6 @@
       "react",
       "react-markdown",
       "remark-gfm",
-      "mermaid",
       "src/components/ShikiHighlighter.tsx",
       "lucide-react",
       "motion",
@@ -266,8 +261,7 @@
       "src/components/SiriLiquidGlass.tsx"
     ],
     "src/components/ShikiHighlighter.tsx": [
-      "react",
-      "shiki"
+      "react"
     ],
     "src/components/Sidebar.tsx": [
       "react",
@@ -301,9 +295,7 @@
     "src/memory/longterm.memory.ts": [
       "dexie"
     ],
-    "src/memory/memory.embeddings.ts": [
-      "@xenova/transformers"
-    ],
+    "src/memory/memory.embeddings.ts": [],
     "src/memory/memory.orchestrator.ts": [
       "src/memory/memory.embeddings.ts",
       "src/memory/longterm.memory.ts"

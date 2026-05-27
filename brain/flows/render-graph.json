@@ -50,8 +50,8 @@
       }
     },
     {
-      "source": "component:App",
-      "target": "component:BrainView",
+      "source": "file:src/App.tsx",
+      "target": "component:SettingsButton",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
@@ -68,15 +68,6 @@
       }
     },
     {
-      "source": "component:App",
-      "target": "component:StudyView",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/App.tsx"
-      }
-    },
-    {
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:Mermaid",
       "type": "renders",
@@ -86,21 +77,21 @@
       }
     },
     {
-      "source": "component:App",
-      "target": "component:BrainRenderProfiler",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/App.tsx"
-      }
-    },
-    {
       "source": "file:src/components/StatusBadge.tsx",
       "target": "component:FailedIcon",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/StatusBadge.tsx"
+      }
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "component:Navigation",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
       }
     },
     {
@@ -141,15 +132,6 @@
       }
     },
     {
-      "source": "component:App",
-      "target": "component:AdminView",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/App.tsx"
-      }
-    },
-    {
       "source": "route:admin",
       "target": "component:BrainRenderProfiler",
       "type": "renders",
@@ -175,6 +157,15 @@
       "confidence": 0.8,
       "evidence": {
         "file": "src/views/RevisionView.tsx"
+      }
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "component:AnalyticsView",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
       }
     },
     {
@@ -206,6 +197,15 @@
       }
     },
     {
+      "source": "file:src/App.tsx",
+      "target": "component:RouteFallback",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
       "source": "file:src/views/StudyView.tsx",
       "target": "component:UsageAnalyticsStrip",
       "type": "renders",
@@ -215,8 +215,17 @@
       }
     },
     {
-      "source": "component:App",
-      "target": "component:SettingsButton",
+      "source": "file:src/App.tsx",
+      "target": "component:StudyView",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "component:BrainView",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
@@ -307,12 +316,30 @@
       }
     },
     {
+      "source": "file:src/App.tsx",
+      "target": "component:RevisionView",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
+      }
+    },
+    {
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:SearchProgressIndicator",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "component:BrainRenderProfiler",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
       }
     },
     {
@@ -325,15 +352,6 @@
       }
     },
     {
-      "source": "component:App",
-      "target": "component:AnalyticsView",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/App.tsx"
-      }
-    },
-    {
       "source": "file:src/App.tsx",
       "target": "route:study",
       "type": "wraps",
@@ -341,6 +359,15 @@
       "evidence": {
         "file": "src/App.tsx",
         "text": "activeView === study"
+      }
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "component:AdminView",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/App.tsx"
       }
     },
     {
@@ -359,15 +386,6 @@
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/ChatPanel.tsx"
-      }
-    },
-    {
-      "source": "component:App",
-      "target": "component:Navigation",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/App.tsx"
       }
     },
     {
@@ -450,15 +468,6 @@
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/ChatPanel.tsx"
-      }
-    },
-    {
-      "source": "component:App",
-      "target": "component:RevisionView",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/App.tsx"
       }
     },
     {

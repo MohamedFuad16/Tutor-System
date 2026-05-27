@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:20:27.069Z",
+    "generatedAt": "2026-05-27T08:32:31.677Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,20 +23,20 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "3a26cf9c4dc6f4767dc48596c92aa228205745cb",
+      "commit": "ec24e6ad030a3bfccaa30fed3cb549c886b40be1",
       "branch": "main",
-      "dirty": false
+      "dirty": true
     },
     "package": {
       "name": "react-example",
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "45b05af83cbb47d51431b360e76b53a3bb31aa38bff76179d2ea985ced9a7467"
+    "sourceHash": "02aca1c8e0379e1aab8929ae0e45ea18bfa082cea93ba8a6e888b4df635a4aa9"
   },
   "subsystems": {
     "frontend": {
-      "generatedAt": "2026-05-27T08:20:27.130Z",
+      "generatedAt": "2026-05-27T08:32:31.717Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/AnimatedScrollText.tsx",
@@ -66,10 +66,6 @@
         "src/components/Navigation.tsx",
         "src/components/SettingsModal.tsx",
         "src/views/StudyView.tsx",
-        "src/views/BrainView.tsx",
-        "src/views/AnalyticsView.tsx",
-        "src/views/RevisionView.tsx",
-        "src/views/AdminView.tsx",
         "motion",
         "src/brain-runtime/RenderProfiler.tsx",
         "src/brain-runtime/runtimeTelemetry.ts",
@@ -77,7 +73,6 @@
         "react",
         "react-markdown",
         "remark-gfm",
-        "mermaid",
         "src/components/ShikiHighlighter.tsx",
         "lucide-react",
         "motion",
@@ -120,7 +115,6 @@
         "src/store/index.ts",
         "src/components/SiriLiquidGlass.tsx",
         "react",
-        "shiki",
         "react",
         "motion",
         "lucide-react",
@@ -188,15 +182,15 @@
           "risk": 16
         },
         {
-          "file": "src/views/RevisionView.tsx",
-          "risk": 16
-        },
-        {
           "file": "src/views/StudyView.tsx",
           "risk": 16
         },
         {
           "file": "src/App.tsx",
+          "risk": 8
+        },
+        {
+          "file": "src/components/AnimatedScrollText.tsx",
           "risk": 8
         }
       ],
@@ -210,7 +204,7 @@
       ]
     },
     "backend": {
-      "generatedAt": "2026-05-27T08:20:27.130Z",
+      "generatedAt": "2026-05-27T08:32:31.717Z",
       "sourceFiles": [
         "server.ts"
       ],
@@ -236,7 +230,7 @@
       ]
     },
     "state": {
-      "generatedAt": "2026-05-27T08:20:27.130Z",
+      "generatedAt": "2026-05-27T08:32:31.717Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/ChatPanel.tsx",
@@ -257,17 +251,12 @@
         "src/components/Navigation.tsx",
         "src/components/SettingsModal.tsx",
         "src/views/StudyView.tsx",
-        "src/views/BrainView.tsx",
-        "src/views/AnalyticsView.tsx",
-        "src/views/RevisionView.tsx",
-        "src/views/AdminView.tsx",
         "motion",
         "src/brain-runtime/RenderProfiler.tsx",
         "src/brain-runtime/runtimeTelemetry.ts",
         "react",
         "react-markdown",
         "remark-gfm",
-        "mermaid",
         "src/components/ShikiHighlighter.tsx",
         "lucide-react",
         "motion",
@@ -350,10 +339,6 @@
           "risk": 16
         },
         {
-          "file": "src/views/RevisionView.tsx",
-          "risk": 16
-        },
-        {
           "file": "src/views/StudyView.tsx",
           "risk": 16
         },
@@ -372,6 +357,10 @@
         {
           "file": "src/components/SettingsModal.tsx",
           "risk": 8
+        },
+        {
+          "file": "src/views/AdminView.tsx",
+          "risk": 8
         }
       ],
       "contextPacks": [
@@ -384,7 +373,7 @@
       ]
     },
     "memory": {
-      "generatedAt": "2026-05-27T08:20:27.130Z",
+      "generatedAt": "2026-05-27T08:32:31.717Z",
       "sourceFiles": [
         "src/memory/bkt.engine.ts",
         "src/memory/cognitive.load.ts",
@@ -413,7 +402,6 @@
         "src/memory/illusion.detector.ts",
         "src/memory/cognitive.load.ts",
         "dexie",
-        "@xenova/transformers",
         "src/memory/memory.embeddings.ts",
         "src/memory/longterm.memory.ts",
         "src/memory/longterm.memory.ts",
@@ -465,7 +453,7 @@
       ]
     },
     "brainTooling": {
-      "generatedAt": "2026-05-27T08:20:27.130Z",
+      "generatedAt": "2026-05-27T08:32:31.717Z",
       "sourceFiles": [
         "generate-brain.ts",
         "brain/drift-check.ts",

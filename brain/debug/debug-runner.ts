@@ -231,7 +231,12 @@ function readComponentSummaries(componentsDir: string) {
   return fs
     .readdirSync(componentsDir)
     .filter((file) => file.endsWith(".json"))
-    .map((file) => readJson<Record<string, any> | null>(path.join(componentsDir, file), null))
+    .map((file) =>
+      readJson<Record<string, any> | null>(
+        path.join(componentsDir, file),
+        null,
+      ),
+    )
     .filter(Boolean)
     .sort((a, b) =>
       String(a?.finishedAt || a?.timestamp || "").localeCompare(
@@ -293,7 +298,10 @@ function main() {
     console.log(JSON.stringify(payload));
   };
 
-  const previous = readJson<Record<string, any>>(path.join(runDir, "run.json"), {});
+  const previous = readJson<Record<string, any>>(
+    path.join(runDir, "run.json"),
+    {},
+  );
   const metadata = {
     id: runId,
     mode,
@@ -494,11 +502,18 @@ function main() {
     }),
   ];
   const ok = finalCommands.every((command) => command.ok);
-  const summary = writeRunSnapshot(runDir, componentsDir, metadata, queue, completed, {
-    status: ok ? "completed" : "failed-verification",
-    finishedAt: new Date().toISOString(),
-    finalCommands,
-  });
+  const summary = writeRunSnapshot(
+    runDir,
+    componentsDir,
+    metadata,
+    queue,
+    completed,
+    {
+      status: ok ? "completed" : "failed-verification",
+      finishedAt: new Date().toISOString(),
+      finalCommands,
+    },
+  );
   emit({
     type: "run-completed",
     message: `Debug run ${summary.status}`,

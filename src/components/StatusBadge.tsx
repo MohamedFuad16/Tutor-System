@@ -16,7 +16,7 @@ export const StatusBadge = ({ status, labelOverride }: { status: Status; labelOv
   const { bg, text, label, icon } = config[status] || config.pending;
 
   return (
-    <span className={`inline-flex items-center gap-2 px-5 py-2 rounded-[14px] text-[17px] font-semibold tracking-tight transition-opacity duration-200 hover:opacity-90 ${bg} ${text}`}>
+    <span className={`inline-flex items-center gap-2 px-5 py-2 rounded-[14px] text-[17px] font-medium tracking-tight transition-opacity duration-200 hover:opacity-90 ${bg} ${text}`}>
       {icon}
       {labelOverride || label}
     </span>
@@ -25,7 +25,7 @@ export const StatusBadge = ({ status, labelOverride }: { status: Status; labelOv
 
 // SVG Components matching the vector images
 
-const PendingIcon = () => (
+export const PendingIcon = () => (
   <div className="relative w-[22px] h-[22px] flex items-center justify-center">
     <svg width="24" height="22" viewBox="0 0 48 44" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute">
       <path d="M3.7781 29.553L18.0209 6.09945C20.7604 1.58847 27.1738 1.58847 29.9134 6.09945L44.1562 29.553C47.0554 34.3272 43.7013 40.5036 38.2099 40.5036H9.72434C4.23278 40.5036 0.878918 34.3272 3.7781 29.553Z" stroke="currentColor" strokeWidth="5.43245" strokeLinecap="square"/>
@@ -39,19 +39,19 @@ const PendingIcon = () => (
   </div>
 );
 
-const ProgressIcon = () => (
+export const ProgressIcon = () => (
   <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M44.8724 23.6171C44.8724 35.3562 35.3562 44.8724 23.6171 44.8724C11.8781 44.8724 2.36169 35.3562 2.36169 23.6171C2.36169 11.8781 11.8781 2.36169 23.6171 2.36169C35.3562 2.36169 44.8724 11.8781 44.8724 23.6171Z" stroke="currentColor" strokeWidth="4.72342" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="7.09 9.45" className="origin-center animate-[spin_3s_linear_infinite]" />
   </svg>
 );
 
-const SubmittedIcon = () => (
+export const SubmittedIcon = () => (
   <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M27.5275 42.4905C28.4996 45.893 33.3102 45.9247 34.3269 42.5351L44.9019 7.28532C45.7125 4.58303 43.193 2.06353 40.4907 2.87421L5.24086 13.4492C1.85152 14.466 1.88317 19.2766 5.28557 20.2486L20.6925 24.6506C21.8694 24.9869 22.7893 25.9068 23.1256 27.0837L27.5275 42.4905Z" stroke="currentColor" strokeWidth="5.43245" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
-const ReviewIcon = () => (
+export const ReviewIcon = () => (
   <div className="relative w-[22px] h-[22px] flex items-center justify-center">
     <svg width="22" height="22" viewBox="0 0 43 43" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute">
       <path d="M2.36197 18.8937C3.52417 9.57362 11.4746 2.36169 21.1094 2.36169C31.5442 2.36169 40.0031 10.8207 40.0031 21.2554C40.0031 30.8904 32.7911 38.8409 23.4709 40.0028" stroke="currentColor" strokeWidth="4.72342" strokeLinecap="round"/>
@@ -65,7 +65,7 @@ const ReviewIcon = () => (
   </div>
 );
 
-const SuccessIcon = () => (
+export const SuccessIcon = () => (
   <div className="relative w-[22px] h-[22px] flex items-center justify-center scale-[0.8]">
     <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute">
       <path d="M45.227 23.9716C45.227 35.7107 35.7107 45.227 23.9716 45.227C12.2326 45.227 2.71625 35.7107 2.71625 23.9716C2.71625 12.2326 12.2326 2.71625 23.9716 2.71625C35.7107 2.71625 45.227 12.2326 45.227 23.9716Z" stroke="currentColor" strokeWidth="5.43245" strokeLinecap="round" strokeLinejoin="round"/>
@@ -76,7 +76,7 @@ const SuccessIcon = () => (
   </div>
 );
 
-const FailedIcon = () => (
+export const FailedIcon = () => (
   <div className="relative w-[22px] h-[22px] flex items-center justify-center">
     <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute">
       <path d="M45.227 23.9716C45.227 35.7107 35.7107 45.227 23.9716 45.227C12.2326 45.227 2.71622 35.7107 2.71622 23.9716C2.71622 12.2326 12.2326 2.71625 23.9716 2.71625C35.7107 2.71625 45.227 12.2326 45.227 23.9716Z" stroke="currentColor" strokeWidth="5.43245" strokeLinecap="round" strokeLinejoin="round"/>
@@ -87,7 +87,7 @@ const FailedIcon = () => (
   </div>
 );
 
-const ExpiredIcon = () => (
+export const ExpiredIcon = () => (
   <svg width="22" height="22" viewBox="0 0 55 55" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M27.1623 16.2974V27.1623L33.9528 33.9528M51.6083 27.1623C51.6083 40.6636 40.6636 51.6083 27.1623 51.6083C13.6611 51.6083 2.71625 40.6636 2.71625 27.1623C2.71625 13.6611 13.6611 2.71625 27.1623 2.71625C40.6636 2.71625 51.6083 13.6611 51.6083 27.1623Z" stroke="currentColor" strokeWidth="5.43245" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>

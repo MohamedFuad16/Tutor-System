@@ -1,12 +1,12 @@
 {
   "ok": true,
-  "generatedAt": "2026-05-27T08:21:42.161Z",
+  "generatedAt": "2026-05-27T08:32:04.082Z",
   "threshold": 85,
-  "score": 98,
+  "score": 99,
   "checks": {
     "graphFreshness": 12,
     "vectorFreshness": 14,
-    "retrievalQuality": 14,
+    "retrievalQuality": 15,
     "runtimeCoverage": 14,
     "contractCoverage": 10,
     "routeStateCoverage": 10,
@@ -16,7 +16,7 @@
   },
   "retrievalBenchmark": {
     "recall": 1,
-    "confidenceAverage": 0.8745166666666666,
+    "confidenceAverage": 0.9078499999999999,
     "results": [
       {
         "task": "add dashboard feature",
@@ -64,7 +64,7 @@
         ],
         "recall": 1,
         "confidence": "high",
-        "confidenceScore": 0.89
+        "confidenceScore": 0.97
       },
       {
         "task": "modify SSE streaming",
@@ -80,7 +80,7 @@
         ],
         "recall": 1,
         "confidence": "high",
-        "confidenceScore": 0.85
+        "confidenceScore": 0.97
       },
       {
         "task": "change shared UI animations",

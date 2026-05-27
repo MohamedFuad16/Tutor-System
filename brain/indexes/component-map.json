@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:20:27.069Z",
+    "generatedAt": "2026-05-27T08:32:31.677Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,16 +23,16 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "3a26cf9c4dc6f4767dc48596c92aa228205745cb",
+      "commit": "ec24e6ad030a3bfccaa30fed3cb549c886b40be1",
       "branch": "main",
-      "dirty": false
+      "dirty": true
     },
     "package": {
       "name": "react-example",
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "45b05af83cbb47d51431b360e76b53a3bb31aa38bff76179d2ea985ced9a7467"
+    "sourceHash": "02aca1c8e0379e1aab8929ae0e45ea18bfa082cea93ba8a6e888b4df635a4aa9"
   },
   "files": {
     "generate-brain.ts": {
@@ -162,7 +162,7 @@
     },
     "server.ts": {
       "file": "server.ts",
-      "hash": "75b54f7f2eb8836bd09a9d93cf8f8c93628733ca3b9d75b36b66b5b754a335d1",
+      "hash": "b917cd667edf32cea4cab391352e9aac7dc03dd6e366bf0fb1ef92891e4925ba",
       "imports": [
         {
           "specifier": "dotenv",
@@ -361,7 +361,7 @@
     },
     "src/App.tsx": {
       "file": "src/App.tsx",
-      "hash": "acb0c02d3ab7d4789ea7758bea11b00130125cbd99b1056e3434528f512749ed",
+      "hash": "0d9f529c6608722dfdb2886c48507a17d82a12d3e39639d78687492e47c4f85a",
       "imports": [
         {
           "specifier": "react",
@@ -384,22 +384,6 @@
           "resolved": "src/views/StudyView.tsx"
         },
         {
-          "specifier": "./views/BrainView",
-          "resolved": "src/views/BrainView.tsx"
-        },
-        {
-          "specifier": "./views/AnalyticsView",
-          "resolved": "src/views/AnalyticsView.tsx"
-        },
-        {
-          "specifier": "./views/RevisionView",
-          "resolved": "src/views/RevisionView.tsx"
-        },
-        {
-          "specifier": "./views/AdminView",
-          "resolved": "src/views/AdminView.tsx"
-        },
-        {
           "specifier": "motion/react",
           "external": "motion"
         },
@@ -416,22 +400,29 @@
         "default"
       ],
       "functions": [
+        "RouteFallback",
         "App"
       ],
-      "variables": [],
+      "variables": [
+        "BrainView",
+        "AnalyticsView",
+        "RevisionView",
+        "AdminView"
+      ],
       "classes": [],
       "components": [
-        "App"
+        "App",
+        "RouteFallback"
       ],
       "hooks": [],
       "storeSelectors": [
         {
           "field": "activeView",
-          "selector": "state => state.activeView"
+          "selector": "(state) => state.activeView"
         },
         {
           "field": "setActiveView",
-          "selector": "state => state.setActiveView"
+          "selector": "(state) => state.setActiveView"
         }
       ],
       "storeWrites": [
@@ -449,8 +440,10 @@
         "BrainView",
         "Navigation",
         "RevisionView",
+        "RouteFallback",
         "SettingsButton",
-        "StudyView"
+        "StudyView",
+        "Suspense"
       ],
       "routes": [
         {
@@ -713,7 +706,7 @@
     },
     "brain/debug/debug-runner.ts": {
       "file": "brain/debug/debug-runner.ts",
-      "hash": "6c8bc4c4ba85df1250f8d14847ab79b65e242ca3678510d5a7656df3be76da7f",
+      "hash": "9fc8faa80f0416480e6fed2536d939fdfb8883934c6a17c85aaebe10f5593558",
       "imports": [
         {
           "specifier": "child_process",
@@ -748,6 +741,8 @@
         "loadMemoryGraph",
         "appendMemoryGraph",
         "loadQueue",
+        "readComponentSummaries",
+        "writeRunSnapshot",
         "main"
       ],
       "variables": [
@@ -1561,7 +1556,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "d9be0e00735f257894e06a728866da1887889597a4783761453cca93bb3edb0a",
+      "hash": "ed18232371e6ef546d6b90abec878576f61c1f2a6a2cf7f9e6ae0e63fba55a1c",
       "imports": [
         {
           "specifier": "react",
@@ -1574,10 +1569,6 @@
         {
           "specifier": "remark-gfm",
           "external": "remark-gfm"
-        },
-        {
-          "specifier": "mermaid",
-          "external": "mermaid"
         },
         {
           "specifier": "./ShikiHighlighter",
@@ -1641,6 +1632,8 @@
         "ChatPanel"
       ],
       "variables": [
+        "mermaidPromise",
+        "loadMermaid",
         "Mermaid",
         "languageLabels",
         "languageExtensions",
@@ -1694,127 +1687,127 @@
       "storeSelectors": [
         {
           "field": "chatUsage",
-          "selector": "state => state.chatUsage"
+          "selector": "(state) => state.chatUsage"
         },
         {
           "field": "voiceUsage",
-          "selector": "state => state.voiceUsage"
+          "selector": "(state) => state.voiceUsage"
         },
         {
           "field": "webUsage",
-          "selector": "state => state.webUsage"
+          "selector": "(state) => state.webUsage"
         },
         {
           "field": "pricing",
-          "selector": "state => state.pricing"
+          "selector": "(state) => state.pricing"
         },
         {
           "field": "setPricing",
-          "selector": "state => state.setPricing"
+          "selector": "(state) => state.setPricing"
         },
         {
           "field": "resetUsageAnalytics",
-          "selector": "state => state.resetUsageAnalytics"
+          "selector": "(state) => state.resetUsageAnalytics"
         },
         {
           "field": "isVoiceActive",
-          "selector": "state => state.isVoiceActive"
+          "selector": "(state) => state.isVoiceActive"
         },
         {
           "field": "apiKey",
-          "selector": "state => state.apiKey"
+          "selector": "(state) => state.apiKey"
         },
         {
           "field": "serperApiKey",
-          "selector": "state => state.serperApiKey"
+          "selector": "(state) => state.serperApiKey"
         },
         {
           "field": "learnerName",
-          "selector": "state => state.learnerName"
+          "selector": "(state) => state.learnerName"
         },
         {
           "field": "askTutorQuery",
-          "selector": "state => state.askTutorQuery"
+          "selector": "(state) => state.askTutorQuery"
         },
         {
           "field": "setAskTutorQuery",
-          "selector": "state => state.setAskTutorQuery"
+          "selector": "(state) => state.setAskTutorQuery"
         },
         {
           "field": "activeProject",
-          "selector": "state => state.activeProject"
+          "selector": "(state) => state.activeProject"
         },
         {
           "field": "setActiveProject",
-          "selector": "state => state.setActiveProject"
+          "selector": "(state) => state.setActiveProject"
         },
         {
           "field": "activeLearningBookId",
-          "selector": "state => state.activeLearningBookId"
+          "selector": "(state) => state.activeLearningBookId"
         },
         {
           "field": "setActiveLearningBookId",
-          "selector": "state => state.setActiveLearningBookId"
+          "selector": "(state) => state.setActiveLearningBookId"
         },
         {
           "field": "ttsVoice",
-          "selector": "state => state.ttsVoice"
+          "selector": "(state) => state.ttsVoice"
         },
         {
           "field": "setActiveView",
-          "selector": "state => state.setActiveView"
+          "selector": "(state) => state.setActiveView"
         },
         {
           "field": "aiModel",
-          "selector": "state => state.aiModel"
+          "selector": "(state) => state.aiModel"
         },
         {
           "field": "animationsEnabled",
-          "selector": "state => state.animationsEnabled"
+          "selector": "(state) => state.animationsEnabled"
         },
         {
           "field": "systemPrompt",
-          "selector": "state => state.systemPrompt"
+          "selector": "(state) => state.systemPrompt"
         },
         {
           "field": "recordChatUsage",
-          "selector": "state => state.recordChatUsage"
+          "selector": "(state) => state.recordChatUsage"
         },
         {
           "field": "recordVoiceUsage",
-          "selector": "state => state.recordVoiceUsage"
+          "selector": "(state) => state.recordVoiceUsage"
         },
         {
           "field": "recordWebUsage",
-          "selector": "state => state.recordWebUsage"
+          "selector": "(state) => state.recordWebUsage"
         },
         {
           "field": "recordWebSearchEvent",
-          "selector": "state => state.recordWebSearchEvent"
+          "selector": "(state) => state.recordWebSearchEvent"
         },
         {
           "field": "cacheWebSources",
-          "selector": "state => state.cacheWebSources"
+          "selector": "(state) => state.cacheWebSources"
         },
         {
           "field": "selectedTextContext",
-          "selector": "state => state.selectedTextContext"
+          "selector": "(state) => state.selectedTextContext"
         },
         {
           "field": "setSelectedTextContext",
-          "selector": "state => state.setSelectedTextContext"
+          "selector": "(state) => state.setSelectedTextContext"
         },
         {
           "field": "messages",
-          "selector": "state => state.messages"
+          "selector": "(state) => state.messages"
         },
         {
           "field": "setMessages",
-          "selector": "state => state.setMessages"
+          "selector": "(state) => state.setMessages"
         },
         {
           "field": "setIsVoiceActive",
-          "selector": "state => state.setIsVoiceActive"
+          "selector": "(state) => state.setIsVoiceActive"
         }
       ],
       "storeWrites": [
@@ -1839,22 +1832,9 @@
         {
           "table": "learningBooks",
           "operation": "orderBy"
-        },
-        {
-          "table": "learningBooks",
-          "operation": "get"
         }
       ],
-      "databaseWrites": [
-        {
-          "table": "flashcards",
-          "operation": "add"
-        },
-        {
-          "table": "flashcards",
-          "operation": "add"
-        }
-      ],
+      "databaseWrites": [],
       "renders": [
         "Activity",
         "AnimatePresence",
@@ -2348,21 +2328,18 @@
     },
     "src/components/ShikiHighlighter.tsx": {
       "file": "src/components/ShikiHighlighter.tsx",
-      "hash": "ba012c0041ad9820d556b46a5cacbc3560e3fb57a30f3587d9f60627d5b2cd8e",
+      "hash": "7ff39ea11da56699c86320fe63a9f18f38bb9f5b8fc966430b55d7c74056e7d4",
       "imports": [
         {
           "specifier": "react",
           "external": "react"
-        },
-        {
-          "specifier": "shiki",
-          "external": "shiki"
         }
       ],
       "exports": [
         "ShikiHighlighter"
       ],
       "functions": [
+        "createTutorHighlighter",
         "ShikiHighlighter"
       ],
       "variables": [
@@ -2466,7 +2443,7 @@
     },
     "src/components/StatusBadge.tsx": {
       "file": "src/components/StatusBadge.tsx",
-      "hash": "228036278f12b34caab361f6b021bd77a43d7f4fbc77ae2fc344060701fd56a7",
+      "hash": "c8873ef51caf1a3e3baed780f8d1aa9aaf6ab1d9fa48999fdaa39b07b18cc772",
       "imports": [
         {
           "specifier": "react",
@@ -2474,7 +2451,14 @@
         }
       ],
       "exports": [
-        "StatusBadge"
+        "ExpiredIcon",
+        "FailedIcon",
+        "PendingIcon",
+        "ProgressIcon",
+        "ReviewIcon",
+        "StatusBadge",
+        "SubmittedIcon",
+        "SuccessIcon"
       ],
       "functions": [],
       "variables": [
@@ -2544,7 +2528,7 @@
     },
     "src/lib/tutorBook.json": {
       "file": "src/lib/tutorBook.json",
-      "hash": "a1d38411dd51578568a33c6c59bf91868a97f4ef1095c32a83b4b1fc69a4aeed",
+      "hash": "e116d271769caef5219336a76fd1f57ead774353f345426e7f5d622555536aab",
       "imports": [],
       "exports": [],
       "functions": [],
@@ -2775,25 +2759,24 @@
     },
     "src/memory/memory.embeddings.ts": {
       "file": "src/memory/memory.embeddings.ts",
-      "hash": "c7c315bf0c5ed1f370999898fec90acf8fafd8a1c3063b452f935069e4acd35c",
-      "imports": [
-        {
-          "specifier": "@xenova/transformers",
-          "external": "@xenova/transformers"
-        }
-      ],
+      "hash": "bd3285305ac923e25cb271eee766c1a6cb995afa801ff4ba03bb9140ef3b3821",
+      "imports": [],
       "exports": [
         "cosineSimilarity",
         "generateEmbedding",
         "initEmbeddings"
       ],
       "functions": [
+        "tokenize",
+        "fnv1a",
+        "normalize",
         "initEmbeddings",
         "generateEmbedding",
         "cosineSimilarity"
       ],
       "variables": [
-        "embedder"
+        "EMBEDDING_DIMENSIONS",
+        "TOKEN_STOPWORDS"
       ],
       "classes": [],
       "components": [],
@@ -3297,7 +3280,7 @@
     },
     "src/views/AdminView.tsx": {
       "file": "src/views/AdminView.tsx",
-      "hash": "03d64ebb8892f483377e6a20840abbeb60803d6a7fd3f7941dc9a24cfe047225",
+      "hash": "4db4761d515fa611902152779910f0514986ea278c1d7dfdb517cca9d9df4d1f",
       "imports": [
         {
           "specifier": "react",
@@ -3330,7 +3313,9 @@
       "functions": [
         "AdminView"
       ],
-      "variables": [],
+      "variables": [
+        "compactCommand"
+      ],
       "classes": [],
       "components": [
         "AdminView"

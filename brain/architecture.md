@@ -26,7 +26,8 @@
 - Persona generation: `anthropic/claude-3.5-sonnet`.
 - Page vision tool: `openai/gpt-4o-mini`.
 - Voice: Deepgram `flux-general-en`, `gpt-4o-mini`, and `aura-asteria-en`.
-- Local embeddings: `Xenova/all-MiniLM-L6-v2`.
+- Browser memory embeddings: local deterministic 384-dimensional hashed vectors.
+- `/brain` retrieval embeddings: `Xenova/all-MiniLM-L6-v2`.
 - Debug executor, when model-backed fixing is enabled: `BRAIN_DEBUG_MODEL`, `BRAIN_EXECUTOR_MODEL`, then `gpt-4o-mini` or `openai/gpt-4o-mini`.
 
 ## `/brain` Workflow
@@ -61,9 +62,10 @@ Per target, it:
 - applies deterministic auto-fixes with hash checks and backups,
 - runs post-change brain refresh,
 - records findings, changes, docs evidence, and verification,
+- refreshes live `run.json` and `summary.json` after each completed component,
 - appends the debug memory graph.
 
-Run artifacts live in `brain/debug/runs/<run-id>/`; cross-run machine memory lives in `brain/debug/memory-graph.json`.
+Run artifacts live in `brain/debug/runs/<run-id>/`; cross-run machine memory lives in `brain/debug/memory-graph.json`. Admin reads the live summary and event stream so component audits appear before the full long-horizon run finishes.
 
 ## Official Docs
 

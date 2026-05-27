@@ -1,298 +1,298 @@
 {
-  "generatedAt": "2026-05-27T08:20:27.069Z",
-  "sourceHash": "45b05af83cbb47d51431b360e76b53a3bb31aa38bff76179d2ea985ced9a7467",
+  "generatedAt": "2026-05-27T08:32:31.677Z",
+  "sourceHash": "02aca1c8e0379e1aab8929ae0e45ea18bfa082cea93ba8a6e888b4df635a4aa9",
   "files": {
     "generate-brain.ts": {
       "hash": "69ac65dacb90446a80c9feac0cfdbcac41008bcd742acb8d43b86a484c016b93",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "init-task-memory.ts": {
       "hash": "4fb8129543b5e47521c030e64cf009c371e09356262376fc6654c9ed2ef681e6",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "server.ts": {
-      "hash": "75b54f7f2eb8836bd09a9d93cf8f8c93628733ca3b9d75b36b66b5b754a335d1",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "hash": "b917cd667edf32cea4cab391352e9aac7dc03dd6e366bf0fb1ef92891e4925ba",
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/drift-check.ts": {
       "hash": "3bed9fe3cc91b2741e998ec975c9930016f11119cd96d475a013deff394a511b",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/self-audit.ts": {
       "hash": "f719c3d0bb0f5decb9a868bbaf0421a8e8b3f28aa9dbc2c3fa761f3a5a84ad91",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "scripts/install-brain-hooks.ts": {
       "hash": "65cdcac7754ce334e3e0f66e2be9182905d50580a90aa68a6b98740fb5a7f452",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/App.tsx": {
-      "hash": "acb0c02d3ab7d4789ea7758bea11b00130125cbd99b1056e3434528f512749ed",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "hash": "0d9f529c6608722dfdb2886c48507a17d82a12d3e39639d78687492e47c4f85a",
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/audio.ts": {
       "hash": "6d6f6cabb8714a32b85ec0d9972273da33ac9fea6823fcfecb552b6085bd1357",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/main.tsx": {
       "hash": "855bd7960ab94daade740cf412d40f67ff6d7eaa20a1757077ddd1e8597feff2",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/types.ts": {
       "hash": "aff4afc7c95f9321bffae8a50f7851a43acecfc99b9f7b73c3b9263e7d07ade7",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/autonomy/postchange.ts": {
       "hash": "2c7dafc397fdca8f205fd048f1947a7c6f6e4954ad138b546fe894854f363dd8",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/autonomy/source-scope.ts": {
       "hash": "1107fe70ed9247269cccf9ef863499479b3d5bc5efbd9a1f5c50ba1c28d809c7",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/autonomy/watch.ts": {
       "hash": "cc1c0093020b54fb36226887d44053e4acb6aee527fee746f7e55de3f4cc691c",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/debug/debug-runner.ts": {
-      "hash": "6c8bc4c4ba85df1250f8d14847ab79b65e242ca3678510d5a7656df3be76da7f",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "hash": "9fc8faa80f0416480e6fed2536d939fdfb8883934c6a17c85aaebe10f5593558",
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/debug/docs-sync.ts": {
       "hash": "7e825d861cd6fa15ed9a70368a481844a6031402933ce823c6c099960067cdf7",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/embeddings/embedding-engine.ts": {
       "hash": "f3a281a05c8bc1022c61f9732d04dfead1fce9a81b15bdb1bd96afdd50c4703a",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/impact/analyze-impact.ts": {
       "hash": "34d94a044540c1fdb81a4b8e0b2278d57d150db9073096052afec6e50d869e1c",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/knowledge/query-engine.ts": {
       "hash": "0445a0c365534f02d00e626995cba0a1381b180e4fafa2b4f10256c741807045",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/retrieval/retrieve-context.ts": {
       "hash": "11fb93f26c43e7106a71fe41d6efdd814e19485eca341cf20f07b42b53708002",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/retrieval/retrieve-semantic.ts": {
       "hash": "05165eb6272f26cd12acbf4dce0a4876548c33ded4317e500e4084fa648c1538",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/rules/validate-rules.ts": {
       "hash": "a4f9d9063d4c6d7cbc8cba662c00c0348d19c9a0c95db368c72c01de4546f07f",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/runtime/context-orchestrator.ts": {
       "hash": "d3af62db34dcd797a9e5e336202c376f01bc7d253c23fdd53da7c2744071694c",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/runtime/impact-orchestrator.ts": {
       "hash": "619ba554659407d72194e14c19419dd188b685d97d6f91034a5b8cbf290624c9",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/runtime/run-runtime-benchmark.ts": {
       "hash": "b61ec741326516fb0abae35a65f49f446b75fbb7273dcbf80b3d865f8d61d7e4",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/runtime/task-executor.ts": {
       "hash": "6890e27143ae04cc6be229700b3723e8caed9a231b66dece9542518994f8bd23",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "brain/tasks/task-memory.ts": {
       "hash": "aef513b8984ea0a7eb2161eedcdde178351f9db9056dd9d70e27baa473284cc2",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/brain-runtime/installBrainRuntime.ts": {
       "hash": "5eacf49fc82f6ebc3c25e3627c65455695d08308fe851249c1033da63b9bc72d",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/brain-runtime/instrumentDexie.ts": {
       "hash": "6dab7e67e6fe4dfd9e4970c45332079c440cd4275a08b44877d044c4ea389037",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/brain-runtime/instrumentFetch.ts": {
       "hash": "a9b7ba86da472162cd4377c0119b970b7e33fa1211ed4cfbf3573496f8c93e59",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/brain-runtime/instrumentWebSocket.ts": {
       "hash": "b3ba7d13e68e367c9ba8252c56472d2108a8dca7f9a580cb6f50b559d0ae17e7",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/brain-runtime/instrumentZustand.ts": {
       "hash": "c9920e6821a64cae4251a75911fbe5a3b59a46a57d59d27186ba844fd692dee1",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/brain-runtime/RenderProfiler.tsx": {
       "hash": "b60d2a2c2cac8e705a67f374ad3a4a4cdc27743efe02189993cbc58d9e7ad5dc",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/brain-runtime/runtimeTelemetry.ts": {
       "hash": "0c0e6f378c9b8c50e2aacf9a6eb2a3e5395b1587116274e33451ded76f7c83d5",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/AnimatedScrollText.tsx": {
       "hash": "65ca2a375253c97de6157fa51c9ca9ca16fe61cc4d4f5abc53120551fcca5051",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/ChatPanel.tsx": {
-      "hash": "d9be0e00735f257894e06a728866da1887889597a4783761453cca93bb3edb0a",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "hash": "ed18232371e6ef546d6b90abec878576f61c1f2a6a2cf7f9e6ae0e63fba55a1c",
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/FloatingSkillsMenu.tsx": {
       "hash": "7904a5627e021e5bfe83ea9d132678b06549b15a467f9105af0d8bba12cf437b",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/Navigation.tsx": {
       "hash": "d5a1222846e9189e5e4aa9a6df8467b5965bb876c8aae2331ef254401dd1e6be",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/PatternCard.tsx": {
       "hash": "41cea00c6a483c26a3a4b02283d5ac0a06147b6b21392d5e6b230431c679e8b4",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/PatternSVGs.tsx": {
       "hash": "b98e9620a86e81c7468bdb984231f7c37e3da84e0744538435109ebbaaa9a1b1",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/PdfToolbar.tsx": {
       "hash": "fe39622dc3065bdbbef70b1f860fffeec14e3c55ee3b48fcdfa6d75156c28063",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/PdfViewer.tsx": {
       "hash": "327fb4bacd6f1edd2fdadbeb981fd57460a67c11ac971ebd7f2f4087905ff436",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/PracticeMode.tsx": {
       "hash": "134a509a8c52474fc7dd96c7371274311e61c213a3cab246173f102de3e4065c",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/SettingsModal.tsx": {
       "hash": "4db4e83d3871db6b9b12731aa13a69cb604c64d8561da889257d2bbe539d92da",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/ShikiHighlighter.tsx": {
-      "hash": "ba012c0041ad9820d556b46a5cacbc3560e3fb57a30f3587d9f60627d5b2cd8e",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "hash": "7ff39ea11da56699c86320fe63a9f18f38bb9f5b8fc966430b55d7c74056e7d4",
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/Sidebar.tsx": {
       "hash": "0e13f6713f1430eaf7c36091e0dd7dad798cab4823295f8693740c0d8ffa712e",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/SiriLiquidGlass.tsx": {
       "hash": "ce3e86ebe33c1387d73a402ee8a61fc0e8d57000a577985e9eecd3ce6d30137f",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/components/StatusBadge.tsx": {
-      "hash": "228036278f12b34caab361f6b021bd77a43d7f4fbc77ae2fc344060701fd56a7",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "hash": "c8873ef51caf1a3e3baed780f8d1aa9aaf6ab1d9fa48999fdaa39b07b18cc772",
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/lib/audio.ts": {
       "hash": "b7224ce25576b559fffa1eda90c900e361c8de7d3af633f6d0cec48f2d93a84a",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/lib/tutorBook.json": {
-      "hash": "a1d38411dd51578568a33c6c59bf91868a97f4ef1095c32a83b4b1fc69a4aeed",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "hash": "e116d271769caef5219336a76fd1f57ead774353f345426e7f5d622555536aab",
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/bkt.engine.ts": {
       "hash": "8769edf4442fbb7bb504da54370dfd2db8f34daba0b56b5f6fb1fe6c65f0b81b",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/cognitive.load.ts": {
       "hash": "2fbbbe550976b84f855d4223c2ee7cd6d0559d0e404a3b682e585e2c72e7fab8",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/illusion.detector.ts": {
       "hash": "eed5246cfac71f3630c2da0e26237199189b709f21cd16dd3d2c065e9bc6b9a3",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/learner.model.ts": {
       "hash": "e5cd96ab4f4be01d55c884808752e0c9e109e3a54742cc5f295dcd9a8f56a52b",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/longterm.memory.ts": {
       "hash": "e349a880282dcdc793f01fd98102e0d9ae6f0cadcb1709a607a4b425ce0767cb",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/memory.embeddings.ts": {
-      "hash": "c7c315bf0c5ed1f370999898fec90acf8fafd8a1c3063b452f935069e4acd35c",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "hash": "bd3285305ac923e25cb271eee766c1a6cb995afa801ff4ba03bb9140ef3b3821",
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/memory.orchestrator.ts": {
       "hash": "483c0dafcc64944c22b6bc0529d3276cc311be3944163b510da49ae6f32cddf2",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/metacognition.tracker.ts": {
       "hash": "f2b7550ee607db69867e12a25ad42c2ebf4894485491ea9df20b5a7646829894",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/misconception.graph.ts": {
       "hash": "e1c52a969ce9c4a71ccd9e6d7dbd28f3532f105d31973006926d60e39fb636c3",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/prerequisite.dag.ts": {
       "hash": "40e2261ba807e7d22dbf4e71ce3be0d9d673497720a6a937fc5da0712040549e",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/productive.failure.ts": {
       "hash": "8465d76ee6b56ca84760652c653def606689d8f65b4ef35afa53b5f0115ea77f",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/revision.memory.ts": {
       "hash": "303b408a1c31a06d6b06c559dd8e9da9bbac4c99dcaf0356077d88a1509d7aa0",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/scaffolding.engine.ts": {
       "hash": "1771a62b4daba5a11e6ba595b60abfb45a56ba56b790a1033b98f83e93280aff",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/memory/zpd.calculator.ts": {
       "hash": "a29ec2fee31aeae00b567dc369f736b7a2a0d3d4f29bf8a368c4d22f2a55bf54",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/store/index.ts": {
       "hash": "eeab2e565fc8cda04358429482f81562d5ddeb6466c909f1beb5a16f4f9849b6",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/views/AdminView.tsx": {
-      "hash": "03d64ebb8892f483377e6a20840abbeb60803d6a7fd3f7941dc9a24cfe047225",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "hash": "4db4761d515fa611902152779910f0514986ea278c1d7dfdb517cca9d9df4d1f",
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/views/AnalyticsView.tsx": {
       "hash": "c825c8570900021dccf92f5ab8eb515a45c28c016b291cd61eb0a1289d3a8350",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/views/BrainView.tsx": {
       "hash": "4932831ce7b349640e5b988e163c5850172e1dd65870ffbb5d59d7ccaee00537",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/views/RevisionView.tsx": {
       "hash": "73a5a030fdf5e665fa33955cf58f0fa7f6046c59cf8f7f434eec58ffbcadf3ea",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/views/StudyView.tsx": {
       "hash": "b93428d39abc213b3b73d9facce3b60dca83cb4e2503613cd0973ec898d3fec8",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "src/index.css": {
       "hash": "e66fa09825e438a0903e04f761fbbae36b8abe0a30bd06c44e2f6e910ee6ca3c",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "package.json": {
       "hash": "0144d166564637c48c6d7b872ce3749c2c6acc12da1d648aa6eafab450a378ae",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "package-lock.json": {
       "hash": "04194de561413599d14479d64cfa3516985a97829bd277d0ea324dbd6fb2b22b",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     },
     "tsconfig.json": {
       "hash": "75de51e59cd7eb7c175c2dd93d8de644c2c85664ae0c00ac320800af9bf0e888",
-      "generatedAt": "2026-05-27T08:20:27.069Z"
+      "generatedAt": "2026-05-27T08:32:31.677Z"
     }
   }
 }
