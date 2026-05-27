@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:32:31.677Z",
+    "generatedAt": "2026-05-27T12:30:03.046Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "ec24e6ad030a3bfccaa30fed3cb549c886b40be1",
+      "commit": "a1aa71570d41b07b207d4eb12e087a6f080a6b6d",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "02aca1c8e0379e1aab8929ae0e45ea18bfa082cea93ba8a6e888b4df635a4aa9"
+    "sourceHash": "3aa2887a9ecde2983215c85a9f39ced96e0a85415e8ef542806292e4f6482c23"
   },
   "dependencies": {
     "generate-brain.ts": [
@@ -115,6 +115,12 @@
     "brain/debug/docs-sync.ts": [
       "fs",
       "path"
+    ],
+    "brain/debug/ui-regression-probe.ts": [
+      "child_process",
+      "fs",
+      "path",
+      "playwright"
     ],
     "brain/embeddings/embedding-engine.ts": [
       "crypto",
@@ -203,6 +209,7 @@
       "react-markdown",
       "remark-gfm",
       "src/components/ShikiHighlighter.tsx",
+      "src/components/StatusBadge.tsx",
       "lucide-react",
       "motion",
       "dexie-react-hooks",
@@ -213,8 +220,7 @@
       "src/memory/longterm.memory.ts",
       "src/types.ts",
       "src/components/FloatingSkillsMenu.tsx",
-      "src/brain-runtime/runtimeTelemetry.ts",
-      "src/components/StatusBadge.tsx"
+      "src/brain-runtime/runtimeTelemetry.ts"
     ],
     "src/components/FloatingSkillsMenu.tsx": [
       "react",

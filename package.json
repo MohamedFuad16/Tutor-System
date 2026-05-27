@@ -27,8 +27,9 @@
     "brain:auto": "tsx brain/autonomy/watch.ts",
     "brain:debug": "tsx brain/debug/debug-runner.ts",
     "brain:docs:sync": "tsx brain/debug/docs-sync.ts",
-    "format:check": "prettier --check server.ts generate-brain.ts package.json TUTOR_ARCHITECTURE.md brain/architecture.md \"brain/**/*.ts\" \"scripts/**/*.ts\" skills/**/*.md src/views/AdminView.tsx src/lib/tutorBook.json",
-    "format": "prettier --write server.ts generate-brain.ts package.json TUTOR_ARCHITECTURE.md brain/architecture.md \"brain/**/*.ts\" \"scripts/**/*.ts\" skills/**/*.md src/views/AdminView.tsx src/lib/tutorBook.json"
+    "brain:ui-regression": "tsx brain/debug/ui-regression-probe.ts",
+    "format:check": "prettier --check server.ts generate-brain.ts package.json TUTOR_ARCHITECTURE.md brain/architecture.md \"brain/**/*.ts\" \"scripts/**/*.ts\" skills/**/*.md src/views/AdminView.tsx src/views/RevisionView.tsx src/lib/tutorBook.json",
+    "format": "prettier --write server.ts generate-brain.ts package.json TUTOR_ARCHITECTURE.md brain/architecture.md \"brain/**/*.ts\" \"scripts/**/*.ts\" skills/**/*.md src/views/AdminView.tsx src/views/RevisionView.tsx src/lib/tutorBook.json"
   },
   "dependencies": {
     "@fontsource/geist-sans": "^5.2.5",

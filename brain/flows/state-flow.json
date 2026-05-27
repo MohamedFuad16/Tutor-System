@@ -208,10 +208,10 @@
     {
       "field": "setActiveView",
       "readers": [
-        "src/views/RevisionView.tsx",
         "src/views/StudyView.tsx",
         "src/components/ChatPanel.tsx",
-        "src/App.tsx"
+        "src/App.tsx",
+        "src/views/RevisionView.tsx"
       ],
       "writers": [
         "src/views/RevisionView.tsx",
@@ -244,8 +244,8 @@
     {
       "field": "setAskTutorQuery",
       "readers": [
-        "src/components/PdfViewer.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/components/PdfViewer.tsx"
       ],
       "writers": [
         "src/components/ChatPanel.tsx",
@@ -335,8 +335,8 @@
     {
       "field": "setSelectedTextContext",
       "readers": [
-        "src/components/PdfViewer.tsx",
         "src/components/ChatPanel.tsx",
+        "src/components/PdfViewer.tsx",
         "src/views/StudyView.tsx"
       ],
       "writers": [
@@ -564,57 +564,57 @@
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "pdfUrl",
-      "selector": "state => state.pdfUrl"
+      "selector": "(state) => state.pdfUrl"
     },
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "pdfScale",
-      "selector": "state => state.pdfScale"
+      "selector": "(state) => state.pdfScale"
     },
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "setPdfScale",
-      "selector": "state => state.setPdfScale"
+      "selector": "(state) => state.setPdfScale"
     },
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "pdfPage",
-      "selector": "state => state.pdfPage"
+      "selector": "(state) => state.pdfPage"
     },
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "setPdfPage",
-      "selector": "state => state.setPdfPage"
+      "selector": "(state) => state.setPdfPage"
     },
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "pdfTotalPages",
-      "selector": "state => state.pdfTotalPages"
+      "selector": "(state) => state.pdfTotalPages"
     },
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "setPdfTotalPages",
-      "selector": "state => state.setPdfTotalPages"
+      "selector": "(state) => state.setPdfTotalPages"
     },
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "annotations",
-      "selector": "state => state.annotations"
+      "selector": "(state) => state.annotations"
     },
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "addAnnotation",
-      "selector": "state => state.addAnnotation"
+      "selector": "(state) => state.addAnnotation"
     },
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "setAskTutorQuery",
-      "selector": "state => state.setAskTutorQuery"
+      "selector": "(state) => state.setAskTutorQuery"
     },
     {
       "file": "src/components/PdfViewer.tsx",
       "field": "setSelectedTextContext",
-      "selector": "state => state.setSelectedTextContext"
+      "selector": "(state) => state.setSelectedTextContext"
     },
     {
       "file": "src/views/BrainView.tsx",
@@ -624,7 +624,7 @@
     {
       "file": "src/views/RevisionView.tsx",
       "field": "setActiveView",
-      "selector": "state => state.setActiveView"
+      "selector": "(state) => state.setActiveView"
     },
     {
       "file": "src/views/StudyView.tsx",

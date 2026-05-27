@@ -9,6 +9,11 @@ const RUNS_DIR = path.join(DEBUG_DIR, "runs");
 const BACKUP_DIR = path.join(DEBUG_DIR, "backups");
 const MEMORY_GRAPH_PATH = path.join(DEBUG_DIR, "memory-graph.json");
 const DOCS_DIR = path.join(ROOT, "brain/reference-docs");
+const UI_REGRESSION_REPORT = path.join(
+  DEBUG_DIR,
+  "ui-regression",
+  "latest.json",
+);
 
 type Mode = "audit" | "fix";
 
@@ -28,12 +33,177 @@ type ComponentTarget = {
   kind: string;
 };
 
+type DebugPhase = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+type PhaseStatus = DebugPhase & {
+  status: "completed";
+  startedAt: string;
+  finishedAt: string;
+  details?: unknown;
+};
+
+type DetectorReport = Record<string, string[]>;
+
 type RunEvent = {
   timestamp: string;
   type: string;
   message: string;
   data?: unknown;
 };
+
+const DEBUG_PROCESS: DebugPhase[] = [
+  {
+    id: "parse-architecture",
+    title: "Parse architecture",
+    description: "Load /brain context and source metadata for the target.",
+  },
+  {
+    id: "understand-purpose",
+    title: "Understand purpose",
+    description:
+      "Classify the file role, target kind, and implementation intent.",
+  },
+  {
+    id: "analyze-dependencies",
+    title: "Analyze dependencies",
+    description:
+      "Run impact analysis and capture upstream/downstream coupling.",
+  },
+  {
+    id: "detect-anti-patterns",
+    title: "Detect anti-patterns",
+    description:
+      "Scan for risky implementation patterns and maintainability drift.",
+  },
+  {
+    id: "detect-performance",
+    title: "Detect performance issues",
+    description: "Benchmark before patching and inspect avoidable hot paths.",
+  },
+  {
+    id: "detect-stale-state",
+    title: "Detect stale state",
+    description: "Check hooks, stores, subscriptions, and cached state risks.",
+  },
+  {
+    id: "detect-render",
+    title: "Detect render problems",
+    description:
+      "Inspect React rendering, list keys, layout churn, and branch safety.",
+  },
+  {
+    id: "detect-memory-leaks",
+    title: "Detect memory leaks",
+    description:
+      "Check timers, listeners, sockets, observers, and cleanup paths.",
+  },
+  {
+    id: "detect-async",
+    title: "Detect async issues",
+    description:
+      "Check fetch, promises, abortability, error handling, and races.",
+  },
+  {
+    id: "detect-typing",
+    title: "Detect typing issues",
+    description: "Check unsafe casts, implicit any usage, and weak contracts.",
+  },
+  {
+    id: "detect-animation",
+    title: "Detect animation issues",
+    description:
+      "Check motion usage, smoothness, reduced-motion, and layout animation risk.",
+  },
+  {
+    id: "detect-api",
+    title: "Detect API issues",
+    description: "Check client/server contract usage and response handling.",
+  },
+  {
+    id: "detect-accessibility",
+    title: "Detect accessibility issues",
+    description:
+      "Check icon buttons, images, labels, keyboard reachability, and semantics.",
+  },
+  {
+    id: "compare-best-practices",
+    title: "Compare against best practices",
+    description:
+      "Compare implementation against official docs and local architecture rules.",
+  },
+  {
+    id: "search-documentation-patterns",
+    title: "Search documentation patterns",
+    description:
+      "Map relevant official docs packs and secondary evidence slots.",
+  },
+  {
+    id: "generate-improvements",
+    title: "Generate improvements",
+    description:
+      "Produce a target-specific strategy from findings and evidence.",
+  },
+  {
+    id: "apply-patch",
+    title: "Apply patch",
+    description:
+      "Apply guarded deterministic fixes with hash checks and rollback backup.",
+  },
+  {
+    id: "run-validation",
+    title: "Run validation",
+    description: "Run format, lint, type, build, and local verification gates.",
+  },
+  {
+    id: "run-regression-tests",
+    title: "Run regression tests",
+    description:
+      "Measure post-change runtime, responsiveness, and regression signals.",
+  },
+  {
+    id: "persist-findings",
+    title: "Persist findings into brain",
+    description:
+      "Write append-only run artifacts, component ledger, and memory graph nodes.",
+  },
+];
+
+const DEBUG_LOOP = [
+  "scan",
+  "understand",
+  "audit",
+  "benchmark",
+  "detect bugs",
+  "search best practices",
+  "compare implementations",
+  "patch issues",
+  "rerun tests",
+  "validate fixes",
+  "measure regressions",
+  "persist findings into brain",
+  "repeat",
+];
+
+const SOURCE_FILE_PATTERN =
+  /^(src\/.*\.(ts|tsx|js|jsx|json)|brain\/.*\.ts|scripts\/.*\.ts|(server|generate-brain|init-task-memory)\.ts)$/;
+
+const EXCLUDED_SOURCE_PATTERNS = [
+  /^brain\/debug\/runs\//,
+  /^brain\/debug\/backups\//,
+  /^brain\/reference-docs\//,
+  /^brain\/runtime\/plans\//,
+  /^brain\/.*\.(json|md)$/,
+  /^dist\//,
+  /^node_modules\//,
+  /\/__snapshots__\//,
+  /\/coverage\//,
+  /\.tmp$/,
+  /\.cache/,
+];
 
 function arg(name: string, fallback = "") {
   const index = process.argv.indexOf(`--${name}`);
@@ -94,41 +264,116 @@ function run(
   return commandResult;
 }
 
+function sourceFilesFromGit() {
+  try {
+    return execFileSync("git", ["ls-files"], {
+      cwd: ROOT,
+      encoding: "utf8",
+      maxBuffer: 1024 * 1024 * 4,
+    })
+      .split("\n")
+      .map((file) => file.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function isAuditableSourceFile(file: string) {
+  return (
+    SOURCE_FILE_PATTERN.test(file) &&
+    !EXCLUDED_SOURCE_PATTERNS.some((pattern) => pattern.test(file))
+  );
+}
+
+function targetKindForFile(file: string) {
+  if (/^src\/components\//.test(file)) return "component";
+  if (/^src\/views\//.test(file)) return "route";
+  if (/^src\/hooks\//.test(file) || /\/use[A-Z][^/]*\.(ts|tsx)$/.test(file))
+    return "hook";
+  if (/^src\/context\//.test(file)) return "context";
+  if (/^src\/store\//.test(file) || /store/i.test(path.basename(file)))
+    return "store";
+  if (/^src\/memory\//.test(file)) return "service";
+  if (/^src\/lib\//.test(file)) return "utility";
+  if (/^src\/brain-runtime\//.test(file)) return "service";
+  if (/^scripts\//.test(file)) return "utility";
+  if (/^brain\//.test(file)) return "brain-tooling";
+  if (/^server\.ts$/.test(file)) return "api-service";
+  return "file";
+}
+
+function targetNameForFile(file: string) {
+  const basename = path.basename(file).replace(/\.(tsx?|jsx?|json)$/, "");
+  const normalized = basename
+    .replace(/[-_.]+(.)?/g, (_, next: string) =>
+      next ? next.toUpperCase() : "",
+    )
+    .replace(/^./, (char) => char.toUpperCase());
+  return normalized || file;
+}
+
+function discoverSourceTargets(): ComponentTarget[] {
+  return sourceFilesFromGit()
+    .filter(isAuditableSourceFile)
+    .map((file) => ({
+      id: `source:${file}`,
+      name: targetNameForFile(file),
+      file,
+      kind: targetKindForFile(file),
+    }));
+}
+
 function discoverTargets(scope: string): ComponentTarget[] {
   const graph = readJson<{
     nodes: Array<{ id: string; type: string; label: string; file?: string }>;
   }>(path.join(ROOT, "brain/knowledge/graph.json"), { nodes: [] });
+  const graphKinds = new Set([
+    "component",
+    "route",
+    "hook",
+    "file",
+    "store",
+    "service",
+    "context",
+    "utility",
+    "api",
+    "database",
+    "server",
+    "module",
+  ]);
   const fromGraph = graph.nodes
-    .filter((node) =>
-      ["component", "route", "hook", "file"].includes(node.type),
-    )
-    .filter(
-      (node) =>
-        node.file &&
-        (/^src\/(components|views|brain-runtime|memory)\//.test(node.file) ||
-          /^brain\/.*\.ts$/.test(node.file) ||
-          /^(server|generate-brain|init-task-memory)\.ts$/.test(node.file) ||
-          /^scripts\/.*\.ts$/.test(node.file)),
-    )
+    .filter((node) => graphKinds.has(node.type))
+    .filter((node) => node.file && isAuditableSourceFile(node.file))
     .map((node) => ({
       id: node.id,
       name: node.label,
       file: node.file as string,
-      kind: node.type,
+      kind:
+        node.type === "file"
+          ? targetKindForFile(node.file as string)
+          : node.type,
     }));
   const unique = [
     ...new Map(
-      fromGraph.map((target) => [
+      [...fromGraph, ...discoverSourceTargets()].map((target) => [
         `${target.kind}:${target.name}:${target.file}`,
         target,
       ]),
     ).values(),
-  ].sort((a, b) => a.file.localeCompare(b.file));
+  ].sort(
+    (a, b) =>
+      a.file.localeCompare(b.file) ||
+      a.kind.localeCompare(b.kind) ||
+      a.name.localeCompare(b.name),
+  );
   if (scope === "all") return unique;
   const normalized = scope.replace(/^component:/, "").replace(/^file:/, "");
   return unique.filter(
     (target) =>
-      target.name.includes(normalized) || target.file.includes(normalized),
+      target.name.toLowerCase().includes(normalized.toLowerCase()) ||
+      target.file.toLowerCase().includes(normalized.toLowerCase()) ||
+      target.kind.toLowerCase().includes(normalized.toLowerCase()),
   );
 }
 
@@ -151,6 +396,251 @@ function docsForFile(file: string) {
   return packageToDoc
     .filter(([pattern]) => pattern.test(text))
     .map(([, doc]) => doc);
+}
+
+function detectTechnology(file: string, text: string, docs: string[]) {
+  const technologies = new Set<string>();
+  if (/\.(ts|tsx)$/.test(file)) technologies.add("TypeScript");
+  if (/\.tsx$/.test(file) || /from ['"]react['"]|React\./.test(text))
+    technologies.add("React");
+  if (/className=|tailwind/i.test(text)) technologies.add("Tailwind CSS");
+  if (/from ['"]motion\/react['"]|from ['"]framer-motion['"]/.test(text))
+    technologies.add("Motion/Framer");
+  if (/dexie|useLiveQuery|db\./.test(text)) technologies.add("Dexie");
+  if (/zustand|create<|useStore/.test(text)) technologies.add("Zustand");
+  if (/express|app\.(get|post|put|patch|delete)/.test(text))
+    technologies.add("Express");
+  if (/WebSocket|EventSource|SSE|fetch\(/.test(text))
+    technologies.add("Browser networking");
+  if (/react-force-graph-3d|three|THREE/.test(text))
+    technologies.add("Three.js");
+  docs.forEach((doc) => technologies.add(doc));
+  return [...technologies];
+}
+
+function inferPurpose(target: ComponentTarget, text: string) {
+  const exports = [
+    ...text.matchAll(/export\s+(?:function|const|class)\s+(\w+)/g),
+  ]
+    .map((match) => match[1])
+    .slice(0, 4);
+  const imports = [...text.matchAll(/from\s+['"]([^'"]+)['"]/g)]
+    .map((match) => match[1])
+    .slice(0, 6);
+  const signals = [
+    `${target.kind} target for ${target.name}`,
+    exports.length
+      ? `exports ${exports.join(", ")}`
+      : "no named exports detected",
+    imports.length
+      ? `depends on ${imports.join(", ")}`
+      : "no static imports detected",
+  ];
+  return signals.join("; ");
+}
+
+function pushIf(
+  report: DetectorReport,
+  category: string,
+  condition: boolean,
+  message: string,
+) {
+  if (!condition) return;
+  report[category] = report[category] || [];
+  report[category].push(message);
+}
+
+function detectIssues(target: ComponentTarget, text: string): DetectorReport {
+  const report: DetectorReport = {
+    antiPatterns: [],
+    performance: [],
+    responsiveness: [],
+    staleState: [],
+    render: [],
+    memoryLeaks: [],
+    async: [],
+    typing: [],
+    animation: [],
+    smoothness: [],
+    api: [],
+    accessibility: [],
+  };
+  const browserSource = /^src\//.test(target.file);
+
+  pushIf(
+    report,
+    "antiPatterns",
+    browserSource && /\bconsole\.(log|debug)\(/.test(text),
+    "Browser debug console output is present; keep only intentional warnings/errors in UI code.",
+  );
+  pushIf(
+    report,
+    "antiPatterns",
+    /new Function\(|eval\(/.test(text),
+    "Dynamic code execution pattern detected and should be avoided unless sandboxed.",
+  );
+  pushIf(
+    report,
+    "performance",
+    /\.toArray\(\)(?!\s*\.then\([^)]*slice)/.test(text) &&
+      !/\.limit\(\d+\)/.test(text),
+    "Dexie collection loads without an obvious limit; verify large datasets stay bounded.",
+  );
+  pushIf(
+    report,
+    "performance",
+    /import\s+.*shiki|import\s+.*mermaid|import\s+.*react-force-graph-3d/.test(
+      text,
+    ),
+    "Heavy renderer import is static; confirm it is route- or interaction-gated.",
+  );
+  pushIf(
+    report,
+    "responsiveness",
+    /\.tsx?$/.test(target.file) &&
+      /(?:w|h)-\[\d+(?:px|rem)\]/.test(text) &&
+      !/\b(max-w|min-w|sm:|md:|lg:|xl:)/.test(text),
+    "Fixed dimensions appear without nearby responsive constraints.",
+  );
+  pushIf(
+    report,
+    "staleState",
+    /useEffect\(\s*\(\)\s*=>[\s\S]*?,\s*\[\s*\]\s*\)/.test(text) &&
+      /useStore|props|active|current|selected/.test(text),
+    "Empty dependency effect references app state signals; verify it cannot go stale.",
+  );
+  pushIf(
+    report,
+    "render",
+    /\.map\([\s\S]{0,220}=>[\s\S]{0,220}<[^>]+>/.test(text) &&
+      !/\bkey=/.test(text),
+    "Mapped JSX without an obvious key prop can cause unstable React reconciliation.",
+  );
+  pushIf(
+    report,
+    "memoryLeaks",
+    /addEventListener\(/.test(text) && !/removeEventListener\(/.test(text),
+    "Event listener registration found without matching removal in the same file.",
+  );
+  pushIf(
+    report,
+    "memoryLeaks",
+    /setInterval\(/.test(text) && !/clearInterval\(/.test(text),
+    "Interval allocation found without matching clearInterval cleanup.",
+  );
+  pushIf(
+    report,
+    "async",
+    /fetch\(/.test(text) && !/response\.ok|\.ok\)/.test(text),
+    "Fetch usage does not show an explicit response.ok branch in this file.",
+  );
+  pushIf(
+    report,
+    "async",
+    /fetch\(/.test(text) && !/AbortController|signal/.test(text),
+    "Fetch usage is not obviously abortable; verify route changes cannot race stale updates.",
+  );
+  pushIf(
+    report,
+    "typing",
+    /\bany\b|as any/.test(text),
+    "Unsafe any typing is present; prefer explicit local contracts.",
+  );
+  pushIf(
+    report,
+    "animation",
+    /motion\./.test(text) &&
+      !/useReducedMotion|prefers-reduced-motion/.test(text),
+    "Motion usage lacks an obvious reduced-motion path.",
+  );
+  pushIf(
+    report,
+    "smoothness",
+    /transition-all/.test(text),
+    "transition-all can animate expensive layout properties; prefer scoped transition properties.",
+  );
+  pushIf(
+    report,
+    "api",
+    /\/api\//.test(text) && !/try\s*{|catch\s*\(/.test(text),
+    "API call path appears without local error handling.",
+  );
+  pushIf(
+    report,
+    "accessibility",
+    /<img\b(?![^>]*\balt=)/.test(text),
+    "Image element without an alt attribute detected.",
+  );
+  pushIf(
+    report,
+    "accessibility",
+    /<button\b(?![^>]*(aria-label|aria-labelledby|title=))[^>]*>\s*<([A-Z]\w*)\b/.test(
+      text,
+    ),
+    "Icon-first button may need an accessible label.",
+  );
+
+  if (target.kind === "route" || target.kind === "component") {
+    pushIf(
+      report,
+      "render",
+      text.length > 35_000,
+      "Large React surface; consider extracting stable subcomponents if render churn appears.",
+    );
+  }
+
+  return report;
+}
+
+function flattenFindings(report: DetectorReport) {
+  return Object.entries(report).flatMap(([category, findings]) =>
+    findings.map((finding) => `${category}: ${finding}`),
+  );
+}
+
+function summarizeDocsComparison(docs: string[], report: DetectorReport) {
+  const findingCount = flattenFindings(report).length;
+  return {
+    primaryEvidence: docs,
+    status:
+      findingCount === 0
+        ? "No deterministic divergence from official-doc patterns detected."
+        : `${findingCount} deterministic divergence signal(s) need review against official docs.`,
+    categories: Object.fromEntries(
+      Object.entries(report).map(([category, findings]) => [
+        category,
+        findings.length,
+      ]),
+    ),
+  };
+}
+
+function generateImprovements(report: DetectorReport, changed: boolean) {
+  const findings = flattenFindings(report);
+  const improvements = findings.map((finding) => {
+    const [, detail] = finding.split(": ");
+    return detail || finding;
+  });
+  if (changed) {
+    improvements.unshift(
+      "Source now satisfies the deterministic formatting gate for this target.",
+    );
+  }
+  if (!changed && findings.length > 0) {
+    improvements.unshift(
+      "Finding retained for a safe refactor pass; no deterministic patch rule could modify this target without broader semantic review.",
+    );
+  }
+  if (improvements.length === 0) {
+    improvements.push(
+      "No deterministic patch was required; target was verified against the current gates.",
+    );
+  }
+  return improvements;
+}
+
+function readUiRegressionReport() {
+  return readJson<Record<string, unknown> | null>(UI_REGRESSION_REPORT, null);
 }
 
 function ensureDocs() {
@@ -254,6 +744,7 @@ function writeRunSnapshot(
   options: {
     status?: string;
     activeTarget?: ComponentTarget | null;
+    activePhase?: DebugPhase | null;
     finalCommands?: CommandResult[];
     finishedAt?: string | null;
     unresolvedRisks?: string[];
@@ -270,6 +761,9 @@ function writeRunSnapshot(
     completedCount,
     changedCount: components.filter((item) => item?.changed).length,
     activeTarget: options.activeTarget ?? null,
+    activePhase: options.activePhase ?? null,
+    processOrder: DEBUG_PROCESS,
+    debugLoop: DEBUG_LOOP,
     finalCommands: options.finalCommands || metadata.finalCommands || [],
     unresolvedRisks: options.unresolvedRisks || metadata.unresolvedRisks || [],
     components,
@@ -344,6 +838,48 @@ function main() {
     const componentStartedAt = new Date().toISOString();
     const filePath = path.join(ROOT, target.file);
     if (!fs.existsSync(filePath)) continue;
+    const auditPhases: PhaseStatus[] = [];
+
+    const startPhase = (phaseId: string) => {
+      const phase = DEBUG_PROCESS.find((item) => item.id === phaseId);
+      if (!phase) throw new Error(`Unknown debug phase ${phaseId}`);
+      const startedAt = new Date().toISOString();
+      emit({
+        type: "component-phase-started",
+        message: `${target.name}: ${phase.title}`,
+        data: { target, phase },
+      });
+      writeRunSnapshot(runDir, componentsDir, metadata, queue, completed, {
+        status: "running",
+        activeTarget: target,
+        activePhase: phase,
+      });
+      return { phase, startedAt };
+    };
+
+    const finishPhase = (
+      phaseState: { phase: DebugPhase; startedAt: string },
+      details?: unknown,
+    ) => {
+      const completedPhase: PhaseStatus = {
+        ...phaseState.phase,
+        status: "completed",
+        startedAt: phaseState.startedAt,
+        finishedAt: new Date().toISOString(),
+        details,
+      };
+      auditPhases.push(completedPhase);
+      emit({
+        type: "component-phase-completed",
+        message: `${target.name}: ${phaseState.phase.title} completed`,
+        data: { target, phase: completedPhase },
+      });
+      writeRunSnapshot(runDir, componentsDir, metadata, queue, completed, {
+        status: "running",
+        activeTarget: target,
+      });
+      return completedPhase;
+    };
 
     emit({
       type: "component-started",
@@ -356,12 +892,16 @@ function main() {
     });
     const before = fs.readFileSync(filePath);
     const beforeHash = sha256(before);
+    const beforeText = before.toString("utf8");
     const docs = docsForFile(target.file);
+    const technology = detectTechnology(target.file, beforeText, docs);
+    const purpose = inferPurpose(target, beforeText);
     const componentCommands: CommandResult[] = [];
     const findings: string[] = [];
     const changes: string[] = [];
     const backupPath = backupFile(runId, target.file);
 
+    const parsePhase = startPhase("parse-architecture");
     componentCommands.push(
       run(
         "npm",
@@ -375,29 +915,114 @@ function main() {
         { allowFailure: true },
       ),
     );
+    finishPhase(parsePhase, {
+      sourceHash: beforeHash,
+      retrieveCommand: componentCommands.at(-1),
+    });
+
+    const purposePhase = startPhase("understand-purpose");
+    finishPhase(purposePhase, { purpose, technology, targetKind: target.kind });
+
+    const dependencyPhase = startPhase("analyze-dependencies");
     componentCommands.push(
       run("npm", ["run", "--silent", "brain:impact", "--", target.file], {
         allowFailure: true,
       }),
     );
+    const impactCommand = componentCommands.at(-1);
+    finishPhase(dependencyPhase, {
+      command: impactCommand,
+      dependencyAnalysis: impactCommand?.ok
+        ? "Impact analysis completed."
+        : "Impact analysis returned a non-zero exit and is recorded for review.",
+    });
+
+    const detectorReport = detectIssues(target, beforeText);
+
+    let benchmarkBefore: CommandResult | null = null;
+    const detectorPhases: Array<{
+      phaseId: string;
+      category: keyof DetectorReport;
+      benchmarkBefore?: boolean;
+    }> = [
+      { phaseId: "detect-anti-patterns", category: "antiPatterns" },
+      {
+        phaseId: "detect-performance",
+        category: "performance",
+        benchmarkBefore: true,
+      },
+      { phaseId: "detect-stale-state", category: "staleState" },
+      { phaseId: "detect-render", category: "render" },
+      { phaseId: "detect-memory-leaks", category: "memoryLeaks" },
+      { phaseId: "detect-async", category: "async" },
+      { phaseId: "detect-typing", category: "typing" },
+      { phaseId: "detect-animation", category: "animation" },
+      { phaseId: "detect-api", category: "api" },
+      { phaseId: "detect-accessibility", category: "accessibility" },
+    ];
+
+    for (const detectorPhase of detectorPhases) {
+      const phase = startPhase(detectorPhase.phaseId);
+      if (detectorPhase.benchmarkBefore && !skipRuntime) {
+        benchmarkBefore = run(
+          "npm",
+          ["run", "--silent", "brain:runtime-benchmark"],
+          {
+            allowFailure: true,
+            maxBuffer: 1024 * 1024 * 24,
+          },
+        );
+        componentCommands.push(benchmarkBefore);
+      }
+      finishPhase(phase, {
+        category: detectorPhase.category,
+        findings:
+          detectorPhase.phaseId === "detect-performance"
+            ? [
+                ...(detectorReport.performance || []),
+                ...(detectorReport.responsiveness || []),
+                ...(detectorReport.smoothness || []),
+              ]
+            : detectorReport[detectorPhase.category] || [],
+        benchmarkBefore: detectorPhase.benchmarkBefore ? benchmarkBefore : null,
+        skipped: detectorPhase.benchmarkBefore ? skipRuntime : false,
+      });
+    }
+
+    const bestPracticePhase = startPhase("compare-best-practices");
+    const bestPracticeComparison = summarizeDocsComparison(
+      docs,
+      detectorReport,
+    );
+    finishPhase(bestPracticePhase, bestPracticeComparison);
+
+    const docsPhase = startPhase("search-documentation-patterns");
+    const docsEvidence = docs.map((id) => ({
+      id,
+      file: path.relative(ROOT, path.join(DOCS_DIR, `${id}.md`)),
+      role: "official-docs-primary-evidence",
+    }));
+    finishPhase(docsPhase, { docsEvidence });
+
+    findings.push(...flattenFindings(detectorReport));
+
+    const improvementsPhase = startPhase("generate-improvements");
+    let plannedImprovements = generateImprovements(detectorReport, false);
+    finishPhase(improvementsPhase, { plannedImprovements });
+
+    const patchPhase = startPhase("apply-patch");
     const formatCheck = run("npx", ["prettier", "--check", target.file], {
       allowFailure: true,
     });
     componentCommands.push(formatCheck);
-    const lint = run("npm", ["run", "--silent", "lint"], {
-      allowFailure: true,
-    });
-    componentCommands.push(lint);
 
     if (!formatCheck.ok) findings.push("Prettier reported formatting drift.");
-    if (!lint.ok)
-      findings.push("TypeScript/lint gate failed for the current workspace.");
 
     if (mode === "fix" && !formatCheck.ok) {
       const currentHash = sha256(fs.readFileSync(filePath));
       if (currentHash !== beforeHash)
         throw new Error(`Source hash changed before fix for ${target.file}`);
-      run("npx", ["prettier", "--write", target.file]);
+      componentCommands.push(run("npx", ["prettier", "--write", target.file]));
       const afterHash = sha256(fs.readFileSync(filePath));
       if (afterHash !== beforeHash) {
         changes.push(
@@ -419,46 +1044,140 @@ function main() {
         );
       }
     }
+    finishPhase(patchPhase, {
+      changed: changes.length > 0,
+      changes,
+      backupPath,
+      hashGuard: { beforeHash, currentHash: sha256(fs.readFileSync(filePath)) },
+    });
 
+    const validationPhase = startPhase("run-validation");
+    const validationFormat = run("npx", ["prettier", "--check", target.file], {
+      allowFailure: true,
+    });
+    componentCommands.push(validationFormat);
+    const lint = run("npm", ["run", "--silent", "lint"], {
+      allowFailure: true,
+    });
+    componentCommands.push(lint);
     const build = run("npm", ["run", "--silent", "build"], {
       allowFailure: true,
       maxBuffer: 1024 * 1024 * 24,
     });
     componentCommands.push(build);
+    if (!validationFormat.ok)
+      findings.push(
+        "Prettier validation still fails after this component pass.",
+      );
+    if (!lint.ok)
+      findings.push("TypeScript/lint gate failed for the current workspace.");
     if (!build.ok)
       findings.push("Production build failed after this component pass.");
-    if (!skipRuntime && mode === "fix" && changes.length > 0) {
-      componentCommands.push(
-        run("npm", ["run", "--silent", "brain:runtime-benchmark"], {
+    finishPhase(validationPhase, { validationFormat, lint, build });
+
+    const regressionPhase = startPhase("run-regression-tests");
+    let benchmarkAfter: CommandResult | null = null;
+    let uiRegression: CommandResult | null = null;
+    let uiRegressionReport: Record<string, unknown> | null = null;
+    if (!skipRuntime) {
+      benchmarkAfter = run(
+        "npm",
+        ["run", "--silent", "brain:runtime-benchmark"],
+        {
           allowFailure: true,
           maxBuffer: 1024 * 1024 * 24,
-        }),
+        },
       );
+      componentCommands.push(benchmarkAfter);
+      uiRegression = run("npm", ["run", "--silent", "brain:ui-regression"], {
+        allowFailure: true,
+        maxBuffer: 1024 * 1024 * 24,
+      });
+      componentCommands.push(uiRegression);
+      uiRegressionReport = readUiRegressionReport();
     }
+    finishPhase(regressionPhase, {
+      benchmarkBefore,
+      benchmarkAfter,
+      uiRegression,
+      uiRegressionReport,
+      skipped: skipRuntime,
+    });
 
     const afterHash = sha256(fs.readFileSync(filePath));
+    plannedImprovements = generateImprovements(
+      detectorReport,
+      beforeHash !== afterHash,
+    );
+    const persistPhase = startPhase("persist-findings");
     const componentSummary = {
       timestamp: new Date().toISOString(),
       target,
+      componentName: target.name,
       file: target.file,
+      kind: target.kind,
       beforeHash,
       afterHash,
       changed: beforeHash !== afterHash,
       backupPath,
-      docsEvidence: docs.map((id) => ({
-        id,
-        file: path.relative(ROOT, path.join(DOCS_DIR, `${id}.md`)),
-        role: "official-docs-primary-evidence",
-      })),
+      processOrder: DEBUG_PROCESS,
+      auditSequence: DEBUG_LOOP,
+      auditPhases,
+      technology,
+      purpose,
+      dependencyAnalysis: impactCommand?.ok
+        ? "Impact analysis completed."
+        : "Impact analysis needs review; command output is attached.",
+      detectors: detectorReport,
+      bestPracticeComparison,
+      docsEvidence,
       findings,
       changes,
+      whatChanged: changes.length
+        ? changes
+        : findings.length
+          ? [
+              "No automatic source patch was applied; the findings need a safe semantic refactor rule or a model-backed cleanup pass.",
+            ]
+          : ["No source patch was applied during this target pass."],
       reason: changes.length
         ? "The debug runner changed the file because a deterministic verification gate failed."
-        : "No deterministic source change was needed for this component pass.",
+        : findings.length
+          ? "The debug runner found review-worthy issues, but none matched a safe deterministic auto-fix rule for this target."
+          : "No deterministic source change was needed for this component pass.",
+      whyChanged: changes.length
+        ? "A deterministic repository gate failed and the guarded patch was limited to the affected file."
+        : findings.length
+          ? "Findings were preserved in the ledger instead of patched blindly. Add or enable a safe refactor rule before changing this source automatically."
+          : "Current source matched the active debug rules and verification gates.",
+      improvements: plannedImprovements,
+      improvementSummary: plannedImprovements.join(" "),
+      benchmarkBefore,
+      benchmarkAfter,
+      uiRegression,
+      uiRegressionReport,
+      regressionResults: {
+        validationFormat,
+        lint,
+        build,
+        benchmarkBefore,
+        benchmarkAfter,
+        uiRegression,
+        uiRegressionReport,
+      },
       commands: componentCommands,
       startedAt: componentStartedAt,
       finishedAt: new Date().toISOString(),
     };
+    finishPhase(persistPhase, {
+      componentSummaryFile: path.join(
+        "brain/debug/runs",
+        runId,
+        "components",
+        `${sha256(targetKey).slice(0, 16)}.json`,
+      ),
+      memoryGraph: path.relative(ROOT, MEMORY_GRAPH_PATH),
+    });
     writeJson(
       path.join(componentsDir, `${sha256(targetKey).slice(0, 16)}.json`),
       componentSummary,
@@ -483,6 +1202,10 @@ function main() {
       maxBuffer: 1024 * 1024 * 24,
     }),
     run("npm", ["run", "--silent", "brain:runtime-benchmark"], {
+      allowFailure: true,
+      maxBuffer: 1024 * 1024 * 24,
+    }),
+    run("npm", ["run", "--silent", "brain:ui-regression"], {
       allowFailure: true,
       maxBuffer: 1024 * 1024 * 24,
     }),

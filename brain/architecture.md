@@ -54,14 +54,24 @@ The watcher ignores generated artifacts, debug run logs, backups, reference docs
 
 `brain:debug` is the long-horizon debugging and refactoring tool. It is invoked through the `tutor-debug` skill and uses `/brain` context plus official docs packs.
 
-Per target, it:
+By default `brain:debug -- --mode fix --scope all` audits every source-scoped target: files, UI components, stores, services, hooks, contexts, routes, utilities, server/API files, scripts, and `/brain` TypeScript tooling. The target list is merged from the generated graph and tracked source files so stale or missing graph nodes do not hide code from the pass.
 
+Per target, it runs this fixed process:
+
+- parses architecture,
+- understands purpose,
 - retrieves context and impact,
+- detects anti-patterns, performance issues, stale state, render problems, memory leaks, async issues, typing issues, animation issues, API issues, and accessibility issues,
+- captures before/after runtime benchmark signals when runtime benchmarking is enabled,
+- runs responsive and animation-smoothness regression probes with `brain:ui-regression`,
+- compares against best-practice evidence from official docs packs,
+- searches documentation patterns,
+- generates improvement strategy,
 - maps official docs evidence,
 - runs format/lint/build checks,
 - applies deterministic auto-fixes with hash checks and backups,
 - runs post-change brain refresh,
-- records findings, changes, docs evidence, and verification,
+- records findings, changes, reasons, improvements, docs evidence, validation, and regressions,
 - refreshes live `run.json` and `summary.json` after each completed component,
 - appends the debug memory graph.
 
@@ -84,3 +94,5 @@ Admin reads debug history through:
 - `POST /api/debug/runs/:id/cancel`
 
 Existing contracts remain: `/api/chat` SSE events must stay `data: <json>\n\n`; WebSocket paths must stay synchronized between server and browser.
+
+The Version Tracker presents component name, file, target kind, what changed, why it changed, improvement summary, official-doc evidence, verification, and benchmark/regression status. Component cards are collapsed by default for readability, while Live Audit Events remain available for the streaming raw timeline while each long-horizon run is still active.

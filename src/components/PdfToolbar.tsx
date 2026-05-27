@@ -1,12 +1,25 @@
-import React from 'react';
-import { ChevronDown, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Sparkles } from 'lucide-react';
+import React from "react";
+import {
+  ChevronDown,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Sparkles,
+} from "lucide-react";
 
 export const PdfToolbar = () => {
   return (
     <div className="flex items-center bg-white/95 backdrop-blur-xl rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.02)] p-2 gap-2 relative select-none">
-      
       {/* Ask AI Button */}
-      <button className="flex items-center gap-1.5 pl-3 pr-4 py-2.5 rounded-[18px] text-white font-semibold text-[15px] transition-all shadow-[0_4px_14px_rgba(255,59,140,0.3)] hover:shadow-[0_6px_20px_rgba(255,59,140,0.4)] hover:scale-[1.02] active:scale-[0.98]" style={{ background: 'linear-gradient(135deg, #FF3B8C 0%, #FFA07A 100%)' }}>
+      <button
+        className="flex items-center gap-1.5 pl-3 pr-4 py-2.5 rounded-[18px] text-white font-semibold text-[15px] transition-all shadow-[0_4px_14px_rgba(255,59,140,0.3)] hover:shadow-[0_6px_20px_rgba(255,59,140,0.4)] hover:scale-[1.02] active:scale-[0.98]"
+        style={{
+          background: "linear-gradient(135deg, #FF3B8C 0%, #FFA07A 100%)",
+        }}
+      >
         <Sparkles size={18} className="text-white" strokeWidth={2.5} />
         Ask AI
       </button>
@@ -16,7 +29,11 @@ export const PdfToolbar = () => {
         <span className="font-semibold text-[15px] text-[#18181B]">Inter</span>
         <span className="text-[#A1A1AA] mx-0.5">•</span>
         <span className="font-medium text-[15px] text-[#71717A]">Regular</span>
-        <ChevronDown size={16} className="text-[#A1A1AA] ml-1" strokeWidth={2.5} />
+        <ChevronDown
+          size={16}
+          className="text-[#A1A1AA] ml-1"
+          strokeWidth={2.5}
+        />
       </button>
 
       {/* Font Size Dropdown */}
@@ -69,7 +86,6 @@ export const PdfToolbar = () => {
       <div className="px-1 flex items-center justify-center">
         <button className="w-8 h-8 rounded-full bg-[#5E9EFF] border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.08),inset_0_2px_4px_rgba(255,255,255,0.4)] transition-transform hover:scale-110 active:scale-95" />
       </div>
-
     </div>
   );
 };

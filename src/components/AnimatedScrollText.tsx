@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from "react";
 
 interface AnimatedScrollTextProps {
   text: string;
@@ -10,14 +10,14 @@ interface AnimatedScrollTextProps {
   onRevealComplete?: (isComplete: boolean) => void;
 }
 
-export function AnimatedScrollText({ 
-  text = "", 
-  className = "", 
+export function AnimatedScrollText({
+  text = "",
+  className = "",
   scrollContainerRef,
   fullRevealDistance = 600,
   initialBlur = 3,
   initialOpacity = 0.1,
-  onRevealComplete
+  onRevealComplete,
 }: AnimatedScrollTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const words = text.split(" ");
@@ -31,19 +31,22 @@ export function AnimatedScrollText({
     let startPosition = 0;
     let containerHeight = 0;
 
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setIsVisible(true);
-        const rect = entry.boundingClientRect;
-        const scrollerRect = scroller.getBoundingClientRect();
-        
-        startPosition = scroller.scrollTop + (rect.top - scrollerRect.top);
-        containerHeight = rect.height;
-        handleScroll();
-      } else {
-        setIsVisible(false);
-      }
-    }, { threshold: [0], root: scroller });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          const rect = entry.boundingClientRect;
+          const scrollerRect = scroller.getBoundingClientRect();
+
+          startPosition = scroller.scrollTop + (rect.top - scrollerRect.top);
+          containerHeight = rect.height;
+          handleScroll();
+        } else {
+          setIsVisible(false);
+        }
+      },
+      { threshold: [0], root: scroller },
+    );
 
     observer.observe(containerRef.current);
 
@@ -52,18 +55,20 @@ export function AnimatedScrollText({
       const currentScroll = scroller.scrollTop;
       const elementTop = startPosition - currentScroll;
       const visibleHeight = scroller.clientHeight - elementTop;
-      
-      const progress = (visibleHeight - containerHeight) / (fullRevealDistance - containerHeight);
+
+      const progress =
+        (visibleHeight - containerHeight) /
+        (fullRevealDistance - containerHeight);
       const clampedProgress = Math.max(0, Math.min(1, progress));
       setScrollProgress(clampedProgress);
-      
+
       if (onRevealComplete) {
         onRevealComplete(clampedProgress >= 1);
       }
     };
 
     scroller.addEventListener("scroll", handleScroll, { passive: true });
-    
+
     return () => {
       scroller.removeEventListener("scroll", handleScroll);
       if (containerRef.current) {
@@ -75,11 +80,12 @@ export function AnimatedScrollText({
   return (
     <div ref={containerRef} className={`flex flex-wrap ${className}`}>
       {words.map((word, index) => {
-        const wordProgress = (scrollProgress - index / words.length) * words.length;
+        const wordProgress =
+          (scrollProgress - index / words.length) * words.length;
         const progress = Math.max(0, Math.min(1, wordProgress));
         const blurAmount = initialBlur * (1 - progress);
         const opacity = initialOpacity + (1 - initialOpacity) * progress;
-        
+
         return (
           <span
             key={index}
@@ -88,7 +94,7 @@ export function AnimatedScrollText({
               marginRight: "0.25em",
               filter: `blur(${blurAmount}px)`,
               opacity: opacity,
-              transition: "filter 0.2s ease-out, opacity 0.2s ease-out"
+              transition: "filter 0.2s ease-out, opacity 0.2s ease-out",
             }}
           >
             {word}

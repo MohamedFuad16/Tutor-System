@@ -1,5 +1,12 @@
 export type BrainRuntimeEvent = {
-  type: "render" | "state" | "fetch" | "websocket" | "database" | "route" | "web_search";
+  type:
+    | "render"
+    | "state"
+    | "fetch"
+    | "websocket"
+    | "database"
+    | "route"
+    | "web_search";
   name: string;
   timestamp: number;
   durationMs?: number;
@@ -19,7 +26,10 @@ declare global {
 }
 
 export function isBrainRuntimeEnabled() {
-  return import.meta.env.VITE_BRAIN_RUNTIME === "true" || localStorage.getItem("brain_runtime") === "1";
+  return (
+    import.meta.env.VITE_BRAIN_RUNTIME === "true" ||
+    localStorage.getItem("brain_runtime") === "1"
+  );
 }
 
 export function ensureBrainRuntime() {
@@ -46,6 +56,8 @@ export function ensureBrainRuntime() {
   return window.__BRAIN_RUNTIME__;
 }
 
-export function recordBrainRuntime(event: Omit<BrainRuntimeEvent, "timestamp">) {
+export function recordBrainRuntime(
+  event: Omit<BrainRuntimeEvent, "timestamp">,
+) {
   ensureBrainRuntime().record(event);
 }

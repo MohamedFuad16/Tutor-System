@@ -77,6 +77,15 @@
       }
     },
     {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:ProgressIcon",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
       "source": "file:src/components/StatusBadge.tsx",
       "target": "component:FailedIcon",
       "type": "renders",
@@ -264,15 +273,6 @@
     {
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:AnimatedMarkdown",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx"
-      }
-    },
-    {
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "component:StatusBadge",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {

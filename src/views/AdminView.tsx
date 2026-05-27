@@ -33,6 +33,9 @@ type DebugRunSummary = {
 type DebugRunDetails = DebugRunSummary & {
   updatedAt?: string | null;
   activeTarget?: { name?: string; file?: string; kind?: string } | null;
+  activePhase?: { title?: string; id?: string; description?: string } | null;
+  processOrder?: Array<{ id: string; title: string; description?: string }>;
+  debugLoop?: string[];
   events?: Array<{
     timestamp?: string;
     type?: string;
@@ -41,11 +44,32 @@ type DebugRunDetails = DebugRunSummary & {
   }>;
   components?: Array<{
     target?: { name?: string; file?: string; kind?: string };
+    componentName?: string;
     file?: string;
+    kind?: string;
     changed?: boolean;
     reason?: string;
+    whyChanged?: string;
+    whatChanged?: string[];
+    improvements?: string[];
+    improvementSummary?: string;
     findings?: string[];
     changes?: string[];
+    purpose?: string;
+    technology?: string[];
+    dependencyAnalysis?: string;
+    bestPracticeComparison?: {
+      status?: string;
+      primaryEvidence?: string[];
+      categories?: Record<string, number>;
+    };
+    auditPhases?: Array<{
+      id: string;
+      title: string;
+      status: string;
+      startedAt?: string;
+      finishedAt?: string;
+    }>;
     docsEvidence?: Array<{ id: string; file: string; role: string }>;
     commands?: Array<{
       command: string;
@@ -72,6 +96,28 @@ const compactCommand = (command: string) =>
     .replace(/^npm run /, "npm ")
     .replace(/^npx /, "npx ")
     .slice(0, 92);
+
+type DebugComponentSummary = NonNullable<DebugRunDetails["components"]>[number];
+
+const isCliConsoleFinding = (component: DebugComponentSummary, item: string) =>
+  (/^(brain|scripts)\//.test(component.file || "") ||
+    component.kind === "brain-tooling" ||
+    component.target?.kind === "brain-tooling") &&
+  /console output|Debug console output/.test(item);
+
+const visibleAuditItems = (component: DebugComponentSummary, items: string[]) =>
+  items.filter((item) => !isCliConsoleFinding(component, item));
+
+const friendlyWhy = (component: DebugComponentSummary) => {
+  const text =
+    component.whyChanged ||
+    component.reason ||
+    "The target was audited against the debug process.";
+  if (text.includes("Current source passed the guarded patch criteria")) {
+    return "No automatic source patch was applied. Findings stay visible until a safe deterministic rule or model-backed refactor can change the file without guessing.";
+  }
+  return text;
+};
 
 export function AdminView() {
   const { setActiveView, learnerName } = useStore();
@@ -735,6 +781,13 @@ export function AdminView() {
                                         debugRunDetails.activeTarget.file}
                                     </span>
                                   )}
+                                  {debugRunDetails.activePhase && (
+                                    <span className="rounded-full border border-violet-100 bg-violet-50 px-2.5 py-1 font-mono text-[11px] text-violet-700">
+                                      Phase{" "}
+                                      {debugRunDetails.activePhase.title ||
+                                        debugRunDetails.activePhase.id}
+                                    </span>
+                                  )}
                                   {debugRunDetails.updatedAt && (
                                     <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 font-mono text-[11px] text-zinc-500">
                                       {new Date(
@@ -749,10 +802,11 @@ export function AdminView() {
                                   )}
                                 </div>
                                 <p className="mt-2 text-sm leading-relaxed text-zinc-600 font-serif">
-                                  The ledger records which files changed, what
-                                  deterministic bugs or gates were found, why
-                                  the agent changed code, and which official
-                                  docs were used as comparison evidence.
+                                  The ledger records each completed target as
+                                  soon as it finishes: component name, what
+                                  changed, why it changed, improvement summary,
+                                  official-doc evidence, validation, and
+                                  regression signals.
                                 </p>
                               </div>
                               <div className="grid grid-cols-3 gap-2 text-center">
@@ -834,132 +888,244 @@ export function AdminView() {
                               ) : (
                                 (debugRunDetails.components || []).map(
                                   (component, index) => (
-                                    <article
+                                    <motion.article
+                                      layout
+                                      initial={{ opacity: 0, y: 14 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      transition={{
+                                        duration: 0.28,
+                                        delay: Math.min(index * 0.03, 0.24),
+                                      }}
                                       key={`${component.file}-${index}`}
-                                      className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
+                                      className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm"
                                     >
-                                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                        <div className="min-w-0">
-                                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
-                                            {component.changed ? (
-                                              <CheckCircle2
-                                                size={13}
-                                                className="text-emerald-600"
-                                              />
-                                            ) : (
-                                              <Activity
-                                                size={13}
-                                                className="text-zinc-500"
-                                              />
-                                            )}
-                                            {component.target?.kind ||
-                                              "component"}
-                                          </div>
-                                          <h3 className="mt-1 truncate text-lg font-semibold text-zinc-900">
-                                            {component.target?.name ||
-                                              component.file}
-                                          </h3>
-                                          <div className="mt-1 break-all font-mono text-[11px] text-zinc-500">
-                                            {component.file}
-                                          </div>
-                                        </div>
-                                        <span
-                                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${component.changed ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-white text-zinc-600 border border-zinc-200"}`}
-                                        >
-                                          {component.changed
-                                            ? "Changed"
-                                            : "No source change"}
-                                        </span>
-                                      </div>
-
-                                      <p className="mt-4 text-sm leading-relaxed text-zinc-700 font-serif">
-                                        {component.reason}
-                                      </p>
-
-                                      {(component.findings || []).length >
-                                        0 && (
-                                        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3">
-                                          <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
-                                            <AlertTriangle size={13} /> Findings
-                                          </div>
-                                          <ul className="space-y-1 text-sm text-amber-900">
-                                            {(component.findings || []).map(
-                                              (finding) => (
-                                                <li key={finding}>{finding}</li>
-                                              ),
-                                            )}
-                                          </ul>
-                                        </div>
-                                      )}
-
-                                      {(component.changes || []).length > 0 && (
-                                        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-                                          <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">
-                                            <CheckCircle2 size={13} /> Changes
-                                          </div>
-                                          <ul className="space-y-1 text-sm text-emerald-900">
-                                            {(component.changes || []).map(
-                                              (change) => (
-                                                <li key={change}>{change}</li>
-                                              ),
-                                            )}
-                                          </ul>
-                                        </div>
-                                      )}
-
-                                      {(component.docsEvidence || []).length >
-                                        0 && (
-                                        <div className="mt-4 flex flex-wrap gap-2">
-                                          {(component.docsEvidence || []).map(
-                                            (doc) => (
-                                              <span
-                                                key={`${component.file}-${doc.id}`}
-                                                className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 font-mono text-[11px] text-blue-700"
-                                              >
-                                                {doc.id}
-                                              </span>
-                                            ),
-                                          )}
-                                        </div>
-                                      )}
-
-                                      {(component.commands || []).length >
-                                        0 && (
-                                        <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                                          {(component.commands || [])
-                                            .slice(-6)
-                                            .map((command, commandIndex) => (
-                                              <div
-                                                key={`${component.file}-${command.command}-${commandIndex}`}
-                                                className={`rounded-xl border px-3 py-2 ${
-                                                  command.ok
-                                                    ? "border-emerald-100 bg-white text-zinc-700"
-                                                    : "border-red-100 bg-red-50 text-red-800"
-                                                }`}
-                                              >
-                                                <div className="flex items-center justify-between gap-2">
-                                                  <span className="font-mono text-[11px] font-semibold">
-                                                    {compactCommand(
-                                                      command.command,
-                                                    )}
-                                                  </span>
-                                                  <span
-                                                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
-                                                      command.ok
-                                                        ? "bg-emerald-50 text-emerald-700"
-                                                        : "bg-red-100 text-red-700"
-                                                    }`}
-                                                  >
-                                                    {command.ok
-                                                      ? "pass"
-                                                      : `exit ${command.exitCode}`}
-                                                  </span>
-                                                </div>
+                                      <details className="group" open={false}>
+                                        <summary className="flex cursor-pointer list-none flex-col gap-3 rounded-xl outline-none transition-colors hover:bg-white/60 sm:flex-row sm:items-start sm:justify-between">
+                                          <div className="min-w-0">
+                                            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+                                              {component.changed ? (
+                                                <CheckCircle2
+                                                  size={13}
+                                                  className="text-emerald-600"
+                                                />
+                                              ) : (
+                                                <Activity
+                                                  size={13}
+                                                  className="text-zinc-500"
+                                                />
+                                              )}
+                                              {component.kind ||
+                                                component.target?.kind ||
+                                                "component"}
+                                            </div>
+                                            <h3 className="mt-1 truncate text-lg font-semibold text-zinc-900">
+                                              {component.componentName ||
+                                                component.target?.name ||
+                                                component.file}
+                                            </h3>
+                                            <div className="mt-1 break-all font-mono text-[11px] text-zinc-500">
+                                              {component.file}
+                                            </div>
+                                            {(component.technology || [])
+                                              .length > 0 && (
+                                              <div className="mt-3 flex flex-wrap gap-1.5">
+                                                {(component.technology || [])
+                                                  .slice(0, 8)
+                                                  .map((tech) => (
+                                                    <span
+                                                      key={`${component.file}-${tech}`}
+                                                      className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 font-mono text-[10px] text-zinc-500"
+                                                    >
+                                                      {tech}
+                                                    </span>
+                                                  ))}
                                               </div>
-                                            ))}
+                                            )}
+                                          </div>
+                                          <span
+                                            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${component.changed ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-white text-zinc-600 border border-zinc-200"}`}
+                                          >
+                                            {component.changed
+                                              ? "Changed"
+                                              : "No source change"}
+                                            <ChevronRight
+                                              size={13}
+                                              className="ml-1 inline-block transition-transform group-open:rotate-90"
+                                            />
+                                          </span>
+                                        </summary>
+
+                                        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                                          <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                                            <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                              What Changed
+                                            </div>
+                                            <ul className="space-y-1 text-sm leading-relaxed text-zinc-700">
+                                              {(
+                                                component.whatChanged ||
+                                                component.changes || [
+                                                  "No source patch was applied.",
+                                                ]
+                                              ).map((item) => (
+                                                <li key={item}>{item}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                          <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                                            <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                              Why
+                                            </div>
+                                            <p className="text-sm leading-relaxed text-zinc-700">
+                                              {friendlyWhy(component)}
+                                            </p>
+                                          </div>
+                                          <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                                            <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                              Improvements
+                                            </div>
+                                            <ul className="space-y-1 text-sm leading-relaxed text-zinc-700">
+                                              {visibleAuditItems(
+                                                component,
+                                                component.improvements || [
+                                                  component.improvementSummary ||
+                                                    "No improvement summary was recorded.",
+                                                ],
+                                              )
+                                                .slice(0, 4)
+                                                .map((item) => (
+                                                  <li key={item}>{item}</li>
+                                                ))}
+                                            </ul>
+                                          </div>
                                         </div>
-                                      )}
-                                    </article>
+
+                                        {(component.purpose ||
+                                          component.dependencyAnalysis ||
+                                          component.bestPracticeComparison
+                                            ?.status) && (
+                                          <div className="mt-4 grid gap-3 md:grid-cols-3">
+                                            {component.purpose && (
+                                              <div className="rounded-xl border border-zinc-200 bg-white p-3 text-sm leading-relaxed text-zinc-700">
+                                                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                                  Purpose
+                                                </div>
+                                                {component.purpose}
+                                              </div>
+                                            )}
+                                            {component.dependencyAnalysis && (
+                                              <div className="rounded-xl border border-zinc-200 bg-white p-3 text-sm leading-relaxed text-zinc-700">
+                                                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                                  Dependencies
+                                                </div>
+                                                {component.dependencyAnalysis}
+                                              </div>
+                                            )}
+                                            {component.bestPracticeComparison
+                                              ?.status && (
+                                              <div className="rounded-xl border border-zinc-200 bg-white p-3 text-sm leading-relaxed text-zinc-700">
+                                                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                                  Best Practices
+                                                </div>
+                                                {
+                                                  component
+                                                    .bestPracticeComparison
+                                                    .status
+                                                }
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+
+                                        {visibleAuditItems(
+                                          component,
+                                          component.findings || [],
+                                        ).length > 0 && (
+                                          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                                            <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
+                                              <AlertTriangle size={13} />{" "}
+                                              Findings
+                                            </div>
+                                            <ul className="space-y-1 text-sm text-amber-900">
+                                              {visibleAuditItems(
+                                                component,
+                                                component.findings || [],
+                                              ).map((finding) => (
+                                                <li key={finding}>{finding}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+
+                                        {(component.changes || []).length >
+                                          0 && (
+                                          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                                            <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">
+                                              <CheckCircle2 size={13} /> Changes
+                                            </div>
+                                            <ul className="space-y-1 text-sm text-emerald-900">
+                                              {(component.changes || []).map(
+                                                (change) => (
+                                                  <li key={change}>{change}</li>
+                                                ),
+                                              )}
+                                            </ul>
+                                          </div>
+                                        )}
+
+                                        {(component.docsEvidence || []).length >
+                                          0 && (
+                                          <div className="mt-4 flex flex-wrap gap-2">
+                                            {(component.docsEvidence || []).map(
+                                              (doc) => (
+                                                <span
+                                                  key={`${component.file}-${doc.id}`}
+                                                  className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 font-mono text-[11px] text-blue-700"
+                                                >
+                                                  {doc.id}
+                                                </span>
+                                              ),
+                                            )}
+                                          </div>
+                                        )}
+
+                                        {(component.commands || []).length >
+                                          0 && (
+                                          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                                            {(component.commands || [])
+                                              .slice(-6)
+                                              .map((command, commandIndex) => (
+                                                <div
+                                                  key={`${component.file}-${command.command}-${commandIndex}`}
+                                                  className={`rounded-xl border px-3 py-2 ${
+                                                    command.ok
+                                                      ? "border-emerald-100 bg-white text-zinc-700"
+                                                      : "border-red-100 bg-red-50 text-red-800"
+                                                  }`}
+                                                >
+                                                  <div className="flex items-center justify-between gap-2">
+                                                    <span className="font-mono text-[11px] font-semibold">
+                                                      {compactCommand(
+                                                        command.command,
+                                                      )}
+                                                    </span>
+                                                    <span
+                                                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                                        command.ok
+                                                          ? "bg-emerald-50 text-emerald-700"
+                                                          : "bg-red-100 text-red-700"
+                                                      }`}
+                                                    >
+                                                      {command.ok
+                                                        ? "pass"
+                                                        : `exit ${command.exitCode}`}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                          </div>
+                                        )}
+                                      </details>
+                                    </motion.article>
                                   ),
                                 )
                               )}

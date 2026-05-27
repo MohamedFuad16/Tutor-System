@@ -3,6 +3,15 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ShikiHighlighter } from "./ShikiHighlighter";
 import {
+  PendingIcon,
+  ProgressIcon,
+  SubmittedIcon,
+  ReviewIcon,
+  SuccessIcon,
+  ExpiredIcon,
+  StatusBadge,
+} from "./StatusBadge";
+import {
   ArrowUp,
   Sparkles,
   Network,
@@ -222,6 +231,7 @@ const PremiumCodeShell = ({
       <AnimatePresence>
         {output !== undefined && output !== null && (
           <motion.div
+            data-reasoning-steps
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -486,19 +496,20 @@ const compactModel = (model: string) => {
   return parts[parts.length - 1] || model;
 };
 
-const AnimatedNumberText = ({ children }: { children: React.ReactNode }) => (
-  <AnimatePresence mode="popLayout" initial={false}>
-    <motion.span
-      key={String(children)}
-      initial={{ y: 8, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: -8, opacity: 0, position: "absolute" }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-      className="inline-block"
-    >
-      {children}
-    </motion.span>
-  </AnimatePresence>
+const AnimatedNumberText = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <motion.span
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.16, ease: "easeOut" }}
+    className={`inline-block min-w-[3ch] tabular-nums ${className}`}
+  >
+    {children}
+  </motion.span>
 );
 
 export const UsageAnalyticsStrip = () => {
@@ -581,10 +592,7 @@ export const UsageAnalyticsStrip = () => {
   const totalCost = chatUsage.cost + voiceUsage.cost + webUsage.cost;
 
   return (
-    <motion.div
-      layout
-      className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] text-[#fefefe] shadow-[0_18px_54px_rgba(0,0,0,0.34)]"
-    >
+    <motion.div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] text-[#fefefe] shadow-[0_18px_54px_rgba(0,0,0,0.34)]">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_16%_0%,rgba(255,110,0,0.28),transparent_36%),radial-gradient(circle_at_90%_110%,rgba(255,255,255,0.13),transparent_38%)]" />
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.14]"
@@ -617,19 +625,19 @@ export const UsageAnalyticsStrip = () => {
                 <span>Chat</span>
                 <span>{formatCurrency(chatUsage.cost)}</span>
               </div>
-              <div className="mt-1 flex flex-col text-[12px] font-mono text-white/85 tabular-nums">
-                <div>
+              <div className="mt-1 grid grid-cols-[minmax(3.5ch,auto)_auto] gap-x-1 text-[12px] font-mono text-white/85 tabular-nums">
+                <div className="text-right">
                   <AnimatedNumberText>
                     {formatCount(animInputTokens)}
                   </AnimatedNumberText>
-                  {" in"}
                 </div>
-                <div>
+                <span>in</span>
+                <div className="text-right">
                   <AnimatedNumberText>
                     {formatCount(animOutputTokens)}
                   </AnimatedNumberText>
-                  {" out"}
                 </div>
+                <span>out</span>
               </div>
               <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
                 <motion.div
@@ -1074,17 +1082,65 @@ const FinalSourcesPanel = ({ sources }: { sources: NormalizedWebSource[] }) => {
   );
 };
 
-import { PendingIcon, ProgressIcon, SubmittedIcon, ReviewIcon, SuccessIcon, FailedIcon, ExpiredIcon, StatusBadge } from './StatusBadge';
-
 const thoughtStepMeta = (content: string, phase: string) => {
   const value = content.toLowerCase();
-  if (value.includes('web') || value.includes('source') || value.includes('search')) return { icon: ProgressIcon, label: 'Search', bg: 'bg-[#E7F3FF]', text: 'text-[#0A7DFF]' };
-  if (value.includes('page') || value.includes('screen') || value.includes('screenshot') || value.includes('visual')) return { icon: SubmittedIcon, label: 'Vision', bg: 'bg-[#F1EAFC]', text: 'text-[#6929F4]' };
-  if (value.includes('tool') || value.includes('execut')) return { icon: SuccessIcon, label: 'Tool', bg: 'bg-[#E6F8EA]', text: 'text-[#36AA55]' };
-  if (value.includes('graph') || value.includes('concept')) return { icon: PendingIcon, label: 'Graph', bg: 'bg-[#FDF1E8]', text: 'text-[#D87A2C]' };
-  if (value.includes('flashcard') || value.includes('revision')) return { icon: ReviewIcon, label: 'Recall', bg: 'bg-[#FDF4DD]', text: 'text-[#D49B23]' };
-  if (value.includes('synth') || phase === 'synthesizing') return { icon: SubmittedIcon, label: 'Synthesis', bg: 'bg-[#F1EAFC]', text: 'text-[#6929F4]' };
-  return { icon: ExpiredIcon, label: 'Reasoning', bg: 'bg-[#F3F3F3]', text: 'text-[#6A6A6A]' };
+  if (
+    value.includes("web") ||
+    value.includes("source") ||
+    value.includes("search")
+  )
+    return {
+      icon: ProgressIcon,
+      label: "Search",
+      bg: "bg-[#E7F3FF]",
+      text: "text-[#0A7DFF]",
+    };
+  if (
+    value.includes("page") ||
+    value.includes("screen") ||
+    value.includes("screenshot") ||
+    value.includes("visual")
+  )
+    return {
+      icon: SubmittedIcon,
+      label: "Vision",
+      bg: "bg-[#F1EAFC]",
+      text: "text-[#6929F4]",
+    };
+  if (value.includes("tool") || value.includes("execut"))
+    return {
+      icon: SuccessIcon,
+      label: "Tool",
+      bg: "bg-[#E6F8EA]",
+      text: "text-[#36AA55]",
+    };
+  if (value.includes("graph") || value.includes("concept"))
+    return {
+      icon: PendingIcon,
+      label: "Graph",
+      bg: "bg-[#FDF1E8]",
+      text: "text-[#D87A2C]",
+    };
+  if (value.includes("flashcard") || value.includes("revision"))
+    return {
+      icon: ReviewIcon,
+      label: "Recall",
+      bg: "bg-[#FDF4DD]",
+      text: "text-[#D49B23]",
+    };
+  if (value.includes("synth") || phase === "synthesizing")
+    return {
+      icon: SubmittedIcon,
+      label: "Synthesis",
+      bg: "bg-[#F1EAFC]",
+      text: "text-[#6929F4]",
+    };
+  return {
+    icon: ExpiredIcon,
+    label: "Reasoning",
+    bg: "bg-[#F3F3F3]",
+    text: "text-[#6A6A6A]",
+  };
 };
 
 const getStatusBadge = (
@@ -1099,106 +1155,197 @@ const getStatusBadge = (
   return "progress";
 };
 
-const ThinkingPanel = ({ phase, steps, isComplete, webSearch, hasError }: { phase: string, steps: any[], isComplete: boolean, webSearch?: Message['webSearch'], hasError?: boolean }) => {
+const ThinkingPanel = ({
+  phase,
+  steps,
+  isComplete,
+  webSearch,
+  hasError,
+}: {
+  phase: string;
+  steps: any[];
+  isComplete: boolean;
+  webSearch?: Message["webSearch"];
+  hasError?: boolean;
+}) => {
   const panelRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (!isComplete) {
+        panelRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [steps.length, webSearch?.sources.length]);
+  }, [isComplete, steps.length, webSearch?.sources.length]);
 
   if (phase === "idle" && steps.length === 0) return null;
+  const latestStep = steps[steps.length - 1];
+  const latestMeta = thoughtStepMeta(latestStep?.content || phase, phase);
+  const LatestIcon = latestMeta.icon;
+  const activeLabel =
+    phase === "retrieving"
+      ? "Searching"
+      : phase === "web_search"
+        ? "Reviewing"
+        : phase === "tool_execution"
+          ? "Running"
+          : phase === "synthesizing"
+            ? "Synthesizing"
+            : isComplete
+              ? "Complete"
+              : "Thinking";
+  const stepCount = steps.length + (webSearch?.sources.length ? 1 : 0);
 
   return (
-    <div ref={panelRef} className="not-prose mb-5 mt-2 overflow-hidden font-sans">
-      <div className="mt-1 bg-transparent py-2 text-[13px] text-zinc-500 pl-2">
-        <div className="space-y-1">
-          {steps.map((step, idx) => {
-            const meta = thoughtStepMeta(step.content, phase);
-            const active = !isComplete && idx === steps.length - 1 && phase !== "complete";
-            return (
-              <motion.div
-                key={step.id}
-                initial={{ opacity: 0, y: -10, scale: 0.96, filter: "blur(6px)" }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                transition={{ delay: idx * 0.08, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
-              >
-                {idx < steps.length - 1 && (
-                  <motion.div
-                    initial={{ scaleY: 0 }}
-                    animate={{ scaleY: 1 }}
-                    transition={{ delay: idx * 0.08 + 0.1, duration: 0.5, ease: "easeOut" }}
-                    className="absolute left-[26px] top-10 bottom-[-12px] w-px bg-black/10 origin-top"
-                  />
-                )}
-
-                <div className="flex items-center gap-2">
-                  <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-[11px] font-medium tracking-tight ${meta.bg} ${meta.text}`}>
-                    <motion.div
-                      animate={active ? { rotate: [0, -6, 6, 0], y: [0, -1, 0] } : { rotate: 0, y: 0 }}
-                      transition={{ repeat: active ? Infinity : 0, duration: 1.45, ease: "easeInOut" }}
-                      className="flex items-center justify-center scale-[0.6] origin-center -mx-1"
-                    >
-                      <meta.icon />
-                    </motion.div>
-                    {meta.label}
-                  </div>
-                  {active && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-pulse shadow-sm" />
-                  )}
-                </div>
-
-                <div className="pl-[32px] mt-1 text-[12px] leading-relaxed tracking-tight text-zinc-600 transition-colors group-hover/step:text-zinc-900">
-                  {step.content}
-                </div>
-              </motion.div>
-            );
-          })}
-          <SearchActivityPanel webSearch={webSearch} />
-
-          {!isComplete && (
+    <div
+      ref={panelRef}
+      data-reasoning-dropdown
+      className="not-prose mb-5 mt-2 overflow-hidden rounded-3xl border border-zinc-200/80 bg-white/90 font-sans shadow-[0_18px_45px_rgba(0,0,0,0.06)]"
+    >
+      <button
+        type="button"
+        onClick={() => setExpanded((value) => !value)}
+        aria-expanded={expanded}
+        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left outline-none transition-colors hover:bg-zinc-50"
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <div
+            className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl ${latestMeta.bg} ${latestMeta.text}`}
+          >
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.96, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
+              animate={
+                !isComplete
+                  ? { rotate: [0, -6, 6, 0], y: [0, -1, 0] }
+                  : { rotate: 0, y: 0 }
+              }
+              transition={{
+                repeat: !isComplete ? Infinity : 0,
+                duration: 1.45,
+                ease: "easeInOut",
+              }}
+              className="scale-[0.68]"
             >
-              {steps.length > 0 && (
-                <motion.div
-                  initial={{ scaleY: 0 }}
-                  animate={{ scaleY: 1 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="absolute left-[26px] top-[-12px] bottom-[30px] w-px bg-black/10 origin-top"
-                />
-              )}
-
-              <div className="flex items-center gap-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-[11px] font-medium tracking-tight bg-[#E7F3FF] text-[#0A7DFF]">
-                  <div className="flex items-center justify-center scale-[0.6] origin-center -mx-1">
-                    <ProgressIcon />
-                  </div>
-                  {phase === "retrieving"
-                    ? "Searching"
-                    : phase === "web_search"
-                      ? "Reviewing"
-                      : phase === "tool_execution"
-                        ? "Running"
-                        : phase === "synthesizing"
-                          ? "Synthesizing"
-                          : "Thinking"}
-                </div>
-              </div>
-
-              <div className="pl-[32px] mt-1 text-[12px] italic tracking-tight text-zinc-500 transition-colors">
-                Loading...
-              </div>
+              <LatestIcon />
             </motion.div>
-          )}
+          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[12px] font-semibold text-zinc-900">
+                Reasoning trace
+              </span>
+              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                {activeLabel}
+              </span>
+              {stepCount > 0 && (
+                <span className="text-[11px] text-zinc-400">
+                  {stepCount} step{stepCount === 1 ? "" : "s"}
+                </span>
+              )}
+            </div>
+            <div className="mt-0.5 truncate text-[12px] leading-snug text-zinc-500">
+              {latestStep?.content ||
+                webSearch?.status ||
+                "Preparing the reasoning trace..."}
+            </div>
+          </div>
         </div>
-      </div>
+        <motion.span animate={{ rotate: expanded ? 180 : 0 }}>
+          <ChevronDown size={16} className="text-zinc-400" />
+        </motion.span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden border-t border-zinc-100"
+          >
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={{
+                hidden: {},
+                show: { transition: { staggerChildren: 0.045 } },
+              }}
+              className="space-y-1 px-3 py-3 text-[13px] text-zinc-500"
+            >
+              {steps.map((step, idx) => {
+                const meta = thoughtStepMeta(step.content, phase);
+                const active =
+                  !isComplete &&
+                  idx === steps.length - 1 &&
+                  phase !== "complete";
+                return (
+                  <motion.div
+                    key={step.id}
+                    variants={{
+                      hidden: { opacity: 0, y: 8, filter: "blur(5px)" },
+                      show: { opacity: 1, y: 0, filter: "blur(0px)" },
+                    }}
+                    transition={{ duration: 0.28, ease: "easeOut" }}
+                    className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
+                  >
+                    {idx < steps.length - 1 && (
+                      <div className="absolute bottom-[-12px] left-[26px] top-10 w-px bg-black/10" />
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`inline-flex items-center gap-1.5 rounded-[12px] px-3 py-1.5 text-[11px] font-medium tracking-tight ${meta.bg} ${meta.text}`}
+                      >
+                        <div className="-mx-1 flex origin-center scale-[0.6] items-center justify-center">
+                          <meta.icon />
+                        </div>
+                        {meta.label}
+                      </div>
+                      {active && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 shadow-sm animate-pulse" />
+                      )}
+                    </div>
+
+                    <div className="mt-1 pl-[32px] text-[12px] leading-relaxed tracking-tight text-zinc-600 transition-colors group-hover/step:text-zinc-900">
+                      {step.content}
+                    </div>
+                  </motion.div>
+                );
+              })}
+              <SearchActivityPanel webSearch={webSearch} />
+
+              {!isComplete && (
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: 8, filter: "blur(5px)" },
+                    show: { opacity: 1, y: 0, filter: "blur(0px)" },
+                  }}
+                  transition={{ duration: 0.28, ease: "easeOut" }}
+                  className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="inline-flex items-center gap-1.5 rounded-[12px] bg-[#E7F3FF] px-3 py-1.5 text-[11px] font-medium tracking-tight text-[#0A7DFF]">
+                      <div className="-mx-1 flex origin-center scale-[0.6] items-center justify-center">
+                        <ProgressIcon />
+                      </div>
+                      {activeLabel}
+                    </div>
+                  </div>
+
+                  <div className="mt-1 pl-[32px] text-[12px] italic tracking-tight text-zinc-500 transition-colors">
+                    Loading...
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -2577,7 +2724,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   return (
     <div className="flex flex-col h-full bg-transparent relative z-10 w-full overflow-hidden">
       {/* Dynamic Header */}
-      <div className="absolute top-0 w-full px-6 py-4 pt-6 shrink-0 z-40 bg-gradient-to-b from-[#fdfdfd] via-[#fdfdfd]/90 to-transparent flex items-center justify-between pointer-events-none">
+      <div
+        data-tutor-chat-header
+        className="absolute top-0 w-full px-6 py-4 pt-6 shrink-0 z-40 border-b border-zinc-200/70 bg-[rgba(253,253,253,0.98)] shadow-[0_12px_36px_rgba(255,255,255,0.92)] backdrop-blur-xl flex items-center justify-between pointer-events-none"
+      >
         <div className="flex items-center gap-4 pointer-events-auto">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.08)] bg-white border border-black/5 flex items-center justify-center">
@@ -2741,7 +2891,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
       {/* Chat Messages */}
       <div
-        className="flex-1 overflow-y-auto px-4 sm:px-6 pt-[90px] py-4 pb-52 space-y-8 custom-scroll"
+        className="flex-1 overflow-y-auto px-4 sm:px-6 pt-[112px] py-4 pb-52 space-y-8 custom-scroll"
         ref={scrollRef}
       >
         <AnimatePresence initial={false}>

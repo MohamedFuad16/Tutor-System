@@ -8,8 +8,14 @@ export function instrumentFetch() {
   const originalFetch = window.fetch.bind(window);
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const startedAt = performance.now();
-    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-    const method = init?.method || (input instanceof Request ? input.method : "GET");
+    const url =
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url;
+    const method =
+      init?.method || (input instanceof Request ? input.method : "GET");
     try {
       const response = await originalFetch(input, init);
       recordBrainRuntime({
@@ -28,7 +34,10 @@ export function instrumentFetch() {
         type: "fetch",
         name: new URL(url, window.location.href).pathname,
         durationMs: performance.now() - startedAt,
-        metadata: { method, error: error instanceof Error ? error.message : String(error) },
+        metadata: {
+          method,
+          error: error instanceof Error ? error.message : String(error),
+        },
       });
       throw error;
     }

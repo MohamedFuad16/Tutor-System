@@ -131,7 +131,34 @@ The repo-side tool is under `brain/debug/` and is invoked with:
 npm run brain:debug -- --mode fix --scope all
 ```
 
-It builds a resumable queue from the brain graph, audits each UI/code component, retrieves context, runs impact analysis, checks format/lint/build gates, compares source to local official docs packs, applies deterministic fixes with source-hash checks and backups, runs post-change brain refresh, records findings, and appends a machine-readable debug memory graph.
+By default `--scope all` audits every source-scoped app target: files, UI components, stores, services, hooks, contexts, routes, utilities, server/API files, scripts, and `/brain` TypeScript tooling. The queue is built from both the `/brain` graph and the tracked source file list so graph omissions do not hide files from the long-horizon pass.
+
+Every target follows the same ordered debug process:
+
+1. Parse architecture.
+2. Understand purpose.
+3. Analyze dependencies.
+4. Detect anti-patterns.
+5. Detect performance issues and capture a before benchmark when runtime benchmarking is enabled.
+6. Detect stale state.
+7. Detect render problems.
+8. Detect memory leaks.
+9. Detect async issues.
+10. Detect typing issues.
+11. Detect animation issues.
+12. Detect API issues.
+13. Detect accessibility issues.
+14. Compare against best practices.
+15. Search documentation patterns.
+16. Generate improvements.
+17. Apply guarded patches when justified.
+18. Run validation.
+19. Run regression tests, responsiveness probes, animation smoothness sampling, and after benchmarks.
+20. Persist findings into `/brain`.
+
+The operational loop is: scan, understand, audit, benchmark, detect bugs, search best practices, compare implementations, patch issues, rerun tests, validate fixes, measure regressions, persist findings into brain, then repeat until the last target is completed.
+
+It retrieves context, runs impact analysis, maps official documentation evidence, checks format/lint/build gates, compares source to local official docs packs, applies deterministic fixes with source-hash checks and backups, runs post-change brain refresh after patches, records findings, and appends a machine-readable debug memory graph. The regression stage also runs `brain:ui-regression`, a Playwright probe that checks mobile/tablet/desktop overflow, sampled frame smoothness, opaque Tutor headers, and reasoning-dropdown interaction.
 
 Run artifacts are append-only under `brain/debug/runs/<run-id>/`. `run.json` and `summary.json` are written when the run starts and refreshed after each completed component so Admin can show the audit immediately during long runs. The memory graph is `brain/debug/memory-graph.json`.
 
@@ -151,7 +178,7 @@ Admin now exposes a Debug Runs page. It reads server-backed debug artifacts thro
 - `POST /api/debug/run`
 - `POST /api/debug/runs/:id/cancel`
 
-The UI shows run history, status, live event flow, component queue progress, changed files, bugs/findings, why the agent changed code, how the code should behave, official-doc evidence, component command results, and final verification gates while the run is still active.
+The UI shows run history, status, active target, active phase, live event flow, component queue progress, component name, changed files, what changed, why it changed, improvement summaries, bugs/findings, how the code should behave, official-doc evidence, component command results, benchmark/regression results, and final verification gates while the run is still active. Component cards are collapsed by default so the ledger stays readable during long all-target runs.
 
 ## 12. Maintenance Boundaries
 

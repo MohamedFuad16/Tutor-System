@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, MessageSquare, Minus, Plus } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Sparkles, MessageSquare, Minus, Plus } from "lucide-react";
 
-const SKILLS = [
-  "Search"
-];
+const SKILLS = ["Search"];
 
-export function FloatingSkillsMenu({ isOpen, onClose, onSelectSkill }: { isOpen: boolean; onClose: () => void; onSelectSkill?: (skill: string) => void }) {
-  const [activeTab, setActiveTab] = useState<'skills'>('skills');
+export function FloatingSkillsMenu({
+  isOpen,
+  onClose,
+  onSelectSkill,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectSkill?: (skill: string) => void;
+}) {
+  const [activeTab, setActiveTab] = useState<"skills">("skills");
   const [isFetching, setIsFetching] = useState(false);
   const [items, setItems] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(false);
@@ -16,7 +22,7 @@ export function FloatingSkillsMenu({ isOpen, onClose, onSelectSkill }: { isOpen:
   useEffect(() => {
     setIsFetching(true);
     setItems([]);
-    
+
     const timer = setTimeout(() => {
       setItems(SKILLS);
       setIsFetching(false);
@@ -33,19 +39,24 @@ export function FloatingSkillsMenu({ isOpen, onClose, onSelectSkill }: { isOpen:
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 20, scale: 0.95, transition: { duration: 0.2 } }}
+          exit={{
+            opacity: 0,
+            y: 20,
+            scale: 0.95,
+            transition: { duration: 0.2 },
+          }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
           className="absolute bottom-full mb-4 left-0 w-[280px] sm:w-[320px] max-w-[calc(100vw-32px)] bg-[#fdfdfd] text-[#050505] dark:bg-[#121214] dark:text-zinc-100 rounded-3xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/10 overflow-hidden z-50 origin-bottom-left"
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <motion.h3 
+            <motion.h3
               layout="position"
               className="text-sm font-bold tracking-tight"
             >
               Skills
             </motion.h3>
-            <button 
+            <button
               onClick={onClose}
               className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors text-zinc-400"
             >
@@ -65,10 +76,13 @@ export function FloatingSkillsMenu({ isOpen, onClose, onSelectSkill }: { isOpen:
                   transition={{ duration: 0.2 }}
                   className="flex flex-col gap-3 pt-2"
                 >
-                  {[1, 2, 3, 4].map(i => (
+                  {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="flex items-center gap-3">
                       <div className="w-3 h-3 rounded-full bg-black/5 dark:bg-white/5 animate-pulse" />
-                      <div className="h-3 bg-black/5 dark:bg-white/5 rounded-full w-3/4 animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+                      <div
+                        className="h-3 bg-black/5 dark:bg-white/5 rounded-full w-3/4 animate-pulse"
+                        style={{ animationDelay: `${i * 100}ms` }}
+                      />
                     </div>
                   ))}
                 </motion.div>

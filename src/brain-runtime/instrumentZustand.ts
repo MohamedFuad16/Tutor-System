@@ -2,7 +2,9 @@ import { recordBrainRuntime } from "./runtimeTelemetry";
 
 type StoreLike = {
   getState: () => unknown;
-  subscribe: (listener: (state: unknown, previousState: unknown) => void) => () => void;
+  subscribe: (
+    listener: (state: unknown, previousState: unknown) => void,
+  ) => () => void;
 };
 
 export function instrumentZustand(useStore: StoreLike) {
@@ -13,7 +15,9 @@ export function instrumentZustand(useStore: StoreLike) {
   useStore.subscribe((state, previousState) => {
     const current = state as Record<string, unknown>;
     const previous = previousState as Record<string, unknown>;
-    const changed = Object.keys(current).filter((key) => current[key] !== previous[key]);
+    const changed = Object.keys(current).filter(
+      (key) => current[key] !== previous[key],
+    );
     changed.forEach((field) => {
       recordBrainRuntime({
         type: "state",

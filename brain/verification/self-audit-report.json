@@ -1,12 +1,12 @@
 {
   "ok": true,
-  "generatedAt": "2026-05-27T08:32:04.082Z",
+  "generatedAt": "2026-05-27T12:31:01.635Z",
   "threshold": 85,
-  "score": 99,
+  "score": 98,
   "checks": {
     "graphFreshness": 12,
     "vectorFreshness": 14,
-    "retrievalQuality": 15,
+    "retrievalQuality": 14,
     "runtimeCoverage": 14,
     "contractCoverage": 10,
     "routeStateCoverage": 10,
@@ -16,7 +16,7 @@
   },
   "retrievalBenchmark": {
     "recall": 1,
-    "confidenceAverage": 0.9078499999999999,
+    "confidenceAverage": 0.8945166666666666,
     "results": [
       {
         "task": "add dashboard feature",
@@ -80,7 +80,7 @@
         ],
         "recall": 1,
         "confidence": "high",
-        "confidenceScore": 0.97
+        "confidenceScore": 0.89
       },
       {
         "task": "change shared UI animations",

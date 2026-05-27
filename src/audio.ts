@@ -4,7 +4,9 @@ let audioCtx: AudioContext | null = null;
 
 const getAudioContext = () => {
   if (!audioCtx) {
-    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    audioCtx = new (
+      window.AudioContext || (window as any).webkitAudioContext
+    )();
   }
   return audioCtx;
 };
@@ -12,21 +14,21 @@ const getAudioContext = () => {
 export const playHoverSound = () => {
   try {
     const ctx = getAudioContext();
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === "suspended") ctx.resume();
 
     // Soft whoosh (filtered noise)
     const bufferSize = ctx.sampleRate * 0.5; // 0.5 seconds
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
+      data[i] = Math.random() * 2 - 1;
     }
 
     const noiseSource = ctx.createBufferSource();
     noiseSource.buffer = buffer;
 
     const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
+    filter.type = "lowpass";
     filter.frequency.setValueAtTime(600, ctx.currentTime);
     filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
 
@@ -42,14 +44,14 @@ export const playHoverSound = () => {
     noiseSource.start();
     noiseSource.stop(ctx.currentTime + 0.5);
   } catch (err) {
-      console.warn("Audio not supported or permitted yet", err);
+    console.warn("Audio not supported or permitted yet", err);
   }
 };
 
 export const playClickSound = () => {
   try {
     const ctx = getAudioContext();
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === "suspended") ctx.resume();
 
     // Metallic thump (FM synthesis / percussion)
     const osc1 = ctx.createOscillator();
@@ -57,16 +59,16 @@ export const playClickSound = () => {
     const gainNode = ctx.createGain();
     const filter = ctx.createBiquadFilter();
 
-    osc1.type = 'sine';
-    osc2.type = 'square'; // adding metallic harmonics
+    osc1.type = "sine";
+    osc2.type = "square"; // adding metallic harmonics
 
     osc1.frequency.setValueAtTime(180, ctx.currentTime);
     osc1.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
-    
+
     osc2.frequency.setValueAtTime(400, ctx.currentTime);
     osc2.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.15);
 
-    filter.type = 'lowpass';
+    filter.type = "lowpass";
     filter.frequency.setValueAtTime(3000, ctx.currentTime);
     filter.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.2);
 
@@ -84,7 +86,7 @@ export const playClickSound = () => {
     osc1.stop(ctx.currentTime + 0.4);
     osc2.stop(ctx.currentTime + 0.4);
   } catch (err) {
-      console.warn("Audio not supported or permitted yet", err);
+    console.warn("Audio not supported or permitted yet", err);
   }
 };
 
@@ -95,24 +97,24 @@ let isAmbientPlaying = false;
 
 export const startAmbientHum = () => {
   if (isAmbientPlaying) return;
-  
+
   try {
     const ctx = getAudioContext();
-    if (ctx.state === 'suspended') ctx.resume();
-    
+    if (ctx.state === "suspended") ctx.resume();
+
     ambientOsc = ctx.createOscillator();
     ambientLfo = ctx.createOscillator();
     ambientGain = ctx.createGain();
 
-    ambientOsc.type = 'sine';
+    ambientOsc.type = "sine";
     ambientOsc.frequency.value = 55; // Low hum
 
-    ambientLfo.type = 'sine';
+    ambientLfo.type = "sine";
     ambientLfo.frequency.value = 0.1; // Very slow modulation
 
     const lfoGain = ctx.createGain();
     lfoGain.gain.value = 2; // modulate frequency by +/- 2hz
-    
+
     ambientLfo.connect(lfoGain);
     lfoGain.connect(ambientOsc.frequency);
 

@@ -7,8 +7,25 @@ type BrainDbLike = {
   }>;
 };
 
-const READ_OPS = ["get", "toArray", "filter", "where", "orderBy", "limit", "count", "first"];
-const WRITE_OPS = ["add", "put", "update", "delete", "clear", "bulkAdd", "bulkPut"];
+const READ_OPS = [
+  "get",
+  "toArray",
+  "filter",
+  "where",
+  "orderBy",
+  "limit",
+  "count",
+  "first",
+];
+const WRITE_OPS = [
+  "add",
+  "put",
+  "update",
+  "delete",
+  "clear",
+  "bulkAdd",
+  "bulkPut",
+];
 
 export function instrumentDexie(db: BrainDbLike) {
   const marker = "__brainRuntimeDexieInstrumented";
@@ -32,18 +49,25 @@ export function instrumentDexie(db: BrainDbLike) {
                 operation,
                 mutation: WRITE_OPS.includes(operation),
                 status,
-                error: error instanceof Error ? error.message : error ? String(error) : undefined,
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : error
+                      ? String(error)
+                      : undefined,
               },
             });
           };
           if (result && typeof result.then === "function") {
-            return result.then((value: unknown) => {
-              done("ok");
-              return value;
-            }).catch((error: unknown) => {
-              done("error", error);
-              throw error;
-            });
+            return result
+              .then((value: unknown) => {
+                done("ok");
+                return value;
+              })
+              .catch((error: unknown) => {
+                done("error", error);
+                throw error;
+              });
           }
           done("ok");
           return result;
@@ -52,7 +76,12 @@ export function instrumentDexie(db: BrainDbLike) {
             type: "database",
             name: table.name,
             durationMs: performance.now() - startedAt,
-            metadata: { operation, mutation: WRITE_OPS.includes(operation), status: "error", error: error instanceof Error ? error.message : String(error) },
+            metadata: {
+              operation,
+              mutation: WRITE_OPS.includes(operation),
+              status: "error",
+              error: error instanceof Error ? error.message : String(error),
+            },
           });
           throw error;
         }

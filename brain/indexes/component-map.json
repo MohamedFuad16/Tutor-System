@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:32:31.677Z",
+    "generatedAt": "2026-05-27T12:30:03.046Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "ec24e6ad030a3bfccaa30fed3cb549c886b40be1",
+      "commit": "a1aa71570d41b07b207d4eb12e087a6f080a6b6d",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "02aca1c8e0379e1aab8929ae0e45ea18bfa082cea93ba8a6e888b4df635a4aa9"
+    "sourceHash": "3aa2887a9ecde2983215c85a9f39ced96e0a85415e8ef542806292e4f6482c23"
   },
   "files": {
     "generate-brain.ts": {
@@ -129,7 +129,7 @@
     },
     "init-task-memory.ts": {
       "file": "init-task-memory.ts",
-      "hash": "4fb8129543b5e47521c030e64cf009c371e09356262376fc6654c9ed2ef681e6",
+      "hash": "2666730596a5f0b6cfe1318ca079c1c5c7f92e0bbaa3e9071d60786d1cbee8ba",
       "imports": [
         {
           "specifier": "fs",
@@ -470,7 +470,7 @@
     },
     "src/audio.ts": {
       "file": "src/audio.ts",
-      "hash": "6d6f6cabb8714a32b85ec0d9972273da33ac9fea6823fcfecb552b6085bd1357",
+      "hash": "a2ac727b979516d74193040b774f74c91b4d8d70b7444bef7c554f8d2718a27b",
       "imports": [],
       "exports": [
         "playClickSound",
@@ -706,7 +706,7 @@
     },
     "brain/debug/debug-runner.ts": {
       "file": "brain/debug/debug-runner.ts",
-      "hash": "9fc8faa80f0416480e6fed2536d939fdfb8883934c6a17c85aaebe10f5593558",
+      "hash": "13a4f44fc91fa458a7844e983c2404a01d3b154f8cced31497d674f56f32ccd9",
       "imports": [
         {
           "specifier": "child_process",
@@ -734,8 +734,21 @@
         "writeJson",
         "appendNdjson",
         "run",
+        "sourceFilesFromGit",
+        "isAuditableSourceFile",
+        "targetKindForFile",
+        "targetNameForFile",
+        "discoverSourceTargets",
         "discoverTargets",
         "docsForFile",
+        "detectTechnology",
+        "inferPurpose",
+        "pushIf",
+        "detectIssues",
+        "flattenFindings",
+        "summarizeDocsComparison",
+        "generateImprovements",
+        "readUiRegressionReport",
         "ensureDocs",
         "backupFile",
         "loadMemoryGraph",
@@ -751,7 +764,12 @@
         "RUNS_DIR",
         "BACKUP_DIR",
         "MEMORY_GRAPH_PATH",
-        "DOCS_DIR"
+        "DOCS_DIR",
+        "UI_REGRESSION_REPORT",
+        "DEBUG_PROCESS",
+        "DEBUG_LOOP",
+        "SOURCE_FILE_PATTERN",
+        "EXCLUDED_SOURCE_PATTERNS"
       ],
       "classes": [],
       "components": [],
@@ -789,6 +807,53 @@
         "ROOT",
         "DOCS_DIR",
         "SOURCES"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "brain/debug/ui-regression-probe.ts": {
+      "file": "brain/debug/ui-regression-probe.ts",
+      "hash": "2a753da0d2a4869f8528e538ac49478967f78b32ed8baacd43b6eb5025cdac2c",
+      "imports": [
+        {
+          "specifier": "child_process",
+          "external": "child_process"
+        },
+        {
+          "specifier": "fs",
+          "external": "fs"
+        },
+        {
+          "specifier": "path",
+          "external": "path"
+        },
+        {
+          "specifier": "playwright",
+          "external": "playwright"
+        }
+      ],
+      "exports": [],
+      "functions": [
+        "writeJson",
+        "waitForServer",
+        "ensureServer",
+        "measureFrames",
+        "stopServer",
+        "main"
+      ],
+      "variables": [
+        "ROOT",
+        "SERVER_URL",
+        "OUTPUT_PATH"
       ],
       "classes": [],
       "components": [],
@@ -1347,7 +1412,7 @@
     },
     "src/brain-runtime/instrumentDexie.ts": {
       "file": "src/brain-runtime/instrumentDexie.ts",
-      "hash": "6dab7e67e6fe4dfd9e4970c45332079c440cd4275a08b44877d044c4ea389037",
+      "hash": "0d5797b2fc24632e973bcc6f55218d6f0c85bbf37a39fc2a2a17a11cb13f7911",
       "imports": [
         {
           "specifier": "./runtimeTelemetry",
@@ -1378,7 +1443,7 @@
     },
     "src/brain-runtime/instrumentFetch.ts": {
       "file": "src/brain-runtime/instrumentFetch.ts",
-      "hash": "a9b7ba86da472162cd4377c0119b970b7e33fa1211ed4cfbf3573496f8c93e59",
+      "hash": "e6719e38cf0a82b6b123f0b86f6fcb71f5fee7c4c2541a0900d9e4a3b1d4b8c2",
       "imports": [
         {
           "specifier": "./runtimeTelemetry",
@@ -1406,7 +1471,7 @@
     },
     "src/brain-runtime/instrumentWebSocket.ts": {
       "file": "src/brain-runtime/instrumentWebSocket.ts",
-      "hash": "b3ba7d13e68e367c9ba8252c56472d2108a8dca7f9a580cb6f50b559d0ae17e7",
+      "hash": "af3a92a547f396fc409419cac8f355a5bccf5e66c8fff3230fcfa9bf4d4be676",
       "imports": [
         {
           "specifier": "./runtimeTelemetry",
@@ -1434,7 +1499,7 @@
     },
     "src/brain-runtime/instrumentZustand.ts": {
       "file": "src/brain-runtime/instrumentZustand.ts",
-      "hash": "c9920e6821a64cae4251a75911fbe5a3b59a46a57d59d27186ba844fd692dee1",
+      "hash": "1229d04632423cb8c5f554fa5370025014ca7bc4d31354d3a3ce3e68697148a9",
       "imports": [
         {
           "specifier": "./runtimeTelemetry",
@@ -1462,7 +1527,7 @@
     },
     "src/brain-runtime/RenderProfiler.tsx": {
       "file": "src/brain-runtime/RenderProfiler.tsx",
-      "hash": "b60d2a2c2cac8e705a67f374ad3a4a4cdc27743efe02189993cbc58d9e7ad5dc",
+      "hash": "0c1c963e6541a33220548481ee0aa66c3494fda772051383c73d5c533d03e8bb",
       "imports": [
         {
           "specifier": "react",
@@ -1498,7 +1563,7 @@
     },
     "src/brain-runtime/runtimeTelemetry.ts": {
       "file": "src/brain-runtime/runtimeTelemetry.ts",
-      "hash": "0c0e6f378c9b8c50e2aacf9a6eb2a3e5395b1587116274e33451ded76f7c83d5",
+      "hash": "9fbafbae5b26c3e876bd5ba9186e0f4b971f7750686ce3586fe972b62cf903cb",
       "imports": [],
       "exports": [
         "BrainRuntimeEvent",
@@ -1526,7 +1591,7 @@
     },
     "src/components/AnimatedScrollText.tsx": {
       "file": "src/components/AnimatedScrollText.tsx",
-      "hash": "65ca2a375253c97de6157fa51c9ca9ca16fe61cc4d4f5abc53120551fcca5051",
+      "hash": "06a193a832d4ec755bb25635efa49de6e0d5cfd9bce1686c8813b81128525c43",
       "imports": [
         {
           "specifier": "react",
@@ -1556,7 +1621,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "ed18232371e6ef546d6b90abec878576f61c1f2a6a2cf7f9e6ae0e63fba55a1c",
+      "hash": "2f1a5ca59446daccc1a2a4eda48d0a309cd11e597884ae30059e2b7da2851875",
       "imports": [
         {
           "specifier": "react",
@@ -1573,6 +1638,10 @@
         {
           "specifier": "./ShikiHighlighter",
           "resolved": "src/components/ShikiHighlighter.tsx"
+        },
+        {
+          "specifier": "./StatusBadge",
+          "resolved": "src/components/StatusBadge.tsx"
         },
         {
           "specifier": "lucide-react",
@@ -1617,10 +1686,6 @@
         {
           "specifier": "../brain-runtime/runtimeTelemetry",
           "resolved": "src/brain-runtime/runtimeTelemetry.ts"
-        },
-        {
-          "specifier": "./StatusBadge",
-          "resolved": "src/components/StatusBadge.tsx"
         }
       ],
       "exports": [
@@ -1852,6 +1917,7 @@
         "Folder",
         "GeminiVoicePill",
         "Globe2",
+        "LatestIcon",
         "LoaderCircle",
         "Mermaid",
         "MessageItem",
@@ -1861,6 +1927,7 @@
         "Play",
         "Plus",
         "PremiumCodeShell",
+        "ProgressIcon",
         "ReactMarkdown",
         "RotateCcw",
         "RunnableJS",
@@ -1873,7 +1940,6 @@
         "SourceCards",
         "Sparkles",
         "Square",
-        "StatusBadge",
         "Terminal",
         "ThinkingPanel",
         "Volume2",
@@ -1884,7 +1950,7 @@
     },
     "src/components/FloatingSkillsMenu.tsx": {
       "file": "src/components/FloatingSkillsMenu.tsx",
-      "hash": "7904a5627e021e5bfe83ea9d132678b06549b15a467f9105af0d8bba12cf437b",
+      "hash": "e83d51ede03b00707558c1ef10b465f023e445bb31c31688556241b58ea26d9b",
       "imports": [
         {
           "specifier": "react",
@@ -1928,7 +1994,7 @@
     },
     "src/components/Navigation.tsx": {
       "file": "src/components/Navigation.tsx",
-      "hash": "d5a1222846e9189e5e4aa9a6df8467b5965bb876c8aae2331ef254401dd1e6be",
+      "hash": "4324d800ad4a2bc76f6a52c5a215cc586ec7e3c0eb46785b36dae290e094a831",
       "imports": [
         {
           "specifier": "react",
@@ -1977,7 +2043,7 @@
     },
     "src/components/PatternCard.tsx": {
       "file": "src/components/PatternCard.tsx",
-      "hash": "41cea00c6a483c26a3a4b02283d5ac0a06147b6b21392d5e6b230431c679e8b4",
+      "hash": "562ed80965cbdc40c0c0d26765de1c9fd08428f7b44b5a29a6e582320dc1abaa",
       "imports": [
         {
           "specifier": "react",
@@ -2019,7 +2085,7 @@
     },
     "src/components/PatternSVGs.tsx": {
       "file": "src/components/PatternSVGs.tsx",
-      "hash": "b98e9620a86e81c7468bdb984231f7c37e3da84e0744538435109ebbaaa9a1b1",
+      "hash": "f020b5b8f4e220f01a6a2403d98d9600e03e8c5fd640ae1a251fac48acd1bdb4",
       "imports": [
         {
           "specifier": "react",
@@ -2055,7 +2121,7 @@
     },
     "src/components/PdfToolbar.tsx": {
       "file": "src/components/PdfToolbar.tsx",
-      "hash": "fe39622dc3065bdbbef70b1f860fffeec14e3c55ee3b48fcdfa6d75156c28063",
+      "hash": "ab31b8309b53316edc652c91c72801f960184998cd2a458e23a74cadcfb64e18",
       "imports": [
         {
           "specifier": "react",
@@ -2098,7 +2164,7 @@
     },
     "src/components/PdfViewer.tsx": {
       "file": "src/components/PdfViewer.tsx",
-      "hash": "327fb4bacd6f1edd2fdadbeb981fd57460a67c11ac971ebd7f2f4087905ff436",
+      "hash": "21eb4f99e2ce677a219f40855875bafd3c27a2fbcc298bde87bca31c5eeeca0e",
       "imports": [
         {
           "specifier": "react",
@@ -2148,47 +2214,47 @@
       "storeSelectors": [
         {
           "field": "pdfUrl",
-          "selector": "state => state.pdfUrl"
+          "selector": "(state) => state.pdfUrl"
         },
         {
           "field": "pdfScale",
-          "selector": "state => state.pdfScale"
+          "selector": "(state) => state.pdfScale"
         },
         {
           "field": "setPdfScale",
-          "selector": "state => state.setPdfScale"
+          "selector": "(state) => state.setPdfScale"
         },
         {
           "field": "pdfPage",
-          "selector": "state => state.pdfPage"
+          "selector": "(state) => state.pdfPage"
         },
         {
           "field": "setPdfPage",
-          "selector": "state => state.setPdfPage"
+          "selector": "(state) => state.setPdfPage"
         },
         {
           "field": "pdfTotalPages",
-          "selector": "state => state.pdfTotalPages"
+          "selector": "(state) => state.pdfTotalPages"
         },
         {
           "field": "setPdfTotalPages",
-          "selector": "state => state.setPdfTotalPages"
+          "selector": "(state) => state.setPdfTotalPages"
         },
         {
           "field": "annotations",
-          "selector": "state => state.annotations"
+          "selector": "(state) => state.annotations"
         },
         {
           "field": "addAnnotation",
-          "selector": "state => state.addAnnotation"
+          "selector": "(state) => state.addAnnotation"
         },
         {
           "field": "setAskTutorQuery",
-          "selector": "state => state.setAskTutorQuery"
+          "selector": "(state) => state.setAskTutorQuery"
         },
         {
           "field": "setSelectedTextContext",
-          "selector": "state => state.setSelectedTextContext"
+          "selector": "(state) => state.setSelectedTextContext"
         }
       ],
       "storeWrites": [
@@ -2223,7 +2289,7 @@
     },
     "src/components/PracticeMode.tsx": {
       "file": "src/components/PracticeMode.tsx",
-      "hash": "134a509a8c52474fc7dd96c7371274311e61c213a3cab246173f102de3e4065c",
+      "hash": "fe13db25f4e62d5a66aed1cc1cfb1afb337cb36cf80b4609fbd186613b425b56",
       "imports": [
         {
           "specifier": "react",
@@ -2260,7 +2326,7 @@
     },
     "src/components/SettingsModal.tsx": {
       "file": "src/components/SettingsModal.tsx",
-      "hash": "4db4e83d3871db6b9b12731aa13a69cb604c64d8561da889257d2bbe539d92da",
+      "hash": "72c2cf37ce90483c1be2deef1a49f38cf54d63564e4720a4fbf392b99e7ac91e",
       "imports": [
         {
           "specifier": "react",
@@ -2361,7 +2427,7 @@
     },
     "src/components/Sidebar.tsx": {
       "file": "src/components/Sidebar.tsx",
-      "hash": "0e13f6713f1430eaf7c36091e0dd7dad798cab4823295f8693740c0d8ffa712e",
+      "hash": "e7ff09ac633efa551d4b4b92866bd4d29735c265f56e3bab5050d72a09bee241",
       "imports": [
         {
           "specifier": "react",
@@ -2409,7 +2475,7 @@
     },
     "src/components/SiriLiquidGlass.tsx": {
       "file": "src/components/SiriLiquidGlass.tsx",
-      "hash": "ce3e86ebe33c1387d73a402ee8a61fc0e8d57000a577985e9eecd3ce6d30137f",
+      "hash": "7c8d3a22f6e472ce1d01505e35087918aa6d3daf3690bc96cb7f13c5f76e4de6",
       "imports": [
         {
           "specifier": "motion/react",
@@ -2443,7 +2509,7 @@
     },
     "src/components/StatusBadge.tsx": {
       "file": "src/components/StatusBadge.tsx",
-      "hash": "c8873ef51caf1a3e3baed780f8d1aa9aaf6ab1d9fa48999fdaa39b07b18cc772",
+      "hash": "0ea31ed118f610be94bd0951161093c84bc1a22e030f84d354f55eea288a485d",
       "imports": [
         {
           "specifier": "react",
@@ -2528,7 +2594,7 @@
     },
     "src/lib/tutorBook.json": {
       "file": "src/lib/tutorBook.json",
-      "hash": "e116d271769caef5219336a76fd1f57ead774353f345426e7f5d622555536aab",
+      "hash": "0f4c8b0c77e6014dfb9009014426f526674cfbc2fa70ae9a5113a1bdd091c859",
       "imports": [],
       "exports": [],
       "functions": [],
@@ -3280,7 +3346,7 @@
     },
     "src/views/AdminView.tsx": {
       "file": "src/views/AdminView.tsx",
-      "hash": "4db4761d515fa611902152779910f0514986ea278c1d7dfdb517cca9d9df4d1f",
+      "hash": "fa5989f672f4c65dacd6953838d2fc147b0cc1ce2fd55ecb8bc928c733a8b9da",
       "imports": [
         {
           "specifier": "react",
@@ -3314,7 +3380,10 @@
         "AdminView"
       ],
       "variables": [
-        "compactCommand"
+        "compactCommand",
+        "isCliConsoleFinding",
+        "visibleAuditItems",
+        "friendlyWhy"
       ],
       "classes": [],
       "components": [
@@ -3533,7 +3602,7 @@
     },
     "src/views/RevisionView.tsx": {
       "file": "src/views/RevisionView.tsx",
-      "hash": "73a5a030fdf5e665fa33955cf58f0fa7f6046c59cf8f7f434eec58ffbcadf3ea",
+      "hash": "f49df4bf3e26f9e832df586bf974ff96b2d7e755c0db6136675fa1aa304c52af",
       "imports": [
         {
           "specifier": "react",
@@ -3601,7 +3670,7 @@
       "storeSelectors": [
         {
           "field": "setActiveView",
-          "selector": "state => state.setActiveView"
+          "selector": "(state) => state.setActiveView"
         }
       ],
       "storeWrites": [
@@ -3791,7 +3860,7 @@
     },
     "package.json": {
       "file": "package.json",
-      "hash": "0144d166564637c48c6d7b872ce3749c2c6acc12da1d648aa6eafab450a378ae",
+      "hash": "6b99ee6c7e5f6604382cf728f0a6146239c9675f9b2e1140da7d7d16be498f2e",
       "imports": [],
       "exports": [],
       "functions": [],
