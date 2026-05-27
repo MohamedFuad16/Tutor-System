@@ -289,22 +289,147 @@ async function startServer() {
     }
   };
 
+  const writeJsonFile = (file: string, value: unknown) => {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
+  };
+
+  const readDebugEvents = (runDir: string) => {
+    const eventsPath = path.join(runDir, "events.ndjson");
+    if (!fs.existsSync(eventsPath)) return [];
+    return fs
+      .readFileSync(eventsPath, "utf8")
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => {
+        try {
+          return JSON.parse(line);
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+  };
+
+  const readDebugComponents = (runDir: string, summary: any = {}) => {
+    const componentsDir = path.join(runDir, "components");
+    const componentFiles = fs.existsSync(componentsDir)
+      ? fs
+          .readdirSync(componentsDir)
+          .filter((file) => file.endsWith(".json"))
+          .map((file) => readJsonFile(path.join(componentsDir, file)))
+          .filter(Boolean)
+      : [];
+    const storedComponents = Array.isArray(summary.components)
+      ? summary.components
+      : [];
+    return (componentFiles.length ? componentFiles : storedComponents).sort(
+      (a: any, b: any) =>
+        String(a.finishedAt || a.timestamp || "").localeCompare(
+          String(b.finishedAt || b.timestamp || ""),
+        ),
+    );
+  };
+
+  const summarizeDebugRun = (id: string) => {
+    const runDir = path.join(debugRunsDir, id);
+    const summary =
+      readJsonFile(path.join(runDir, "summary.json")) ||
+      readJsonFile(path.join(runDir, "run.json")) ||
+      {};
+    const events = readDebugEvents(runDir);
+    const components = readDebugComponents(runDir, summary);
+    const startEvent = events.find((event: any) => event.type === "run-started");
+    const completeEvent = [...events]
+      .reverse()
+      .find((event: any) => event.type === "run-completed");
+    const active = activeDebugJob?.id === id;
+    const status =
+      active
+        ? "running"
+        : summary.status ||
+          completeEvent?.data?.status ||
+          (completeEvent ? "completed" : "unknown");
+
+    return {
+      ...summary,
+      id,
+      status,
+      startedAt: summary.startedAt || startEvent?.timestamp || null,
+      finishedAt: summary.finishedAt || completeEvent?.timestamp || null,
+      mode: summary.mode || startEvent?.data?.mode || null,
+      scope: summary.scope || startEvent?.data?.scope || null,
+      targetCount: Number(summary.targetCount || 0),
+      completedCount: Number(summary.completedCount ?? components.length),
+      changedCount: Number(
+        summary.changedCount ?? components.filter((item: any) => item.changed).length,
+      ),
+      activeTarget: active ? summary.activeTarget || null : null,
+      components,
+      events: events.slice(-160),
+    };
+  };
+
+  const seedDebugRun = (runId: string, mode: string, scope: string) => {
+    const now = new Date().toISOString();
+    const runDir = path.join(debugRunsDir, runId);
+    fs.mkdirSync(path.join(runDir, "components"), { recursive: true });
+    const seed = {
+      id: runId,
+      status: "running",
+      startedAt: now,
+      finishedAt: null,
+      updatedAt: now,
+      mode,
+      scope,
+      targetCount: 0,
+      completedCount: 0,
+      changedCount: 0,
+      activeTarget: null,
+      components: [],
+      finalCommands: [],
+      unresolvedRisks: [],
+    };
+    writeJsonFile(path.join(runDir, "summary.json"), seed);
+    writeJsonFile(path.join(runDir, "run.json"), seed);
+    fs.appendFileSync(
+      path.join(runDir, "events.ndjson"),
+      `${JSON.stringify({
+        timestamp: now,
+        type: "run-queued",
+        message: `Debug run ${runId} queued by Admin`,
+        data: { id: runId, mode, scope },
+      })}\n`,
+    );
+  };
+
+  const persistDebugExit = (runId: string, code: number | null) => {
+    const runDir = path.join(debugRunsDir, runId);
+    if (!fs.existsSync(runDir)) return;
+    const current = summarizeDebugRun(runId) as any;
+    if (current.status !== "running" && current.status !== "unknown") return;
+    const { events: _events, ...persistable } = current;
+    const finished = {
+      ...persistable,
+      status: code === 0 ? "completed" : "failed-process",
+      finishedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      activeTarget: null,
+    };
+    writeJsonFile(path.join(runDir, "summary.json"), finished);
+    writeJsonFile(path.join(runDir, "run.json"), finished);
+  };
+
   const listDebugRuns = () => {
     if (!fs.existsSync(debugRunsDir)) return [];
     return fs
       .readdirSync(debugRunsDir, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => {
-        const runDir = path.join(debugRunsDir, entry.name);
-        const summary =
-          readJsonFile(path.join(runDir, "summary.json")) ||
-          readJsonFile(path.join(runDir, "run.json")) ||
-          {};
+        const summary = summarizeDebugRun(entry.name);
         return {
           id: entry.name,
-          status:
-            summary.status ||
-            (activeDebugJob?.id === entry.name ? "running" : "unknown"),
+          status: summary.status,
           startedAt: summary.startedAt || null,
           finishedAt: summary.finishedAt || null,
           mode: summary.mode || null,
@@ -331,38 +456,13 @@ async function startServer() {
     const runDir = path.join(debugRunsDir, safeId);
     if (!fs.existsSync(runDir))
       return res.status(404).json({ error: "Debug run not found." });
-    const summary =
-      readJsonFile(path.join(runDir, "summary.json")) ||
-      readJsonFile(path.join(runDir, "run.json")) ||
-      {};
-    const componentsDir = path.join(runDir, "components");
-    const components = fs.existsSync(componentsDir)
-      ? fs
-          .readdirSync(componentsDir)
-          .filter((file) => file.endsWith(".json"))
-          .map((file) => readJsonFile(path.join(componentsDir, file)))
-          .filter(Boolean)
-      : [];
-    res.json({ ...summary, components });
+    res.json(summarizeDebugRun(safeId));
   });
 
   app.get("/api/debug/runs/:id/events", (req, res) => {
     const safeId = path.basename(req.params.id);
-    const eventsPath = path.join(debugRunsDir, safeId, "events.ndjson");
-    if (!fs.existsSync(eventsPath)) return res.json({ events: [] });
-    const events = fs
-      .readFileSync(eventsPath, "utf8")
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => {
-        try {
-          return JSON.parse(line);
-        } catch {
-          return null;
-        }
-      })
-      .filter(Boolean);
-    res.json({ events });
+    const runDir = path.join(debugRunsDir, safeId);
+    res.json({ events: readDebugEvents(runDir) });
   });
 
   app.post("/api/debug/run", (req, res) => {
@@ -376,6 +476,7 @@ async function startServer() {
       String(req.body?.scope || "all").replace(/[^a-zA-Z0-9_./:-]/g, "") ||
       "all";
     const runId = `debug-${new Date().toISOString().replace(/[:.]/g, "-")}`;
+    seedDebugRun(runId, mode, scope);
     const child = spawn(
       "npm",
       [
@@ -406,6 +507,7 @@ async function startServer() {
     child.on("exit", (code) => {
       console.log(`[DEBUG] ${runId} exited with code ${code}`);
       if (activeDebugJob?.id === runId) activeDebugJob = null;
+      persistDebugExit(runId, code);
     });
     res.status(202).json({ ok: true, runId, mode, scope });
   });

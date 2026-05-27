@@ -381,15 +381,6 @@
     },
     {
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "component:ThoughtStepIcon",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx"
-      }
-    },
-    {
-      "source": "file:src/components/ChatPanel.tsx",
       "target": "component:RunnablePython",
       "type": "renders",
       "confidence": 0.8,

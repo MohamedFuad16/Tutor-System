@@ -31,6 +31,14 @@ type DebugRunSummary = {
 };
 
 type DebugRunDetails = DebugRunSummary & {
+  updatedAt?: string | null;
+  activeTarget?: { name?: string; file?: string; kind?: string } | null;
+  events?: Array<{
+    timestamp?: string;
+    type?: string;
+    message?: string;
+    data?: unknown;
+  }>;
   components?: Array<{
     target?: { name?: string; file?: string; kind?: string };
     file?: string;
@@ -39,11 +47,31 @@ type DebugRunDetails = DebugRunSummary & {
     findings?: string[];
     changes?: string[];
     docsEvidence?: Array<{ id: string; file: string; role: string }>;
-    commands?: Array<{ command: string; ok: boolean; exitCode: number }>;
+    commands?: Array<{
+      command: string;
+      ok: boolean;
+      exitCode: number;
+      startedAt?: string;
+      finishedAt?: string;
+    }>;
     finishedAt?: string;
   }>;
-  finalCommands?: Array<{ command: string; ok: boolean; exitCode: number }>;
+  finalCommands?: Array<{
+    command: string;
+    ok: boolean;
+    exitCode: number;
+    startedAt?: string;
+    finishedAt?: string;
+  }>;
+  unresolvedRisks?: string[];
 };
+
+const compactCommand = (command: string) =>
+  command
+    .replace(/^npm run --silent /, "npm ")
+    .replace(/^npm run /, "npm ")
+    .replace(/^npx /, "npx ")
+    .slice(0, 92);
 
 export function AdminView() {
   const { setActiveView, learnerName } = useStore();
@@ -132,7 +160,11 @@ export function AdminView() {
       const data = await response.json();
       const runs = (data.runs || []) as DebugRunSummary[];
       setDebugRuns(runs);
-      setActiveDebugRunId((current) => current || runs[0]?.id || null);
+      setActiveDebugRunId((current) => {
+        if (data.activeRunId) return data.activeRunId;
+        if (current && runs.some((run) => run.id === current)) return current;
+        return runs[0]?.id || null;
+      });
     } catch (error) {
       console.warn("[AdminView] Failed to load debug runs:", error);
     } finally {
@@ -150,13 +182,29 @@ export function AdminView() {
 
   useEffect(() => {
     if (!activeDebugRunId || activeTab !== "debug") return;
-    fetch(`/api/debug/runs/${encodeURIComponent(activeDebugRunId)}`)
-      .then((response) => response.json())
-      .then(setDebugRunDetails)
-      .catch((error) =>
-        console.warn("[AdminView] Failed to load debug run details:", error),
-      );
-  }, [activeDebugRunId, activeTab, debugRuns]);
+    let cancelled = false;
+
+    const loadDetails = async () => {
+      try {
+        const response = await fetch(
+          `/api/debug/runs/${encodeURIComponent(activeDebugRunId)}`,
+        );
+        const details = await response.json();
+        if (!cancelled) setDebugRunDetails(details);
+      } catch (error) {
+        if (!cancelled) {
+          console.warn("[AdminView] Failed to load debug run details:", error);
+        }
+      }
+    };
+
+    void loadDetails();
+    const timer = window.setInterval(loadDetails, 1800);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [activeDebugRunId, activeTab]);
   const conceptsByBook = learningBookConcepts.reduce<
     Record<string, typeof learningBookConcepts>
   >((acc, concept) => {

@@ -226,6 +226,54 @@ function loadQueue(runDir: string, scope: string) {
   return targets;
 }
 
+function readComponentSummaries(componentsDir: string) {
+  if (!fs.existsSync(componentsDir)) return [];
+  return fs
+    .readdirSync(componentsDir)
+    .filter((file) => file.endsWith(".json"))
+    .map((file) => readJson<Record<string, any> | null>(path.join(componentsDir, file), null))
+    .filter(Boolean)
+    .sort((a, b) =>
+      String(a?.finishedAt || a?.timestamp || "").localeCompare(
+        String(b?.finishedAt || b?.timestamp || ""),
+      ),
+    );
+}
+
+function writeRunSnapshot(
+  runDir: string,
+  componentsDir: string,
+  metadata: Record<string, any>,
+  queue: ComponentTarget[],
+  completed: Set<string>,
+  options: {
+    status?: string;
+    activeTarget?: ComponentTarget | null;
+    finalCommands?: CommandResult[];
+    finishedAt?: string | null;
+    unresolvedRisks?: string[];
+  } = {},
+) {
+  const components = readComponentSummaries(componentsDir);
+  const completedCount = Math.max(completed.size, components.length);
+  const snapshot = {
+    ...metadata,
+    status: options.status || metadata.status || "running",
+    finishedAt: options.finishedAt ?? metadata.finishedAt ?? null,
+    updatedAt: new Date().toISOString(),
+    targetCount: queue.length,
+    completedCount,
+    changedCount: components.filter((item) => item?.changed).length,
+    activeTarget: options.activeTarget ?? null,
+    finalCommands: options.finalCommands || metadata.finalCommands || [],
+    unresolvedRisks: options.unresolvedRisks || metadata.unresolvedRisks || [],
+    components,
+  };
+  writeJson(path.join(runDir, "summary.json"), snapshot);
+  writeJson(path.join(runDir, "run.json"), snapshot);
+  return snapshot;
+}
+
 function main() {
   const mode = (arg("mode", "fix") as Mode) || "fix";
   const scope = arg("scope", "all");
@@ -238,7 +286,6 @@ function main() {
   const skipRuntime = hasFlag("skip-runtime");
 
   fs.mkdirSync(componentsDir, { recursive: true });
-  ensureDocs();
 
   const emit = (event: Omit<RunEvent, "timestamp">) => {
     const payload = { timestamp: new Date().toISOString(), ...event };
@@ -246,25 +293,29 @@ function main() {
     console.log(JSON.stringify(payload));
   };
 
+  const previous = readJson<Record<string, any>>(path.join(runDir, "run.json"), {});
   const metadata = {
     id: runId,
     mode,
     scope,
     status: "running",
-    startedAt: new Date().toISOString(),
+    startedAt: previous.startedAt || new Date().toISOString(),
     skill: "tutor-debug",
   };
-  writeJson(path.join(runDir, "run.json"), metadata);
+
+  const queue = loadQueue(runDir, scope);
+  const completedPath = path.join(runDir, "completed.json");
+  const completed = new Set(readJson<string[]>(completedPath, []));
+  writeRunSnapshot(runDir, componentsDir, metadata, queue, completed, {
+    status: "running",
+  });
   emit({
     type: "run-started",
     message: `Debug run ${runId} started`,
     data: metadata,
   });
 
-  const queue = loadQueue(runDir, scope);
-  const completedPath = path.join(runDir, "completed.json");
-  const completed = new Set(readJson<string[]>(completedPath, []));
-  const summaries: unknown[] = [];
+  ensureDocs();
 
   run(
     "npm",
@@ -290,6 +341,10 @@ function main() {
       type: "component-started",
       message: `Auditing ${target.name}`,
       data: target,
+    });
+    writeRunSnapshot(runDir, componentsDir, metadata, queue, completed, {
+      status: "running",
+      activeTarget: target,
     });
     const before = fs.readFileSync(filePath);
     const beforeHash = sha256(before);
@@ -401,9 +456,11 @@ function main() {
       componentSummary,
     );
     appendMemoryGraph(runId, target, componentSummary);
-    summaries.push(componentSummary);
     completed.add(targetKey);
     writeJson(completedPath, [...completed]);
+    writeRunSnapshot(runDir, componentsDir, metadata, queue, completed, {
+      status: "running",
+    });
     emit({
       type: "component-completed",
       message: `Completed ${target.name}`,
@@ -437,18 +494,11 @@ function main() {
     }),
   ];
   const ok = finalCommands.every((command) => command.ok);
-  const summary = {
-    ...metadata,
+  const summary = writeRunSnapshot(runDir, componentsDir, metadata, queue, completed, {
     status: ok ? "completed" : "failed-verification",
     finishedAt: new Date().toISOString(),
-    targetCount: queue.length,
-    completedCount: completed.size,
-    changedCount: summaries.filter((item: any) => item.changed).length,
     finalCommands,
-    components: summaries,
-  };
-  writeJson(path.join(runDir, "summary.json"), summary);
-  writeJson(path.join(runDir, "run.json"), summary);
+  });
   emit({
     type: "run-completed",
     message: `Debug run ${summary.status}`,

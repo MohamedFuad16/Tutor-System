@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:11:35.381Z",
+    "generatedAt": "2026-05-27T08:20:27.069Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,20 +23,20 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "51ba5a32cfe8d9f0b0b7edb3f39ecba8eb0d6743",
+      "commit": "3a26cf9c4dc6f4767dc48596c92aa228205745cb",
       "branch": "main",
-      "dirty": true
+      "dirty": false
     },
     "package": {
       "name": "react-example",
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "a25c8ef1044ec178b3c37f68428d2266051260fe041bf300d3e6a954f93a574b"
+    "sourceHash": "45b05af83cbb47d51431b360e76b53a3bb31aa38bff76179d2ea985ced9a7467"
   },
   "subsystems": {
     "frontend": {
-      "generatedAt": "2026-05-27T08:11:35.417Z",
+      "generatedAt": "2026-05-27T08:20:27.130Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/AnimatedScrollText.tsx",
@@ -45,6 +45,7 @@
         "src/components/Navigation.tsx",
         "src/components/PatternCard.tsx",
         "src/components/PatternSVGs.tsx",
+        "src/components/PdfToolbar.tsx",
         "src/components/PdfViewer.tsx",
         "src/components/PracticeMode.tsx",
         "src/components/SettingsModal.tsx",
@@ -101,6 +102,8 @@
         "motion",
         "src/components/PatternSVGs.tsx",
         "react",
+        "react",
+        "lucide-react",
         "react",
         "react-pdf",
         "react-pdf",
@@ -207,7 +210,7 @@
       ]
     },
     "backend": {
-      "generatedAt": "2026-05-27T08:11:35.417Z",
+      "generatedAt": "2026-05-27T08:20:27.130Z",
       "sourceFiles": [
         "server.ts"
       ],
@@ -233,7 +236,7 @@
       ]
     },
     "state": {
-      "generatedAt": "2026-05-27T08:11:35.417Z",
+      "generatedAt": "2026-05-27T08:20:27.130Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/ChatPanel.tsx",
@@ -381,7 +384,7 @@
       ]
     },
     "memory": {
-      "generatedAt": "2026-05-27T08:11:35.417Z",
+      "generatedAt": "2026-05-27T08:20:27.130Z",
       "sourceFiles": [
         "src/memory/bkt.engine.ts",
         "src/memory/cognitive.load.ts",
@@ -462,7 +465,7 @@
       ]
     },
     "brainTooling": {
-      "generatedAt": "2026-05-27T08:11:35.417Z",
+      "generatedAt": "2026-05-27T08:20:27.130Z",
       "sourceFiles": [
         "generate-brain.ts",
         "brain/drift-check.ts",

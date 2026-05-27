@@ -2,7 +2,7 @@ import React from 'react';
 
 type Status = 'pending' | 'progress' | 'submitted' | 'review' | 'success' | 'failed' | 'expired';
 
-export const StatusBadge = ({ status }: { status: Status }) => {
+export const StatusBadge = ({ status, labelOverride }: { status: Status; labelOverride?: string }) => {
   const config = {
     pending: { bg: 'bg-[#FDF1E8]', text: 'text-[#D87A2C]', label: 'Pending', icon: <PendingIcon /> },
     progress: { bg: 'bg-[#E7F3FF]', text: 'text-[#0A7DFF]', label: 'In progress', icon: <ProgressIcon /> },
@@ -18,7 +18,7 @@ export const StatusBadge = ({ status }: { status: Status }) => {
   return (
     <span className={`inline-flex items-center gap-2 px-5 py-2 rounded-[14px] text-[17px] font-semibold tracking-tight transition-opacity duration-200 hover:opacity-90 ${bg} ${text}`}>
       {icon}
-      {label}
+      {labelOverride || label}
     </span>
   );
 };
@@ -66,7 +66,7 @@ const ReviewIcon = () => (
 );
 
 const SuccessIcon = () => (
-  <div className="relative w-[22px] h-[22px] flex items-center justify-center">
+  <div className="relative w-[22px] h-[22px] flex items-center justify-center scale-[0.8]">
     <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute">
       <path d="M45.227 23.9716C45.227 35.7107 35.7107 45.227 23.9716 45.227C12.2326 45.227 2.71625 35.7107 2.71625 23.9716C2.71625 12.2326 12.2326 2.71625 23.9716 2.71625C35.7107 2.71625 45.227 12.2326 45.227 23.9716Z" stroke="currentColor" strokeWidth="5.43245" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>

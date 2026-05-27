@@ -89,8 +89,8 @@
     {
       "field": "learnerName",
       "readers": [
-        "src/components/ChatPanel.tsx",
-        "src/views/BrainView.tsx"
+        "src/views/BrainView.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": []
     },

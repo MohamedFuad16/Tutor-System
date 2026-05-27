@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T08:11:35.381Z",
+    "generatedAt": "2026-05-27T08:20:27.069Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,16 +23,16 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "51ba5a32cfe8d9f0b0b7edb3f39ecba8eb0d6743",
+      "commit": "3a26cf9c4dc6f4767dc48596c92aa228205745cb",
       "branch": "main",
-      "dirty": true
+      "dirty": false
     },
     "package": {
       "name": "react-example",
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "a25c8ef1044ec178b3c37f68428d2266051260fe041bf300d3e6a954f93a574b"
+    "sourceHash": "45b05af83cbb47d51431b360e76b53a3bb31aa38bff76179d2ea985ced9a7467"
   },
   "files": {
     "generate-brain.ts": {
@@ -1561,7 +1561,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "338df4f9011a9cdbe3875f092e872a23e78b40762dc25e5c85b0d8a86617aa18",
+      "hash": "d9be0e00735f257894e06a728866da1887889597a4783761453cca93bb3edb0a",
       "imports": [
         {
           "specifier": "react",
@@ -1664,7 +1664,6 @@
         "FinalSourcesPanel",
         "thoughtStepMeta",
         "getStatusBadge",
-        "ThoughtStepIcon",
         "ThinkingPanel",
         "markdownComponents",
         "AnimatedMarkdown",
@@ -1687,7 +1686,6 @@
         "SearchProgressIndicator",
         "SourceCards",
         "ThinkingPanel",
-        "ThoughtStepIcon",
         "UsageAnalyticsStrip"
       ],
       "hooks": [
@@ -1874,7 +1872,6 @@
         "Folder",
         "GeminiVoicePill",
         "Globe2",
-        "Icon",
         "LoaderCircle",
         "Mermaid",
         "MessageItem",
@@ -1899,7 +1896,6 @@
         "StatusBadge",
         "Terminal",
         "ThinkingPanel",
-        "ThoughtStepIcon",
         "Volume2",
         "X",
         "Zap"
@@ -2075,6 +2071,49 @@
       "databaseReads": [],
       "databaseWrites": [],
       "renders": [],
+      "routes": []
+    },
+    "src/components/PdfToolbar.tsx": {
+      "file": "src/components/PdfToolbar.tsx",
+      "hash": "fe39622dc3065bdbbef70b1f860fffeec14e3c55ee3b48fcdfa6d75156c28063",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        }
+      ],
+      "exports": [
+        "PdfToolbar"
+      ],
+      "functions": [],
+      "variables": [
+        "PdfToolbar"
+      ],
+      "classes": [],
+      "components": [
+        "PdfToolbar"
+      ],
+      "hooks": [],
+      "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "AlignCenter",
+        "AlignLeft",
+        "AlignRight",
+        "Bold",
+        "ChevronDown",
+        "Italic",
+        "Sparkles",
+        "Underline"
+      ],
       "routes": []
     },
     "src/components/PdfViewer.tsx": {

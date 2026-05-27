@@ -837,7 +837,10 @@ const ThinkingPanel = ({ phase, steps, isComplete, webSearch, hasError }: { phas
          className="group relative flex w-full items-center gap-3 overflow-hidden bg-transparent py-2 text-left transition-all focus:outline-none"
        >
           <div className="relative min-w-0 flex-1">
-            <StatusBadge status={getStatusBadge(phase, isComplete, hasError)} />
+             <StatusBadge 
+               status={getStatusBadge(phase, isComplete, hasError)} 
+               labelOverride={isComplete && !hasError ? "Tutor" : undefined}
+             />
           </div>
           <motion.div className="relative ml-auto" animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2, type: "spring", stiffness: 300, damping: 20 }}>
             <ChevronDown size={18} className="text-zinc-400 opacity-70 group-hover:text-zinc-600 group-hover:opacity-100" />
@@ -857,33 +860,37 @@ const ThinkingPanel = ({ phase, steps, isComplete, webSearch, hasError }: { phas
                  {steps.map((step, idx) => {
                    const meta = thoughtStepMeta(step.content, phase);
                    const active = !isComplete && idx === steps.length - 1 && phase !== 'complete';
-                   const complete = isComplete || idx < steps.length - 1;
                    return (
                    <motion.div 
                      key={step.id} 
-                     initial={{ opacity: 0, y: -8, filter: "blur(4px)" }}
-                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                     transition={{ delay: idx * 0.045, duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
+                     initial={{ opacity: 0, y: -10, scale: 0.96, filter: "blur(6px)" }}
+                     animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                     transition={{ delay: idx * 0.08, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                      className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
                    >
                      {idx < steps.length - 1 && (
                        <motion.div 
                          initial={{ scaleY: 0 }} 
                          animate={{ scaleY: 1 }} 
-                         transition={{ duration: 0.4, ease: "easeOut" }}
+                         transition={{ delay: idx * 0.08 + 0.1, duration: 0.5, ease: "easeOut" }}
                          className="absolute left-[26px] top-10 bottom-[-12px] w-px bg-black/10 origin-top" 
                        />
                      )}
                      
                      <div className="flex items-center gap-2">
                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-[11px] font-semibold tracking-tight ${meta.bg} ${meta.text}`}>
-                         <meta.icon size={12} strokeWidth={2.5} />
+                          <motion.div
+                            animate={active ? { rotate: [0, -6, 6, 0], y: [0, -1, 0] } : { rotate: 0, y: 0 }}
+                            transition={{ repeat: active ? Infinity : 0, duration: 1.45, ease: "easeInOut" }}
+                          >
+                            <meta.icon size={12} strokeWidth={2.5} />
+                          </motion.div>
                          {meta.label}
                        </div>
                        {active && <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-pulse shadow-sm" />}
                      </div>
                      
-                     <div className="pl-1 mt-0.5 text-[12px] leading-relaxed tracking-tight text-zinc-600 transition-colors group-hover/step:text-zinc-900">
+                     <div className="pl-[32px] mt-1 text-[12px] leading-relaxed tracking-tight text-zinc-600 transition-colors group-hover/step:text-zinc-900">
                        {step.content}
                      </div>
                    </motion.div>
@@ -915,7 +922,7 @@ const ThinkingPanel = ({ phase, steps, isComplete, webSearch, hasError }: { phas
                         </div>
                       </div>
                       
-                      <div className="pl-1 mt-0.5 text-[12px] italic tracking-tight text-zinc-500 transition-colors">
+                      <div className="pl-[32px] mt-1 text-[12px] italic tracking-tight text-zinc-500 transition-colors">
                         Loading...
                       </div>
                     </motion.div>
