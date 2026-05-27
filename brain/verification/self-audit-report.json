@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "generatedAt": "2026-05-27T13:13:24.211Z",
+  "generatedAt": "2026-05-27T13:24:50.205Z",
   "threshold": 85,
   "score": 89,
   "checks": {
@@ -16,7 +16,7 @@
   },
   "retrievalBenchmark": {
     "recall": 1,
-    "confidenceAverage": 0.9093833333333331,
+    "confidenceAverage": 0.9087833333333332,
     "results": [
       {
         "task": "add dashboard feature",
@@ -80,7 +80,7 @@
         ],
         "recall": 1,
         "confidence": "high",
-        "confidenceScore": 0.97
+        "confidenceScore": 0.9664
       },
       {
         "task": "change shared UI animations",

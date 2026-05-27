@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T13:12:10.569Z",
+    "generatedAt": "2026-05-27T13:22:52.955Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "41b56010fac13961b9a5e4d577e5e591579967ef",
+      "commit": "efd5b47481c0e7fa2fb5bc1f9f73961e3a773b50",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "18199a43c4507f3ffe29dcd5d6fb9c279bf4e9c07199301361aa267025e135a6"
+    "sourceHash": "1936f028ec2992f39e59d817cf65987e4c3a6c5a6441a0458b8433e2f6bd3274"
   },
   "contextPacks": [
     {

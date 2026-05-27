@@ -210,8 +210,8 @@
     {
       "field": "setActiveView",
       "readers": [
-        "src/views/StudyView.tsx",
         "src/components/ChatPanel.tsx",
+        "src/views/StudyView.tsx",
         "src/views/RevisionView.tsx",
         "src/App.tsx"
       ],
@@ -246,8 +246,8 @@
     {
       "field": "setAskTutorQuery",
       "readers": [
-        "src/components/PdfViewer.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/components/PdfViewer.tsx"
       ],
       "writers": [
         "src/components/ChatPanel.tsx",

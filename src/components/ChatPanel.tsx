@@ -41,7 +41,7 @@ import {
   Image as ImageIcon,
   Code2,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, type Variants } from "motion/react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { audio } from "../lib/audio";
 import { SiriLiquidGlass } from "./SiriLiquidGlass";
@@ -1155,6 +1155,109 @@ const getStatusBadge = (
   return "progress";
 };
 
+const reasoningTraceEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
+const reasoningTraceStepGap = 0.48;
+const reasoningTraceDelay = (index: number, offset = 0) =>
+  index * reasoningTraceStepGap + offset;
+
+const reasoningStepVariants: Variants = {
+  hidden: { opacity: 0, y: 10, filter: "blur(6px)" },
+  show: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.24,
+      ease: reasoningTraceEase,
+      delay: reasoningTraceDelay(index),
+    },
+  }),
+};
+
+const reasoningIconVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.34, rotate: -16, y: 2 },
+  show: (index: number) => ({
+    opacity: 1,
+    scale: 0.6,
+    rotate: [-14, 9, -3, 0],
+    y: [1, -1, 0],
+    transition: {
+      opacity: {
+        duration: 0.14,
+        delay: reasoningTraceDelay(index, 0.02),
+      },
+      scale: {
+        type: "spring",
+        stiffness: 560,
+        damping: 21,
+        delay: reasoningTraceDelay(index, 0.02),
+      },
+      rotate: {
+        duration: 0.42,
+        ease: "easeOut",
+        delay: reasoningTraceDelay(index, 0.03),
+      },
+      y: {
+        duration: 0.3,
+        ease: "easeOut",
+        delay: reasoningTraceDelay(index, 0.03),
+      },
+    },
+  }),
+};
+
+const reasoningLineVariants: Variants = {
+  hidden: { scaleY: 0, opacity: 0 },
+  show: (index: number) => ({
+    scaleY: 1,
+    opacity: 1,
+    transition: {
+      duration: 0.3,
+      ease: reasoningTraceEase,
+      delay: reasoningTraceDelay(index, 0.18),
+    },
+  }),
+};
+
+const reasoningTextVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    x: -3,
+    backgroundPosition: "155% 50%",
+  },
+  show: (index: number) => ({
+    opacity: 1,
+    x: 0,
+    backgroundPosition: ["155% 50%", "45% 50%", "-70% 50%"],
+    transition: {
+      opacity: {
+        duration: 0.16,
+        delay: reasoningTraceDelay(index, 0.11),
+      },
+      x: {
+        duration: 0.22,
+        ease: reasoningTraceEase,
+        delay: reasoningTraceDelay(index, 0.11),
+      },
+      backgroundPosition: {
+        duration: 0.72,
+        ease: "easeInOut",
+        delay: reasoningTraceDelay(index, 0.12),
+      },
+    },
+  }),
+};
+
+const reasoningShimmerTextStyle: React.CSSProperties = {
+  backgroundImage:
+    "linear-gradient(100deg, #52525b 0%, #52525b 34%, #111827 45%, #a1a1aa 52%, #52525b 66%, #52525b 100%)",
+  backgroundSize: "240% 100%",
+  backgroundClip: "text",
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+  willChange: "background-position, opacity, transform",
+};
+
 const ThinkingPanel = ({
   phase,
   steps,
@@ -1269,12 +1372,10 @@ const ThinkingPanel = ({
             className="overflow-hidden border-t border-zinc-100"
           >
             <motion.div
+              key={`reasoning-trace-open-${stepCount}-${steps.map((step) => step.id).join("-")}`}
               initial="hidden"
               animate="show"
-              variants={{
-                hidden: {},
-                show: { transition: { staggerChildren: 0.045 } },
-              }}
+              variants={{ hidden: {}, show: {} }}
               className="space-y-1 px-3 py-3 text-[13px] text-zinc-500"
             >
               {steps.map((step, idx) => {
@@ -1286,25 +1387,15 @@ const ThinkingPanel = ({
                 return (
                   <motion.div
                     key={step.id}
-                    variants={{
-                      hidden: { opacity: 0, y: 8, filter: "blur(5px)" },
-                      show: { opacity: 1, y: 0, filter: "blur(0px)" },
-                    }}
-                    transition={{ duration: 0.28, ease: "easeOut" }}
+                    custom={idx}
+                    variants={reasoningStepVariants}
                     className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
                   >
                     {idx < steps.length - 1 && (
                       <motion.div
-                        variants={{
-                          hidden: { scaleY: 0, opacity: 0 },
-                          show: { scaleY: 1, opacity: 1 },
-                        }}
-                        transition={{
-                          duration: 0.34,
-                          ease: [0.16, 1, 0.3, 1],
-                          delay: 0.08,
-                        }}
-                        className="absolute bottom-[-12px] left-[26px] top-10 w-px origin-top bg-black/10"
+                        custom={idx}
+                        variants={reasoningLineVariants}
+                        className="absolute bottom-[-12px] left-[26px] top-10 w-px origin-top bg-black/10 will-change-transform"
                       />
                     )}
 
@@ -1313,15 +1404,8 @@ const ThinkingPanel = ({
                         className={`inline-flex items-center gap-1.5 rounded-[12px] px-3 py-1.5 text-[11px] font-medium tracking-tight ${meta.bg} ${meta.text}`}
                       >
                         <motion.div
-                          variants={{
-                            hidden: { opacity: 0, scale: 0.45, rotate: -10 },
-                            show: { opacity: 1, scale: 0.6, rotate: 0 },
-                          }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 420,
-                            damping: 24,
-                          }}
+                          custom={idx}
+                          variants={reasoningIconVariants}
                           className="-mx-1 flex origin-center items-center justify-center"
                         >
                           <meta.icon />
@@ -1333,9 +1417,14 @@ const ThinkingPanel = ({
                       )}
                     </div>
 
-                    <div className="mt-1 pl-[32px] text-[12px] leading-relaxed tracking-tight text-zinc-600 transition-colors group-hover/step:text-zinc-900">
+                    <motion.div
+                      custom={idx}
+                      variants={reasoningTextVariants}
+                      style={reasoningShimmerTextStyle}
+                      className="mt-1 pl-[32px] text-[12px] leading-relaxed tracking-tight transition-colors"
+                    >
                       {step.content}
-                    </div>
+                    </motion.div>
                   </motion.div>
                 );
               })}
@@ -1343,25 +1432,15 @@ const ThinkingPanel = ({
 
               {!isComplete && (
                 <motion.div
-                  variants={{
-                    hidden: { opacity: 0, y: 8, filter: "blur(5px)" },
-                    show: { opacity: 1, y: 0, filter: "blur(0px)" },
-                  }}
-                  transition={{ duration: 0.28, ease: "easeOut" }}
+                  custom={steps.length}
+                  variants={reasoningStepVariants}
                   className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
                 >
                   <div className="flex items-center gap-2">
                     <div className="inline-flex items-center gap-1.5 rounded-[12px] bg-[#E7F3FF] px-3 py-1.5 text-[11px] font-medium tracking-tight text-[#0A7DFF]">
                       <motion.div
-                        variants={{
-                          hidden: { opacity: 0, scale: 0.45, rotate: -10 },
-                          show: { opacity: 1, scale: 0.6, rotate: 0 },
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 420,
-                          damping: 24,
-                        }}
+                        custom={steps.length}
+                        variants={reasoningIconVariants}
                         className="-mx-1 flex origin-center items-center justify-center"
                       >
                         <ProgressIcon />
@@ -1370,9 +1449,14 @@ const ThinkingPanel = ({
                     </div>
                   </div>
 
-                  <div className="mt-1 pl-[32px] text-[12px] italic tracking-tight text-zinc-500 transition-colors">
+                  <motion.div
+                    custom={steps.length}
+                    variants={reasoningTextVariants}
+                    style={reasoningShimmerTextStyle}
+                    className="mt-1 pl-[32px] text-[12px] italic tracking-tight"
+                  >
                     Loading...
-                  </div>
+                  </motion.div>
                 </motion.div>
               )}
             </motion.div>
