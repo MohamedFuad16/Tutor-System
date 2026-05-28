@@ -277,6 +277,8 @@ interface AppState {
   /** True while voice agent is connected or TTS is playing */
   isVoiceActive: boolean;
   setIsVoiceActive: (active: boolean) => void;
+  language: string;
+  setLanguage: (lang: string) => void;
 }
 
 const storedUsage = readStoredUsage();
@@ -286,6 +288,11 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       activeView: "study",
       setActiveView: (view) => set({ activeView: view }),
+      language: localStorage.getItem("learning_ai_language") || "en",
+      setLanguage: (lang) => {
+        localStorage.setItem("learning_ai_language", lang);
+        set({ language: lang });
+      },
       apiKey: localStorage.getItem("openrouter_api_key") || "",
       setApiKey: (key) => {
         localStorage.setItem("openrouter_api_key", key);
@@ -562,6 +569,7 @@ What would you like to learn today?`,
         activeProject: state.activeProject,
         activeLearningBookId: state.activeLearningBookId,
         activeView: state.activeView,
+        language: state.language,
       }),
     },
   ),

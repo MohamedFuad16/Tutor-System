@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useStore } from "../store";
 import { SiriLiquidGlass } from "./SiriLiquidGlass";
+import { useTranslation } from "../lib/translations";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -231,6 +232,7 @@ function UsageInsightsPanel() {
 
 export function SettingsButton() {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
   const {
     apiKey,
     setApiKey,
@@ -246,6 +248,8 @@ export function SettingsButton() {
     setAnimationsEnabled,
     systemPrompt,
     setSystemPrompt,
+    language,
+    setLanguage,
   } = useStore();
   const [inputKey, setInputKey] = useState(apiKey);
   const [inputSerperKey, setInputSerperKey] = useState(serperApiKey);
@@ -254,6 +258,7 @@ export function SettingsButton() {
   const [inputModel, setInputModel] = useState(aiModel || "gpt-4o-mini");
   const [inputAnimations, setInputAnimations] = useState(animationsEnabled);
   const [inputPrompt, setInputPrompt] = useState(systemPrompt || "");
+  const [inputLanguage, setInputLanguage] = useState(language || "en");
   const [personaDesc, setPersonaDesc] = useState("");
   const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
   const [personaStatus, setPersonaStatus] = useState<string | null>(null);
@@ -291,6 +296,7 @@ export function SettingsButton() {
       setInputModel(aiModel || "gpt-4o-mini");
       setInputAnimations(animationsEnabled);
       setInputPrompt(systemPrompt || "");
+      setInputLanguage(language || "en");
       setValidationError(null);
       setPersonaStatus(null);
     }
@@ -303,6 +309,7 @@ export function SettingsButton() {
     aiModel,
     animationsEnabled,
     systemPrompt,
+    language,
   ]);
 
   const handleSave = async () => {
@@ -318,6 +325,7 @@ export function SettingsButton() {
       setAiModel(inputModel);
       setAnimationsEnabled(inputAnimations);
       setSystemPrompt(inputPrompt);
+      setLanguage(inputLanguage);
       setIsOpen(false);
       return;
     }
@@ -348,6 +356,7 @@ export function SettingsButton() {
       setAiModel(inputModel);
       setAnimationsEnabled(inputAnimations);
       setSystemPrompt(inputPrompt);
+      setLanguage(inputLanguage);
       setIsOpen(false);
     } catch (err: any) {
       setValidationError(
@@ -422,7 +431,7 @@ export function SettingsButton() {
                 <div className="flex justify-between items-center">
                   <h2 className="text-xl font-medium tracking-tight text-white flex items-center gap-2">
                     <Settings size={20} className="text-zinc-400" />
-                    App Settings
+                    {t("app_settings")}
                   </h2>
                   <button
                     onClick={() => {
@@ -446,7 +455,7 @@ export function SettingsButton() {
                         className="absolute inset-0 bg-[#2a2a2a] rounded-md shadow z-[-1]"
                       />
                     )}
-                    General
+                    {t("general")}
                   </button>
                   <button
                     onClick={() => setActiveTab("usage")}
@@ -458,7 +467,7 @@ export function SettingsButton() {
                         className="absolute inset-0 bg-[#ff6e00]/15 rounded-md shadow border border-[#ff6e00]/25 z-[-1]"
                       />
                     )}
-                    Usage
+                    {t("usage")}
                   </button>
                   <button
                     onClick={() => setActiveTab("persona")}
@@ -470,7 +479,7 @@ export function SettingsButton() {
                         className="absolute inset-0 bg-emerald-500/20 rounded-md shadow border border-emerald-500/30 z-[-1]"
                       />
                     )}
-                    Persona Studio
+                    {t("persona_studio")}
                   </button>
                 </div>
 
@@ -487,8 +496,25 @@ export function SettingsButton() {
                       >
                         <div className="flex flex-col gap-2">
                           <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                            <Globe2 size={14} className="text-emerald-400" />
+                            {t("language")}
+                          </label>
+                          <select
+                            value={inputLanguage}
+                            onChange={(e) => setInputLanguage(e.target.value)}
+                            disabled={isValidating}
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <option value="en">English (US)</option>
+                            <option value="ja">日本語 (Japanese)</option>
+                            <option value="ko">한국어 (Korean)</option>
+                          </select>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
                             <UserRound size={14} className="text-orange-400" />
-                            Learner Name
+                            {t("learner_name")}
                           </label>
                           <input
                             type="text"
@@ -509,7 +535,7 @@ export function SettingsButton() {
                         <div className="flex flex-col gap-2">
                           <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
                             <Key size={14} className="text-blue-400" />
-                            OpenRouter API Key
+                            {t("openrouter_key")}
                           </label>
                           <input
                             type="password"
@@ -529,7 +555,7 @@ export function SettingsButton() {
                         <div className="flex flex-col gap-2">
                           <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
                             <Globe2 size={14} className="text-cyan-400" />
-                            Serper API Key
+                            {t("serper_key")}
                           </label>
                           <input
                             type="password"
@@ -549,7 +575,7 @@ export function SettingsButton() {
                         <div className="flex flex-col gap-2">
                           <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
                             <Mic size={14} className="text-violet-400" />
-                            TTS Voice Selection
+                            {t("tts_voice")}
                           </label>
                           <select
                             value={inputVoice}
@@ -568,7 +594,7 @@ export function SettingsButton() {
                         <div className="flex flex-col gap-2">
                           <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
                             <Settings size={14} className="text-pink-400" />
-                            AI Model
+                            {t("ai_model")}
                           </label>
                           <select
                             value={inputModel}
@@ -597,7 +623,7 @@ export function SettingsButton() {
                             <div className="w-5 h-5 relative overflow-hidden rounded-full shrink-0">
                               <SiriLiquidGlass isActive={false} />
                             </div>
-                            UI Animations & Transitions
+                            {t("ui_animations")}
                           </label>
                           <button
                             type="button"
@@ -773,7 +799,7 @@ export function SettingsButton() {
                     disabled={isValidating}
                     className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
                   >
-                    Cancel
+                    {t("cancel")}
                   </button>
                   <button
                     onClick={handleSave}
@@ -783,7 +809,7 @@ export function SettingsButton() {
                     {isValidating && (
                       <Loader2 size={16} className="animate-spin" />
                     )}
-                    {isValidating ? "Validating..." : "Save Changes"}
+                    {isValidating ? "Validating..." : t("save_changes")}
                   </button>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T05:31:32.892Z",
+    "generatedAt": "2026-05-28T05:45:08.213Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "f00c9dfbb420c5c0cfa41f5878924f85ffc0350d",
+      "commit": "d58f9ff5461681397048fcaf0f82362bef18d5c7",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "f76dcaa5d9631dea80129091bac861e05f10beb2fa3736b871a86411e5dbd9d6"
+    "sourceHash": "3477bc351458b386a1259c343e45335d0d6e6f7568e4155696d273b1cc7c933d"
   },
   "files": {
     "generate-brain.ts": {
@@ -162,7 +162,7 @@
     },
     "server.ts": {
       "file": "server.ts",
-      "hash": "29f1327dfc8bac92b946e35935e096ef1d9490709107cfd7d978aaad1270f1f4",
+      "hash": "fca59aa5284b088cabbdd77f596cd2814ba6804d7264f0dd91e53e08381942d2",
       "imports": [
         {
           "specifier": "dotenv",
@@ -1628,7 +1628,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "12f6ab94829ddde5d070e105b83c503db9d6ef170cec66469689ee391de0f402",
+      "hash": "f9ea988940c3f9d9f0faef69d67dc6d3d2d04b297c6d6d3764be9199168bfaec",
       "imports": [
         {
           "specifier": "react",
@@ -1693,6 +1693,10 @@
         {
           "specifier": "../brain-runtime/runtimeTelemetry",
           "resolved": "src/brain-runtime/runtimeTelemetry.ts"
+        },
+        {
+          "specifier": "../lib/translations",
+          "resolved": "src/lib/translations.ts"
         }
       ],
       "exports": [
@@ -1797,6 +1801,10 @@
         {
           "field": "isVoiceActive",
           "selector": "(state) => state.isVoiceActive"
+        },
+        {
+          "field": "language",
+          "selector": "(state) => state.language"
         },
         {
           "field": "apiKey",
@@ -2022,7 +2030,7 @@
     },
     "src/components/Navigation.tsx": {
       "file": "src/components/Navigation.tsx",
-      "hash": "1886b627d39b162d0f0d99e5a35cbc2e9f68655eeccb51ba9aef63d8fb5b3932",
+      "hash": "0f355b01cce6d0436a13f40cd6b612049d347d44763fe94094ce4d6cd0738f3e",
       "imports": [
         {
           "specifier": "react",
@@ -2039,6 +2047,10 @@
         {
           "specifier": "motion/react",
           "external": "motion"
+        },
+        {
+          "specifier": "../lib/translations",
+          "resolved": "src/lib/translations.ts"
         }
       ],
       "exports": [
@@ -2191,7 +2203,7 @@
     },
     "src/components/PdfViewer.tsx": {
       "file": "src/components/PdfViewer.tsx",
-      "hash": "454060d0d24916b7ba952572a96e4bca06ebad17007ed9b1c354da6a5196342c",
+      "hash": "e3b3ccb91a1a28ed2e102ed579df239c79203ac1a9b73731ceba85a7db54c8be",
       "imports": [
         {
           "specifier": "react",
@@ -2216,6 +2228,10 @@
         {
           "specifier": "motion/react",
           "external": "motion"
+        },
+        {
+          "specifier": "../lib/translations",
+          "resolved": "src/lib/translations.ts"
         },
         {
           "specifier": "lucide-react",
@@ -2353,7 +2369,7 @@
     },
     "src/components/SettingsModal.tsx": {
       "file": "src/components/SettingsModal.tsx",
-      "hash": "fa9c508a33d9116f30f552d912547cc1f8632b87822622125fdd6376398cbe0c",
+      "hash": "957f48a301b430376198651da98ec23989df706004dece88824eddbdb73ec1a2",
       "imports": [
         {
           "specifier": "react",
@@ -2374,6 +2390,10 @@
         {
           "specifier": "./SiriLiquidGlass",
           "resolved": "src/components/SiriLiquidGlass.tsx"
+        },
+        {
+          "specifier": "../lib/translations",
+          "resolved": "src/lib/translations.ts"
         }
       ],
       "exports": [
@@ -2417,6 +2437,7 @@
         "setAiModel",
         "setAnimationsEnabled",
         "setApiKey",
+        "setLanguage",
         "setLearnerName",
         "setSerperApiKey",
         "setSystemPrompt",
@@ -2643,6 +2664,45 @@
       "components": [],
       "hooks": [],
       "storeSelectors": [],
+      "storeWrites": [],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [],
+      "routes": []
+    },
+    "src/lib/translations.ts": {
+      "file": "src/lib/translations.ts",
+      "hash": "24f8f8d31bc93993479f1d093837f04569227ce425dfdebdff071c1618f13124",
+      "imports": [
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        }
+      ],
+      "exports": [
+        "Language",
+        "translations",
+        "useTranslation"
+      ],
+      "functions": [
+        "useTranslation"
+      ],
+      "variables": [
+        "translations"
+      ],
+      "classes": [],
+      "components": [],
+      "hooks": [
+        "useTranslation"
+      ],
+      "storeSelectors": [
+        {
+          "field": "language",
+          "selector": "(state) => state.language"
+        }
+      ],
       "storeWrites": [],
       "apiCalls": [],
       "websocketCalls": [],
@@ -3325,7 +3385,7 @@
     },
     "src/store/index.ts": {
       "file": "src/store/index.ts",
-      "hash": "0f4ee54dba27fc86b7726e38a4010d333cc93dca20080697da046f3d9b00add0",
+      "hash": "e7192297d7c77f7e0bb3afd36d766ac74e05502e2cf70fc417753abc9d0d2bab",
       "imports": [
         {
           "specifier": "zustand",

@@ -4,6 +4,7 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { useStore, Annotation } from "../store";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "../lib/translations";
 import {
   ZoomIn,
   ZoomOut,
@@ -22,6 +23,7 @@ import { brainOrchestrator } from "../memory/memory.orchestrator";
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export function PdfViewer() {
+  const { t } = useTranslation();
   const pdfUrl = useStore((state) => state.pdfUrl);
   const pdfScale = useStore((state) => state.pdfScale);
   const setPdfScale = useStore((state) => state.setPdfScale);
@@ -397,14 +399,14 @@ export function PdfViewer() {
           <button
             onClick={() => setIsFitWidth(false)}
             className={`relative z-10 p-2 rounded-full transition-colors w-8 h-8 flex items-center justify-center focus:outline-none ${!isFitWidth ? "text-white shadow-[0_2px_10px_rgba(0,0,0,0.5)] bg-white/10 border border-white/10 mix-blend-screen" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
-            title="Fit Page"
+            title={t("fit_height")}
           >
             <Minimize size={14} />
           </button>
           <button
             onClick={() => setIsFitWidth(true)}
             className={`relative z-10 p-2 rounded-full transition-colors w-8 h-8 flex items-center justify-center focus:outline-none ${isFitWidth ? "text-white shadow-[0_2px_10px_rgba(0,0,0,0.5)] bg-white/10 border border-white/10 mix-blend-screen" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
-            title="Fit Width"
+            title={t("fit_width")}
           >
             <Maximize size={14} />
           </button>
@@ -587,7 +589,7 @@ export function PdfViewer() {
                         addSelectionAnnotation("highlight", "#fde047")
                       } // yellow
                       className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-yellow-400 tooltip-trigger"
-                      title="Highlight"
+                      title={t("highlight")}
                     >
                       <Highlighter size={14} />
                     </button>
@@ -596,7 +598,7 @@ export function PdfViewer() {
                         addSelectionAnnotation("underline", "#3b82f6")
                       } // blue
                       className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-blue-500"
-                      title="Underline"
+                      title={t("underline")}
                     >
                       <Underline size={14} />
                     </button>
@@ -605,7 +607,7 @@ export function PdfViewer() {
                         addSelectionAnnotation("strikethrough", "#ef4444")
                       } // red
                       className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-red-500"
-                      title="Strikethrough"
+                      title={t("strikethrough")}
                     >
                       <Strikethrough size={14} />
                     </button>
@@ -614,7 +616,7 @@ export function PdfViewer() {
                         addSelectionAnnotation("sticky", "#fde047")
                       } // yellow
                       className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-yellow-400"
-                      title="Add Note"
+                      title={t("sticky_note")}
                     >
                       <StickyNote size={14} />
                     </button>
@@ -639,7 +641,7 @@ export function PdfViewer() {
                       className="relative z-10 drop-shadow-md"
                     />{" "}
                     <span className="relative z-10 drop-shadow-sm font-bold">
-                      Ask Tutor
+                      {t("ask_tutor")}
                     </span>
                   </button>
                 </div>
@@ -666,7 +668,7 @@ export function PdfViewer() {
                   <div className="bg-[#1A1A1E] px-3 py-2 border-b border-[#2A2A30] flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-yellow-400 uppercase tracking-wide">
                       <StickyNote size={12} />
-                      New Sticky Note
+                      {t("sticky_note")}
                     </div>
                     <button
                       onClick={() => setDraftNote(null)}
@@ -695,8 +697,8 @@ export function PdfViewer() {
                           saveStickyNote();
                         }
                       }}
-                      placeholder="Write down your thought..."
-                      className="w-full bg-transparent border-none outline-none text-sm text-zinc-200 placeholder:text-zinc-600 resize-none min-h-[80px]"
+                      placeholder={t("add_annotation_note")}
+                      className="w-full bg-transparent border-none outline-none text-sm text-zinc-200 placeholder:text-zinc-650 resize-none min-h-[80px]"
                     />
                   </div>
                   <div className="px-3 py-2 bg-[#1A1A1E]/50 border-t border-[#2A2A30] flex justify-end gap-2">
@@ -704,13 +706,13 @@ export function PdfViewer() {
                       onClick={() => setDraftNote(null)}
                       className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
                     >
-                      Cancel
+                      {t("cancel")}
                     </button>
                     <button
                       onClick={saveStickyNote}
                       className="px-3 py-1.5 text-xs font-semibold bg-yellow-400/10 text-yellow-400 hover:bg-yellow-400/20 border border-yellow-400/20 rounded pl-2 pr-3 flex items-center gap-1 transition-colors"
                     >
-                      Save
+                      {t("save_changes")}
                     </button>
                   </div>
                 </div>

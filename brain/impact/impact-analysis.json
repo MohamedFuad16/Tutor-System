@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T05:31:32.892Z",
+    "generatedAt": "2026-05-28T05:45:08.213Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "f00c9dfbb420c5c0cfa41f5878924f85ffc0350d",
+      "commit": "d58f9ff5461681397048fcaf0f82362bef18d5c7",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "f76dcaa5d9631dea80129091bac861e05f10beb2fa3736b871a86411e5dbd9d6"
+    "sourceHash": "3477bc351458b386a1259c343e45335d0d6e6f7568e4155696d273b1cc7c933d"
   },
   "files": {
     "generate-brain.ts": {
@@ -793,6 +793,28 @@
       },
       "affectedTests": []
     },
+    "src/lib/translations.ts": {
+      "riskScore": 32,
+      "blastRadius": [
+        "src/components/ChatPanel.tsx",
+        "src/components/Navigation.tsx",
+        "src/components/PdfViewer.tsx",
+        "src/components/SettingsModal.tsx"
+      ],
+      "semanticFactors": {
+        "directImportDependents": [
+          "src/components/ChatPanel.tsx",
+          "src/components/Navigation.tsx",
+          "src/components/PdfViewer.tsx",
+          "src/components/SettingsModal.tsx"
+        ],
+        "renderedBy": [],
+        "clientCallers": [],
+        "storeReaders": [],
+        "databaseUsers": []
+      },
+      "affectedTests": []
+    },
     "src/lib/tutorBook.json": {
       "riskScore": 8,
       "blastRadius": [
@@ -1071,6 +1093,7 @@
         "src/components/Navigation.tsx",
         "src/components/PdfViewer.tsx",
         "src/components/SettingsModal.tsx",
+        "src/lib/translations.ts",
         "src/views/AdminView.tsx",
         "src/views/AnalyticsView.tsx",
         "src/views/BrainView.tsx",
@@ -1085,6 +1108,7 @@
           "src/components/Navigation.tsx",
           "src/components/PdfViewer.tsx",
           "src/components/SettingsModal.tsx",
+          "src/lib/translations.ts",
           "src/views/AdminView.tsx",
           "src/views/AnalyticsView.tsx",
           "src/views/BrainView.tsx",
@@ -1098,6 +1122,7 @@
           "src/components/ChatPanel.tsx",
           "src/components/PdfViewer.tsx",
           "src/components/SettingsModal.tsx",
+          "src/lib/translations.ts",
           "src/views/BrainView.tsx",
           "src/views/RevisionView.tsx",
           "src/views/StudyView.tsx"
@@ -1477,6 +1502,13 @@
         "dependsOn": 1
       }
     },
+    "src/components/PdfViewer.tsx <-> src/lib/translations.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
     "brain/runtime/impact-orchestrator.ts <-> brain/runtime/task-executor.ts": {
       "score": 2,
       "edgeTypes": {
@@ -1485,6 +1517,13 @@
       }
     },
     "src/memory/learner.model.ts <-> src/memory/misconception.graph.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
+    "src/components/Navigation.tsx <-> src/lib/translations.ts": {
       "score": 2,
       "edgeTypes": {
         "imports": 1,
@@ -1503,13 +1542,6 @@
       "edgeTypes": {
         "dependsOn": 1,
         "imports": 1
-      }
-    },
-    "src/components/PdfViewer.tsx <-> src/memory/memory.orchestrator.ts": {
-      "score": 2,
-      "edgeTypes": {
-        "imports": 1,
-        "dependsOn": 1
       }
     },
     "src/index.css <-> src/main.tsx": {
@@ -1652,6 +1684,13 @@
         "imports": 1
       }
     },
+    "src/components/SettingsModal.tsx <-> src/lib/translations.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "dependsOn": 1,
+        "imports": 1
+      }
+    },
     "brain/autonomy/postchange.ts <-> brain/autonomy/source-scope.ts": {
       "score": 2,
       "edgeTypes": {
@@ -1671,6 +1710,13 @@
       "edgeTypes": {
         "dependsOn": 1,
         "imports": 1
+      }
+    },
+    "src/components/ChatPanel.tsx <-> src/lib/translations.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
       }
     },
     "src/store/index.ts <-> src/views/AnalyticsView.tsx": {
@@ -1715,6 +1761,13 @@
         "imports": 1
       }
     },
+    "src/components/PdfViewer.tsx <-> src/memory/memory.orchestrator.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
     "src/brain-runtime/installBrainRuntime.ts <-> src/memory/longterm.memory.ts": {
       "score": 2,
       "edgeTypes": {
@@ -1723,6 +1776,13 @@
       }
     },
     "src/brain-runtime/installBrainRuntime.ts <-> src/brain-runtime/instrumentWebSocket.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "dependsOn": 1,
+        "imports": 1
+      }
+    },
+    "src/lib/translations.ts <-> src/store/index.ts": {
       "score": 2,
       "edgeTypes": {
         "dependsOn": 1,

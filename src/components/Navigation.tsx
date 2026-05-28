@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { useStore, ViewState } from "../store";
 import { BookOpen, Zap, Activity } from "lucide-react";
 import { motion, useMotionValue, useMotionTemplate } from "motion/react";
+import { useTranslation } from "../lib/translations";
 
 export function Navigation() {
   const { activeView, setActiveView } = useStore();
+  const { t } = useTranslation();
   const [isHoveringContainer, setIsHoveringContainer] = useState(false);
 
   const mouseX = useMotionValue(0);
@@ -18,9 +20,9 @@ export function Navigation() {
   };
 
   const navItems: { id: ViewState; label: string; icon: React.ReactNode }[] = [
-    { id: "study", label: "Study", icon: <BookOpen size={16} /> },
-    { id: "analytics", label: "Analytics", icon: <Activity size={16} /> },
-    { id: "revision", label: "Revision", icon: <Zap size={16} /> },
+    { id: "study", label: t("study"), icon: <BookOpen size={16} /> },
+    { id: "analytics", label: t("analytics"), icon: <Activity size={16} /> },
+    { id: "revision", label: t("revision"), icon: <Zap size={16} /> },
   ];
 
   return (

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T05:31:32.892Z",
+    "generatedAt": "2026-05-28T05:45:08.213Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "f00c9dfbb420c5c0cfa41f5878924f85ffc0350d",
+      "commit": "d58f9ff5461681397048fcaf0f82362bef18d5c7",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "f76dcaa5d9631dea80129091bac861e05f10beb2fa3736b871a86411e5dbd9d6"
+    "sourceHash": "3477bc351458b386a1259c343e45335d0d6e6f7568e4155696d273b1cc7c933d"
   },
   "dependencies": {
     "generate-brain.ts": [
@@ -221,7 +221,8 @@
       "src/memory/longterm.memory.ts",
       "src/types.ts",
       "src/components/FloatingSkillsMenu.tsx",
-      "src/brain-runtime/runtimeTelemetry.ts"
+      "src/brain-runtime/runtimeTelemetry.ts",
+      "src/lib/translations.ts"
     ],
     "src/components/FloatingSkillsMenu.tsx": [
       "react",
@@ -232,7 +233,8 @@
       "react",
       "src/store/index.ts",
       "lucide-react",
-      "motion"
+      "motion",
+      "src/lib/translations.ts"
     ],
     "src/components/PatternCard.tsx": [
       "react",
@@ -253,6 +255,7 @@
       "react-pdf",
       "src/store/index.ts",
       "motion",
+      "src/lib/translations.ts",
       "lucide-react",
       "src/memory/memory.orchestrator.ts"
     ],
@@ -265,7 +268,8 @@
       "motion",
       "lucide-react",
       "src/store/index.ts",
-      "src/components/SiriLiquidGlass.tsx"
+      "src/components/SiriLiquidGlass.tsx",
+      "src/lib/translations.ts"
     ],
     "src/components/ShikiHighlighter.tsx": [
       "react"
@@ -283,6 +287,9 @@
       "react"
     ],
     "src/lib/audio.ts": [],
+    "src/lib/translations.ts": [
+      "src/store/index.ts"
+    ],
     "src/lib/tutorBook.json": [],
     "src/memory/bkt.engine.ts": [
       "src/memory/longterm.memory.ts"

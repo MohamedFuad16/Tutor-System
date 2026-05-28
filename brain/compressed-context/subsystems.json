@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T05:31:32.892Z",
+    "generatedAt": "2026-05-28T05:45:08.213Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "f00c9dfbb420c5c0cfa41f5878924f85ffc0350d",
+      "commit": "d58f9ff5461681397048fcaf0f82362bef18d5c7",
       "branch": "main",
       "dirty": true
     },
@@ -32,11 +32,11 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "f76dcaa5d9631dea80129091bac861e05f10beb2fa3736b871a86411e5dbd9d6"
+    "sourceHash": "3477bc351458b386a1259c343e45335d0d6e6f7568e4155696d273b1cc7c933d"
   },
   "subsystems": {
     "frontend": {
-      "generatedAt": "2026-05-28T05:31:32.929Z",
+      "generatedAt": "2026-05-28T05:45:08.263Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/AnimatedScrollText.tsx",
@@ -86,6 +86,7 @@
         "src/types.ts",
         "src/components/FloatingSkillsMenu.tsx",
         "src/brain-runtime/runtimeTelemetry.ts",
+        "src/lib/translations.ts",
         "react",
         "motion",
         "lucide-react",
@@ -93,6 +94,7 @@
         "src/store/index.ts",
         "lucide-react",
         "motion",
+        "src/lib/translations.ts",
         "react",
         "motion",
         "src/components/PatternSVGs.tsx",
@@ -105,6 +107,7 @@
         "react-pdf",
         "src/store/index.ts",
         "motion",
+        "src/lib/translations.ts",
         "lucide-react",
         "src/memory/memory.orchestrator.ts",
         "react",
@@ -114,6 +117,7 @@
         "lucide-react",
         "src/store/index.ts",
         "src/components/SiriLiquidGlass.tsx",
+        "src/lib/translations.ts",
         "react",
         "react",
         "motion",
@@ -204,7 +208,7 @@
       ]
     },
     "backend": {
-      "generatedAt": "2026-05-28T05:31:32.929Z",
+      "generatedAt": "2026-05-28T05:45:08.263Z",
       "sourceFiles": [
         "server.ts"
       ],
@@ -231,13 +235,14 @@
       ]
     },
     "state": {
-      "generatedAt": "2026-05-28T05:31:32.929Z",
+      "generatedAt": "2026-05-28T05:45:08.263Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/ChatPanel.tsx",
         "src/components/Navigation.tsx",
         "src/components/PdfViewer.tsx",
         "src/components/SettingsModal.tsx",
+        "src/lib/translations.ts",
         "src/store/index.ts",
         "src/views/AdminView.tsx",
         "src/views/AnalyticsView.tsx",
@@ -271,16 +276,19 @@
         "src/types.ts",
         "src/components/FloatingSkillsMenu.tsx",
         "src/brain-runtime/runtimeTelemetry.ts",
+        "src/lib/translations.ts",
         "react",
         "src/store/index.ts",
         "lucide-react",
         "motion",
+        "src/lib/translations.ts",
         "react",
         "react-pdf",
         "react-pdf",
         "react-pdf",
         "src/store/index.ts",
         "motion",
+        "src/lib/translations.ts",
         "lucide-react",
         "src/memory/memory.orchestrator.ts",
         "react",
@@ -288,6 +296,8 @@
         "lucide-react",
         "src/store/index.ts",
         "src/components/SiriLiquidGlass.tsx",
+        "src/lib/translations.ts",
+        "src/store/index.ts",
         "zustand",
         "zustand",
         "src/types.ts",
@@ -336,6 +346,10 @@
           "risk": 100
         },
         {
+          "file": "src/lib/translations.ts",
+          "risk": 32
+        },
+        {
           "file": "src/components/ChatPanel.tsx",
           "risk": 16
         },
@@ -358,10 +372,6 @@
         {
           "file": "src/components/SettingsModal.tsx",
           "risk": 8
-        },
-        {
-          "file": "src/views/AdminView.tsx",
-          "risk": 8
         }
       ],
       "contextPacks": [
@@ -374,7 +384,7 @@
       ]
     },
     "memory": {
-      "generatedAt": "2026-05-28T05:31:32.929Z",
+      "generatedAt": "2026-05-28T05:45:08.263Z",
       "sourceFiles": [
         "src/memory/bkt.engine.ts",
         "src/memory/cognitive.load.ts",
@@ -454,7 +464,7 @@
       ]
     },
     "brainTooling": {
-      "generatedAt": "2026-05-28T05:31:32.929Z",
+      "generatedAt": "2026-05-28T05:45:08.263Z",
       "sourceFiles": [
         "generate-brain.ts",
         "brain/drift-check.ts",

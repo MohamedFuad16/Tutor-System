@@ -1044,6 +1044,7 @@ CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapt
         aiModel,
         customPrompt,
         serperApiKey: bodySerperKey,
+        language,
       } = req.body;
       const serperRuntimeKey =
         sanitizeApiKey(req.headers["x-serper-api-key"]) ||
@@ -1153,6 +1154,12 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
       if (memoryContext) {
         systemInstruction += `\n\n${memoryContext}`;
+      }
+
+      if (language === "ja") {
+        systemInstruction += `\n\nCRITICAL LANGUAGE REQUIREMENT: You must think, reason, and respond natively in Japanese (日本語). Ensure all educational explanations, conceptual analogies, and technical feedback are phrased naturally in fluent Japanese. Keep the professional academic tone with no emojis.`;
+      } else if (language === "ko") {
+        systemInstruction += `\n\nCRITICAL LANGUAGE REQUIREMENT: You must think, reason, and respond natively in Korean (한국어). Ensure all educational explanations, conceptual analogies, and technical feedback are phrased naturally in fluent Korean. Keep the professional academic tone with no emojis.`;
       }
 
       // Eager vision prefetch removed. Vision tool look_at_current_page is registered if currentPageImage is present.
@@ -1639,10 +1646,11 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
   });
 
   wss.on("connection", (ws, req) => {
-    // Extract openRouterKey from query params
+    // Extract openRouterKey and language from query params
     const url = new URL(req.url || "", `http://${req.headers.host}`);
     const openRouterKey =
       url.searchParams.get("openRouterKey") || process.env.OPENROUTER_API_KEY;
+    const language = url.searchParams.get("language") || "en";
 
     if (!openRouterKey) {
       ws.close(1008, "OpenRouter API key is required");
@@ -1674,7 +1682,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           usage: {
             provider: "deepgram",
             voiceAgentModel: "Deepgram Voice Agent Standard",
-            listenModel: "flux-general-en",
+            listenModel:
+              language === "ja" || language === "ko"
+                ? "flux-general-multi"
+                : "flux-general-en",
             speakModel: "gpt-4o-mini-tts",
             ttsModel: "gpt-4o-mini-tts",
             connectionSeconds,
@@ -1703,6 +1714,36 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
       dgWs.on("open", () => {
         // Send initial configuration
+        const listenModel =
+          language === "ja" || language === "ko"
+            ? "flux-general-multi"
+            : "flux-general-en";
+        const listenProvider: any = {
+          type: "deepgram",
+          model: listenModel,
+          version: "v2",
+        };
+        if (language === "ja" || language === "ko") {
+          listenProvider.language_hints = ["en", "ja", "ko"];
+        }
+
+        let thinkPrompt =
+          "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks — you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate.";
+        let greeting =
+          "Hello! I am Aria, your CS tutor. What are you studying today?";
+
+        if (language === "ja") {
+          thinkPrompt =
+            "あなたはAriaという名前の優秀なコンピュータサイエンスおよびプログラミングのチューターです。現在、技術的な内容を学習している学生をサポートしています。シニアエンジニアがジュニアデベロッパーを指導するように概念を説明してください。現実世界の例え話を使用してください。回答は3〜5文に抑えてください。音声での対話であるため、箇条書き、マークダウン、コードブロックは絶対に使用しないでください。記号は言葉で説明してください。最後は必ず次の質問をするか、詳しく説明することを提案して終えてください。必ず日本語で自然に会話してください。";
+          greeting =
+            "こんにちは！CSチューターのAriaです。今日は何を勉強しますか？";
+        } else if (language === "ko") {
+          thinkPrompt =
+            "당신은 Aria라는 이름의 우수한 컴퓨터 과학 및 프로그래밍 튜터입니다. 현재 기술적인 내용을 학습하고 있는 학생을 돕고 있습니다. 시니어 엔지니어가 주니어 개발자를 멘토링하듯이 개념을 설명해 주세요. 현실 세계의 비유를 사용해 주세요. 답변은 3~5문장으로 제한해 주세요. 음성으로 대화 중이므로 글머리 기호, 마크다운, 코드 블록은 절대 사용하지 마세요. 기호는 말로 설명해 주세요. 각 답변의 끝에는 후속 질문을 하거나 더 자세히 설명하겠다고 제안해 주세요. 반드시 한국어로 자연스럽게 대화해 주세요.";
+          greeting =
+            "안녕하세요! CS 튜터 Aria입니다. 오늘 어떤 내용을 공부하시겠어요?";
+        }
+
         const config = {
           type: "Settings",
           audio: {
@@ -1718,19 +1759,14 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           },
           agent: {
             listen: {
-              provider: {
-                type: "deepgram",
-                model: "flux-general-en",
-                version: "v2",
-              },
+              provider: listenProvider,
             },
             think: {
               provider: {
                 type: "open_ai",
                 model: "gpt-4o-mini",
               },
-              prompt:
-                "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks — you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate.",
+              prompt: thinkPrompt,
             },
             speak: {
               provider: {
@@ -1738,8 +1774,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 model: "gpt-4o-mini-tts",
               },
             },
-            greeting:
-              "Hello! I am Aria, your CS tutor. What are you studying today?",
+            greeting: greeting,
           },
         };
         console.log(

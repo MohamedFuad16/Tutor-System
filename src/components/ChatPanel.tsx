@@ -51,6 +51,7 @@ import { db } from "../memory/longterm.memory";
 import type { Message } from "../types";
 import { FloatingSkillsMenu } from "./FloatingSkillsMenu";
 import { recordBrainRuntime } from "../brain-runtime/runtimeTelemetry";
+import { useTranslation } from "../lib/translations";
 
 type MermaidApi = typeof import("mermaid").default;
 
@@ -1355,6 +1356,7 @@ const ThinkingPanel = ({
   }, [isComplete, steps.length, webSearch?.sources.length]);
 
   if (phase === "idle" && steps.length === 0) return null;
+  const { t } = useTranslation();
   const latestStep = steps[steps.length - 1];
   const latestMeta = thoughtStepMeta(latestStep?.content || phase, phase);
   const LatestIcon = latestMeta.icon;
@@ -1369,7 +1371,7 @@ const ThinkingPanel = ({
             ? "Synthesizing"
             : isComplete
               ? "Complete"
-              : "Thinking";
+              : t("thinking_process");
   const stepCount = steps.length + (webSearch?.sources.length ? 1 : 0);
 
   return (
@@ -1890,6 +1892,8 @@ const MessageItem = React.memo(
 );
 
 export function ChatPanel({ onClose }: { onClose?: () => void }) {
+  const { t } = useTranslation();
+  const language = useStore((state) => state.language);
   const apiKey = useStore((state) => state.apiKey);
   const serperApiKey = useStore((state) => state.serperApiKey);
   const learnerName = useStore((state) => state.learnerName);
@@ -2089,7 +2093,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       processorRef.current = processor;
 
       const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${wsProtocol}//${window.location.host}/api/voice-agent?openRouterKey=${encodeURIComponent(apiKey)}`;
+      const wsUrl = `${wsProtocol}//${window.location.host}/api/voice-agent?openRouterKey=${encodeURIComponent(apiKey)}&language=${encodeURIComponent(language)}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -2526,6 +2530,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           activeProject: activeLearningBook?.title || activeProject,
           activeBookId: activeLearningBookId,
           serperApiKey: serperApiKey || undefined,
+          language: language || "en",
         }),
       });
 
@@ -3484,7 +3489,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   placeholder={
                     isSearchSkillActive
                       ? "Search the web..."
-                      : "Ask anything about the document..."
+                      : t("ask_question_placeholder")
                   }
                   className={`w-full h-full bg-transparent border-none outline-none text-[15px] px-4 ${isSearchSkillActive ? "pt-8 pb-3" : "py-5"} max-h-[200px] min-h-[60px] resize-none text-zinc-100 placeholder:text-zinc-500 caret-white custom-scroll z-10`}
                   rows={1}

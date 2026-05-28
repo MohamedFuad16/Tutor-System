@@ -88,6 +88,14 @@
       "writers": []
     },
     {
+      "field": "language",
+      "readers": [
+        "src/lib/translations.ts",
+        "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
       "field": "learnerName",
       "readers": [
         "src/views/BrainView.tsx",
@@ -271,6 +279,13 @@
       ]
     },
     {
+      "field": "setLanguage",
+      "readers": [],
+      "writers": [
+        "src/components/SettingsModal.tsx"
+      ]
+    },
+    {
       "field": "setLearnerName",
       "readers": [],
       "writers": [
@@ -386,16 +401,16 @@
     {
       "field": "voiceUsage",
       "readers": [
-        "src/components/SettingsModal.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/components/SettingsModal.tsx"
       ],
       "writers": []
     },
     {
       "field": "webUsage",
       "readers": [
-        "src/components/SettingsModal.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/components/SettingsModal.tsx"
       ],
       "writers": []
     }
@@ -445,6 +460,11 @@
       "file": "src/components/ChatPanel.tsx",
       "field": "isVoiceActive",
       "selector": "(state) => state.isVoiceActive"
+    },
+    {
+      "file": "src/components/ChatPanel.tsx",
+      "field": "language",
+      "selector": "(state) => state.language"
     },
     {
       "file": "src/components/ChatPanel.tsx",
@@ -640,6 +660,11 @@
       "file": "src/components/SettingsModal.tsx",
       "field": "resetUsageAnalytics",
       "selector": "(state) => state.resetUsageAnalytics"
+    },
+    {
+      "file": "src/lib/translations.ts",
+      "field": "language",
+      "selector": "(state) => state.language"
     },
     {
       "file": "src/views/BrainView.tsx",
