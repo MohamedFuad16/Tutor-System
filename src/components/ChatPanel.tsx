@@ -505,15 +505,12 @@ const AnimatedNumberText = ({
   children: React.ReactNode;
   className?: string;
 }) => (
-  <motion.span
-    layout
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-    className={`inline-block min-w-[3ch] text-right tabular-nums will-change-transform ${className}`}
+  <span
+    className={`inline-block min-w-[3ch] text-right tabular-nums transition-[color,opacity] duration-200 ${className}`}
     style={{ fontVariantNumeric: "tabular-nums" }}
   >
     {children}
-  </motion.span>
+  </span>
 );
 
 export const UsageAnalyticsStrip = () => {
@@ -1579,6 +1576,16 @@ const AnimatedMarkdown = React.memo(
     return (
       <div className={`streaming-text ${showCursor ? "typing-active" : ""}`}>
         <style>{`
+        .streaming-text {
+          overflow-wrap: anywhere;
+          text-rendering: geometricPrecision;
+        }
+        .streaming-text.typing-active {
+          animation: responseStreamSettle 220ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .streaming-text.typing-active > * {
+          animation: responseLineReveal 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
         .streaming-text.typing-active > *:last-child::after {
           content: '';
           display: inline-block;
@@ -1593,6 +1600,14 @@ const AnimatedMarkdown = React.memo(
         }
         @keyframes terminalBlink { 
           50% { opacity: 0; } 
+        }
+        @keyframes responseStreamSettle {
+          from { opacity: 0.86; filter: blur(0.35px); }
+          to { opacity: 1; filter: blur(0px); }
+        }
+        @keyframes responseLineReveal {
+          from { opacity: 0.7; transform: translateY(2px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
         <ReactMarkdown
@@ -1622,9 +1637,10 @@ const MessageUsageFooter = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
       className="not-prose mt-2 flex justify-end text-[10px] font-medium tracking-tight text-zinc-400"
+      aria-live="polite"
     >
-      <span className="flex min-w-[9.5rem] items-center justify-end gap-1 rounded-full bg-zinc-50/95 px-2 py-1 tabular-nums">
-        <AnimatedNumberText className="min-w-[4ch]">
+      <span className="flex min-w-[10.25rem] items-center justify-end gap-1 rounded-full bg-zinc-50/95 px-2 py-1 tabular-nums">
+        <AnimatedNumberText className="min-w-[4.5ch]">
           {formatCount(animatedTotal)}
         </AnimatedNumberText>{" "}
         tokens · {formatCurrency(usage.cost || 0)}
@@ -2666,7 +2682,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   }
                   return newM;
                 });
-                forceScrollToBottom("auto");
+                forceScrollToBottom("smooth");
               }
             } else if (data.type === "web_search_started") {
               recordWebSearchEvent({
@@ -2951,7 +2967,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 return newM;
               });
             } else if (data.type === "info") {
-              currentContent += `> ⚠️ ${data.message}\n\n`;
+              currentContent += `> Note: ${data.message}\n\n`;
               setMessages((prev) => {
                 const newM = [...prev];
                 const msgIndex = newM.findIndex((m) => m.id === assistantMsgId);

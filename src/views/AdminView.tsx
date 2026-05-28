@@ -16,6 +16,9 @@ import {
   RefreshCw,
   Square,
   Trash2,
+  Gauge,
+  ShieldCheck,
+  Timer,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useStore } from "../store";
@@ -121,6 +124,63 @@ const friendlyWhy = (component: DebugComponentSummary) => {
   return text;
 };
 
+const dateMs = (value?: string | null) => {
+  if (!value) return null;
+  const ms = new Date(value).getTime();
+  return Number.isFinite(ms) ? ms : null;
+};
+
+const formatDebugDuration = (ms: number) => {
+  const seconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${secs}s`;
+  return `${secs}s`;
+};
+
+const getDebugHealth = (details: DebugRunDetails) => {
+  const targetCount = Math.max(1, details.targetCount || 0);
+  const completedCount = Math.max(0, details.completedCount || 0);
+  const completion = Math.min(1, completedCount / targetCount);
+  const componentFailures = (details.components || []).reduce(
+    (total, component) =>
+      total +
+      (component.commands || []).filter((command) => !command.ok).length,
+    0,
+  );
+  const finalFailures = (details.finalCommands || []).filter(
+    (command) => !command.ok,
+  ).length;
+  const unresolvedRiskCount = details.unresolvedRisks?.length || 0;
+  const penalty =
+    componentFailures * 7 + finalFailures * 15 + unresolvedRiskCount * 5;
+  const score = Math.max(
+    0,
+    Math.min(100, Math.round(completion * 100 - penalty)),
+  );
+  const start = dateMs(details.startedAt);
+  const finish = dateMs(details.finishedAt);
+  const updated = dateMs(details.updatedAt);
+  const durationMs = start ? (finish || updated || Date.now()) - start : 0;
+  const trend =
+    componentFailures + finalFailures + unresolvedRiskCount > 0
+      ? "down"
+      : details.status === "completed"
+        ? "stable"
+        : "live";
+
+  return {
+    score,
+    completion,
+    duration: formatDebugDuration(durationMs),
+    failedGates: componentFailures + finalFailures,
+    unresolvedRiskCount,
+    trend,
+  };
+};
+
 export function AdminView() {
   const { setActiveView, learnerName } = useStore();
   const logs = useLiveQuery(() =>
@@ -155,6 +215,7 @@ export function AdminView() {
     "stop" | "delete" | null
   >(null);
   const consoleRef = useRef<HTMLDivElement>(null);
+  const auditEventsRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll console
   useEffect(() => {
@@ -258,6 +319,16 @@ export function AdminView() {
       window.clearInterval(timer);
     };
   }, [activeDebugRunId, activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "debug") return;
+    const el = auditEventsRef.current;
+    if (!el) return;
+    requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    });
+  }, [activeTab, activeDebugRunId, debugRunDetails?.events?.length]);
+
   const conceptsByBook = learningBookConcepts.reduce<
     Record<string, typeof learningBookConcepts>
   >((acc, concept) => {
@@ -271,6 +342,14 @@ export function AdminView() {
     if (!acc[entry.bookId]) acc[entry.bookId] = entry;
     return acc;
   }, {});
+  const traceCount = logs?.length || 0;
+  const latestTrace = logs?.[0];
+  const mappedConceptCount = learningBookConcepts.length;
+  const tracedBookCount = learningBooks.filter(
+    (book) => (conceptsByBook[book.id] || []).length > 0,
+  ).length;
+  const debugHealth = debugRunDetails ? getDebugHealth(debugRunDetails) : null;
+  const liveAuditEvents = (debugRunDetails?.events || []).slice(-18);
 
   return (
     <div className="w-full h-full bg-[#faf9f6] text-zinc-900 flex flex-col overflow-y-auto custom-scroll pt-20 md:pt-0 relative font-serif">
@@ -285,7 +364,7 @@ export function AdminView() {
 
       <div className="min-h-full flex w-full relative z-10 pt-16 md:pt-20">
         {/* Sidebar Navigation */}
-        <div className="w-64 border-r border-zinc-200/50 bg-[#faf9f6] hidden lg:block px-4 py-6 flex-shrink-0 sticky top-20 h-[calc(100vh-80px)] overflow-y-auto custom-scroll font-sans">
+        <div className="sticky top-20 z-40 hidden h-[calc(100vh-80px)] min-h-[calc(100vh-80px)] w-64 flex-shrink-0 self-start overflow-y-auto border-r border-zinc-200/70 bg-[#faf9f6]/98 px-4 py-6 font-sans shadow-[12px_0_36px_rgba(255,255,255,0.72)] backdrop-blur-xl custom-scroll lg:block">
           <button
             onClick={() => setActiveView("study")}
             className="flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors mb-8 px-2"
@@ -355,10 +434,10 @@ export function AdminView() {
                   </h1>
                   <p className="text-zinc-600 leading-relaxed max-w-2xl text-sm font-serif">
                     Welcome to the Tutor System's central command. This
-                    dashboard provides complete transparency into the AI's
-                    internal cognitive processes. Use the{" "}
-                    <strong>DeepSeek Trace</strong> to watch the LLM's thought
-                    process and tool invocations in real-time, or switch to the{" "}
+                    dashboard exposes recorded model actions, saved trace
+                    explanations, and backend health signals. Use the{" "}
+                    <strong>DeepSeek Trace</strong> to inspect persisted tutor
+                    updates and tool context, or switch to the{" "}
                     <strong>Server Console</strong> to monitor live backend
                     traffic, WebSocket streams, and TTS generation logs.
                   </p>
@@ -376,7 +455,7 @@ export function AdminView() {
                   <div className="flex items-center justify-between">
                     <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-2 font-serif leading-[1.15]">
                       {activeTab === "traces"
-                        ? "DeepSeek Brain Trace"
+                        ? "DeepSeek Trace Ledger"
                         : activeTab === "debug"
                           ? "Debug Run Ledger"
                           : "Live Server Console"}
@@ -402,16 +481,17 @@ export function AdminView() {
                         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                           <div>
                             <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-orange-500/70">
-                              <Sparkles size={13} /> Virtual Brain
+                              <Sparkles size={13} /> Trace Evidence
                             </div>
                             <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
-                              {learnerName}'s DeepSeek Brain Trace
+                              {learnerName}'s DeepSeek Trace Ledger
                             </h2>
                             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
-                              Learning books are updated after each completed
-                              tutor chat. Each card shows the current concepts
-                              and weak spots the background DeepSeek pass
-                              extracted from the conversation.
+                              This ledger shows persisted learning-book updates,
+                              concept maps, and saved trace explanations. It
+                              does not expose hidden chain-of-thought; each item
+                              reflects records written by Tutor after a chat
+                              action completes.
                             </p>
                           </div>
                           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -420,6 +500,53 @@ export function AdminView() {
                             </div>
                             <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
                               Books mapped
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mb-5 grid gap-3 md:grid-cols-4">
+                          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              Trace Events
+                            </div>
+                            <div className="mt-2 text-2xl font-semibold tabular-nums text-zinc-900">
+                              {traceCount}
+                            </div>
+                          </div>
+                          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              Mapped Concepts
+                            </div>
+                            <div className="mt-2 text-2xl font-semibold tabular-nums text-zinc-900">
+                              {mappedConceptCount}
+                            </div>
+                          </div>
+                          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              Books With Graphs
+                            </div>
+                            <div className="mt-2 text-2xl font-semibold tabular-nums text-zinc-900">
+                              {tracedBookCount}
+                            </div>
+                          </div>
+                          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              Latest Action
+                            </div>
+                            <div className="mt-2 truncate font-mono text-sm font-semibold text-zinc-900">
+                              {latestTrace?.action || "none"}
+                            </div>
+                            <div className="mt-1 font-mono text-[10px] text-zinc-500">
+                              {latestTrace?.timestamp
+                                ? new Date(
+                                    latestTrace.timestamp,
+                                  ).toLocaleTimeString([], {
+                                    hour12: false,
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    second: "2-digit",
+                                  })
+                                : "waiting"}
                             </div>
                           </div>
                         </div>
@@ -610,8 +737,18 @@ export function AdminView() {
                       </section>
 
                       {!logs || logs.length === 0 ? (
-                        <div className="flex items-center justify-center flex-col text-zinc-500 gap-3 py-20 font-serif italic text-lg">
-                          No background traces recorded yet.
+                        <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-zinc-200 bg-white px-6 py-16 text-center">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-blue-600">
+                            <Activity size={20} />
+                          </div>
+                          <div className="font-serif text-lg italic text-zinc-700">
+                            No trace records yet.
+                          </div>
+                          <div className="max-w-md text-sm leading-relaxed text-zinc-500">
+                            Saved trace explanations will appear here after
+                            Tutor writes a trace log from a completed learning
+                            action.
+                          </div>
                         </div>
                       ) : (
                         logs.map((log, index) => (
@@ -678,8 +815,8 @@ export function AdminView() {
                       )}
                     </div>
                   ) : activeTab === "debug" ? (
-                    <div className="grid gap-6 font-sans xl:grid-cols-[320px_1fr]">
-                      <section className="rounded-[24px] border border-zinc-200 bg-white p-4 shadow-sm">
+                    <div className="grid gap-6 font-sans xl:grid-cols-[340px_minmax(0,1fr)]">
+                      <section className="rounded-[24px] border border-zinc-200 bg-white p-4 shadow-sm xl:sticky xl:top-28 xl:self-start">
                         <div className="mb-4 flex items-center justify-between gap-3">
                           <div>
                             <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500">
@@ -719,7 +856,7 @@ export function AdminView() {
                                 }
                               }}
                               disabled={debugActionPending !== null}
-                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 text-[11px] font-semibold text-red-600 transition-colors hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
+                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-gradient-to-b from-red-500 to-red-600 px-3 text-[11px] font-semibold text-white shadow-[0_10px_24px_rgba(239,68,68,0.22)] transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(239,68,68,0.26)] disabled:cursor-wait disabled:opacity-60"
                             >
                               <Trash2 size={13} />
                               Delete History
@@ -743,7 +880,7 @@ export function AdminView() {
                               disabled={
                                 !activeDebugJobId || debugActionPending !== null
                               }
-                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3 text-[11px] font-semibold text-amber-700 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-amber-200 bg-gradient-to-b from-amber-100 to-orange-100 px-3 text-[11px] font-semibold text-orange-800 shadow-[0_10px_22px_rgba(251,146,60,0.18)] transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:border-orange-300 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               <Square size={12} />
                               Stop Debugging
@@ -752,7 +889,7 @@ export function AdminView() {
                               whileTap={{ scale: 0.98 }}
                               type="button"
                               onClick={loadDebugRuns}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-600 transition-colors hover:bg-zinc-100"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950 text-white shadow-[0_10px_24px_rgba(0,0,0,0.16)] transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:bg-zinc-800"
                               aria-label="Refresh debug runs"
                             >
                               <RefreshCw
@@ -811,7 +948,7 @@ export function AdminView() {
                                 }}
                                 type="button"
                                 onClick={() => setActiveDebugRunId(run.id)}
-                                className={`w-full rounded-2xl border p-3 text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ${activeDebugRunId === run.id ? "border-blue-200 bg-blue-50 shadow-sm" : "border-zinc-200 bg-white hover:bg-zinc-50"}`}
+                                className={`w-full rounded-2xl border p-3 text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ${activeDebugRunId === run.id ? "border-blue-200 bg-blue-50 shadow-[0_14px_30px_rgba(59,130,246,0.16)]" : "border-zinc-200 bg-white hover:-translate-y-0.5 hover:bg-zinc-50 hover:shadow-sm"}`}
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <span className="truncate font-mono text-[11px] font-semibold text-zinc-800">
@@ -847,7 +984,7 @@ export function AdminView() {
                           </div>
                         ) : (
                           <div className="space-y-6">
-                            <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 2xl:flex-row 2xl:items-start 2xl:justify-between">
                               <div>
                                 <div className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">
                                   {debugRunDetails.scope || "all"} ·{" "}
@@ -905,47 +1042,154 @@ export function AdminView() {
                                   regression signals.
                                 </p>
                               </div>
-                              <div className="grid grid-cols-3 gap-2 text-center">
-                                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                              <div className="grid w-full grid-cols-3 gap-2 text-center 2xl:w-auto 2xl:min-w-[360px]">
+                                <div className="min-w-0 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-3">
                                   <div className="text-xl font-semibold text-zinc-900">
                                     {debugRunDetails.completedCount || 0}
                                   </div>
-                                  <div className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">
+                                  <div className="text-[10px] uppercase tracking-[0.08em] text-zinc-500">
                                     Done
                                   </div>
                                 </div>
-                                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                                <div className="min-w-0 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-3">
                                   <div className="text-xl font-semibold text-zinc-900">
                                     {debugRunDetails.changedCount || 0}
                                   </div>
-                                  <div className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">
+                                  <div className="text-[10px] uppercase tracking-[0.08em] text-zinc-500">
                                     Changed
                                   </div>
                                 </div>
-                                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                                <div className="min-w-0 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-3">
                                   <div className="text-xl font-semibold text-zinc-900">
                                     {debugRunDetails.targetCount || 0}
                                   </div>
-                                  <div className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">
+                                  <div className="text-[10px] uppercase tracking-[0.08em] text-zinc-500">
                                     Targets
                                   </div>
                                 </div>
                               </div>
                             </div>
 
-                            {(debugRunDetails.events || []).length > 0 && (
+                            {debugHealth && (
+                              <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+                                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                  <div className="flex min-w-0 items-center gap-3">
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-blue-700">
+                                      <ShieldCheck size={20} />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                        <Gauge size={13} /> Debug Health
+                                      </div>
+                                      <div className="mt-1 text-sm text-zinc-600">
+                                        Continuous uptime {debugHealth.duration}{" "}
+                                        · {debugHealth.failedGates} failed gate
+                                        {debugHealth.failedGates === 1
+                                          ? ""
+                                          : "s"}{" "}
+                                        · {debugHealth.unresolvedRiskCount} open
+                                        risk
+                                        {debugHealth.unresolvedRiskCount === 1
+                                          ? ""
+                                          : "s"}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <div className="text-right">
+                                      <div className="text-2xl font-semibold tabular-nums text-zinc-950">
+                                        {debugHealth.score}%
+                                      </div>
+                                      <div
+                                        className={`text-[10px] font-bold uppercase tracking-[0.14em] ${debugHealth.trend === "down" ? "text-red-500" : debugHealth.trend === "live" ? "text-blue-600" : "text-emerald-600"}`}
+                                      >
+                                        {debugHealth.trend === "down"
+                                          ? "Needs Review"
+                                          : debugHealth.trend === "live"
+                                            ? "Running"
+                                            : "Stable"}
+                                      </div>
+                                    </div>
+                                    <div className="relative h-12 w-28 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50">
+                                      <motion.div
+                                        className={`absolute bottom-0 left-0 top-0 ${debugHealth.trend === "down" ? "bg-red-500" : "bg-blue-600"}`}
+                                        initial={{ width: 0 }}
+                                        animate={{
+                                          width: `${Math.max(6, debugHealth.score)}%`,
+                                        }}
+                                        transition={{
+                                          duration: 0.65,
+                                          ease: [0.16, 1, 0.3, 1],
+                                        }}
+                                      />
+                                      <motion.div
+                                        className="absolute inset-y-2 w-8 rounded-full bg-white/45 blur-md"
+                                        animate={{
+                                          x:
+                                            debugHealth.trend === "down"
+                                              ? [92, 12]
+                                              : [0, 92],
+                                          opacity: [0.2, 0.6, 0.2],
+                                        }}
+                                        transition={{
+                                          repeat: Infinity,
+                                          duration: 2.2,
+                                          ease: "easeInOut",
+                                        }}
+                                      />
+                                      <Timer
+                                        size={15}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-800"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-zinc-100">
+                                  <motion.div
+                                    className="h-full rounded-full bg-zinc-950"
+                                    initial={{ width: 0 }}
+                                    animate={{
+                                      width: `${Math.round(debugHealth.completion * 100)}%`,
+                                    }}
+                                    transition={{
+                                      duration: 0.5,
+                                      ease: [0.16, 1, 0.3, 1],
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {liveAuditEvents.length > 0 && (
                               <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
                                 <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700">
                                   <Activity size={13} /> Live Audit Events
                                 </div>
-                                <div className="max-h-48 space-y-2 overflow-y-auto pr-1 custom-scroll">
-                                  {(debugRunDetails.events || [])
-                                    .slice(-10)
-                                    .reverse()
-                                    .map((event, index) => (
-                                      <div
+                                <div
+                                  ref={auditEventsRef}
+                                  className="max-h-56 space-y-2 overflow-y-auto pr-1 custom-scroll scroll-smooth"
+                                >
+                                  <AnimatePresence initial={false}>
+                                    {liveAuditEvents.map((event, index) => (
+                                      <motion.div
                                         key={`${event.timestamp}-${event.type}-${index}`}
-                                        className="rounded-xl border border-white/70 bg-white/80 px-3 py-2"
+                                        layout
+                                        initial={{
+                                          opacity: 0,
+                                          y: 10,
+                                          filter: "blur(6px)",
+                                        }}
+                                        animate={{
+                                          opacity: 1,
+                                          y: 0,
+                                          filter: "blur(0px)",
+                                        }}
+                                        exit={{ opacity: 0, y: -8 }}
+                                        transition={{
+                                          duration: 0.24,
+                                          ease: [0.16, 1, 0.3, 1],
+                                        }}
+                                        className="rounded-xl border border-white/80 bg-white/90 px-3 py-2 shadow-[0_8px_20px_rgba(59,130,246,0.07)]"
                                       >
                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                           <span className="font-mono text-[11px] font-semibold text-blue-800">
@@ -967,8 +1211,9 @@ export function AdminView() {
                                         <div className="mt-1 text-sm text-zinc-700">
                                           {event.message}
                                         </div>
-                                      </div>
+                                      </motion.div>
                                     ))}
+                                  </AnimatePresence>
                                 </div>
                               </div>
                             )}

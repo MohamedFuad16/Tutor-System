@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T18:15:38.826Z",
+    "generatedAt": "2026-05-28T02:44:12.015Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "f94cc1a6b6a357de5deeebce04bd36b315b3666d",
+      "commit": "0b394707e65dcfecd11340906a86b81533d2788f",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "5dc49f924aafa926801cf00d64b47e212a5c2eda153660f26b53037583219e5b"
+    "sourceHash": "06b6f11e1cad3ccd4ab8bbd09fe0ee196cd98fad8fff08a978b23e645f039a87"
   },
   "files": {
     "generate-brain.ts": {
@@ -162,7 +162,7 @@
     },
     "server.ts": {
       "file": "server.ts",
-      "hash": "6c8089499889c6a6e87ab568bd5a78cb273124bb2d5fa99a6b51d088def135f4",
+      "hash": "f39eedd59d97e6cf2ec715d9fdb805004288a1856eecd9d118a690b75803b06a",
       "imports": [
         {
           "specifier": "dotenv",
@@ -1628,7 +1628,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "a3b53885931c0dfdd5e065eb64ab110575ae9ad5c0e0408faa7e7463f0c20f91",
+      "hash": "304f453eb5c420e8ffa97b31c697a643b2583103a1bda2ad5fe87f518398d840",
       "imports": [
         {
           "specifier": "react",
@@ -2353,7 +2353,7 @@
     },
     "src/components/SettingsModal.tsx": {
       "file": "src/components/SettingsModal.tsx",
-      "hash": "e035c6d55d417bf1284be08f3b7f1182b077788aac4f570896c76644d5cfe3d9",
+      "hash": "af56a15181001d02b257caad8070595b9d652c3695348ce637f94683acc1432c",
       "imports": [
         {
           "specifier": "react",
@@ -2534,7 +2534,7 @@
     },
     "src/components/SiriLiquidGlass.tsx": {
       "file": "src/components/SiriLiquidGlass.tsx",
-      "hash": "4dc8d39c0de430a32ac72cdbe27ca4559d101d641cd0a9086c0ab7a91e72cc52",
+      "hash": "1c73303e6a09c074e3a8915a056f96900403592f27159da4cbc873d7bbce2072",
       "imports": [
         {
           "specifier": "motion/react",
@@ -3381,7 +3381,7 @@
     },
     "src/views/AdminView.tsx": {
       "file": "src/views/AdminView.tsx",
-      "hash": "0e200c20f0de9c762a678913ca07cb3446df516427e096f938b3e2eb16a3f5b3",
+      "hash": "be733ca6c02e11ac7301d4cff90bf0bcc892a7415a228e93c28d9fb5fdd72da9",
       "imports": [
         {
           "specifier": "react",
@@ -3418,7 +3418,10 @@
         "compactCommand",
         "isCliConsoleFinding",
         "visibleAuditItems",
-        "friendlyWhy"
+        "friendlyWhy",
+        "dateMs",
+        "formatDebugDuration",
+        "getDebugHealth"
       ],
       "classes": [],
       "components": [
@@ -3466,12 +3469,15 @@
         "CheckCircle2",
         "ChevronRight",
         "Clock",
+        "Gauge",
         "Menu",
         "Network",
         "RefreshCw",
+        "ShieldCheck",
         "Sparkles",
         "Square",
         "Terminal",
+        "Timer",
         "Trash2"
       ],
       "routes": []
@@ -3640,7 +3646,7 @@
     },
     "src/views/RevisionView.tsx": {
       "file": "src/views/RevisionView.tsx",
-      "hash": "1d0d230c3f0e65f48815d50ed598b2e214828ab5437fe2ef3d42a67344f08e57",
+      "hash": "a2c8fb51bbf2f189597a5980846d6955594a24fbffa4148cc4608a576dc86abe",
       "imports": [
         {
           "specifier": "react",
@@ -3694,17 +3700,31 @@
         "RevisionView"
       ],
       "variables": [
-        "createTutorBookConcept",
+        "designTokens",
+        "wireframeNodes",
+        "wireframeLinks",
+        "snapshotCards",
+        "GalleryPanel",
+        "WireframeMap",
+        "LiveComponentPreview",
+        "AppDesignLanguagePage",
+        "builtInBooks",
+        "builtInBookIds",
+        "createBuiltInBookConcept",
         "LongPressWrapper",
         "FlashcardUI",
         "FlashcardDeck"
       ],
       "classes": [],
       "components": [
+        "AppDesignLanguagePage",
         "FlashcardDeck",
         "FlashcardUI",
+        "GalleryPanel",
+        "LiveComponentPreview",
         "LongPressWrapper",
-        "RevisionView"
+        "RevisionView",
+        "WireframeMap"
       ],
       "hooks": [],
       "storeSelectors": [
@@ -3714,7 +3734,8 @@
         }
       ],
       "storeWrites": [
-        "setActiveView"
+        "setActiveView",
+        "setPdfPage"
       ],
       "apiCalls": [],
       "websocketCalls": [],
@@ -3764,21 +3785,25 @@
       ],
       "renders": [
         "AnimatePresence",
+        "AppDesignLanguagePage",
         "BookOpen",
         "FlashcardDeck",
         "FlashcardUI",
+        "GalleryPanel",
+        "LiveComponentPreview",
         "LongPressWrapper",
         "Menu",
         "PatternCard",
         "ReactMarkdown",
         "Trash2",
+        "WireframeMap",
         "Zap"
       ],
       "routes": []
     },
     "src/views/StudyView.tsx": {
       "file": "src/views/StudyView.tsx",
-      "hash": "93d7c7a2b57e2236615cbce7afbc58856678fbb39cc3636142107b7c552fc58f",
+      "hash": "b0135ce72c26dda4b3099dbfc957de2dacc668669e59d6a4ba678d4e9fe82f15",
       "imports": [
         {
           "specifier": "react",

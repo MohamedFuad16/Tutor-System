@@ -29,13 +29,715 @@ import { PatternCard, themes } from "../components/PatternCard";
 import { SvgBeige } from "../components/PatternSVGs";
 import tutorBook from "../lib/tutorBook.json";
 
-const createTutorBookConcept = (): PersistentConcept => ({
-  id: "tutor-book",
-  name: "Tutor System Architecture",
+type BuiltInBook = {
+  id: string;
+  name: string;
+  description: string;
+  hiddenKey: string;
+  chapters: { title: string; content?: string }[];
+  renderChapter?: (chapterIndex: number) => React.ReactNode;
+};
+
+const designTokens = [
+  { label: "Obsidian", value: "#030303", swatch: "bg-[#030303]" },
+  { label: "Panel", value: "#0A0A0B", swatch: "bg-[#0A0A0B]" },
+  { label: "Paper", value: "#faf9f6", swatch: "bg-[#faf9f6]" },
+  { label: "Violet", value: "#7c3aed", swatch: "bg-violet-600" },
+  { label: "Blue", value: "#0a84ff", swatch: "bg-[#0a84ff]" },
+  { label: "Signal", value: "#ff6e00", swatch: "bg-[#ff6e00]" },
+];
+
+type SnapshotPreviewId =
+  | "navigation"
+  | "library"
+  | "pdf"
+  | "toolbar"
+  | "chat"
+  | "thinking"
+  | "brain"
+  | "revision"
+  | "settings"
+  | "analytics";
+
+const wireframeNodes = [
+  { id: "Study", x: 14, y: 48, tone: "dark", summary: "workspace" },
+  { id: "PDF Viewer", x: 32, y: 22, tone: "light", summary: "read + mark" },
+  { id: "Chat Panel", x: 32, y: 74, tone: "dark", summary: "ask + stream" },
+  { id: "Memory", x: 52, y: 48, tone: "accent", summary: "map learning" },
+  { id: "Brain Graph", x: 72, y: 22, tone: "dark", summary: "concepts" },
+  { id: "Analytics", x: 72, y: 48, tone: "light", summary: "progress" },
+  { id: "Revision", x: 72, y: 74, tone: "paper", summary: "review" },
+  { id: "Admin", x: 88, y: 48, tone: "accent", summary: "debug" },
+];
+
+const wireframeLinks = [
+  ["Study", "PDF Viewer"],
+  ["Study", "Chat Panel"],
+  ["PDF Viewer", "Memory"],
+  ["Chat Panel", "Memory"],
+  ["Memory", "Brain Graph"],
+  ["Memory", "Analytics"],
+  ["Memory", "Revision"],
+  ["Analytics", "Admin"],
+];
+
+const snapshotCards: {
+  id: SnapshotPreviewId;
+  title: string;
+  caption: string;
+}[] = [
+  {
+    id: "navigation",
+    title: "Navigation",
+    caption: "Click a route to move the active pill.",
+  },
+  {
+    id: "library",
+    title: "Library Book Card",
+    caption: "Open and close the cover state.",
+  },
+  {
+    id: "pdf",
+    title: "PDF Viewer",
+    caption: "Change page, zoom, and annotation mode.",
+  },
+  {
+    id: "toolbar",
+    title: "Selection Toolbar",
+    caption: "Pick highlight, underline, strike, or Ask Tutor.",
+  },
+  {
+    id: "chat",
+    title: "Chat Panel",
+    caption: "Send a sample prompt into the mini tutor.",
+  },
+  {
+    id: "thinking",
+    title: "AI Thinking",
+    caption: "Expand and collapse the reasoning trace.",
+  },
+  {
+    id: "brain",
+    title: "Brain Graph",
+    caption: "Focus different concept nodes.",
+  },
+  {
+    id: "revision",
+    title: "Revision Notebook",
+    caption: "Turn notebook pages.",
+  },
+  {
+    id: "settings",
+    title: "Settings",
+    caption: "Switch settings tabs.",
+  },
+  {
+    id: "analytics",
+    title: "Analytics/Admin",
+    caption: "Toggle metric modes.",
+  },
+];
+
+const GalleryPanel = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div
+    className={`rounded-[34px] border border-zinc-200/70 bg-zinc-100/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_28px_80px_rgba(24,24,27,0.08)] sm:p-6 ${className}`}
+  >
+    {children}
+  </div>
+);
+
+const WireframeMap = () => {
+  const nodeById = new Map(wireframeNodes.map((node) => [node.id, node]));
+  return (
+    <GalleryPanel className="relative overflow-hidden bg-[#f3f3f4]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.88),transparent_56%)]" />
+      <div className="relative min-h-[620px]">
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <marker
+              id="wire-arrow"
+              markerHeight="6"
+              markerWidth="6"
+              orient="auto"
+              refX="5"
+              refY="3"
+            >
+              <path d="M0,0 L6,3 L0,6 Z" fill="rgba(161,161,170,0.72)" />
+            </marker>
+          </defs>
+          {wireframeLinks.map(([from, to]) => {
+            const source = nodeById.get(from)!;
+            const target = nodeById.get(to)!;
+            return (
+              <line
+                key={`${from}-${to}`}
+                x1={source.x}
+                y1={source.y}
+                x2={target.x}
+                y2={target.y}
+                stroke="rgba(161,161,170,0.62)"
+                strokeWidth="0.42"
+                markerEnd="url(#wire-arrow)"
+              />
+            );
+          })}
+          <line
+            x1="52"
+            y1="13"
+            x2="52"
+            y2="83"
+            stroke="rgba(212,212,216,0.78)"
+            strokeWidth="0.2"
+          />
+          <line
+            x1="8"
+            y1="48"
+            x2="92"
+            y2="48"
+            stroke="rgba(212,212,216,0.78)"
+            strokeWidth="0.2"
+          />
+        </svg>
+
+        {wireframeNodes.map((node) => (
+          <motion.div
+            key={node.id}
+            whileHover={{ y: -4, scale: 1.03 }}
+            className={`absolute flex min-h-[86px] w-[min(180px,24vw)] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[28px] border px-5 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${
+              node.tone === "dark"
+                ? "border-zinc-700 bg-[#07070a] text-white"
+                : node.tone === "accent"
+                  ? "border-orange-300 bg-white text-orange-600"
+                  : node.tone === "paper"
+                    ? "border-zinc-200 bg-[#faf9f6] text-zinc-900"
+                    : "border-white bg-white text-zinc-700"
+            }`}
+            style={{ left: `${node.x}%`, top: `${node.y}%` }}
+          >
+            <div className="text-lg font-bold tracking-tight">{node.id}</div>
+            <div
+              className={`mt-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
+                node.tone === "dark" ? "text-white/40" : "text-zinc-400"
+              }`}
+            >
+              {node.summary}
+            </div>
+          </motion.div>
+        ))}
+
+        <div className="absolute bottom-5 left-5 right-5 rounded-[32px] bg-white/90 p-6 shadow-[0_24px_70px_rgba(24,24,27,0.09)] backdrop-blur">
+          <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+            Connection Contract
+          </div>
+          <div className="mt-4 grid gap-4 text-[15px] leading-7 text-zinc-600 md:grid-cols-3">
+            <div>
+              <strong className="text-zinc-950">Study</strong> owns the live
+              PDF, selection toolbar, and chat workspace.
+            </div>
+            <div>
+              <strong className="text-orange-600">Memory</strong> translates
+              reading and conversation into books, concepts, and entries.
+            </div>
+            <div>
+              <strong className="text-zinc-950">
+                Revision, analytics, and admin
+              </strong>{" "}
+              read the mapped record without owning the study session.
+            </div>
+          </div>
+        </div>
+      </div>
+    </GalleryPanel>
+  );
+};
+
+const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
+  const [activeRoute, setActiveRoute] = useState("Study");
+  const [bookOpen, setBookOpen] = useState(false);
+  const [pdfPage, setPdfPage] = useState(2);
+  const [pdfZoom, setPdfZoom] = useState(112);
+  const [activeTool, setActiveTool] = useState("Highlight");
+  const [chatMessages, setChatMessages] = useState([
+    "What should I review next?",
+  ]);
+  const [thinkingOpen, setThinkingOpen] = useState(true);
+  const [brainFocus, setBrainFocus] = useState("Memory");
+  const [notebookPage, setNotebookPage] = useState(1);
+  const [settingsTab, setSettingsTab] = useState("AI");
+  const [metricMode, setMetricMode] = useState("Mastery");
+
+  if (id === "navigation") {
+    return (
+      <div className="rounded-[28px] bg-[#101012] p-3 shadow-2xl">
+        <div className="relative grid grid-cols-3 gap-1 rounded-full bg-white/5 p-1">
+          {["Study", "Analytics", "Revision"].map((route) => (
+            <button
+              key={route}
+              type="button"
+              onClick={() => setActiveRoute(route)}
+              className={`relative rounded-full px-3 py-2 text-[11px] font-semibold transition-colors ${
+                activeRoute === route
+                  ? "bg-white/15 text-white shadow-[0_10px_24px_rgba(0,0,0,0.35)]"
+                  : "text-zinc-500 hover:text-zinc-200"
+              }`}
+            >
+              {route}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (id === "library") {
+    return (
+      <button
+        type="button"
+        onClick={() => setBookOpen((open) => !open)}
+        className={`relative h-44 w-full overflow-hidden rounded-[32px] p-6 text-left shadow-2xl transition-all ${
+          bookOpen ? "bg-[#faf9f6] text-zinc-950" : "bg-[#08080a] text-white"
+        }`}
+      >
+        <div className="absolute -left-10 top-12 h-40 w-40 rounded-full bg-white/20 blur-2xl" />
+        <div className="relative text-[10px] font-bold uppercase tracking-[0.18em] opacity-50">
+          {bookOpen ? "Inside pages" : "Built-in book"}
+        </div>
+        <div className="relative mt-7 text-2xl font-semibold leading-none">
+          App Design
+          <br />
+          Language
+        </div>
+        <div className="relative mt-5 text-xs opacity-60">
+          {bookOpen ? "Wireframes · Theme · Snapshots" : "Tap to open"}
+        </div>
+      </button>
+    );
+  }
+
+  if (id === "pdf") {
+    return (
+      <div className="rounded-[28px] bg-[#08080a] p-4 text-white shadow-2xl">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="flex gap-1">
+            {["-", "+"].map((control) => (
+              <button
+                key={control}
+                type="button"
+                onClick={() =>
+                  setPdfZoom((zoom) =>
+                    control === "+"
+                      ? Math.min(150, zoom + 8)
+                      : Math.max(80, zoom - 8),
+                  )
+                }
+                className="h-8 w-8 rounded-xl bg-white/10 text-sm font-bold"
+              >
+                {control}
+              </button>
+            ))}
+          </div>
+          <div className="rounded-full bg-white/10 px-3 py-1 text-[10px]">
+            {pdfZoom}%
+          </div>
+        </div>
+        <div className="rounded-[22px] bg-[#faf9f6] p-4 text-zinc-900">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="h-2 w-24 rounded-full bg-zinc-300" />
+            <div className="text-[10px] font-bold text-zinc-400">
+              p. {pdfPage}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="h-2 rounded-full bg-zinc-200" />
+            <div className="h-2 w-5/6 rounded-full bg-zinc-200" />
+            <div
+              className={`h-4 rounded-full ${
+                activeTool === "Highlight" ? "bg-yellow-300" : "bg-zinc-200"
+              }`}
+            />
+          </div>
+        </div>
+        <div className="mt-3 flex gap-2">
+          {[1, 2, 3].map((page) => (
+            <button
+              key={page}
+              type="button"
+              onClick={() => setPdfPage(page)}
+              className={`h-7 flex-1 rounded-full text-[10px] ${
+                pdfPage === page ? "bg-indigo-500" : "bg-white/10 text-zinc-400"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (id === "toolbar") {
+    return (
+      <div className="rounded-[28px] bg-[#111114] p-4 text-white shadow-2xl">
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {["Highlight", "Underline", "Strike", "Ask"].map((tool) => (
+            <button
+              key={tool}
+              type="button"
+              onClick={() => setActiveTool(tool)}
+              className={`rounded-2xl px-3 py-2 text-[11px] font-semibold transition-colors ${
+                activeTool === tool
+                  ? "bg-indigo-500 text-white"
+                  : "bg-white/10 text-zinc-400 hover:text-white"
+              }`}
+            >
+              {tool}
+            </button>
+          ))}
+        </div>
+        <div className="mt-4 rounded-2xl bg-white/5 p-3 text-center text-xs text-zinc-400">
+          Selected tool: <span className="text-white">{activeTool}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (id === "chat") {
+    return (
+      <div className="rounded-[28px] bg-[#08080a] p-4 text-white shadow-2xl">
+        <div className="mb-3 flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 via-violet-500 to-orange-400" />
+          <div>
+            <div className="text-sm font-semibold">Tutor</div>
+            <div className="text-[10px] text-zinc-500">streaming preview</div>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {chatMessages.slice(-2).map((message, index) => (
+            <div
+              key={`${message}-${index}`}
+              className="rounded-2xl bg-white/8 px-3 py-2 text-xs text-zinc-300"
+            >
+              {message}
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() =>
+            setChatMessages((messages) => [
+              ...messages,
+              "Explain this page with one analogy.",
+            ])
+          }
+          className="mt-4 w-full rounded-full bg-white px-4 py-2 text-xs font-semibold text-zinc-950"
+        >
+          Send sample prompt
+        </button>
+      </div>
+    );
+  }
+
+  if (id === "thinking") {
+    return (
+      <button
+        type="button"
+        onClick={() => setThinkingOpen((open) => !open)}
+        className="w-full rounded-[28px] border border-violet-300/50 bg-violet-50 p-4 text-left shadow-2xl"
+      >
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-full bg-violet-500 shadow-[0_0_26px_rgba(124,58,237,0.45)]" />
+          <div>
+            <div className="text-sm font-semibold text-violet-950">
+              Thinking Panel
+            </div>
+            <div className="text-[10px] text-violet-500">
+              {thinkingOpen ? "expanded" : "collapsed"}
+            </div>
+          </div>
+        </div>
+        {thinkingOpen && (
+          <div className="mt-4 space-y-2 text-xs text-violet-700">
+            <div className="rounded-xl bg-white/70 p-2">
+              Detect selected concept.
+            </div>
+            <div className="rounded-xl bg-white/70 p-2">
+              Connect it to prior knowledge.
+            </div>
+          </div>
+        )}
+      </button>
+    );
+  }
+
+  if (id === "brain") {
+    return (
+      <div className="relative h-48 rounded-[30px] bg-[#07070a] p-4 shadow-2xl">
+        {["Learner", "Memory", "Revision"].map((node, index) => {
+          const positions = [
+            "left-[18%] top-[48%]",
+            "left-[48%] top-[25%]",
+            "left-[70%] top-[62%]",
+          ];
+          return (
+            <button
+              key={node}
+              type="button"
+              onClick={() => setBrainFocus(node)}
+              className={`absolute ${positions[index]} h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all ${
+                brainFocus === node
+                  ? "bg-violet-400 shadow-[0_0_34px_rgba(167,139,250,0.82)]"
+                  : "bg-blue-400/70 shadow-[0_0_22px_rgba(96,165,250,0.45)]"
+              }`}
+              aria-label={`Focus ${node}`}
+            />
+          );
+        })}
+        <div className="absolute left-[24%] top-[41%] h-px w-24 rotate-[-20deg] bg-white/30" />
+        <div className="absolute left-[51%] top-[45%] h-px w-24 rotate-[31deg] bg-white/30" />
+        <div className="absolute bottom-4 left-4 rounded-full bg-white/10 px-3 py-1 text-xs text-white">
+          Focus: {brainFocus}
+        </div>
+      </div>
+    );
+  }
+
+  if (id === "revision") {
+    return (
+      <div className="rounded-[28px] bg-[#faf9f6] p-5 shadow-2xl">
+        <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+          Page {notebookPage}
+        </div>
+        <h4 className="mt-3 font-serif text-2xl font-medium">
+          {notebookPage === 1 ? "Recall Prompt" : "Concept Notes"}
+        </h4>
+        <div className="mt-5 space-y-2">
+          <div className="h-2 rounded-full bg-zinc-200" />
+          <div className="h-2 w-5/6 rounded-full bg-zinc-200" />
+          <div className="h-2 w-2/3 rounded-full bg-zinc-200" />
+        </div>
+        <button
+          type="button"
+          onClick={() => setNotebookPage((page) => (page === 1 ? 2 : 1))}
+          className="mt-5 rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white"
+        >
+          Turn page
+        </button>
+      </div>
+    );
+  }
+
+  if (id === "settings") {
+    return (
+      <div className="rounded-[28px] bg-zinc-950 p-4 text-white shadow-2xl">
+        <div className="grid grid-cols-3 gap-1 rounded-full bg-white/5 p-1">
+          {["AI", "Voice", "Usage"].map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setSettingsTab(tab)}
+              className={`rounded-full py-2 text-[10px] font-semibold ${
+                settingsTab === tab
+                  ? "bg-white/15 text-white"
+                  : "text-zinc-500 hover:text-zinc-200"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-xs text-emerald-100">
+          {settingsTab} controls preview
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-[28px] bg-white p-4 shadow-2xl">
+      <div className="mb-4 flex gap-2">
+        {["Mastery", "Runtime"].map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => setMetricMode(mode)}
+            className={`rounded-full px-3 py-1 text-[10px] font-semibold ${
+              metricMode === mode ? "bg-zinc-950 text-white" : "bg-zinc-100"
+            }`}
+          >
+            {mode}
+          </button>
+        ))}
+      </div>
+      <div className="flex h-28 items-end gap-2">
+        {(metricMode === "Mastery"
+          ? [42, 68, 34, 86, 58]
+          : [70, 40, 92, 55, 76]
+        ).map((height, index) => (
+          <div
+            key={`${height}-${index}`}
+            className="flex-1 rounded-t-xl bg-gradient-to-t from-blue-500 to-emerald-300"
+            style={{ height }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
+  if (chapterIndex === 0) {
+    return (
+      <div className="font-sans text-zinc-900">
+        <WireframeMap />
+      </div>
+    );
+  }
+
+  if (chapterIndex === 1) {
+    return (
+      <div className="font-sans text-zinc-900">
+        <div className="grid gap-5 md:grid-cols-2">
+          <GalleryPanel className="bg-[#09090b] text-white">
+            <div className="mb-8 text-[11px] font-bold uppercase tracking-[0.18em] text-white/35">
+              Cosmic Obsidian
+            </div>
+            <div className="relative min-h-64 overflow-hidden rounded-[32px] border border-white/10 bg-[#030303] p-6 shadow-2xl">
+              <div className="absolute -left-8 top-10 h-36 w-36 rounded-full bg-blue-500/25 blur-2xl" />
+              <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-violet-500/30 blur-2xl" />
+              <div className="absolute bottom-0 right-8 h-24 w-24 rounded-full bg-orange-500/25 blur-xl" />
+              <div className="relative">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 via-violet-500 to-orange-400 shadow-[0_0_40px_rgba(124,58,237,0.5)]" />
+                <h3 className="mt-8 text-3xl font-semibold tracking-tight">
+                  Dark learning surfaces stay cinematic and focused.
+                </h3>
+                <p className="mt-4 text-sm leading-6 text-zinc-400">
+                  Glass, blur, neon, and spring motion are reserved for active
+                  learning controls and AI state.
+                </p>
+              </div>
+            </div>
+          </GalleryPanel>
+
+          <GalleryPanel className="bg-[#faf9f6]">
+            <div className="mb-8 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+              Paper Counterpart
+            </div>
+            <div className="rounded-[32px] border border-zinc-200 bg-white/65 p-6 shadow-[0_24px_70px_rgba(46,36,22,0.12)]">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-400">
+                Revision
+              </div>
+              <h3 className="mt-5 font-serif text-3xl font-medium leading-tight">
+                Review should feel like opening a careful notebook.
+              </h3>
+              <div className="mt-8 space-y-3">
+                <div className="h-2 rounded-full bg-zinc-200" />
+                <div className="h-2 w-5/6 rounded-full bg-zinc-200" />
+                <div className="h-2 w-2/3 rounded-full bg-zinc-200" />
+              </div>
+            </div>
+          </GalleryPanel>
+        </div>
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {designTokens.map((token) => (
+            <div
+              key={token.label}
+              className="flex items-center gap-3 rounded-[22px] bg-white px-4 py-3 shadow-[0_14px_34px_rgba(24,24,27,0.08)]"
+            >
+              <div
+                className={`h-10 w-10 rounded-2xl border border-zinc-200 ${token.swatch}`}
+              />
+              <div>
+                <div className="text-sm font-semibold">{token.label}</div>
+                <div className="font-mono text-xs text-zinc-400">
+                  {token.value}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="font-sans text-zinc-900">
+      <div className="grid gap-5 md:grid-cols-2">
+        {snapshotCards.map((card) => (
+          <GalleryPanel key={card.title} className="min-h-[250px]">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+                  Snapshot
+                </div>
+                <h3 className="mt-2 text-xl font-semibold tracking-tight">
+                  {card.title}
+                </h3>
+              </div>
+              <div className="rounded-full bg-white px-3 py-1 text-[10px] font-semibold text-zinc-400 shadow-sm">
+                UI
+              </div>
+            </div>
+            <div className="flex min-h-36 items-center justify-center rounded-[30px] bg-white/55 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+              <div className="w-full max-w-xs">
+                <LiveComponentPreview id={card.id} />
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-zinc-500">
+              {card.caption}
+            </p>
+          </GalleryPanel>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const builtInBooks: BuiltInBook[] = [
+  {
+    id: "tutor-book",
+    name: "Tutor System Architecture",
+    description:
+      "Complete guide to the underlying pedagogical models and technical architecture of the AI Tutor.",
+    hiddenKey: "tutor_book_hidden",
+    chapters: tutorBook,
+  },
+  {
+    id: "app-design-language",
+    name: "App Design Language",
+    description:
+      "Wireframe connections, theme rules, and rendered UI component snapshots for the Tutor interface.",
+    hiddenKey: "app_design_language_book_hidden",
+    chapters: [
+      { title: "Wireframe Connections" },
+      { title: "Theme System" },
+      { title: "UI Component Snapshots" },
+    ],
+    renderChapter: (chapterIndex) => (
+      <AppDesignLanguagePage chapterIndex={chapterIndex} />
+    ),
+  },
+];
+
+const builtInBookIds = new Set(builtInBooks.map((book) => book.id));
+
+const createBuiltInBookConcept = (book: BuiltInBook): PersistentConcept => ({
+  id: book.id,
+  name: book.name,
   mastery: 0,
   confidence: 0,
-  description:
-    "Complete guide to the underlying pedagogical models and technical architecture of the AI Tutor.",
+  description: book.description,
   p_learn: 0.2,
   p_transit: 0.1,
   p_slip: 0.1,
@@ -261,18 +963,22 @@ export function RevisionView() {
 
   const concepts =
     useLiveQuery(async () => {
-      const tutorBookHidden = localStorage.getItem("tutor_book_hidden") === "1";
       try {
         const all = (await db.concepts.toArray()).filter(
-          (c) => c.id === "tutor-book",
+          (concept) =>
+            builtInBookIds.has(concept.id) &&
+            localStorage.getItem(
+              builtInBooks.find((book) => book.id === concept.id)?.hiddenKey ||
+                "",
+            ) !== "1",
         );
-        if (
-          !tutorBookHidden &&
-          (all.length === 0 || !all.find((c) => c.id === "tutor-book"))
-        ) {
-          const defaultConcept = createTutorBookConcept();
-          await db.concepts.put(defaultConcept);
-          all.push(defaultConcept);
+        for (const book of builtInBooks) {
+          const isHidden = localStorage.getItem(book.hiddenKey) === "1";
+          if (!isHidden && !all.find((concept) => concept.id === book.id)) {
+            const defaultConcept = createBuiltInBookConcept(book);
+            await db.concepts.put(defaultConcept);
+            all.push(defaultConcept);
+          }
         }
         return all;
       } catch (error) {
@@ -280,7 +986,9 @@ export function RevisionView() {
           "[RevisionView] Concept library unavailable, using local fallback:",
           error,
         );
-        return tutorBookHidden ? [] : [createTutorBookConcept()];
+        return builtInBooks
+          .filter((book) => localStorage.getItem(book.hiddenKey) !== "1")
+          .map(createBuiltInBookConcept);
       }
     }, []) || [];
 
@@ -352,6 +1060,9 @@ export function RevisionView() {
   };
 
   const activeConcept = concepts.find((c) => c.id === activeConceptId);
+  const activeBuiltInBook = builtInBooks.find(
+    (book) => book.id === activeConcept?.id,
+  );
   const activeLearningBook = learningBooks.find(
     (book) => book.id === activeConceptId,
   );
@@ -420,13 +1131,19 @@ export function RevisionView() {
       .join("\n");
     return `## Overview\n${book.overview || "Overview pending."}\n\n## Knowledge Summary\n${book.knowledgeSummary || book.summary || "Summary pending."}\n\n## Chapters\n${chapterText}\n\n## Mapped Concepts\n${conceptText}\n\n## Recent Learning Notes\n${entryText || "No learning notes recorded yet."}`;
   };
-  const isTutorBook = activeConcept?.id === "tutor-book";
+  const isBuiltInBook = Boolean(activeBuiltInBook);
   const activeTitle = activeLearningBook?.title || activeConcept?.name || "";
+  const activeChapterCount = activeBuiltInBook
+    ? activeBuiltInBook.chapters.length
+    : activeLearningBook?.chapters?.length || 0;
 
   const deleteConcept = async () => {
     if (!deleteTarget) return;
-    if (deleteTarget.id === "tutor-book") {
-      localStorage.setItem("tutor_book_hidden", "1");
+    const builtInDeleteTarget = builtInBooks.find(
+      (book) => book.id === deleteTarget.id,
+    );
+    if (builtInDeleteTarget) {
+      localStorage.setItem(builtInDeleteTarget.hiddenKey, "1");
     }
     try {
       await db.concepts.delete(deleteTarget.id);
@@ -458,7 +1175,7 @@ export function RevisionView() {
       {activeConcept || activeLearningBook ? (
         <div className="min-h-full flex w-full relative z-10 pt-16 md:pt-20">
           {/* Sidebar Navigation */}
-          {(isTutorBook || activeLearningBook) && (
+          {(isBuiltInBook || activeLearningBook) && (
             <div className="w-64 border-r border-zinc-200/50 bg-[#faf9f6] hidden lg:block px-4 py-6 flex-shrink-0 sticky top-20 h-[calc(100vh-80px)] overflow-y-auto custom-scroll">
               <div className="sticky top-0 z-20 -mt-2 mb-4 border-b border-zinc-200/70 bg-[#faf9f6] pb-4 pt-2 shadow-[0_14px_28px_rgba(250,249,246,0.96)]">
                 <button
@@ -475,9 +1192,10 @@ export function RevisionView() {
                 </div>
               </div>
               <nav className="flex flex-col gap-1">
-                {(isTutorBook
-                  ? tutorBook
-                  : activeLearningBook?.chapters || []
+                {(
+                  activeBuiltInBook?.chapters ||
+                  activeLearningBook?.chapters ||
+                  []
                 ).map((ch: any, idx: number) => (
                   <button
                     key={idx}
@@ -510,15 +1228,16 @@ export function RevisionView() {
               </div>
               <div className="w-16"></div>
             </div>
-            {(isTutorBook || activeLearningBook) && (
+            {(isBuiltInBook || activeLearningBook) && (
               <div className="sticky top-[121px] z-40 border-b border-zinc-200/70 bg-[#faf9f6] px-4 py-3 shadow-[0_14px_28px_rgba(250,249,246,0.96)] md:top-[141px] lg:hidden">
                 <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
                   Contents
                 </div>
                 <div className="flex gap-2 overflow-x-auto pb-1 custom-scroll">
-                  {(isTutorBook
-                    ? tutorBook
-                    : activeLearningBook?.chapters || []
+                  {(
+                    activeBuiltInBook?.chapters ||
+                    activeLearningBook?.chapters ||
+                    []
                   ).map((ch: any, idx: number) => (
                     <button
                       key={idx}
@@ -545,15 +1264,15 @@ export function RevisionView() {
                   <div className="mb-10 border-b border-zinc-200 pb-8 pt-4 font-sans cursor-default">
                     <span className="text-[11px] uppercase tracking-[0.2em] font-mono text-zinc-400 mb-6 block font-medium">
                       <span className="text-zinc-500 mr-2">#</span>
-                      {isTutorBook
+                      {isBuiltInBook
                         ? "Documentation"
                         : activeLearningBook
                           ? "Learning Book"
                           : "Concept Overview"}
                     </span>
                     <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-6 font-serif leading-[1.15]">
-                      {isTutorBook
-                        ? tutorBook[currentChapterIndex].title
+                      {activeBuiltInBook
+                        ? activeBuiltInBook.chapters[currentChapterIndex]?.title
                         : activeLearningBook
                           ? activeLearningBook.chapters?.[currentChapterIndex]
                               ?.title || activeTitle
@@ -561,28 +1280,33 @@ export function RevisionView() {
                     </h1>
                   </div>
 
-                  <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-zinc-900 prose-li:leading-[1.8] prose-li:text-zinc-800 prose-li:font-light prose-ul:my-5 prose-pre:bg-zinc-100 prose-pre:text-zinc-800 prose-pre:border prose-pre:border-zinc-200 prose-pre:shadow-inner prose-pre:my-8 prose-code:before:content-none prose-code:after:content-none prose-code:bg-transparent prose-code:px-0 prose-code:py-0 prose-code:font-mono prose-code:text-[0.88em] prose-code:font-normal prose-code:text-zinc-700 prose-strong:text-zinc-900 prose-strong:font-medium selection:bg-zinc-200 selection:text-zinc-950">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {isTutorBook
-                        ? tutorBook[currentChapterIndex].content
-                        : activeLearningBook
-                          ? activeLearningBook.chapters &&
-                            activeLearningBook.chapters.length > 0
-                            ? activeLearningBook.chapters[currentChapterIndex]
-                                ?.summary ||
-                              learningBookMarkdown(activeLearningBook)
-                            : learningBookMarkdown(activeLearningBook)
-                          : sampleNotes[
-                              activeConcept!.id as keyof typeof sampleNotes
-                            ] ||
-                            activeConcept!.description ||
-                            "Notes unavailable."}
-                    </ReactMarkdown>
-                  </div>
+                  {activeBuiltInBook?.renderChapter ? (
+                    activeBuiltInBook.renderChapter(currentChapterIndex)
+                  ) : (
+                    <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-zinc-900 prose-li:leading-[1.8] prose-li:text-zinc-800 prose-li:font-light prose-ul:my-5 prose-pre:bg-zinc-100 prose-pre:text-zinc-800 prose-pre:border prose-pre:border-zinc-200 prose-pre:shadow-inner prose-pre:my-8 prose-code:before:content-none prose-code:after:content-none prose-code:bg-transparent prose-code:px-0 prose-code:py-0 prose-code:font-mono prose-code:text-[0.88em] prose-code:font-normal prose-code:text-zinc-700 prose-strong:text-zinc-900 prose-strong:font-medium selection:bg-zinc-200 selection:text-zinc-950">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {activeBuiltInBook
+                          ? activeBuiltInBook.chapters[currentChapterIndex]
+                              ?.content || ""
+                          : activeLearningBook
+                            ? activeLearningBook.chapters &&
+                              activeLearningBook.chapters.length > 0
+                              ? activeLearningBook.chapters[currentChapterIndex]
+                                  ?.summary ||
+                                learningBookMarkdown(activeLearningBook)
+                              : learningBookMarkdown(activeLearningBook)
+                            : sampleNotes[
+                                activeConcept!.id as keyof typeof sampleNotes
+                              ] ||
+                              activeConcept!.description ||
+                              "Notes unavailable."}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </motion.div>
               </AnimatePresence>
 
-              {isTutorBook && (
+              {isBuiltInBook && (
                 <div className="flex justify-between items-center mt-12 pt-8 border-t border-zinc-200/50 font-sans">
                   <button
                     disabled={currentChapterIndex === 0}
@@ -598,10 +1322,10 @@ export function RevisionView() {
                     &larr; Previous
                   </button>
                   <button
-                    disabled={currentChapterIndex === tutorBook.length - 1}
+                    disabled={currentChapterIndex === activeChapterCount - 1}
                     onClick={() => {
                       setCurrentChapterIndex((c) =>
-                        Math.min(tutorBook.length - 1, c + 1),
+                        Math.min(activeChapterCount - 1, c + 1),
                       );
                       scrollRef.current?.scrollTo({
                         top: 0,
@@ -655,7 +1379,10 @@ export function RevisionView() {
                 <PatternCard
                   key={book.id}
                   layoutId={`card-${book.id}`}
-                  onClick={() => setActiveConceptId(book.id)}
+                  onClick={() => {
+                    setCurrentChapterIndex(0);
+                    setActiveConceptId(book.id);
+                  }}
                   bgClass={theme.bg}
                   SvgComponent={theme.SvgComponent}
                   bloomColor={theme.bloom}
@@ -700,7 +1427,10 @@ export function RevisionView() {
                 <LongPressWrapper
                   key={concept.id}
                   onLongPress={() => setDeleteTarget(concept)}
-                  onClick={() => setActiveConceptId(concept.id)}
+                  onClick={() => {
+                    setCurrentChapterIndex(0);
+                    setActiveConceptId(concept.id);
+                  }}
                 >
                   {(pressing) => (
                     <PatternCard

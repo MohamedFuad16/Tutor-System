@@ -256,6 +256,7 @@ export function SettingsButton() {
   const [inputPrompt, setInputPrompt] = useState(systemPrompt || "");
   const [personaDesc, setPersonaDesc] = useState("");
   const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
+  const [personaStatus, setPersonaStatus] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [activeTab, setActiveTab] = useState<"general" | "persona" | "usage">(
     "general",
@@ -290,6 +291,7 @@ export function SettingsButton() {
       setInputAnimations(animationsEnabled);
       setInputPrompt(systemPrompt || "");
       setValidationError(null);
+      setPersonaStatus(null);
     }
   }, [
     isOpen,
@@ -648,22 +650,43 @@ export function SettingsButton() {
                         transition={{ duration: 0.2, ease: "easeInOut" }}
                         className="flex flex-col gap-5"
                       >
-                        <div className="flex flex-col gap-2">
-                          <label className="text-sm font-medium text-zinc-300 flex items-center justify-between">
-                            <span className="flex items-center gap-2">
-                              <Settings
-                                size={14}
-                                className="text-emerald-400"
-                              />
-                              AI Persona Studio
-                            </span>
-                          </label>
-                          <p className="text-xs text-zinc-500 mb-1">
-                            Describe your ideal tutor (e.g. "Python expert with
-                            10 years experience"). We will generate a structured
-                            persona prompt based on best practices.
-                          </p>
-                          <div className="flex gap-2">
+                        <div className="overflow-hidden rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.04] p-4">
+                          <div className="flex flex-col gap-3">
+                            <label className="text-sm font-medium text-zinc-200 flex items-center justify-between">
+                              <span className="flex items-center gap-2">
+                                <Settings
+                                  size={14}
+                                  className="text-emerald-400"
+                                />
+                                AI Persona Studio
+                              </span>
+                              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-emerald-300">
+                                Live prompt
+                              </span>
+                            </label>
+                            <p className="text-xs leading-relaxed text-zinc-500">
+                              Describe the tutor you want. The generator writes
+                              a professional system prompt, applies the no-emoji
+                              tutor style, and saves it when you press Save.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {[
+                                "Socratic Python mentor",
+                                "Concise exam coach",
+                                "Research paper tutor",
+                              ].map((preset) => (
+                                <button
+                                  key={preset}
+                                  type="button"
+                                  onClick={() => setPersonaDesc(preset)}
+                                  className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] text-zinc-400 transition-colors hover:border-emerald-400/30 hover:text-emerald-300"
+                                >
+                                  {preset}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="mt-4 flex gap-2">
                             <input
                               type="text"
                               value={personaDesc}
@@ -682,6 +705,11 @@ export function SettingsButton() {
                                       method: "POST",
                                       headers: {
                                         "Content-Type": "application/json",
+                                        ...(inputKey.trim()
+                                          ? {
+                                              Authorization: `Bearer ${inputKey.trim()}`,
+                                            }
+                                          : {}),
                                       },
                                       body: JSON.stringify({
                                         description: personaDesc,
@@ -689,9 +717,25 @@ export function SettingsButton() {
                                     },
                                   );
                                   const data = await res.json();
-                                  if (data.prompt) setInputPrompt(data.prompt);
+                                  if (!res.ok || data.error) {
+                                    throw new Error(
+                                      data.error ||
+                                        "Persona generation failed.",
+                                    );
+                                  }
+                                  if (data.prompt) {
+                                    setInputPrompt(data.prompt);
+                                    setPersonaStatus(
+                                      "Persona prompt generated. Press Save to apply it.",
+                                    );
+                                  }
                                 } catch (e) {
                                   console.error(e);
+                                  setPersonaStatus(
+                                    e instanceof Error
+                                      ? e.message
+                                      : "Persona generation failed.",
+                                  );
                                 } finally {
                                   setIsGeneratingPersona(false);
                                 }
@@ -705,11 +749,16 @@ export function SettingsButton() {
                               Generate
                             </button>
                           </div>
+                          {personaStatus && (
+                            <div className="mt-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs leading-relaxed text-zinc-400">
+                              {personaStatus}
+                            </div>
+                          )}
                           <textarea
                             value={inputPrompt}
                             onChange={(e) => setInputPrompt(e.target.value)}
-                            placeholder="You are a strict, Socratic tutor who NEVER gives direct answers. Ask questions."
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono min-h-[120px]"
+                            placeholder="You are a precise, professional tutor. Use clear markdown, ask targeted questions, and do not use emojis unless explicitly requested."
+                            className="mt-3 min-h-[170px] w-full resize-y rounded-xl border border-white/10 bg-[#121214] px-4 py-3 font-mono text-sm leading-relaxed text-white transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                           />
                         </div>
                       </motion.div>

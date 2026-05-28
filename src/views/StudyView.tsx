@@ -385,28 +385,29 @@ export function StudyView() {
       </div>
 
       <motion.aside
-        layout
-        transition={{ type: "spring", stiffness: 360, damping: 30 }}
+        layout="position"
+        transition={{ type: "spring", stiffness: 260, damping: 34, mass: 0.8 }}
         className="flex min-h-0 w-full flex-1 origin-bottom-right flex-col gap-2 md:gap-3 xl:h-[calc(100%-0.5rem)] xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center"
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false} mode="popLayout">
           {isChatOpen ? (
             <motion.div
               key="chat-panel"
-              initial={{ opacity: 0, y: 30, scale: 0.95, filter: "blur(10px)" }}
+              layout="position"
+              initial={{ opacity: 0, y: 18, scale: 0.98, filter: "blur(8px)" }}
               animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
               exit={{
                 opacity: 0,
-                y: 20,
-                scale: 0.98,
-                filter: "blur(8px)",
-                transition: { duration: 0.15 },
+                y: 10,
+                scale: 0.985,
+                filter: "blur(5px)",
+                transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
               }}
               transition={{
                 type: "spring",
-                stiffness: 350,
-                damping: 30,
-                mass: 0.9,
+                stiffness: 260,
+                damping: 32,
+                mass: 0.8,
               }}
               className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-black/5 bg-[#fdfdfd] text-[#050505] shadow-[0_20px_60px_rgba(0,0,0,0.15)] origin-bottom"
             >
@@ -415,9 +416,11 @@ export function StudyView() {
           ) : (
             <motion.button
               key="chat-minimized"
-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              layout="position"
+              initial={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(4px)" }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: 8, scale: 0.98, filter: "blur(4px)" }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setIsChatOpen(true)}

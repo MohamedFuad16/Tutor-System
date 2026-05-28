@@ -50,6 +50,15 @@
       }
     },
     {
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "component:WireframeMap",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx"
+      }
+    },
+    {
       "source": "file:src/components/StatusBadge.tsx",
       "target": "component:ReviewIcon",
       "type": "renders",
@@ -195,6 +204,15 @@
       }
     },
     {
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "component:GalleryPanel",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx"
+      }
+    },
+    {
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:ThinkingPanel",
       "type": "renders",
@@ -296,6 +314,15 @@
       }
     },
     {
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "component:AppDesignLanguagePage",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx"
+      }
+    },
+    {
       "source": "file:src/App.tsx",
       "target": "component:RevisionView",
       "type": "renders",
@@ -357,6 +384,15 @@
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "component:LiveComponentPreview",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx"
       }
     },
     {

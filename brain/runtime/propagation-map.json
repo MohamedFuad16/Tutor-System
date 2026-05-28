@@ -1,18 +1,18 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T18:16:21.784Z",
+    "generatedAt": "2026-05-28T02:46:14.429Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "5dc49f924aafa926801cf00d64b47e212a5c2eda153660f26b53037583219e5b",
+    "sourceHash": "06b6f11e1cad3ccd4ab8bbd09fe0ee196cd98fad8fff08a978b23e645f039a87",
     "url": "http://127.0.0.1:3000",
-    "eventCount": 43,
+    "eventCount": 42,
     "confidence": 0.82
   },
   "propagation": [
     {
       "state": "messages",
-      "timestamp": 259.4000000357628,
+      "timestamp": 249.80000001192093,
       "nextRender": "route:study",
-      "lagMs": 12.099999964237213,
+      "lagMs": 11.400000035762787,
       "metadata": {
         "previousType": "object",
         "nextType": "object"
@@ -20,9 +20,9 @@
     },
     {
       "state": "activeLearningBookId",
-      "timestamp": 309.4000000357628,
+      "timestamp": 306.7000000476837,
       "nextRender": "route:study",
-      "lagMs": 8.299999952316284,
+      "lagMs": 8.399999976158142,
       "metadata": {
         "previousType": "object",
         "nextType": "string"
@@ -30,9 +30,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 1448.4000000357628,
+      "timestamp": 1425.2000000476837,
       "nextRender": "route:study",
-      "lagMs": 5.799999952316284,
+      "lagMs": 5.599999964237213,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -40,9 +40,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 2326,
+      "timestamp": 2301.7000000476837,
       "nextRender": "route:analytics",
-      "lagMs": 3.300000011920929,
+      "lagMs": 2.899999976158142,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -50,9 +50,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 3136.199999988079,
+      "timestamp": 3109.400000035763,
       "nextRender": "route:revision",
-      "lagMs": 8.300000011920929,
+      "lagMs": 9.399999976158142,
       "metadata": {
         "previousType": "string",
         "nextType": "string"

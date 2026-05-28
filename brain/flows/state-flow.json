@@ -210,8 +210,8 @@
     {
       "field": "setActiveView",
       "readers": [
-        "src/views/StudyView.tsx",
         "src/views/RevisionView.tsx",
+        "src/views/StudyView.tsx",
         "src/components/ChatPanel.tsx",
         "src/App.tsx"
       ],
@@ -295,7 +295,8 @@
       ],
       "writers": [
         "src/views/StudyView.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfViewer.tsx",
+        "src/views/RevisionView.tsx"
       ]
     },
     {
@@ -338,8 +339,8 @@
       "field": "setSelectedTextContext",
       "readers": [
         "src/views/StudyView.tsx",
-        "src/components/ChatPanel.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfViewer.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": [
         "src/components/PdfViewer.tsx",
@@ -385,8 +386,8 @@
     {
       "field": "voiceUsage",
       "readers": [
-        "src/components/ChatPanel.tsx",
-        "src/components/SettingsModal.tsx"
+        "src/components/SettingsModal.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": []
     },

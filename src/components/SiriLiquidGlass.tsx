@@ -17,7 +17,9 @@ export function SiriLiquidGlass({
       {/* Apple iOS Siri Orbs for Liquid Glass Effect */}
       <motion.div
         className="absolute w-[200%] h-[200%] top-[-50%] left-[-50%]"
-        animate={animated ? { rotate: isActive ? 360 : [0, 360] } : { rotate: 0 }}
+        animate={
+          animated ? { rotate: isActive ? 360 : [0, 360] } : { rotate: 0 }
+        }
         transition={{
           duration: isActive ? 3 : 10,
           repeat: animated ? Infinity : 0,
@@ -27,50 +29,64 @@ export function SiriLiquidGlass({
         {/* Blue Orb */}
         <motion.div
           className="absolute top-[10%] right-[30%] w-[40%] h-[40%] bg-[#0a84ff] rounded-full mix-blend-screen"
-          animate={animated ? {
-            scale: isHovered ? 1.3 : [1, 1.2, 1],
-            x: isActive ? [0, 10, 0] : 0,
-            y: isActive ? [0, 10, 0] : 0,
-          } : { scale: 1, x: 0, y: 0 }}
+          animate={
+            animated
+              ? {
+                  scale: isHovered ? 1.3 : [1, 1.2, 1],
+                  x: isActive ? [0, 10, 0] : 0,
+                  y: isActive ? [0, 10, 0] : 0,
+                }
+              : { scale: 1, x: 0, y: 0 }
+          }
           transition={{
             duration: isHovered ? 0.8 : 2,
-            repeat: (animated && !isHovered) ? Infinity : 0,
+            repeat: animated && !isHovered ? Infinity : 0,
             ease: "easeInOut",
           }}
         />
         {/* Purple Orb */}
         <motion.div
           className="absolute bottom-[30%] right-[10%] w-[45%] h-[45%] bg-[#bf5af2] rounded-full mix-blend-screen"
-          animate={animated ? {
-            scale: isHovered ? 1.2 : [1, 1.2, 1],
-            x: isActive ? [0, -10, 0] : 0,
-          } : { scale: 1, x: 0 }}
+          animate={
+            animated
+              ? {
+                  scale: isHovered ? 1.2 : [1, 1.2, 1],
+                  x: isActive ? [0, -10, 0] : 0,
+                }
+              : { scale: 1, x: 0 }
+          }
           transition={{
             duration: isHovered ? 0.8 : 2.5,
-            repeat: (animated && !isHovered) ? Infinity : 0,
+            repeat: animated && !isHovered ? Infinity : 0,
             ease: "easeInOut",
           }}
         />
         {/* Orange/Pink Orb */}
         <motion.div
           className="absolute bottom-[10%] left-[30%] w-[50%] h-[50%] bg-[#ff375f] rounded-full mix-blend-screen"
-          animate={animated ? {
-            scale: isHovered ? 1.4 : [1, 1.25, 1],
-            y: isActive ? [0, -15, 0] : 0,
-          } : { scale: 1, y: 0 }}
+          animate={
+            animated
+              ? {
+                  scale: isHovered ? 1.4 : [1, 1.25, 1],
+                  y: isActive ? [0, -15, 0] : 0,
+                }
+              : { scale: 1, y: 0 }
+          }
           transition={{
             duration: isHovered ? 0.8 : 3,
-            repeat: (animated && !isHovered) ? Infinity : 0,
+            repeat: animated && !isHovered ? Infinity : 0,
             ease: "easeInOut",
           }}
         />
         {/* Cyan/Teal core for high contrast */}
         <motion.div
           className="absolute top-[30%] left-[10%] w-[40%] h-[40%] bg-[#64d2ff] rounded-full mix-blend-screen"
-          animate={animated ? { scale: isHovered ? 1.2 : [1, 1.15, 1] } : { scale: 1 }}
+          animate={
+            animated ? { scale: isHovered ? 1.2 : [1, 1.15, 1] } : { scale: 1 }
+          }
           transition={{
             duration: isHovered ? 0.8 : 2.2,
-            repeat: (animated && !isHovered) ? Infinity : 0,
+            repeat: animated && !isHovered ? Infinity : 0,
             ease: "easeInOut",
           }}
         />
