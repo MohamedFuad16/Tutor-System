@@ -1,14 +1,14 @@
 <div align="center">
-  
-  <!-- Adaptive Theme-Aware Banner -->
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="public/banner.png">
-    <img alt="Tutor System Architecture Banner" src="public/banner.png" width="100%" style="border-radius: 8px; margin-bottom: 20px;" />
-  </picture>
 
   <h1>Tutor: Cognitive Learning Interface</h1>
   
   <p><strong>A hyper-advanced, type-safe learning system powered by agentic retrieval, real-time audio tutoring, and autonomous `/brain` self-healing cognition.</strong></p>
+
+  <!-- Adaptive Theme-Aware Banner -->
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/banner.png">
+    <img alt="Tutor System Architecture Banner" src="public/banner.png" width="100%" style="border-radius: 8px; margin-top: 10px; margin-bottom: 20px;" />
+  </picture>
 
   <!-- Branded Neon Color-Coordinated Badges -->
   <p>
