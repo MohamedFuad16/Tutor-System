@@ -362,7 +362,7 @@ export function AdminView() {
         }}
       />
 
-      <div className="min-h-full flex w-full relative z-10 pt-16 md:pt-20">
+      <div className="min-h-full flex w-full relative z-10 pt-16 md:pt-20 shrink-0">
         {/* Sidebar Navigation */}
         <div className="sticky top-20 z-40 hidden h-[calc(100vh-80px)] min-h-[calc(100vh-80px)] w-64 flex-shrink-0 self-start overflow-y-auto border-r border-zinc-200/70 bg-[#faf9f6]/98 px-4 py-6 font-sans shadow-[12px_0_36px_rgba(255,255,255,0.72)] backdrop-blur-xl custom-scroll lg:block">
           <button
@@ -597,7 +597,7 @@ export function AdminView() {
                                           <div className="mt-1 text-[11px] font-mono uppercase tracking-[0.14em] text-zinc-500">
                                             {book.conversationCount} chats ·{" "}
                                             {book.agentModel ||
-                                              "deepseek/deepseek-chat"}
+                                              "deepseek/deepseek-v4-flash"}
                                           </div>
                                         </div>
                                       </div>

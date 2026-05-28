@@ -64,15 +64,23 @@ export const translations = {
     units: "billable units",
 
     // Study View Cards & Hero
-    study_hero_1: "Learning, redefined. Extract profound insights from any document.",
+    study_hero_1:
+      "Learning, redefined. Extract profound insights from any document.",
     study_card_tutor_title: "Interactive Tutor",
-    study_card_tutor_subtitle: "Chat with your document and test your knowledge.",
+    study_card_tutor_subtitle:
+      "Chat with your document and test your knowledge.",
     study_card_graph_title: "Knowledge Graph",
-    study_card_graph_subtitle: "Visualize how concepts connect across all your documents.",
+    study_card_graph_subtitle:
+      "Visualize how concepts connect across all your documents.",
     study_card_upload_title: "Upload Document",
     study_card_upload_subtitle: "Drag & drop your PDF here to begin learning.",
-    study_scroll_text_2: "Map complex concepts into your personalized brain graph.",
-    study_scroll_text_3: "Upload your first document to retain knowledge forever.",
+    study_card_ingest_title: "Ingesting Document...",
+    study_card_ingest_subtitle:
+      "Classifying and extracting knowledge. Please wait.",
+    study_scroll_text_2:
+      "Map complex concepts into your personalized brain graph.",
+    study_scroll_text_3:
+      "Upload your first document to retain knowledge forever.",
     tutor_minimized: "Tutor minimized",
     tutor_minimized_desc: "Open without resizing the document.",
     open: "Open",
@@ -81,16 +89,21 @@ export const translations = {
 
     // Analytics View Detailed Labels
     cognitive_analytics: "Cognitive Analytics",
-    visualizing_learning_memory: "Visualizing your learning memory and retention over time.",
+    visualizing_learning_memory:
+      "Visualizing your learning memory and retention over time.",
     total_concepts: "Total Concepts",
-    total_concepts_desc: "The number of unique academic concepts you have extracted and studied across all documents.",
+    total_concepts_desc:
+      "The number of unique academic concepts you have extracted and studied across all documents.",
     interactions: "Interactions",
-    interactions_desc: "The total number of messages and voice queries you have exchanged with the AI Tutor.",
+    interactions_desc:
+      "The total number of messages and voice queries you have exchanged with the AI Tutor.",
     study_sessions: "Study Sessions",
-    study_sessions_desc: "Distinct study periods you have completed, tracking your cognitive load over time.",
+    study_sessions_desc:
+      "Distinct study periods you have completed, tracking your cognitive load over time.",
     concept_mastery_levels: "Concept Mastery Levels",
     mastery_distribution: "Mastery Distribution",
-    mastery_distribution_desc: "Shows how many concepts are fully Mastered (Blue), currently being Learned (Purple), or are New/Needs Review (Orange).",
+    mastery_distribution_desc:
+      "Shows how many concepts are fully Mastered (Blue), currently being Learned (Purple), or are New/Needs Review (Orange).",
     mastered: "Mastered",
     learning: "Learning",
     new: "New",
@@ -158,13 +171,21 @@ export const translations = {
     // Study View Cards & Hero
     study_hero_1: "学習を再定義。ドキュメントから深い洞察を抽出します。",
     study_card_tutor_title: "インタラクティブ チューター",
-    study_card_tutor_subtitle: "ドキュメントについてチャットし、知識をテストします。",
+    study_card_tutor_subtitle:
+      "ドキュメントについてチャットし、知識をテストします。",
     study_card_graph_title: "ナレッジグラフ",
-    study_card_graph_subtitle: "すべてのドキュメント間で概念がどのように接続しているかを視覚化します。",
+    study_card_graph_subtitle:
+      "すべてのドキュメント間で概念がどのように接続しているかを視覚化します。",
     study_card_upload_title: "ドキュメントをアップロード",
-    study_card_upload_subtitle: "ここにPDFをドラッグ＆ドロップして学習を開始します。",
-    study_scroll_text_2: "複雑な概念をあなた専用のブレイングラフにマッピングします。",
-    study_scroll_text_3: "最初のドキュメントをアップロードして、知識を永久に保持しましょう。",
+    study_card_upload_subtitle:
+      "学習を始めるには、ここにPDFをドラッグ＆ドロップしてください。",
+    study_card_ingest_title: "ドキュメントを取り込み中...",
+    study_card_ingest_subtitle:
+      "分類し、知識を抽出しています。お待ちください。",
+    study_scroll_text_2:
+      "複雑な概念をあなた専用のブレイングラフにマッピングします。",
+    study_scroll_text_3:
+      "最初のドキュメントをアップロードして、知識を永久に保持しましょう。",
     tutor_minimized: "チューターを最小化しました",
     tutor_minimized_desc: "ドキュメントのサイズを変更せずに開きます。",
     open: "開く",
@@ -175,14 +196,18 @@ export const translations = {
     cognitive_analytics: "認知機能分析",
     visualizing_learning_memory: "学習記憶の推移と定着状況を視覚化します。",
     total_concepts: "総概念数",
-    total_concepts_desc: "これまでにすべてのドキュメントから抽出して学習した、独自の学術的概念の数です。",
+    total_concepts_desc:
+      "これまでにすべてのドキュメントから抽出して学習した、独自の学術的概念の数です。",
     interactions: "対話数",
-    interactions_desc: "AI チューターとやり取りしたメッセージおよび音声クエリの総数です。",
+    interactions_desc:
+      "AI チューターとやり取りしたメッセージおよび音声クエリの総数です。",
     study_sessions: "学習セッション数",
-    study_sessions_desc: "完了した個別の学習期間であり、時間の経過に伴う認知負荷を追跡します。",
+    study_sessions_desc:
+      "完了した個別の学習期間であり、時間の経過に伴う認知負荷を追跡します。",
     concept_mastery_levels: "概念の習熟度レベル",
     mastery_distribution: "習熟度の分布",
-    mastery_distribution_desc: "完全に習得した概念（青）、現在学習中の概念（紫）、新規または復習が必要な概念（オレンジ）の数を示します。",
+    mastery_distribution_desc:
+      "完全に習得した概念（青）、現在学習中の概念（紫）、新規または復習が必要な概念（オレンジ）の数を示します。",
     mastered: "習得済み",
     learning: "学習中",
     new: "新規",
@@ -250,13 +275,21 @@ export const translations = {
     // Study View Cards & Hero
     study_hero_1: "학습의 재정의. 모든 문서에서 심오한 통찰을 추출해보세요.",
     study_card_tutor_title: "인터랙티브 튜터",
-    study_card_tutor_subtitle: "문서에 대해 대화하고 나의 지식을 테스트해보세요.",
+    study_card_tutor_subtitle:
+      "문서에 대해 대화하고 나의 지식을 테스트해보세요.",
     study_card_graph_title: "지식 그래프",
-    study_card_graph_subtitle: "모든 문서에 걸쳐 개념들이 어떻게 연결되는지 시각화해보세요.",
+    study_card_graph_subtitle:
+      "모든 문서에 걸쳐 개념들이 어떻게 연결되는지 시각화해보세요.",
     study_card_upload_title: "문서 업로드",
-    study_card_upload_subtitle: "학습을 시작하려면 여기에 PDF를 드래그 앤 드롭하세요.",
-    study_scroll_text_2: "복잡한 개념들을 나만의 개인화된 두뇌 그래프로 매핑해보세요.",
-    study_scroll_text_3: "지식을 영원히 간직할 수 있도록 첫 문서를 업로드해보세요.",
+    study_card_upload_subtitle:
+      "여기에 PDF를 드래그 앤 드롭하여 학습을 시작하세요.",
+    study_card_ingest_title: "문서 수집 중...",
+    study_card_ingest_subtitle:
+      "지식을 분류하고 추출하는 중입니다. 잠시만 기다려주세요.",
+    study_scroll_text_2:
+      "복잡한 개념들을 나만의 개인화된 두뇌 그래프로 매핑해보세요.",
+    study_scroll_text_3:
+      "지식을 영원히 간직할 수 있도록 첫 문서를 업로드해보세요.",
     tutor_minimized: "튜터 최소화됨",
     tutor_minimized_desc: "문서 크기 조절 없이 대화창 열기.",
     open: "열기",
@@ -265,16 +298,21 @@ export const translations = {
 
     // Analytics View Detailed Labels
     cognitive_analytics: "인지 분석",
-    visualizing_learning_memory: "시간 경과에 따른 나의 학습 기억과 유지율을 시각화합니다.",
+    visualizing_learning_memory:
+      "시간 경과에 따른 나의 학습 기억과 유지율을 시각화합니다.",
     total_concepts: "총 개념 개수",
-    total_concepts_desc: "모든 문서에서 추출하고 학습한 고유한 학술적 개념의 총 개수입니다.",
+    total_concepts_desc:
+      "모든 문서에서 추출하고 학습한 고유한 학술적 개념의 총 개수입니다.",
     interactions: "상호작용 횟수",
-    interactions_desc: "AI 튜터와 주고받은 메시지 및 음성 질의의 총 횟수입니다.",
+    interactions_desc:
+      "AI 튜터와 주고받은 메시지 및 음성 질의의 총 횟수입니다.",
     study_sessions: "학습 세션 수",
-    study_sessions_desc: "시간 경과에 따른 인지 부하를 추적하며 완료한 고유 학습 기간입니다.",
+    study_sessions_desc:
+      "시간 경과에 따른 인지 부하를 추적하며 완료한 고유 학습 기간입니다.",
     concept_mastery_levels: "개념 숙련도 수준",
     mastery_distribution: "숙련도 분포",
-    mastery_distribution_desc: "완전히 마스터한 개념(파란색), 현재 학습 중인 개념(보라색), 새로운 개념 또는 복습이 필요한 개념(오렌지색)의 수를 나타냅니다.",
+    mastery_distribution_desc:
+      "완전히 마스터한 개념(파란색), 현재 학습 중인 개념(보라색), 새로운 개념 또는 복습이 필요한 개념(오렌지색)의 수를 나타냅니다.",
     mastered: "마스터함",
     learning: "학습 중",
     new: "새로운 개념",

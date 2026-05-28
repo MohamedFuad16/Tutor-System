@@ -4,7 +4,7 @@ This document is the human-readable architecture book for Tutor. The generated `
 
 ## 1. Product Purpose
 
-Tutor is an AI-powered learning interface for reading academic papers and textbooks, asking a streaming tutor questions, building a personal learning library, and reviewing knowledge over time. The product combines a PDF study surface, AI chat, voice tutoring, web search, a 3D learner brain, revision notebooks, analytics, admin diagnostics, and the `/brain` architecture cognition layer.
+Tutor is an AI-powered learning interface for reading academic papers and textbooks, asking a streaming tutor questions, building a personal learning library, and reviewing knowledge over time. The product combines a PDF study surface, AI chat, voice tutoring, web search, a 3D learner brain, revision notebooks, analytics, admin diagnostics, built-in architecture/design-language library books, and the `/brain` architecture cognition layer.
 
 The design language is **Cosmic Obsidian** for the main app: near-black surfaces (`#030303`), surfaces (`#0A0A0B`), neon violet/blue/orange accents (`#8B5CF6`, `#3B82F6`, `#F97316`), glass panels, motion-heavy transitions, and liquid AI details. Revision and Admin intentionally use a `#faf9f6` paper style to make review and diagnostics feel like a readable notebook.
 
@@ -37,7 +37,7 @@ Dynamic component imports (`React.lazy`) manage route-level code splitting. The 
 
 - **Server Platform**: Express API running under Node.
 - **Streams**: Server-Sent Events (SSE) for `/api/chat` model response streaming. WebSockets on `/ws/debug` for streaming diagnostics and live console logs.
-- **AI Providers**: Deepgram Voice Agent API proxy, Deepgram TTS (Aura-Asteria), Serper API for web/news searches, and OpenAI SDK broker targeting OpenRouter models.
+- **AI Providers**: Deepgram Voice Agent API proxy, Deepgram TTS fallback, OpenAI speech fallback, Serper API for web/news searches, and OpenAI SDK broker targeting OpenRouter models.
 
 ---
 
@@ -45,24 +45,24 @@ Dynamic component imports (`React.lazy`) manage route-level code splitting. The 
 
 All cloud LLM calls are brokered by `server.ts`. The browser sends the user OpenRouter key from Settings as a bearer token, with `OPENROUTER_API_KEY`, `DEEPGRAM_API_KEY`, and `SERPER_API_KEY` as environment fallbacks.
 
-| Use                                      | Provider                   | Model                                                                                                        |
-| ---------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Default tutor chat                       | OpenRouter                 | `deepseek/deepseek-chat`                                                                                     |
-| Settings chat options                    | OpenRouter                 | `anthropic/claude-3.5-sonnet`, `google/gemini-1.5-pro`, `deepseek/deepseek-chat`                             |
-| Chat fallback chain                      | OpenRouter                 | `google/gemini-2.5-flash`, `anthropic/claude-3.5-haiku`, `openai/gpt-4o-mini`, `meta-llama/llama-4-maverick` |
-| PDF title extraction                     | OpenRouter                 | `qwen/qwen2.5-vl-72b-instruct`                                                                               |
-| Persona prompt generation                | OpenRouter                 | `anthropic/claude-3.5-sonnet`                                                                                |
-| Trace explanation                        | OpenRouter                 | `deepseek/deepseek-chat`                                                                                     |
-| Learning book updates                    | OpenRouter                 | `deepseek/deepseek-chat`                                                                                     |
-| Flashcard extraction                     | OpenRouter                 | `deepseek/deepseek-chat`                                                                                     |
-| Page vision tool                         | OpenRouter                 | `openai/gpt-4o-mini`                                                                                         |
-| Voice Agent listen                       | Deepgram                   | `flux-general-en`                                                                                            |
-| Voice Agent think                        | Deepgram/OpenAI-compatible | `gpt-4o-mini`                                                                                                |
-| Voice Agent speak                        | Deepgram                   | `aura-asteria-en`                                                                                            |
-| Read-aloud TTS                           | Deepgram                   | `aura-asteria-en` by default                                                                                 |
-| Browser memory embeddings                | Local deterministic        | 384-dimensional hashed text vectors, no browser `onnxruntime-web` bundle                                     |
-| `/brain` retrieval embeddings            | Local Xenova               | MiniLM 384-dimensional chunks                                                                                |
-| Brain debug auto-fix model, when enabled | OpenAI/OpenRouter          | `BRAIN_DEBUG_MODEL`, then `BRAIN_EXECUTOR_MODEL`, then `gpt-4o-mini`/`openai/gpt-4o-mini`                    |
+| Use                                      | Provider                   | Model                                                                                                                        |
+| ---------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Default tutor chat                       | OpenRouter                 | `deepseek/deepseek-v4-flash`                                                                                                 |
+| Settings chat options                    | OpenRouter                 | `anthropic/claude-3.5-sonnet`, `google/gemini-1.5-pro`, `deepseek/deepseek-v4-flash`                                         |
+| Chat fallback chain                      | OpenRouter                 | `google/gemini-2.5-flash`, `anthropic/claude-3.5-haiku`, `openai/gpt-4o-mini`, `meta-llama/llama-4-maverick`                 |
+| PDF title extraction                     | OpenRouter                 | `qwen/qwen2.5-vl-72b-instruct`                                                                                               |
+| Persona prompt generation                | OpenRouter                 | `anthropic/claude-3.5-sonnet`                                                                                                |
+| Trace explanation                        | OpenRouter                 | `deepseek/deepseek-v4-flash`                                                                                                 |
+| Learning book updates                    | OpenRouter                 | `deepseek/deepseek-v4-flash`                                                                                                 |
+| Flashcard extraction                     | OpenRouter                 | `deepseek/deepseek-v4-flash`                                                                                                 |
+| Page vision tool                         | OpenRouter                 | `openai/gpt-4o-mini`                                                                                                         |
+| Voice Agent listen                       | Deepgram                   | `flux-general-en`                                                                                                            |
+| Voice Agent think                        | Deepgram/OpenAI-compatible | `gpt-4o-mini`                                                                                                                |
+| Voice Agent speak                        | Deepgram                   | `aura-asteria-en`                                                                                                            |
+| Read-aloud TTS                           | OpenAI, then Deepgram      | `gpt-4o-mini-tts` request mode uses OpenAI speech and falls back to `aura-asteria-en`; Deepgram Aura voices remain supported |
+| Browser memory embeddings                | Local deterministic        | 384-dimensional hashed text vectors, no browser `onnxruntime-web` bundle                                                     |
+| `/brain` retrieval embeddings            | Local Xenova               | MiniLM 384-dimensional chunks                                                                                                |
+| Brain debug auto-fix model, when enabled | OpenAI/OpenRouter          | `BRAIN_DEBUG_MODEL`, then `BRAIN_EXECUTOR_MODEL`, then `gpt-4o-mini`/`openai/gpt-4o-mini`                                    |
 
 `GET /api/pricing` fetches live OpenRouter pricing and caches it for six hours. Deepgram pricing constants are maintained in `server.ts`.
 
@@ -71,6 +71,8 @@ All cloud LLM calls are brokered by `server.ts`. The browser sends the user Open
 ## 4. Zustand Global State Store
 
 The global state store is defined in `src/store/index.ts` via `useStore` with Zustand's `persist` middleware. It saves user progress, API settings, and usage trackers to local storage under the key `learning-ai-store`.
+
+Chat messages intentionally start fresh after a reload. The active `messages` array is not hydrated from Zustand persistence; completed chats are archived separately under `learning_ai_chat_archives_v1` and can be restored from the Chat Panel library context menu.
 
 ### State Properties
 
@@ -117,7 +119,9 @@ The `MemoryOrchestrator` integrates these tables with the application runtime. W
 
 1.  It intercepts the conversation, uses a local 384-dimensional hashed text index to locate similar historic concepts, and injects ZPD Zonal directives into the system prompt.
 2.  It sends the dialogue to `/api/learning-book-update`, returning compiled summaries.
-3.  It updates the matching `learningBooks`, inserts new chapters, updates concepts, creates associated flashcards, and writes an entry in the `traceLogs` database.
+3.  It updates the matching `learningBooks`, inserts detailed notebook-style chapters, updates concepts, writes chronological `learningEntries`, and records trace logs. Earlier generated learning books are preserved across reloads while each reload starts a fresh chat session.
+4.  Chat archive restore is intentionally source-scoped: selecting a previous chat clears the active PDF URL, page counters, and selected-text context before restoring messages. Static/admin books are excluded from the Chat Panel context menu, while user-generated learning books stay visible in Revision.
+5.  Local fallback summaries are normalized into revision notes (`Key idea`, `Why it matters`, `How to review it`) so generic prompts such as "what is this page about?" do not become the book content. Revision also cleans legacy `Prompt:` / `Learning note:` artifacts at render time.
 
 ---
 
@@ -128,7 +132,8 @@ The application design supports fluid layout scaling across all device categorie
 ### Study View
 
 - **Layout Grid**: Renders a vertical layout `flex-col` on mobile viewports to prevent squashing panels. On desktop (`xl:flex-row`), it splits into a 64% width left-hand workspace (housing the PDF viewer) and a 36% width right-hand panel (`ChatPanel`).
-- **Chat Panel**: Renders as a `<motion.aside>` that slides out or collapses using Framer Motion's `AnimatePresence`.
+- **Document Ingestion**: Upload accepts PDFs and images. `/api/documents/ingest` shells to `scripts/classify_and_extract.py`, classifies native text PDFs, scanned PDFs/images, and mixed documents, then routes native/mixed text through PyMuPDF4LLM and scanned/mixed page images through bounded OCR/vision parsing. Node uses an enlarged extraction buffer because scanned pages return base64 page images before vision parsing.
+- **Chat Panel**: Renders as a `<motion.aside>` that slides out or collapses using Framer Motion's `AnimatePresence`. Streaming output uses a local RAF text buffer and a non-jumping autoscroll policy so generated text appears smoothly without forcing the reasoning trace into view.
 - **PDF Viewer**: Adapts using width listeners. Squeezes margins and scales canvas layouts using `ResizeObserver`. Displays a floating top-right bar for overlays (zoom, navigate, annotate) to save space.
 
 ### Revision View
@@ -137,6 +142,7 @@ The application design supports fluid layout scaling across all device categorie
 - **Sidebar Layout**: The chapter and table of contents sidebar is hidden by default and displayed only on large screens (`hidden lg:block w-64 flex-shrink-0 sticky`).
 - **Mobile Navigation**: Smaller viewports replace the vertical sidebar with a top horizontal scrollbar tags navbar (`flex gap-2 overflow-x-auto pb-1`).
 - **Fluid Margins**: Container uses `max-w-4xl` and shifts padding based on breakpoints (`p-5` on mobile, scaling up through `sm:p-6`, `md:p-10`, `lg:p-16`, and `xl:p-20`).
+- **Built-In Books**: `RevisionView.tsx` uses a built-in book model with static architecture content from `src/lib/tutorBook.json` and an App Design Language book rendered in React. The design-language book contains a cleaned wireframe map, theme tokens, and interactive UI component previews; it preserves the existing long-press hide/delete behavior through per-book local storage keys.
 
 ### Brain View
 
@@ -148,6 +154,7 @@ The application design supports fluid layout scaling across all device categorie
 - **Layout**: Matches the `#faf9f6` paper layout of the Revision View, sharing the identical responsive sidebar navigation (`hidden lg:block`) and mobile top header (`lg:hidden`).
 - **Monospace Console**: Renders a hardware-accelerated monospace log viewport. Uses a `useEffect` layout trigger to automatically scroll the console to the bottom on new incoming WebSocket trace logs.
 - **Debug Ledger**: Displays active and historic `DebugRuns`. Component card sub-logs are collapsed by default to allow fast scrolling and high readability on small viewports.
+- **Run Visibility**: The server summarizes both `summary.json` and `run.json`, marks stale externally-killed runs as `interrupted`, and supports `scan`, `audit`, and `fix` modes from Admin so long-running all-scope audits remain visible immediately.
 
 ---
 
@@ -173,6 +180,7 @@ This component creates an organic liquid glass fluid overlay resembling Apple iO
 Renders an o1-style streaming thinking trace for complex reasoning loops.
 
 - **Step Categorization**: Tracks active phases (`retrieving`, `web_search`, `tool_execution`, `synthesizing`, `complete`). Uses `thoughtStepMeta` to dynamically assign theme values based on text contents (Search: `#0A7DFF`, Vision: `#6929F4`, Tool: `#36AA55`, Graph: `#D87A2C`, Recall: `#D49B23`, Synthesis: `#6929F4`, Reasoning: `#6A6A6A`).
+- **Source-Material-First Search Policy**: Questions about the current page, screen, selected text, uploaded document, active book, visible diagram, or "what is this about" are answered from local source context and the page-vision tool. Serper web search is gated to explicit web/internet requests or truly freshness-sensitive external facts.
 - **Timeline Animations**: Sequenced using index-based delays (`index * 0.48s`).
   - `reasoningStepVariants`: Fades in and slides up steps.
   - `reasoningIconVariants`: Scale, rotate, and bounce spring sequence (`scale: 0.34` to `0.6`, `rotate: [-14, 9, -3, 0]`).
@@ -248,7 +256,7 @@ graph TD
 4.  **Vector Indexer (`brain/embed`)**: Chunks codebase contexts locally via Hugging Face `Xenova/all-MiniLM-L6-v2` transformer pipelines. Saves 384-dimensional text vectors into a local database.
 5.  **Telemetry Benchmark (`brain/runtime-benchmark`)**: Captures rerender performance, memory usage, and state propagation hotspots.
 6.  **Invariants Verification (`brain/verify`)**: Validates route configurations, store state shapes, API signatures, and runs test suites.
-7.  **Self-Audit (`brain/self-audit.ts`)**: Examines cognitive maturity and generates an audit report (current autonomous safety score: **92 / 100**).
+7.  **Self-Audit (`brain/self-audit.ts`)**: Examines cognitive maturity and generates an audit report from the latest generated source graph, retrieval index, runtime traces, and rule checks.
 
 ---
 
@@ -259,35 +267,50 @@ The autonomous debugging utility operates independently of default tutor dialogu
 ### Invoking the Tool
 
 ```bash
-npm run brain:debug -- --mode fix --scope all
+npm run brain:debug -- --mode fix --scope changed
 ```
 
 ### Execution Protocol
 
-The orchestrator walks through every targeted application target (files, components, hooks) using a 20-step process:
+The orchestrator starts from the narrowest truthful scope: `changed`, a named component, route, or file. `--scope all` is reserved for explicit full-system audits and sorts UI routes/components before `/brain` tooling. Every target follows a tightened 35-step process:
 
-1.  **Parse**: Scans targets.
-2.  **Understand**: Analyzes target purpose.
-3.  **Dependencies**: Maps dependencies.
-4.  **Anti-patterns**: Analyzes syntax and architecture patterns.
-5.  **Performance**: Measures runtime execution.
-6.  **Stale state**: Checks for stale dependencies.
-7.  **Render**: Audits UI components for render bugs.
-8.  **Memory leaks**: Runs heap profile checks.
-9.  **Async**: Inspects for unresolved promises or race conditions.
-10. **Typing**: Checks TypeScript typings.
-11. **Animations**: Validates animation frame rates.
-12. **API**: Checks server-contract compliance.
-13. **Accessibility**: Runs semantic HTML and WCAG contrast audits.
-14. **Best Practices**: Compares code against reference documents.
-15. **Documentation**: Maps official documentation evidence.
-16. **Improvements**: Designs code enhancements.
-17. **Guarded Patches**: Applies patches if justified.
-18. **Validation**: Verifies syntax.
-19. **Regressions**: Runs Playwright automated regression probes.
-20. **Persist**: Saves findings into `/brain`.
+1.  **Parse architecture**: Scans targets.
+2.  **Understand purpose**: Analyzes product role.
+3.  **Lock scope**: Prevents accidental all-repo expansion.
+4.  **Analyze dependencies**: Maps imports, downstream consumers, and runtime edges.
+5.  **Verify mutation boundary**: Checks high-risk contracts before edits.
+6.  **Detect anti-patterns**: Reviews syntax and architecture patterns.
+7.  **Detect performance issues**: Measures runtime and render risk.
+8.  **Detect stale state**: Checks stale dependencies and outdated assumptions.
+9.  **Detect render problems**: Audits UI components for visible defects.
+10. **Detect memory leaks**: Checks cleanup and listener lifetimes.
+11. **Detect async issues**: Inspects unresolved promises and race conditions.
+12. **Detect typing issues**: Checks TypeScript contracts.
+13. **Detect animation issues**: Validates motion and frame risk.
+14. **Detect API issues**: Checks server/SSE/WebSocket compliance.
+15. **Detect accessibility issues**: Reviews semantic HTML and WCAG contrast.
+16. **Detect responsive layout and overlap issues**: Checks mobile, notebook, and desktop widths for collisions, clipping, and cramped controls.
+17. **Detect source-material boundaries**: Ensures chat/vision/retrieval/web-search tools do not bypass local study context.
+18. **Detect model/config drift**: Compares configured defaults against current provider docs and local settings.
+19. **Detect document-ingestion branch coverage**: Verifies native, scanned/image, and mixed document paths.
+20. **Verify live surface**: Proves UI work renders as a live interactive surface, not a static mock.
+21. **Execute browser**: Runs the app through `/browser` when available or the Playwright-backed probe as a recorded fallback.
+22. **Test viewports**: Checks mobile, tablet, and desktop dimensions for overflow and blank states.
+23. **Simulate interactions**: Clicks, toggles, navigates, scrolls, and types where the target owns an input path.
+24. **Instrument runtime**: Captures console/page errors, frame timing, responsiveness, and route/runtime signals.
+25. **Check visual regression**: Records screenshot hashes, screenshot size, nonblank viewport evidence, overflow, and overlap signals.
+26. **Test state transitions**: Exercises route, toggle, loading, empty, disabled, error, and persisted-state transitions when owned by the target.
+27. **Verify interactive states**: Checks keyboard reachability, loading, empty, error, disabled, toggled, and paged states.
+28. **Compare best practices**: Compares code against local and official references.
+29. **Search documentation patterns**: Maps evidence for implementation choices.
+30. **Generate improvements**: Designs concrete repair options.
+31. **Gate patch safety**: Blocks broad or unrelated patches.
+32. **Apply guarded patches**: Applies source-hash-checked fixes only when justified.
+33. **Run focused validation**: Runs targeted format/type/build checks.
+34. **Run targeted regressions**: Runs responsiveness probes, animation sampling, runtime/UI checks, and after benchmarks.
+35. **Persist findings**: Saves summaries, run artifacts, and memory graph updates into `/brain`.
 
-The regression stage runs `brain:ui-regression`, a Playwright probe checking mobile/tablet/desktop layouts, sampled frame smoothness, opaque headers, and reasoning-dropdown states.
+The regression stage runs `brain:ui-regression`, a Playwright probe checking actual browser execution, mobile/tablet/desktop layouts, interaction simulation, state transitions, sampled frame smoothness, console/page errors, screenshot hashes, opaque headers, reasoning-dropdown states, and interactive Revision design-language previews.
 
 ---
 

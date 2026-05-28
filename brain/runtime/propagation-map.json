@@ -1,18 +1,18 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T05:51:32.746Z",
+    "generatedAt": "2026-05-28T23:29:01.599Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "46d9b3a3adaf21922ccedb68ac060d7b232d6a798d9104aa280d26ac88cfe07a",
-    "url": "http://127.0.0.1:3000",
-    "eventCount": 42,
+    "sourceHash": "bbdf281ff88a05e043e4c500dfe3dc5698c543a1926da64ec8744aa8d0ec1f44",
+    "url": "http://127.0.0.1:3210",
+    "eventCount": 44,
     "confidence": 0.82
   },
   "propagation": [
     {
       "state": "messages",
-      "timestamp": 240.5999999642372,
+      "timestamp": 346.7000000476837,
       "nextRender": "route:study",
-      "lagMs": 12.400000035762787,
+      "lagMs": 13.699999928474426,
       "metadata": {
         "previousType": "object",
         "nextType": "object"
@@ -20,9 +20,9 @@
     },
     {
       "state": "activeLearningBookId",
-      "timestamp": 287.0999999642372,
+      "timestamp": 402.10000002384186,
       "nextRender": "route:study",
-      "lagMs": 7.800000011920929,
+      "lagMs": 8.899999976158142,
       "metadata": {
         "previousType": "object",
         "nextType": "string"
@@ -30,9 +30,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 1418.5999999642372,
+      "timestamp": 1533.3000000715256,
       "nextRender": "route:study",
-      "lagMs": 5.600000023841858,
+      "lagMs": 5.199999928474426,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -40,9 +40,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 2278.399999976158,
+      "timestamp": 2379.5,
       "nextRender": "route:analytics",
-      "lagMs": 3.699999988079071,
+      "lagMs": 2.8000000715255737,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -50,9 +50,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 3087.399999976158,
+      "timestamp": 3185.899999976158,
       "nextRender": "route:revision",
-      "lagMs": 11.300000011920929,
+      "lagMs": 7.300000071525574,
       "metadata": {
         "previousType": "string",
         "nextType": "string"

@@ -109,13 +109,20 @@ export interface WebSearchEvent {
 
 const emptyChatUsage: ChatUsage = {
   provider: "openrouter",
-  model: "deepseek/deepseek-chat",
+  model: "deepseek/deepseek-v4-flash",
   inputTokens: 0,
   outputTokens: 0,
   cost: 0,
   estimated: false,
   requests: 0,
 };
+
+const DEFAULT_AI_MODEL = "deepseek/deepseek-v4-flash";
+
+const normalizeAiModel = (model: string | null) =>
+  model === "deepseek/deepseek-chat"
+    ? DEFAULT_AI_MODEL
+    : model || DEFAULT_AI_MODEL;
 
 const emptyWebUsage: WebUsage = {
   provider: "serper",
@@ -336,10 +343,11 @@ export const useStore = create<AppState>()(
         set({ ttsVoice: voice });
       },
 
-      aiModel: localStorage.getItem("ai_model") || "deepseek/deepseek-chat",
+      aiModel: normalizeAiModel(localStorage.getItem("ai_model")),
       setAiModel: (model) => {
-        localStorage.setItem("ai_model", model);
-        set({ aiModel: model });
+        const normalizedModel = normalizeAiModel(model);
+        localStorage.setItem("ai_model", normalizedModel);
+        set({ aiModel: normalizedModel });
       },
 
       animationsEnabled: localStorage.getItem("animations_enabled") !== "false",
@@ -564,8 +572,16 @@ What would you like to learn today?`,
     }),
     {
       name: "learning-ai-store",
+      merge: (persisted, current) => {
+        const persistedState = (persisted || {}) as Partial<AppState>;
+        const { messages: _messages, ...safePersistedState } = persistedState;
+        return {
+          ...current,
+          ...safePersistedState,
+          messages: current.messages,
+        };
+      },
       partialize: (state) => ({
-        messages: state.messages,
         activeProject: state.activeProject,
         activeLearningBookId: state.activeLearningBookId,
         activeView: state.activeView,

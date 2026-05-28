@@ -250,6 +250,7 @@ export function SettingsButton() {
     setSystemPrompt,
     language,
     setLanguage,
+    activeView,
   } = useStore();
   const [inputKey, setInputKey] = useState(apiKey);
   const [inputSerperKey, setInputSerperKey] = useState(serperApiKey);
@@ -373,7 +374,11 @@ export function SettingsButton() {
         onClick={() => setIsOpen(true)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="fixed right-4 top-[4.35rem] z-50 flex h-[42px] w-[42px] items-center justify-center overflow-visible rounded-full p-[1px] shadow-[0_8px_32px_rgba(0,0,0,0.8)] transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:outline-none group sm:right-8 sm:top-8 sm:h-[46px] sm:w-[46px]"
+        className="fixed right-4 top-[4.35rem] z-50 flex h-[42px] w-[42px] items-center justify-center overflow-visible rounded-full p-[1px] transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:outline-none group sm:right-8 sm:top-8 sm:h-[46px] sm:w-[46px]"
+        style={{
+          boxShadow:
+            "0 20px 50px -10px rgba(0,0,0,1), inset 0 1px 1px rgba(255,255,255,0.1)",
+        }}
       >
         {/* Animated Liquid Metal Border */}
         <div
@@ -398,13 +403,20 @@ export function SettingsButton() {
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent mix-blend-overlay" />
         </div>
 
-        <div className="w-full h-full rounded-full bg-[#111111] flex items-center justify-center shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)] group-hover:bg-[#1A1A1A] transition-colors relative">
+        <div
+          className="w-full h-full rounded-full flex items-center justify-center group-hover:bg-white/5 transition-colors relative"
+          style={{
+            background:
+              activeView === "revision"
+                ? "rgba(10, 10, 12, 0.85)"
+                : "rgba(28, 28, 30, 0.4)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}
+        >
           <Settings
             size={20}
-            className="relative z-10 transition-transform group-hover:rotate-45 duration-700 ease-out text-white drop-shadow-md focus:outline-none"
-          />
-          <div
-            className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#121214] z-20 ${apiKey ? "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]" : "bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)]"}`}
+            className="relative z-10 transition-[transform,color] group-hover:rotate-45 duration-700 ease-out text-zinc-400 group-hover:text-zinc-200 focus:outline-none"
           />
         </div>
       </button>
@@ -427,56 +439,57 @@ export function SettingsButton() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-2xl px-4"
             >
-              <div className="bg-[#0A0A0B] border border-white/10 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,1)] flex flex-col gap-6">
+              <div className="relative overflow-hidden bg-[#09090b]/95 border border-white/10 rounded-[30px] p-6 shadow-[0_34px_110px_rgba(0,0,0,0.58),inset_0_1px_0_rgba(255,255,255,0.08)] flex flex-col gap-6 backdrop-blur-2xl">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,110,0,0.18),transparent_34%),radial-gradient(circle_at_88%_10%,rgba(124,58,237,0.16),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.055),transparent_42%)]" />
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-medium tracking-tight text-white flex items-center gap-2">
-                    <Settings size={20} className="text-zinc-400" />
+                  <h2 className="relative z-10 text-xl font-medium tracking-tight text-white flex items-center gap-2">
+                    <Settings size={20} className="text-[#ff6e00]" />
                     {t("app_settings")}
                   </h2>
                   <button
                     onClick={() => {
                       if (!isValidating) setIsOpen(false);
                     }}
-                    className="text-zinc-500 hover:text-white transition-colors disabled:opacity-50"
+                    className="relative z-10 rounded-full p-1 text-zinc-500 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50"
                     disabled={isValidating}
                   >
                     <X size={20} />
                   </button>
                 </div>
 
-                <div className="flex bg-[#121214] border border-white/10 rounded-lg p-1 relative z-10">
+                <div className="flex bg-white/[0.05] border border-white/10 rounded-full p-1 relative z-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                   <button
                     onClick={() => setActiveTab("general")}
-                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors relative z-20 ${activeTab === "general" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+                    className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors relative z-20 ${activeTab === "general" ? "text-white" : "text-zinc-500 hover:text-zinc-200"}`}
                   >
                     {activeTab === "general" && (
                       <motion.div
                         layoutId="settings-tab-bg"
-                        className="absolute inset-0 bg-[#2a2a2a] rounded-md shadow z-[-1]"
+                        className="absolute inset-0 bg-white/[0.09] rounded-full shadow-[0_10px_24px_rgba(0,0,0,0.25)] border border-white/10 z-[-1]"
                       />
                     )}
                     {t("general")}
                   </button>
                   <button
                     onClick={() => setActiveTab("usage")}
-                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors relative z-20 ${activeTab === "usage" ? "text-[#ffb067]" : "text-zinc-500 hover:text-zinc-300"}`}
+                    className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors relative z-20 ${activeTab === "usage" ? "text-[#ffb17a]" : "text-zinc-500 hover:text-zinc-200"}`}
                   >
                     {activeTab === "usage" && (
                       <motion.div
                         layoutId="settings-tab-bg"
-                        className="absolute inset-0 bg-[#ff6e00]/15 rounded-md shadow border border-[#ff6e00]/25 z-[-1]"
+                        className="absolute inset-0 bg-[#ff6e00]/15 rounded-full shadow-[0_10px_26px_rgba(255,110,0,0.16)] border border-[#ff6e00]/20 z-[-1]"
                       />
                     )}
                     {t("usage")}
                   </button>
                   <button
                     onClick={() => setActiveTab("persona")}
-                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors relative z-20 ${activeTab === "persona" ? "text-emerald-400" : "text-zinc-500 hover:text-zinc-300"}`}
+                    className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors relative z-20 ${activeTab === "persona" ? "text-emerald-300" : "text-zinc-500 hover:text-zinc-200"}`}
                   >
                     {activeTab === "persona" && (
                       <motion.div
                         layoutId="settings-tab-bg"
-                        className="absolute inset-0 bg-emerald-500/20 rounded-md shadow border border-emerald-500/30 z-[-1]"
+                        className="absolute inset-0 bg-emerald-500/12 rounded-full shadow-[0_10px_26px_rgba(16,185,129,0.16)] border border-emerald-500/20 z-[-1]"
                       />
                     )}
                     {t("persona_studio")}
@@ -612,7 +625,7 @@ export function SettingsButton() {
                             <option value="google/gemini-1.5-pro">
                               Gemini 1.5 Pro
                             </option>
-                            <option value="deepseek/deepseek-chat">
+                            <option value="deepseek/deepseek-v4-flash">
                               DeepSeek V4 Flash
                             </option>
                           </select>

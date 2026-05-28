@@ -40,6 +40,7 @@ import {
   Terminal,
   Image as ImageIcon,
   Code2,
+  Clock,
 } from "lucide-react";
 import { motion, AnimatePresence, type Variants } from "motion/react";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -437,6 +438,84 @@ I'm ready to help you explore concepts, discuss code, and break down complex sub
 
 What would you like to learn today?`;
 
+type ChatArchive = {
+  id: string;
+  title: string;
+  bookId: string | null;
+  bookTitle: string;
+  updatedAt: number;
+  messages: Message[];
+};
+
+const CHAT_ARCHIVE_KEY = "learning_ai_chat_archives_v1";
+const RESERVED_LIBRARY_CONTEXT_PATTERN =
+  /\b(admin\s*dashboard|app\s*design|system\s*architecture|tutor\s*system\s*architecture)\b/i;
+
+const isReservedLibraryContext = (title?: string | null) =>
+  RESERVED_LIBRARY_CONTEXT_PATTERN.test(String(title || ""));
+
+const isGenericLibraryTitle = (title?: string | null) =>
+  /^(general study|conversation notes|study session)$/i.test(
+    String(title || "").trim(),
+  );
+
+const meaningfulChatMessages = (items: Message[]) =>
+  items.filter(
+    (item) =>
+      item.id !== "1" &&
+      item.content.trim() &&
+      (item.role === "user" || item.role === "assistant"),
+  );
+
+const readChatArchives = (): ChatArchive[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(CHAT_ARCHIVE_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed.slice(0, 20) : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeChatArchives = (archives: ChatArchive[]) => {
+  localStorage.setItem(CHAT_ARCHIVE_KEY, JSON.stringify(archives.slice(0, 20)));
+};
+
+const archiveChatSnapshot = (
+  items: Message[],
+  bookId: string | null,
+  bookTitle: string,
+) => {
+  const archivedMessages = meaningfulChatMessages(items);
+  if (!archivedMessages.some((item) => item.role === "user")) return [];
+  const firstUser = archivedMessages.find((item) => item.role === "user");
+  const title =
+    firstUser?.content
+      .replace(/\s+/g, " ")
+      .replace(/^\[SYSTEM:[\s\S]*?\]\s*/i, "")
+      .slice(0, 64) || bookTitle;
+  const snapshot: ChatArchive = {
+    id: bookId || `chat:${Date.now()}`,
+    title,
+    bookId,
+    bookTitle: bookTitle || "General Study",
+    updatedAt: Date.now(),
+    messages: [
+      {
+        id: "1",
+        role: "assistant",
+        content: INITIAL_MESSAGE,
+      },
+      ...archivedMessages,
+    ],
+  };
+  const next = [
+    snapshot,
+    ...readChatArchives().filter((archive) => archive.id !== snapshot.id),
+  ].slice(0, 20);
+  writeChatArchives(next);
+  return next;
+};
+
 // ─── Smooth animated counter ──────────────────────────────────────────────────
 function useAnimatedNumber(target: number, duration = 600): number {
   const [displayed, setDisplayed] = useState(target);
@@ -494,7 +573,11 @@ const formatSeconds = (value: number) => {
 
 const compactModel = (model: string) => {
   if (!model) return "unknown";
-  if (model === "deepseek/deepseek-chat") return "DeepSeek V4 Flash";
+  if (
+    model === "deepseek/deepseek-v4-flash" ||
+    model === "deepseek/deepseek-chat"
+  )
+    return "DeepSeek V4 Flash";
   const parts = model.split("/");
   return parts[parts.length - 1] || model;
 };
@@ -838,14 +921,14 @@ const GeminiVoicePill = ({
       initial={{ y: 50, opacity: 0, scale: 0.9 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       exit={{ y: 50, opacity: 0, scale: 0.9 }}
-      className="fixed bottom-12 left-1/2 -translate-x-1/2 flex items-center justify-center overflow-hidden rounded-full shadow-[0_20px_60px_rgba(0,0,0,0.9)] bg-[#050505]/90 backdrop-blur-3xl border border-white/10 z-[100]"
+      className="fixed bottom-12 left-1/2 -translate-x-1/2 flex items-center justify-center overflow-hidden rounded-[28px] border border-zinc-200/70 bg-[#faf9f6]/95 shadow-[0_24px_70px_rgba(24,24,27,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-3xl z-[100]"
       style={{
         width: state === "speaking" ? "300px" : "240px",
         height: "64px",
         transition: "width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
       }}
     >
-      <div className="absolute inset-0 overflow-hidden mix-blend-screen blur-[8px] opacity-80">
+      <div className="absolute inset-0 overflow-hidden blur-[10px] opacity-70">
         <motion.div
           className="absolute w-[200%] h-[200%] top-[-50%] left-[-50%]"
           animate={{ rotate: 360 }}
@@ -873,7 +956,7 @@ const GeminiVoicePill = ({
         </motion.div>
       </div>
 
-      <div className="relative z-10 text-white font-medium tracking-wide flex items-center gap-3 bg-black/40 px-6 py-2 rounded-full backdrop-blur-md border border-white/5 shadow-inner">
+      <div className="relative z-10 flex items-center gap-3 rounded-2xl border border-white/80 bg-white/80 px-6 py-2 font-medium tracking-wide text-zinc-950 shadow-[0_12px_34px_rgba(24,24,27,0.12)] backdrop-blur-md">
         {state === "speaking" ? (
           <>
             <Activity size={18} className="text-blue-400 animate-pulse" />
@@ -1340,28 +1423,21 @@ const ThinkingPanel = ({
   webSearch?: Message["webSearch"];
   hasError?: boolean;
 }) => {
-  const panelRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (!isComplete) {
-        panelRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
-      }
-    }, 120);
-    return () => window.clearTimeout(timer);
-  }, [isComplete, steps.length, webSearch?.sources.length]);
 
   if (phase === "idle" && steps.length === 0) return null;
   const { t } = useTranslation();
-  const latestStep = steps[steps.length - 1];
+  const visibleSteps = isComplete
+    ? steps.filter(
+        (step) => !/synthesizing\s+(final\s+)?answer/i.test(step.content),
+      )
+    : steps;
+  const latestStep = visibleSteps[visibleSteps.length - 1] || steps[0];
   const latestMeta = thoughtStepMeta(latestStep?.content || phase, phase);
   const LatestIcon = latestMeta.icon;
-  const activeLabel =
-    phase === "retrieving"
+  const activeLabel = isComplete
+    ? "Complete"
+    : phase === "retrieving"
       ? "Searching"
       : phase === "web_search"
         ? "Reviewing"
@@ -1369,14 +1445,18 @@ const ThinkingPanel = ({
           ? "Running"
           : phase === "synthesizing"
             ? "Synthesizing"
-            : isComplete
-              ? "Complete"
-              : t("thinking_process");
-  const stepCount = steps.length + (webSearch?.sources.length ? 1 : 0);
+            : t("thinking_process");
+  const traceKey = `${visibleSteps.map((step) => step.id).join("-")}-${webSearch?.sources.length || 0}`;
+  const previewText = isComplete
+    ? webSearch?.status && webSearch.sources.length > 0
+      ? webSearch.status
+      : "Answer ready."
+    : latestStep?.content ||
+      webSearch?.status ||
+      "Preparing the reasoning trace...";
 
   return (
     <div
-      ref={panelRef}
       data-reasoning-dropdown
       className="not-prose mb-5 mt-2 overflow-hidden rounded-3xl border border-zinc-200/80 bg-white/90 font-sans shadow-[0_18px_45px_rgba(0,0,0,0.06)]"
     >
@@ -1414,16 +1494,9 @@ const ThinkingPanel = ({
               <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
                 {activeLabel}
               </span>
-              {stepCount > 0 && (
-                <span className="text-[11px] text-zinc-400">
-                  {stepCount} step{stepCount === 1 ? "" : "s"}
-                </span>
-              )}
             </div>
             <div className="mt-0.5 truncate text-[12px] leading-snug text-zinc-500">
-              {latestStep?.content ||
-                webSearch?.status ||
-                "Preparing the reasoning trace..."}
+              {previewText}
             </div>
           </div>
         </div>
@@ -1442,17 +1515,17 @@ const ThinkingPanel = ({
             className="overflow-hidden border-t border-zinc-100"
           >
             <motion.div
-              key={`reasoning-trace-open-${stepCount}-${steps.map((step) => step.id).join("-")}`}
+              key={`reasoning-trace-open-${traceKey}`}
               initial="hidden"
               animate="show"
               variants={{ hidden: {}, show: {} }}
               className="space-y-1 px-3 py-3 text-[13px] text-zinc-500"
             >
-              {steps.map((step, idx) => {
+              {visibleSteps.map((step, idx) => {
                 const meta = thoughtStepMeta(step.content, phase);
                 const active =
                   !isComplete &&
-                  idx === steps.length - 1 &&
+                  idx === visibleSteps.length - 1 &&
                   phase !== "complete";
                 return (
                   <motion.div
@@ -1461,7 +1534,7 @@ const ThinkingPanel = ({
                     variants={reasoningStepVariants}
                     className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
                   >
-                    {idx < steps.length - 1 && (
+                    {idx < visibleSteps.length - 1 && (
                       <motion.div
                         custom={idx}
                         variants={reasoningLineVariants}
@@ -1560,6 +1633,79 @@ const markdownComponents = {
   code: InteractiveCodeBlock,
 };
 
+function useSmoothStreamingText(
+  rawContent: string,
+  isStreaming: boolean,
+): string {
+  const [displayedContent, setDisplayedContent] = useState(
+    isStreaming ? "" : rawContent,
+  );
+  const queueRef = useRef<string>(rawContent);
+  const displayedRef = useRef<string>(isStreaming ? "" : rawContent);
+  const rafRef = useRef<number | null>(null);
+
+  const wasStreamingRef = useRef(isStreaming);
+  if (isStreaming) {
+    wasStreamingRef.current = true;
+  }
+
+  useEffect(() => {
+    queueRef.current = rawContent;
+
+    if (!wasStreamingRef.current) {
+      displayedRef.current = rawContent;
+      setDisplayedContent(rawContent);
+      return;
+    }
+
+    if (!isStreaming) {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      displayedRef.current = rawContent;
+      setDisplayedContent(rawContent);
+      return;
+    }
+
+    if (rafRef.current === null) {
+      const tick = () => {
+        const target = queueRef.current;
+        const current = displayedRef.current;
+
+        if (current !== target) {
+          let nextContent = target;
+          if (target.startsWith(current) && target.length > current.length) {
+            const diff = target.length - current.length;
+            // Base speed 3 chars/frame (~180 chars/sec).
+            // If lagging, speed up but cap at 12 chars/frame (~720 chars/sec)
+            // so it ALWAYS looks like smooth typing and never jumps in huge blocks.
+            const speed = diff > 30 ? Math.min(12, Math.ceil(diff / 15)) : 3;
+            const charsToAdd = Math.min(diff, speed);
+            nextContent = target.slice(0, current.length + charsToAdd);
+          } else {
+            nextContent = target;
+          }
+          displayedRef.current = nextContent;
+          setDisplayedContent(nextContent);
+          rafRef.current = requestAnimationFrame(tick);
+        } else {
+          rafRef.current = null;
+        }
+      };
+      rafRef.current = requestAnimationFrame(tick);
+    }
+  }, [rawContent, isStreaming]);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  return displayedContent;
+}
+
 const AnimatedMarkdown = React.memo(
   ({
     content,
@@ -1572,8 +1718,13 @@ const AnimatedMarkdown = React.memo(
     animationsEnabled?: boolean;
     isStreaming?: boolean;
   }) => {
+    const smoothContent =
+      animationsEnabled && !isVoice
+        ? useSmoothStreamingText(content, isStreaming)
+        : content;
+
     const showCursor =
-      animationsEnabled && !isVoice && isStreaming && content.length > 0;
+      animationsEnabled && !isVoice && isStreaming && smoothContent.length > 0;
 
     return (
       <div className={`streaming-text ${showCursor ? "typing-active" : ""}`}>
@@ -1581,14 +1732,9 @@ const AnimatedMarkdown = React.memo(
         .streaming-text {
           overflow-wrap: anywhere;
           text-rendering: geometricPrecision;
+          contain: content;
         }
-        .streaming-text.typing-active {
-          animation: responseStreamSettle 220ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .streaming-text.typing-active > * {
-          animation: responseLineReveal 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        .streaming-text.typing-active > *:last-child::after {
+        .streaming-text.typing-active .streaming-plain::after {
           content: '';
           display: inline-block;
           width: 6px;
@@ -1603,21 +1749,19 @@ const AnimatedMarkdown = React.memo(
         @keyframes terminalBlink { 
           50% { opacity: 0; } 
         }
-        @keyframes responseStreamSettle {
-          from { opacity: 0.86; filter: blur(0.35px); }
-          to { opacity: 1; filter: blur(0px); }
-        }
-        @keyframes responseLineReveal {
-          from { opacity: 0.7; transform: translateY(2px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
       `}</style>
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={markdownComponents}
-        >
-          {content}
-        </ReactMarkdown>
+        {isStreaming ? (
+          <div className="streaming-plain whitespace-pre-wrap leading-relaxed">
+            {smoothContent}
+          </div>
+        ) : (
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={markdownComponents}
+          >
+            {smoothContent}
+          </ReactMarkdown>
+        )}
       </div>
     );
   },
@@ -1919,6 +2063,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const setSelectedTextContext = useStore(
     (state) => state.setSelectedTextContext,
   );
+  const setPdfUrl = useStore((state) => state.setPdfUrl);
+  const setPdfPage = useStore((state) => state.setPdfPage);
+  const setPdfTotalPages = useStore((state) => state.setPdfTotalPages);
   const messages = useStore((state) => state.messages);
   const setMessages = useStore((state) => state.setMessages);
   const setIsVoiceActive = useStore((state) => state.setIsVoiceActive);
@@ -1934,6 +2081,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   );
   const [isPlayingTTS, setIsPlayingTTS] = useState<string | null>(null);
   const [thinkingStep, setThinkingStep] = useState(0);
+  const [chatArchives, setChatArchives] = useState<ChatArchive[]>(() =>
+    readChatArchives(),
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAutoScrollPaused = useRef(false);
   const [isSkillsMenuOpen, setIsSkillsMenuOpen] = useState(false);
@@ -1971,27 +2121,69 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
       [],
     ) || [];
+  const libraryContextBooks = React.useMemo(
+    () => learningBooks.filter((book) => !isReservedLibraryContext(book.title)),
+    [learningBooks],
+  );
   const activeLearningBook = activeLearningBookId
-    ? learningBooks.find((book) => book.id === activeLearningBookId)
+    ? libraryContextBooks.find((book) => book.id === activeLearningBookId)
     : undefined;
+  const activeLearningBookTitle = activeLearningBook?.title || activeProject;
+  const visibleChatArchives = chatArchives.filter(
+    (archive) =>
+      !isReservedLibraryContext(archive.bookTitle) &&
+      !isReservedLibraryContext(archive.title),
+  );
+
+  const clearStudyDocumentContext = useCallback(() => {
+    const currentPdfUrl = useStore.getState().pdfUrl;
+    if (currentPdfUrl?.startsWith("blob:")) {
+      URL.revokeObjectURL(currentPdfUrl);
+    }
+    setPdfUrl(null);
+    setPdfPage(1);
+    setPdfTotalPages(0);
+    setSelectedTextContext("");
+  }, [setPdfPage, setPdfTotalPages, setPdfUrl, setSelectedTextContext]);
+
+  const saveCurrentChatArchive = useCallback(() => {
+    const next = archiveChatSnapshot(
+      useStore.getState().messages,
+      useStore.getState().activeLearningBookId,
+      activeLearningBookTitle,
+    );
+    if (next.length) setChatArchives(next);
+  }, [activeLearningBookTitle]);
 
   useEffect(() => {
-    if (learningBooks.length === 0) return;
+    const handleBeforeUnload = () => {
+      archiveChatSnapshot(
+        useStore.getState().messages,
+        useStore.getState().activeLearningBookId,
+        activeLearningBookTitle,
+      );
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [activeLearningBookTitle]);
+
+  useEffect(() => {
+    if (libraryContextBooks.length === 0) return;
     const selectedBook = activeLearningBookId
-      ? learningBooks.find((book) => book.id === activeLearningBookId)
+      ? libraryContextBooks.find((book) => book.id === activeLearningBookId)
       : undefined;
     if (selectedBook) return;
 
-    const matchingBook = learningBooks.find(
+    const matchingBook = libraryContextBooks.find(
       (book) => book.title.toLowerCase() === activeProject.toLowerCase(),
     );
-    const nextBook = matchingBook || learningBooks[0];
+    const nextBook = matchingBook || libraryContextBooks[0];
     setActiveLearningBookId(nextBook.id);
     setActiveProject(nextBook.title);
   }, [
     activeLearningBookId,
     activeProject,
-    learningBooks,
+    libraryContextBooks,
     setActiveLearningBookId,
     setActiveProject,
   ]);
@@ -2244,12 +2436,19 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         }
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
+        if (event.code !== 1000 && event.reason) {
+          console.warn("Voice connection closed:", event.reason);
+          window.alert(event.reason);
+        }
         stopVoice();
       };
 
       ws.onerror = (e) => {
         console.error("WS error: ", e);
+        window.alert(
+          "Voice mode could not connect. Check the voice service keys and try again.",
+        );
         stopVoice();
       };
     } catch (err) {
@@ -2687,7 +2886,6 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   }
                   return newM;
                 });
-                forceScrollToBottom("smooth");
               }
             } else if (data.type === "web_search_started") {
               recordWebSearchEvent({
@@ -2873,6 +3071,17 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     content: data.content,
                     hasFlashcards: hasFlashcards,
                     phase: "complete",
+                    reasoningSteps: (newM[msgIndex].reasoningSteps || [])
+                      .filter(
+                        (step) =>
+                          !/synthesizing\s+(final\s+)?answer/i.test(
+                            step.content,
+                          ),
+                      )
+                      .concat({
+                        id: crypto.randomUUID(),
+                        content: "Ready with the final answer.",
+                      }),
                     usage: messageUsage,
                     webSearch: newM[msgIndex].webSearch
                       ? {
@@ -2919,6 +3128,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     error,
                   );
                 });
+              setChatArchives(
+                archiveChatSnapshot(
+                  useStore.getState().messages,
+                  activeLearningBookId,
+                  activeLearningBook?.title || activeProject,
+                ),
+              );
 
               if (data.graphUpdates && data.graphUpdates.length > 0) {
                 data.graphUpdates.forEach((update: any) => {
@@ -3031,20 +3247,23 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   }, [selectedTextContext]);
 
   const lastMessage = messages[messages.length - 1];
+  const lastAutoScrolledMessageIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (
-      sendState !== "idle" ||
-      (lastMessage?.role === "assistant" &&
-        lastMessage.id !== "1" &&
-        lastMessage.content.length > 0)
-    ) {
+    if (!lastMessage) return;
+    const isNewMessage =
+      lastMessage.id !== lastAutoScrolledMessageIdRef.current;
+    if (isNewMessage) {
+      lastAutoScrolledMessageIdRef.current = lastMessage.id;
       isAutoScrollPaused.current = false;
-      forceScrollToBottom(sendState === "sending" ? "smooth" : "auto");
+      forceScrollToBottom("smooth");
+      return;
+    }
+    if (sendState !== "idle" && !isAutoScrollPaused.current) {
+      forceScrollToBottom("auto");
     }
   }, [
     forceScrollToBottom,
-    lastMessage?.content,
     lastMessage?.id,
     lastMessage?.phase,
     lastMessage?.role,
@@ -3064,14 +3283,19 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
     scrollEl.addEventListener("scroll", handleScroll, { passive: true });
 
+    let scrollFrame: number | null = null;
     // Use ResizeObserver to detect content height changes (like streaming text)
     const resizeObserver = new ResizeObserver(() => {
-      if (!isAutoScrollPaused.current || sendState !== "idle") {
+      if ((isAutoScrollPaused.current && sendState === "idle") || scrollFrame) {
+        return;
+      }
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = null;
         scrollEl.scrollTo({
           top: scrollEl.scrollHeight,
-          behavior: sendState === "idle" ? "smooth" : "auto",
+          behavior: "auto",
         });
-      }
+      });
     });
 
     // Observe the single direct child (the inner container) or the scrollEl itself
@@ -3083,6 +3307,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     return () => {
       scrollEl.removeEventListener("scroll", handleScroll);
       resizeObserver.disconnect();
+      if (scrollFrame) cancelAnimationFrame(scrollFrame);
     };
   }, [sendState]);
 
@@ -3186,15 +3411,17 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     />
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    {learningBooks.length === 0 && (
+                    {libraryContextBooks.length === 0 && (
                       <div className="px-3 py-3 text-[12px] leading-relaxed text-zinc-500">
                         Library book will appear when this session initializes.
                       </div>
                     )}
-                    {learningBooks.map((book) => (
+                    {libraryContextBooks.map((book) => (
                       <button
                         key={book.id}
                         onClick={() => {
+                          saveCurrentChatArchive();
+                          clearStudyDocumentContext();
                           setActiveLearningBookId(book.id);
                           setActiveProject(book.title);
                           setIsProjectDropdownOpen(false);
@@ -3221,6 +3448,70 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       </button>
                     ))}
                   </div>
+                  {visibleChatArchives.length > 0 && (
+                    <>
+                      <div className="mt-2 px-3 py-2 border-t border-black/5">
+                        <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
+                          Previous Chats
+                        </span>
+                      </div>
+                      <div className="flex max-h-48 flex-col gap-0.5 overflow-y-auto pr-1 custom-scroll">
+                        {visibleChatArchives.map((archive) => (
+                          <button
+                            key={archive.id}
+                            type="button"
+                            onClick={() => {
+                              saveCurrentChatArchive();
+                              clearStudyDocumentContext();
+                              setMessages(archive.messages);
+                              if (archive.bookId) {
+                                if (
+                                  isGenericLibraryTitle(archive.bookTitle) &&
+                                  archive.title.trim()
+                                ) {
+                                  void db.learningBooks
+                                    .update(archive.bookId, {
+                                      title: archive.title,
+                                      updatedAt: Date.now(),
+                                    })
+                                    .catch((error) =>
+                                      console.warn(
+                                        "[ChatPanel] Archived book title sync failed:",
+                                        error,
+                                      ),
+                                    );
+                                }
+                                setActiveLearningBookId(archive.bookId);
+                              } else {
+                                setActiveLearningBookId(null);
+                              }
+                              setActiveProject(
+                                archive.bookTitle &&
+                                  archive.bookTitle !== "General Study"
+                                  ? archive.bookTitle
+                                  : archive.title,
+                              );
+                              setIsProjectDropdownOpen(false);
+                              requestAnimationFrame(() =>
+                                forceScrollToBottom("auto"),
+                              );
+                            }}
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-left text-zinc-500 transition-colors hover:bg-black/5 hover:text-zinc-800 focus:outline-none"
+                          >
+                            <Clock size={14} />
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-[13px] font-medium">
+                                {archive.title}
+                              </span>
+                              <span className="mt-0.5 block truncate text-[10px] uppercase tracking-[0.12em] text-zinc-400">
+                                {archive.bookTitle}
+                              </span>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -3236,6 +3527,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   "Are you sure you want to clear the chat history?",
                 )
               ) {
+                saveCurrentChatArchive();
                 setMessages([
                   {
                     id: "1",

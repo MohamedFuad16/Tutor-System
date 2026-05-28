@@ -260,15 +260,6 @@
       }
     },
     {
-      "source": "file:src/components/Sidebar.tsx",
-      "target": "component:SidebarItem",
-      "type": "renders",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/components/Sidebar.tsx"
-      }
-    },
-    {
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:AnimatedMarkdown",
       "type": "renders",

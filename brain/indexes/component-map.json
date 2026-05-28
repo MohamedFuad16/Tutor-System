@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T05:50:20.538Z",
+    "generatedAt": "2026-05-28T23:28:02.702Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "4545d813ddab98c0f3e9847dd56feb2989ab7330",
+      "commit": "e87720b8c7911337554502014fbf63ae2d009701",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "46d9b3a3adaf21922ccedb68ac060d7b232d6a798d9104aa280d26ac88cfe07a"
+    "sourceHash": "bbdf281ff88a05e043e4c500dfe3dc5698c543a1926da64ec8744aa8d0ec1f44"
   },
   "files": {
     "generate-brain.ts": {
@@ -162,7 +162,7 @@
     },
     "server.ts": {
       "file": "server.ts",
-      "hash": "8f927b7ad4f9264b72dadbca5acd8433d25bf812efaefde9ea11664a6c9a0417",
+      "hash": "b310ae3f865486285db94799add6a177d579ab792c10e7339e72fc16e1eddf96",
       "imports": [
         {
           "specifier": "dotenv",
@@ -193,6 +193,14 @@
           "external": "openai"
         },
         {
+          "specifier": "multer",
+          "external": "multer"
+        },
+        {
+          "specifier": "@google/genai",
+          "external": "@google/genai"
+        },
+        {
           "specifier": "ws",
           "external": "ws"
         },
@@ -210,6 +218,7 @@
         "pricingCache",
         "PRICING_CACHE_TTL_MS",
         "PCM16_MONO_48K_BYTES_PER_SECOND",
+        "DEFAULT_CHAT_MODEL",
         "LEARNING_AGENT_MODEL",
         "roundCost",
         "estimateTokensFromText",
@@ -466,39 +475,6 @@
         }
       ]
     },
-    "src/audio.ts": {
-      "file": "src/audio.ts",
-      "hash": "a2ac727b979516d74193040b774f74c91b4d8d70b7444bef7c554f8d2718a27b",
-      "imports": [],
-      "exports": [
-        "playClickSound",
-        "playHoverSound",
-        "startAmbientHum"
-      ],
-      "functions": [],
-      "variables": [
-        "audioCtx",
-        "getAudioContext",
-        "playHoverSound",
-        "playClickSound",
-        "ambientOsc",
-        "ambientGain",
-        "ambientLfo",
-        "isAmbientPlaying",
-        "startAmbientHum"
-      ],
-      "classes": [],
-      "components": [],
-      "hooks": [],
-      "storeSelectors": [],
-      "storeWrites": [],
-      "apiCalls": [],
-      "websocketCalls": [],
-      "databaseReads": [],
-      "databaseWrites": [],
-      "renders": [],
-      "routes": []
-    },
     "src/main.tsx": {
       "file": "src/main.tsx",
       "hash": "4e3e03611b3e8b497dbe571db36378aedf357e40a75ab2a8d282845890a5b220",
@@ -704,7 +680,7 @@
     },
     "brain/debug/debug-runner.ts": {
       "file": "brain/debug/debug-runner.ts",
-      "hash": "5e7aedc34dd4968b0af570d374ae8ee19c311c68280bf8c08fb0575638ffa78a",
+      "hash": "ecbedd044e6fea6a72a50421906f117948f3f96d6f02207427c8af97b487a69f",
       "imports": [
         {
           "specifier": "child_process",
@@ -735,14 +711,24 @@
         "labelCommand",
         "runUiRegressionWithRetry",
         "sourceFilesFromGit",
+        "changedFilesFromGit",
         "isAuditableSourceFile",
         "targetKindForFile",
         "targetNameForFile",
         "discoverSourceTargets",
+        "targetSortGroup",
+        "sortDebugTargets",
         "targetPriority",
         "bestTargetForFile",
         "dedupeTargetsByFile",
         "discoverTargets",
+        "isUiTarget",
+        "isGeneratedOrArtifactTarget",
+        "targetTouchesHighRiskBoundary",
+        "liveSurfaceReview",
+        "shouldRunWorkspaceGates",
+        "shouldRunBrowserEvidence",
+        "shouldRunTargetRuntime",
         "docsForFile",
         "detectTechnology",
         "inferPurpose",
@@ -756,6 +742,7 @@
         "applyDeterministicFixes",
         "hasPotentialLeakyEventListener",
         "readUiRegressionReport",
+        "summarizeUiRegressionEvidence",
         "ensureDocs",
         "backupFile",
         "loadMemoryGraph",
@@ -829,11 +816,15 @@
     },
     "brain/debug/ui-regression-probe.ts": {
       "file": "brain/debug/ui-regression-probe.ts",
-      "hash": "0a8fe83949529143df9a5e8a1f1a8af212f10ad6bbfd384d825c44ddb1c7df46",
+      "hash": "1be146b6f7e04be84783b984780a86a1c8544826e3aba9a8767c713ef9444af6",
       "imports": [
         {
           "specifier": "child_process",
           "external": "child_process"
+        },
+        {
+          "specifier": "crypto",
+          "external": "crypto"
         },
         {
           "specifier": "fs",
@@ -860,7 +851,8 @@
       "variables": [
         "ROOT",
         "SERVER_URL",
-        "OUTPUT_PATH"
+        "OUTPUT_PATH",
+        "SCREENSHOT_DIR"
       ],
       "classes": [],
       "components": [],
@@ -1205,7 +1197,7 @@
     },
     "brain/runtime/run-runtime-benchmark.ts": {
       "file": "brain/runtime/run-runtime-benchmark.ts",
-      "hash": "5121bbde242c5eab9fe7c2b17f44ed3e1d996f01edf23dde18501d94e4c992e6",
+      "hash": "865d316aca8179a8a501ec96822c891b4c036ee049b1982b933f37d1313d16c5",
       "imports": [
         {
           "specifier": "playwright",
@@ -1235,6 +1227,7 @@
       "variables": [
         "ROOT",
         "RUNTIME_DIR",
+        "SERVER_PORT",
         "SERVER_URL"
       ],
       "classes": [],
@@ -1628,7 +1621,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "f9ea988940c3f9d9f0faef69d67dc6d3d2d04b297c6d6d3764be9199168bfaec",
+      "hash": "364ab4b0e04e7c32dd840c78c25e954b12fd75618739dc6e4bfda0abb7b207f2",
       "imports": [
         {
           "specifier": "react",
@@ -1705,6 +1698,7 @@
       ],
       "functions": [
         "useAnimatedNumber",
+        "useSmoothStreamingText",
         "ChatPanel"
       ],
       "variables": [
@@ -1720,6 +1714,14 @@
         "RunnablePython",
         "InteractiveCodeBlock",
         "INITIAL_MESSAGE",
+        "CHAT_ARCHIVE_KEY",
+        "RESERVED_LIBRARY_CONTEXT_PATTERN",
+        "isReservedLibraryContext",
+        "isGenericLibraryTitle",
+        "meaningfulChatMessages",
+        "readChatArchives",
+        "writeChatArchives",
+        "archiveChatSnapshot",
         "formatCurrency",
         "formatCount",
         "formatSeconds",
@@ -1771,7 +1773,8 @@
         "UsageAnalyticsStrip"
       ],
       "hooks": [
-        "useAnimatedNumber"
+        "useAnimatedNumber",
+        "useSmoothStreamingText"
       ],
       "storeSelectors": [
         {
@@ -1891,6 +1894,18 @@
           "selector": "(state) => state.setSelectedTextContext"
         },
         {
+          "field": "setPdfUrl",
+          "selector": "(state) => state.setPdfUrl"
+        },
+        {
+          "field": "setPdfPage",
+          "selector": "(state) => state.setPdfPage"
+        },
+        {
+          "field": "setPdfTotalPages",
+          "selector": "(state) => state.setPdfTotalPages"
+        },
+        {
           "field": "messages",
           "selector": "(state) => state.messages"
         },
@@ -1909,6 +1924,9 @@
         "setAskTutorQuery",
         "setIsVoiceActive",
         "setMessages",
+        "setPdfPage",
+        "setPdfTotalPages",
+        "setPdfUrl",
         "setPricing",
         "setSelectedTextContext"
       ],
@@ -1942,6 +1960,7 @@
         "BookOpen",
         "Check",
         "ChevronDown",
+        "Clock",
         "Copy",
         "ExternalLink",
         "FileCode2",
@@ -2158,49 +2177,6 @@
       "renders": [],
       "routes": []
     },
-    "src/components/PdfToolbar.tsx": {
-      "file": "src/components/PdfToolbar.tsx",
-      "hash": "0883c2350018add2f7bbf826208cea8eaa18d61506a7c2743c9345adf2832afd",
-      "imports": [
-        {
-          "specifier": "react",
-          "external": "react"
-        },
-        {
-          "specifier": "lucide-react",
-          "external": "lucide-react"
-        }
-      ],
-      "exports": [
-        "PdfToolbar"
-      ],
-      "functions": [],
-      "variables": [
-        "PdfToolbar"
-      ],
-      "classes": [],
-      "components": [
-        "PdfToolbar"
-      ],
-      "hooks": [],
-      "storeSelectors": [],
-      "storeWrites": [],
-      "apiCalls": [],
-      "websocketCalls": [],
-      "databaseReads": [],
-      "databaseWrites": [],
-      "renders": [
-        "AlignCenter",
-        "AlignLeft",
-        "AlignRight",
-        "Bold",
-        "ChevronDown",
-        "Italic",
-        "Sparkles",
-        "Underline"
-      ],
-      "routes": []
-    },
     "src/components/PdfViewer.tsx": {
       "file": "src/components/PdfViewer.tsx",
       "hash": "e3b3ccb91a1a28ed2e102ed579df239c79203ac1a9b73731ceba85a7db54c8be",
@@ -2330,46 +2306,9 @@
       ],
       "routes": []
     },
-    "src/components/PracticeMode.tsx": {
-      "file": "src/components/PracticeMode.tsx",
-      "hash": "fe13db25f4e62d5a66aed1cc1cfb1afb337cb36cf80b4609fbd186613b425b56",
-      "imports": [
-        {
-          "specifier": "react",
-          "external": "react"
-        },
-        {
-          "specifier": "lucide-react",
-          "external": "lucide-react"
-        }
-      ],
-      "exports": [
-        "PracticeMode"
-      ],
-      "functions": [
-        "PracticeMode"
-      ],
-      "variables": [],
-      "classes": [],
-      "components": [
-        "PracticeMode"
-      ],
-      "hooks": [],
-      "storeSelectors": [],
-      "storeWrites": [],
-      "apiCalls": [],
-      "websocketCalls": [],
-      "databaseReads": [],
-      "databaseWrites": [],
-      "renders": [
-        "Code2",
-        "Play"
-      ],
-      "routes": []
-    },
     "src/components/SettingsModal.tsx": {
       "file": "src/components/SettingsModal.tsx",
-      "hash": "957f48a301b430376198651da98ec23989df706004dece88824eddbdb73ec1a2",
+      "hash": "f556fe7df05d3f9e5919045b3cf4f9014f175cd496c83d41e59d0953e4e89f50",
       "imports": [
         {
           "specifier": "react",
@@ -2505,54 +2444,6 @@
       "renders": [],
       "routes": []
     },
-    "src/components/Sidebar.tsx": {
-      "file": "src/components/Sidebar.tsx",
-      "hash": "e7ff09ac633efa551d4b4b92866bd4d29735c265f56e3bab5050d72a09bee241",
-      "imports": [
-        {
-          "specifier": "react",
-          "external": "react"
-        },
-        {
-          "specifier": "motion/react",
-          "external": "motion"
-        },
-        {
-          "specifier": "lucide-react",
-          "external": "lucide-react"
-        }
-      ],
-      "exports": [
-        "Sidebar"
-      ],
-      "functions": [
-        "Sidebar",
-        "SidebarItem"
-      ],
-      "variables": [],
-      "classes": [],
-      "components": [
-        "Sidebar",
-        "SidebarItem"
-      ],
-      "hooks": [],
-      "storeSelectors": [],
-      "storeWrites": [],
-      "apiCalls": [],
-      "websocketCalls": [],
-      "databaseReads": [],
-      "databaseWrites": [],
-      "renders": [
-        "BookOpen",
-        "Clock",
-        "Compass",
-        "FolderClosed",
-        "Plus",
-        "Settings",
-        "SidebarItem"
-      ],
-      "routes": []
-    },
     "src/components/SiriLiquidGlass.tsx": {
       "file": "src/components/SiriLiquidGlass.tsx",
       "hash": "1c73303e6a09c074e3a8915a056f96900403592f27159da4cbc873d7bbce2072",
@@ -2674,7 +2565,7 @@
     },
     "src/lib/translations.ts": {
       "file": "src/lib/translations.ts",
-      "hash": "4a1285b98c5557fa371ac10bf47b882fc90c04c7c731b7fa8b64b988a3810160",
+      "hash": "199a5aef5eb852a32641c80352155fde3f69a139dd5230b018f7c45cf6c64652",
       "imports": [
         {
           "specifier": "../store",
@@ -2713,7 +2604,7 @@
     },
     "src/lib/tutorBook.json": {
       "file": "src/lib/tutorBook.json",
-      "hash": "0f4c8b0c77e6014dfb9009014426f526674cfbc2fa70ae9a5113a1bdd091c859",
+      "hash": "8776928f9c2016ef5188eed325f3f36794f9651b13bd64af72bc89f5d74a4ef8",
       "imports": [],
       "exports": [],
       "functions": [],
@@ -2973,7 +2864,7 @@
     },
     "src/memory/memory.orchestrator.ts": {
       "file": "src/memory/memory.orchestrator.ts",
-      "hash": "048539724c890ea1cb5aefa0a73d5a320ae3ed843b78263729602828da34cdad",
+      "hash": "98f0f75204fe7c7f46e715595ba3787613f8f985f8875fb1ce5e72d7b3fafe82",
       "imports": [
         {
           "specifier": "./memory.embeddings",
@@ -2999,6 +2890,8 @@
       "variables": [
         "mergeUnique",
         "compactText",
+        "stripConversationArtifacts",
+        "buildStudyNoteFallback",
         "announceActiveLearningBook",
         "brainOrchestrator"
       ],
@@ -3385,7 +3278,7 @@
     },
     "src/store/index.ts": {
       "file": "src/store/index.ts",
-      "hash": "e7192297d7c77f7e0bb3afd36d766ac74e05502e2cf70fc417753abc9d0d2bab",
+      "hash": "152767d175d4410fbba26491cfdfb1076ca6e5c4378f1f52f00c6e32157cfcf7",
       "imports": [
         {
           "specifier": "zustand",
@@ -3416,6 +3309,8 @@
       "functions": [],
       "variables": [
         "emptyChatUsage",
+        "DEFAULT_AI_MODEL",
+        "normalizeAiModel",
         "emptyWebUsage",
         "emptyVoiceUsage",
         "emptyPricing",
@@ -3441,7 +3336,7 @@
     },
     "src/views/AdminView.tsx": {
       "file": "src/views/AdminView.tsx",
-      "hash": "be733ca6c02e11ac7301d4cff90bf0bcc892a7415a228e93c28d9fb5fdd72da9",
+      "hash": "7474db023a2e802d9e4ab923a710ed6e78e9d2e80552f0a1dd86bc95bb996398",
       "imports": [
         {
           "specifier": "react",
@@ -3544,7 +3439,7 @@
     },
     "src/views/AnalyticsView.tsx": {
       "file": "src/views/AnalyticsView.tsx",
-      "hash": "a66bfa5023a556c7b83debbee26c16002e5fc9dfd39a0c4e6b4e67924af5e09e",
+      "hash": "2efcd12bc220487e3697235b1913f33999ac8210ae7be913a5233bb64deec3d6",
       "imports": [
         {
           "specifier": "react",
@@ -3710,7 +3605,7 @@
     },
     "src/views/RevisionView.tsx": {
       "file": "src/views/RevisionView.tsx",
-      "hash": "60dd768636a0f04e1724aef8aa5c3c709495fe3554233b5b3de47128cb9b340a",
+      "hash": "1127b183f4a1799e451ec9b0c0d3c3a07b7c059de9fab1075c1d9b65899388af",
       "imports": [
         {
           "specifier": "react",
@@ -3764,6 +3659,7 @@
         "RevisionView"
       ],
       "variables": [
+        "coreLearningBookTitlePattern",
         "designTokens",
         "wireframeNodes",
         "wireframeLinks",
@@ -3805,10 +3701,6 @@
       "websocketCalls": [],
       "databaseReads": [
         {
-          "table": "concepts",
-          "operation": "toArray"
-        },
-        {
           "table": "learningBooks",
           "operation": "orderBy"
         },
@@ -3825,40 +3717,46 @@
           "operation": "toArray"
         },
         {
-          "table": "concepts",
-          "operation": "toArray"
+          "table": "learningBookConcepts",
+          "operation": "where"
+        },
+        {
+          "table": "learningEntries",
+          "operation": "where"
+        },
+        {
+          "table": "flashcards",
+          "operation": "filter"
         }
       ],
       "databaseWrites": [
-        {
-          "table": "concepts",
-          "operation": "put"
-        },
-        {
-          "table": "concepts",
-          "operation": "delete"
-        },
         {
           "table": "flashcards",
           "operation": "update"
         },
         {
-          "table": "concepts",
+          "table": "learningBooks",
           "operation": "delete"
         }
       ],
       "renders": [
         "AnimatePresence",
         "AppDesignLanguagePage",
+        "ArrowUp",
         "BookOpen",
+        "ChevronDown",
         "FlashcardDeck",
         "FlashcardUI",
+        "Folder",
         "GalleryPanel",
+        "Icon",
         "LiveComponentPreview",
         "LongPressWrapper",
         "Menu",
+        "MessageSquare",
         "PatternCard",
         "ReactMarkdown",
+        "Settings",
         "Trash2",
         "WireframeMap",
         "Zap"
@@ -3867,7 +3765,7 @@
     },
     "src/views/StudyView.tsx": {
       "file": "src/views/StudyView.tsx",
-      "hash": "b7281422fd70baf09d4b4084a6514f3a212aee84cd48796840f13a79a6d76d77",
+      "hash": "b785a0d4e302278a10b9e6369c084e1fa936b4ab1cd20d37bad8ad8d691073d5",
       "imports": [
         {
           "specifier": "react",
@@ -3904,6 +3802,10 @@
         {
           "specifier": "../lib/translations",
           "resolved": "src/lib/translations.ts"
+        },
+        {
+          "specifier": "../memory/memory.orchestrator",
+          "resolved": "src/memory/memory.orchestrator.ts"
         }
       ],
       "exports": [
@@ -3954,7 +3856,10 @@
         "setPdfUrl",
         "setSelectedTextContext"
       ],
-      "apiCalls": [],
+      "apiCalls": [
+        "/api/documents/ingest",
+        "/api/learning-book-update"
+      ],
       "websocketCalls": [],
       "databaseReads": [],
       "databaseWrites": [],
@@ -3993,7 +3898,7 @@
     },
     "package.json": {
       "file": "package.json",
-      "hash": "86a0430f010701b87a60aec6ccc3ca29e21c482b8aefd8eb7ad0a0278dbd1f43",
+      "hash": "d5d8aa09857a4bd71e6c9e77fff40edb55119464ed445ac6aae3bbccab7bde0f",
       "imports": [],
       "exports": [],
       "functions": [],
@@ -4012,7 +3917,7 @@
     },
     "package-lock.json": {
       "file": "package-lock.json",
-      "hash": "4e90f8ac2019de2da29f748af5d97b37f4dce944c356d72791a8703359e17c8d",
+      "hash": "5db16f64c83885688b0ddfe491128a36641cfa9e6380dff85b8618f6de0c0ac5",
       "imports": [],
       "exports": [],
       "functions": [],

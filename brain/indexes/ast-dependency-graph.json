@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T05:50:20.538Z",
+    "generatedAt": "2026-05-28T23:28:02.702Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "4545d813ddab98c0f3e9847dd56feb2989ab7330",
+      "commit": "e87720b8c7911337554502014fbf63ae2d009701",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "46d9b3a3adaf21922ccedb68ac060d7b232d6a798d9104aa280d26ac88cfe07a"
+    "sourceHash": "bbdf281ff88a05e043e4c500dfe3dc5698c543a1926da64ec8744aa8d0ec1f44"
   },
   "dependencies": {
     "generate-brain.ts": [
@@ -95,6 +95,14 @@
       {
         "specifier": "openai",
         "external": "openai"
+      },
+      {
+        "specifier": "multer",
+        "external": "multer"
+      },
+      {
+        "specifier": "@google/genai",
+        "external": "@google/genai"
       },
       {
         "specifier": "ws",
@@ -181,7 +189,6 @@
         "resolved": "src/brain-runtime/runtimeTelemetry.ts"
       }
     ],
-    "src/audio.ts": [],
     "src/main.tsx": [
       {
         "specifier": "react",
@@ -283,6 +290,10 @@
       {
         "specifier": "child_process",
         "external": "child_process"
+      },
+      {
+        "specifier": "crypto",
+        "external": "crypto"
       },
       {
         "specifier": "fs",
@@ -640,16 +651,6 @@
         "external": "react"
       }
     ],
-    "src/components/PdfToolbar.tsx": [
-      {
-        "specifier": "react",
-        "external": "react"
-      },
-      {
-        "specifier": "lucide-react",
-        "external": "lucide-react"
-      }
-    ],
     "src/components/PdfViewer.tsx": [
       {
         "specifier": "react",
@@ -688,16 +689,6 @@
         "resolved": "src/memory/memory.orchestrator.ts"
       }
     ],
-    "src/components/PracticeMode.tsx": [
-      {
-        "specifier": "react",
-        "external": "react"
-      },
-      {
-        "specifier": "lucide-react",
-        "external": "lucide-react"
-      }
-    ],
     "src/components/SettingsModal.tsx": [
       {
         "specifier": "react",
@@ -728,20 +719,6 @@
       {
         "specifier": "react",
         "external": "react"
-      }
-    ],
-    "src/components/Sidebar.tsx": [
-      {
-        "specifier": "react",
-        "external": "react"
-      },
-      {
-        "specifier": "motion/react",
-        "external": "motion"
-      },
-      {
-        "specifier": "lucide-react",
-        "external": "lucide-react"
       }
     ],
     "src/components/SiriLiquidGlass.tsx": [
@@ -1054,6 +1031,10 @@
       {
         "specifier": "../lib/translations",
         "resolved": "src/lib/translations.ts"
+      },
+      {
+        "specifier": "../memory/memory.orchestrator",
+        "resolved": "src/memory/memory.orchestrator.ts"
       }
     ],
     "src/index.css": [],

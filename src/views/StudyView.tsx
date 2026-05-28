@@ -7,6 +7,7 @@ import { PatternCard, themes } from "../components/PatternCard";
 import { AnimatedScrollText } from "../components/AnimatedScrollText";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import { useTranslation } from "../lib/translations";
+import { brainOrchestrator } from "../memory/memory.orchestrator";
 
 const CurvedArrow = ({ color }: { color: string }) => (
   <svg
@@ -75,6 +76,7 @@ export function StudyView() {
   );
   const setActiveView = useStore((state) => state.setActiveView);
   const [isDragging, setIsDragging] = useState(false);
+  const [isIngesting, setIsIngesting] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [card1DotsReady, setCard1DotsReady] = useState(false);
   const [card2DotsReady, setCard2DotsReady] = useState(false);
@@ -116,12 +118,59 @@ export function StudyView() {
     });
   };
 
+  const ingestDocument = async (file: File) => {
+    setIsIngesting(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const apiKey = useStore.getState().apiKey;
+      const res = await fetch("/api/documents/ingest", {
+        method: "POST",
+        body: formData,
+        headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      console.info("Document classification:", data.classification);
+
+      if (data.content && data.content.trim()) {
+        const title = useStore.getState().activeProject || "Uploaded Document";
+        await brainOrchestrator.updateSessionBookTitle(title);
+        // Dispatch to memory orchestrator
+        fetch("/api/learning-book-update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(apiKey && { Authorization: `Bearer ${apiKey}` }),
+          },
+          body: JSON.stringify({
+            activeProject: title,
+            userMessage: `I uploaded a document classified as ${data.classification} using ${data.extractionMode || "document extraction"}.`,
+            assistantMessage: `I have ingested the document. Here is the extracted text context:\n\n${data.content.slice(0, 10000)}`,
+          }),
+        }).catch(console.error);
+      }
+    } catch (e) {
+      console.error("Ingestion failed:", e);
+    } finally {
+      setIsIngesting(false);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type === "application/pdf") {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
+    if (
+      file &&
+      (file.type === "application/pdf" || file.type.startsWith("image/"))
+    ) {
+      if (file.type === "application/pdf") {
+        if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+        const url = URL.createObjectURL(file);
+        setPdfUrl(url);
+      }
+      ingestDocument(file);
     }
   };
 
@@ -129,10 +178,16 @@ export function StudyView() {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type === "application/pdf") {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
+    if (
+      file &&
+      (file.type === "application/pdf" || file.type.startsWith("image/"))
+    ) {
+      if (file.type === "application/pdf") {
+        if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+        const url = URL.createObjectURL(file);
+        setPdfUrl(url);
+      }
+      ingestDocument(file);
     }
   };
 
@@ -169,7 +224,7 @@ export function StudyView() {
             </div>
             <input
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,image/*"
               ref={fileInputRef}
               className="hidden"
               onChange={handleFileChange}
@@ -241,7 +296,10 @@ export function StudyView() {
                           <>
                             {t("study_card_tutor_title").split(" ")[0]}
                             <br />
-                            {t("study_card_tutor_title").split(" ").slice(1).join(" ")}
+                            {t("study_card_tutor_title")
+                              .split(" ")
+                              .slice(1)
+                              .join(" ")}
                           </>
                         ) : (
                           t("study_card_tutor_title")
@@ -306,7 +364,10 @@ export function StudyView() {
                           <>
                             {t("study_card_graph_title").split(" ")[0]}
                             <br />
-                            {t("study_card_graph_title").split(" ").slice(1).join(" ")}
+                            {t("study_card_graph_title")
+                              .split(" ")
+                              .slice(1)
+                              .join(" ")}
                           </>
                         ) : (
                           t("study_card_graph_title")
@@ -356,7 +417,7 @@ export function StudyView() {
               <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center">
                 <input
                   type="file"
-                  accept="application/pdf"
+                  accept="application/pdf,image/*"
                   ref={fileInputRef}
                   className="hidden"
                   onChange={handleFileChange}
@@ -382,18 +443,25 @@ export function StudyView() {
                       <UploadCloud className="w-5 h-5" />
                     </div>
                     <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
-                      {t("study_card_upload_title").includes(" ") ? (
+                      {isIngesting ? (
+                        t("study_card_ingest_title")
+                      ) : t("study_card_upload_title").includes(" ") ? (
                         <>
                           {t("study_card_upload_title").split(" ")[0]}
                           <br />
-                          {t("study_card_upload_title").split(" ").slice(1).join(" ")}
+                          {t("study_card_upload_title")
+                            .split(" ")
+                            .slice(1)
+                            .join(" ")}
                         </>
                       ) : (
                         t("study_card_upload_title")
                       )}
                     </div>
                     <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
-                      {t("study_card_upload_subtitle")}
+                      {isIngesting
+                        ? t("study_card_ingest_subtitle")
+                        : t("study_card_upload_subtitle")}
                     </div>
                   </div>
                 </PatternCard>

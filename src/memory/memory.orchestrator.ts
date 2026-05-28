@@ -83,6 +83,41 @@ const compactText = (value: unknown, fallback = "") => {
   return text.replace(/\s+/g, " ").slice(0, 1800);
 };
 
+const stripConversationArtifacts = (value: string) =>
+  compactText(value)
+    .replace(/\bPrompt:\s*/gi, "")
+    .replace(/\bLearning note:\s*/gi, "")
+    .replace(
+      /\bReview hook:\s*restate the idea in your own words, identify the key mechanism, and test it with a fresh example\.?/gi,
+      "",
+    )
+    .trim();
+
+const buildStudyNoteFallback = (
+  userMessage: string,
+  assistantMessage: string,
+) => {
+  const cleanUser = stripConversationArtifacts(userMessage);
+  const cleanAssistant = stripConversationArtifacts(
+    assistantMessage || userMessage || "The learner explored a tutor concept.",
+  );
+  const genericScreenQuestion =
+    /\b(what\s+is\s+(this|the)\s+(page|screen)\s+about|what'?s\s+on\s+(the\s+)?screen)\b/i.test(
+      cleanUser,
+    );
+  const focus =
+    genericScreenQuestion || !cleanUser
+      ? "the studied material"
+      : cleanUser.length > 120
+        ? `${cleanUser.slice(0, 117).trim()}...`
+        : cleanUser;
+  return [
+    `Key idea: ${cleanAssistant}`,
+    `Why it matters: This page preserves the useful learning from ${focus} so it can be revised later without replaying the whole chat.`,
+    "How to review it: restate the idea, identify the mechanism, and test it with a fresh example.",
+  ].join("\n\n");
+};
+
 const announceActiveLearningBook = (book: LearningBook) => {
   localStorage.setItem("active_learning_book_id", book.id);
   localStorage.setItem("active_project", book.title);
@@ -103,7 +138,6 @@ export class MemoryOrchestrator {
   }
 
   private async startSession() {
-    await this.resetGeneratedLearningLibraryForSession();
     await db.sessions.add({
       id: this.currentSessionId,
       startTime: Date.now(),
@@ -333,6 +367,10 @@ export class MemoryOrchestrator {
     if (!update) {
       const fallbackTitle =
         existingSessionBook?.title || input.activeProject || "Study Session";
+      const fallbackStudyNote = buildStudyNoteFallback(
+        userMessage,
+        assistantMessage,
+      );
       update = {
         userName,
         bookTitle: fallbackTitle,
@@ -341,23 +379,18 @@ export class MemoryOrchestrator {
           existingSessionBook?.overview ||
           `A continuous learning book for this tutor session.`,
         chapterTitle: fallbackTitle,
-        chapterSummary:
-          assistantMessage.slice(0, 500) || userMessage.slice(0, 500),
-        conversationSummary:
-          assistantMessage.slice(0, 500) || userMessage.slice(0, 500),
-        knowledgeSummary:
-          existingSessionBook?.knowledgeSummary ||
-          `The learner is discussing ${fallbackTitle}.`,
+        chapterSummary: fallbackStudyNote,
+        conversationSummary: fallbackStudyNote,
+        knowledgeSummary: existingSessionBook?.knowledgeSummary
+          ? `${existingSessionBook.knowledgeSummary}\n\n${fallbackStudyNote}`
+          : fallbackStudyNote,
         conceptsLearned: [fallbackTitle],
         risks: [],
         confidence: 0.35,
         concepts: [
           {
             name: fallbackTitle,
-            summary:
-              assistantMessage.slice(0, 320) ||
-              userMessage.slice(0, 320) ||
-              "Learning topic discussed in chat.",
+            summary: fallbackStudyNote,
             mastery: 0.3,
             confidence: 0.35,
             parentConcepts: [],
@@ -395,7 +428,11 @@ export class MemoryOrchestrator {
         id: conceptId,
         bookId,
         name,
-        summary: String(concept.summary || existing?.summary || "").trim(),
+        summary:
+          String(concept.summary || existing?.summary || "").trim().length >=
+          120
+            ? String(concept.summary || existing?.summary || "").trim()
+            : buildStudyNoteFallback(userMessage, assistantMessage),
         mastery: clamp01(concept.mastery, existing?.mastery ?? 0.35),
         confidence: clamp01(concept.confidence, existing?.confidence ?? 0.45),
         parentConcepts: mergeUnique(
@@ -443,13 +480,29 @@ export class MemoryOrchestrator {
         chapter.id === chapterId ||
         chapter.title.toLowerCase() === chapterTitle.toLowerCase(),
     );
+    const studyNoteFallback = buildStudyNoteFallback(
+      userMessage,
+      assistantMessage,
+    );
+    const proposedChapterSummary = compactText(
+      update.chapterSummary || update.conversationSummary,
+      existingChapters[chapterIndex]?.summary || "",
+    );
+    const proposedConversationSummary = compactText(
+      update.conversationSummary || update.chapterSummary,
+      existingBook?.summary || "",
+    );
+    const proposedKnowledgeSummary = compactText(
+      update.knowledgeSummary,
+      existingBook?.knowledgeSummary || "",
+    );
     const nextChapter = {
       id: chapterIndex >= 0 ? existingChapters[chapterIndex].id : chapterId,
       title: chapterTitle,
-      summary: compactText(
-        update.chapterSummary || update.conversationSummary,
-        existingChapters[chapterIndex]?.summary || "",
-      ),
+      summary:
+        proposedChapterSummary.length >= 160
+          ? proposedChapterSummary
+          : studyNoteFallback,
       conceptIds: mergeUnique(
         [...(existingChapters[chapterIndex]?.conceptIds || []), ...conceptIds],
         24,
@@ -476,21 +529,21 @@ export class MemoryOrchestrator {
         existingBook?.overview ||
           `A continuous learning book for ${userName}'s current tutor session.`,
       ),
-      summary: compactText(
-        update.conversationSummary,
-        existingBook?.summary || "",
-      ),
-      knowledgeSummary: compactText(
-        update.knowledgeSummary,
-        existingBook?.knowledgeSummary || "",
-      ),
+      summary:
+        proposedConversationSummary.length >= 160
+          ? proposedConversationSummary
+          : studyNoteFallback,
+      knowledgeSummary:
+        proposedKnowledgeSummary.length >= 160
+          ? proposedKnowledgeSummary
+          : studyNoteFallback,
       chapters,
       conceptIds: mergedConceptIds,
       conversationCount: (existingBook?.conversationCount || 0) + 1,
       createdAt: existingBook?.createdAt || now,
       updatedAt: now,
       lastConversationId: conversationId,
-      agentModel: String(update.model || "deepseek/deepseek-chat"),
+      agentModel: String(update.model || "deepseek/deepseek-v4-flash"),
     };
     await db.learningBooks.put(book);
     announceActiveLearningBook(book);
@@ -508,7 +561,7 @@ export class MemoryOrchestrator {
       risks: Array.isArray(update.risks)
         ? update.risks.map(String).slice(0, 8)
         : [],
-      model: book.agentModel || "deepseek/deepseek-chat",
+      model: book.agentModel || "deepseek/deepseek-v4-flash",
       confidence: clamp01(update.confidence, 0.55),
     });
 

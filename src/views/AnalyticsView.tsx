@@ -156,7 +156,11 @@ export function AnalyticsView() {
                       borderColor: "#333",
                     }}
                   />
-                  <Bar dataKey={t("mastery")} fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey={t("mastery")}
+                    fill="#3b82f6"
+                    radius={[4, 4, 0, 0]}
+                  />
                   <Bar
                     dataKey={t("confidence")}
                     fill="#a855f7"

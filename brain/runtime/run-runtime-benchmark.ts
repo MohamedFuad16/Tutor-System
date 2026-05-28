@@ -13,7 +13,8 @@ type RuntimeEvent = {
 
 const ROOT = process.cwd();
 const RUNTIME_DIR = path.join(ROOT, "brain/runtime");
-const SERVER_URL = "http://127.0.0.1:3000";
+const SERVER_PORT = Number(process.env.BRAIN_RUNTIME_PORT || 3210);
+const SERVER_URL = `http://127.0.0.1:${SERVER_PORT}`;
 
 function writeJson(file: string, data: unknown) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -38,7 +39,11 @@ async function ensureServer() {
   if (await waitForServer(1000)) return null;
   const child = spawn("npm", ["run", "dev"], {
     cwd: ROOT,
-    env: { ...process.env, VITE_BRAIN_RUNTIME: "true" },
+    env: {
+      ...process.env,
+      PORT: String(SERVER_PORT),
+      VITE_BRAIN_RUNTIME: "true",
+    },
     detached: true,
     stdio: ["ignore", "pipe", "pipe"],
   });

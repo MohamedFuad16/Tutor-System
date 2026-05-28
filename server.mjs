@@ -6,6 +6,7 @@ import path from "path";
 import { spawn } from "child_process";
 import compression from "compression";
 import OpenAI from "openai";
+import multer from "multer";
 import { WebSocketServer, WebSocket as WSWebSocket } from "ws";
 
 // server/web-search.ts
@@ -79,8 +80,25 @@ var normalizeRows = (payload, mode, maxResults) => {
 };
 function detectFreshnessSearch(text) {
   const value = text.toLowerCase();
-  const explicit = /\b(search|web|browse|internet|google|look up)\b/.test(value);
-  const fresh = /\b(latest|current|recent|today|yesterday|this week|this month|now|new|news|trend|trending|pricing|price|release|released|ranking|rankings|best .*20\d{2}|who won|score|game|election|weather)\b/.test(value);
+  const sourceMaterialRequest = /\b(current|this|the)\s+(page|screen|document|pdf|chapter|section|slide|image|diagram|chart|figure)\b/.test(
+    value
+  ) || /\b(what'?s|what is|explain|summari[sz]e|describe)\s+(this|the)\b/.test(
+    value
+  ) || /\b(on the screen|visible|shown|source material|uploaded document|reading)\b/.test(
+    value
+  );
+  const explicitExternal = /\b(search|browse|google|look up)\s+(the\s+)?(web|internet|online)\b/.test(
+    value
+  ) || /\b(web search|internet search|search online|from the web|on the web)\b/.test(
+    value
+  );
+  if (sourceMaterialRequest && !explicitExternal) return null;
+  const explicit = explicitExternal || /\b(search the web|browse the web)\b/.test(value);
+  const fresh = /\b(latest|recent|today|yesterday|this week|this month|right now|breaking|news|trend|trending|pricing|price|release|released|ranking|rankings|best .*20\d{2}|who won|score|game|election|weather)\b/.test(
+    value
+  ) || /\bcurrent\s+(price|pricing|version|release|model|news|weather|score|ranking|rankings|ceo|president|law|rule|schedule)\b/.test(
+    value
+  );
   if (!explicit && !fresh) return null;
   const mode = /\b(news|today|headline|headlines|happened)\b/.test(value) ? "news" : "search";
   return { query: text.trim().slice(0, 240), mode };
@@ -147,7 +165,8 @@ var DEEPGRAM_PRICING = {
 var pricingCache = null;
 var PRICING_CACHE_TTL_MS = 6 * 60 * 60 * 1e3;
 var PCM16_MONO_48K_BYTES_PER_SECOND = 48e3 * 2;
-var LEARNING_AGENT_MODEL = "deepseek/deepseek-chat";
+var DEFAULT_CHAT_MODEL = "deepseek/deepseek-v4-flash";
+var LEARNING_AGENT_MODEL = "deepseek/deepseek-v4-flash";
 var roundCost = (value) => Math.round((value || 0) * 1e6) / 1e6;
 var estimateTokensFromText = (value) => {
   const text = typeof value === "string" ? value : JSON.stringify(value || "");
@@ -234,6 +253,7 @@ var fallbackLearningUpdate = (body) => {
   const project = String(body?.activeProject || "").trim();
   const userMessage = String(body?.userMessage || "").trim();
   const assistantMessage = String(body?.assistantMessage || "").trim();
+  const cleanAssistant = assistantMessage.replace(/\bPrompt:\s*/gi, "").replace(/\bLearning note:\s*/gi, "").replace(/\bReview hook:[\s\S]*$/gi, "").replace(/\s+/g, " ").trim() || userMessage.replace(/\s+/g, " ").trim() || "The learner explored a tutor concept.";
   const title = project && project !== "General Study" ? project : userMessage.match(
     /\b(Python|JavaScript|React|TypeScript|Algorithms|System Design|Concurrency|Networking|Machine Learning|Calculus|History)\b/i
   )?.[0] || "General Study";
@@ -244,16 +264,22 @@ var fallbackLearningUpdate = (body) => {
     bookSource: "chat",
     overview: `A session learning book collecting the learner's tutor conversations about ${title}.`,
     chapterTitle: title === "General Study" ? "Conversation Notes" : title,
-    chapterSummary: assistantMessage.slice(0, 500) || userMessage.slice(0, 500),
-    conversationSummary: assistantMessage.slice(0, 420) || userMessage.slice(0, 420),
-    knowledgeSummary: `Recent tutoring discussion about ${conceptName}.`,
+    chapterSummary: `Key idea: ${cleanAssistant}
+
+How to review it: restate the idea, identify the mechanism, and test it with a fresh example.`,
+    conversationSummary: `Revision note: ${cleanAssistant}
+
+Review check: explain the takeaway without looking, then apply it to a new example.`,
+    knowledgeSummary: `Current learning focus: ${conceptName}. The learner should revise the core takeaway, the mechanism behind it, and one example application.`,
     conceptsLearned: [conceptName],
     risks: [],
     confidence: 0.45,
     concepts: [
       {
         name: conceptName,
-        summary: assistantMessage.slice(0, 320) || userMessage.slice(0, 320) || "Learning topic discussed in chat.",
+        summary: `Key idea: ${cleanAssistant}
+
+Application: turn the answer into a short explanation and one test example.`,
         mastery: 0.35,
         confidence: 0.45,
         parentConcepts: [],
@@ -270,6 +296,7 @@ async function startServer() {
   app.use(compression());
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "100mb", extended: true }));
+  const upload = multer({ dest: "uploads/" });
   app.use((req, res, next) => {
     if (!req.url.startsWith("/src/") && !req.url.startsWith("/node_modules/") && !req.url.startsWith("/@")) {
       console.log(`[HTTP] ${req.method} ${req.url}`);
@@ -369,13 +396,16 @@ async function startServer() {
     );
     const completeEvent = [...events].reverse().find((event) => event.type === "run-completed");
     const active = activeDebugJob?.id === id;
-    const status = active ? "running" : summary.status || completeEvent?.data?.status || (completeEvent ? "completed" : "unknown");
+    const updatedAtMs = summary.updatedAt ? Date.parse(summary.updatedAt) : 0;
+    const staleRunning = summary.status === "running" && !active && !completeEvent && (!updatedAtMs || Date.now() - updatedAtMs > 6e4);
+    const status = active ? "running" : staleRunning ? "interrupted" : summary.status || completeEvent?.data?.status || (completeEvent ? "completed" : "unknown");
     return {
       ...summary,
       id,
       status,
       startedAt: summary.startedAt || startEvent?.timestamp || null,
       finishedAt: summary.finishedAt || completeEvent?.timestamp || null,
+      updatedAt: summary.updatedAt || null,
       mode: summary.mode || startEvent?.data?.mode || null,
       scope: summary.scope || startEvent?.data?.scope || null,
       targetCount: Number(summary.targetCount || 0),
@@ -496,8 +526,9 @@ async function startServer() {
         error: "A debug run is already active.",
         activeRunId: activeDebugJob.id
       });
-    const mode = req.body?.mode === "audit" ? "audit" : "fix";
-    const scope = String(req.body?.scope || "all").replace(/[^a-zA-Z0-9_./:-]/g, "") || "all";
+    const requestedMode = String(req.body?.mode || "fix");
+    const mode = ["audit", "fix", "scan"].includes(requestedMode) ? requestedMode : "fix";
+    const scope = String(req.body?.scope || "changed").replace(/[^a-zA-Z0-9_./:-]/g, "") || "changed";
     const runId = `debug-${(/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-")}`;
     seedDebugRun(runId, mode, scope);
     const child = spawn(
@@ -541,6 +572,7 @@ async function startServer() {
     if (!activeDebugJob || activeDebugJob.id !== safeId)
       return res.status(404).json({ error: "No active debug run with that id." });
     activeDebugJob.child.kill("SIGTERM");
+    persistDebugExit(safeId, null);
     activeDebugJob = null;
     res.json({ ok: true, cancelled: safeId });
   });
@@ -571,6 +603,98 @@ async function startServer() {
         pricing: DEEPGRAM_PRICING
       }
     });
+  });
+  app.post("/api/documents/ingest", upload.single("file"), async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    const filePath = req.file.path;
+    try {
+      const { execFile } = await import("child_process");
+      execFile(
+        "python3",
+        ["scripts/classify_and_extract.py", filePath],
+        { maxBuffer: 1024 * 1024 * 96, timeout: 12e4 },
+        async (error, stdout, stderr) => {
+          fs.unlink(filePath, () => {
+          });
+          if (error) {
+            console.error("Python Extraction Error:", stderr);
+            return res.status(500).json({ error: "Failed to process document" });
+          }
+          let result;
+          try {
+            const jsonMatch = stdout.match(/\{[\s\S]*\}/);
+            const jsonStr = jsonMatch ? jsonMatch[0] : stdout;
+            result = JSON.parse(jsonStr);
+          } catch (e) {
+            console.error("Failed to parse JSON from Python script:", stdout);
+            return res.status(500).json({ error: "Invalid response from python script" });
+          }
+          if (result.error) {
+            return res.status(400).json({ error: result.error });
+          }
+          let extractedText = result.content || "";
+          if (result.classification === "Scanned" || result.classification === "Mixed") {
+            const authHeader = req.headers.authorization;
+            const bearerMatch = (authHeader || "").match(/^Bearer\s+(.+)$/i);
+            const apiKey = bearerMatch ? bearerMatch[1].trim() : process.env.OPENROUTER_API_KEY;
+            if (apiKey && result.images && result.images.length > 0) {
+              try {
+                const openai = new OpenAI({
+                  baseURL: "https://openrouter.ai/api/v1",
+                  apiKey
+                });
+                for (const img of result.images) {
+                  const response = await openai.chat.completions.create({
+                    model: "qwen/qwen2.5-vl-72b-instruct",
+                    messages: [
+                      {
+                        role: "user",
+                        content: [
+                          {
+                            type: "text",
+                            text: `Extract all readable text, diagrams, tables, and layout cues from page ${Number(img.page_num ?? 0) + 1}. Output concise markdown only from the provided source image; do not add outside facts.`
+                          },
+                          {
+                            type: "image_url",
+                            image_url: {
+                              url: `data:${img.mime_type};base64,${img.data}`
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  });
+                  const pageText = response.choices[0]?.message?.content?.trim();
+                  if (pageText) {
+                    extractedText += `
+
+## OCR / Vision Page ${Number(img.page_num ?? 0) + 1}
+
+${pageText}`;
+                  }
+                }
+              } catch (visionError) {
+                console.error("Vision API Error:", visionError);
+              }
+            }
+          }
+          res.json({
+            classification: result.classification,
+            extractionMode: result.extraction_mode,
+            totalPages: result.total_pages,
+            pagesWithText: result.pages_with_text,
+            renderedImagePages: result.images?.length || 0,
+            content: extractedText
+          });
+        }
+      );
+    } catch (e) {
+      fs.unlink(filePath, () => {
+      });
+      res.status(500).json({ error: e.message });
+    }
   });
   app.post("/api/title", async (req, res) => {
     try {
@@ -660,7 +784,7 @@ async function startServer() {
       });
       const { action, payload } = req.body;
       const response = await openai.chat.completions.create({
-        model: "deepseek/deepseek-chat",
+        model: LEARNING_AGENT_MODEL,
         messages: [
           {
             role: "system",
@@ -719,9 +843,9 @@ Schema:
   "bookSource": "chat|pdf|library|mixed",
   "overview": "stable overview of the whole session learning book",
   "chapterTitle": "short chapter title for this conversation",
-  "chapterSummary": "chapter-level note that can be merged into the book",
-  "conversationSummary": "one concise paragraph",
-  "knowledgeSummary": "what the learner now appears to know",
+  "chapterSummary": "dense study notes for this conversation: 4-8 sentences that capture definitions, mechanisms, examples, mistakes, and how to apply the idea",
+  "conversationSummary": "notebook-quality learning note, not a chat recap: write the actual takeaways a learner would review later",
+  "knowledgeSummary": "cumulative notes on what the learner now appears to know, including precise concept relationships",
   "conceptsLearned": ["plain names of concepts learned or practiced"],
   "risks": ["misconceptions or weak spots"],
   "confidence": 0.0,
@@ -738,7 +862,11 @@ Schema:
   ]
 }
 Maintain one learning book for the current session. Use bookTitle as the broad session title (e.g. "Python Programming"). 
-CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapterTitle\` based strictly on what the user actually asked about in this message (e.g. "List Comprehensions", "Promises and Async/Await", "Calculus Integrals"). DO NOT use generic chapter titles like "Conversation Notes". If the current book already exists, prefer continuing it and adding/refining chapters. Do not invent advanced concepts absent from the conversation.`
+CRITICAL RULES:
+- You MUST dynamically generate a specific, highly relevant \`chapterTitle\` based strictly on what the user actually asked about in this message (e.g. "List Comprehensions", "Promises and Async/Await", "Calculus Integrals"). DO NOT use generic chapter titles like "Conversation Notes".
+- The summaries must be substantial study notes. Avoid one-line summaries. Capture the actual learning, key distinctions, worked examples, misconceptions, and next review hooks.
+- Each concept summary should be useful by itself when shown in the Revision library. Include how the concept works, not just that it was mentioned.
+- If the current book already exists, prefer continuing it and adding/refining chapters. Do not invent advanced concepts absent from the conversation.`
           },
           {
             role: "user",
@@ -803,7 +931,6 @@ CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapt
 ${content}`
           }
         ],
-        response_format: { type: "json_object" },
         tools: [
           {
             type: "function",
@@ -845,15 +972,33 @@ ${content}`
         }
       } else if (message?.content) {
         try {
-          const parsed = JSON.parse(message.content);
+          const parsed = extractJsonObject(message.content);
           if (parsed.cards) cards = parsed.cards;
         } catch (e) {
         }
       }
+      if (!Array.isArray(cards) || cards.length === 0) {
+        const sentences = content.replace(/\s+/g, " ").split(/(?<=[.!?])\s+/).filter((sentence) => sentence.trim().length > 35).slice(0, 3);
+        cards = (sentences.length ? sentences : [content.slice(0, 280)]).map(
+          (sentence, index) => ({
+            front: index === 0 ? "What is the core idea from this tutor answer?" : `What should you remember from note ${index + 1}?`,
+            back: sentence.trim()
+          })
+        );
+      }
       res.json({ cards });
     } catch (error) {
       console.warn("[FLASHCARDS] Generation failed:", error);
-      res.status(500).json({ error: "Failed to generate flashcards" });
+      const sentences = content.replace(/\s+/g, " ").split(/(?<=[.!?])\s+/).filter((sentence) => sentence.trim().length > 35).slice(0, 3);
+      res.json({
+        cards: (sentences.length ? sentences : [content.slice(0, 280)]).map(
+          (sentence, index) => ({
+            front: index === 0 ? "What is the core idea from this tutor answer?" : `What should you remember from note ${index + 1}?`,
+            back: sentence.trim()
+          })
+        ),
+        fallback: true
+      });
     }
   });
   app.get("/api/tts", async (req, res) => {
@@ -863,15 +1008,45 @@ ${content}`
       if (!text) {
         return res.status(400).json({ error: "Text is required." });
       }
-      const requestedVoice = typeof req.query.voice === "string" ? req.query.voice : "aura-asteria-en";
-      const ttsModel = /^aura-[a-z0-9-]+-en$/i.test(requestedVoice) ? requestedVoice : "aura-asteria-en";
+      const requestedVoice = typeof req.query.voice === "string" ? req.query.voice : "gpt-4o-mini-tts";
+      const ttsModel = requestedVoice === "gpt-4o-mini-tts" ? requestedVoice : /^aura-[a-z0-9-]+-en$/i.test(requestedVoice) ? requestedVoice : "aura-asteria-en";
       const billedText = text.slice(0, 4e3);
       const inputCharacters = billedText.length;
       const estimatedCost = ttsCostForModel(ttsModel, inputCharacters);
+      if (ttsModel === "gpt-4o-mini-tts") {
+        try {
+          const openaiKey = process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || "";
+          if (!openaiKey) throw new Error("OpenAI API Key is missing");
+          const openai = new OpenAI({
+            apiKey: openaiKey
+          });
+          const mp3 = await openai.audio.speech.create({
+            model: "tts-1",
+            voice: "alloy",
+            input: billedText
+          });
+          const buffer = Buffer.from(await mp3.arrayBuffer());
+          res.setHeader("Content-Type", "audio/mpeg");
+          res.setHeader("X-Usage-Provider", "openai");
+          res.setHeader("X-Usage-Model", "gpt-4o-mini-tts");
+          res.setHeader("X-Usage-Unit", "characters");
+          res.setHeader("X-Usage-Input-Chars", String(inputCharacters));
+          res.setHeader("X-Usage-Cost", String(estimatedCost));
+          res.setHeader("X-Usage-Estimated", "false");
+          res.send(buffer);
+          return;
+        } catch (openaiErr) {
+          console.warn(
+            "[TTS] OpenAI TTS failed, falling back to Deepgram default:",
+            openaiErr
+          );
+        }
+      }
+      const ttsModelForDeepgram = ttsModel === "gpt-4o-mini-tts" ? "aura-asteria-en" : ttsModel;
       const deepgramKey = process.env.DEEPGRAM_API_KEY;
       if (!deepgramKey) throw new Error("Deepgram API Key is missing");
       const response = await fetch(
-        `https://api.deepgram.com/v1/speak?model=${ttsModel}&encoding=mp3`,
+        `https://api.deepgram.com/v1/speak?model=${ttsModelForDeepgram}&encoding=mp3`,
         {
           method: "POST",
           headers: {
@@ -938,7 +1113,8 @@ ${content}`
         memoryContext,
         aiModel,
         customPrompt,
-        serperApiKey: bodySerperKey
+        serperApiKey: bodySerperKey,
+        language
       } = req.body;
       const serperRuntimeKey = sanitizeApiKey(req.headers["x-serper-api-key"]) || sanitizeApiKey(bodySerperKey) || sanitizeApiKey(process.env.SERPER_API_KEY);
       if (!apiKey) {
@@ -951,13 +1127,23 @@ ${content}`
         baseURL: "https://openrouter.ai/api/v1",
         apiKey
       });
-      const requestedModel = aiModel || "deepseek/deepseek-chat";
+      const requestedModel = aiModel === "deepseek/deepseek-chat" ? DEFAULT_CHAT_MODEL : aiModel || DEFAULT_CHAT_MODEL;
       let usedModelForUsage = requestedModel;
       let inputTokens = 0;
       let outputTokens = 0;
       let usageEstimated = true;
       let webSources = [];
       const latestUserContent = [...messages || []].reverse().find((m) => m?.role === "user")?.content || "";
+      const sourceMaterialRequest = /\b(current|this|the)\s+(page|screen|document|pdf|chapter|section|slide|image|diagram|chart|figure)\b/i.test(
+        latestUserContent
+      ) || /\b(what'?s|what is|explain|summari[sz]e|describe)\s+(this|the)\b/i.test(
+        latestUserContent
+      ) || /\b(on the screen|visible|shown|source material|uploaded document|reading)\b/i.test(
+        latestUserContent
+      );
+      const requestedWebSearch = Boolean(
+        detectFreshnessSearch(latestUserContent)
+      );
       const mergeWebSources = (sources) => {
         const byUrl = new Map(webSources.map((source) => [source.url, source]));
         sources.forEach((source) => byUrl.set(source.url, source));
@@ -1021,7 +1207,8 @@ Keep the tone professional and do not use emojis unless the user explicitly asks
 IMPORTANT TOOL USAGE INSTRUCTIONS:
 1. If the user asks questions about "the current page", "this chapter", "the document", "the screen", or asks you to explain something visible in what they are reading, use the provided screenshot context when present. If you need an additional page inspection and the \`look_at_current_page\` tool is available, call it. Do NOT claim you cannot see the screen when screenshot context is attached.
 2. If the user requests flashcards, active recall questions, or revision cards, YOU MUST forcefully use the \`generate_flashcards\` tool to create them. NEVER simply write out the flashcards in text. ALWAYS use the tool. Start your message slightly confirming you generated them and suggest they navigate to the Revision tab.
-3. If the user asks for latest, current, recent, news, rankings, pricing, releases, trends, sports scores, or explicitly asks to search the web, use the \`web_search\` tool unless live web sources are already provided in the prompt. When using web sources, cite freshness-sensitive claims with compact references like [1] and [2]. Do not dump raw URLs in the answer body.`;
+3. Source-material questions come first. If the user asks "what is this about", "what's on the screen", "what is this page about", "explain this page", "summarize this document", or similar reading-context questions, answer from selected text, active library context, and the page image via \`look_at_current_page\` when available. Do not use \`web_search\` for these questions unless the user explicitly asks to search the web.
+4. Use \`web_search\` only when the user explicitly asks for web/internet/online search, or when the answer depends on fresh external facts such as latest/current/recent news, rankings, pricing, releases, trends, sports scores, elections, weather, laws, schedules, or named people/company roles. When using web sources, cite freshness-sensitive claims with compact references like [1] and [2]. Do not dump raw URLs in the answer body.`;
       if (customPrompt) {
         systemInstruction = `${customPrompt}
 
@@ -1032,7 +1219,21 @@ ${systemInstruction}`;
 
 ${memoryContext}`;
       }
-      const freshnessSearch = detectFreshnessSearch(latestUserContent);
+      if (currentPageImage && sourceMaterialRequest) {
+        systemInstruction += `
+
+CURRENT PAGE IMAGE IS ATTACHED THROUGH THE look_at_current_page TOOL. For this source-material request, call look_at_current_page before answering and answer from the page image plus selected/library context. Do not use web_search unless the user explicitly asks for web search.`;
+      }
+      if (language === "ja") {
+        systemInstruction += `
+
+CRITICAL LANGUAGE REQUIREMENT: You must think, reason, and respond natively in Japanese (\u65E5\u672C\u8A9E). Ensure all educational explanations, conceptual analogies, and technical feedback are phrased naturally in fluent Japanese. Keep the professional academic tone with no emojis.`;
+      } else if (language === "ko") {
+        systemInstruction += `
+
+CRITICAL LANGUAGE REQUIREMENT: You must think, reason, and respond natively in Korean (\uD55C\uAD6D\uC5B4). Ensure all educational explanations, conceptual analogies, and technical feedback are phrased naturally in fluent Korean. Keep the professional academic tone with no emojis.`;
+      }
+      const freshnessSearch = requestedWebSearch ? detectFreshnessSearch(latestUserContent) : null;
       if (freshnessSearch) {
         sendEvent("reasoning_summary", {
           content: "Detecting freshness requirement"
@@ -1118,7 +1319,7 @@ Use these sources for current factual claims and cite them with bracketed source
           type: "function",
           function: {
             name: "web_search",
-            description: "Search the live web when the user needs current, recent, external, or freshness-sensitive information. Use news for headlines or events.",
+            description: "Search the live web only when the user explicitly asks for web/internet/online search or needs fresh external facts. Do not use for current page, screen, document, PDF, selected text, uploaded source material, or active library questions.",
             parameters: {
               type: "object",
               properties: {
@@ -1314,6 +1515,14 @@ Use these sources for current factual claims and cite them with bracketed source
             }
           } else if (functionName === "web_search") {
             try {
+              if (!requestedWebSearch) {
+                formattedMessages.push({
+                  role: "tool",
+                  tool_call_id: toolCall.id,
+                  content: "Web search denied for this turn. Answer from the provided source material, selected text, memory context, and page image if available."
+                });
+                continue;
+              }
               sendEvent("reasoning_summary", {
                 content: "Searching live web sources"
               });
@@ -1466,6 +1675,7 @@ Use these sources for current factual claims and cite them with bracketed source
   wss.on("connection", (ws, req) => {
     const url = new URL(req.url || "", `http://${req.headers.host}`);
     const openRouterKey = url.searchParams.get("openRouterKey") || process.env.OPENROUTER_API_KEY;
+    const language = url.searchParams.get("language") || "en";
     if (!openRouterKey) {
       ws.close(1008, "OpenRouter API key is required");
       return;
@@ -1494,9 +1704,9 @@ Use these sources for current factual claims and cite them with bracketed source
           usage: {
             provider: "deepgram",
             voiceAgentModel: "Deepgram Voice Agent Standard",
-            listenModel: "flux-general-en",
-            speakModel: "aura-asteria-en",
-            ttsModel: "aura-asteria-en",
+            listenModel: language === "ja" || language === "ko" ? "flux-general-multi" : "flux-general-en",
+            speakModel: "gpt-4o-mini-tts",
+            ttsModel: "gpt-4o-mini-tts",
             connectionSeconds,
             inputAudioSeconds: clientInputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
             outputAudioSeconds: deepgramOutputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
@@ -1517,6 +1727,24 @@ Use these sources for current factual claims and cite them with bracketed source
         }
       });
       dgWs.on("open", () => {
+        const listenModel = language === "ja" || language === "ko" ? "flux-general-multi" : "flux-general-en";
+        const listenProvider = {
+          type: "deepgram",
+          model: listenModel,
+          version: "v2"
+        };
+        if (language === "ja" || language === "ko") {
+          listenProvider.language_hints = ["en", "ja", "ko"];
+        }
+        let thinkPrompt = "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks \u2014 you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate.";
+        let greeting = "Hello! I am Aria, your CS tutor. What are you studying today?";
+        if (language === "ja") {
+          thinkPrompt = "\u3042\u306A\u305F\u306FAria\u3068\u3044\u3046\u540D\u524D\u306E\u512A\u79C0\u306A\u30B3\u30F3\u30D4\u30E5\u30FC\u30BF\u30B5\u30A4\u30A8\u30F3\u30B9\u304A\u3088\u3073\u30D7\u30ED\u30B0\u30E9\u30DF\u30F3\u30B0\u306E\u30C1\u30E5\u30FC\u30BF\u30FC\u3067\u3059\u3002\u73FE\u5728\u3001\u6280\u8853\u7684\u306A\u5185\u5BB9\u3092\u5B66\u7FD2\u3057\u3066\u3044\u308B\u5B66\u751F\u3092\u30B5\u30DD\u30FC\u30C8\u3057\u3066\u3044\u307E\u3059\u3002\u30B7\u30CB\u30A2\u30A8\u30F3\u30B8\u30CB\u30A2\u304C\u30B8\u30E5\u30CB\u30A2\u30C7\u30D9\u30ED\u30C3\u30D1\u30FC\u3092\u6307\u5C0E\u3059\u308B\u3088\u3046\u306B\u6982\u5FF5\u3092\u8AAC\u660E\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u73FE\u5B9F\u4E16\u754C\u306E\u4F8B\u3048\u8A71\u3092\u4F7F\u7528\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u56DE\u7B54\u306F3\u301C5\u6587\u306B\u6291\u3048\u3066\u304F\u3060\u3055\u3044\u3002\u97F3\u58F0\u3067\u306E\u5BFE\u8A71\u3067\u3042\u308B\u305F\u3081\u3001\u7B87\u6761\u66F8\u304D\u3001\u30DE\u30FC\u30AF\u30C0\u30A6\u30F3\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306F\u7D76\u5BFE\u306B\u4F7F\u7528\u3057\u306A\u3044\u3067\u304F\u3060\u3055\u3044\u3002\u8A18\u53F7\u306F\u8A00\u8449\u3067\u8AAC\u660E\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u6700\u5F8C\u306F\u5FC5\u305A\u6B21\u306E\u8CEA\u554F\u3092\u3059\u308B\u304B\u3001\u8A73\u3057\u304F\u8AAC\u660E\u3059\u308B\u3053\u3068\u3092\u63D0\u6848\u3057\u3066\u7D42\u3048\u3066\u304F\u3060\u3055\u3044\u3002\u5FC5\u305A\u65E5\u672C\u8A9E\u3067\u81EA\u7136\u306B\u4F1A\u8A71\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+          greeting = "\u3053\u3093\u306B\u3061\u306F\uFF01CS\u30C1\u30E5\u30FC\u30BF\u30FC\u306EAria\u3067\u3059\u3002\u4ECA\u65E5\u306F\u4F55\u3092\u52C9\u5F37\u3057\u307E\u3059\u304B\uFF1F";
+        } else if (language === "ko") {
+          thinkPrompt = "\uB2F9\uC2E0\uC740 Aria\uB77C\uB294 \uC774\uB984\uC758 \uC6B0\uC218\uD55C \uCEF4\uD4E8\uD130 \uACFC\uD559 \uBC0F \uD504\uB85C\uADF8\uB798\uBC0D \uD29C\uD130\uC785\uB2C8\uB2E4. \uD604\uC7AC \uAE30\uC220\uC801\uC778 \uB0B4\uC6A9\uC744 \uD559\uC2B5\uD558\uACE0 \uC788\uB294 \uD559\uC0DD\uC744 \uB3D5\uACE0 \uC788\uC2B5\uB2C8\uB2E4. \uC2DC\uB2C8\uC5B4 \uC5D4\uC9C0\uB2C8\uC5B4\uAC00 \uC8FC\uB2C8\uC5B4 \uAC1C\uBC1C\uC790\uB97C \uBA58\uD1A0\uB9C1\uD558\uB4EF\uC774 \uAC1C\uB150\uC744 \uC124\uBA85\uD574 \uC8FC\uC138\uC694. \uD604\uC2E4 \uC138\uACC4\uC758 \uBE44\uC720\uB97C \uC0AC\uC6A9\uD574 \uC8FC\uC138\uC694. \uB2F5\uBCC0\uC740 3~5\uBB38\uC7A5\uC73C\uB85C \uC81C\uD55C\uD574 \uC8FC\uC138\uC694. \uC74C\uC131\uC73C\uB85C \uB300\uD654 \uC911\uC774\uBBC0\uB85C \uAE00\uBA38\uB9AC \uAE30\uD638, \uB9C8\uD06C\uB2E4\uC6B4, \uCF54\uB4DC \uBE14\uB85D\uC740 \uC808\uB300 \uC0AC\uC6A9\uD558\uC9C0 \uB9C8\uC138\uC694. \uAE30\uD638\uB294 \uB9D0\uB85C \uC124\uBA85\uD574 \uC8FC\uC138\uC694. \uAC01 \uB2F5\uBCC0\uC758 \uB05D\uC5D0\uB294 \uD6C4\uC18D \uC9C8\uBB38\uC744 \uD558\uAC70\uB098 \uB354 \uC790\uC138\uD788 \uC124\uBA85\uD558\uACA0\uB2E4\uACE0 \uC81C\uC548\uD574 \uC8FC\uC138\uC694. \uBC18\uB4DC\uC2DC \uD55C\uAD6D\uC5B4\uB85C \uC790\uC5F0\uC2A4\uB7FD\uAC8C \uB300\uD654\uD574 \uC8FC\uC138\uC694.";
+          greeting = "\uC548\uB155\uD558\uC138\uC694! CS \uD29C\uD130 Aria\uC785\uB2C8\uB2E4. \uC624\uB298 \uC5B4\uB5A4 \uB0B4\uC6A9\uC744 \uACF5\uBD80\uD558\uC2DC\uACA0\uC5B4\uC694?";
+        }
         const config = {
           type: "Settings",
           audio: {
@@ -1532,26 +1760,22 @@ Use these sources for current factual claims and cite them with bracketed source
           },
           agent: {
             listen: {
-              provider: {
-                type: "deepgram",
-                model: "flux-general-en",
-                version: "v2"
-              }
+              provider: listenProvider
             },
             think: {
               provider: {
                 type: "open_ai",
                 model: "gpt-4o-mini"
               },
-              prompt: "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks \u2014 you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate."
+              prompt: thinkPrompt
             },
             speak: {
               provider: {
-                type: "deepgram",
-                model: "aura-asteria-en"
+                type: "open_ai",
+                model: "gpt-4o-mini-tts"
               }
             },
-            greeting: "Hello! I am Aria, your CS tutor. What are you studying today?"
+            greeting
           }
         };
         console.log(

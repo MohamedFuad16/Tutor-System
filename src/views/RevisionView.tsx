@@ -13,8 +13,20 @@ import {
   Menu,
   X,
   ChevronRight,
+  ChevronDown,
   RefreshCw,
   Trash2,
+  MessageSquare,
+  Highlighter,
+  Underline,
+  Strikethrough,
+  StickyNote,
+  Settings,
+  Mic,
+  Activity,
+  ArrowUp,
+  Folder,
+  Check,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
@@ -37,6 +49,15 @@ type BuiltInBook = {
   chapters: { title: string; content?: string }[];
   renderChapter?: (chapterIndex: number) => React.ReactNode;
 };
+
+type LibraryDeleteTarget = {
+  id: string;
+  name: string;
+  kind: "built-in" | "learning";
+};
+
+const coreLearningBookTitlePattern =
+  /\b(admin\s*dashboard|app\s*design|system\s*architecture|tutor\s*system\s*architecture)\b/i;
 
 const designTokens = [
   { label: "Obsidian", value: "#030303", swatch: "bg-[#030303]" },
@@ -214,7 +235,7 @@ const WireframeMap = () => {
           <motion.div
             key={node.id}
             whileHover={{ y: -4, scale: 1.03 }}
-            className={`absolute flex min-h-[80px] w-[125px] sm:w-[145px] xl:w-[160px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[28px] border px-2 sm:px-4 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${
+            className={`absolute flex min-h-[80px] w-[125px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[28px] border px-2 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] sm:w-[145px] sm:px-4 xl:w-[160px] ${
               node.tone === "dark"
                 ? "border-zinc-700 bg-[#07070a] text-white"
                 : node.tone === "accent"
@@ -225,11 +246,11 @@ const WireframeMap = () => {
             }`}
             style={{ left: `${node.x}%`, top: `${node.y}%` }}
           >
-            <div className="text-sm sm:text-base md:text-lg font-bold tracking-tight leading-snug">
+            <div className="text-sm font-bold leading-snug tracking-tight sm:text-base md:text-lg">
               {node.id}
             </div>
             <div
-              className={`mt-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] ${
+              className={`mt-1 text-[9px] font-bold uppercase tracking-[0.16em] sm:text-[10px] ${
                 node.tone === "dark" ? "text-white/40" : "text-zinc-400"
               }`}
             >
@@ -273,28 +294,47 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
   const [chatMessages, setChatMessages] = useState([
     "What should I review next?",
   ]);
-  const [thinkingOpen, setThinkingOpen] = useState(true);
+  const [thinkingOpen, setThinkingOpen] = useState(false);
   const [brainFocus, setBrainFocus] = useState("Memory");
   const [notebookPage, setNotebookPage] = useState(1);
   const [settingsTab, setSettingsTab] = useState("AI");
   const [metricMode, setMetricMode] = useState("Mastery");
 
   if (id === "navigation") {
+    const navItems = [
+      { label: "Study", icon: BookOpen },
+      { label: "Analytics", icon: Zap },
+      { label: "Revision", icon: Brain },
+    ];
     return (
-      <div className="rounded-[28px] bg-[#101012] p-3 shadow-2xl">
-        <div className="relative grid grid-cols-3 gap-1 rounded-full bg-white/5 p-1">
-          {["Study", "Analytics", "Revision"].map((route) => (
+      <div className="flex justify-center rounded-[28px] bg-[#f7f7f8] p-6 shadow-inner">
+        <div className="inline-flex rounded-full border border-white/10 bg-[#242426] p-1 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
+          {navItems.map(({ label, icon: Icon }) => (
             <button
-              key={route}
+              key={label}
               type="button"
-              onClick={() => setActiveRoute(route)}
-              className={`relative rounded-full px-3 py-2 text-[11px] font-semibold transition-colors ${
-                activeRoute === route
-                  ? "bg-white/15 text-white shadow-[0_10px_24px_rgba(0,0,0,0.35)]"
+              onClick={() => setActiveRoute(label)}
+              className={`relative inline-flex h-10 min-w-24 items-center justify-center gap-2 rounded-full px-4 text-xs font-semibold transition-colors ${
+                activeRoute === label
+                  ? "text-white"
                   : "text-zinc-500 hover:text-zinc-200"
               }`}
             >
-              {route}
+              {activeRoute === label && (
+                <motion.span
+                  layoutId="adl-nav-active-pill"
+                  className="absolute inset-0 rounded-full bg-white/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_22px_rgba(0,0,0,0.35)]"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+              )}
+              <motion.span
+                className="relative z-10 inline-flex items-center gap-2"
+                animate={{ y: activeRoute === label ? -1 : 0 }}
+                transition={{ type: "spring", stiffness: 420, damping: 28 }}
+              >
+                <Icon size={14} />
+                {label}
+              </motion.span>
             </button>
           ))}
         </div>
@@ -304,26 +344,42 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
 
   if (id === "library") {
     return (
-      <button
-        type="button"
-        onClick={() => setBookOpen((open) => !open)}
-        className={`relative h-44 w-full overflow-hidden rounded-[32px] p-6 text-left shadow-2xl transition-all ${
-          bookOpen ? "bg-[#faf9f6] text-zinc-950" : "bg-[#08080a] text-white"
-        }`}
-      >
-        <div className="absolute -left-10 top-12 h-40 w-40 rounded-full bg-white/20 blur-2xl" />
-        <div className="relative text-[10px] font-bold uppercase tracking-[0.18em] opacity-50">
-          {bookOpen ? "Inside pages" : "Built-in book"}
+      <div className="flex justify-center rounded-[30px] bg-[#f4f4f5] p-4 shadow-inner">
+        <div className="h-60 w-[190px] overflow-hidden rounded-[28px]">
+          <div className="origin-top-left scale-[0.58]">
+            <PatternCard
+              bgClass={bookOpen ? themes[2].bg : themes[0].bg}
+              SvgComponent={
+                bookOpen ? themes[2].SvgComponent : themes[0].SvgComponent
+              }
+              bloomColor={bookOpen ? themes[2].bloom : themes[0].bloom}
+              bloomOpacity={
+                bookOpen ? themes[2].bloomOpacity : themes[0].bloomOpacity
+              }
+              onClick={() => setBookOpen((open) => !open)}
+              animateDots
+            >
+              <div
+                className={`relative z-20 flex h-full flex-col justify-end p-8 ${
+                  bookOpen ? "text-zinc-950" : "text-white"
+                }`}
+              >
+                <div className="text-[12px] font-bold uppercase tracking-[0.22em] opacity-50">
+                  Built-in book
+                </div>
+                <div className="mt-5 text-4xl font-semibold leading-[0.95] tracking-tight">
+                  App Design
+                  <br />
+                  Language
+                </div>
+                <div className="mt-6 text-sm font-medium opacity-60">
+                  {bookOpen ? "Wireframes · Theme · Snapshots" : "Tap to open"}
+                </div>
+              </div>
+            </PatternCard>
+          </div>
         </div>
-        <div className="relative mt-7 text-2xl font-semibold leading-none">
-          App Design
-          <br />
-          Language
-        </div>
-        <div className="relative mt-5 text-xs opacity-60">
-          {bookOpen ? "Wireframes · Theme · Snapshots" : "Tap to open"}
-        </div>
-      </button>
+      </div>
     );
   }
 
@@ -389,26 +445,50 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
   }
 
   if (id === "toolbar") {
+    const tools = [
+      { label: "Highlight", icon: Highlighter, color: "text-yellow-400" },
+      { label: "Underline", icon: Underline, color: "text-blue-500" },
+      { label: "Strike", icon: Strikethrough, color: "text-red-500" },
+      { label: "Sticky", icon: StickyNote, color: "text-yellow-400" },
+    ];
     return (
-      <div className="rounded-[28px] bg-[#111114] p-4 text-white shadow-2xl">
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {["Highlight", "Underline", "Strike", "Ask"].map((tool) => (
-            <button
-              key={tool}
-              type="button"
-              onClick={() => setActiveTool(tool)}
-              className={`rounded-2xl px-3 py-2 text-[11px] font-semibold transition-colors ${
-                activeTool === tool
-                  ? "bg-indigo-500 text-white"
-                  : "bg-white/10 text-zinc-400 hover:text-white"
-              }`}
-            >
-              {tool}
-            </button>
-          ))}
-        </div>
-        <div className="mt-4 rounded-2xl bg-white/5 p-3 text-center text-xs text-zinc-400">
-          Selected tool: <span className="text-white">{activeTool}</span>
+      <div className="flex justify-center rounded-[28px] bg-[#f7f7f8] p-6 shadow-inner">
+        <div className="relative flex items-center gap-1 overflow-hidden rounded-xl bg-[#121214]/95 p-1 text-white shadow-[0_20px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+          <motion.div
+            className="absolute inset-[-60%] h-[220%] w-[220%]"
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            style={{
+              background:
+                "conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.08) 40%, rgba(255,255,255,0.72) 50%, rgba(255,255,255,0.08) 60%, transparent 100%)",
+            }}
+          />
+          <div className="relative z-10 flex gap-1 border-r border-white/10 pr-1.5">
+            {tools.map(({ label, icon: Icon, color }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setActiveTool(label)}
+                title={label}
+                className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-white/10 ${color} ${
+                  activeTool === label ? "bg-white/10" : ""
+                }`}
+              >
+                <Icon size={14} />
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveTool("Ask")}
+            className={`relative z-10 ml-1 flex items-center gap-1 overflow-hidden rounded-lg border border-indigo-400/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-[0_0_15px_rgba(99,102,241,0.4)] ${
+              activeTool === "Ask" ? "bg-indigo-400" : "bg-indigo-500"
+            }`}
+          >
+            <span className="absolute inset-0 rounded-lg bg-[linear-gradient(135deg,rgba(255,255,255,0.24),rgba(255,255,255,0.04)_42%,rgba(129,140,248,0.32))]" />
+            <MessageSquare size={12} className="relative z-10" />
+            <span className="relative z-10">Ask Tutor</span>
+          </button>
         </div>
       </div>
     );
@@ -416,69 +496,122 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
 
   if (id === "chat") {
     return (
-      <div className="rounded-[28px] bg-[#08080a] p-4 text-white shadow-2xl">
-        <div className="mb-3 flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 via-violet-500 to-orange-400" />
-          <div>
+      <div className="overflow-hidden rounded-[28px] border border-zinc-200 bg-[#fdfdfd] text-zinc-950 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-zinc-200/70 bg-white/95 px-4 py-3 shadow-[0_12px_30px_rgba(255,255,255,0.9)]">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-black/5 bg-white shadow-sm">
+              <Zap size={14} className="text-zinc-600" />
+            </div>
             <div className="text-sm font-semibold">Tutor</div>
-            <div className="text-[10px] text-zinc-500">streaming preview</div>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-[10px] font-medium shadow-sm">
+            <Folder size={12} />
+            App Design
           </div>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-3 p-4">
           {chatMessages.slice(-2).map((message, index) => (
             <div
               key={`${message}-${index}`}
-              className="rounded-2xl bg-white/8 px-3 py-2 text-xs text-zinc-300"
+              className={
+                index === 0
+                  ? "ml-auto max-w-[82%] rounded-2xl rounded-br-sm bg-[#1c1c1e] px-3 py-2 text-xs font-medium text-white"
+                  : "max-w-[88%] rounded-2xl bg-zinc-100 px-3 py-2 text-xs text-zinc-700"
+              }
             >
               {message}
             </div>
           ))}
+          <div className="rounded-3xl border border-zinc-200/80 bg-white p-3 shadow-[0_14px_34px_rgba(0,0,0,0.06)]">
+            <div className="flex items-center gap-2 text-xs font-semibold">
+              <Zap size={14} className="text-violet-500" />
+              Reasoning trace
+              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[9px] uppercase tracking-[0.12em] text-zinc-500">
+                Complete
+              </span>
+            </div>
+            <div className="mt-1 text-[11px] text-zinc-500">Answer ready.</div>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() =>
-            setChatMessages((messages) => [
-              ...messages,
-              "Explain this page with one analogy.",
-            ])
-          }
-          className="mt-4 w-full rounded-full bg-white px-4 py-2 text-xs font-semibold text-zinc-950"
-        >
-          Send sample prompt
-        </button>
+        <div className="p-3 pt-0">
+          <div className="flex items-center gap-2 rounded-[24px] bg-[#18181b] p-2">
+            <button
+              type="button"
+              onClick={() =>
+                setChatMessages((messages) => [
+                  ...messages,
+                  "Explain this page with one analogy.",
+                ])
+              }
+              className="flex-1 rounded-2xl px-3 py-2 text-left text-xs text-zinc-400"
+            >
+              Ask about the current page...
+            </button>
+            <button className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-950 text-white">
+              <ArrowUp size={16} />
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (id === "thinking") {
     return (
-      <button
-        type="button"
-        onClick={() => setThinkingOpen((open) => !open)}
-        className="w-full rounded-[28px] border border-violet-300/50 bg-violet-50 p-4 text-left shadow-2xl"
-      >
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-violet-500 shadow-[0_0_26px_rgba(124,58,237,0.45)]" />
-          <div>
-            <div className="text-sm font-semibold text-violet-950">
-              Thinking Panel
+      <div className="overflow-hidden rounded-3xl border border-zinc-200/80 bg-white/90 text-left shadow-[0_18px_45px_rgba(0,0,0,0.06)]">
+        <button
+          type="button"
+          onClick={() => setThinkingOpen((open) => !open)}
+          aria-expanded={thinkingOpen}
+          className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left outline-none transition-colors hover:bg-zinc-50"
+        >
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
+              <Zap size={16} />
             </div>
-            <div className="text-[10px] text-violet-500">
-              {thinkingOpen ? "expanded" : "collapsed"}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[12px] font-semibold text-zinc-900">
+                  Reasoning trace
+                </span>
+                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                  Complete
+                </span>
+              </div>
+              <div className="mt-0.5 truncate text-[12px] leading-snug text-zinc-500">
+                Answer ready.
+              </div>
             </div>
           </div>
-        </div>
-        {thinkingOpen && (
-          <div className="mt-4 space-y-2 text-xs text-violet-700">
-            <div className="rounded-xl bg-white/70 p-2">
-              Detect selected concept.
-            </div>
-            <div className="rounded-xl bg-white/70 p-2">
-              Connect it to prior knowledge.
-            </div>
-          </div>
-        )}
-      </button>
+          <motion.span animate={{ rotate: thinkingOpen ? 180 : 0 }}>
+            <ChevronDown size={16} className="text-zinc-400" />
+          </motion.span>
+        </button>
+        <AnimatePresence initial={false}>
+          {thinkingOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden border-t border-zinc-100"
+            >
+              <div className="space-y-2 px-4 py-3 text-[12px] text-zinc-500">
+                {["Retrieving relevant context", "Linking concepts"].map(
+                  (item) => (
+                    <div
+                      key={item}
+                      className="rounded-2xl bg-zinc-50 px-3 py-2"
+                    >
+                      {item}
+                    </div>
+                  ),
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     );
   }
 
@@ -496,7 +629,7 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
               key={node}
               type="button"
               onClick={() => setBrainFocus(node)}
-              className={`absolute ${positions[index]} h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all ${
+              className={`absolute ${positions[index]} h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full transition-[color,background-color,border-color,box-shadow,transform,opacity] ${
                 brainFocus === node
                   ? "bg-violet-400 shadow-[0_0_34px_rgba(167,139,250,0.82)]"
                   : "bg-blue-400/70 shadow-[0_0_22px_rgba(96,165,250,0.45)]"
@@ -541,26 +674,47 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
 
   if (id === "settings") {
     return (
-      <div className="rounded-[28px] bg-zinc-950 p-4 text-white shadow-2xl">
-        <div className="grid grid-cols-3 gap-1 rounded-full bg-white/5 p-1">
+      <div className="rounded-[30px] border border-zinc-200 bg-[#faf9f6] p-4 text-zinc-950 shadow-2xl">
+        <div className="grid grid-cols-3 gap-1 rounded-full bg-white p-1 shadow-inner">
           {["AI", "Voice", "Usage"].map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setSettingsTab(tab)}
-              className={`rounded-full py-2 text-[10px] font-semibold ${
+              className={`relative rounded-full py-2 text-[10px] font-semibold transition-colors ${
                 settingsTab === tab
-                  ? "bg-white/15 text-white"
-                  : "text-zinc-500 hover:text-zinc-200"
+                  ? "text-zinc-950"
+                  : "text-zinc-400 hover:text-zinc-700"
               }`}
             >
-              {tab}
+              {settingsTab === tab && (
+                <motion.span
+                  layoutId="adl-settings-tab"
+                  className="absolute inset-0 rounded-full bg-zinc-950/5 shadow-[0_8px_18px_rgba(24,24,27,0.08)]"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+              )}
+              <span className="relative z-10">{tab}</span>
             </button>
           ))}
         </div>
-        <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-xs text-emerald-100">
-          {settingsTab} controls preview
-        </div>
+        <AnimatePresence mode="popLayout">
+          <motion.div
+            key={settingsTab}
+            initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+            transition={{ duration: 0.2 }}
+            className="mt-4 rounded-2xl border border-zinc-200 bg-white/80 p-4 text-xs text-zinc-600 shadow-sm"
+          >
+            <div className="flex items-center gap-2 font-semibold text-zinc-950">
+              <Settings size={14} />
+              {settingsTab} controls preview
+            </div>
+            <div className="mt-3 h-2 rounded-full bg-zinc-200" />
+            <div className="mt-2 h-2 w-2/3 rounded-full bg-zinc-200" />
+          </motion.div>
+        </AnimatePresence>
       </div>
     );
   }
@@ -962,43 +1116,22 @@ const FlashcardDeck = ({
 
 export function RevisionView() {
   const setActiveView = useStore((state) => state.setActiveView);
+  const [libraryRevision, setLibraryRevision] = useState(0);
 
-  const concepts =
-    useLiveQuery(async () => {
-      try {
-        const all = (await db.concepts.toArray()).filter(
-          (concept) =>
-            builtInBookIds.has(concept.id) &&
-            localStorage.getItem(
-              builtInBooks.find((book) => book.id === concept.id)?.hiddenKey ||
-                "",
-            ) !== "1",
-        );
-        for (const book of builtInBooks) {
-          const isHidden = localStorage.getItem(book.hiddenKey) === "1";
-          if (!isHidden && !all.find((concept) => concept.id === book.id)) {
-            const defaultConcept = createBuiltInBookConcept(book);
-            await db.concepts.put(defaultConcept);
-            all.push(defaultConcept);
-          }
-        }
-        return all;
-      } catch (error) {
-        console.warn(
-          "[RevisionView] Concept library unavailable, using local fallback:",
-          error,
-        );
-        return builtInBooks
-          .filter((book) => localStorage.getItem(book.hiddenKey) !== "1")
-          .map(createBuiltInBookConcept);
-      }
-    }, []) || [];
+  const concepts = React.useMemo(
+    () =>
+      builtInBooks
+        .filter((book) => localStorage.getItem(book.hiddenKey) !== "1")
+        .map(createBuiltInBookConcept),
+    [libraryRevision],
+  );
 
   const learningBooks =
     useLiveQuery(
       () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
       [],
     ) || [];
+  const visibleLearningBooks = learningBooks;
   const learningBookConcepts =
     useLiveQuery(
       () => db.learningBookConcepts.orderBy("updatedAt").reverse().toArray(),
@@ -1023,29 +1156,26 @@ export function RevisionView() {
 
   const [activeConceptId, setActiveConceptId] = useState<string | null>(null);
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
-  const [deleteTarget, setDeleteTarget] = useState<PersistentConcept | null>(
+  const [deleteTarget, setDeleteTarget] = useState<LibraryDeleteTarget | null>(
     null,
   );
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const cleanupBooks = async () => {
+    const unhideCoreKey = "revision_core_books_visible_v1";
+    if (localStorage.getItem(unhideCoreKey) !== "1") {
       try {
-        const all = await db.concepts.toArray();
-        for (const concept of all) {
-          if (
-            ["AI Tutor Book", "ChatGPT", "Scientific Writing"].includes(
-              concept.name,
-            )
-          ) {
-            await db.concepts.delete(concept.id);
-          }
-        }
+        localStorage.removeItem("tutor_book_hidden");
+        localStorage.removeItem("app_design_language_book_hidden");
+        localStorage.setItem(unhideCoreKey, "1");
+        setLibraryRevision((version) => version + 1);
       } catch (error) {
-        console.warn("[RevisionView] Book cleanup skipped:", error);
+        console.warn(
+          "[RevisionView] Core book visibility sync skipped:",
+          error,
+        );
       }
-    };
-    cleanupBooks();
+    }
   }, []);
 
   const handleReview = async (card: Flashcard, quality: number) => {
@@ -1090,10 +1220,47 @@ export function RevisionView() {
   useEffect(() => {
     const pendingBookId = localStorage.getItem("revision_open_book_id");
     if (!pendingBookId) return;
-    if (!learningBooks.some((book) => book.id === pendingBookId)) return;
+    const canOpenBook =
+      builtInBookIds.has(pendingBookId) ||
+      learningBooks.some((book) => book.id === pendingBookId);
+    if (!canOpenBook) return;
+    setCurrentChapterIndex(0);
     setActiveConceptId(pendingBookId);
     localStorage.removeItem("revision_open_book_id");
   }, [learningBooks]);
+
+  const cleanRevisionNote = (value?: string) =>
+    String(value || "")
+      .replace(/\bPrompt:\s*/gi, "")
+      .replace(/\bLearning note:\s*/gi, "")
+      .replace(
+        /\bReview hook:\s*restate the idea in your own words, identify the key mechanism, and test it with a fresh example\.?/gi,
+        "",
+      )
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+  const formatLearningChapterPage = (book: LearningBook, index: number) => {
+    const chapter = book.chapters?.[index];
+    if (!chapter) return learningBookMarkdown(book);
+    const conceptsForChapter = learningBookConcepts.filter(
+      (concept) =>
+        concept.bookId === book.id && chapter.conceptIds.includes(concept.id),
+    );
+    const note =
+      cleanRevisionNote(chapter.summary) ||
+      cleanRevisionNote(book.summary) ||
+      "This chapter is ready for notes from the next tutor exchange.";
+    const conceptText = conceptsForChapter.length
+      ? conceptsForChapter
+          .map(
+            (concept) =>
+              `### ${concept.name}\n${cleanRevisionNote(concept.summary) || "Summary pending."}`,
+          )
+          .join("\n\n")
+      : "No mapped concepts yet.";
+    return `## Chapter ${index + 1}: ${chapter.title}\n\n${note}\n\n## Concepts To Revise\n\n${conceptText}\n\n## Review Check\n\nExplain the key idea in your own words, name the mechanism that makes it work, and apply it to one fresh example.`;
+  };
 
   const learningBookMarkdown = (book: LearningBook) => {
     const conceptsForBook = learningBookConcepts.filter(
@@ -1108,7 +1275,7 @@ export function RevisionView() {
             const chapterConcepts = conceptsForBook
               .filter((concept) => chapter.conceptIds.includes(concept.id))
               .map((concept) => concept.name);
-            return `### Chapter ${index + 1}: ${chapter.title}\n${chapter.summary || "Chapter summary pending."}${chapterConcepts.length ? `\n\nConcepts: ${chapterConcepts.join(", ")}` : ""}`;
+            return `### Chapter ${index + 1}: ${chapter.title}\n${cleanRevisionNote(chapter.summary) || "Chapter summary pending."}${chapterConcepts.length ? `\n\nConcepts: ${chapterConcepts.join(", ")}` : ""}`;
           })
           .join("\n\n")
       : "No chapters mapped yet.";
@@ -1121,17 +1288,18 @@ export function RevisionView() {
             const parents = concept.parentConcepts.length
               ? `\n  - Parent concepts: ${concept.parentConcepts.join(", ")}`
               : "";
-            return `### ${concept.name}\n${concept.summary || "Summary pending."}${parents}${branches}`;
+            return `### ${concept.name}\n${cleanRevisionNote(concept.summary) || "Summary pending."}${parents}${branches}`;
           })
           .join("\n\n")
       : "No concepts mapped yet.";
     const entryText = entriesForBook
       .slice(0, 5)
       .map(
-        (entry) => `- ${entry.conversationSummary || entry.assistantSummary}`,
+        (entry, index) =>
+          `### Page ${index + 1}\n${cleanRevisionNote(entry.conversationSummary || entry.assistantSummary) || "Learning note pending."}`,
       )
-      .join("\n");
-    return `## Overview\n${book.overview || "Overview pending."}\n\n## Knowledge Summary\n${book.knowledgeSummary || book.summary || "Summary pending."}\n\n## Chapters\n${chapterText}\n\n## Mapped Concepts\n${conceptText}\n\n## Recent Learning Notes\n${entryText || "No learning notes recorded yet."}`;
+      .join("\n\n");
+    return `## Overview\n${cleanRevisionNote(book.overview) || "Overview pending."}\n\n## Knowledge Summary\n${cleanRevisionNote(book.knowledgeSummary || book.summary) || "Summary pending."}\n\n## Chapters\n${chapterText}\n\n## Mapped Concepts\n${conceptText}\n\n## Learning Pages\n${entryText || "No learning notes recorded yet."}`;
   };
   const isBuiltInBook = Boolean(activeBuiltInBook);
   const activeTitle = activeLearningBook?.title || activeConcept?.name || "";
@@ -1139,16 +1307,36 @@ export function RevisionView() {
     ? activeBuiltInBook.chapters.length
     : activeLearningBook?.chapters?.length || 0;
 
+  const deleteLearningBookRecords = async (bookId: string) => {
+    await db.transaction(
+      "rw",
+      db.learningBooks,
+      db.learningBookConcepts,
+      db.learningEntries,
+      db.flashcards,
+      async () => {
+        await db.learningBookConcepts.where("bookId").equals(bookId).delete();
+        await db.learningEntries.where("bookId").equals(bookId).delete();
+        await db.flashcards.filter((card) => card.bookId === bookId).delete();
+        await db.learningBooks.delete(bookId);
+      },
+    );
+  };
+
   const deleteConcept = async () => {
     if (!deleteTarget) return;
-    const builtInDeleteTarget = builtInBooks.find(
-      (book) => book.id === deleteTarget.id,
-    );
-    if (builtInDeleteTarget) {
-      localStorage.setItem(builtInDeleteTarget.hiddenKey, "1");
-    }
     try {
-      await db.concepts.delete(deleteTarget.id);
+      if (deleteTarget.kind === "built-in") {
+        const builtInDeleteTarget = builtInBooks.find(
+          (book) => book.id === deleteTarget.id,
+        );
+        if (builtInDeleteTarget) {
+          localStorage.setItem(builtInDeleteTarget.hiddenKey, "1");
+        }
+        setLibraryRevision((version) => version + 1);
+      } else {
+        await deleteLearningBookRecords(deleteTarget.id);
+      }
     } catch (error) {
       console.warn(
         "[RevisionView] Book delete could not update IndexedDB:",
@@ -1175,10 +1363,10 @@ export function RevisionView() {
         }}
       />
       {activeConcept || activeLearningBook ? (
-        <div className="min-h-full flex w-full relative z-10 pt-16 md:pt-20">
+        <div className="min-h-full flex w-full relative z-10 pt-16 md:pt-20 shrink-0">
           {/* Sidebar Navigation */}
           {(isBuiltInBook || activeLearningBook) && (
-            <div className="w-64 border-r border-zinc-200/50 bg-[#faf9f6] hidden lg:block px-4 py-6 flex-shrink-0 sticky top-20 h-[calc(100vh-80px)] overflow-y-auto custom-scroll">
+            <div className="w-64 border-r border-zinc-200/50 bg-[#faf9f6] hidden lg:block px-4 py-6 flex-shrink-0 sticky top-20 h-[calc(100vh-80px)] overflow-y-auto custom-scroll self-start">
               <div className="sticky top-0 z-20 -mt-2 mb-4 border-b border-zinc-200/70 bg-[#faf9f6] pb-4 pt-2 shadow-[0_14px_28px_rgba(250,249,246,0.96)]">
                 <button
                   onClick={() => {
@@ -1293,9 +1481,10 @@ export function RevisionView() {
                           : activeLearningBook
                             ? activeLearningBook.chapters &&
                               activeLearningBook.chapters.length > 0
-                              ? activeLearningBook.chapters[currentChapterIndex]
-                                  ?.summary ||
-                                learningBookMarkdown(activeLearningBook)
+                              ? formatLearningChapterPage(
+                                  activeLearningBook,
+                                  currentChapterIndex,
+                                )
                               : learningBookMarkdown(activeLearningBook)
                             : sampleNotes[
                                 activeConcept!.id as keyof typeof sampleNotes
@@ -1361,74 +1550,93 @@ export function RevisionView() {
               Library
             </h1>
             <div className="text-sm font-mono text-zinc-500">
-              {learningBooks.length + concepts.length + 1} Books
+              {visibleLearningBooks.length + concepts.length + 1} Books
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {learningBooks.length === 0 && concepts.length === 0 && (
+            {visibleLearningBooks.length === 0 && concepts.length === 0 && (
               <div className="col-span-full h-64 flex items-center justify-center text-zinc-500 border border-white/10 border-dashed rounded-3xl">
                 No books discovered yet. Start chatting to learn new concepts.
               </div>
             )}
-            {learningBooks.map((book, index) => {
+            {visibleLearningBooks.map((book, index) => {
               const theme = themes[index % themes.length];
               const conceptCount = learningBookConcepts.filter(
                 (concept) => concept.bookId === book.id,
               ).length;
               const cardCount = flashcardsForBook(book).length;
               return (
-                <PatternCard
+                <LongPressWrapper
                   key={book.id}
-                  layoutId={`card-${book.id}`}
+                  onLongPress={() =>
+                    setDeleteTarget({
+                      id: book.id,
+                      name: book.title,
+                      kind: "learning",
+                    })
+                  }
                   onClick={() => {
                     setCurrentChapterIndex(0);
                     setActiveConceptId(book.id);
                   }}
-                  bgClass={theme.bg}
-                  SvgComponent={theme.SvgComponent}
-                  bloomColor={theme.bloom}
-                  bloomOpacity={theme.bloomOpacity}
-                  pressDotColor={
-                    theme.text.includes("1f1f1f") ? "#ff6e00" : "#fefefe"
-                  }
-                  pressRingColor={
-                    theme.text.includes("1f1f1f")
-                      ? "rgba(255,110,0,0.58)"
-                      : "rgba(254,254,254,0.58)"
-                  }
                 >
-                  <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
-                    <div
-                      className={`text-[11px] font-mono font-bold uppercase tracking-[0.16em] opacity-65 ${theme.text}`}
+                  {(pressing) => (
+                    <PatternCard
+                      layoutId={`card-${book.id}`}
+                      bgClass={theme.bg}
+                      SvgComponent={theme.SvgComponent}
+                      bloomColor={theme.bloom}
+                      bloomOpacity={theme.bloomOpacity}
+                      isPressing={pressing}
+                      pressDotColor={
+                        theme.text.includes("1f1f1f") ? "#ff6e00" : "#fefefe"
+                      }
+                      pressRingColor={
+                        theme.text.includes("1f1f1f")
+                          ? "rgba(255,110,0,0.58)"
+                          : "rgba(254,254,254,0.58)"
+                      }
                     >
-                      Learning Book · {conceptCount} concepts
-                      {cardCount > 0 ? ` · ${cardCount} cards` : ""}
-                    </div>
-                    <div
-                      className={`text-[25px] font-medium tracking-tight leading-[1.05] ${theme.text}`}
-                    >
-                      {book.title}
-                    </div>
-                    <div
-                      className={`text-[16px] font-light tracking-tight leading-[1.25] opacity-70 ${theme.text}`}
-                    >
-                      {book.overview ||
-                        book.knowledgeSummary ||
-                        book.summary ||
-                        "DeepSeek trace is building this map."}
-                    </div>
-                  </div>
-                </PatternCard>
+                      <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
+                        <div
+                          className={`text-[11px] font-mono font-bold uppercase tracking-[0.16em] opacity-65 ${theme.text}`}
+                        >
+                          Learning Book · {conceptCount} concepts
+                          {cardCount > 0 ? ` · ${cardCount} cards` : ""}
+                        </div>
+                        <div
+                          className={`text-[25px] font-medium tracking-tight leading-[1.05] ${theme.text}`}
+                        >
+                          {book.title}
+                        </div>
+                        <div
+                          className={`text-[16px] font-light tracking-tight leading-[1.25] opacity-70 ${theme.text}`}
+                        >
+                          {book.overview ||
+                            book.knowledgeSummary ||
+                            book.summary ||
+                            "DeepSeek trace is building this map."}
+                        </div>
+                      </div>
+                    </PatternCard>
+                  )}
+                </LongPressWrapper>
               );
             })}
             {concepts.map((concept, index) => {
               const theme =
-                themes[(index + learningBooks.length) % themes.length];
+                themes[(index + visibleLearningBooks.length) % themes.length];
               return (
                 <LongPressWrapper
                   key={concept.id}
-                  onLongPress={() => setDeleteTarget(concept)}
+                  onLongPress={() =>
+                    setDeleteTarget({
+                      id: concept.id,
+                      name: concept.name,
+                      kind: "built-in",
+                    })
+                  }
                   onClick={() => {
                     setCurrentChapterIndex(0);
                     setActiveConceptId(concept.id);

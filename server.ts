@@ -6,6 +6,8 @@ import path from "path";
 import { spawn, type ChildProcessWithoutNullStreams } from "child_process";
 import compression from "compression";
 import OpenAI from "openai";
+import multer from "multer";
+import { GoogleGenAI } from "@google/genai";
 import { WebSocketServer, WebSocket as WSWebSocket } from "ws";
 import {
   detectFreshnessSearch,
@@ -35,7 +37,8 @@ let pricingCache: {
 
 const PRICING_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PCM16_MONO_48K_BYTES_PER_SECOND = 48000 * 2;
-const LEARNING_AGENT_MODEL = "deepseek/deepseek-chat";
+const DEFAULT_CHAT_MODEL = "deepseek/deepseek-v4-flash";
+const LEARNING_AGENT_MODEL = "deepseek/deepseek-v4-flash";
 
 const roundCost = (value: number) =>
   Math.round((value || 0) * 1_000_000) / 1_000_000;
@@ -158,6 +161,15 @@ const fallbackLearningUpdate = (body: any) => {
   const project = String(body?.activeProject || "").trim();
   const userMessage = String(body?.userMessage || "").trim();
   const assistantMessage = String(body?.assistantMessage || "").trim();
+  const cleanAssistant =
+    assistantMessage
+      .replace(/\bPrompt:\s*/gi, "")
+      .replace(/\bLearning note:\s*/gi, "")
+      .replace(/\bReview hook:[\s\S]*$/gi, "")
+      .replace(/\s+/g, " ")
+      .trim() ||
+    userMessage.replace(/\s+/g, " ").trim() ||
+    "The learner explored a tutor concept.";
   const title =
     project && project !== "General Study"
       ? project
@@ -172,20 +184,16 @@ const fallbackLearningUpdate = (body: any) => {
     bookSource: "chat",
     overview: `A session learning book collecting the learner's tutor conversations about ${title}.`,
     chapterTitle: title === "General Study" ? "Conversation Notes" : title,
-    chapterSummary: assistantMessage.slice(0, 500) || userMessage.slice(0, 500),
-    conversationSummary:
-      assistantMessage.slice(0, 420) || userMessage.slice(0, 420),
-    knowledgeSummary: `Recent tutoring discussion about ${conceptName}.`,
+    chapterSummary: `Key idea: ${cleanAssistant}\n\nHow to review it: restate the idea, identify the mechanism, and test it with a fresh example.`,
+    conversationSummary: `Revision note: ${cleanAssistant}\n\nReview check: explain the takeaway without looking, then apply it to a new example.`,
+    knowledgeSummary: `Current learning focus: ${conceptName}. The learner should revise the core takeaway, the mechanism behind it, and one example application.`,
     conceptsLearned: [conceptName],
     risks: [],
     confidence: 0.45,
     concepts: [
       {
         name: conceptName,
-        summary:
-          assistantMessage.slice(0, 320) ||
-          userMessage.slice(0, 320) ||
-          "Learning topic discussed in chat.",
+        summary: `Key idea: ${cleanAssistant}\n\nApplication: turn the answer into a short explanation and one test example.`,
         mastery: 0.35,
         confidence: 0.45,
         parentConcepts: [],
@@ -204,6 +212,8 @@ async function startServer() {
   app.use(compression());
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "100mb", extended: true }));
+
+  const upload = multer({ dest: "uploads/" });
 
   // Log incoming requests for the Admin Server Console
   app.use((req, res, next) => {
@@ -348,11 +358,19 @@ async function startServer() {
       .reverse()
       .find((event: any) => event.type === "run-completed");
     const active = activeDebugJob?.id === id;
+    const updatedAtMs = summary.updatedAt ? Date.parse(summary.updatedAt) : 0;
+    const staleRunning =
+      summary.status === "running" &&
+      !active &&
+      !completeEvent &&
+      (!updatedAtMs || Date.now() - updatedAtMs > 60_000);
     const status = active
       ? "running"
-      : summary.status ||
-        completeEvent?.data?.status ||
-        (completeEvent ? "completed" : "unknown");
+      : staleRunning
+        ? "interrupted"
+        : summary.status ||
+          completeEvent?.data?.status ||
+          (completeEvent ? "completed" : "unknown");
 
     return {
       ...summary,
@@ -360,6 +378,7 @@ async function startServer() {
       status,
       startedAt: summary.startedAt || startEvent?.timestamp || null,
       finishedAt: summary.finishedAt || completeEvent?.timestamp || null,
+      updatedAt: summary.updatedAt || null,
       mode: summary.mode || startEvent?.data?.mode || null,
       scope: summary.scope || startEvent?.data?.scope || null,
       targetCount: Number(summary.targetCount || 0),
@@ -497,10 +516,13 @@ async function startServer() {
         error: "A debug run is already active.",
         activeRunId: activeDebugJob.id,
       });
-    const mode = req.body?.mode === "audit" ? "audit" : "fix";
+    const requestedMode = String(req.body?.mode || "fix");
+    const mode = ["audit", "fix", "scan"].includes(requestedMode)
+      ? requestedMode
+      : "fix";
     const scope =
-      String(req.body?.scope || "all").replace(/[^a-zA-Z0-9_./:-]/g, "") ||
-      "all";
+      String(req.body?.scope || "changed").replace(/[^a-zA-Z0-9_./:-]/g, "") ||
+      "changed";
     const runId = `debug-${new Date().toISOString().replace(/[:.]/g, "-")}`;
     seedDebugRun(runId, mode, scope);
     const child = spawn(
@@ -545,6 +567,7 @@ async function startServer() {
         .status(404)
         .json({ error: "No active debug run with that id." });
     activeDebugJob.child.kill("SIGTERM");
+    persistDebugExit(safeId, null);
     activeDebugJob = null;
     res.json({ ok: true, cancelled: safeId });
   });
@@ -579,6 +602,114 @@ async function startServer() {
         pricing: DEEPGRAM_PRICING,
       },
     });
+  });
+
+  // API Route to Ingest and Classify Documents
+  app.post("/api/documents/ingest", upload.single("file"), async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    const filePath = req.file.path;
+    try {
+      const { execFile } = await import("child_process");
+      execFile(
+        "python3",
+        ["scripts/classify_and_extract.py", filePath],
+        { maxBuffer: 1024 * 1024 * 96, timeout: 120_000 },
+        async (error, stdout, stderr) => {
+          // Clean up the uploaded file
+          fs.unlink(filePath, () => {});
+          if (error) {
+            console.error("Python Extraction Error:", stderr);
+            return res
+              .status(500)
+              .json({ error: "Failed to process document" });
+          }
+
+          let result;
+          try {
+            const jsonMatch = stdout.match(/\{[\s\S]*\}/);
+            const jsonStr = jsonMatch ? jsonMatch[0] : stdout;
+            result = JSON.parse(jsonStr);
+          } catch (e) {
+            console.error("Failed to parse JSON from Python script:", stdout);
+            return res
+              .status(500)
+              .json({ error: "Invalid response from python script" });
+          }
+
+          if (result.error) {
+            return res.status(400).json({ error: result.error });
+          }
+
+          let extractedText = result.content || "";
+
+          // If Scanned or Mixed, perform Vision Parsing on page images.
+          if (
+            result.classification === "Scanned" ||
+            result.classification === "Mixed"
+          ) {
+            const authHeader = req.headers.authorization;
+            const bearerMatch = (authHeader || "").match(/^Bearer\s+(.+)$/i);
+            const apiKey = bearerMatch
+              ? bearerMatch[1].trim()
+              : process.env.OPENROUTER_API_KEY;
+
+            if (apiKey && result.images && result.images.length > 0) {
+              try {
+                const openai = new OpenAI({
+                  baseURL: "https://openrouter.ai/api/v1",
+                  apiKey: apiKey,
+                });
+
+                for (const img of result.images) {
+                  const response = await openai.chat.completions.create({
+                    model: "qwen/qwen2.5-vl-72b-instruct",
+                    messages: [
+                      {
+                        role: "user",
+                        content: [
+                          {
+                            type: "text",
+                            text: `Extract all readable text, diagrams, tables, and layout cues from page ${Number(img.page_num ?? 0) + 1}. Output concise markdown only from the provided source image; do not add outside facts.`,
+                          },
+                          {
+                            type: "image_url",
+                            image_url: {
+                              url: `data:${img.mime_type};base64,${img.data}`,
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  });
+
+                  const pageText =
+                    response.choices[0]?.message?.content?.trim();
+                  if (pageText) {
+                    extractedText += `\n\n## OCR / Vision Page ${Number(img.page_num ?? 0) + 1}\n\n${pageText}`;
+                  }
+                }
+              } catch (visionError) {
+                console.error("Vision API Error:", visionError);
+              }
+            }
+          }
+
+          res.json({
+            classification: result.classification,
+            extractionMode: result.extraction_mode,
+            totalPages: result.total_pages,
+            pagesWithText: result.pages_with_text,
+            renderedImagePages: result.images?.length || 0,
+            content: extractedText,
+          });
+        },
+      );
+    } catch (e: any) {
+      fs.unlink(filePath, () => {});
+      res.status(500).json({ error: e.message });
+    }
   });
 
   // API Route to Generate Title
@@ -697,7 +828,7 @@ async function startServer() {
       const { action, payload } = req.body;
 
       const response = await openai.chat.completions.create({
-        model: "deepseek/deepseek-chat",
+        model: LEARNING_AGENT_MODEL,
         messages: [
           {
             role: "system",
@@ -764,9 +895,9 @@ Schema:
   "bookSource": "chat|pdf|library|mixed",
   "overview": "stable overview of the whole session learning book",
   "chapterTitle": "short chapter title for this conversation",
-  "chapterSummary": "chapter-level note that can be merged into the book",
-  "conversationSummary": "one concise paragraph",
-  "knowledgeSummary": "what the learner now appears to know",
+  "chapterSummary": "dense study notes for this conversation: 4-8 sentences that capture definitions, mechanisms, examples, mistakes, and how to apply the idea",
+  "conversationSummary": "notebook-quality learning note, not a chat recap: write the actual takeaways a learner would review later",
+  "knowledgeSummary": "cumulative notes on what the learner now appears to know, including precise concept relationships",
   "conceptsLearned": ["plain names of concepts learned or practiced"],
   "risks": ["misconceptions or weak spots"],
   "confidence": 0.0,
@@ -783,7 +914,11 @@ Schema:
   ]
 }
 Maintain one learning book for the current session. Use bookTitle as the broad session title (e.g. "Python Programming"). 
-CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapterTitle\` based strictly on what the user actually asked about in this message (e.g. "List Comprehensions", "Promises and Async/Await", "Calculus Integrals"). DO NOT use generic chapter titles like "Conversation Notes". If the current book already exists, prefer continuing it and adding/refining chapters. Do not invent advanced concepts absent from the conversation.`,
+CRITICAL RULES:
+- You MUST dynamically generate a specific, highly relevant \`chapterTitle\` based strictly on what the user actually asked about in this message (e.g. "List Comprehensions", "Promises and Async/Await", "Calculus Integrals"). DO NOT use generic chapter titles like "Conversation Notes".
+- The summaries must be substantial study notes. Avoid one-line summaries. Capture the actual learning, key distinctions, worked examples, misconceptions, and next review hooks.
+- Each concept summary should be useful by itself when shown in the Revision library. Include how the concept works, not just that it was mentioned.
+- If the current book already exists, prefer continuing it and adding/refining chapters. Do not invent advanced concepts absent from the conversation.`,
           },
           {
             role: "user",
@@ -853,7 +988,6 @@ CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapt
             content: `Please generate flashcards from this text:\n\n${content}`,
           },
         ],
-        response_format: { type: "json_object" },
         tools: [
           {
             type: "function",
@@ -896,15 +1030,48 @@ CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapt
         }
       } else if (message?.content) {
         try {
-          const parsed = JSON.parse(message.content);
+          const parsed = extractJsonObject(message.content);
           if (parsed.cards) cards = parsed.cards;
         } catch (e) {}
+      }
+
+      if (!Array.isArray(cards) || cards.length === 0) {
+        const sentences = content
+          .replace(/\s+/g, " ")
+          .split(/(?<=[.!?])\s+/)
+          .filter((sentence) => sentence.trim().length > 35)
+          .slice(0, 3);
+        cards = (sentences.length ? sentences : [content.slice(0, 280)]).map(
+          (sentence, index) => ({
+            front:
+              index === 0
+                ? "What is the core idea from this tutor answer?"
+                : `What should you remember from note ${index + 1}?`,
+            back: sentence.trim(),
+          }),
+        );
       }
 
       res.json({ cards });
     } catch (error) {
       console.warn("[FLASHCARDS] Generation failed:", error);
-      res.status(500).json({ error: "Failed to generate flashcards" });
+      const sentences = content
+        .replace(/\s+/g, " ")
+        .split(/(?<=[.!?])\s+/)
+        .filter((sentence) => sentence.trim().length > 35)
+        .slice(0, 3);
+      res.json({
+        cards: (sentences.length ? sentences : [content.slice(0, 280)]).map(
+          (sentence, index) => ({
+            front:
+              index === 0
+                ? "What is the core idea from this tutor answer?"
+                : `What should you remember from note ${index + 1}?`,
+            back: sentence.trim(),
+          }),
+        ),
+        fallback: true,
+      });
     }
   });
 
@@ -1063,7 +1230,10 @@ CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapt
         apiKey: apiKey,
       });
 
-      const requestedModel = aiModel || "deepseek/deepseek-chat";
+      const requestedModel =
+        aiModel === "deepseek/deepseek-chat"
+          ? DEFAULT_CHAT_MODEL
+          : aiModel || DEFAULT_CHAT_MODEL;
       let usedModelForUsage = requestedModel;
       let inputTokens = 0;
       let outputTokens = 0;
@@ -1072,6 +1242,19 @@ CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapt
       const latestUserContent =
         [...(messages || [])].reverse().find((m: any) => m?.role === "user")
           ?.content || "";
+      const sourceMaterialRequest =
+        /\b(current|this|the)\s+(page|screen|document|pdf|chapter|section|slide|image|diagram|chart|figure)\b/i.test(
+          latestUserContent,
+        ) ||
+        /\b(what'?s|what is|explain|summari[sz]e|describe)\s+(this|the)\b/i.test(
+          latestUserContent,
+        ) ||
+        /\b(on the screen|visible|shown|source material|uploaded document|reading)\b/i.test(
+          latestUserContent,
+        );
+      const requestedWebSearch = Boolean(
+        detectFreshnessSearch(latestUserContent),
+      );
       const mergeWebSources = (sources: NormalizedWebSource[]) => {
         const byUrl = new Map(webSources.map((source) => [source.url, source]));
         sources.forEach((source) => byUrl.set(source.url, source));
@@ -1146,7 +1329,8 @@ Keep the tone professional and do not use emojis unless the user explicitly asks
 IMPORTANT TOOL USAGE INSTRUCTIONS:
 1. If the user asks questions about "the current page", "this chapter", "the document", "the screen", or asks you to explain something visible in what they are reading, use the provided screenshot context when present. If you need an additional page inspection and the \`look_at_current_page\` tool is available, call it. Do NOT claim you cannot see the screen when screenshot context is attached.
 2. If the user requests flashcards, active recall questions, or revision cards, YOU MUST forcefully use the \`generate_flashcards\` tool to create them. NEVER simply write out the flashcards in text. ALWAYS use the tool. Start your message slightly confirming you generated them and suggest they navigate to the Revision tab.
-3. If the user asks for latest, current, recent, news, rankings, pricing, releases, trends, sports scores, or explicitly asks to search the web, use the \`web_search\` tool unless live web sources are already provided in the prompt. When using web sources, cite freshness-sensitive claims with compact references like [1] and [2]. Do not dump raw URLs in the answer body.`;
+3. Source-material questions come first. If the user asks "what is this about", "what's on the screen", "what is this page about", "explain this page", "summarize this document", or similar reading-context questions, answer from selected text, active library context, and the page image via \`look_at_current_page\` when available. Do not use \`web_search\` for these questions unless the user explicitly asks to search the web.
+4. Use \`web_search\` only when the user explicitly asks for web/internet/online search, or when the answer depends on fresh external facts such as latest/current/recent news, rankings, pricing, releases, trends, sports scores, elections, weather, laws, schedules, or named people/company roles. When using web sources, cite freshness-sensitive claims with compact references like [1] and [2]. Do not dump raw URLs in the answer body.`;
 
       if (customPrompt) {
         systemInstruction = `${customPrompt}\n\n${systemInstruction}`;
@@ -1154,6 +1338,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
       if (memoryContext) {
         systemInstruction += `\n\n${memoryContext}`;
+      }
+
+      if (currentPageImage && sourceMaterialRequest) {
+        systemInstruction += `\n\nCURRENT PAGE IMAGE IS ATTACHED THROUGH THE look_at_current_page TOOL. For this source-material request, call look_at_current_page before answering and answer from the page image plus selected/library context. Do not use web_search unless the user explicitly asks for web search.`;
       }
 
       if (language === "ja") {
@@ -1164,7 +1352,9 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
       // Eager vision prefetch removed. Vision tool look_at_current_page is registered if currentPageImage is present.
 
-      const freshnessSearch = detectFreshnessSearch(latestUserContent);
+      const freshnessSearch = requestedWebSearch
+        ? detectFreshnessSearch(latestUserContent)
+        : null;
       if (freshnessSearch) {
         sendEvent("reasoning_summary", {
           content: "Detecting freshness requirement",
@@ -1254,7 +1444,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           function: {
             name: "web_search",
             description:
-              "Search the live web when the user needs current, recent, external, or freshness-sensitive information. Use news for headlines or events.",
+              "Search the live web only when the user explicitly asks for web/internet/online search or needs fresh external facts. Do not use for current page, screen, document, PDF, selected text, uploaded source material, or active library questions.",
             parameters: {
               type: "object",
               properties: {
@@ -1482,6 +1672,15 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             }
           } else if (functionName === "web_search") {
             try {
+              if (!requestedWebSearch) {
+                formattedMessages.push({
+                  role: "tool",
+                  tool_call_id: toolCall.id,
+                  content:
+                    "Web search denied for this turn. Answer from the provided source material, selected text, memory context, and page image if available.",
+                });
+                continue;
+              }
               sendEvent("reasoning_summary", {
                 content: "Searching live web sources",
               });

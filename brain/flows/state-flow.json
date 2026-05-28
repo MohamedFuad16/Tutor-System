@@ -134,8 +134,8 @@
     {
       "field": "pdfUrl",
       "readers": [
-        "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx"
+        "src/views/StudyView.tsx",
+        "src/components/PdfViewer.tsx"
       ],
       "writers": []
     },
@@ -305,13 +305,15 @@
     {
       "field": "setPdfPage",
       "readers": [
-        "src/views/StudyView.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/components/PdfViewer.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": [
         "src/views/StudyView.tsx",
         "src/components/PdfViewer.tsx",
-        "src/views/RevisionView.tsx"
+        "src/views/RevisionView.tsx",
+        "src/components/ChatPanel.tsx"
       ]
     },
     {
@@ -325,9 +327,11 @@
       "field": "setPdfTotalPages",
       "readers": [
         "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx"
+        "src/views/StudyView.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": [
+        "src/components/ChatPanel.tsx",
         "src/views/StudyView.tsx",
         "src/components/PdfViewer.tsx"
       ]
@@ -335,9 +339,11 @@
     {
       "field": "setPdfUrl",
       "readers": [
-        "src/views/StudyView.tsx"
+        "src/views/StudyView.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": [
+        "src/components/ChatPanel.tsx",
         "src/views/StudyView.tsx"
       ]
     },
@@ -570,6 +576,21 @@
       "file": "src/components/ChatPanel.tsx",
       "field": "setSelectedTextContext",
       "selector": "(state) => state.setSelectedTextContext"
+    },
+    {
+      "file": "src/components/ChatPanel.tsx",
+      "field": "setPdfUrl",
+      "selector": "(state) => state.setPdfUrl"
+    },
+    {
+      "file": "src/components/ChatPanel.tsx",
+      "field": "setPdfPage",
+      "selector": "(state) => state.setPdfPage"
+    },
+    {
+      "file": "src/components/ChatPanel.tsx",
+      "field": "setPdfTotalPages",
+      "selector": "(state) => state.setPdfTotalPages"
     },
     {
       "file": "src/components/ChatPanel.tsx",

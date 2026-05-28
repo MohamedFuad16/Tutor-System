@@ -100,12 +100,41 @@ const normalizeRows = (payload: any, mode: WebSearchMode, maxResults: number) =>
   return results.slice(0, maxResults);
 };
 
-export function detectFreshnessSearch(text: string): { query: string; mode: WebSearchMode } | null {
+export function detectFreshnessSearch(
+  text: string,
+): { query: string; mode: WebSearchMode } | null {
   const value = text.toLowerCase();
-  const explicit = /\b(search|web|browse|internet|google|look up)\b/.test(value);
-  const fresh = /\b(latest|current|recent|today|yesterday|this week|this month|now|new|news|trend|trending|pricing|price|release|released|ranking|rankings|best .*20\d{2}|who won|score|game|election|weather)\b/.test(value);
+  const sourceMaterialRequest =
+    /\b(current|this|the)\s+(page|screen|document|pdf|chapter|section|slide|image|diagram|chart|figure)\b/.test(
+      value,
+    ) ||
+    /\b(what'?s|what is|explain|summari[sz]e|describe)\s+(this|the)\b/.test(
+      value,
+    ) ||
+    /\b(on the screen|visible|shown|source material|uploaded document|reading)\b/.test(
+      value,
+    );
+  const explicitExternal =
+    /\b(search|browse|google|look up)\s+(the\s+)?(web|internet|online)\b/.test(
+      value,
+    ) ||
+    /\b(web search|internet search|search online|from the web|on the web)\b/.test(
+      value,
+    );
+  if (sourceMaterialRequest && !explicitExternal) return null;
+
+  const explicit = explicitExternal || /\b(search the web|browse the web)\b/.test(value);
+  const fresh =
+    /\b(latest|recent|today|yesterday|this week|this month|right now|breaking|news|trend|trending|pricing|price|release|released|ranking|rankings|best .*20\d{2}|who won|score|game|election|weather)\b/.test(
+      value,
+    ) ||
+    /\bcurrent\s+(price|pricing|version|release|model|news|weather|score|ranking|rankings|ceo|president|law|rule|schedule)\b/.test(
+      value,
+    );
   if (!explicit && !fresh) return null;
-  const mode: WebSearchMode = /\b(news|today|headline|headlines|happened)\b/.test(value) ? "news" : "search";
+  const mode: WebSearchMode = /\b(news|today|headline|headlines|happened)\b/.test(value)
+    ? "news"
+    : "search";
   return { query: text.trim().slice(0, 240), mode };
 }
 

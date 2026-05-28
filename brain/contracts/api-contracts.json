@@ -108,6 +108,16 @@
       "responseFormat": "application/json",
       "generatedFromSource": true
     },
+    "POST /api/documents/ingest": {
+      "method": "POST",
+      "path": "/api/documents/ingest",
+      "serverFile": "server.ts",
+      "clients": [
+        "src/views/StudyView.tsx"
+      ],
+      "responseFormat": "application/json",
+      "generatedFromSource": true
+    },
     "POST /api/generate-flashcards": {
       "method": "POST",
       "path": "/api/generate-flashcards",
@@ -134,7 +144,8 @@
       "serverFile": "server.ts",
       "clients": [
         "src/lib/tutorBook.json",
-        "src/memory/memory.orchestrator.ts"
+        "src/memory/memory.orchestrator.ts",
+        "src/views/StudyView.tsx"
       ],
       "responseFormat": "application/json",
       "generatedFromSource": true
@@ -263,6 +274,14 @@
     {
       "file": "src/views/AdminView.tsx",
       "endpoint": "/api/debug/stop"
+    },
+    {
+      "file": "src/views/StudyView.tsx",
+      "endpoint": "/api/documents/ingest"
+    },
+    {
+      "file": "src/views/StudyView.tsx",
+      "endpoint": "/api/learning-book-update"
     }
   ]
 }

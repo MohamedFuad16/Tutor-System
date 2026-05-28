@@ -24,6 +24,7 @@ type CommandResult = {
   output: string;
   startedAt: string;
   finishedAt: string;
+  timedOut?: boolean;
 };
 
 type ComponentTarget = {
@@ -77,10 +78,22 @@ const DEBUG_PROCESS: DebugPhase[] = [
       "Classify the file role, target kind, and implementation intent.",
   },
   {
+    id: "lock-scope",
+    title: "Lock scope",
+    description:
+      "Confirm the target belongs to the requested task scope before spending global gates.",
+  },
+  {
     id: "analyze-dependencies",
     title: "Analyze dependencies",
     description:
       "Run impact analysis and capture upstream/downstream coupling.",
+  },
+  {
+    id: "verify-mutation-boundary",
+    title: "Verify boundary",
+    description:
+      "Check generated-artifact, database, routing, API, and broad shared-state boundaries before patching.",
   },
   {
     id: "detect-anti-patterns",
@@ -139,6 +152,48 @@ const DEBUG_PROCESS: DebugPhase[] = [
       "Check icon buttons, images, labels, keyboard reachability, and semantics.",
   },
   {
+    id: "verify-live-surface",
+    title: "Verify live surface",
+    description:
+      "For UI targets, require rendered, interactive, non-static surfaces that can be smoke-tested.",
+  },
+  {
+    id: "execute-browser",
+    title: "Execute browser",
+    description:
+      "Run the local app in a real browser automation context before accepting UI findings.",
+  },
+  {
+    id: "test-viewports",
+    title: "Test viewports",
+    description:
+      "Verify mobile, tablet, and desktop dimensions for overflow, clipping, and blank states.",
+  },
+  {
+    id: "simulate-interactions",
+    title: "Simulate interactions",
+    description:
+      "Click, type, toggle, navigate, and scroll through the target surface where possible.",
+  },
+  {
+    id: "instrument-runtime",
+    title: "Instrument runtime",
+    description:
+      "Capture browser console errors, frame timing, responsiveness, and route/runtime signals.",
+  },
+  {
+    id: "check-visual-regression",
+    title: "Check visual regression",
+    description:
+      "Record screenshot hashes and visual nonblank/overflow evidence for regression comparison.",
+  },
+  {
+    id: "test-state-transitions",
+    title: "Test state transitions",
+    description:
+      "Exercise route, toggle, loading, empty, disabled, error, and persisted-state transitions.",
+  },
+  {
     id: "compare-best-practices",
     title: "Compare against best practices",
     description:
@@ -155,6 +210,12 @@ const DEBUG_PROCESS: DebugPhase[] = [
     title: "Generate improvements",
     description:
       "Produce a target-specific strategy from findings and evidence.",
+  },
+  {
+    id: "gate-patch-safety",
+    title: "Gate patch safety",
+    description:
+      "Patch only when evidence, scope, hash guard, and validation plan are strong enough.",
   },
   {
     id: "apply-patch",
@@ -183,16 +244,24 @@ const DEBUG_PROCESS: DebugPhase[] = [
 
 const DEBUG_LOOP = [
   "scan",
+  "scope",
   "understand",
   "audit",
-  "benchmark",
+  "boundary check",
   "detect bugs",
+  "verify live UI",
+  "execute browser",
+  "test viewports",
+  "simulate interactions",
+  "instrument runtime",
+  "check visual regressions",
+  "test state transitions",
   "search best practices",
   "compare implementations",
+  "gate patch safety",
   "patch issues",
-  "rerun tests",
-  "validate fixes",
-  "measure regressions",
+  "run focused validation",
+  "measure targeted regressions",
   "persist findings into brain",
   "repeat",
 ];
@@ -245,7 +314,12 @@ function appendNdjson(file: string, value: unknown) {
 function run(
   command: string,
   args: string[],
-  options: { allowFailure?: boolean; maxBuffer?: number } = {},
+  options: {
+    allowFailure?: boolean;
+    maxBuffer?: number;
+    timeoutMs?: number;
+    env?: NodeJS.ProcessEnv;
+  } = {},
 ): CommandResult {
   const startedAt = new Date().toISOString();
   const label = [command, ...args].join(" ");
@@ -254,16 +328,22 @@ function run(
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     maxBuffer: options.maxBuffer ?? 1024 * 1024 * 12,
-    env: process.env,
+    env: options.env ? { ...process.env, ...options.env } : process.env,
+    timeout: options.timeoutMs,
   });
+  const timedOut =
+    (result.error as { code?: string } | undefined)?.code === "ETIMEDOUT";
   const output = `${result.stdout || ""}${result.stderr || ""}`.slice(-180_000);
   const commandResult = {
     command: label,
     ok: result.status === 0,
-    exitCode: result.status ?? 1,
-    output,
+    exitCode: result.status ?? (timedOut ? 124 : 1),
+    output: timedOut
+      ? `${output}\nCommand timed out after ${options.timeoutMs}ms.`
+      : output,
     startedAt,
     finishedAt: new Date().toISOString(),
+    timedOut,
   };
   if (!commandResult.ok && !options.allowFailure) {
     throw new Error(
@@ -281,14 +361,16 @@ function runUiRegressionWithRetry(componentCommands: CommandResult[]) {
   const first = run("npm", ["run", "--silent", "brain:ui-regression"], {
     allowFailure: true,
     maxBuffer: 1024 * 1024 * 24,
+    timeoutMs: 90_000,
   });
   componentCommands.push(first);
-  if (first.ok) return first;
+  if (first.ok || first.timedOut) return first;
 
   const retry = labelCommand(
     run("npm", ["run", "--silent", "brain:ui-regression"], {
       allowFailure: true,
       maxBuffer: 1024 * 1024 * 24,
+      timeoutMs: 90_000,
     }),
     "(retry after failed sample)",
   );
@@ -306,6 +388,29 @@ function sourceFilesFromGit() {
       .split("\n")
       .map((file) => file.trim())
       .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function changedFilesFromGit() {
+  try {
+    const changed = new Set<string>();
+    for (const args of [
+      ["diff", "--name-only", "HEAD"],
+      ["diff", "--name-only", "--cached"],
+    ]) {
+      execFileSync("git", args, {
+        cwd: ROOT,
+        encoding: "utf8",
+        maxBuffer: 1024 * 1024,
+      })
+        .split("\n")
+        .map((file) => file.trim())
+        .filter(Boolean)
+        .forEach((file) => changed.add(file));
+    }
+    return [...changed];
   } catch {
     return [];
   }
@@ -348,12 +453,36 @@ function targetNameForFile(file: string) {
 function discoverSourceTargets(): ComponentTarget[] {
   return sourceFilesFromGit()
     .filter(isAuditableSourceFile)
+    .filter((file) => fs.existsSync(path.join(ROOT, file)))
     .map((file) => ({
       id: `source:${file}`,
       name: targetNameForFile(file),
       file,
       kind: targetKindForFile(file),
     }));
+}
+
+function targetSortGroup(target: ComponentTarget) {
+  if (/^src\/views\//.test(target.file)) return 0;
+  if (/^src\/components\//.test(target.file)) return 1;
+  if (
+    /^src\/(store|hooks|context|memory|lib|brain-runtime)\//.test(target.file)
+  )
+    return 2;
+  if (/^server\.ts$/.test(target.file)) return 3;
+  if (/^scripts\//.test(target.file)) return 4;
+  if (/^brain\//.test(target.file)) return 5;
+  return 6;
+}
+
+function sortDebugTargets(targets: ComponentTarget[]) {
+  return [...targets].sort(
+    (a, b) =>
+      targetSortGroup(a) - targetSortGroup(b) ||
+      a.file.localeCompare(b.file) ||
+      a.kind.localeCompare(b.kind) ||
+      a.name.localeCompare(b.name),
+  );
 }
 
 function targetPriority(target: ComponentTarget) {
@@ -386,12 +515,7 @@ function dedupeTargetsByFile(targets: ComponentTarget[]) {
   for (const target of targets) {
     byFile.set(target.file, bestTargetForFile(byFile.get(target.file), target));
   }
-  return [...byFile.values()].sort(
-    (a, b) =>
-      a.file.localeCompare(b.file) ||
-      a.kind.localeCompare(b.kind) ||
-      a.name.localeCompare(b.name),
-  );
+  return sortDebugTargets([...byFile.values()]);
 }
 
 function discoverTargets(scope: string): ComponentTarget[] {
@@ -429,6 +553,10 @@ function discoverTargets(scope: string): ComponentTarget[] {
     ...discoverSourceTargets(),
   ]);
   if (scope === "all") return unique;
+  if (scope === "changed") {
+    const changed = new Set(changedFilesFromGit());
+    return unique.filter((target) => changed.has(target.file));
+  }
   const normalized = scope.replace(/^component:/, "").replace(/^file:/, "");
   return unique.filter(
     (target) =>
@@ -436,6 +564,114 @@ function discoverTargets(scope: string): ComponentTarget[] {
       target.file.toLowerCase().includes(normalized.toLowerCase()) ||
       target.kind.toLowerCase().includes(normalized.toLowerCase()),
   );
+}
+
+function isUiTarget(target: ComponentTarget) {
+  return (
+    /\.(tsx|jsx)$/.test(target.file) &&
+    (/^src\/(components|views)\//.test(target.file) ||
+      target.kind === "component" ||
+      target.kind === "route")
+  );
+}
+
+function isGeneratedOrArtifactTarget(target: ComponentTarget) {
+  return (
+    /^brain\/(debug\/runs|debug\/backups|reference-docs|snapshots|verification)\//.test(
+      target.file,
+    ) || /\.(json|md|map)$/.test(target.file)
+  );
+}
+
+function targetTouchesHighRiskBoundary(target: ComponentTarget, text: string) {
+  return {
+    database: /dexie|db\.version|indexedDB|schema/i.test(text),
+    routing: /ViewState|setActiveView|activeView|createBrowserRouter/i.test(
+      text,
+    ),
+    api:
+      /^server\.ts$/.test(target.file) ||
+      /app\.(get|post|put|patch|delete)/.test(text),
+    websocket: /WebSocket|EventSource|SSE/i.test(text),
+    sharedState: /zustand|useStore|create<|set\(/.test(text),
+  };
+}
+
+function liveSurfaceReview(target: ComponentTarget, text: string) {
+  const interactiveSignals = [
+    /onClick=/,
+    /onChange=/,
+    /onSubmit=/,
+    /useState\(/,
+    /aria-pressed=/,
+    /role=["']tab/,
+    /input\b|select\b|textarea\b/,
+  ];
+  const isInteractive = interactiveSignals.some((pattern) =>
+    pattern.test(text),
+  );
+  const notes: string[] = [];
+  if (!isUiTarget(target)) {
+    notes.push("Non-UI target; live surface smoke is not required.");
+  } else if (isInteractive) {
+    notes.push(
+      "UI target has local interactive controls or stateful preview signals.",
+    );
+  } else {
+    notes.push(
+      "UI target looks static; verify the rendered surface has testable controls before accepting visual changes.",
+    );
+  }
+  if (
+    target.file === "src/views/RevisionView.tsx" &&
+    /UI Component Snapshots/i.test(text) &&
+    !/LiveComponentPreview/.test(text)
+  ) {
+    notes.push(
+      "Revision design-language snapshots should use live previews, not static mock cards.",
+    );
+  }
+  return {
+    required: isUiTarget(target),
+    requiredEvidence: isUiTarget(target)
+      ? [
+          "actual browser execution",
+          "viewport testing",
+          "interaction simulation",
+          "runtime instrumentation",
+          "visual regression checks",
+          "state transition testing",
+        ]
+      : [],
+    interactiveSignals: interactiveSignals
+      .filter((pattern) => pattern.test(text))
+      .map((pattern) => pattern.source),
+    notes,
+  };
+}
+
+function shouldRunWorkspaceGates(scope: string, changed: boolean) {
+  return changed || scope !== "all";
+}
+
+/**
+ * Skill.md §99-105: Every UI target must collect evidence for actual browser
+ * execution, viewport testing, interaction simulation, runtime instrumentation,
+ * visual regression checks, and state transition testing — regardless of
+ * whether the file changed or the scope is "all". This is SEPARATE from the
+ * workspace gate (lint/build/benchmark) deferral which still applies.
+ */
+function shouldRunBrowserEvidence(target: ComponentTarget) {
+  return isUiTarget(target);
+}
+
+function shouldRunTargetRuntime(
+  scope: string,
+  target: ComponentTarget,
+  changed: boolean,
+) {
+  // Runtime benchmark and full workspace gates still defer for unchanged all-scope.
+  return changed || (scope !== "all" && isUiTarget(target));
 }
 
 function docsForFile(file: string) {
@@ -637,6 +873,46 @@ function detectIssues(target: ComponentTarget, text: string): DetectorReport {
   );
   pushIf(
     report,
+    "api",
+    target.file === "server.ts" &&
+      /\/api\/documents\/ingest/.test(text) &&
+      /execFile\(/.test(text) &&
+      !/maxBuffer/.test(text),
+    "Document ingestion shells out without an enlarged maxBuffer; scanned PDFs can overflow stdout with base64 page images.",
+  );
+  pushIf(
+    report,
+    "api",
+    target.file === "server.ts" &&
+      /web_search/.test(text) &&
+      !/Source-material questions come first/.test(text),
+    "Chat search policy does not explicitly prioritize selected text, active book context, and current page vision before live web search.",
+  );
+  pushIf(
+    report,
+    "api",
+    /deepseek\/deepseek-chat/.test(text) &&
+      !/normalizeAiModel|legacy|deprecated|compatibility/.test(text),
+    "Legacy DeepSeek chat alias detected; prefer the explicit DeepSeek V4 Flash model slug where chat defaults are configured.",
+  );
+  pushIf(
+    report,
+    "api",
+    target.file === "server/web-search.ts" &&
+      /latest\|current\|recent/.test(text) &&
+      !/sourceMaterialRequest/.test(text),
+    "Freshness detector lacks a source-material guard; current page/screen questions may trigger unnecessary web search.",
+  );
+  pushIf(
+    report,
+    "api",
+    target.file === "scripts/classify_and_extract.py" &&
+      /Scanned/.test(text) &&
+      !/MAX_VISION_PAGES/.test(text),
+    "Scanned document extraction renders page images without an explicit page cap.",
+  );
+  pushIf(
+    report,
     "accessibility",
     jsxSource && /<img\b(?![^>]*\balt=)/.test(text),
     "Image element without an alt attribute detected.",
@@ -649,6 +925,38 @@ function detectIssues(target: ComponentTarget, text: string): DetectorReport {
         text,
       ),
     "Icon-first button may need an accessible label.",
+  );
+  pushIf(
+    report,
+    "render",
+    target.file === "src/views/RevisionView.tsx" &&
+      /UI Component Snapshots/i.test(text) &&
+      !/LiveComponentPreview/.test(text),
+    "Design-language UI snapshots should render live component previews instead of static mockups.",
+  );
+  pushIf(
+    report,
+    "render",
+    target.file === "src/views/RevisionView.tsx" &&
+      /Wireframe Connections/i.test(text) &&
+      !/markerEnd|arrow|connections/i.test(text),
+    "Design-language wireframes should show clear directional connections, not isolated labels.",
+  );
+  pushIf(
+    report,
+    "render",
+    target.file === "src/views/RevisionView.tsx" &&
+      /WireframeMap/.test(text) &&
+      /wireframeNodes[\s\S]{0,500}absolute/.test(text),
+    "Wireframe map uses absolute floating nodes; prefer responsive zones or graph layout so labels cannot overlap on notebook widths.",
+  );
+  pushIf(
+    report,
+    "render",
+    target.file === "src/views/RevisionView.tsx" &&
+      /Library Book Card/.test(text) &&
+      !/PatternCard/.test(text),
+    "Design-language library snapshots should reuse the real book-card visual primitive rather than a generic card.",
   );
 
   if (target.kind === "route" || target.kind === "component") {
@@ -792,6 +1100,41 @@ function hasPotentialLeakyEventListener(text: string) {
 
 function readUiRegressionReport() {
   return readJson<Record<string, unknown> | null>(UI_REGRESSION_REPORT, null);
+}
+
+function summarizeUiRegressionEvidence(report: Record<string, unknown> | null) {
+  const results = Array.isArray(report?.results) ? report.results : [];
+  return {
+    ok: report?.ok === true,
+    url: report?.url,
+    requiredEvidence: report?.requiredEvidence ?? [],
+    viewportCount: results.length,
+    viewports: results.map((result) => {
+      const item = result as {
+        name?: string;
+        width?: number;
+        height?: number;
+        horizontalOverflow?: number;
+        browserExecuted?: boolean;
+        interactionSimulation?: Record<string, boolean>;
+        runtimeInstrumentation?: Record<string, unknown>;
+        visualChecks?: Record<string, unknown>;
+        stateTransitions?: Record<string, unknown>;
+      };
+      return {
+        name: item.name,
+        width: item.width,
+        height: item.height,
+        browserExecuted: item.browserExecuted,
+        horizontalOverflow: item.horizontalOverflow,
+        interactionSimulation: item.interactionSimulation,
+        runtimeInstrumentation: item.runtimeInstrumentation,
+        visualChecks: item.visualChecks,
+        stateTransitions: item.stateTransitions,
+      };
+    }),
+    failures: report?.failures ?? [],
+  };
 }
 
 function ensureDocs() {
@@ -980,7 +1323,16 @@ function main() {
       "--reason",
       `debug-preflight:${runId}`,
     ],
-    { allowFailure: true },
+    {
+      allowFailure: true,
+      timeoutMs: 120_000,
+      env: {
+        BRAIN_POSTCHANGE_SKIP_RUNTIME:
+          skipRuntime || scope === "all"
+            ? "1"
+            : process.env.BRAIN_POSTCHANGE_SKIP_RUNTIME,
+      },
+    },
   );
 
   for (const target of queue) {
@@ -1074,6 +1426,20 @@ function main() {
     const purposePhase = startPhase("understand-purpose");
     finishPhase(purposePhase, { purpose, technology, targetKind: target.kind });
 
+    const scopePhase = startPhase("lock-scope");
+    finishPhase(scopePhase, {
+      scope,
+      queueLength: queue.length,
+      targetPosition:
+        queue.findIndex(
+          (item) => `${item.kind}:${item.name}:${item.file}` === targetKey,
+        ) + 1,
+      scopePolicy:
+        scope === "all"
+          ? "All-scope pass is allowed, but expensive workspace gates are deferred unless this target changes."
+          : "Focused scope: target-level workspace gates and UI smoke checks are enabled.",
+    });
+
     const dependencyPhase = startPhase("analyze-dependencies");
     componentCommands.push(
       run("npm", ["run", "--silent", "brain:impact", "--", target.file], {
@@ -1086,6 +1452,18 @@ function main() {
       dependencyAnalysis: impactCommand?.ok
         ? "Impact analysis completed."
         : "Impact analysis returned a non-zero exit and is recorded for review.",
+    });
+
+    const boundaryPhase = startPhase("verify-mutation-boundary");
+    const boundarySignals = targetTouchesHighRiskBoundary(target, beforeText);
+    finishPhase(boundaryPhase, {
+      generatedOrArtifactTarget: isGeneratedOrArtifactTarget(target),
+      boundarySignals,
+      policy:
+        Object.values(boundarySignals).some(Boolean) ||
+        isGeneratedOrArtifactTarget(target)
+          ? "High-risk boundary detected; deterministic patches must stay local and require postchange verification."
+          : "No high-risk boundary detected for this target.",
     });
 
     const detectorReport = detectIssues(target, beforeText);
@@ -1114,13 +1492,18 @@ function main() {
 
     for (const detectorPhase of detectorPhases) {
       const phase = startPhase(detectorPhase.phaseId);
-      if (detectorPhase.benchmarkBefore && !skipRuntime) {
+      if (
+        detectorPhase.benchmarkBefore &&
+        !skipRuntime &&
+        shouldRunTargetRuntime(scope, target, false)
+      ) {
         benchmarkBefore = run(
           "npm",
           ["run", "--silent", "brain:runtime-benchmark"],
           {
             allowFailure: true,
             maxBuffer: 1024 * 1024 * 24,
+            timeoutMs: 90_000,
           },
         );
         componentCommands.push(benchmarkBefore);
@@ -1136,9 +1519,94 @@ function main() {
               ]
             : detectorReport[detectorPhase.category] || [],
         benchmarkBefore: detectorPhase.benchmarkBefore ? benchmarkBefore : null,
-        skipped: detectorPhase.benchmarkBefore ? skipRuntime : false,
+        skipped: detectorPhase.benchmarkBefore
+          ? skipRuntime || !shouldRunTargetRuntime(scope, target, false)
+          : false,
       });
     }
+
+    const liveSurfacePhase = startPhase("verify-live-surface");
+    const liveSurface = liveSurfaceReview(target, beforeText);
+    if (liveSurface.required && liveSurface.interactiveSignals.length === 0) {
+      findings.push(
+        "render: UI target needs a live interactive smoke path before visual changes are accepted.",
+      );
+    }
+    finishPhase(liveSurfacePhase, liveSurface);
+
+    let browserEvidenceCommand: CommandResult | null = null;
+    let browserEvidenceReport: Record<string, unknown> | null = null;
+    // Skill.md: ALL UI targets require browser evidence — not gated by changed/scope.
+    const shouldCollectBrowserEvidence =
+      liveSurface.required && !skipRuntime && shouldRunBrowserEvidence(target);
+    if (shouldCollectBrowserEvidence) {
+      browserEvidenceCommand = runUiRegressionWithRetry(componentCommands);
+      browserEvidenceReport = readUiRegressionReport();
+      if (!browserEvidenceCommand.ok) {
+        findings.push(
+          "render: Browser-backed UI regression evidence failed for this target.",
+        );
+      }
+    }
+    const browserEvidenceSummary = summarizeUiRegressionEvidence(
+      browserEvidenceReport,
+    );
+    const browserExecutionPhase = startPhase("execute-browser");
+    finishPhase(browserExecutionPhase, {
+      command: browserEvidenceCommand,
+      browserExecuted: browserEvidenceSummary.viewports.every(
+        (viewport) => viewport.browserExecuted,
+      ),
+      skipped: !shouldCollectBrowserEvidence,
+      policy:
+        "UI targets must collect actual browser execution evidence through /browser when available or the Playwright-backed UI regression probe.",
+    });
+    const viewportPhase = startPhase("test-viewports");
+    finishPhase(viewportPhase, {
+      viewportCount: browserEvidenceSummary.viewportCount,
+      viewports: browserEvidenceSummary.viewports.map((viewport) => ({
+        name: viewport.name,
+        width: viewport.width,
+        height: viewport.height,
+        horizontalOverflow: viewport.horizontalOverflow,
+      })),
+      skipped: !shouldCollectBrowserEvidence,
+    });
+    const interactionPhase = startPhase("simulate-interactions");
+    finishPhase(interactionPhase, {
+      interactions: browserEvidenceSummary.viewports.map((viewport) => ({
+        name: viewport.name,
+        interactionSimulation: viewport.interactionSimulation,
+      })),
+      skipped: !shouldCollectBrowserEvidence,
+    });
+    const instrumentationPhase = startPhase("instrument-runtime");
+    finishPhase(instrumentationPhase, {
+      runtimeInstrumentation: browserEvidenceSummary.viewports.map(
+        (viewport) => ({
+          name: viewport.name,
+          runtimeInstrumentation: viewport.runtimeInstrumentation,
+        }),
+      ),
+      skipped: !shouldCollectBrowserEvidence,
+    });
+    const visualPhase = startPhase("check-visual-regression");
+    finishPhase(visualPhase, {
+      visualChecks: browserEvidenceSummary.viewports.map((viewport) => ({
+        name: viewport.name,
+        visualChecks: viewport.visualChecks,
+      })),
+      failures: browserEvidenceSummary.failures,
+      skipped: !shouldCollectBrowserEvidence,
+    });
+    const stateTransitionPhase = startPhase("test-state-transitions");
+    finishPhase(stateTransitionPhase, {
+      stateTransitions: browserEvidenceSummary.viewports.map((viewport) => ({
+        name: viewport.name,
+        stateTransitions: viewport.stateTransitions,
+      })),
+      skipped: !shouldCollectBrowserEvidence,
+    });
 
     const bestPracticePhase = startPhase("compare-best-practices");
     const bestPracticeComparison = summarizeDocsComparison(
@@ -1161,6 +1629,19 @@ function main() {
     let plannedImprovements = generateImprovements(detectorReport, false);
     finishPhase(improvementsPhase, { plannedImprovements });
 
+    const patchSafetyPhase = startPhase("gate-patch-safety");
+    finishPhase(patchSafetyPhase, {
+      mode,
+      canPatch: mode === "fix" && !isGeneratedOrArtifactTarget(target),
+      hashGuard: beforeHash,
+      patchPolicy:
+        mode !== "fix"
+          ? "Audit mode records findings only."
+          : isGeneratedOrArtifactTarget(target)
+            ? "Generated or artifact target is not patched directly."
+            : "Fix mode may apply deterministic local patches with hash guard and rollback backup.",
+    });
+
     const patchPhase = startPhase("apply-patch");
     let deterministicFix: DeterministicFixResult = {
       text: fs.readFileSync(filePath, "utf8"),
@@ -1174,7 +1655,7 @@ function main() {
 
     if (!formatCheck.ok) findings.push("Prettier reported formatting drift.");
 
-    if (mode === "fix") {
+    if (mode === "fix" && !isGeneratedOrArtifactTarget(target)) {
       const currentHash = sha256(fs.readFileSync(filePath));
       if (currentHash !== beforeHash)
         throw new Error(`Source hash changed before fix for ${target.file}`);
@@ -1229,48 +1710,76 @@ function main() {
       allowFailure: true,
     });
     componentCommands.push(validationFormat);
-    const lint = run("npm", ["run", "--silent", "lint"], {
-      allowFailure: true,
-    });
-    componentCommands.push(lint);
-    const build = run("npm", ["run", "--silent", "build"], {
-      allowFailure: true,
-      maxBuffer: 1024 * 1024 * 24,
-    });
-    componentCommands.push(build);
+    const changedAfterPatch = sha256(fs.readFileSync(filePath)) !== beforeHash;
+    const runWorkspaceGates = shouldRunWorkspaceGates(scope, changedAfterPatch);
+    const lint = runWorkspaceGates
+      ? run("npm", ["run", "--silent", "lint"], {
+          allowFailure: true,
+          timeoutMs: 90_000,
+        })
+      : null;
+    if (lint) componentCommands.push(lint);
+    const build = runWorkspaceGates
+      ? run("npm", ["run", "--silent", "build"], {
+          allowFailure: true,
+          maxBuffer: 1024 * 1024 * 24,
+          timeoutMs: 120_000,
+        })
+      : null;
+    if (build) componentCommands.push(build);
     if (!validationFormat.ok)
       findings.push(
         "Prettier validation still fails after this component pass.",
       );
-    if (!lint.ok)
+    if (lint && !lint.ok)
       findings.push("TypeScript/lint gate failed for the current workspace.");
-    if (!build.ok)
+    if (build && !build.ok)
       findings.push("Production build failed after this component pass.");
-    finishPhase(validationPhase, { validationFormat, lint, build });
+    finishPhase(validationPhase, {
+      validationFormat,
+      lint,
+      build,
+      skippedWorkspaceGates: !runWorkspaceGates,
+      policy: runWorkspaceGates
+        ? "Workspace gates ran because this was a focused scope or the target changed."
+        : "Workspace lint/build deferred to final gates because all-scope target was unchanged.",
+    });
 
     const regressionPhase = startPhase("run-regression-tests");
     let benchmarkAfter: CommandResult | null = null;
-    let uiRegression: CommandResult | null = null;
-    let uiRegressionReport: Record<string, unknown> | null = null;
-    if (!skipRuntime) {
+    let uiRegression: CommandResult | null = browserEvidenceCommand;
+    let uiRegressionReport: Record<string, unknown> | null =
+      browserEvidenceReport;
+    const runTargetRuntime = shouldRunTargetRuntime(
+      scope,
+      target,
+      changedAfterPatch,
+    );
+    if (!skipRuntime && runTargetRuntime) {
       benchmarkAfter = run(
         "npm",
         ["run", "--silent", "brain:runtime-benchmark"],
         {
           allowFailure: true,
           maxBuffer: 1024 * 1024 * 24,
+          timeoutMs: 90_000,
         },
       );
       componentCommands.push(benchmarkAfter);
-      uiRegression = runUiRegressionWithRetry(componentCommands);
-      uiRegressionReport = readUiRegressionReport();
+      if (!uiRegression) {
+        uiRegression = runUiRegressionWithRetry(componentCommands);
+        uiRegressionReport = readUiRegressionReport();
+      }
     }
     finishPhase(regressionPhase, {
       benchmarkBefore,
       benchmarkAfter,
       uiRegression,
       uiRegressionReport,
-      skipped: skipRuntime,
+      skipped: skipRuntime || !runTargetRuntime,
+      policy: runTargetRuntime
+        ? "Target-level runtime/UI regression ran because this target changed or scope is focused UI."
+        : "Target-level runtime/UI regression deferred to final gates for unchanged all-scope target.",
     });
 
     const afterHash = sha256(fs.readFileSync(filePath));
@@ -1366,32 +1875,54 @@ function main() {
   }
 
   const finalCommands = [
-    run("npm", ["run", "--silent", "brain:generate"], { allowFailure: true }),
+    run("npm", ["run", "--silent", "brain:generate"], {
+      allowFailure: true,
+      timeoutMs: 120_000,
+    }),
     run("npm", ["run", "--silent", "brain:embed"], {
       allowFailure: true,
       maxBuffer: 1024 * 1024 * 24,
+      timeoutMs: 120_000,
     }),
-    run("npm", ["run", "--silent", "brain:runtime-benchmark"], {
+    ...(!skipRuntime
+      ? [
+          run("npm", ["run", "--silent", "brain:runtime-benchmark"], {
+            allowFailure: true,
+            maxBuffer: 1024 * 1024 * 24,
+            timeoutMs: 90_000,
+          }),
+          run("npm", ["run", "--silent", "brain:ui-regression"], {
+            allowFailure: true,
+            maxBuffer: 1024 * 1024 * 24,
+            timeoutMs: 90_000,
+          }),
+        ]
+      : []),
+    run("npm", ["run", "--silent", "brain:verify"], {
       allowFailure: true,
-      maxBuffer: 1024 * 1024 * 24,
+      timeoutMs: 60_000,
     }),
-    run("npm", ["run", "--silent", "brain:ui-regression"], {
-      allowFailure: true,
-      maxBuffer: 1024 * 1024 * 24,
-    }),
-    run("npm", ["run", "--silent", "brain:verify"], { allowFailure: true }),
     run("npm", ["run", "--silent", "brain:drift-check"], {
       allowFailure: true,
+      timeoutMs: 60_000,
     }),
-    run("npm", ["run", "--silent", "brain:self-audit"], { allowFailure: true }),
+    run("npm", ["run", "--silent", "brain:self-audit"], {
+      allowFailure: true,
+      timeoutMs: 60_000,
+    }),
     run("npm", ["run", "--silent", "format:check"], {
       allowFailure: true,
       maxBuffer: 1024 * 1024 * 24,
+      timeoutMs: 60_000,
     }),
-    run("npm", ["run", "--silent", "lint"], { allowFailure: true }),
+    run("npm", ["run", "--silent", "lint"], {
+      allowFailure: true,
+      timeoutMs: 90_000,
+    }),
     run("npm", ["run", "--silent", "build"], {
       allowFailure: true,
       maxBuffer: 1024 * 1024 * 24,
+      timeoutMs: 120_000,
     }),
   ];
   const ok = finalCommands.every((command) => command.ok);

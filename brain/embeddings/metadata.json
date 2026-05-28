@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-28T05:50:57.456Z",
+  "generatedAt": "2026-05-28T23:28:08.051Z",
   "generator": "generate-brain.ts",
   "generatorVersion": 2,
   "sourceScope": [
@@ -22,7 +22,7 @@
     "temporary files"
   ],
   "commit": {
-    "commit": "4545d813ddab98c0f3e9847dd56feb2989ab7330",
+    "commit": "e87720b8c7911337554502014fbf63ae2d009701",
     "branch": "main",
     "dirty": true
   },
@@ -31,9 +31,9 @@
     "version": "0.0.0",
     "react": "^19.0.1"
   },
-  "sourceHash": "46d9b3a3adaf21922ccedb68ac060d7b232d6a798d9104aa280d26ac88cfe07a",
+  "sourceHash": "bbdf281ff88a05e043e4c500dfe3dc5698c543a1926da64ec8744aa8d0ec1f44",
   "model": "Xenova/all-MiniLM-L6-v2",
   "algorithm": "xenova-all-minilm-l6-v2-hybrid-v1",
-  "chunkCount": 473,
+  "chunkCount": 486,
   "vectorIndex": "brain/retrieval/vector-index.json"
 }

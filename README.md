@@ -48,7 +48,7 @@
 
 ## Overview
 
-**Tutor** is not just a PDF reader—it is an intelligent, high-fidelity learning environment that builds a persistent structural memory of your academic study progress. By synthesizing a 3D learner model, real-time streaming tutor agents, automated book-scoped flashcards, local browser databases, and dynamic search, Tutor turns passive reading material into an active, multi-sensory masterclass.
+**Tutor** is not just a PDF reader—it is an intelligent, high-fidelity learning environment that builds a persistent structural memory of your academic study progress. By synthesizing a 3D learner model, real-time streaming tutor agents, automated book-scoped flashcards, local browser databases, dynamic search, and built-in architecture/design-language books, Tutor turns passive reading material into an active, multi-sensory masterclass.
 
 It features a custom-built **`/brain` Cognitive Autonomy Layer** that monitors local codebase health, calculates code dependencies, runs runtime performance benchmarks, and employs long-horizon AI self-healing agents to automatically audit and patch system bugs.
 
@@ -66,13 +66,13 @@ Tutor transitions seamlessly between a dark-mode **Cosmic Obsidian** control pan
     </td>
     <td width="50%" valign="top">
       <h3>Streaming Chat Panel</h3>
-      <p>Streaming SSE tutor response window loaded with custom Markdown, native <strong>Mermaid diagrams</strong>, runnable JS/Python sandboxes, TTS audio, and real-time Google search via Serper. Includes an animated step-by-step reasoning trace with precise cost/token telemetry.</p>
+      <p>Streaming SSE tutor response window loaded with custom Markdown, native <strong>Mermaid diagrams</strong>, runnable JS/Python sandboxes, TTS audio, and source-material-first web search via Serper only when fresh external facts are actually needed. Includes a smooth reasoning trace, non-jumping token streaming, fresh-chat reload behavior, and previous-chat restoration from the library context menu.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
       <h3>Active Recall Library</h3>
-      <p>A classic paper-style textbook interface. Houses generated learning books, custom-mapped concept graphs, personal notes, and revision flashcards stored locally. Modeled after textbook layouts to minimize cognitive overload.</p>
+      <p>A classic paper-style textbook interface. Houses generated learning books with substantial notebook-style conversation learnings, custom-mapped concept graphs, personal notes, revision flashcards, the built-in Tutor System Architecture book, and a live App Design Language book with cleaned wireframes, theme tokens, and interactive component previews.</p>
     </td>
     <td width="50%" valign="top">
       <h3>Three-Dimensional Brain Graph</h3>
@@ -97,6 +97,16 @@ Tutor transitions seamlessly between a dark-mode **Cosmic Obsidian** control pan
 
 Tutor integrates heavy-performance browser surfaces with an agile local server proxy to coordinate high-speed streaming, voice synthesizers, and database mutations.
 
+Document upload now runs through a classifier-first extraction path:
+
+```text
+Upload
+  -> Document Classifier
+     -> Native/Text PDF: PyMuPDF4LLM
+     -> Scanned PDF / Images: bounded OCR + vision parsing
+     -> Mixed Documents: PyMuPDF4LLM + page-image vision context
+```
+
 ```mermaid
 graph TD
     %% Nodes
@@ -104,22 +114,22 @@ graph TD
     B[AI Streaming Chat & Voice Engine]
     C[Express Server API Broker]
     D[(Local Dexie NeuralNestBrain DB)]
-    
+
     E[OpenRouter Core LLMs]
     F[Deepgram Audio STT/TTS]
     G[Serper Web Search Index]
-    
+
     H[Cognitive Autonomy Tooling]
 
     %% Layout / Flow
     A -->|Text annotations & page selection| B
     B <-->|Bidirectional state & visual components| D
     B -->|Streaming SSE prompts & voice streams| C
-    
+
     C <-->|Federated query dispatch| E
     C <-->|Low-latency audio synthesis| F
     C -->|Real-time web search request| G
-    
+
     H -.->|Continuous layout & invariant verification| B
     H -.->|Performance auditing & telemetry| C
 ```
@@ -136,24 +146,27 @@ The `/brain` folder represents the cognitive core of Tutor's development archite
 
 ### Core Development Commands
 
-| Command | Action / Operational Purpose |
-| :--- | :--- |
-| `npm run brain:generate` | Scans the codebase and regenerates the dependency, graph, and API maps. |
-| `npm run brain:embed` | Updates the semantic retrieval index using local Xenova embeddings. |
-| `npm run brain:verify` | Audits the codebase against mutation boundaries and structural architecture rules. |
-| `npm run brain:drift-check` | Assesses codebase files to detect any non-compliant structural or layout deviations. |
-| `npm run brain:runtime-benchmark` | Profiles app rendering performance and logs microsecond telemetry. |
-| `npm run brain:postchange` | Executed after every code change to automatically regenerate maps, verify rules, and update cache. |
-| `npm run brain:debug -- --mode fix --scope all` | Invokes the long-horizon autonomous debugger to analyze, benchmark, and patch targets. |
+| Command                                                         | Action / Operational Purpose                                                                                           |
+| :-------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| `npm run brain:generate`                                        | Scans the codebase and regenerates the dependency, graph, and API maps.                                                |
+| `npm run brain:embed`                                           | Updates the semantic retrieval index using local Xenova embeddings.                                                    |
+| `npm run brain:verify`                                          | Audits the codebase against mutation boundaries and structural architecture rules.                                     |
+| `npm run brain:drift-check`                                     | Assesses codebase files to detect any non-compliant structural or layout deviations.                                   |
+| `npm run brain:runtime-benchmark`                               | Profiles app rendering performance and logs microsecond telemetry.                                                     |
+| `npm run brain:ui-regression`                                   | Runs the browser-backed UI probe for viewport, interaction, runtime, visual-regression, and state-transition evidence. |
+| `npm run brain:postchange`                                      | Executed after every code change to automatically regenerate maps, verify rules, and update cache.                     |
+| `npm run brain:debug -- --mode fix --scope changed`             | Invokes the long-horizon autonomous debugger against the narrowest truthful changed-file scope first.                  |
+| `npm run brain:debug -- --mode fix --scope component:ChatPanel` | Runs the debugger against a named route, component, or file when the defect is localized.                              |
 
 ---
 
 ## Getting Started
 
 ### 1. Prerequisites
-* **Node.js** (v18+ recommended)
-* A valid set of API keys (BYOK Model):
-  - **OpenRouter Key:** To power chat intelligence models (`deepseek-chat`, `claude-3.5-sonnet`, `gemini-1.5-pro`)
+
+- **Node.js** (v18+ recommended)
+- A valid set of API keys (BYOK Model):
+  - **OpenRouter Key:** To power chat intelligence models (`deepseek/deepseek-v4-flash`, `claude-3.5-sonnet`, `gemini-1.5-pro`)
   - **Deepgram Key:** To broker low-latency voice, text-to-speech, and transcriptions
   - **Serper Key:** To fetch real-time web news and search indexes
 
@@ -180,7 +193,7 @@ OPENROUTER_API_KEY=your_openrouter_key_here
 DEEPGRAM_API_KEY=your_deepgram_key_here
 
 # Live Google Search Index Key
-WEB_SEARCH_API_KEY=your_web_search_key_here
+SERPER_API_KEY=your_serper_key_here
 ```
 
 ### 4. Running the Application
@@ -199,20 +212,25 @@ Navigate to `http://localhost:5173` to start learning!
 
 The application combines two contrasting high-impact themes, carefully selected to balance active system diagnostics with deep reading focus:
 
-* **Cosmic Obsidian Theme (Study, Graph, Settings, Admin views):**
+- **Cosmic Obsidian Theme (Study, Graph, Settings, Admin views):**
   - **Primary Backgrounds:** Ultra-dark obsidian `#030303` and glass-obsidian panel `#0A0A0B`.
   - **Accents:** Neon Violet (`#8B5CF6`), Neon Blue (`#3B82F6`), and Neon Orange (`#F97316`) glow borders and motion transitions.
   - **Details:** Transparent layouts, liquid progress indicators, and custom glowing focus rings.
-* **Paper Reading Theme (Revision & Trace views):**
+- **Paper Reading Theme (Revision & Trace views):**
   - **Primary Background:** `#faf9f6` paper texture.
   - **Typography:** Serif fonts styled like high-quality printed textbooks and notes.
   - **Details:** Soft shadows, minimal high-contrast dividers, and warm-toned review markers.
+- **App Design Language Library:**
+  - **Wireframes:** Live connection map for Study, PDF Viewer, Chat Panel, Memory, Brain, Revision, Analytics, and Admin.
+  - **Theme Tokens:** Cosmic Obsidian colors, paper contrast, neon accents, liquid glass, radius, shadow, motion, and typography rules.
+  - **Component Previews:** Interactive rendered miniatures for the app's major UI components so contributors can test behavior instead of reading static screenshots.
 
 ---
 
 ## Contributing
 
 Contributions are highly welcome! Please follow these guidelines:
+
 1. Ensure all changes are verified using `npm run brain:verify`.
 2. Run `npm run brain:postchange` to sync cognitive dependency maps before creating a pull request.
 3. Review `TUTOR_ARCHITECTURE.md` to understand high-risk mutation boundaries before modifying Dexie database structures.
