@@ -21,8 +21,10 @@ import {
 } from "../memory/longterm.memory";
 import { motion } from "motion/react";
 import { useStore } from "../store";
+import { useTranslation } from "../lib/translations";
 
 export function AnalyticsView() {
+  const { t } = useTranslation();
   const [concepts, setConcepts] = useState<PersistentConcept[]>([]);
   const [interactions, setInteractions] = useState<ConversationInteraction[]>(
     [],
@@ -40,15 +42,15 @@ export function AnalyticsView() {
 
   const masteryData = concepts.map((c) => ({
     name: c.name,
-    mastery: Math.round(c.mastery * 100),
-    confidence: Math.round(c.confidence * 100),
+    [t("mastery")]: Math.round(c.mastery * 100),
+    [t("confidence")]: Math.round(c.confidence * 100),
   }));
 
   const masteryCounts = {
-    Mastered: concepts.filter((c) => c.mastery > 0.7).length,
-    Learning: concepts.filter((c) => c.mastery > 0.4 && c.mastery <= 0.7)
+    [t("mastered")]: concepts.filter((c) => c.mastery > 0.7).length,
+    [t("learning")]: concepts.filter((c) => c.mastery > 0.4 && c.mastery <= 0.7)
       .length,
-    New: concepts.filter((c) => c.mastery <= 0.4).length,
+    [t("new")]: concepts.filter((c) => c.mastery <= 0.4).length,
   };
 
   const pieData = Object.entries(masteryCounts).map(([name, value]) => ({
@@ -66,17 +68,17 @@ export function AnalyticsView() {
       >
         <header>
           <h1 className="text-3xl font-semibold tracking-tight mb-2 text-white">
-            Cognitive Analytics
+            {t("cognitive_analytics")}
           </h1>
           <p className="text-zinc-400 text-sm">
-            Visualizing your learning memory and retention over time.
+            {t("visualizing_learning_memory")}
           </p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl relative group">
             <h3 className="text-sm font-medium text-zinc-400 mb-1 cursor-help flex items-center gap-1">
-              Total Concepts{" "}
+              {t("total_concepts")}{" "}
               <span className="text-[10px] text-zinc-600 border border-zinc-600 rounded-full w-3 h-3 flex items-center justify-center">
                 i
               </span>
@@ -85,13 +87,12 @@ export function AnalyticsView() {
               {concepts.length}
             </p>
             <div className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 w-48 shadow-2xl">
-              The number of unique academic concepts you have extracted and
-              studied across all documents.
+              {t("total_concepts_desc")}
             </div>
           </div>
           <div className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl relative group">
             <h3 className="text-sm font-medium text-zinc-400 mb-1 cursor-help flex items-center gap-1">
-              Interactions{" "}
+              {t("interactions")}{" "}
               <span className="text-[10px] text-zinc-600 border border-zinc-600 rounded-full w-3 h-3 flex items-center justify-center">
                 i
               </span>
@@ -100,13 +101,12 @@ export function AnalyticsView() {
               {interactions.length}
             </p>
             <div className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 w-48 shadow-2xl">
-              The total number of messages and voice queries you have exchanged
-              with the AI Tutor.
+              {t("interactions_desc")}
             </div>
           </div>
           <div className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl relative group">
             <h3 className="text-sm font-medium text-zinc-400 mb-1 cursor-help flex items-center gap-1">
-              Study Sessions{" "}
+              {t("study_sessions")}{" "}
               <span className="text-[10px] text-zinc-600 border border-zinc-600 rounded-full w-3 h-3 flex items-center justify-center">
                 i
               </span>
@@ -115,8 +115,7 @@ export function AnalyticsView() {
               {sessions.length}
             </p>
             <div className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 w-48 shadow-2xl">
-              Distinct study periods you have completed, tracking your cognitive
-              load over time.
+              {t("study_sessions_desc")}
             </div>
           </div>
         </div>
@@ -124,7 +123,7 @@ export function AnalyticsView() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl h-96">
             <h3 className="text-sm font-medium text-white mb-6">
-              Concept Mastery Levels
+              {t("concept_mastery_levels")}
             </h3>
             <div className="w-full h-[300px]">
               <ResponsiveContainer
@@ -157,9 +156,9 @@ export function AnalyticsView() {
                       borderColor: "#333",
                     }}
                   />
-                  <Bar dataKey="mastery" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey={t("mastery")} fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   <Bar
-                    dataKey="confidence"
+                    dataKey={t("confidence")}
                     fill="#a855f7"
                     radius={[4, 4, 0, 0]}
                   />
@@ -170,14 +169,13 @@ export function AnalyticsView() {
 
           <div className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl h-96 flex flex-col relative group">
             <h3 className="text-sm font-medium text-white mb-6 cursor-help flex items-center gap-1 w-fit">
-              Mastery Distribution{" "}
+              {t("mastery_distribution")}{" "}
               <span className="text-[10px] text-zinc-600 border border-zinc-600 rounded-full w-3 h-3 flex items-center justify-center">
                 i
               </span>
             </h3>
             <div className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 w-64 shadow-2xl">
-              Shows how many concepts are fully Mastered (Blue), currently being
-              Learned (Purple), or are New/Needs Review (Orange).
+              {t("mastery_distribution_desc")}
             </div>
             <div className="w-full flex-1 flex items-center justify-center min-h-[250px]">
               <ResponsiveContainer

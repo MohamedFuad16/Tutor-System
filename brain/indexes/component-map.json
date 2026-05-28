@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T05:45:08.213Z",
+    "generatedAt": "2026-05-28T05:50:20.538Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "d58f9ff5461681397048fcaf0f82362bef18d5c7",
+      "commit": "4545d813ddab98c0f3e9847dd56feb2989ab7330",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "3477bc351458b386a1259c343e45335d0d6e6f7568e4155696d273b1cc7c933d"
+    "sourceHash": "46d9b3a3adaf21922ccedb68ac060d7b232d6a798d9104aa280d26ac88cfe07a"
   },
   "files": {
     "generate-brain.ts": {
@@ -162,7 +162,7 @@
     },
     "server.ts": {
       "file": "server.ts",
-      "hash": "fca59aa5284b088cabbdd77f596cd2814ba6804d7264f0dd91e53e08381942d2",
+      "hash": "8f927b7ad4f9264b72dadbca5acd8433d25bf812efaefde9ea11664a6c9a0417",
       "imports": [
         {
           "specifier": "dotenv",
@@ -2674,7 +2674,7 @@
     },
     "src/lib/translations.ts": {
       "file": "src/lib/translations.ts",
-      "hash": "24f8f8d31bc93993479f1d093837f04569227ce425dfdebdff071c1618f13124",
+      "hash": "4a1285b98c5557fa371ac10bf47b882fc90c04c7c731b7fa8b64b988a3810160",
       "imports": [
         {
           "specifier": "../store",
@@ -3544,7 +3544,7 @@
     },
     "src/views/AnalyticsView.tsx": {
       "file": "src/views/AnalyticsView.tsx",
-      "hash": "41599004cae621c523b77f50fb4b991375b65a068c90e69eb8667522ceadbf8b",
+      "hash": "a66bfa5023a556c7b83debbee26c16002e5fc9dfd39a0c4e6b4e67924af5e09e",
       "imports": [
         {
           "specifier": "react",
@@ -3565,6 +3565,10 @@
         {
           "specifier": "../store",
           "resolved": "src/store/index.ts"
+        },
+        {
+          "specifier": "../lib/translations",
+          "resolved": "src/lib/translations.ts"
         }
       ],
       "exports": [
@@ -3706,7 +3710,7 @@
     },
     "src/views/RevisionView.tsx": {
       "file": "src/views/RevisionView.tsx",
-      "hash": "a2c8fb51bbf2f189597a5980846d6955594a24fbffa4148cc4608a576dc86abe",
+      "hash": "60dd768636a0f04e1724aef8aa5c3c709495fe3554233b5b3de47128cb9b340a",
       "imports": [
         {
           "specifier": "react",
@@ -3863,7 +3867,7 @@
     },
     "src/views/StudyView.tsx": {
       "file": "src/views/StudyView.tsx",
-      "hash": "b0135ce72c26dda4b3099dbfc957de2dacc668669e59d6a4ba678d4e9fe82f15",
+      "hash": "b7281422fd70baf09d4b4084a6514f3a212aee84cd48796840f13a79a6d76d77",
       "imports": [
         {
           "specifier": "react",
@@ -3896,6 +3900,10 @@
         {
           "specifier": "motion/react",
           "external": "motion"
+        },
+        {
+          "specifier": "../lib/translations",
+          "resolved": "src/lib/translations.ts"
         }
       ],
       "exports": [

@@ -90,8 +90,8 @@
     {
       "field": "language",
       "readers": [
-        "src/lib/translations.ts",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/lib/translations.ts"
       ],
       "writers": []
     },
@@ -134,8 +134,8 @@
     {
       "field": "pdfUrl",
       "readers": [
-        "src/views/StudyView.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfViewer.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": []
     },
@@ -305,8 +305,8 @@
     {
       "field": "setPdfPage",
       "readers": [
-        "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx"
+        "src/views/StudyView.tsx",
+        "src/components/PdfViewer.tsx"
       ],
       "writers": [
         "src/views/StudyView.tsx",

@@ -6,6 +6,7 @@ import { UploadCloud, MessageSquare, X, RefreshCw } from "lucide-react";
 import { PatternCard, themes } from "../components/PatternCard";
 import { AnimatedScrollText } from "../components/AnimatedScrollText";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
+import { useTranslation } from "../lib/translations";
 
 const CurvedArrow = ({ color }: { color: string }) => (
   <svg
@@ -64,6 +65,7 @@ const CurvedArrow = ({ color }: { color: string }) => (
 );
 
 export function StudyView() {
+  const { t } = useTranslation();
   const pdfUrl = useStore((state) => state.pdfUrl);
   const setPdfUrl = useStore((state) => state.setPdfUrl);
   const setPdfPage = useStore((state) => state.setPdfPage);
@@ -154,7 +156,7 @@ export function StudyView() {
                 onClick={() => fileInputRef.current?.click()}
                 className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3 py-2 text-xs font-semibold text-zinc-200 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-white/10 hover:text-white"
               >
-                <RefreshCw size={13} /> Replace
+                <RefreshCw size={13} /> {t("replace")}
               </button>
               <button
                 type="button"
@@ -197,7 +199,7 @@ export function StudyView() {
                 className="mb-6 w-full overflow-visible py-3 text-center md:mb-8"
               >
                 <h2 className="flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 overflow-visible font-serif text-2xl leading-[1.35] tracking-tight text-white/90 sm:text-3xl lg:text-4xl">
-                  {"Learning, redefined. Extract profound insights from any document."
+                  {t("study_hero_1")
                     .split(" ")
                     .map((word, i, arr) => (
                       <motion.span
@@ -235,12 +237,18 @@ export function StudyView() {
                         <MessageSquare className="w-5 h-5" />
                       </div>
                       <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-black">
-                        Interactive
-                        <br />
-                        Tutor
+                        {t("study_card_tutor_title").includes(" ") ? (
+                          <>
+                            {t("study_card_tutor_title").split(" ")[0]}
+                            <br />
+                            {t("study_card_tutor_title").split(" ").slice(1).join(" ")}
+                          </>
+                        ) : (
+                          t("study_card_tutor_title")
+                        )}
                       </div>
                       <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-black">
-                        Chat with your document and test your knowledge.
+                        {t("study_card_tutor_subtitle")}
                       </div>
                     </div>
                   </PatternCard>
@@ -260,7 +268,7 @@ export function StudyView() {
                       textShadow: "0 0 12px rgba(255,110,0,0.4)",
                     }}
                   >
-                    Scroll
+                    {t("scroll")}
                   </span>
                   <CurvedArrow color="#ff6e00" />
                 </motion.button>
@@ -271,7 +279,7 @@ export function StudyView() {
               {/* Text 2: Brain Graph */}
               <div className="w-full mb-16 text-center">
                 <AnimatedScrollText
-                  text="Map complex concepts into your personalized brain graph."
+                  text={t("study_scroll_text_2")}
                   className="justify-center font-serif text-2xl leading-[1.4] tracking-tight text-white/90 sm:text-3xl lg:text-4xl"
                   scrollContainerRef={scrollContainerRef}
                   fullRevealDistance={300}
@@ -294,13 +302,18 @@ export function StudyView() {
                         <RefreshCw className="w-5 h-5" />
                       </div>
                       <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
-                        Knowledge
-                        <br />
-                        Graph
+                        {t("study_card_graph_title").includes(" ") ? (
+                          <>
+                            {t("study_card_graph_title").split(" ")[0]}
+                            <br />
+                            {t("study_card_graph_title").split(" ").slice(1).join(" ")}
+                          </>
+                        ) : (
+                          t("study_card_graph_title")
+                        )}
                       </div>
                       <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
-                        Visualize how concepts connect across all your
-                        documents.
+                        {t("study_card_graph_subtitle")}
                       </div>
                     </div>
                   </PatternCard>
@@ -320,7 +333,7 @@ export function StudyView() {
                       textShadow: "0 0 12px rgba(255,255,255,0.4)",
                     }}
                   >
-                    Scroll
+                    {t("scroll")}
                   </span>
                   <CurvedArrow color="#ffffff" />
                 </motion.button>
@@ -331,7 +344,7 @@ export function StudyView() {
               {/* Text 3: Upload Document */}
               <div className="w-full text-center pb-16">
                 <AnimatedScrollText
-                  text="Upload your first document to retain knowledge forever."
+                  text={t("study_scroll_text_3")}
                   className="justify-center font-serif text-2xl leading-[1.4] tracking-tight text-white/90 sm:text-3xl lg:text-4xl"
                   scrollContainerRef={scrollContainerRef}
                   fullRevealDistance={300}
@@ -369,12 +382,18 @@ export function StudyView() {
                       <UploadCloud className="w-5 h-5" />
                     </div>
                     <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
-                      Upload
-                      <br />
-                      Document
+                      {t("study_card_upload_title").includes(" ") ? (
+                        <>
+                          {t("study_card_upload_title").split(" ")[0]}
+                          <br />
+                          {t("study_card_upload_title").split(" ").slice(1).join(" ")}
+                        </>
+                      ) : (
+                        t("study_card_upload_title")
+                      )}
                     </div>
                     <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
-                      Drag & drop your PDF here to begin learning.
+                      {t("study_card_upload_subtitle")}
                     </div>
                   </div>
                 </PatternCard>
@@ -445,15 +464,15 @@ export function StudyView() {
                   </div>
                   <div>
                     <div className="text-sm font-semibold tracking-tight text-white group-hover:text-[#ff6e00] transition-colors duration-300">
-                      Tutor minimized
+                      {t("tutor_minimized")}
                     </div>
                     <div className="text-xs text-white/45">
-                      Open without resizing the document.
+                      {t("tutor_minimized_desc")}
                     </div>
                   </div>
                 </div>
                 <div className="rounded-full border border-[#ff6e00]/30 bg-[#ff6e00]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#ff6e00] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 group-hover:scale-105 group-hover:border-[#ff6e00]/50 group-hover:bg-[#ff6e00]/20 group-hover:text-white group-hover:shadow-[0_0_15px_rgba(255,110,0,0.4)]">
-                  Open
+                  {t("open")}
                 </div>
               </div>
             </motion.button>

@@ -60,14 +60,14 @@ type SnapshotPreviewId =
   | "analytics";
 
 const wireframeNodes = [
-  { id: "Study", x: 14, y: 48, tone: "dark", summary: "workspace" },
+  { id: "Study", x: 12, y: 48, tone: "dark", summary: "workspace" },
   { id: "PDF Viewer", x: 32, y: 22, tone: "light", summary: "read + mark" },
   { id: "Chat Panel", x: 32, y: 74, tone: "dark", summary: "ask + stream" },
   { id: "Memory", x: 52, y: 48, tone: "accent", summary: "map learning" },
   { id: "Brain Graph", x: 72, y: 22, tone: "dark", summary: "concepts" },
   { id: "Analytics", x: 72, y: 48, tone: "light", summary: "progress" },
   { id: "Revision", x: 72, y: 74, tone: "paper", summary: "review" },
-  { id: "Admin", x: 88, y: 48, tone: "accent", summary: "debug" },
+  { id: "Admin", x: 92, y: 48, tone: "accent", summary: "debug" },
 ];
 
 const wireframeLinks = [
@@ -214,7 +214,7 @@ const WireframeMap = () => {
           <motion.div
             key={node.id}
             whileHover={{ y: -4, scale: 1.03 }}
-            className={`absolute flex min-h-[86px] w-[min(180px,24vw)] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[28px] border px-5 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${
+            className={`absolute flex min-h-[80px] w-[125px] sm:w-[145px] xl:w-[160px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[28px] border px-2 sm:px-4 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${
               node.tone === "dark"
                 ? "border-zinc-700 bg-[#07070a] text-white"
                 : node.tone === "accent"
@@ -225,9 +225,11 @@ const WireframeMap = () => {
             }`}
             style={{ left: `${node.x}%`, top: `${node.y}%` }}
           >
-            <div className="text-lg font-bold tracking-tight">{node.id}</div>
+            <div className="text-sm sm:text-base md:text-lg font-bold tracking-tight leading-snug">
+              {node.id}
+            </div>
             <div
-              className={`mt-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
+              className={`mt-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] ${
                 node.tone === "dark" ? "text-white/40" : "text-zinc-400"
               }`}
             >

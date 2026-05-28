@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T05:45:08.213Z",
+    "generatedAt": "2026-05-28T05:50:20.538Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "d58f9ff5461681397048fcaf0f82362bef18d5c7",
+      "commit": "4545d813ddab98c0f3e9847dd56feb2989ab7330",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "3477bc351458b386a1259c343e45335d0d6e6f7568e4155696d273b1cc7c933d"
+    "sourceHash": "46d9b3a3adaf21922ccedb68ac060d7b232d6a798d9104aa280d26ac88cfe07a"
   },
   "nodes": [
     {
@@ -53,7 +53,7 @@
       "file": "src/views/AnalyticsView.tsx",
       "symbol": "AnalyticsView",
       "loc": {
-        "line": 25,
+        "line": 26,
         "column": 1
       }
     },
@@ -152,7 +152,7 @@
       "file": "src/views/StudyView.tsx",
       "symbol": "CurvedArrow",
       "loc": {
-        "line": 10,
+        "line": 11,
         "column": 7
       }
     },
@@ -570,7 +570,7 @@
       "file": "src/views/StudyView.tsx",
       "symbol": "StudyView",
       "loc": {
-        "line": 66,
+        "line": 67,
         "column": 1
       }
     },
@@ -1294,9 +1294,9 @@
       "type": "file",
       "label": "server.ts",
       "file": "server.ts",
-      "hash": "fca59aa5284b088cabbdd77f596cd2814ba6804d7264f0dd91e53e08381942d2",
+      "hash": "8f927b7ad4f9264b72dadbca5acd8433d25bf812efaefde9ea11664a6c9a0417",
       "metadata": {
-        "lines": 1874
+        "lines": 1883
       }
     },
     {
@@ -1555,9 +1555,9 @@
       "type": "file",
       "label": "src/lib/translations.ts",
       "file": "src/lib/translations.ts",
-      "hash": "24f8f8d31bc93993479f1d093837f04569227ce425dfdebdff071c1618f13124",
+      "hash": "4a1285b98c5557fa371ac10bf47b882fc90c04c7c731b7fa8b64b988a3810160",
       "metadata": {
-        "lines": 195
+        "lines": 291
       }
     },
     {
@@ -1755,9 +1755,9 @@
       "type": "file",
       "label": "src/views/AnalyticsView.tsx",
       "file": "src/views/AnalyticsView.tsx",
-      "hash": "41599004cae621c523b77f50fb4b991375b65a068c90e69eb8667522ceadbf8b",
+      "hash": "a66bfa5023a556c7b83debbee26c16002e5fc9dfd39a0c4e6b4e67924af5e09e",
       "metadata": {
-        "lines": 220
+        "lines": 218
       }
     },
     {
@@ -1775,7 +1775,7 @@
       "type": "file",
       "label": "src/views/RevisionView.tsx",
       "file": "src/views/RevisionView.tsx",
-      "hash": "a2c8fb51bbf2f189597a5980846d6955594a24fbffa4148cc4608a576dc86abe",
+      "hash": "60dd768636a0f04e1724aef8aa5c3c709495fe3554233b5b3de47128cb9b340a",
       "metadata": {
         "lines": 1559
       }
@@ -1785,9 +1785,9 @@
       "type": "file",
       "label": "src/views/StudyView.tsx",
       "file": "src/views/StudyView.tsx",
-      "hash": "b0135ce72c26dda4b3099dbfc957de2dacc668669e59d6a4ba678d4e9fe82f15",
+      "hash": "b7281422fd70baf09d4b4084a6514f3a212aee84cd48796840f13a79a6d76d77",
       "metadata": {
-        "lines": 466
+        "lines": 485
       }
     },
     {
@@ -1830,7 +1830,7 @@
       "file": "src/lib/translations.ts",
       "symbol": "useTranslation",
       "loc": {
-        "line": 188,
+        "line": 284,
         "column": 1
       }
     },
@@ -2512,6 +2512,18 @@
       "id": "034c83d8b8135add269f"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:setPdfPage",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 71,
+        "text": "(state) => state.setPdfPage"
+      },
+      "id": "038ee670377d2293e226"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/App.tsx",
       "target": "file:src/views/StudyView.tsx",
@@ -2569,18 +2581,6 @@
         "text": "illusionDetector"
       },
       "id": "055411ffb2bb2ec00749"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "file:src/views/AnalyticsView.tsx:export:AnalyticsView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 25,
-        "text": "AnalyticsView"
-      },
-      "id": "060550ec6437bae96074"
     },
     {
       "type": "imports",
@@ -3241,18 +3241,6 @@
       "id": "189cc59b476a01e7c4e8"
     },
     {
-      "type": "usesState",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:setPdfUrl",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 68,
-        "text": "(state) => state.setPdfUrl"
-      },
-      "id": "18c30d2c095a5a96e88e"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/views/RevisionView.tsx",
       "target": "package:react-markdown",
@@ -3669,18 +3657,6 @@
       "id": "252f23089fd4d8087637"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/lib/translations.ts",
-      "target": "storeField:language",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/lib/translations.ts",
-        "line": 189,
-        "text": "(state) => state.language"
-      },
-      "id": "2594b17347fed02c885a"
-    },
-    {
       "type": "definedIn",
       "source": "component:SidebarItem",
       "target": "file:src/components/Sidebar.tsx",
@@ -3736,6 +3712,18 @@
         "text": "setActiveProject"
       },
       "id": "261d46ecd80212354830"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "databaseTable:interactions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 37,
+        "text": "db.interactions.toArray()"
+      },
+      "id": "26730f643f9977b919af"
     },
     {
       "type": "usesState",
@@ -3864,18 +3852,6 @@
         "text": "setLearnerName"
       },
       "id": "28419b14e49608ffa350"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:setPdfTotalPages",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 70,
-        "text": "(state) => state.setPdfTotalPages"
-      },
-      "id": "284f943c16994865955c"
     },
     {
       "type": "exports",
@@ -5112,6 +5088,18 @@
       "id": "43e6a852e642fab165c1"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:setSelectedTextContext",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 73,
+        "text": "(state) => state.setSelectedTextContext"
+      },
+      "id": "441ccccd3991eabde1a3"
+    },
+    {
       "type": "mutates",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "databaseTable:learningEntries",
@@ -5203,29 +5191,6 @@
         "text": "import { useTranslation } from \"../lib/translations\";"
       },
       "id": "458af9840f2bab978c3f"
-    },
-    {
-      "type": "definedIn",
-      "source": "component:AnalyticsView",
-      "target": "file:src/views/AnalyticsView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 25
-      },
-      "id": "45d3c73f42af97955737"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:pdfUrl",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 67,
-        "text": "(state) => state.pdfUrl"
-      },
-      "id": "462d0080a97ba5544a65"
     },
     {
       "type": "imports",
@@ -5529,6 +5494,18 @@
       "id": "4cce8d758b04ea0b311a"
     },
     {
+      "type": "exports",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "file:src/views/AnalyticsView.tsx:export:AnalyticsView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 26,
+        "text": "AnalyticsView"
+      },
+      "id": "4d313f08a31f85ec87c6"
+    },
+    {
       "type": "writesStore",
       "source": "file:src/views/StudyView.tsx",
       "target": "storeField:setPdfTotalPages",
@@ -5609,6 +5586,18 @@
         "text": "import * as fs from \"fs\";"
       },
       "id": "4f14adc9ebae90203817"
+    },
+    {
+      "type": "dependsOn",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "file:src/lib/translations.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 9,
+        "text": "import { useTranslation } from \"../lib/translations\";"
+      },
+      "id": "4f788eb28a20255f229f"
     },
     {
       "type": "imports",
@@ -5832,6 +5821,18 @@
         "text": "TraceLog"
       },
       "id": "532c760308a795142f62"
+    },
+    {
+      "type": "imports",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "file:src/lib/translations.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 24,
+        "text": "import { useTranslation } from \"../lib/translations\";"
+      },
+      "id": "5402cb756265618fb604"
     },
     {
       "type": "renders",
@@ -6088,18 +6089,6 @@
       "id": "57ffdc2e79967ffdbe15"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:setActiveView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 74,
-        "text": "(state) => state.setActiveView"
-      },
-      "id": "581282fe9ae84121914e"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/views/BrainView.tsx",
       "target": "package:lucide-react",
@@ -6155,18 +6144,6 @@
         "text": "import tutorBook from \"../lib/tutorBook.json\";"
       },
       "id": "5b14b8580d060483de50"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:setSelectedTextContext",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 71,
-        "text": "(state) => state.setSelectedTextContext"
-      },
-      "id": "5b3535f538527a2998ce"
     },
     {
       "type": "dependsOn",
@@ -6273,16 +6250,15 @@
       "id": "5e1fd2078054b3f09829"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "databaseTable:interactions",
-      "confidence": 0.9,
+      "type": "definedIn",
+      "source": "hook:useTranslation",
+      "target": "file:src/lib/translations.ts",
+      "confidence": 1,
       "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 35,
-        "text": "db.interactions.toArray()"
+        "file": "src/lib/translations.ts",
+        "line": 284
       },
-      "id": "5e9e87fc4d458d991009"
+      "id": "5eedb61eaf12f4e5d1de"
     },
     {
       "type": "dependsOn",
@@ -6494,18 +6470,6 @@
       "id": "6316b799e4397de8ea02"
     },
     {
-      "type": "usesState",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:setActiveView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 74,
-        "text": "(state) => state.setActiveView"
-      },
-      "id": "63835b4cd9dfbeeccdf6"
-    },
-    {
       "type": "writesDatabase",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "databaseTable:concepts",
@@ -6670,6 +6634,18 @@
         "text": "(state) => state.recordVoiceUsage"
       },
       "id": "685ef5109e6828ac3614"
+    },
+    {
+      "type": "exports",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "file:src/views/StudyView.tsx:export:StudyView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 67,
+        "text": "StudyView"
+      },
+      "id": "68d9fa120cc30201ca9f"
     },
     {
       "type": "dependsOn",
@@ -6915,6 +6891,18 @@
         "line": 494
       },
       "id": "6d182a312254edc17c0f"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/lib/translations.ts",
+      "target": "storeField:language",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/lib/translations.ts",
+        "line": 285,
+        "text": "(state) => state.language"
+      },
+      "id": "6d31c3616b8a9d9bf081"
     },
     {
       "type": "usesState",
@@ -7255,18 +7243,6 @@
       "id": "7619babbf2ed962e4794"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:pdfUrl",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 67,
-        "text": "(state) => state.pdfUrl"
-      },
-      "id": "76e6a0766fb69faaee7b"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/views/AdminView.tsx",
       "target": "package:motion",
@@ -7332,17 +7308,6 @@
         "text": "setMessages"
       },
       "id": "793036f12117c4f9798b"
-    },
-    {
-      "type": "definedIn",
-      "source": "hook:useTranslation",
-      "target": "file:src/lib/translations.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/lib/translations.ts",
-        "line": 188
-      },
-      "id": "7963a89f017af7d730da"
     },
     {
       "type": "dependsOn",
@@ -7633,6 +7598,18 @@
         "file": "src/components/ChatPanel.tsx"
       },
       "id": "7fe720cc689f489041a0"
+    },
+    {
+      "type": "imports",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "file:src/lib/translations.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 9,
+        "text": "import { useTranslation } from \"../lib/translations\";"
+      },
+      "id": "807029a12fdea233e492"
     },
     {
       "type": "mutates",
@@ -8107,17 +8084,6 @@
       "id": "8a94d93ed1f1604fd4ed"
     },
     {
-      "type": "definedIn",
-      "source": "component:StudyView",
-      "target": "file:src/views/StudyView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 66
-      },
-      "id": "8ac7d720fb6a822e323d"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/autonomy/postchange.ts",
       "target": "package:child_process",
@@ -8471,18 +8437,6 @@
         "text": "import * as fs from \"fs\";"
       },
       "id": "919d71f4f1dc06038527"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:setPdfUrl",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 68,
-        "text": "(state) => state.setPdfUrl"
-      },
-      "id": "91f32ccf007d49bfa048"
     },
     {
       "type": "readsStore",
@@ -8906,18 +8860,6 @@
       "id": "9b813a9dadcd7ebfc584"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 34,
-        "text": "db.concepts.toArray()"
-      },
-      "id": "9b9b8f92b73c8b24253b"
-    },
-    {
       "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:apiKey",
@@ -9009,6 +8951,18 @@
         "text": "db.learningEntries.orderBy(\"timestamp\")"
       },
       "id": "9e2efc675da51cc88f80"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "databaseTable:sessions",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 38,
+        "text": "db.sessions.toArray()"
+      },
+      "id": "9e8f2602bea53219f694"
     },
     {
       "type": "readsDatabase",
@@ -9266,6 +9220,17 @@
         "line": 80
       },
       "id": "a58d72625c23ece22c02"
+    },
+    {
+      "type": "definedIn",
+      "source": "component:StudyView",
+      "target": "file:src/views/StudyView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 67
+      },
+      "id": "a669abc609fcabac41c2"
     },
     {
       "type": "imports",
@@ -9546,6 +9511,18 @@
         "text": "db.learningBookConcepts.put(nextConcept)"
       },
       "id": "ace78ca7cee010e9ee68"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:setPdfUrl",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 70,
+        "text": "(state) => state.setPdfUrl"
+      },
+      "id": "ad650051ae587cca12d6"
     },
     {
       "type": "definedIn",
@@ -10149,10 +10126,10 @@
       "confidence": 0.9,
       "evidence": {
         "file": "src/views/StudyView.tsx",
-        "line": 69,
+        "line": 71,
         "text": "(state) => state.setPdfPage"
       },
-      "id": "be9821218e9ff2558c1d"
+      "id": "be5c1a8ad78e6841e5ec"
     },
     {
       "type": "dependsOn",
@@ -10296,6 +10273,18 @@
         "line": 166
       },
       "id": "c16c80dbb9dab05242e3"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:setActiveView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 76,
+        "text": "(state) => state.setActiveView"
+      },
+      "id": "c1f04a10bc1a973205d4"
     },
     {
       "type": "definedIn",
@@ -10496,6 +10485,18 @@
       "id": "c7090807a94369ead4f2"
     },
     {
+      "type": "usesState",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:setPdfTotalPages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 72,
+        "text": "(state) => state.setPdfTotalPages"
+      },
+      "id": "c71d0ab0c9e2e5d465d5"
+    },
+    {
       "type": "definedIn",
       "source": "component:PendingIcon",
       "target": "file:src/components/StatusBadge.tsx",
@@ -10647,6 +10648,18 @@
       "id": "cacf9335edc79a236fc6"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:setPdfTotalPages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 72,
+        "text": "(state) => state.setPdfTotalPages"
+      },
+      "id": "cb09c2617d2513f3bad9"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/store/index.ts",
       "target": "package:zustand",
@@ -10731,6 +10744,17 @@
       "id": "cc7a94c3b7a3b45c65e8"
     },
     {
+      "type": "definedIn",
+      "source": "component:AnalyticsView",
+      "target": "file:src/views/AnalyticsView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 26
+      },
+      "id": "cd0c21a31514880b7e02"
+    },
+    {
       "type": "exports",
       "source": "file:src/views/RevisionView.tsx",
       "target": "file:src/views/RevisionView.tsx:export:RevisionView",
@@ -10765,6 +10789,18 @@
         "text": "db.concepts.toArray()"
       },
       "id": "ce0f9511f54396bbbd8d"
+    },
+    {
+      "type": "dependsOn",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "file:src/lib/translations.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 24,
+        "text": "import { useTranslation } from \"../lib/translations\";"
+      },
+      "id": "ce78ae7b8dfbab14561b"
     },
     {
       "type": "dependsOn",
@@ -11224,18 +11260,6 @@
       "id": "d7ac8ce556e0a100d711"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:setPdfTotalPages",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 70,
-        "text": "(state) => state.setPdfTotalPages"
-      },
-      "id": "d7dfe7b67e67a0ca003a"
-    },
-    {
       "type": "callsEndpoint",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "endpoint:ANY /api/generate-persona",
@@ -11330,18 +11354,6 @@
       "id": "d918fe7ac384be3eb2ec"
     },
     {
-      "type": "exports",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "file:src/views/StudyView.tsx:export:StudyView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 66,
-        "text": "StudyView"
-      },
-      "id": "d991b504f842261d7d77"
-    },
-    {
       "type": "imports",
       "source": "file:src/brain-runtime/installBrainRuntime.ts",
       "target": "file:src/brain-runtime/runtimeTelemetry.ts",
@@ -11410,6 +11422,18 @@
         "line": 12
       },
       "id": "db4a37c5d4c18fd6f5ad"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:setSelectedTextContext",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 73,
+        "text": "(state) => state.setSelectedTextContext"
+      },
+      "id": "dba421632d0a128656f6"
     },
     {
       "type": "dependsOn",
@@ -11612,6 +11636,18 @@
       "id": "e2bfcc624f7541dcc3e1"
     },
     {
+      "type": "usesState",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:pdfUrl",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 69,
+        "text": "(state) => state.pdfUrl"
+      },
+      "id": "e2f483a8ea7028c91e98"
+    },
+    {
       "type": "exports",
       "source": "file:brain/autonomy/source-scope.ts",
       "target": "file:brain/autonomy/source-scope.ts:export:isIgnored",
@@ -11622,18 +11658,6 @@
         "text": "isIgnored"
       },
       "id": "e30643226496d1d3d829"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:setPdfPage",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 69,
-        "text": "(state) => state.setPdfPage"
-      },
-      "id": "e31ac902c45d2326e426"
     },
     {
       "type": "exports",
@@ -11730,15 +11754,16 @@
       "id": "e5381d980229e7acadc2"
     },
     {
-      "type": "definedIn",
-      "source": "component:CurvedArrow",
-      "target": "file:src/views/StudyView.tsx",
-      "confidence": 1,
+      "type": "readsStore",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:pdfUrl",
+      "confidence": 0.9,
       "evidence": {
         "file": "src/views/StudyView.tsx",
-        "line": 10
+        "line": 69,
+        "text": "(state) => state.pdfUrl"
       },
-      "id": "e5590ea2158da32c27a5"
+      "id": "e541c4943408f011669c"
     },
     {
       "type": "exports",
@@ -11751,18 +11776,6 @@
         "text": "Message"
       },
       "id": "e5aefea78b9c7d3d953e"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/views/AnalyticsView.tsx",
-      "target": "databaseTable:sessions",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AnalyticsView.tsx",
-        "line": 36,
-        "text": "db.sessions.toArray()"
-      },
-      "id": "e6352eb9cca3d0abfa98"
     },
     {
       "type": "imports",
@@ -11953,6 +11966,17 @@
       "id": "eb977aecdf020987c3a2"
     },
     {
+      "type": "definedIn",
+      "source": "component:CurvedArrow",
+      "target": "file:src/views/StudyView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 11
+      },
+      "id": "ebd961ee4da700b27b19"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/retrieval/retrieve-semantic.ts",
       "target": "package:fs",
@@ -11963,6 +11987,30 @@
         "text": "import * as fs from \"fs\";"
       },
       "id": "ebde6ea718c91209a003"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/AnalyticsView.tsx",
+      "target": "databaseTable:concepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/AnalyticsView.tsx",
+        "line": 36,
+        "text": "db.concepts.toArray()"
+      },
+      "id": "ec1fc04e065f0811cda4"
+    },
+    {
+      "type": "exports",
+      "source": "file:src/lib/translations.ts",
+      "target": "file:src/lib/translations.ts:export:useTranslation",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/lib/translations.ts",
+        "line": 284,
+        "text": "useTranslation"
+      },
+      "id": "ec881931a44c9b853251"
     },
     {
       "type": "dependsOn",
@@ -12058,30 +12106,6 @@
       "id": "ee67c75726c8998b14bc"
     },
     {
-      "type": "usesState",
-      "source": "file:src/views/StudyView.tsx",
-      "target": "storeField:setSelectedTextContext",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/StudyView.tsx",
-        "line": 71,
-        "text": "(state) => state.setSelectedTextContext"
-      },
-      "id": "eea651394ecee645b1a9"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/lib/translations.ts",
-      "target": "file:src/lib/translations.ts:export:useTranslation",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/lib/translations.ts",
-        "line": 188,
-        "text": "useTranslation"
-      },
-      "id": "ef26f6ede4d2a0ff6d61"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/memory/learner.model.ts",
       "target": "file:src/memory/longterm.memory.ts",
@@ -12115,6 +12139,18 @@
         "text": "/api/debug/run"
       },
       "id": "f08a40b8e3fd47b73a15"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:setActiveView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 76,
+        "text": "(state) => state.setActiveView"
+      },
+      "id": "f1be3a683325000ee32b"
     },
     {
       "type": "dependsOn",
@@ -12173,6 +12209,18 @@
         "text": "import { StudyView } from \"./views/StudyView\";"
       },
       "id": "f3828483fcd45dccfb19"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/views/StudyView.tsx",
+      "target": "storeField:setPdfUrl",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/StudyView.tsx",
+        "line": 70,
+        "text": "(state) => state.setPdfUrl"
+      },
+      "id": "f3c24f4e3b7ffca6408a"
     },
     {
       "type": "renders",
@@ -12326,6 +12374,18 @@
         "text": "import { db } from \"../memory/longterm.memory\";"
       },
       "id": "f97476fb412f7c18adf9"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/lib/translations.ts",
+      "target": "storeField:language",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/lib/translations.ts",
+        "line": 285,
+        "text": "(state) => state.language"
+      },
+      "id": "fa435c7808e2fdba0666"
     },
     {
       "type": "usesState",
@@ -12533,18 +12593,6 @@
         "text": "/api/tts"
       },
       "id": "ff8a5650f1168b9db04a"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/lib/translations.ts",
-      "target": "storeField:language",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/lib/translations.ts",
-        "line": 189,
-        "text": "(state) => state.language"
-      },
-      "id": "ffe4c3da1472c789a8bd"
     }
   ]
 }
