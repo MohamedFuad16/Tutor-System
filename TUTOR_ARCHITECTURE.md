@@ -6,15 +6,35 @@ This document is the human-readable architecture book for Tutor. The generated `
 
 Tutor is an AI-powered learning interface for reading academic papers and textbooks, asking a streaming tutor questions, building a personal learning library, and reviewing knowledge over time. The product combines a PDF study surface, AI chat, voice tutoring, web search, a 3D learner brain, revision notebooks, analytics, admin diagnostics, and the `/brain` architecture cognition layer.
 
-The design language is **Cosmic Obsidian** for the main app: near-black surfaces, neon violet/blue/orange accents, glass panels, motion-heavy transitions, and liquid AI details. Revision and Admin intentionally use a `#faf9f6` paper style to make review and diagnostics feel like a readable notebook.
+The design language is **Cosmic Obsidian** for the main app: near-black surfaces (`#030303`), surfaces (`#0A0A0B`), neon violet/blue/orange accents (`#8B5CF6`, `#3B82F6`, `#F97316`), glass panels, motion-heavy transitions, and liquid AI details. Revision and Admin intentionally use a `#faf9f6` paper style to make review and diagnostics feel like a readable notebook.
 
-## 2. Runtime Stack
+---
 
-The frontend uses React 19, Vite 6, TypeScript 5.8, Tailwind CSS 4, Zustand, `motion/react`, Dexie, `react-pdf`, `react-force-graph-3d`, Three.js, Recharts, React Markdown, Remark GFM, Mermaid, Shiki, and Lucide icons. Heavy routes and renderers are split by Vite chunks: Brain/Admin/Analytics/Revision load on demand, while Mermaid, Shiki, and the 3D graph stack are lazy-loaded only when their surfaces render.
+## 2. Runtime Stack & Build Configuration
 
-The backend is `server.ts`, an Express server with API routes, SSE chat streaming, WebSocket debug logs, a Deepgram Voice Agent proxy, Deepgram TTS, Serper web/news search, and the OpenAI SDK pointed at OpenRouter or OpenAI-compatible providers.
+### Frontend Stack
+The frontend utilizes:
+*   **Core**: React 19, Vite 6, TypeScript 5.8, Tailwind CSS 4.
+*   **State & DB**: Zustand (Global), Dexie (IndexedDB local database).
+*   **Visualization & Media**: Three.js, `react-force-graph-3d`, `react-pdf`, Recharts.
+*   **Animation**: `motion/react` (Framer Motion).
+*   **Markdown Parsing**: React Markdown, Remark GFM, Shiki syntax highlighter, Mermaid rendering.
 
-The app has no URL router. `src/App.tsx` renders from `activeView` in `src/store/index.ts`: `study`, `brain`, `analytics`, `revision`, and `admin`.
+### Build and Splitting Strategy (`vite.config.ts`)
+To prevent heavy load times and optimize Interaction to Next Paint (INP), Vite is configured to split vendor code into dedicated bundles via `manualChunks`:
+1.  **3D Graph Engine**: `Three.js` and `react-force-graph-3d` are split into a lazy chunk, loaded dynamically when the user switches to `BrainView`.
+2.  **PDF Engine**: `react-pdf` and its dedicated PDF worker are isolated into a deferred worker chunk.
+3.  **Parsers**: Mermaid and Shiki load on-demand only when markdown containing code blocks or diagrams is streamed.
+4.  **UI Core**: Zustand, Recharts, and Lucide icons reside in the main shared client chunk.
+
+Dynamic component imports (`React.lazy`) manage route-level code splitting. The app has no URL router. `src/App.tsx` acts as a view switcher driven entirely by `activeView` in the Zustand store.
+
+### Backend Stack (`server.ts`)
+*   **Server Platform**: Express API running under Node.
+*   **Streams**: Server-Sent Events (SSE) for `/api/chat` model response streaming. WebSockets on `/ws/debug` for streaming diagnostics and live console logs.
+*   **AI Providers**: Deepgram Voice Agent API proxy, Deepgram TTS (Aura-Asteria), Serper API for web/news searches, and OpenAI SDK broker targeting OpenRouter models.
+
+---
 
 ## 3. Model Inventory
 
@@ -41,153 +61,209 @@ All cloud LLM calls are brokered by `server.ts`. The browser sends the user Open
 
 `GET /api/pricing` fetches live OpenRouter pricing and caches it for six hours. Deepgram pricing constants are maintained in `server.ts`.
 
-## 4. User Features
+---
 
-**Study View** is the main workspace. It contains PDF upload, reading, annotation, selected-text context, usage analytics, and the chat panel.
+## 4. Zustand Global State Store
 
-**PDF Viewer** uses `react-pdf`. It supports zoom, fit-width, page navigation, highlights, underlines, strikethrough, sticky notes, selected text capture, and normalized annotation rectangles. Page images can be passed to Qwen for title extraction and to `openai/gpt-4o-mini` for visual page questions.
+The global state store is defined in `src/store/index.ts` via `useStore` with Zustand's `persist` middleware. It saves user progress, API settings, and usage trackers to local storage under the key `learning-ai-store`.
 
-**Chat Panel** streams `/api/chat` via SSE. It supports memory context, active book context, selected PDF text, current page image context, web search, graph updates, flashcard generation, Markdown, Mermaid, code highlighting, runnable JavaScript/Python snippets, TTS, and voice mode.
+### State Properties
+*   **Navigation & Credentials**:
+    *   `activeView`: `"study" | "analytics" | "revision" | "admin"` (central application router).
+    *   `learnerName`: string (defaults to "Learner").
+    *   `apiKey` / `serperApiKey`: string (user OpenRouter and Serper keys).
+*   **Active Study Context**:
+    *   `activeLearningBookId`: string | null (persistent tracking of the active book).
+    *   `activeProject`: string (current learning space name).
+    *   `askTutorQuery`: string (search input).
+    *   `pdfUrl`: string | null (path of currently opened PDF).
+    *   `pdfScale` / `pdfPage` / `pdfTotalPages`: number.
+    *   `annotations`: Array of `Annotation` (strikethroughs, underlines, highlights, sticky notes).
+*   **Analytics Trackers**:
+    *   `chatUsage`: `inputTokens`, `outputTokens`, `cost`, `requests` (tracks LLM usage).
+    *   `voiceUsage`: `connectionSeconds`, `inputAudioSeconds`, `outputAudioSeconds`, `ttsCharacters`, `cost`, `sessions`.
+    *   `webUsage`: `requests`, `searchRequests`, `newsRequests`, `sourcesReviewed`, `failures`, `cost`.
+    *   `pricing`: `PricingState` (caches fetched OpenRouter model rates).
 
-**Brain View** renders a Three.js concept graph with `react-force-graph-3d`. It roots the learner, links to learning books, links books to concepts, and falls back to legacy concepts when needed.
+---
 
-**Revision View** is the library and active recall surface. It shows the built-in Tutor System Architecture book, generated learning books, concepts, notes, and flashcards in a paper-style notebook.
+## 5. Dexie / IndexedDB Database Schema
 
-**Analytics View** reads Dexie concepts, interactions, and sessions and renders mastery, confidence, session, and distribution charts with Recharts.
+Tutor persists concept maps, learning history, flashcards, and diagnostic trace logs in a local Dexie instance named `NeuralNestBrain` in `src/memory/longterm.memory.ts`.
 
-**Admin View** now has three diagnostics surfaces: DeepSeek Trace, Server Console, and Debug Runs.
+### Schema Version 6
+The database tables and their indexing layouts are defined exactly as follows:
+*   **`concepts`**: `id, name, summary, description, confidence, prerequisites, hiddenKey, childConcepts, parentConcepts, updatedAt` (concept nodes).
+*   **`misconceptions`**: `id, conceptId, name, description, resolved, updatedAt` (learner misunderstandings).
+*   **`sessions`**: `id, startedAt, endedAt, totalTokens` (active user sessions).
+*   **`interactions`**: `id, sessionId, timestamp, tokensUsed` (dialogue history).
+*   **`flashcards`**: `id, conceptId, bookId, bookTitle, front, back, nextReviewAt` (Active recall cards).
+*   **`traceLogs`**: `id, timestamp, action, llmExplanation` (audit trail of DeepSeek updates).
+*   **`learningBooks`**: `id, title, conversationCount, agentModel, overview, knowledgeSummary, chapters, updatedAt` (AI-generated textbooks).
+*   **`learningBookConcepts`**: `id, bookId, name, summary, confidence, childConcepts, parentConcepts, updatedAt` (concepts belonging to generated books).
+*   **`learningEntries`**: `id, bookId, timestamp, conversationSummary, assistantSummary` (chronological learning notes).
 
-## 5. Learning Memory And Library
+### MemoryOrchestrator Integration
+The `MemoryOrchestrator` integrates these tables with the application runtime. When a chat session concludes:
+1.  It intercepts the conversation, uses a local 384-dimensional hashed text index to locate similar historic concepts, and injects ZPD Zonal directives into the system prompt.
+2.  It sends the dialogue to `/api/learning-book-update`, returning compiled summaries.
+3.  It updates the matching `learningBooks`, inserts new chapters, updates concepts, creates associated flashcards, and writes an entry in the `traceLogs` database.
 
-The persistent database is Dexie database `NeuralNestBrain` in `src/memory/longterm.memory.ts`. Version 6 contains `concepts`, `misconceptions`, `sessions`, `interactions`, `flashcards`, `traceLogs`, `learningBooks`, `learningBookConcepts`, and `learningEntries`.
+---
 
-`MemoryOrchestrator` creates a browser session, clears generated session learning records, preserves the built-in Tutor System Architecture concept, creates a General Study learning book, and announces the active book through local storage plus a `learning-book-updated` event.
+## 6. Core UI Views and Responsive Sizing Models
 
-After chat or voice responses, it stores locally embedded interactions, asks `/api/learning-book-update` for book/chapter/concept summaries, merges those records into Dexie, writes `learningEntries`, updates active context, and optionally logs trace explanations through `/api/trace`. Browser embeddings use deterministic 384-dimensional hashed vectors so memory retrieval stays local without loading `onnxruntime-web`.
+The application design supports fluid layout scaling across all device categories.
 
-## 6. Learner Model
+### Study View
+*   **Layout Grid**: Renders a vertical layout `flex-col` on mobile viewports to prevent squashing panels. On desktop (`xl:flex-row`), it splits into a 64% width left-hand workspace (housing the PDF viewer) and a 36% width right-hand panel (`ChatPanel`).
+*   **Chat Panel**: Renders as a `<motion.aside>` that slides out or collapses using Framer Motion's `AnimatePresence`. 
+*   **PDF Viewer**: Adapts using width listeners. Squeezes margins and scales canvas layouts using `ResizeObserver`. Displays a floating top-right bar for overlays (zoom, navigate, annotate) to save space.
 
-The Phase 5 learner model lives under `src/memory/` and is injected into chat prompts by `MemoryOrchestrator.getRelevantContext()`.
+### Revision View
+*   **Visual Style**: Clean paper styling (`#faf9f6`) with an overlaid noise SVG background overlay set to `opacity-[0.03]` for an organic notebook feel.
+*   **Sidebar Layout**: The chapter and table of contents sidebar is hidden by default and displayed only on large screens (`hidden lg:block w-64 flex-shrink-0 sticky`). 
+*   **Mobile Navigation**: Smaller viewports replace the vertical sidebar with a top horizontal scrollbar tags navbar (`flex gap-2 overflow-x-auto pb-1`).
+*   **Fluid Margins**: Container uses `max-w-4xl` and shifts padding based on breakpoints (`p-5` on mobile, scaling up through `sm:p-6`, `md:p-10`, `lg:p-16`, and `xl:p-20`).
 
-Core subsystems:
+### Brain View
+*   **3D Workspace**: Three.js/WebGL canvas managed by a custom `ResizeObserver` listener on the parent container. Automatically re-centers coordinates when the window resizes to prevent graph drift.
+*   **Sidebar Details Card**: An overlay card positioned absolutely. Occupies full width (`left-5 right-5`) on mobile/tablet screens and transitions to a fixed width of `720px` (`xl:right-auto xl:w-[720px]`) on desktop viewports.
 
-- Bayesian Knowledge Tracing through `BKTEngine`.
-- ZPD zones through `ZPDCalculator`.
-- Adaptive scaffolding through `ScaffoldingEngine`.
-- Misconception tracking through `MisconceptionGraph`.
-- Prerequisite analysis through `PrerequisiteDAG`.
-- Illusion-of-knowing detection.
-- Cognitive-load monitoring.
-- Productive-failure classification.
+### Admin View
+*   **Layout**: Matches the `#faf9f6` paper layout of the Revision View, sharing the identical responsive sidebar navigation (`hidden lg:block`) and mobile top header (`lg:hidden`).
+*   **Monospace Console**: Renders a hardware-accelerated monospace log viewport. Uses a `useEffect` layout trigger to automatically scroll the console to the bottom on new incoming WebSocket trace logs.
+*   **Debug Ledger**: Displays active and historic `DebugRuns`. Component card sub-logs are collapsed by default to allow fast scrolling and high readability on small viewports.
 
-The resulting tutor directives tell the model when to correct misconceptions, reinforce prerequisites, test transfer, reduce load, interleave weak concepts, or raise difficulty.
+---
 
-## 7. `/brain` Architecture Cognition
+## 7. High-Fidelity Animations
 
-`/brain` is a generated architecture cognition layer for coding agents. It contains source-scoped architecture graphs, semantic retrieval indexes, runtime impact telemetry, route/state/render/API/WebSocket/database maps, architecture rules, mutation boundaries, drift checks, self-audit reports, and task memory.
+Tutor features advanced UI motion choreography using hardware-accelerated web techniques.
 
-Required agent flow:
+### Siri Liquid Glass Orb Shader (`SiriLiquidGlass.tsx`)
+This component creates an organic liquid glass fluid overlay resembling Apple iOS voice systems without the performance cost of compiling raw WebGL fragment shaders.
+*   **Layout**: Outer wrapper uses `absolute inset-0 overflow-hidden mix-blend-screen blur-[4px]` overlays on dark backgrounds.
+*   **Parent Wrapper**: A large container `absolute w-[200%] h-[200%] top-[-50%] left-[-50%]` that undergoes continuous rotation, accelerating from a passive rate (`duration: 10`) to an active rate (`duration: 3`) during voice activation.
+*   **Independent Color Orbs**: Inside the parent container, four colored circles float and pulse independently using spring animations:
+    1.  **Blue Orb** (`#0a84ff`): Scales to `1.3` on hover; floats on X and Y paths during active voice streams.
+    2.  **Purple Orb** (`#bf5af2`): Scales to `1.2` on hover; moves along X coordinates.
+    3.  **Orange/Pink Orb** (`#ff375f`): Scales to `1.4` on hover; shifts along Y coordinates.
+    4.  **Cyan/Teal Core** (`#64d2ff`): Keyframe-pulses passively to act as a high-contrast core.
+*   **Color Bleeding**: Utilizing `mix-blend-screen` within the outer wrapper creates organic plasma-like color bleeding.
 
-```text
-LOAD -> RETRIEVE -> IMPACT ANALYSIS -> VERIFY RULES -> PLAN -> MODIFY -> VERIFY -> REGENERATE -> UPDATE MEMORY
+### Reasoning Thinking Panel (`ChatPanel.tsx`)
+Renders an o1-style streaming thinking trace for complex reasoning loops.
+*   **Step Categorization**: Tracks active phases (`retrieving`, `web_search`, `tool_execution`, `synthesizing`, `complete`). Uses `thoughtStepMeta` to dynamically assign theme values based on text contents (Search: `#0A7DFF`, Vision: `#6929F4`, Tool: `#36AA55`, Graph: `#D87A2C`, Recall: `#D49B23`, Synthesis: `#6929F4`, Reasoning: `#6A6A6A`).
+*   **Timeline Animations**: Sequenced using index-based delays (`index * 0.48s`).
+    *   `reasoningStepVariants`: Fades in and slides up steps.
+    *   `reasoningIconVariants`: Scale, rotate, and bounce spring sequence (`scale: 0.34` to `0.6`, `rotate: [-14, 9, -3, 0]`).
+    *   `reasoningLineVariants`: Separator vertical lines expand downward (`scaleY` from `0` to `1`) *after* icons land.
+*   **Gradient Shimmer Mask**: Text uses a hardware-accelerated linear gradient mask:
+    ```css
+    background-image: linear-gradient(100deg, #52525b 0%, #52525b 34%, #111827 45%, #a1a1aa 52%, #52525b 66%, #52525b 100%);
+    background-size: 240% 100%;
+    ```
+    Shifts the `backgroundPosition` across coordinates to create a typing shimmer. Animates with GPU acceleration via `willChange` to avoid Interaction to Next Paint (INP) frame lag during streaming.
+
+---
+
+## 8. Performance Optimizations
+
+### INP Mitigation via `useMotionValue`
+Binding standard window or container scroll listeners to React state variables (`useState`) triggers component-wide re-renders on every scroll tick. In complex layouts like the PDF Study View, this degrades Interaction to Next Paint (INP) frames.
+*   To resolve this, `StudyView.tsx` binds scroll progress directly to Framer Motion values:
+    ```typescript
+    const { scrollYProgress } = useScroll({ container: scrollContainerRef });
+    const arrow1Opacity = useTransform(scrollYProgress, [0.3, 0.45], [0.9, 0]);
+    ```
+*   Updates update the DOM directly, bypassing the React virtual DOM render thread to maintain a constant 60+ FPS.
+
+### Ticker Counter Hook (`useAnimatedNumber`)
+Renders high-speed rolling numerical values (tokens, cost, characters) without layout stutter:
+*   Takes a `target` number and computes differences from the previous state via `displayedRef.current`.
+*   Updates numbers using a cubic ease-out curve (`1 - Math.pow(1 - progress, 3)`).
+*   Runs inside `requestAnimationFrame` loops, canceling older frames on component unmount to prevent render jitter.
+
+---
+
+## 9. `/brain` Cognitive Autonomy Layer
+
+The `/brain` folder contains an executable cognitive layer. It monitors the codebase, generates vector search indexes, maps dependencies, and manages self-healing debugging loops.
+
+```mermaid
+graph TD
+    A[watch.ts Watcher] -->|Source Changed| B[Debounce 2500ms]
+    B -->|Trigger| C[postchange.ts Pipeline]
+    C -->|1. Run| D[drift-check.ts]
+    D -->|Stale?| E[brain:generate]
+    E -->|2. Run| F[brain:embed]
+    F -->|3. Run| G[brain:runtime-benchmark]
+    G -->|4. Run| H[brain:verify]
+    H -->|5. Run| I[brain:self-audit]
+    I -->|All Clean?| J[Update status.json]
+    H -->|Failures?| K[Abort & Exit 1]
 ```
 
-Core commands:
+### Self-Healing Autonomy Subsystems
+1.  **Workspace Watcher (`brain/autonomy/watch.ts`)**: Monitors folders via `fs.watch`, debounces changes (2500ms), and spawns the postchange pipeline. Writes watch statuses to `status.json`.
+2.  **Drift Check (`brain/drift-check.ts`)**: Compares SHA-256 hashes of all source code files against snapshots in `file-hashes.json`. Outputs `regenerationTargets` based on modified files:
+    *   `src/store/` -> `state-flow`
+    *   `server.ts` -> `api-contracts`
+    *   `src/App.tsx` -> `route-map`
+    *   `src/components/` or `src/views/` -> `render-graph`
+    *   `src/memory/` -> `database-impact`
+3.  **Artifact Generator (`generate-brain.ts`)**: Rebuilds semantic dependency maps, API contract definitions, and layout hierarchies.
+4.  **Vector Indexer (`brain/embed`)**: Chunks codebase contexts locally via Hugging Face `Xenova/all-MiniLM-L6-v2` transformer pipelines. Saves 384-dimensional text vectors into a local database.
+5.  **Telemetry Benchmark (`brain/runtime-benchmark`)**: Captures rerender performance, memory usage, and state propagation hotspots.
+6.  **Invariants Verification (`brain/verify`)**: Validates route configurations, store state shapes, API signatures, and runs test suites.
+7.  **Self-Audit (`brain/self-audit.ts`)**: Examines cognitive maturity and generates an audit report (current autonomous safety score: **92 / 100**).
 
-- `npm run brain:generate`
-- `npm run brain:embed`
-- `npm run brain:retrieve -- "<task>"`
-- `npm run brain:impact -- "<file-or-symbol>"`
-- `npm run brain:verify`
-- `npm run brain:drift-check`
-- `npm run brain:runtime-benchmark`
-- `npm run brain:self-audit`
-- `npm run brain:memory`
+---
 
-## 8. Brain Autonomy
+## 10. Debug Skill & Long-Horizon Orchestrator
 
-The stale-brain issue is handled by a deliberate autonomous refresh layer:
+The autonomous debugging utility operates independently of default tutor dialogues, executing multi-step repair loops.
 
-- `npm run brain:postchange` runs after completed source changes.
-- `npm run brain:auto` starts a debounced watcher for source-scoped files.
-- `brain/autonomy/status.json` records freshness, timestamps, failures, source hashes, regeneration targets, and watcher state.
-
-`brain:postchange` runs `brain:drift-check`; if stale, it regenerates the brain and embeddings, then runs verification and self-audit. The watcher ignores generated artifacts, docs packs, debug run logs, backups, `dist`, `node_modules`, caches, snapshots, hidden files, and temporary files.
-
-The debug tool calls `brain:postchange` after applied component patches so future agents do not use stale `/brain` artifacts.
-
-## 9. Debug Skill And Orchestrator
-
-The long-horizon debugging tool is separate from the tutor chat. It is invoked through the `tutor-debug` skill copied into:
-
-- `skills/tutor-debug/SKILL.md`
-- `/Users/mfuad16/.codex/skills/tutor-debug/SKILL.md`
-- `/Users/mfuad16/antigravity-skills/skills/tutor-debug/SKILL.md`
-- `/Users/mfuad16/.gemini/config/skills/tutor-debug/SKILL.md`
-
-The repo-side tool is under `brain/debug/` and is invoked with:
-
+### Invoking the Tool
 ```bash
 npm run brain:debug -- --mode fix --scope all
 ```
 
-By default `--scope all` audits every source-scoped app target: files, UI components, stores, services, hooks, contexts, routes, utilities, server/API files, scripts, and `/brain` TypeScript tooling. The queue is built from both the `/brain` graph and the tracked source file list so graph omissions do not hide files from the long-horizon pass.
+### Execution Protocol
+The orchestrator walks through every targeted application target (files, components, hooks) using a 20-step process:
+1.  **Parse**: Scans targets.
+2.  **Understand**: Analyzes target purpose.
+3.  **Dependencies**: Maps dependencies.
+4.  **Anti-patterns**: Analyzes syntax and architecture patterns.
+5.  **Performance**: Measures runtime execution.
+6.  **Stale state**: Checks for stale dependencies.
+7.  **Render**: Audits UI components for render bugs.
+8.  **Memory leaks**: Runs heap profile checks.
+9.  **Async**: Inspects for unresolved promises or race conditions.
+10. **Typing**: Checks TypeScript typings.
+11. **Animations**: Validates animation frame rates.
+12. **API**: Checks server-contract compliance.
+13. **Accessibility**: Runs semantic HTML and WCAG contrast audits.
+14. **Best Practices**: Compares code against reference documents.
+15. **Documentation**: Maps official documentation evidence.
+16. **Improvements**: Designs code enhancements.
+17. **Guarded Patches**: Applies patches if justified.
+18. **Validation**: Verifies syntax.
+19. **Regressions**: Runs Playwright automated regression probes.
+20. **Persist**: Saves findings into `/brain`.
 
-Every target follows the same ordered debug process:
+The regression stage runs `brain:ui-regression`, a Playwright probe checking mobile/tablet/desktop layouts, sampled frame smoothness, opaque headers, and reasoning-dropdown states.
 
-1. Parse architecture.
-2. Understand purpose.
-3. Analyze dependencies.
-4. Detect anti-patterns.
-5. Detect performance issues and capture a before benchmark when runtime benchmarking is enabled.
-6. Detect stale state.
-7. Detect render problems.
-8. Detect memory leaks.
-9. Detect async issues.
-10. Detect typing issues.
-11. Detect animation issues.
-12. Detect API issues.
-13. Detect accessibility issues.
-14. Compare against best practices.
-15. Search documentation patterns.
-16. Generate improvements.
-17. Apply guarded patches when justified.
-18. Run validation.
-19. Run regression tests, responsiveness probes, animation smoothness sampling, and after benchmarks.
-20. Persist findings into `/brain`.
+---
 
-The operational loop is: scan, understand, audit, benchmark, detect bugs, search best practices, compare implementations, patch issues, rerun tests, validate fixes, measure regressions, persist findings into brain, then repeat until the last target is completed.
-
-It retrieves context, runs impact analysis, maps official documentation evidence, checks format/lint/build gates, compares source to local official docs packs, applies deterministic fixes with source-hash checks and backups, runs post-change brain refresh after patches, records findings, and appends a machine-readable debug memory graph. The regression stage also runs `brain:ui-regression`, a Playwright probe that checks mobile/tablet/desktop overflow, sampled frame smoothness, opaque Tutor headers, and reasoning-dropdown interaction.
-
-Run artifacts are append-only under `brain/debug/runs/<run-id>/`. `run.json` and `summary.json` are written when the run starts and refreshed after each completed component so Admin can show the audit immediately during long runs. The memory graph is `brain/debug/memory-graph.json`.
-
-## 10. Official Docs Packs
-
-`npm run brain:docs:sync` downloads curated official documentation into `brain/reference-docs/`. Official docs are primary evidence; live web search is allowed only as secondary best-practice evidence and must be recorded separately.
-
-Current docs packs include TypeScript, React, Vite, Tailwind, Motion/Framer, Dexie, Zustand, Playwright, Three.js, react-force-graph/react-pdf related sources, Express, Node, and Python for future Python audits.
-
-## 11. Admin Debug Runs
-
-Admin now exposes a Debug Runs page. It reads server-backed debug artifacts through:
-
-- `GET /api/debug/runs`
-- `GET /api/debug/runs/:id`
-- `GET /api/debug/runs/:id/events`
-- `POST /api/debug/run`
-- `POST /api/debug/runs/:id/cancel`
-
-The UI shows run history, status, active target, active phase, live event flow, component queue progress, component name, changed files, what changed, why it changed, improvement summaries, bugs/findings, how the code should behave, official-doc evidence, component command results, benchmark/regression results, and final verification gates while the run is still active. Component cards are collapsed by default so the ledger stays readable during long all-target runs.
-
-## 12. Maintenance Boundaries
+## 11. Maintenance Boundaries
 
 High-risk mutation boundaries remain Dexie schema, server API/SSE/WebSocket contracts, Zustand store shape, routing, shared layout primitives, ChatPanel stream parsing, and generated `/brain` artifacts.
 
 Generated graph, flow, contract, vector, impact, runtime, snapshot, and verification outputs must be regenerated by commands rather than manually edited.
 
 Before reporting architecture work done, run:
-
 ```bash
 npm run brain:generate
 npm run brain:embed
