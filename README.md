@@ -6,7 +6,7 @@
     <img alt="Tutor System Architecture Banner" src="public/banner.png" width="100%" style="border-radius: 8px; margin-bottom: 20px;" />
   </picture>
 
-  <h1>🌌 Tutor: Cognitive Learning Interface</h1>
+  <h1>Tutor: Cognitive Learning Interface</h1>
   
   <p><strong>A hyper-advanced, type-safe learning system powered by agentic retrieval, real-time audio tutoring, and autonomous `/brain` self-healing cognition.</strong></p>
 
@@ -30,11 +30,11 @@
   </p>
   
   <p align="center">
-    <a href="#-core-surfaces">Core Surfaces</a> •
-    <a href="#%EF%B8%8F-system-architecture">System Architecture</a> •
-    <a href="#-cognitive-autonomy-layer-brain">Cognitive Autonomy Layer</a> •
-    <a href="#-getting-started">Getting Started</a> •
-    <a href="#-design-system">Design System</a>
+    <a href="#core-surfaces">Core Surfaces</a> •
+    <a href="#system-architecture">System Architecture</a> •
+    <a href="#cognitive-autonomy-layer-brain">Cognitive Autonomy Layer</a> •
+    <a href="#getting-started">Getting Started</a> •
+    <a href="#design-system">Design System</a>
   </p>
   
 </div>
@@ -46,7 +46,7 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 **Tutor** is not just a PDF reader—it is an intelligent, high-fidelity learning environment that builds a persistent structural memory of your academic study progress. By synthesizing a 3D learner model, real-time streaming tutor agents, automated book-scoped flashcards, local browser databases, and dynamic search, Tutor turns passive reading material into an active, multi-sensory masterclass.
 
@@ -54,38 +54,38 @@ It features a custom-built **`/brain` Cognitive Autonomy Layer** that monitors l
 
 ---
 
-## 🎨 Core Surfaces & Bento Grid
+## Core Surfaces
 
 Tutor transitions seamlessly between a dark-mode **Cosmic Obsidian** control panel for live studying, and a clean **Paper Reading Style** for deep-focus revision reviews.
 
 <table width="100%">
   <tr>
     <td width="50%" valign="top">
-      <h3>📁 Study Workspace</h3>
+      <h3>Study Workspace</h3>
       <p>Interactive PDF study surface using <code>react-pdf</code>. Supports rich-text selection, sticky highlights, annotations, and active page extraction. Page images are sent directly to multi-modal vision layers (Qwen-VL / GPT-4o-Mini) to extract titles and diagram contexts.</p>
     </td>
     <td width="50%" valign="top">
-      <h3>💬 Streaming Chat Panel</h3>
+      <h3>Streaming Chat Panel</h3>
       <p>Streaming SSE tutor response window loaded with custom Markdown, native <strong>Mermaid diagrams</strong>, runnable JS/Python sandboxes, TTS audio, and real-time Google search via Serper. Includes an animated step-by-step reasoning trace with precise cost/token telemetry.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>📚 Active Recall Library</h3>
+      <h3>Active Recall Library</h3>
       <p>A classic paper-style textbook interface. Houses generated learning books, custom-mapped concept graphs, personal notes, and revision flashcards stored locally. Modeled after textbook layouts to minimize cognitive overload.</p>
     </td>
     <td width="50%" valign="top">
-      <h3>🧠 Three-Dimensional Brain</h3>
+      <h3>Three-Dimensional Brain Graph</h3>
       <p>An interactive, hardware-accelerated 3D concept matrix rendered using Three.js and <code>react-force-graph-3d</code>. Maps out the learner's knowledge nodes, linking books, prerequisites, and concepts together dynamically.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>📊 BKT Analytics</h3>
+      <h3>BKT Analytics Matrix</h3>
       <p>Dynamic charts tracking concept mastery and session metrics powered by Recharts. Operates on a local <strong>Bayesian Knowledge Tracing (BKT)</strong> engine to calculate knowledge retention, scaffolding levels, and illusion-of-knowing alerts.</p>
     </td>
     <td width="50%" valign="top">
-      <h3>🛡️ Admin Diagnostics</h3>
+      <h3>Admin Diagnostics Console</h3>
       <p>A master telemetry room. Inspect deep LLM trace chains, watch active WebSocket server logs, and monitor long-horizon <code>brain:debug</code> refactoring tasks as they execute across targets.</p>
     </td>
   </tr>
@@ -93,66 +93,40 @@ Tutor transitions seamlessly between a dark-mode **Cosmic Obsidian** control pan
 
 ---
 
-## ⚙️ System Architecture
+## System Architecture
 
-Tutor integrates heavy-performance browser surfaces with an agile local server proxy to coordinate high-speed streaming, voice synthesizers, and database mutations:
+Tutor integrates heavy-performance browser surfaces with an agile local server proxy to coordinate high-speed streaming, voice synthesizers, and database mutations.
 
 ```mermaid
 graph TD
-    %% Base Styles
-    classDef client fill:#030303,stroke:#8B5CF6,stroke-width:2px,color:#fff;
-    classDef server fill:#0A0A0B,stroke:#3B82F6,stroke-width:2px,color:#fff;
-    classDef cloud fill:#0d0d0e,stroke:#F97316,stroke-width:2px,color:#fff;
-    classDef brain fill:#121214,stroke:#10B981,stroke-width:2px,color:#fff;
-
-    subgraph Browser ["Client Interface (React 19, Cosmic Obsidian Style)"]
-        UI["Study View (react-pdf)"]:::client
-        Chat["Chat Panel (SSE Streaming, TTS, Voice Mode)"]:::client
-        Brain3D["Brain View (Three.js 3D Graph)"]:::client
-        Revision["Revision View (Paper Style Notebook)"]:::client
-        Dexie["Local Storage (Dexie NeuralNestBrain DB)"]:::client
-    end
-
-    subgraph Backend ["Express Server (server.ts)"]
-        Broker["API Broker (OpenRouter & OpenAI SDK)"]:::server
-        TTS["Deepgram Voice & TTS Proxy"]:::server
-        Search["Serper Web Search API"]:::server
-    end
-
-    subgraph Cloud ["External Cloud Services"]
-        OpenRouter["OpenRouter (DeepSeek Chat, Claude 3.5, Gemini 1.5)"]:::cloud
-        Deepgram["Deepgram (Voice & TTS Engine)"]:::cloud
-        Serper["Serper (Google Search Results)"]:::cloud
-    end
-
-    subgraph Autonomy ["Cognitive Layer (/brain)"]
-        Gen["brain:generate (Graph Mapping)"]:::brain
-        Embed["brain:embed (Local Embedding)"]:::brain
-        Debug["brain:debug (Autonomous Refactor Engine)"]:::brain
-        Playwright["brain:ui-regression (UI Testing)"]:::brain
-    end
-
-    %% Data Flow Connections
-    UI -->|Annotations & Text Selected| Chat
-    Chat -->|SSE Prompt| Broker
-    Chat <-->|Audio Stream| TTS
-    Broker -->|Federated Queries| OpenRouter
-    TTS -->|STT/TTS API| Deepgram
-    Broker -->|Web Search Request| Search -->|Query| Serper
+    %% Nodes
+    A[Study Workspace PDF Selection]
+    B[AI Streaming Chat & Voice Engine]
+    C[Express Server API Broker]
+    D[(Local Dexie NeuralNestBrain DB)]
     
-    %% Local Db interactions
-    Chat -->|Save Interactions & Books| Dexie
-    Revision -->|Load Flashcards & Notes| Dexie
-    Brain3D -->|Render Concept Matrix| Dexie
+    E[OpenRouter Core LLMs]
+    F[Deepgram Audio STT/TTS]
+    G[Serper Web Search Index]
     
-    %% Autonomy integrations
-    Autonomy -.->|Audit, Verify, Benchmark, and Auto-Fix| Browser
-    Autonomy -.->|Telemetry & Drift Checking| Backend
+    H[Cognitive Autonomy Tooling]
+
+    %% Layout / Flow
+    A -->|Text annotations & page selection| B
+    B <-->|Bidirectional state & visual components| D
+    B -->|Streaming SSE prompts & voice streams| C
+    
+    C <-->|Federated query dispatch| E
+    C <-->|Low-latency audio synthesis| F
+    C -->|Real-time web search request| G
+    
+    H -.->|Continuous layout & invariant verification| B
+    H -.->|Performance auditing & telemetry| C
 ```
 
 ---
 
-## 🤖 Cognitive Autonomy Layer (`/brain`)
+## Cognitive Autonomy Layer (`/brain`)
 
 The `/brain` folder represents the cognitive core of Tutor's development architecture. It is designed to allow coding agents and local environments to maintain high system cohesion, prevent architectural drift, and automatically fix bugs.
 
@@ -174,7 +148,7 @@ The `/brain` folder represents the cognitive core of Tutor's development archite
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Prerequisites
 * **Node.js** (v18+ recommended)
@@ -221,7 +195,7 @@ Navigate to `http://localhost:5173` to start learning!
 
 ---
 
-## 🎨 Design System
+## Design System
 
 The application combines two contrasting high-impact themes, carefully selected to balance active system diagnostics with deep reading focus:
 
@@ -236,7 +210,7 @@ The application combines two contrasting high-impact themes, carefully selected 
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are highly welcome! Please follow these guidelines:
 1. Ensure all changes are verified using `npm run brain:verify`.
@@ -245,6 +219,6 @@ Contributions are highly welcome! Please follow these guidelines:
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the **MIT License**. See `LICENSE` for details.
