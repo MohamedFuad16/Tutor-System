@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T02:44:12.015Z",
+    "generatedAt": "2026-05-28T05:31:32.892Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "0b394707e65dcfecd11340906a86b81533d2788f",
+      "commit": "f00c9dfbb420c5c0cfa41f5878924f85ffc0350d",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "06b6f11e1cad3ccd4ab8bbd09fe0ee196cd98fad8fff08a978b23e645f039a87"
+    "sourceHash": "f76dcaa5d9631dea80129091bac861e05f10beb2fa3736b871a86411e5dbd9d6"
   },
   "nodes": [
     {
@@ -1294,9 +1294,9 @@
       "type": "file",
       "label": "server.ts",
       "file": "server.ts",
-      "hash": "f39eedd59d97e6cf2ec715d9fdb805004288a1856eecd9d118a690b75803b06a",
+      "hash": "29f1327dfc8bac92b946e35935e096ef1d9490709107cfd7d978aaad1270f1f4",
       "metadata": {
-        "lines": 1812
+        "lines": 1842
       }
     },
     {
@@ -1404,7 +1404,7 @@
       "type": "file",
       "label": "src/components/ChatPanel.tsx",
       "file": "src/components/ChatPanel.tsx",
-      "hash": "304f453eb5c420e8ffa97b31c697a643b2583103a1bda2ad5fe87f518398d840",
+      "hash": "12f6ab94829ddde5d070e105b83c503db9d6ef170cec66469689ee391de0f402",
       "metadata": {
         "lines": 3793
       }
@@ -1484,9 +1484,9 @@
       "type": "file",
       "label": "src/components/SettingsModal.tsx",
       "file": "src/components/SettingsModal.tsx",
-      "hash": "af56a15181001d02b257caad8070595b9d652c3695348ce637f94683acc1432c",
+      "hash": "fa9c508a33d9116f30f552d912547cc1f8632b87822622125fdd6376398cbe0c",
       "metadata": {
-        "lines": 796
+        "lines": 797
       }
     },
     {
@@ -1715,7 +1715,7 @@
       "type": "file",
       "label": "src/store/index.ts",
       "file": "src/store/index.ts",
-      "hash": "8b143d2726791d01ed5570618f95a2a3f5ba575a0c79ea6f8423a2fb3ec95845",
+      "hash": "0f4ee54dba27fc86b7726e38a4010d333cc93dca20080697da046f3d9b00add0",
       "metadata": {
         "lines": 569
       }
@@ -3470,6 +3470,17 @@
       "id": "1db130d76150234c9860"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/chat",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1018
+      },
+      "id": "1dcb0caeba8074c61b0e"
+    },
+    {
       "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:systemPrompt",
@@ -3528,6 +3539,18 @@
         "text": "db.learningBooks.orderBy(\"updatedAt\")"
       },
       "id": "1ed8de8a128320022cd9"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/components/SettingsModal.tsx",
+      "target": "endpoint:ANY /api/v1/models",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/SettingsModal.tsx",
+        "line": 329,
+        "text": "fetch(\"https://openrouter.ai/api/v1/models\", {\n        method: \"GET\",\n        headers: {\n          Authorization: `Bearer ${inputKey}`,\n          \"HTTP-Referer\": window.location.hr"
+      },
+      "id": "1f6557db40121371fbef"
     },
     {
       "type": "renders",
@@ -4008,6 +4031,17 @@
         "file": "src/views/RevisionView.tsx"
       },
       "id": "2a76059ba230594159cf"
+    },
+    {
+      "type": "servedBy",
+      "source": "websocket:/ws/debug",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1626
+      },
+      "id": "2afa6442e91c1b247455"
     },
     {
       "type": "definedIn",
@@ -4582,17 +4616,6 @@
         "text": "audio"
       },
       "id": "37f3b63080f9710cb198"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "websocket:/api/voice-agent",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1592
-      },
-      "id": "38149f5fb000bcc3e98b"
     },
     {
       "type": "emits",
@@ -5983,18 +6006,6 @@
       "id": "5b3535f538527a2998ce"
     },
     {
-      "type": "callsEndpoint",
-      "source": "file:src/components/SettingsModal.tsx",
-      "target": "endpoint:ANY /api/v1/models",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/components/SettingsModal.tsx",
-        "line": 328,
-        "text": "fetch(\"https://openrouter.ai/api/v1/models\", {\n        method: \"GET\",\n        headers: {\n          Authorization: `Bearer ${inputKey}`,\n          \"HTTP-Referer\": window.location.hr"
-      },
-      "id": "5b52ea7e9dd04a86ce55"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "package:react-pdf",
@@ -6063,18 +6074,6 @@
         "file": "src/views/StudyView.tsx"
       },
       "id": "5d81031facc59a450cca"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/components/SettingsModal.tsx",
-      "target": "endpoint:ANY /api/generate-persona",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/components/SettingsModal.tsx",
-        "line": 702,
-        "text": "fetch(\n                                    \"/api/generate-persona\",\n                                    {\n                                      method: \"POST\",\n                    "
-      },
-      "id": "5d8d2c2038968b38638e"
     },
     {
       "type": "renders",
@@ -6470,6 +6469,17 @@
         "text": "productiveFailureEngine"
       },
       "id": "67c55b851b3cc8150663"
+    },
+    {
+      "type": "servedBy",
+      "source": "websocket:/api/voice-agent",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1622
+      },
+      "id": "6908f3384b9328bc6f5d"
     },
     {
       "type": "dependsOn",
@@ -7020,17 +7030,6 @@
         "text": "import { motion, AnimatePresence } from \"motion/react\";"
       },
       "id": "7748a3a835bb43f77970"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/chat",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 988
-      },
-      "id": "77c81dbd03debe242272"
     },
     {
       "type": "dependsOn",
@@ -8453,17 +8452,6 @@
       "id": "980e26e166710be5ecd4"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "websocket:/ws/debug",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1596
-      },
-      "id": "983ab098f08bc5718430"
-    },
-    {
       "type": "dependsOn",
       "source": "file:server.ts",
       "target": "package:express",
@@ -8773,7 +8761,7 @@
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
         "line": 2315,
-        "text": "fetch(\n        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || \"aura-asteria-en\")}`,\n      )"
+        "text": "fetch(\n        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || \"gpt-4o-mini-tts\")}`,\n      )"
       },
       "id": "a22d6a683d617396596e"
     },
@@ -8858,6 +8846,17 @@
         "text": "SvgOrange"
       },
       "id": "a43dceb0bbcdb4c6947d"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:GET *",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1603
+      },
+      "id": "a47ad74c0cb967c1051b"
     },
     {
       "type": "usesState",
@@ -9808,6 +9807,17 @@
       "id": "bd3c23a57bce84df1377"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "websocket:/ws/debug",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1626
+      },
+      "id": "bd7e8aa7c81489420adc"
+    },
+    {
       "type": "callsEndpoint",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "endpoint:ANY /api/pricing",
@@ -10030,6 +10040,18 @@
       "id": "c25db24a132772cf432a"
     },
     {
+      "type": "callsEndpoint",
+      "source": "file:src/components/SettingsModal.tsx",
+      "target": "endpoint:ANY /api/generate-persona",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/SettingsModal.tsx",
+        "line": 703,
+        "text": "fetch(\n                                    \"/api/generate-persona\",\n                                    {\n                                      method: \"POST\",\n                    "
+      },
+      "id": "c268c39b217cca366e94"
+    },
+    {
       "type": "imports",
       "source": "file:src/views/StudyView.tsx",
       "target": "file:src/store/index.ts",
@@ -10040,17 +10062,6 @@
         "text": "import { useStore } from \"../store\";"
       },
       "id": "c28b98cfd145ce6262db"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:GET *",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1573
-      },
-      "id": "c303b72ae3899a31c1eb"
     },
     {
       "type": "exports",
@@ -10794,17 +10805,6 @@
       "id": "d5511346ddf17855d659"
     },
     {
-      "type": "servedBy",
-      "source": "websocket:/ws/debug",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1596
-      },
-      "id": "d56d3a5801542da45739"
-    },
-    {
       "type": "definedIn",
       "source": "component:RouteFallback",
       "target": "file:src/App.tsx",
@@ -11122,6 +11122,17 @@
       "id": "dc4249d216e5dcafce72"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/chat",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1018
+      },
+      "id": "dc7020c5448977e28ffa"
+    },
+    {
       "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:setSelectedTextContext",
@@ -11235,17 +11246,6 @@
         "line": 1624
       },
       "id": "e0ed8eef9192183b47b3"
-    },
-    {
-      "type": "servedBy",
-      "source": "websocket:/api/voice-agent",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1592
-      },
-      "id": "e1340f9e094f595309ed"
     },
     {
       "type": "usesState",
@@ -11603,6 +11603,17 @@
       "id": "e9e4f2cf69c36ce1ce9b"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "websocket:/api/voice-agent",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1622
+      },
+      "id": "ea01ed41b35ef4f2c979"
+    },
+    {
       "type": "exports",
       "source": "file:src/memory/scaffolding.engine.ts",
       "target": "file:src/memory/scaffolding.engine.ts:export:ScaffoldingEngine",
@@ -11825,17 +11836,6 @@
         "text": "import { instrumentWebSocket } from \"./instrumentWebSocket\";"
       },
       "id": "f21e4a9714c0c3c470fd"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/chat",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 988
-      },
-      "id": "f26572a97ed5434c8cc5"
     },
     {
       "type": "exports",

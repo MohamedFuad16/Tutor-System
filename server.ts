@@ -920,19 +920,55 @@ CRITICAL RULE: You MUST dynamically generate a specific, highly relevant \`chapt
       const requestedVoice =
         typeof req.query.voice === "string"
           ? req.query.voice
-          : "aura-asteria-en";
-      const ttsModel = /^aura-[a-z0-9-]+-en$/i.test(requestedVoice)
-        ? requestedVoice
-        : "aura-asteria-en";
+          : "gpt-4o-mini-tts";
+      const ttsModel =
+        requestedVoice === "gpt-4o-mini-tts"
+          ? requestedVoice
+          : /^aura-[a-z0-9-]+-en$/i.test(requestedVoice)
+            ? requestedVoice
+            : "aura-asteria-en";
       const billedText = text.slice(0, 4000);
       const inputCharacters = billedText.length;
       const estimatedCost = ttsCostForModel(ttsModel, inputCharacters);
 
+      if (ttsModel === "gpt-4o-mini-tts") {
+        try {
+          const openaiKey =
+            process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || "";
+          if (!openaiKey) throw new Error("OpenAI API Key is missing");
+          const openai = new OpenAI({
+            apiKey: openaiKey,
+          });
+          const mp3 = await openai.audio.speech.create({
+            model: "tts-1",
+            voice: "alloy",
+            input: billedText,
+          });
+          const buffer = Buffer.from(await mp3.arrayBuffer());
+          res.setHeader("Content-Type", "audio/mpeg");
+          res.setHeader("X-Usage-Provider", "openai");
+          res.setHeader("X-Usage-Model", "gpt-4o-mini-tts");
+          res.setHeader("X-Usage-Unit", "characters");
+          res.setHeader("X-Usage-Input-Chars", String(inputCharacters));
+          res.setHeader("X-Usage-Cost", String(estimatedCost));
+          res.setHeader("X-Usage-Estimated", "false");
+          res.send(buffer);
+          return;
+        } catch (openaiErr) {
+          console.warn(
+            "[TTS] OpenAI TTS failed, falling back to Deepgram default:",
+            openaiErr,
+          );
+        }
+      }
+
+      const ttsModelForDeepgram =
+        ttsModel === "gpt-4o-mini-tts" ? "aura-asteria-en" : ttsModel;
       const deepgramKey = process.env.DEEPGRAM_API_KEY;
       if (!deepgramKey) throw new Error("Deepgram API Key is missing");
 
       const response = await fetch(
-        `https://api.deepgram.com/v1/speak?model=${ttsModel}&encoding=mp3`,
+        `https://api.deepgram.com/v1/speak?model=${ttsModelForDeepgram}&encoding=mp3`,
         {
           method: "POST",
           headers: {
@@ -1639,8 +1675,8 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             provider: "deepgram",
             voiceAgentModel: "Deepgram Voice Agent Standard",
             listenModel: "flux-general-en",
-            speakModel: "aura-asteria-en",
-            ttsModel: "aura-asteria-en",
+            speakModel: "gpt-4o-mini-tts",
+            ttsModel: "gpt-4o-mini-tts",
             connectionSeconds,
             inputAudioSeconds:
               clientInputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
@@ -1698,8 +1734,8 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             },
             speak: {
               provider: {
-                type: "deepgram",
-                model: "aura-asteria-en",
+                type: "open_ai",
+                model: "gpt-4o-mini-tts",
               },
             },
             greeting:

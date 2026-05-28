@@ -250,7 +250,7 @@ export function SettingsButton() {
   const [inputKey, setInputKey] = useState(apiKey);
   const [inputSerperKey, setInputSerperKey] = useState(serperApiKey);
   const [inputLearnerName, setInputLearnerName] = useState(learnerName);
-  const [inputVoice, setInputVoice] = useState(ttsVoice || "aura-asteria-en");
+  const [inputVoice, setInputVoice] = useState(ttsVoice || "gpt-4o-mini-tts");
   const [inputModel, setInputModel] = useState(aiModel || "gpt-4o-mini");
   const [inputAnimations, setInputAnimations] = useState(animationsEnabled);
   const [inputPrompt, setInputPrompt] = useState(systemPrompt || "");
@@ -266,6 +266,7 @@ export function SettingsButton() {
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const TTS_VOICES = [
+    { id: "gpt-4o-mini-tts", name: "OpenAI gpt-4o-mini-tts (Premium)" },
     { id: "aura-asteria-en", name: "Asteria (Clear)" },
     { id: "aura-luna-en", name: "Luna (Warm)" },
     { id: "aura-stella-en", name: "Stella (Bright)" },
@@ -286,7 +287,7 @@ export function SettingsButton() {
       setInputKey(apiKey);
       setInputSerperKey(serperApiKey);
       setInputLearnerName(learnerName);
-      setInputVoice(ttsVoice || "aura-asteria-en");
+      setInputVoice(ttsVoice || "gpt-4o-mini-tts");
       setInputModel(aiModel || "gpt-4o-mini");
       setInputAnimations(animationsEnabled);
       setInputPrompt(systemPrompt || "");

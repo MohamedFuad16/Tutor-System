@@ -2313,7 +2313,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           ? cleanText.substring(0, 1500) + "..."
           : cleanText;
       const res = await fetch(
-        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || "aura-asteria-en")}`,
+        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || "gpt-4o-mini-tts")}`,
       );
       if (!res.ok) {
         const err = await res
@@ -2327,7 +2327,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         res.headers.get("X-Usage-Input-Chars") || safeText.length,
       );
       const usageModel =
-        res.headers.get("X-Usage-Model") || ttsVoice || "aura-asteria-en";
+        res.headers.get("X-Usage-Model") || ttsVoice || "gpt-4o-mini-tts";
       recordVoiceUsage({
         provider: res.headers.get("X-Usage-Provider") || "deepgram",
         ttsModel: usageModel,

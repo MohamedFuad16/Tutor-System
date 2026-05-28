@@ -131,9 +131,9 @@ const emptyWebUsage: WebUsage = {
 const emptyVoiceUsage: VoiceUsage = {
   provider: "deepgram",
   voiceAgentModel: "Deepgram Voice Agent",
-  ttsModel: "aura-asteria-en",
+  ttsModel: "gpt-4o-mini-tts",
   listenModel: "flux-general-en",
-  speakModel: "aura-asteria-en",
+  speakModel: "gpt-4o-mini-tts",
   connectionSeconds: 0,
   inputAudioSeconds: 0,
   outputAudioSeconds: 0,
@@ -323,7 +323,7 @@ export const useStore = create<AppState>()(
       askTutorQuery: "",
       setAskTutorQuery: (query) => set({ askTutorQuery: query }),
 
-      ttsVoice: localStorage.getItem("tts_voice") || "aura-asteria-en",
+      ttsVoice: localStorage.getItem("tts_voice") || "gpt-4o-mini-tts",
       setTtsVoice: (voice) => {
         localStorage.setItem("tts_voice", voice);
         set({ ttsVoice: voice });

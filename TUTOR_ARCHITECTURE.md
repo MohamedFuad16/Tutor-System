@@ -13,15 +13,19 @@ The design language is **Cosmic Obsidian** for the main app: near-black surfaces
 ## 2. Runtime Stack & Build Configuration
 
 ### Frontend Stack
+
 The frontend utilizes:
-*   **Core**: React 19, Vite 6, TypeScript 5.8, Tailwind CSS 4.
-*   **State & DB**: Zustand (Global), Dexie (IndexedDB local database).
-*   **Visualization & Media**: Three.js, `react-force-graph-3d`, `react-pdf`, Recharts.
-*   **Animation**: `motion/react` (Framer Motion).
-*   **Markdown Parsing**: React Markdown, Remark GFM, Shiki syntax highlighter, Mermaid rendering.
+
+- **Core**: React 19, Vite 6, TypeScript 5.8, Tailwind CSS 4.
+- **State & DB**: Zustand (Global), Dexie (IndexedDB local database).
+- **Visualization & Media**: Three.js, `react-force-graph-3d`, `react-pdf`, Recharts.
+- **Animation**: `motion/react` (Framer Motion).
+- **Markdown Parsing**: React Markdown, Remark GFM, Shiki syntax highlighter, Mermaid rendering.
 
 ### Build and Splitting Strategy (`vite.config.ts`)
+
 To prevent heavy load times and optimize Interaction to Next Paint (INP), Vite is configured to split vendor code into dedicated bundles via `manualChunks`:
+
 1.  **3D Graph Engine**: `Three.js` and `react-force-graph-3d` are split into a lazy chunk, loaded dynamically when the user switches to `BrainView`.
 2.  **PDF Engine**: `react-pdf` and its dedicated PDF worker are isolated into a deferred worker chunk.
 3.  **Parsers**: Mermaid and Shiki load on-demand only when markdown containing code blocks or diagrams is streamed.
@@ -30,9 +34,10 @@ To prevent heavy load times and optimize Interaction to Next Paint (INP), Vite i
 Dynamic component imports (`React.lazy`) manage route-level code splitting. The app has no URL router. `src/App.tsx` acts as a view switcher driven entirely by `activeView` in the Zustand store.
 
 ### Backend Stack (`server.ts`)
-*   **Server Platform**: Express API running under Node.
-*   **Streams**: Server-Sent Events (SSE) for `/api/chat` model response streaming. WebSockets on `/ws/debug` for streaming diagnostics and live console logs.
-*   **AI Providers**: Deepgram Voice Agent API proxy, Deepgram TTS (Aura-Asteria), Serper API for web/news searches, and OpenAI SDK broker targeting OpenRouter models.
+
+- **Server Platform**: Express API running under Node.
+- **Streams**: Server-Sent Events (SSE) for `/api/chat` model response streaming. WebSockets on `/ws/debug` for streaming diagnostics and live console logs.
+- **AI Providers**: Deepgram Voice Agent API proxy, Deepgram TTS (Aura-Asteria), Serper API for web/news searches, and OpenAI SDK broker targeting OpenRouter models.
 
 ---
 
@@ -68,22 +73,23 @@ All cloud LLM calls are brokered by `server.ts`. The browser sends the user Open
 The global state store is defined in `src/store/index.ts` via `useStore` with Zustand's `persist` middleware. It saves user progress, API settings, and usage trackers to local storage under the key `learning-ai-store`.
 
 ### State Properties
-*   **Navigation & Credentials**:
-    *   `activeView`: `"study" | "analytics" | "revision" | "admin"` (central application router).
-    *   `learnerName`: string (defaults to "Learner").
-    *   `apiKey` / `serperApiKey`: string (user OpenRouter and Serper keys).
-*   **Active Study Context**:
-    *   `activeLearningBookId`: string | null (persistent tracking of the active book).
-    *   `activeProject`: string (current learning space name).
-    *   `askTutorQuery`: string (search input).
-    *   `pdfUrl`: string | null (path of currently opened PDF).
-    *   `pdfScale` / `pdfPage` / `pdfTotalPages`: number.
-    *   `annotations`: Array of `Annotation` (strikethroughs, underlines, highlights, sticky notes).
-*   **Analytics Trackers**:
-    *   `chatUsage`: `inputTokens`, `outputTokens`, `cost`, `requests` (tracks LLM usage).
-    *   `voiceUsage`: `connectionSeconds`, `inputAudioSeconds`, `outputAudioSeconds`, `ttsCharacters`, `cost`, `sessions`.
-    *   `webUsage`: `requests`, `searchRequests`, `newsRequests`, `sourcesReviewed`, `failures`, `cost`.
-    *   `pricing`: `PricingState` (caches fetched OpenRouter model rates).
+
+- **Navigation & Credentials**:
+  - `activeView`: `"study" | "analytics" | "revision" | "admin"` (central application router).
+  - `learnerName`: string (defaults to "Learner").
+  - `apiKey` / `serperApiKey`: string (user OpenRouter and Serper keys).
+- **Active Study Context**:
+  - `activeLearningBookId`: string | null (persistent tracking of the active book).
+  - `activeProject`: string (current learning space name).
+  - `askTutorQuery`: string (search input).
+  - `pdfUrl`: string | null (path of currently opened PDF).
+  - `pdfScale` / `pdfPage` / `pdfTotalPages`: number.
+  - `annotations`: Array of `Annotation` (strikethroughs, underlines, highlights, sticky notes).
+- **Analytics Trackers**:
+  - `chatUsage`: `inputTokens`, `outputTokens`, `cost`, `requests` (tracks LLM usage).
+  - `voiceUsage`: `connectionSeconds`, `inputAudioSeconds`, `outputAudioSeconds`, `ttsCharacters`, `cost`, `sessions`.
+  - `webUsage`: `requests`, `searchRequests`, `newsRequests`, `sourcesReviewed`, `failures`, `cost`.
+  - `pricing`: `PricingState` (caches fetched OpenRouter model rates).
 
 ---
 
@@ -92,19 +98,23 @@ The global state store is defined in `src/store/index.ts` via `useStore` with Zu
 Tutor persists concept maps, learning history, flashcards, and diagnostic trace logs in a local Dexie instance named `NeuralNestBrain` in `src/memory/longterm.memory.ts`.
 
 ### Schema Version 6
+
 The database tables and their indexing layouts are defined exactly as follows:
-*   **`concepts`**: `id, name, summary, description, confidence, prerequisites, hiddenKey, childConcepts, parentConcepts, updatedAt` (concept nodes).
-*   **`misconceptions`**: `id, conceptId, name, description, resolved, updatedAt` (learner misunderstandings).
-*   **`sessions`**: `id, startedAt, endedAt, totalTokens` (active user sessions).
-*   **`interactions`**: `id, sessionId, timestamp, tokensUsed` (dialogue history).
-*   **`flashcards`**: `id, conceptId, bookId, bookTitle, front, back, nextReviewAt` (Active recall cards).
-*   **`traceLogs`**: `id, timestamp, action, llmExplanation` (audit trail of DeepSeek updates).
-*   **`learningBooks`**: `id, title, conversationCount, agentModel, overview, knowledgeSummary, chapters, updatedAt` (AI-generated textbooks).
-*   **`learningBookConcepts`**: `id, bookId, name, summary, confidence, childConcepts, parentConcepts, updatedAt` (concepts belonging to generated books).
-*   **`learningEntries`**: `id, bookId, timestamp, conversationSummary, assistantSummary` (chronological learning notes).
+
+- **`concepts`**: `id, name, summary, description, confidence, prerequisites, hiddenKey, childConcepts, parentConcepts, updatedAt` (concept nodes).
+- **`misconceptions`**: `id, conceptId, name, description, resolved, updatedAt` (learner misunderstandings).
+- **`sessions`**: `id, startedAt, endedAt, totalTokens` (active user sessions).
+- **`interactions`**: `id, sessionId, timestamp, tokensUsed` (dialogue history).
+- **`flashcards`**: `id, conceptId, bookId, bookTitle, front, back, nextReviewAt` (Active recall cards).
+- **`traceLogs`**: `id, timestamp, action, llmExplanation` (audit trail of DeepSeek updates).
+- **`learningBooks`**: `id, title, conversationCount, agentModel, overview, knowledgeSummary, chapters, updatedAt` (AI-generated textbooks).
+- **`learningBookConcepts`**: `id, bookId, name, summary, confidence, childConcepts, parentConcepts, updatedAt` (concepts belonging to generated books).
+- **`learningEntries`**: `id, bookId, timestamp, conversationSummary, assistantSummary` (chronological learning notes).
 
 ### MemoryOrchestrator Integration
+
 The `MemoryOrchestrator` integrates these tables with the application runtime. When a chat session concludes:
+
 1.  It intercepts the conversation, uses a local 384-dimensional hashed text index to locate similar historic concepts, and injects ZPD Zonal directives into the system prompt.
 2.  It sends the dialogue to `/api/learning-book-update`, returning compiled summaries.
 3.  It updates the matching `learningBooks`, inserts new chapters, updates concepts, creates associated flashcards, and writes an entry in the `traceLogs` database.
@@ -116,24 +126,28 @@ The `MemoryOrchestrator` integrates these tables with the application runtime. W
 The application design supports fluid layout scaling across all device categories.
 
 ### Study View
-*   **Layout Grid**: Renders a vertical layout `flex-col` on mobile viewports to prevent squashing panels. On desktop (`xl:flex-row`), it splits into a 64% width left-hand workspace (housing the PDF viewer) and a 36% width right-hand panel (`ChatPanel`).
-*   **Chat Panel**: Renders as a `<motion.aside>` that slides out or collapses using Framer Motion's `AnimatePresence`. 
-*   **PDF Viewer**: Adapts using width listeners. Squeezes margins and scales canvas layouts using `ResizeObserver`. Displays a floating top-right bar for overlays (zoom, navigate, annotate) to save space.
+
+- **Layout Grid**: Renders a vertical layout `flex-col` on mobile viewports to prevent squashing panels. On desktop (`xl:flex-row`), it splits into a 64% width left-hand workspace (housing the PDF viewer) and a 36% width right-hand panel (`ChatPanel`).
+- **Chat Panel**: Renders as a `<motion.aside>` that slides out or collapses using Framer Motion's `AnimatePresence`.
+- **PDF Viewer**: Adapts using width listeners. Squeezes margins and scales canvas layouts using `ResizeObserver`. Displays a floating top-right bar for overlays (zoom, navigate, annotate) to save space.
 
 ### Revision View
-*   **Visual Style**: Clean paper styling (`#faf9f6`) with an overlaid noise SVG background overlay set to `opacity-[0.03]` for an organic notebook feel.
-*   **Sidebar Layout**: The chapter and table of contents sidebar is hidden by default and displayed only on large screens (`hidden lg:block w-64 flex-shrink-0 sticky`). 
-*   **Mobile Navigation**: Smaller viewports replace the vertical sidebar with a top horizontal scrollbar tags navbar (`flex gap-2 overflow-x-auto pb-1`).
-*   **Fluid Margins**: Container uses `max-w-4xl` and shifts padding based on breakpoints (`p-5` on mobile, scaling up through `sm:p-6`, `md:p-10`, `lg:p-16`, and `xl:p-20`).
+
+- **Visual Style**: Clean paper styling (`#faf9f6`) with an overlaid noise SVG background overlay set to `opacity-[0.03]` for an organic notebook feel.
+- **Sidebar Layout**: The chapter and table of contents sidebar is hidden by default and displayed only on large screens (`hidden lg:block w-64 flex-shrink-0 sticky`).
+- **Mobile Navigation**: Smaller viewports replace the vertical sidebar with a top horizontal scrollbar tags navbar (`flex gap-2 overflow-x-auto pb-1`).
+- **Fluid Margins**: Container uses `max-w-4xl` and shifts padding based on breakpoints (`p-5` on mobile, scaling up through `sm:p-6`, `md:p-10`, `lg:p-16`, and `xl:p-20`).
 
 ### Brain View
-*   **3D Workspace**: Three.js/WebGL canvas managed by a custom `ResizeObserver` listener on the parent container. Automatically re-centers coordinates when the window resizes to prevent graph drift.
-*   **Sidebar Details Card**: An overlay card positioned absolutely. Occupies full width (`left-5 right-5`) on mobile/tablet screens and transitions to a fixed width of `720px` (`xl:right-auto xl:w-[720px]`) on desktop viewports.
+
+- **3D Workspace**: Three.js/WebGL canvas managed by a custom `ResizeObserver` listener on the parent container. Automatically re-centers coordinates when the window resizes to prevent graph drift.
+- **Sidebar Details Card**: An overlay card positioned absolutely. Occupies full width (`left-5 right-5`) on mobile/tablet screens and transitions to a fixed width of `720px` (`xl:right-auto xl:w-[720px]`) on desktop viewports.
 
 ### Admin View
-*   **Layout**: Matches the `#faf9f6` paper layout of the Revision View, sharing the identical responsive sidebar navigation (`hidden lg:block`) and mobile top header (`lg:hidden`).
-*   **Monospace Console**: Renders a hardware-accelerated monospace log viewport. Uses a `useEffect` layout trigger to automatically scroll the console to the bottom on new incoming WebSocket trace logs.
-*   **Debug Ledger**: Displays active and historic `DebugRuns`. Component card sub-logs are collapsed by default to allow fast scrolling and high readability on small viewports.
+
+- **Layout**: Matches the `#faf9f6` paper layout of the Revision View, sharing the identical responsive sidebar navigation (`hidden lg:block`) and mobile top header (`lg:hidden`).
+- **Monospace Console**: Renders a hardware-accelerated monospace log viewport. Uses a `useEffect` layout trigger to automatically scroll the console to the bottom on new incoming WebSocket trace logs.
+- **Debug Ledger**: Displays active and historic `DebugRuns`. Component card sub-logs are collapsed by default to allow fast scrolling and high readability on small viewports.
 
 ---
 
@@ -142,48 +156,64 @@ The application design supports fluid layout scaling across all device categorie
 Tutor features advanced UI motion choreography using hardware-accelerated web techniques.
 
 ### Siri Liquid Glass Orb Shader (`SiriLiquidGlass.tsx`)
+
 This component creates an organic liquid glass fluid overlay resembling Apple iOS voice systems without the performance cost of compiling raw WebGL fragment shaders.
-*   **Layout**: Outer wrapper uses `absolute inset-0 overflow-hidden mix-blend-screen blur-[4px]` overlays on dark backgrounds.
-*   **Parent Wrapper**: A large container `absolute w-[200%] h-[200%] top-[-50%] left-[-50%]` that undergoes continuous rotation, accelerating from a passive rate (`duration: 10`) to an active rate (`duration: 3`) during voice activation.
-*   **Independent Color Orbs**: Inside the parent container, four colored circles float and pulse independently using spring animations:
-    1.  **Blue Orb** (`#0a84ff`): Scales to `1.3` on hover; floats on X and Y paths during active voice streams.
-    2.  **Purple Orb** (`#bf5af2`): Scales to `1.2` on hover; moves along X coordinates.
-    3.  **Orange/Pink Orb** (`#ff375f`): Scales to `1.4` on hover; shifts along Y coordinates.
-    4.  **Cyan/Teal Core** (`#64d2ff`): Keyframe-pulses passively to act as a high-contrast core.
-*   **Color Bleeding**: Utilizing `mix-blend-screen` within the outer wrapper creates organic plasma-like color bleeding.
+
+- **Layout**: Outer wrapper uses `absolute inset-0 overflow-hidden mix-blend-screen blur-[4px]` overlays on dark backgrounds.
+- **Parent Wrapper**: A large container `absolute w-[200%] h-[200%] top-[-50%] left-[-50%]` that undergoes continuous rotation, accelerating from a passive rate (`duration: 10`) to an active rate (`duration: 3`) during voice activation.
+- **Independent Color Orbs**: Inside the parent container, four colored circles float and pulse independently using spring animations:
+  1.  **Blue Orb** (`#0a84ff`): Scales to `1.3` on hover; floats on X and Y paths during active voice streams.
+  2.  **Purple Orb** (`#bf5af2`): Scales to `1.2` on hover; moves along X coordinates.
+  3.  **Orange/Pink Orb** (`#ff375f`): Scales to `1.4` on hover; shifts along Y coordinates.
+  4.  **Cyan/Teal Core** (`#64d2ff`): Keyframe-pulses passively to act as a high-contrast core.
+- **Color Bleeding**: Utilizing `mix-blend-screen` within the outer wrapper creates organic plasma-like color bleeding.
 
 ### Reasoning Thinking Panel (`ChatPanel.tsx`)
+
 Renders an o1-style streaming thinking trace for complex reasoning loops.
-*   **Step Categorization**: Tracks active phases (`retrieving`, `web_search`, `tool_execution`, `synthesizing`, `complete`). Uses `thoughtStepMeta` to dynamically assign theme values based on text contents (Search: `#0A7DFF`, Vision: `#6929F4`, Tool: `#36AA55`, Graph: `#D87A2C`, Recall: `#D49B23`, Synthesis: `#6929F4`, Reasoning: `#6A6A6A`).
-*   **Timeline Animations**: Sequenced using index-based delays (`index * 0.48s`).
-    *   `reasoningStepVariants`: Fades in and slides up steps.
-    *   `reasoningIconVariants`: Scale, rotate, and bounce spring sequence (`scale: 0.34` to `0.6`, `rotate: [-14, 9, -3, 0]`).
-    *   `reasoningLineVariants`: Separator vertical lines expand downward (`scaleY` from `0` to `1`) *after* icons land.
-*   **Gradient Shimmer Mask**: Text uses a hardware-accelerated linear gradient mask:
-    ```css
-    background-image: linear-gradient(100deg, #52525b 0%, #52525b 34%, #111827 45%, #a1a1aa 52%, #52525b 66%, #52525b 100%);
-    background-size: 240% 100%;
-    ```
-    Shifts the `backgroundPosition` across coordinates to create a typing shimmer. Animates with GPU acceleration via `willChange` to avoid Interaction to Next Paint (INP) frame lag during streaming.
+
+- **Step Categorization**: Tracks active phases (`retrieving`, `web_search`, `tool_execution`, `synthesizing`, `complete`). Uses `thoughtStepMeta` to dynamically assign theme values based on text contents (Search: `#0A7DFF`, Vision: `#6929F4`, Tool: `#36AA55`, Graph: `#D87A2C`, Recall: `#D49B23`, Synthesis: `#6929F4`, Reasoning: `#6A6A6A`).
+- **Timeline Animations**: Sequenced using index-based delays (`index * 0.48s`).
+  - `reasoningStepVariants`: Fades in and slides up steps.
+  - `reasoningIconVariants`: Scale, rotate, and bounce spring sequence (`scale: 0.34` to `0.6`, `rotate: [-14, 9, -3, 0]`).
+  - `reasoningLineVariants`: Separator vertical lines expand downward (`scaleY` from `0` to `1`) _after_ icons land.
+- **Gradient Shimmer Mask**: Text uses a hardware-accelerated linear gradient mask:
+  ```css
+  background-image: linear-gradient(
+    100deg,
+    #52525b 0%,
+    #52525b 34%,
+    #111827 45%,
+    #a1a1aa 52%,
+    #52525b 66%,
+    #52525b 100%
+  );
+  background-size: 240% 100%;
+  ```
+  Shifts the `backgroundPosition` across coordinates to create a typing shimmer. Animates with GPU acceleration via `willChange` to avoid Interaction to Next Paint (INP) frame lag during streaming.
 
 ---
 
 ## 8. Performance Optimizations
 
 ### INP Mitigation via `useMotionValue`
+
 Binding standard window or container scroll listeners to React state variables (`useState`) triggers component-wide re-renders on every scroll tick. In complex layouts like the PDF Study View, this degrades Interaction to Next Paint (INP) frames.
-*   To resolve this, `StudyView.tsx` binds scroll progress directly to Framer Motion values:
-    ```typescript
-    const { scrollYProgress } = useScroll({ container: scrollContainerRef });
-    const arrow1Opacity = useTransform(scrollYProgress, [0.3, 0.45], [0.9, 0]);
-    ```
-*   Updates update the DOM directly, bypassing the React virtual DOM render thread to maintain a constant 60+ FPS.
+
+- To resolve this, `StudyView.tsx` binds scroll progress directly to Framer Motion values:
+  ```typescript
+  const { scrollYProgress } = useScroll({ container: scrollContainerRef });
+  const arrow1Opacity = useTransform(scrollYProgress, [0.3, 0.45], [0.9, 0]);
+  ```
+- Updates update the DOM directly, bypassing the React virtual DOM render thread to maintain a constant 60+ FPS.
 
 ### Ticker Counter Hook (`useAnimatedNumber`)
+
 Renders high-speed rolling numerical values (tokens, cost, characters) without layout stutter:
-*   Takes a `target` number and computes differences from the previous state via `displayedRef.current`.
-*   Updates numbers using a cubic ease-out curve (`1 - Math.pow(1 - progress, 3)`).
-*   Runs inside `requestAnimationFrame` loops, canceling older frames on component unmount to prevent render jitter.
+
+- Takes a `target` number and computes differences from the previous state via `displayedRef.current`.
+- Updates numbers using a cubic ease-out curve (`1 - Math.pow(1 - progress, 3)`).
+- Runs inside `requestAnimationFrame` loops, canceling older frames on component unmount to prevent render jitter.
 
 ---
 
@@ -206,13 +236,14 @@ graph TD
 ```
 
 ### Self-Healing Autonomy Subsystems
+
 1.  **Workspace Watcher (`brain/autonomy/watch.ts`)**: Monitors folders via `fs.watch`, debounces changes (2500ms), and spawns the postchange pipeline. Writes watch statuses to `status.json`.
 2.  **Drift Check (`brain/drift-check.ts`)**: Compares SHA-256 hashes of all source code files against snapshots in `file-hashes.json`. Outputs `regenerationTargets` based on modified files:
-    *   `src/store/` -> `state-flow`
-    *   `server.ts` -> `api-contracts`
-    *   `src/App.tsx` -> `route-map`
-    *   `src/components/` or `src/views/` -> `render-graph`
-    *   `src/memory/` -> `database-impact`
+    - `src/store/` -> `state-flow`
+    - `server.ts` -> `api-contracts`
+    - `src/App.tsx` -> `route-map`
+    - `src/components/` or `src/views/` -> `render-graph`
+    - `src/memory/` -> `database-impact`
 3.  **Artifact Generator (`generate-brain.ts`)**: Rebuilds semantic dependency maps, API contract definitions, and layout hierarchies.
 4.  **Vector Indexer (`brain/embed`)**: Chunks codebase contexts locally via Hugging Face `Xenova/all-MiniLM-L6-v2` transformer pipelines. Saves 384-dimensional text vectors into a local database.
 5.  **Telemetry Benchmark (`brain/runtime-benchmark`)**: Captures rerender performance, memory usage, and state propagation hotspots.
@@ -226,12 +257,15 @@ graph TD
 The autonomous debugging utility operates independently of default tutor dialogues, executing multi-step repair loops.
 
 ### Invoking the Tool
+
 ```bash
 npm run brain:debug -- --mode fix --scope all
 ```
 
 ### Execution Protocol
+
 The orchestrator walks through every targeted application target (files, components, hooks) using a 20-step process:
+
 1.  **Parse**: Scans targets.
 2.  **Understand**: Analyzes target purpose.
 3.  **Dependencies**: Maps dependencies.
@@ -264,6 +298,7 @@ High-risk mutation boundaries remain Dexie schema, server API/SSE/WebSocket cont
 Generated graph, flow, contract, vector, impact, runtime, snapshot, and verification outputs must be regenerated by commands rather than manually edited.
 
 Before reporting architecture work done, run:
+
 ```bash
 npm run brain:generate
 npm run brain:embed

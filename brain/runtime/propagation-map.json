@@ -1,18 +1,18 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T02:46:14.429Z",
+    "generatedAt": "2026-05-28T05:32:44.970Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "06b6f11e1cad3ccd4ab8bbd09fe0ee196cd98fad8fff08a978b23e645f039a87",
+    "sourceHash": "f76dcaa5d9631dea80129091bac861e05f10beb2fa3736b871a86411e5dbd9d6",
     "url": "http://127.0.0.1:3000",
-    "eventCount": 42,
+    "eventCount": 43,
     "confidence": 0.82
   },
   "propagation": [
     {
       "state": "messages",
-      "timestamp": 249.80000001192093,
+      "timestamp": 233.60000002384186,
       "nextRender": "route:study",
-      "lagMs": 11.400000035762787,
+      "lagMs": 10.699999988079071,
       "metadata": {
         "previousType": "object",
         "nextType": "object"
@@ -20,9 +20,9 @@
     },
     {
       "state": "activeLearningBookId",
-      "timestamp": 306.7000000476837,
+      "timestamp": 272.30000001192093,
       "nextRender": "route:study",
-      "lagMs": 8.399999976158142,
+      "lagMs": 7.600000023841858,
       "metadata": {
         "previousType": "object",
         "nextType": "string"
@@ -30,9 +30,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 1425.2000000476837,
+      "timestamp": 1417.5,
       "nextRender": "route:study",
-      "lagMs": 5.599999964237213,
+      "lagMs": 5.5,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -40,7 +40,7 @@
     },
     {
       "state": "activeView",
-      "timestamp": 2301.7000000476837,
+      "timestamp": 2277.100000023842,
       "nextRender": "route:analytics",
       "lagMs": 2.899999976158142,
       "metadata": {
@@ -50,9 +50,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 3109.400000035763,
+      "timestamp": 3084.699999988079,
       "nextRender": "route:revision",
-      "lagMs": 9.399999976158142,
+      "lagMs": 7.300000011920929,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
