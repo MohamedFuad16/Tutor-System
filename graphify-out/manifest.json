@@ -1,386 +1,386 @@
 {
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/package.json": {
-    "mtime": 1780097503.1000597,
+    "mtime": 1780097825.0618627,
     "ast_hash": "c503912c373bc6b689eaf478eb4ae368",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/server.ts": {
-    "mtime": 1780097503.1090598,
+    "mtime": 1780097825.070863,
     "ast_hash": "f6166f6ad49be87b294755091f4f81ea",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/metadata.json": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "d5f26d4bb528fd2cb1e0d6caf0b6fb29",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.eslintrc.json": {
-    "mtime": 1780097503.0940597,
+    "mtime": 1780097825.0558627,
     "ast_hash": "aca5da813918e717700d7ededcdaf0b9",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/vite.config.ts": {
-    "mtime": 1780097503.1147873,
+    "mtime": 1780097825.0759554,
     "ast_hash": "cbe4dd018d422f1967ab47ee905f39b0",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/tsconfig.json": {
-    "mtime": 1780097503.1147873,
+    "mtime": 1780097825.0759554,
     "ast_hash": "9d7a844877d1634af42c454f6554fed8",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.vscode/settings.json": {
-    "mtime": 1780097503.0957165,
+    "mtime": 1780097825.05642,
     "ast_hash": "a4e3f0c31e6cf93f76953ab6dfdd082b",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.vscode/launch.json": {
-    "mtime": 1780097503.0955265,
+    "mtime": 1780097825.0562303,
     "ast_hash": "103ff7f277af9d288c9213b0b75ddf86",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/api/[...path].ts": {
-    "mtime": 1780097503.0957165,
+    "mtime": 1780097825.05642,
     "ast_hash": "f0743ede715b4d0d5a326a6096bc0e71",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/api/index.ts": {
-    "mtime": 1780097503.096143,
+    "mtime": 1780097825.0567927,
     "ast_hash": "f0743ede715b4d0d5a326a6096bc0e71",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/server/vercel-handler.ts": {
-    "mtime": 1780097503.1090598,
+    "mtime": 1780097825.070863,
     "ast_hash": "9053716e3e221405ad45cd65db40a4db",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/server/web-search.ts": {
-    "mtime": 1780097503.1108823,
+    "mtime": 1780097825.0721066,
     "ast_hash": "dcd3d9832b9609f479a580d055037577",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/App.tsx": {
-    "mtime": 1780097503.1108823,
+    "mtime": 1780097825.0721066,
     "ast_hash": "6489087e5f4efb93a00cf354535663c8",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/main.tsx": {
-    "mtime": 1780097503.1126554,
+    "mtime": 1780097825.0738544,
     "ast_hash": "deed79ca9909acda7df8edc95cc37185",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/vite-env.d.ts": {
-    "mtime": 1780097503.1130598,
+    "mtime": 1780097825.0748632,
     "ast_hash": "0352474ba2918efe13895edbc3780d94",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/types.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "2d26d62a5b29aa270631d2b9b03c5870",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/lib/audio.ts": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072863,
     "ast_hash": "9f97a5d47433905280d31c2dbeb35846",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/lib/tutorBook.json": {
-    "mtime": 1780097503.1126554,
+    "mtime": 1780097825.0738544,
     "ast_hash": "881484d2705570597b639ae5c5328471",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/lib/translations.ts": {
-    "mtime": 1780097503.1126554,
+    "mtime": 1780097825.0738544,
     "ast_hash": "ecb181ff82756860ebd6a34bcaf3b638",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/store/index.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "7f5a8fc4510901d2ef3854378758ad4e",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/views/AdminView.tsx": {
-    "mtime": 1780097503.1130598,
+    "mtime": 1780097825.0748632,
     "ast_hash": "98d13c689699859f1b288c17ea4b01c4",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/views/AnalyticsView.tsx": {
-    "mtime": 1780097503.1130598,
+    "mtime": 1780097825.0748632,
     "ast_hash": "2cc409cd0cf24431855b412b44336986",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/views/RevisionView.tsx": {
-    "mtime": 1780097503.1130598,
+    "mtime": 1780097825.0748632,
     "ast_hash": "a98b2659780df5d764265fe0707c62fe",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/views/StudyView.tsx": {
-    "mtime": 1780097503.1130598,
+    "mtime": 1780097825.0748632,
     "ast_hash": "cd9778bb47c0712380ea8c4622d5d7a2",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/longterm.memory.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "1d43181e47912ce5a89db9f408f508b8",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/cognitive.load.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "483a8ea56a1428f5a34c35c23b465e47",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/revision.memory.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "4d91733e443a9cf62197f969fa63d006",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/bkt.engine.ts": {
-    "mtime": 1780097503.1126554,
+    "mtime": 1780097825.073863,
     "ast_hash": "ce93e8a5f96c5abc2eb160a9faa06a02",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/zpd.calculator.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "5f4eb99ec209b0041b469fb55937289f",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/memory.orchestrator.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "391f6131196e9aace23456df326b8987",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/misconception.graph.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "eb28122fae7dfdd78f0713a14bd90a03",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/scaffolding.engine.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "134c37bdb928c11979b87859db7def0c",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/illusion.detector.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "5b2b765fc3a4ce60442dd628394b8e40",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/productive.failure.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "0f77529b6365cb91cf75b6d2533c0abc",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/metacognition.tracker.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "219ae539bf0097b945bbab9473bf4b82",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/learner.model.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "f5c12bb487dd0cf67760c7b669447864",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/prerequisite.dag.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "8e23add494effc34670ec33d68234822",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/memory.embeddings.ts": {
-    "mtime": 1780097503.1129808,
+    "mtime": 1780097825.074199,
     "ast_hash": "d7c42eca73477128e35c98c46f835470",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/SiriLiquidGlass.tsx": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072863,
     "ast_hash": "b7ece82d58b7997c3480a1770b17e790",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/FloatingSkillsMenu.tsx": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072345,
     "ast_hash": "dea3359b40535d56186367f0d6246e5b",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/SettingsModal.tsx": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072863,
     "ast_hash": "4022540497d3ea9463f774be523ff463",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/ChatPanel.tsx": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072345,
     "ast_hash": "87f0e825657c3e1da63873ba2bc047bc",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/PatternCard.tsx": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072345,
     "ast_hash": "aab586cdffd03a36b310f17309fdf0bc",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/PdfViewer.tsx": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072863,
     "ast_hash": "ada78cbaf774477da75a92fd8a8b594e",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/ShikiHighlighter.tsx": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072863,
     "ast_hash": "bc26e1ed9fd5a57895920ef2d7bd41e7",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/PatternSVGs.tsx": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072863,
     "ast_hash": "090d0dae21f3e57d657e97f447e55a13",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/AnimatedScrollText.tsx": {
-    "mtime": 1780097503.1110473,
+    "mtime": 1780097825.0722728,
     "ast_hash": "6a7ce796b410ea9c840e70ff7ca6fe5a",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/StatusBadge.tsx": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072863,
     "ast_hash": "a08aca5e4cfeab7bca60dfbe8f3fce0d",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/Navigation.tsx": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072345,
     "ast_hash": "9e7dbbc21bfee8748a8c429b291453a5",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/scripts/classify_and_extract.py": {
-    "mtime": 1780097503.1090598,
+    "mtime": 1780097825.070863,
     "ast_hash": "c59688e8951ee4357258f3283e489d06",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/AGENTS.md": {
-    "mtime": 1780097503.0957165,
+    "mtime": 1780097825.05642,
     "ast_hash": "dc718bd49e535e0c512f413dd63f28fe",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/requirements.txt": {
-    "mtime": 1780097503.1090598,
+    "mtime": 1780097825.070863,
     "ast_hash": "bb37f2cb6388a248ff064b049483371d",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/TUTOR_ARCHITECTURE.md": {
-    "mtime": 1780097503.0957165,
+    "mtime": 1780097825.05642,
     "ast_hash": "c42f8c67f3b4ed2df90edecaa816dd54",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/RESPONSIVENESS.md": {
-    "mtime": 1780097503.0957165,
+    "mtime": 1780097825.05642,
     "ast_hash": "54363edfad7598d0988436ebfa633022",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/index.html": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "9130cb8ce6eae6faa8a1da65b4cc34ec",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/README.md": {
-    "mtime": 1780097503.0957165,
+    "mtime": 1780097825.05642,
     "ast_hash": "d2a4634ac3bef1985adabf5c6ad63dd6",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.github/workflows/graphify-refresh.yml": {
-    "mtime": 1780097503.0955265,
+    "mtime": 1780097825.0562303,
     "ast_hash": "9a2c77fe6082f24a20c5648b594651e8",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/test_native.pdf": {
-    "mtime": 1780097503.1130598,
+    "mtime": 1780097825.0748632,
     "ast_hash": "862505cecd14b65b906c147417f1cad9",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/public/fluent-python.pdf": {
-    "mtime": 1780097503.1090598,
+    "mtime": 1780097825.070863,
     "ast_hash": "7818ee366a28f31a1036b52d27e3f2b0",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-22.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "7fca003d893c771e4f8b72c3a64e49f1",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-7.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "22998c66ab6ba8fcacc146b79e452158",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-27.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "26608124205039246fdd21bf3e673a90",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-12.svg": {
-    "mtime": 1780097503.0980597,
+    "mtime": 1780097825.0598629,
     "ast_hash": "a4cc9bbdf4d41759623cd2a0e257cb85",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-32.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "8f5d7b44cc1ae8d93a050cbd32c60b6e",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-20.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "cb01dc0d98365463df0f0eef23d809aa",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-21.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "ba2ad3a90f3528979fb5d37685ebbcab",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-36.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "da68958c03dda7aaf880316f07b07d9e",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-31.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "7abfbdd516dfaf60a0a3a9ed9a80614a",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-5.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "aed1acb544cfd1be925a91c6e7266f6b",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-6.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "3838347cf5bd2e4d7eb526bd2467b039",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-8.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "22d9a1c95e2bc52ea2d1d8bfc2e5d661",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-16.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "8f239453b7553728546cf40c878c597b",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-26.svg": {
-    "mtime": 1780097503.0998127,
+    "mtime": 1780097825.061015,
     "ast_hash": "9766c7a1a528eb0d3c988620dbfbc16c",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/public/banner.png": {
-    "mtime": 1780097503.1010597,
+    "mtime": 1780097825.0638628,
     "ast_hash": "f1d628e37e7baa288bb61463161ced4b",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/hooks/useMotionPreference.ts": {
-    "mtime": 1780097503.111125,
+    "mtime": 1780097825.072863,
     "ast_hash": "bf6748d11c4f02b4c2f988e88db213e0",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/tests/document-ingest.test.mjs": {
-    "mtime": 1780097503.1130598,
+    "mtime": 1780097825.0748632,
     "ast_hash": "b24dd32b0eb5b60c255a76ce2366646b",
     "semantic_hash": ""
   },
   "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/tests/web-search.test.mjs": {
-    "mtime": 1780097503.1147873,
+    "mtime": 1780097825.0759554,
     "ast_hash": "ffd69e4b5061515bb3d3377e74843435",
     "semantic_hash": ""
   }
