@@ -98,7 +98,6 @@
     {
       "field": "learnerName",
       "readers": [
-        "src/views/BrainView.tsx",
         "src/components/ChatPanel.tsx"
       ],
       "writers": []
@@ -326,8 +325,8 @@
     {
       "field": "setPdfTotalPages",
       "readers": [
-        "src/components/PdfViewer.tsx",
         "src/components/ChatPanel.tsx",
+        "src/components/PdfViewer.tsx",
         "src/views/StudyView.tsx"
       ],
       "writers": [
@@ -360,8 +359,8 @@
       "field": "setSelectedTextContext",
       "readers": [
         "src/views/StudyView.tsx",
-        "src/components/PdfViewer.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/components/PdfViewer.tsx"
       ],
       "writers": [
         "src/components/PdfViewer.tsx",
@@ -686,11 +685,6 @@
       "file": "src/lib/translations.ts",
       "field": "language",
       "selector": "(state) => state.language"
-    },
-    {
-      "file": "src/views/BrainView.tsx",
-      "field": "learnerName",
-      "selector": "(state) => state.learnerName"
     },
     {
       "file": "src/views/RevisionView.tsx",

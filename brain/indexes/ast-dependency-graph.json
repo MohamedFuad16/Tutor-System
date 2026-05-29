@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-29T05:56:02.897Z",
+    "generatedAt": "2026-05-29T08:24:34.345Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "e6e5492d780b8804ac753368d36c58a11c673905",
+      "commit": "0e7f22c063b4f007c8c0d156c600799ed2798e04",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "625e2d8379fdf94c8728ab4f50d49e10cff72e8e59a7125ae2445f189b9dd3b1"
+    "sourceHash": "1acf0e74100b87053667c55ddc74551d8d62755274847ec58aa5498a1092daff"
   },
   "dependencies": {
     "generate-brain.ts": [
@@ -107,6 +107,10 @@
       {
         "specifier": "ws",
         "external": "ws"
+      },
+      {
+        "specifier": "http",
+        "external": "http"
       },
       {
         "specifier": "./server/web-search",
@@ -661,6 +665,10 @@
         "external": "react-pdf"
       },
       {
+        "specifier": "pdfjs-dist/build/pdf.worker.min.mjs?url",
+        "external": "pdfjs-dist"
+      },
+      {
         "specifier": "react-pdf/dist/Page/AnnotationLayer.css",
         "external": "react-pdf"
       },
@@ -913,40 +921,6 @@
       {
         "specifier": "../lib/translations",
         "resolved": "src/lib/translations.ts"
-      }
-    ],
-    "src/views/BrainView.tsx": [
-      {
-        "specifier": "react",
-        "external": "react"
-      },
-      {
-        "specifier": "react-force-graph-3d",
-        "external": "react-force-graph-3d"
-      },
-      {
-        "specifier": "../store",
-        "resolved": "src/store/index.ts"
-      },
-      {
-        "specifier": "lucide-react",
-        "external": "lucide-react"
-      },
-      {
-        "specifier": "three",
-        "external": "three"
-      },
-      {
-        "specifier": "motion/react",
-        "external": "motion"
-      },
-      {
-        "specifier": "../memory/longterm.memory",
-        "resolved": "src/memory/longterm.memory.ts"
-      },
-      {
-        "specifier": "dexie-react-hooks",
-        "external": "dexie-react-hooks"
       }
     ],
     "src/views/RevisionView.tsx": [

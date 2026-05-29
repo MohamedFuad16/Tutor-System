@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { useStore, Annotation } from "../store";
@@ -20,7 +21,7 @@ import {
 } from "lucide-react";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 export function PdfViewer() {
   const { t } = useTranslation();

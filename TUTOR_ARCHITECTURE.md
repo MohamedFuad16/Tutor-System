@@ -4,7 +4,7 @@ This document is the human-readable architecture book for Tutor. The generated `
 
 ## 1. Product Purpose
 
-Tutor is an AI-powered learning interface for reading academic papers and textbooks, asking a streaming tutor questions, building a personal learning library, and reviewing knowledge over time. The product combines a PDF study surface, AI chat, voice tutoring, web search, a 3D learner brain, revision notebooks, analytics, admin diagnostics, built-in architecture/design-language library books, and the `/brain` architecture cognition layer.
+Tutor is an AI-powered learning interface for reading academic papers and textbooks, asking a streaming tutor questions, building a personal learning library, and reviewing knowledge over time. The product combines a PDF study surface, AI chat, voice tutoring, web search, revision notebooks, analytics, admin diagnostics, built-in architecture/design-language library books, and the `/brain` architecture cognition layer.
 
 The design language is **Cosmic Obsidian** for the main app: near-black surfaces (`#030303`), surfaces (`#0A0A0B`), neon violet/blue/orange accents (`#8B5CF6`, `#3B82F6`, `#F97316`), glass panels, motion-heavy transitions, and liquid AI details. Revision and Admin intentionally use a `#faf9f6` paper style to make review and diagnostics feel like a readable notebook.
 
@@ -18,7 +18,7 @@ The frontend utilizes:
 
 - **Core**: React 19, Vite 6, TypeScript 5.8, Tailwind CSS 4.
 - **State & DB**: Zustand (Global), Dexie (IndexedDB local database).
-- **Visualization & Media**: Three.js, `react-force-graph-3d`, `react-pdf`, Recharts.
+- **Visualization & Media**: `react-pdf`, Recharts.
 - **Animation**: `motion/react` (Framer Motion).
 - **Markdown Parsing**: React Markdown, Remark GFM, Shiki syntax highlighter, Mermaid rendering.
 
@@ -26,10 +26,9 @@ The frontend utilizes:
 
 To prevent heavy load times and optimize Interaction to Next Paint (INP), Vite is configured to split vendor code into dedicated bundles via `manualChunks`:
 
-1.  **3D Graph Engine**: `Three.js` and `react-force-graph-3d` are split into a lazy chunk, loaded dynamically when the user switches to `BrainView`.
-2.  **PDF Engine**: `react-pdf` and its dedicated PDF worker are isolated into a deferred worker chunk.
-3.  **Parsers**: Mermaid and Shiki load on-demand only when markdown containing code blocks or diagrams is streamed.
-4.  **UI Core**: Zustand, Recharts, and Lucide icons reside in the main shared client chunk.
+1.  **PDF Engine**: `react-pdf` and its dedicated PDF worker are isolated into a deferred worker chunk.
+2.  **Parsers**: Mermaid and Shiki load on-demand only when markdown containing code blocks or diagrams is streamed.
+3.  **UI Core**: Zustand, Recharts, and Lucide icons reside in the main shared client chunk.
 
 Dynamic component imports (`React.lazy`) manage route-level code splitting. The app has no URL router. `src/App.tsx` acts as a view switcher driven entirely by `activeView` in the Zustand store.
 
@@ -143,11 +142,6 @@ The application design supports fluid layout scaling across all device categorie
 - **Mobile Navigation**: Smaller viewports replace the vertical sidebar with a top horizontal scrollbar tags navbar (`flex gap-2 overflow-x-auto pb-1`).
 - **Fluid Margins**: Container uses `max-w-4xl` and shifts padding based on breakpoints (`p-5` on mobile, scaling up through `sm:p-6`, `md:p-10`, `lg:p-16`, and `xl:p-20`).
 - **Built-In Books**: `RevisionView.tsx` uses a built-in book model with static architecture content from `src/lib/tutorBook.json` and an App Design Language book rendered in React. The design-language book contains a cleaned wireframe map, theme tokens, and interactive UI component previews; it preserves the existing long-press hide/delete behavior through per-book local storage keys.
-
-### Brain View
-
-- **3D Workspace**: Three.js/WebGL canvas managed by a custom `ResizeObserver` listener on the parent container. Automatically re-centers coordinates when the window resizes to prevent graph drift.
-- **Sidebar Details Card**: An overlay card positioned absolutely. Occupies full width (`left-5 right-5`) on mobile/tablet screens and transitions to a fixed width of `720px` (`xl:right-auto xl:w-[720px]`) on desktop viewports.
 
 ### Admin View
 

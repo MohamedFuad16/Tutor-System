@@ -13,6 +13,7 @@ import OpenAI from "openai";
 import multer from "multer";
 import { GoogleGenAI } from "@google/genai";
 import { WebSocketServer, WebSocket as WSWebSocket } from "ws";
+import type { IncomingHttpHeaders } from "http";
 import {
   detectFreshnessSearch,
   formatSourcesForPrompt,
@@ -76,6 +77,91 @@ const sanitizeApiKey = (value: unknown) => {
   const key = typeof raw === "string" ? raw.trim() : "";
   if (!key || key === "undefined" || key === "null") return "";
   return key;
+};
+
+type RequestLike = {
+  headers: IncomingHttpHeaders;
+  socket: { remoteAddress?: string | null };
+  url?: string;
+};
+
+const firstHeader = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] || "" : value || "";
+
+const hostNameFromHeader = (host: string | string[] | undefined) => {
+  const rawHost = firstHeader(host).trim().toLowerCase();
+  if (!rawHost) return "";
+  if (rawHost.startsWith("[")) {
+    const end = rawHost.indexOf("]");
+    return end > 0 ? rawHost.slice(1, end) : rawHost;
+  }
+  return rawHost.split(":")[0];
+};
+
+const isLoopbackHost = (host: string | string[] | undefined) => {
+  const hostname = hostNameFromHeader(host);
+  return (
+    hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
+    hostname === "::1" ||
+    hostname === "127.0.0.1"
+  );
+};
+
+const isLoopbackAddress = (address?: string | null) => {
+  const normalized = String(address || "").replace(/^::ffff:/, "");
+  return normalized === "::1" || /^127(?:\.\d{1,3}){3}$/.test(normalized);
+};
+
+const debugAdminToken = sanitizeApiKey(
+  process.env.TUTOR_DEBUG_TOKEN || process.env.ADMIN_DEBUG_TOKEN,
+);
+
+const tokenFromAuthorization = (authorization: string) => {
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : "";
+};
+
+const debugTokenFromRequest = (request: RequestLike) => {
+  const headerToken = sanitizeApiKey(
+    request.headers["x-debug-token"] ||
+      request.headers["x-admin-token"] ||
+      tokenFromAuthorization(firstHeader(request.headers.authorization)),
+  );
+  if (headerToken) return headerToken;
+
+  try {
+    const url = new URL(
+      request.url || "",
+      `http://${firstHeader(request.headers.host) || "localhost"}`,
+    );
+    return sanitizeApiKey(url.searchParams.get("debugToken"));
+  } catch {
+    return "";
+  }
+};
+
+const isAuthorizedDebugRequest = (request: RequestLike) => {
+  const requestToken = debugTokenFromRequest(request);
+  if (debugAdminToken && requestToken === debugAdminToken) return true;
+
+  return (
+    process.env.NODE_ENV !== "production" &&
+    isLoopbackHost(request.headers.host) &&
+    isLoopbackAddress(request.socket.remoteAddress)
+  );
+};
+
+const redactSensitiveUrl = (url: string) =>
+  url.replace(
+    /([?&](?:openRouterKey|apiKey|debugToken|token|key)=)[^&]*/gi,
+    "$1[redacted]",
+  );
+
+const normalizeVoiceLanguage = (value: unknown) => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const language = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+  return language === "ja" || language === "ko" ? language : "en";
 };
 
 const normalizeModelPricing = (raw: any): OpenRouterPricing => {
@@ -217,7 +303,9 @@ async function startServer() {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "100mb", extended: true }));
 
-  const upload = multer({ dest: "uploads/" });
+  const uploadDir = path.join(process.cwd(), "uploads");
+  fs.mkdirSync(uploadDir, { recursive: true });
+  const upload = multer({ dest: uploadDir });
 
   // Log incoming requests for the Admin Server Console
   app.use((req, res, next) => {
@@ -226,10 +314,21 @@ async function startServer() {
       !req.url.startsWith("/node_modules/") &&
       !req.url.startsWith("/@")
     ) {
-      console.log(`[HTTP] ${req.method} ${req.url}`);
+      console.log(`[HTTP] ${req.method} ${redactSensitiveUrl(req.url)}`);
     }
     next();
   });
+
+  const requireDebugAccess: express.RequestHandler = (req, res, next) => {
+    if (isAuthorizedDebugRequest(req)) {
+      next();
+      return;
+    }
+    res.status(403).json({
+      error:
+        "Debug access denied. Use localhost in development or provide x-debug-token with TUTOR_DEBUG_TOKEN.",
+    });
+  };
 
   // WebSocket Server for Console Broadcaster
   const wssDebug = new WebSocketServer({ noServer: true });
@@ -540,6 +639,8 @@ async function startServer() {
         String(b.startedAt || b.id).localeCompare(String(a.startedAt || a.id)),
       );
   };
+
+  app.use("/api/debug", requireDebugAccess);
 
   app.get("/api/debug/runs", (_req, res) => {
     res.json({
@@ -1924,6 +2025,11 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         wss.emit("connection", ws, request);
       });
     } else if (pathname === "/ws/debug") {
+      if (!isAuthorizedDebugRequest(request)) {
+        socket.write("HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n");
+        socket.destroy();
+        return;
+      }
       wssDebug.handleUpgrade(request, socket, head, (ws) => {
         wssDebug.emit("connection", ws, request);
       });
@@ -1933,25 +2039,13 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
   });
 
   wss.on("connection", (ws, req) => {
-    // Extract openRouterKey and language from query params
     const url = new URL(req.url || "", `http://${req.headers.host}`);
-    const openRouterKey =
-      url.searchParams.get("openRouterKey") || process.env.OPENROUTER_API_KEY;
-    const language = url.searchParams.get("language") || "en";
-
-    if (!openRouterKey) {
-      ws.close(1008, "OpenRouter API key is required");
-      return;
-    }
-
-    const deepgramKey = process.env.DEEPGRAM_API_KEY;
-    if (!deepgramKey) {
-      ws.close(1011, "Deepgram API Key is missing");
-      return;
-    }
+    let language = normalizeVoiceLanguage(url.searchParams.get("language"));
     let dgWs: WSWebSocket | null = null;
     let isDeepgramReady = false;
     let messageBuffer: Array<{ data: any; isBinary: boolean }> = [];
+    let isVoiceSessionStarted = false;
+    let usageInterval: ReturnType<typeof setInterval> | null = null;
     const voiceStartedAt = Date.now();
     let lastUsageAt = voiceStartedAt;
     let clientInputBytes = 0;
@@ -1988,161 +2082,201 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       );
     };
 
-    const usageInterval = setInterval(() => sendVoiceUsage(0), 1000);
+    const parseVoiceAuth = (data: any, isBinary: boolean) => {
+      if (isBinary) return null;
+      const text = Buffer.isBuffer(data) ? data.toString("utf8") : String(data);
+      try {
+        const payload = JSON.parse(text);
+        return payload?.type === "voice_auth" ? payload : null;
+      } catch {
+        return null;
+      }
+    };
 
-    try {
-      const dgUrl = "wss://agent.deepgram.com/v1/agent/converse";
-      console.log(`Connecting to Deepgram at: ${dgUrl}`);
-      dgWs = new WSWebSocket(dgUrl, {
-        headers: {
-          Authorization: `Token ${deepgramKey}`,
-        },
-      });
+    const startVoiceSession = (
+      providedOpenRouterKey: string,
+      selectedLanguage: string,
+    ) => {
+      if (isVoiceSessionStarted) return true;
 
-      dgWs.on("open", () => {
-        // Send initial configuration
-        const listenModel =
-          language === "ja" || language === "ko"
-            ? "flux-general-multi"
-            : "flux-general-en";
-        const listenProvider: any = {
-          type: "deepgram",
-          model: listenModel,
-          version: "v2",
-        };
-        if (language === "ja" || language === "ko") {
-          listenProvider.language_hints = ["en", "ja", "ko"];
-        }
+      const openRouterKey =
+        sanitizeApiKey(providedOpenRouterKey) ||
+        sanitizeApiKey(process.env.OPENROUTER_API_KEY);
+      if (!openRouterKey) {
+        ws.close(1008, "OpenRouter API key is required");
+        return false;
+      }
 
-        let thinkPrompt =
-          "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks — you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate.";
-        let greeting =
-          "Hello! I am Aria, your CS tutor. What are you studying today?";
+      const deepgramKey = process.env.DEEPGRAM_API_KEY;
+      if (!deepgramKey) {
+        ws.close(1011, "Deepgram API Key is missing");
+        return false;
+      }
 
-        if (language === "ja") {
-          thinkPrompt =
-            "あなたはAriaという名前の優秀なコンピュータサイエンスおよびプログラミングのチューターです。現在、技術的な内容を学習している学生をサポートしています。シニアエンジニアがジュニアデベロッパーを指導するように概念を説明してください。現実世界の例え話を使用してください。回答は3〜5文に抑えてください。音声での対話であるため、箇条書き、マークダウン、コードブロックは絶対に使用しないでください。記号は言葉で説明してください。最後は必ず次の質問をするか、詳しく説明することを提案して終えてください。必ず日本語で自然に会話してください。";
-          greeting =
-            "こんにちは！CSチューターのAriaです。今日は何を勉強しますか？";
-        } else if (language === "ko") {
-          thinkPrompt =
-            "당신은 Aria라는 이름의 우수한 컴퓨터 과학 및 프로그래밍 튜터입니다. 현재 기술적인 내용을 학습하고 있는 학생을 돕고 있습니다. 시니어 엔지니어가 주니어 개발자를 멘토링하듯이 개념을 설명해 주세요. 현실 세계의 비유를 사용해 주세요. 답변은 3~5문장으로 제한해 주세요. 음성으로 대화 중이므로 글머리 기호, 마크다운, 코드 블록은 절대 사용하지 마세요. 기호는 말로 설명해 주세요. 각 답변의 끝에는 후속 질문을 하거나 더 자세히 설명하겠다고 제안해 주세요. 반드시 한국어로 자연스럽게 대화해 주세요.";
-          greeting =
-            "안녕하세요! CS 튜터 Aria입니다. 오늘 어떤 내용을 공부하시겠어요?";
-        }
+      language = normalizeVoiceLanguage(selectedLanguage);
+      isVoiceSessionStarted = true;
+      usageInterval = setInterval(() => sendVoiceUsage(0), 1000);
 
-        const config = {
-          type: "Settings",
-          audio: {
-            input: {
-              encoding: "linear16",
-              sample_rate: 48000,
-            },
-            output: {
-              encoding: "linear16",
-              sample_rate: 48000,
-              container: "none",
-            },
+      try {
+        const dgUrl = "wss://agent.deepgram.com/v1/agent/converse";
+        console.log(`Connecting to Deepgram at: ${dgUrl}`);
+        dgWs = new WSWebSocket(dgUrl, {
+          headers: {
+            Authorization: `Token ${deepgramKey}`,
           },
-          agent: {
-            listen: {
-              provider: listenProvider,
-            },
-            think: {
-              provider: {
-                type: "open_ai",
-                model: "gpt-4o-mini",
-              },
-              prompt: thinkPrompt,
-            },
-            speak: {
-              provider: {
-                type: "open_ai",
-                model: "gpt-4o-mini-tts",
-              },
-            },
-            greeting: greeting,
-          },
-        };
-        console.log(
-          "Sending Deepgram settings config:",
-          JSON.stringify(config, null, 2),
-        );
-        dgWs?.send(JSON.stringify(config));
-      });
+        });
 
-      dgWs.on("unexpected-response", (req, res) => {
-        console.error(
-          `Deepgram WS Unexpected Response: ${res.statusCode} ${res.statusMessage}`,
-        );
-        console.error(
-          "Deepgram Headers:",
-          JSON.stringify(res.headers, null, 2),
-        );
-        if (res.statusCode === 404) {
-          console.error(
-            "This usually means the Deepgram API key does not have access to the Voice Agent API, or the endpoint is incorrect.",
+        dgWs.on("open", () => {
+          // Send initial configuration
+          const listenModel =
+            language === "ja" || language === "ko"
+              ? "flux-general-multi"
+              : "flux-general-en";
+          const listenProvider: any = {
+            type: "deepgram",
+            model: listenModel,
+            version: "v2",
+          };
+          if (language === "ja" || language === "ko") {
+            listenProvider.language_hints = ["en", "ja", "ko"];
+          }
+
+          let thinkPrompt =
+            "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks — you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate.";
+          let greeting =
+            "Hello! I am Aria, your CS tutor. What are you studying today?";
+
+          if (language === "ja") {
+            thinkPrompt =
+              "あなたはAriaという名前の優秀なコンピュータサイエンスおよびプログラミングのチューターです。現在、技術的な内容を学習している学生をサポートしています。シニアエンジニアがジュニアデベロッパーを指導するように概念を説明してください。現実世界の例え話を使用してください。回答は3〜5文に抑えてください。音声での対話であるため、箇条書き、マークダウン、コードブロックは絶対に使用しないでください。記号は言葉で説明してください。最後は必ず次の質問をするか、詳しく説明することを提案して終えてください。必ず日本語で自然に会話してください。";
+            greeting =
+              "こんにちは！CSチューターのAriaです。今日は何を勉強しますか？";
+          } else if (language === "ko") {
+            thinkPrompt =
+              "당신은 Aria라는 이름의 우수한 컴퓨터 과학 및 프로그래밍 튜터입니다. 현재 기술적인 내용을 학습하고 있는 학생을 돕고 있습니다. 시니어 엔지니어가 주니어 개발자를 멘토링하듯이 개념을 설명해 주세요. 현실 세계의 비유를 사용해 주세요. 답변은 3~5문장으로 제한해 주세요. 음성으로 대화 중이므로 글머리 기호, 마크다운, 코드 블록은 절대 사용하지 마세요. 기호는 말로 설명해 주세요. 각 답변의 끝에는 후속 질문을 하거나 더 자세히 설명하겠다고 제안해 주세요. 반드시 한국어로 자연스럽게 대화해 주세요.";
+            greeting =
+              "안녕하세요! CS 튜터 Aria입니다. 오늘 어떤 내용을 공부하시겠어요?";
+          }
+
+          const config = {
+            type: "Settings",
+            audio: {
+              input: {
+                encoding: "linear16",
+                sample_rate: 48000,
+              },
+              output: {
+                encoding: "linear16",
+                sample_rate: 48000,
+                container: "none",
+              },
+            },
+            agent: {
+              listen: {
+                provider: listenProvider,
+              },
+              think: {
+                provider: {
+                  type: "open_ai",
+                  model: "gpt-4o-mini",
+                },
+                prompt: thinkPrompt,
+              },
+              speak: {
+                provider: {
+                  type: "open_ai",
+                  model: "gpt-4o-mini-tts",
+                },
+              },
+              greeting: greeting,
+            },
+          };
+          console.log(
+            "Sending Deepgram settings config:",
+            JSON.stringify(config, null, 2),
           );
-        }
-
-        let body = "";
-        res.on("data", (chunk) => {
-          body += chunk;
+          dgWs?.send(JSON.stringify(config));
         });
-        res.on("end", () => {
-          if (body) console.error("Deepgram Error Body:", body);
+
+        dgWs.on("unexpected-response", (req, res) => {
+          console.error(
+            `Deepgram WS Unexpected Response: ${res.statusCode} ${res.statusMessage}`,
+          );
+          console.error(
+            "Deepgram Headers:",
+            JSON.stringify(res.headers, null, 2),
+          );
+          if (res.statusCode === 404) {
+            console.error(
+              "This usually means the Deepgram API key does not have access to the Voice Agent API, or the endpoint is incorrect.",
+            );
+          }
+
+          let body = "";
+          res.on("data", (chunk) => {
+            body += chunk;
+          });
+          res.on("end", () => {
+            if (body) console.error("Deepgram Error Body:", body);
+            if (ws.readyState === ws.OPEN) {
+              ws.close(1011, `Deepgram returned ${res.statusCode}`);
+            }
+          });
+        });
+
+        dgWs.on("message", (data, isBinary) => {
           if (ws.readyState === ws.OPEN) {
-            ws.close(1011, `Deepgram returned ${res.statusCode}`);
+            if (isBinary) {
+              deepgramOutputBytes += rawByteLength(data);
+              ws.send(data);
+            } else {
+              const messageStr = data.toString();
+              try {
+                const parsed = JSON.parse(messageStr);
+                if (
+                  parsed.type === "SettingsApplied" ||
+                  parsed.type === "Welcome"
+                ) {
+                  isDeepgramReady = true;
+                  messageBuffer.forEach((msg) => {
+                    if (dgWs?.readyState === WSWebSocket.OPEN) {
+                      dgWs.send(msg.data);
+                    }
+                  });
+                  messageBuffer = [];
+                }
+              } catch (e) {}
+              ws.send(messageStr);
+            }
           }
         });
-      });
 
-      dgWs.on("message", (data, isBinary) => {
-        if (ws.readyState === ws.OPEN) {
-          if (isBinary) {
-            deepgramOutputBytes += rawByteLength(data);
-            ws.send(data);
-          } else {
-            const messageStr = data.toString();
-            try {
-              const parsed = JSON.parse(messageStr);
-              if (
-                parsed.type === "SettingsApplied" ||
-                parsed.type === "Welcome"
-              ) {
-                isDeepgramReady = true;
-                messageBuffer.forEach((msg) => {
-                  if (dgWs?.readyState === WSWebSocket.OPEN) {
-                    dgWs.send(msg.data);
-                  }
-                });
-                messageBuffer = [];
-              }
-            } catch (e) {}
-            ws.send(messageStr);
+        dgWs.on("close", () => {
+          if (ws.readyState === ws.OPEN) {
+            sendVoiceUsage(1);
+            ws.close();
           }
-        }
-      });
+        });
 
-      dgWs.on("close", () => {
-        if (ws.readyState === ws.OPEN) {
-          sendVoiceUsage(1);
-          ws.close();
+        dgWs.on("error", (error) => {
+          console.error("Deepgram WS Error:", error);
+          if (ws.readyState === ws.OPEN) {
+            ws.close();
+          }
+        });
+      } catch (e) {
+        if (usageInterval) {
+          clearInterval(usageInterval);
+          usageInterval = null;
         }
-      });
+        console.error("Failed to connect to Deepgram", e);
+        ws.close(1011, "Failed to connect to Deepgram");
+      }
 
-      dgWs.on("error", (error) => {
-        console.error("Deepgram WS Error:", error);
-        if (ws.readyState === ws.OPEN) {
-          ws.close();
-        }
-      });
-    } catch (e) {
-      console.error("Failed to connect to Deepgram", e);
-      ws.close(1011, "Failed to connect to Deepgram");
-    }
+      return true;
+    };
 
-    ws.on("message", (data, isBinary) => {
+    const forwardClientMessage = (data: any, isBinary: boolean) => {
       if (isBinary) {
         clientInputBytes += rawByteLength(data);
       }
@@ -2152,10 +2286,28 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       } else {
         messageBuffer.push({ data, isBinary });
       }
+    };
+
+    ws.on("message", (data, isBinary) => {
+      if (!isVoiceSessionStarted) {
+        const authPayload = parseVoiceAuth(data, isBinary);
+        if (authPayload) {
+          startVoiceSession(
+            sanitizeApiKey(authPayload.openRouterKey),
+            authPayload.language || language,
+          );
+          return;
+        }
+
+        const started = startVoiceSession("", language);
+        if (!started) return;
+      }
+
+      forwardClientMessage(data, isBinary);
     });
 
     ws.on("close", () => {
-      clearInterval(usageInterval);
+      if (usageInterval) clearInterval(usageInterval);
       if (dgWs && dgWs.readyState === dgWs.OPEN) {
         dgWs.close();
       }

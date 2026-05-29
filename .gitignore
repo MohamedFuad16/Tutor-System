@@ -11,4 +11,3 @@ brain/embeddings/query-cache.json
 brain/debug/backups/
 brain/debug/runs/
 brain/debug/ui-regression/
-brain/debug/ui-regression-probe.ts

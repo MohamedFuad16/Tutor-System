@@ -1,34 +1,32 @@
 {
-  "ok": false,
+  "ok": true,
   "staleBeforeRefresh": false,
-  "reason": "revision-book-scroll-wireframe-map",
-  "startedAt": "2026-05-29T06:01:47.247Z",
-  "finishedAt": "2026-05-29T06:02:12.641Z",
-  "snapshotGeneratedAt": "2026-05-29T05:56:02.897Z",
+  "reason": "audit-fixes",
+  "startedAt": "2026-05-29T08:26:03.386Z",
+  "finishedAt": "2026-05-29T08:26:06.652Z",
+  "snapshotGeneratedAt": "2026-05-29T08:24:34.345Z",
   "regenerationTargets": [],
   "steps": [
     {
       "name": "brain:drift-check",
       "ok": true,
-      "startedAt": "2026-05-29T06:01:47.251Z",
-      "finishedAt": "2026-05-29T06:01:49.374Z",
-      "output": "{\n  \"ok\": true,\n  \"stale\": false,\n  \"checkedAt\": \"2026-05-29T06:01:49.331Z\",\n  \"snapshotGeneratedAt\": \"2026-05-29T05:56:02.897Z\",\n  \"changed\": [],\n  \"added\": [],\n  \"deleted\": [],\n  \"regenerationTargets\": []\n}\n"
+      "startedAt": "2026-05-29T08:26:03.386Z",
+      "finishedAt": "2026-05-29T08:26:03.653Z",
+      "output": "{\n  \"ok\": true,\n  \"stale\": false,\n  \"checkedAt\": \"2026-05-29T08:26:03.645Z\",\n  \"snapshotGeneratedAt\": \"2026-05-29T08:24:34.345Z\",\n  \"changed\": [],\n  \"added\": [],\n  \"deleted\": [],\n  \"regenerationTargets\": []\n}\n"
     },
     {
       "name": "brain:verify",
-      "ok": false,
-      "startedAt": "2026-05-29T06:01:49.375Z",
-      "finishedAt": "2026-05-29T06:01:51.908Z",
-      "exitCode": 1,
-      "output": "{\n  \"ok\": false,\n  \"generatedAt\": \"2026-05-29T06:01:51.858Z\",\n  \"failures\": [\n    \"Semantic vector index is stale relative to graph sourceHash.\",\n    \"Semantic vector index is stale relative to retrieval corpus content.\"\n  ],\n  \"warnings\": []\n}\n"
+      "ok": true,
+      "startedAt": "2026-05-29T08:26:03.653Z",
+      "finishedAt": "2026-05-29T08:26:03.943Z",
+      "output": "{\n  \"ok\": true,\n  \"generatedAt\": \"2026-05-29T08:26:03.932Z\",\n  \"failures\": [],\n  \"warnings\": []\n}\n"
     },
     {
       "name": "brain:self-audit",
-      "ok": false,
-      "startedAt": "2026-05-29T06:01:51.908Z",
-      "finishedAt": "2026-05-29T06:02:12.640Z",
-      "exitCode": 1,
-      "output": "node:internal/errors:932\n  const err = new Error(message);\n              ^\n\nError: Command failed: npm run --silent brain:verify\n    at __node_internal_genericNodeError (node:internal/errors:932:15)\n    at checkExecSyncError (node:child_process:890:11)\n    at execFileSync (node:child_process:926:15)\n    at runJson (/Users/mfuad16/Documents/LearningAI/brain/self-audit.ts:31:5)\n    at main (/Users/mfuad16/Documents/LearningAI/brain/self-audit.ts:181:7)\n    at <anonymous> (/Users/mfuad16/Documents/LearningAI/brain/self-audit.ts:233:1)\n    at ModuleJob.run (node:internal/modules/esm/module_job:218:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:329:24)\n    at async loadESM (node:internal/process/esm_loader:28:7)\n    at async handleMainPromise (node:internal/modules/run_main:113:12) {\n  status: 1,\n  signal: null,\n  output: [\n    null,\n    '{\\n' +\n      '  \"ok\": false,\\n' +\n      '  \"generatedAt\": \"2026-05-29T06:02:12.531Z\",\\n' +\n      '  \"failures\": [\\n' +\n      '    \"Semantic vector index is stale relative to graph sourceHash.\",\\n' +\n      '    \"Semantic vector index is stale relative to retrieval corpus content.\"\\n' +\n      '  ],\\n' +\n      '  \"warnings\": []\\n' +\n      '}\\n',\n    ''\n  ],\n  pid: 27323,\n  stdout: '{\\n' +\n    '  \"ok\": false,\\n' +\n    '  \"generatedAt\": \"2026-05-29T06:02:12.531Z\",\\n' +\n    '  \"failures\": [\\n' +\n    '    \"Semantic vector index is stale relative to graph sourceHash.\",\\n' +\n    '    \"Semantic vector index is stale relative to retrieval corpus content.\"\\n' +\n    '  ],\\n' +\n    '  \"warnings\": []\\n' +\n    '}\\n',\n  stderr: ''\n}\n\nNode.js v20.11.0\n"
+      "ok": true,
+      "startedAt": "2026-05-29T08:26:03.943Z",
+      "finishedAt": "2026-05-29T08:26:06.652Z",
+      "output": "{\n  \"ok\": true,\n  \"generatedAt\": \"2026-05-29T08:26:06.638Z\",\n  \"threshold\": 85,\n  \"score\": 88,\n  \"checks\": {\n    \"graphFreshness\": 12,\n    \"vectorFreshness\": 14,\n    \"retrievalQuality\": 14,\n    \"runtimeCoverage\": 14,\n    \"contractCoverage\": 10,\n    \"routeStateCoverage\": 0,\n    \"ruleCompliance\": 10,\n    \"taskMemoryContinuity\": 7,\n    \"loaderCoverage\": 7\n  },\n  \"retrievalBenchmark\": {\n    \"recall\": 1,\n    \"confidenceAverage\": 0.8893833333333333,\n    \"results\": [\n      {\n        \"task\": \"add dashboard feature\",\n        \"expected\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/store/index.ts\"\n        ],\n        \"hits\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/store/index.ts\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.85\n      },\n      {\n        \"task\": \"refactor Zustand store\",\n        \"expected\": [\n          \"src/store/index.ts\",\n          \"src/App.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"hits\": [\n          \"src/store/index.ts\",\n          \"src/App.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.8897\n      },\n      {\n        \"task\": \"modify route layout\",\n        \"expected\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/views/StudyView.tsx\"\n        ],\n        \"hits\": [\n          \"src/App.tsx\",\n          \"src/components/Navigation.tsx\",\n          \"src/views/StudyView.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.97\n      },\n      {\n        \"task\": \"modify SSE streaming\",\n        \"expected\": [\n          \"server.ts\",\n          \"src/components/ChatPanel.tsx\",\n          \"brain/contracts/api-contracts.json\"\n        ],\n        \"hits\": [\n          \"server.ts\",\n          \"src/components/ChatPanel.tsx\",\n          \"brain/contracts/api-contracts.json\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.85\n      },\n      {\n        \"task\": \"change shared UI animations\",\n        \"expected\": [\n          \"src/components/SiriLiquidGlass.tsx\",\n          \"src/components/SettingsModal.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"hits\": [\n          \"src/components/SiriLiquidGlass.tsx\",\n          \"src/components/SettingsModal.tsx\",\n          \"src/components/ChatPanel.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.85\n      },\n      {\n        \"task\": \"modify Dexie schema\",\n        \"expected\": [\n          \"src/memory/longterm.memory.ts\",\n          \"src/memory/memory.orchestrator.ts\",\n          \"src/views/RevisionView.tsx\"\n        ],\n        \"hits\": [\n          \"src/memory/longterm.memory.ts\",\n          \"src/memory/memory.orchestrator.ts\",\n          \"src/views/RevisionView.tsx\"\n        ],\n        \"recall\": 1,\n        \"confidence\": \"high\",\n        \"confidenceScore\": 0.9266\n      }\n    ]\n  },\n  \"unresolvedWeaknesses\": []\n}\n"
     }
   ]
 }

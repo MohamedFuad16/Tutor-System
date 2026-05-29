@@ -8,7 +8,6 @@ const deferredPreloadChunks = [
   /vendor-pdf/,
   /vendor-charts/,
   /vendor-shiki/,
-  /vendor-graph3d/,
 ];
 
 export default defineConfig(() => {
@@ -50,14 +49,6 @@ export default defineConfig(() => {
             }
             if (id.includes("react-pdf") || id.includes("pdfjs-dist")) {
               return "vendor-pdf";
-            }
-            if (
-              id.includes("react-force-graph") ||
-              id.includes("3d-force-graph") ||
-              id.includes("three") ||
-              id.includes("kapsule")
-            ) {
-              return "vendor-graph3d";
             }
             if (id.includes("mermaid")) return "vendor-mermaid";
             if (id.includes("shiki") || id.includes("@shikijs")) {

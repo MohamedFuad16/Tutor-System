@@ -21,6 +21,8 @@ const AdminView = React.lazy(() =>
   import("./views/AdminView").then((module) => ({ default: module.AdminView })),
 );
 
+const VALID_VIEWS = new Set(["study", "analytics", "revision", "admin"]);
+
 function RouteFallback() {
   return (
     <div className="flex h-full w-full items-center justify-center bg-[#050505] text-sm text-zinc-500">
@@ -34,7 +36,7 @@ export default function App() {
   const setActiveView = useStore((state) => state.setActiveView);
 
   useEffect(() => {
-    if ((activeView as string) === "brain") {
+    if (!VALID_VIEWS.has(activeView as string)) {
       setActiveView("study");
     }
   }, [activeView, setActiveView]);

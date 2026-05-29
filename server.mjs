@@ -194,6 +194,60 @@ var sanitizeApiKey = (value) => {
   if (!key || key === "undefined" || key === "null") return "";
   return key;
 };
+var firstHeader = (value) => Array.isArray(value) ? value[0] || "" : value || "";
+var hostNameFromHeader = (host) => {
+  const rawHost = firstHeader(host).trim().toLowerCase();
+  if (!rawHost) return "";
+  if (rawHost.startsWith("[")) {
+    const end = rawHost.indexOf("]");
+    return end > 0 ? rawHost.slice(1, end) : rawHost;
+  }
+  return rawHost.split(":")[0];
+};
+var isLoopbackHost = (host) => {
+  const hostname = hostNameFromHeader(host);
+  return hostname === "localhost" || hostname.endsWith(".localhost") || hostname === "::1" || hostname === "127.0.0.1";
+};
+var isLoopbackAddress = (address) => {
+  const normalized = String(address || "").replace(/^::ffff:/, "");
+  return normalized === "::1" || /^127(?:\.\d{1,3}){3}$/.test(normalized);
+};
+var debugAdminToken = sanitizeApiKey(
+  process.env.TUTOR_DEBUG_TOKEN || process.env.ADMIN_DEBUG_TOKEN
+);
+var tokenFromAuthorization = (authorization) => {
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : "";
+};
+var debugTokenFromRequest = (request) => {
+  const headerToken = sanitizeApiKey(
+    request.headers["x-debug-token"] || request.headers["x-admin-token"] || tokenFromAuthorization(firstHeader(request.headers.authorization))
+  );
+  if (headerToken) return headerToken;
+  try {
+    const url = new URL(
+      request.url || "",
+      `http://${firstHeader(request.headers.host) || "localhost"}`
+    );
+    return sanitizeApiKey(url.searchParams.get("debugToken"));
+  } catch {
+    return "";
+  }
+};
+var isAuthorizedDebugRequest = (request) => {
+  const requestToken = debugTokenFromRequest(request);
+  if (debugAdminToken && requestToken === debugAdminToken) return true;
+  return process.env.NODE_ENV !== "production" && isLoopbackHost(request.headers.host) && isLoopbackAddress(request.socket.remoteAddress);
+};
+var redactSensitiveUrl = (url) => url.replace(
+  /([?&](?:openRouterKey|apiKey|debugToken|token|key)=)[^&]*/gi,
+  "$1[redacted]"
+);
+var normalizeVoiceLanguage = (value) => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const language = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+  return language === "ja" || language === "ko" ? language : "en";
+};
 var normalizeModelPricing = (raw) => {
   const models = {};
   const rows = Array.isArray(raw?.data) ? raw.data : [];
@@ -299,13 +353,24 @@ async function startServer() {
   app.use(compression());
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "100mb", extended: true }));
-  const upload = multer({ dest: "uploads/" });
+  const uploadDir = path.join(process.cwd(), "uploads");
+  fs.mkdirSync(uploadDir, { recursive: true });
+  const upload = multer({ dest: uploadDir });
   app.use((req, res, next) => {
     if (!req.url.startsWith("/src/") && !req.url.startsWith("/node_modules/") && !req.url.startsWith("/@")) {
-      console.log(`[HTTP] ${req.method} ${req.url}`);
+      console.log(`[HTTP] ${req.method} ${redactSensitiveUrl(req.url)}`);
     }
     next();
   });
+  const requireDebugAccess = (req, res, next) => {
+    if (isAuthorizedDebugRequest(req)) {
+      next();
+      return;
+    }
+    res.status(403).json({
+      error: "Debug access denied. Use localhost in development or provide x-debug-token with TUTOR_DEBUG_TOKEN."
+    });
+  };
   const wssDebug = new WebSocketServer({ noServer: true });
   let debugClients = [];
   const logHistory = [];
@@ -544,6 +609,7 @@ async function startServer() {
       (a, b) => String(b.startedAt || b.id).localeCompare(String(a.startedAt || a.id))
     );
   };
+  app.use("/api/debug", requireDebugAccess);
   app.get("/api/debug/runs", (_req, res) => {
     res.json({
       activeRunId: activeDebugJob?.id || null,
@@ -1742,6 +1808,11 @@ Use these sources for current factual claims and cite them with bracketed source
         wss.emit("connection", ws, request);
       });
     } else if (pathname === "/ws/debug") {
+      if (!isAuthorizedDebugRequest(request)) {
+        socket.write("HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n");
+        socket.destroy();
+        return;
+      }
       wssDebug.handleUpgrade(request, socket, head, (ws) => {
         wssDebug.emit("connection", ws, request);
       });
@@ -1751,20 +1822,12 @@ Use these sources for current factual claims and cite them with bracketed source
   });
   wss.on("connection", (ws, req) => {
     const url = new URL(req.url || "", `http://${req.headers.host}`);
-    const openRouterKey = url.searchParams.get("openRouterKey") || process.env.OPENROUTER_API_KEY;
-    const language = url.searchParams.get("language") || "en";
-    if (!openRouterKey) {
-      ws.close(1008, "OpenRouter API key is required");
-      return;
-    }
-    const deepgramKey = process.env.DEEPGRAM_API_KEY;
-    if (!deepgramKey) {
-      ws.close(1011, "Deepgram API Key is missing");
-      return;
-    }
+    let language = normalizeVoiceLanguage(url.searchParams.get("language"));
     let dgWs = null;
     let isDeepgramReady = false;
     let messageBuffer = [];
+    let isVoiceSessionStarted = false;
+    let usageInterval = null;
     const voiceStartedAt = Date.now();
     let lastUsageAt = voiceStartedAt;
     let clientInputBytes = 0;
@@ -1794,138 +1857,168 @@ Use these sources for current factual claims and cite them with bracketed source
         })
       );
     };
-    const usageInterval = setInterval(() => sendVoiceUsage(0), 1e3);
-    try {
-      const dgUrl = "wss://agent.deepgram.com/v1/agent/converse";
-      console.log(`Connecting to Deepgram at: ${dgUrl}`);
-      dgWs = new WSWebSocket(dgUrl, {
-        headers: {
-          Authorization: `Token ${deepgramKey}`
-        }
-      });
-      dgWs.on("open", () => {
-        const listenModel = language === "ja" || language === "ko" ? "flux-general-multi" : "flux-general-en";
-        const listenProvider = {
-          type: "deepgram",
-          model: listenModel,
-          version: "v2"
-        };
-        if (language === "ja" || language === "ko") {
-          listenProvider.language_hints = ["en", "ja", "ko"];
-        }
-        let thinkPrompt = "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks \u2014 you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate.";
-        let greeting = "Hello! I am Aria, your CS tutor. What are you studying today?";
-        if (language === "ja") {
-          thinkPrompt = "\u3042\u306A\u305F\u306FAria\u3068\u3044\u3046\u540D\u524D\u306E\u512A\u79C0\u306A\u30B3\u30F3\u30D4\u30E5\u30FC\u30BF\u30B5\u30A4\u30A8\u30F3\u30B9\u304A\u3088\u3073\u30D7\u30ED\u30B0\u30E9\u30DF\u30F3\u30B0\u306E\u30C1\u30E5\u30FC\u30BF\u30FC\u3067\u3059\u3002\u73FE\u5728\u3001\u6280\u8853\u7684\u306A\u5185\u5BB9\u3092\u5B66\u7FD2\u3057\u3066\u3044\u308B\u5B66\u751F\u3092\u30B5\u30DD\u30FC\u30C8\u3057\u3066\u3044\u307E\u3059\u3002\u30B7\u30CB\u30A2\u30A8\u30F3\u30B8\u30CB\u30A2\u304C\u30B8\u30E5\u30CB\u30A2\u30C7\u30D9\u30ED\u30C3\u30D1\u30FC\u3092\u6307\u5C0E\u3059\u308B\u3088\u3046\u306B\u6982\u5FF5\u3092\u8AAC\u660E\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u73FE\u5B9F\u4E16\u754C\u306E\u4F8B\u3048\u8A71\u3092\u4F7F\u7528\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u56DE\u7B54\u306F3\u301C5\u6587\u306B\u6291\u3048\u3066\u304F\u3060\u3055\u3044\u3002\u97F3\u58F0\u3067\u306E\u5BFE\u8A71\u3067\u3042\u308B\u305F\u3081\u3001\u7B87\u6761\u66F8\u304D\u3001\u30DE\u30FC\u30AF\u30C0\u30A6\u30F3\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306F\u7D76\u5BFE\u306B\u4F7F\u7528\u3057\u306A\u3044\u3067\u304F\u3060\u3055\u3044\u3002\u8A18\u53F7\u306F\u8A00\u8449\u3067\u8AAC\u660E\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u6700\u5F8C\u306F\u5FC5\u305A\u6B21\u306E\u8CEA\u554F\u3092\u3059\u308B\u304B\u3001\u8A73\u3057\u304F\u8AAC\u660E\u3059\u308B\u3053\u3068\u3092\u63D0\u6848\u3057\u3066\u7D42\u3048\u3066\u304F\u3060\u3055\u3044\u3002\u5FC5\u305A\u65E5\u672C\u8A9E\u3067\u81EA\u7136\u306B\u4F1A\u8A71\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
-          greeting = "\u3053\u3093\u306B\u3061\u306F\uFF01CS\u30C1\u30E5\u30FC\u30BF\u30FC\u306EAria\u3067\u3059\u3002\u4ECA\u65E5\u306F\u4F55\u3092\u52C9\u5F37\u3057\u307E\u3059\u304B\uFF1F";
-        } else if (language === "ko") {
-          thinkPrompt = "\uB2F9\uC2E0\uC740 Aria\uB77C\uB294 \uC774\uB984\uC758 \uC6B0\uC218\uD55C \uCEF4\uD4E8\uD130 \uACFC\uD559 \uBC0F \uD504\uB85C\uADF8\uB798\uBC0D \uD29C\uD130\uC785\uB2C8\uB2E4. \uD604\uC7AC \uAE30\uC220\uC801\uC778 \uB0B4\uC6A9\uC744 \uD559\uC2B5\uD558\uACE0 \uC788\uB294 \uD559\uC0DD\uC744 \uB3D5\uACE0 \uC788\uC2B5\uB2C8\uB2E4. \uC2DC\uB2C8\uC5B4 \uC5D4\uC9C0\uB2C8\uC5B4\uAC00 \uC8FC\uB2C8\uC5B4 \uAC1C\uBC1C\uC790\uB97C \uBA58\uD1A0\uB9C1\uD558\uB4EF\uC774 \uAC1C\uB150\uC744 \uC124\uBA85\uD574 \uC8FC\uC138\uC694. \uD604\uC2E4 \uC138\uACC4\uC758 \uBE44\uC720\uB97C \uC0AC\uC6A9\uD574 \uC8FC\uC138\uC694. \uB2F5\uBCC0\uC740 3~5\uBB38\uC7A5\uC73C\uB85C \uC81C\uD55C\uD574 \uC8FC\uC138\uC694. \uC74C\uC131\uC73C\uB85C \uB300\uD654 \uC911\uC774\uBBC0\uB85C \uAE00\uBA38\uB9AC \uAE30\uD638, \uB9C8\uD06C\uB2E4\uC6B4, \uCF54\uB4DC \uBE14\uB85D\uC740 \uC808\uB300 \uC0AC\uC6A9\uD558\uC9C0 \uB9C8\uC138\uC694. \uAE30\uD638\uB294 \uB9D0\uB85C \uC124\uBA85\uD574 \uC8FC\uC138\uC694. \uAC01 \uB2F5\uBCC0\uC758 \uB05D\uC5D0\uB294 \uD6C4\uC18D \uC9C8\uBB38\uC744 \uD558\uAC70\uB098 \uB354 \uC790\uC138\uD788 \uC124\uBA85\uD558\uACA0\uB2E4\uACE0 \uC81C\uC548\uD574 \uC8FC\uC138\uC694. \uBC18\uB4DC\uC2DC \uD55C\uAD6D\uC5B4\uB85C \uC790\uC5F0\uC2A4\uB7FD\uAC8C \uB300\uD654\uD574 \uC8FC\uC138\uC694.";
-          greeting = "\uC548\uB155\uD558\uC138\uC694! CS \uD29C\uD130 Aria\uC785\uB2C8\uB2E4. \uC624\uB298 \uC5B4\uB5A4 \uB0B4\uC6A9\uC744 \uACF5\uBD80\uD558\uC2DC\uACA0\uC5B4\uC694?";
-        }
-        const config = {
-          type: "Settings",
-          audio: {
-            input: {
-              encoding: "linear16",
-              sample_rate: 48e3
-            },
-            output: {
-              encoding: "linear16",
-              sample_rate: 48e3,
-              container: "none"
-            }
-          },
-          agent: {
-            listen: {
-              provider: listenProvider
-            },
-            think: {
-              provider: {
-                type: "open_ai",
-                model: "gpt-4o-mini"
+    const parseVoiceAuth = (data, isBinary) => {
+      if (isBinary) return null;
+      const text = Buffer.isBuffer(data) ? data.toString("utf8") : String(data);
+      try {
+        const payload = JSON.parse(text);
+        return payload?.type === "voice_auth" ? payload : null;
+      } catch {
+        return null;
+      }
+    };
+    const startVoiceSession = (providedOpenRouterKey, selectedLanguage) => {
+      if (isVoiceSessionStarted) return true;
+      const openRouterKey = sanitizeApiKey(providedOpenRouterKey) || sanitizeApiKey(process.env.OPENROUTER_API_KEY);
+      if (!openRouterKey) {
+        ws.close(1008, "OpenRouter API key is required");
+        return false;
+      }
+      const deepgramKey = process.env.DEEPGRAM_API_KEY;
+      if (!deepgramKey) {
+        ws.close(1011, "Deepgram API Key is missing");
+        return false;
+      }
+      language = normalizeVoiceLanguage(selectedLanguage);
+      isVoiceSessionStarted = true;
+      usageInterval = setInterval(() => sendVoiceUsage(0), 1e3);
+      try {
+        const dgUrl = "wss://agent.deepgram.com/v1/agent/converse";
+        console.log(`Connecting to Deepgram at: ${dgUrl}`);
+        dgWs = new WSWebSocket(dgUrl, {
+          headers: {
+            Authorization: `Token ${deepgramKey}`
+          }
+        });
+        dgWs.on("open", () => {
+          const listenModel = language === "ja" || language === "ko" ? "flux-general-multi" : "flux-general-en";
+          const listenProvider = {
+            type: "deepgram",
+            model: listenModel,
+            version: "v2"
+          };
+          if (language === "ja" || language === "ko") {
+            listenProvider.language_hints = ["en", "ja", "ko"];
+          }
+          let thinkPrompt = "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks \u2014 you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate.";
+          let greeting = "Hello! I am Aria, your CS tutor. What are you studying today?";
+          if (language === "ja") {
+            thinkPrompt = "\u3042\u306A\u305F\u306FAria\u3068\u3044\u3046\u540D\u524D\u306E\u512A\u79C0\u306A\u30B3\u30F3\u30D4\u30E5\u30FC\u30BF\u30B5\u30A4\u30A8\u30F3\u30B9\u304A\u3088\u3073\u30D7\u30ED\u30B0\u30E9\u30DF\u30F3\u30B0\u306E\u30C1\u30E5\u30FC\u30BF\u30FC\u3067\u3059\u3002\u73FE\u5728\u3001\u6280\u8853\u7684\u306A\u5185\u5BB9\u3092\u5B66\u7FD2\u3057\u3066\u3044\u308B\u5B66\u751F\u3092\u30B5\u30DD\u30FC\u30C8\u3057\u3066\u3044\u307E\u3059\u3002\u30B7\u30CB\u30A2\u30A8\u30F3\u30B8\u30CB\u30A2\u304C\u30B8\u30E5\u30CB\u30A2\u30C7\u30D9\u30ED\u30C3\u30D1\u30FC\u3092\u6307\u5C0E\u3059\u308B\u3088\u3046\u306B\u6982\u5FF5\u3092\u8AAC\u660E\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u73FE\u5B9F\u4E16\u754C\u306E\u4F8B\u3048\u8A71\u3092\u4F7F\u7528\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u56DE\u7B54\u306F3\u301C5\u6587\u306B\u6291\u3048\u3066\u304F\u3060\u3055\u3044\u3002\u97F3\u58F0\u3067\u306E\u5BFE\u8A71\u3067\u3042\u308B\u305F\u3081\u3001\u7B87\u6761\u66F8\u304D\u3001\u30DE\u30FC\u30AF\u30C0\u30A6\u30F3\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306F\u7D76\u5BFE\u306B\u4F7F\u7528\u3057\u306A\u3044\u3067\u304F\u3060\u3055\u3044\u3002\u8A18\u53F7\u306F\u8A00\u8449\u3067\u8AAC\u660E\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u6700\u5F8C\u306F\u5FC5\u305A\u6B21\u306E\u8CEA\u554F\u3092\u3059\u308B\u304B\u3001\u8A73\u3057\u304F\u8AAC\u660E\u3059\u308B\u3053\u3068\u3092\u63D0\u6848\u3057\u3066\u7D42\u3048\u3066\u304F\u3060\u3055\u3044\u3002\u5FC5\u305A\u65E5\u672C\u8A9E\u3067\u81EA\u7136\u306B\u4F1A\u8A71\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+            greeting = "\u3053\u3093\u306B\u3061\u306F\uFF01CS\u30C1\u30E5\u30FC\u30BF\u30FC\u306EAria\u3067\u3059\u3002\u4ECA\u65E5\u306F\u4F55\u3092\u52C9\u5F37\u3057\u307E\u3059\u304B\uFF1F";
+          } else if (language === "ko") {
+            thinkPrompt = "\uB2F9\uC2E0\uC740 Aria\uB77C\uB294 \uC774\uB984\uC758 \uC6B0\uC218\uD55C \uCEF4\uD4E8\uD130 \uACFC\uD559 \uBC0F \uD504\uB85C\uADF8\uB798\uBC0D \uD29C\uD130\uC785\uB2C8\uB2E4. \uD604\uC7AC \uAE30\uC220\uC801\uC778 \uB0B4\uC6A9\uC744 \uD559\uC2B5\uD558\uACE0 \uC788\uB294 \uD559\uC0DD\uC744 \uB3D5\uACE0 \uC788\uC2B5\uB2C8\uB2E4. \uC2DC\uB2C8\uC5B4 \uC5D4\uC9C0\uB2C8\uC5B4\uAC00 \uC8FC\uB2C8\uC5B4 \uAC1C\uBC1C\uC790\uB97C \uBA58\uD1A0\uB9C1\uD558\uB4EF\uC774 \uAC1C\uB150\uC744 \uC124\uBA85\uD574 \uC8FC\uC138\uC694. \uD604\uC2E4 \uC138\uACC4\uC758 \uBE44\uC720\uB97C \uC0AC\uC6A9\uD574 \uC8FC\uC138\uC694. \uB2F5\uBCC0\uC740 3~5\uBB38\uC7A5\uC73C\uB85C \uC81C\uD55C\uD574 \uC8FC\uC138\uC694. \uC74C\uC131\uC73C\uB85C \uB300\uD654 \uC911\uC774\uBBC0\uB85C \uAE00\uBA38\uB9AC \uAE30\uD638, \uB9C8\uD06C\uB2E4\uC6B4, \uCF54\uB4DC \uBE14\uB85D\uC740 \uC808\uB300 \uC0AC\uC6A9\uD558\uC9C0 \uB9C8\uC138\uC694. \uAE30\uD638\uB294 \uB9D0\uB85C \uC124\uBA85\uD574 \uC8FC\uC138\uC694. \uAC01 \uB2F5\uBCC0\uC758 \uB05D\uC5D0\uB294 \uD6C4\uC18D \uC9C8\uBB38\uC744 \uD558\uAC70\uB098 \uB354 \uC790\uC138\uD788 \uC124\uBA85\uD558\uACA0\uB2E4\uACE0 \uC81C\uC548\uD574 \uC8FC\uC138\uC694. \uBC18\uB4DC\uC2DC \uD55C\uAD6D\uC5B4\uB85C \uC790\uC5F0\uC2A4\uB7FD\uAC8C \uB300\uD654\uD574 \uC8FC\uC138\uC694.";
+            greeting = "\uC548\uB155\uD558\uC138\uC694! CS \uD29C\uD130 Aria\uC785\uB2C8\uB2E4. \uC624\uB298 \uC5B4\uB5A4 \uB0B4\uC6A9\uC744 \uACF5\uBD80\uD558\uC2DC\uACA0\uC5B4\uC694?";
+          }
+          const config = {
+            type: "Settings",
+            audio: {
+              input: {
+                encoding: "linear16",
+                sample_rate: 48e3
               },
-              prompt: thinkPrompt
-            },
-            speak: {
-              provider: {
-                type: "open_ai",
-                model: "gpt-4o-mini-tts"
+              output: {
+                encoding: "linear16",
+                sample_rate: 48e3,
+                container: "none"
               }
             },
-            greeting
-          }
-        };
-        console.log(
-          "Sending Deepgram settings config:",
-          JSON.stringify(config, null, 2)
-        );
-        dgWs?.send(JSON.stringify(config));
-      });
-      dgWs.on("unexpected-response", (req2, res) => {
-        console.error(
-          `Deepgram WS Unexpected Response: ${res.statusCode} ${res.statusMessage}`
-        );
-        console.error(
-          "Deepgram Headers:",
-          JSON.stringify(res.headers, null, 2)
-        );
-        if (res.statusCode === 404) {
-          console.error(
-            "This usually means the Deepgram API key does not have access to the Voice Agent API, or the endpoint is incorrect."
-          );
-        }
-        let body = "";
-        res.on("data", (chunk) => {
-          body += chunk;
-        });
-        res.on("end", () => {
-          if (body) console.error("Deepgram Error Body:", body);
-          if (ws.readyState === ws.OPEN) {
-            ws.close(1011, `Deepgram returned ${res.statusCode}`);
-          }
-        });
-      });
-      dgWs.on("message", (data, isBinary) => {
-        if (ws.readyState === ws.OPEN) {
-          if (isBinary) {
-            deepgramOutputBytes += rawByteLength(data);
-            ws.send(data);
-          } else {
-            const messageStr = data.toString();
-            try {
-              const parsed = JSON.parse(messageStr);
-              if (parsed.type === "SettingsApplied" || parsed.type === "Welcome") {
-                isDeepgramReady = true;
-                messageBuffer.forEach((msg) => {
-                  if (dgWs?.readyState === WSWebSocket.OPEN) {
-                    dgWs.send(msg.data);
-                  }
-                });
-                messageBuffer = [];
-              }
-            } catch (e) {
+            agent: {
+              listen: {
+                provider: listenProvider
+              },
+              think: {
+                provider: {
+                  type: "open_ai",
+                  model: "gpt-4o-mini"
+                },
+                prompt: thinkPrompt
+              },
+              speak: {
+                provider: {
+                  type: "open_ai",
+                  model: "gpt-4o-mini-tts"
+                }
+              },
+              greeting
             }
-            ws.send(messageStr);
+          };
+          console.log(
+            "Sending Deepgram settings config:",
+            JSON.stringify(config, null, 2)
+          );
+          dgWs?.send(JSON.stringify(config));
+        });
+        dgWs.on("unexpected-response", (req2, res) => {
+          console.error(
+            `Deepgram WS Unexpected Response: ${res.statusCode} ${res.statusMessage}`
+          );
+          console.error(
+            "Deepgram Headers:",
+            JSON.stringify(res.headers, null, 2)
+          );
+          if (res.statusCode === 404) {
+            console.error(
+              "This usually means the Deepgram API key does not have access to the Voice Agent API, or the endpoint is incorrect."
+            );
           }
+          let body = "";
+          res.on("data", (chunk) => {
+            body += chunk;
+          });
+          res.on("end", () => {
+            if (body) console.error("Deepgram Error Body:", body);
+            if (ws.readyState === ws.OPEN) {
+              ws.close(1011, `Deepgram returned ${res.statusCode}`);
+            }
+          });
+        });
+        dgWs.on("message", (data, isBinary) => {
+          if (ws.readyState === ws.OPEN) {
+            if (isBinary) {
+              deepgramOutputBytes += rawByteLength(data);
+              ws.send(data);
+            } else {
+              const messageStr = data.toString();
+              try {
+                const parsed = JSON.parse(messageStr);
+                if (parsed.type === "SettingsApplied" || parsed.type === "Welcome") {
+                  isDeepgramReady = true;
+                  messageBuffer.forEach((msg) => {
+                    if (dgWs?.readyState === WSWebSocket.OPEN) {
+                      dgWs.send(msg.data);
+                    }
+                  });
+                  messageBuffer = [];
+                }
+              } catch (e) {
+              }
+              ws.send(messageStr);
+            }
+          }
+        });
+        dgWs.on("close", () => {
+          if (ws.readyState === ws.OPEN) {
+            sendVoiceUsage(1);
+            ws.close();
+          }
+        });
+        dgWs.on("error", (error) => {
+          console.error("Deepgram WS Error:", error);
+          if (ws.readyState === ws.OPEN) {
+            ws.close();
+          }
+        });
+      } catch (e) {
+        if (usageInterval) {
+          clearInterval(usageInterval);
+          usageInterval = null;
         }
-      });
-      dgWs.on("close", () => {
-        if (ws.readyState === ws.OPEN) {
-          sendVoiceUsage(1);
-          ws.close();
-        }
-      });
-      dgWs.on("error", (error) => {
-        console.error("Deepgram WS Error:", error);
-        if (ws.readyState === ws.OPEN) {
-          ws.close();
-        }
-      });
-    } catch (e) {
-      console.error("Failed to connect to Deepgram", e);
-      ws.close(1011, "Failed to connect to Deepgram");
-    }
-    ws.on("message", (data, isBinary) => {
+        console.error("Failed to connect to Deepgram", e);
+        ws.close(1011, "Failed to connect to Deepgram");
+      }
+      return true;
+    };
+    const forwardClientMessage = (data, isBinary) => {
       if (isBinary) {
         clientInputBytes += rawByteLength(data);
       }
@@ -1934,9 +2027,24 @@ Use these sources for current factual claims and cite them with bracketed source
       } else {
         messageBuffer.push({ data, isBinary });
       }
+    };
+    ws.on("message", (data, isBinary) => {
+      if (!isVoiceSessionStarted) {
+        const authPayload = parseVoiceAuth(data, isBinary);
+        if (authPayload) {
+          startVoiceSession(
+            sanitizeApiKey(authPayload.openRouterKey),
+            authPayload.language || language
+          );
+          return;
+        }
+        const started = startVoiceSession("", language);
+        if (!started) return;
+      }
+      forwardClientMessage(data, isBinary);
     });
     ws.on("close", () => {
-      clearInterval(usageInterval);
+      if (usageInterval) clearInterval(usageInterval);
       if (dgWs && dgWs.readyState === dgWs.OPEN) {
         dgWs.close();
       }

@@ -13,7 +13,6 @@
     "src/memory/zpd.calculator.ts",
     "src/views/AdminView.tsx",
     "src/views/AnalyticsView.tsx",
-    "src/views/BrainView.tsx",
     "src/views/RevisionView.tsx"
   ],
   "invariants": [
@@ -25,7 +24,6 @@
     "0bb429ea01d9638ba99e",
     "0e2be87b1d16fea4303b",
     "10698b4cb2e57d132a7f",
-    "177d8cb7d3ea7d72d0ef",
     "18a72ecf55b53826e1f7",
     "1902f1cc546fec40ef7b",
     "20fc75d09a88de5e5994",
@@ -76,18 +74,15 @@
     "e941dd5cd6e254ced8f5",
     "ebdce0f1d26bf31b5392",
     "ec1fc04e065f0811cda4",
-    "f3fc52b459a644dfcb09",
-    "f65614e56120227da016",
     "ff188af7ba04f0d77117"
   ],
   "confidence": 0.82,
-  "generatedAt": "2026-05-29T05:56:03.161Z",
+  "generatedAt": "2026-05-29T08:24:34.380Z",
   "dependencyReferences": [
     "05bf3f6bfcadd3ef9344",
     "0bb429ea01d9638ba99e",
     "0e2be87b1d16fea4303b",
     "10698b4cb2e57d132a7f",
-    "177d8cb7d3ea7d72d0ef",
     "18a72ecf55b53826e1f7",
     "1902f1cc546fec40ef7b",
     "20fc75d09a88de5e5994",
@@ -138,8 +133,6 @@
     "e941dd5cd6e254ced8f5",
     "ebdce0f1d26bf31b5392",
     "ec1fc04e065f0811cda4",
-    "f3fc52b459a644dfcb09",
-    "f65614e56120227da016",
     "ff188af7ba04f0d77117"
   ],
   "contractRefs": [],

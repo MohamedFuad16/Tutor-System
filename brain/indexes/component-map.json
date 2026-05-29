@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-29T05:56:02.897Z",
+    "generatedAt": "2026-05-29T08:24:34.345Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "e6e5492d780b8804ac753368d36c58a11c673905",
+      "commit": "0e7f22c063b4f007c8c0d156c600799ed2798e04",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "625e2d8379fdf94c8728ab4f50d49e10cff72e8e59a7125ae2445f189b9dd3b1"
+    "sourceHash": "1acf0e74100b87053667c55ddc74551d8d62755274847ec58aa5498a1092daff"
   },
   "files": {
     "generate-brain.ts": {
@@ -162,7 +162,7 @@
     },
     "server.ts": {
       "file": "server.ts",
-      "hash": "5d46c360774e6434e265cfdea1f4a51f0eddb46f55f05e6bdb0a4b9a61310279",
+      "hash": "7d1e6b7055c5af3dfa9b2fed6d7fdbfc5b9225a6d1db4474613f29121ae4124b",
       "imports": [
         {
           "specifier": "dotenv",
@@ -205,6 +205,10 @@
           "external": "ws"
         },
         {
+          "specifier": "http",
+          "external": "http"
+        },
+        {
           "specifier": "./server/web-search",
           "external": "."
         }
@@ -226,6 +230,16 @@
         "voiceAgentCostForSeconds",
         "rawByteLength",
         "sanitizeApiKey",
+        "firstHeader",
+        "hostNameFromHeader",
+        "isLoopbackHost",
+        "isLoopbackAddress",
+        "debugAdminToken",
+        "tokenFromAuthorization",
+        "debugTokenFromRequest",
+        "isAuthorizedDebugRequest",
+        "redactSensitiveUrl",
+        "normalizeVoiceLanguage",
         "normalizeModelPricing",
         "fetchOpenRouterPricing",
         "openRouterCost",
@@ -374,7 +388,7 @@
     },
     "src/App.tsx": {
       "file": "src/App.tsx",
-      "hash": "6f3cb11c9e90420571369dbfcc1dde2efc42256c12a54d3eedd6d87952c1bb9b",
+      "hash": "c369efdaee806c938b297508ad9ce815820327a613b97e645f3111f5393c1ce9",
       "imports": [
         {
           "specifier": "react",
@@ -419,7 +433,8 @@
       "variables": [
         "AnalyticsView",
         "RevisionView",
-        "AdminView"
+        "AdminView",
+        "VALID_VIEWS"
       ],
       "classes": [],
       "components": [
@@ -1621,7 +1636,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "a695cff19999b975da5733e0d6932936ca01571bfa3d101a7b0a0a47b3f987cf",
+      "hash": "bdbc97397ca56a4ba80ad7a9fc26e629fdef7f4e7a9e4986aaea938db37136f0",
       "imports": [
         {
           "specifier": "react",
@@ -2179,7 +2194,7 @@
     },
     "src/components/PdfViewer.tsx": {
       "file": "src/components/PdfViewer.tsx",
-      "hash": "e3b3ccb91a1a28ed2e102ed579df239c79203ac1a9b73731ceba85a7db54c8be",
+      "hash": "fea1bdff373508f5c693062ca210403e7a14a85dfc2435e437271ddcc551a79e",
       "imports": [
         {
           "specifier": "react",
@@ -2188,6 +2203,10 @@
         {
           "specifier": "react-pdf",
           "external": "react-pdf"
+        },
+        {
+          "specifier": "pdfjs-dist/build/pdf.worker.min.mjs?url",
+          "external": "pdfjs-dist"
         },
         {
           "specifier": "react-pdf/dist/Page/AnnotationLayer.css",
@@ -3517,96 +3536,6 @@
       ],
       "routes": []
     },
-    "src/views/BrainView.tsx": {
-      "file": "src/views/BrainView.tsx",
-      "hash": "6e88d36e92568751c8d33996112478a4966e72e0ae232fdb12a8b1a6aa96bde1",
-      "imports": [
-        {
-          "specifier": "react",
-          "external": "react"
-        },
-        {
-          "specifier": "react-force-graph-3d",
-          "external": "react-force-graph-3d"
-        },
-        {
-          "specifier": "../store",
-          "resolved": "src/store/index.ts"
-        },
-        {
-          "specifier": "lucide-react",
-          "external": "lucide-react"
-        },
-        {
-          "specifier": "three",
-          "external": "three"
-        },
-        {
-          "specifier": "motion/react",
-          "external": "motion"
-        },
-        {
-          "specifier": "../memory/longterm.memory",
-          "resolved": "src/memory/longterm.memory.ts"
-        },
-        {
-          "specifier": "dexie-react-hooks",
-          "external": "dexie-react-hooks"
-        }
-      ],
-      "exports": [
-        "BrainView"
-      ],
-      "functions": [
-        "createTextSprite",
-        "BrainView"
-      ],
-      "variables": [
-        "geometryCache",
-        "materialCache",
-        "textureCache",
-        "spriteMaterialCache",
-        "getGeometry",
-        "getMaterial"
-      ],
-      "classes": [],
-      "components": [
-        "BrainView"
-      ],
-      "hooks": [],
-      "storeSelectors": [
-        {
-          "field": "learnerName",
-          "selector": "(state) => state.learnerName"
-        }
-      ],
-      "storeWrites": [],
-      "apiCalls": [],
-      "websocketCalls": [],
-      "databaseReads": [
-        {
-          "table": "learningBooks",
-          "operation": "orderBy"
-        },
-        {
-          "table": "learningBookConcepts",
-          "operation": "orderBy"
-        },
-        {
-          "table": "concepts",
-          "operation": "orderBy"
-        }
-      ],
-      "databaseWrites": [],
-      "renders": [
-        "BookOpen",
-        "CircleDot",
-        "ForceGraph3D",
-        "Library",
-        "Target"
-      ],
-      "routes": []
-    },
     "src/views/RevisionView.tsx": {
       "file": "src/views/RevisionView.tsx",
       "hash": "b15736d39e708a858f35b75b50371aefb712a19cbb3e407ca2c03c30242f9f88",
@@ -3902,7 +3831,7 @@
     },
     "package.json": {
       "file": "package.json",
-      "hash": "d5d8aa09857a4bd71e6c9e77fff40edb55119464ed445ac6aae3bbccab7bde0f",
+      "hash": "1a83defc672a735b7a16710ab930f7359ca04aea7143d336ea5555ff5856e15c",
       "imports": [],
       "exports": [],
       "functions": [],
@@ -3921,7 +3850,7 @@
     },
     "package-lock.json": {
       "file": "package-lock.json",
-      "hash": "5db16f64c83885688b0ddfe491128a36641cfa9e6380dff85b8618f6de0c0ac5",
+      "hash": "b12ca1becf8b6f1cfac477795f97ab611772b728f24143e82db77053e67b9f9c",
       "imports": [],
       "exports": [],
       "functions": [],

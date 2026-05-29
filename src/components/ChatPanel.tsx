@@ -2284,9 +2284,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       processorRef.current = processor;
 
       const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${wsProtocol}//${window.location.host}/api/voice-agent?openRouterKey=${encodeURIComponent(apiKey)}&language=${encodeURIComponent(language)}`;
+      const wsUrl = `${wsProtocol}//${window.location.host}/api/voice-agent?language=${encodeURIComponent(language)}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
+      let hasSentVoiceAuth = false;
 
       processor.onaudioprocess = (e) => {
         const inputData = e.inputBuffer.getChannelData(0);
@@ -2300,6 +2301,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
         if (
           ws.readyState === WebSocket.OPEN &&
+          hasSentVoiceAuth &&
           voiceStateRef.current === "listening"
         ) {
           const pcm16 = new Int16Array(inputData.length);
@@ -2315,7 +2317,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
       ws.onopen = () => {
         console.log("Connected to Deepgram proxy");
-        // Settings config is sent by the proxy. We just stream audio now.
+        ws.send(
+          JSON.stringify({
+            type: "voice_auth",
+            openRouterKey: apiKey,
+            language,
+          }),
+        );
+        hasSentVoiceAuth = true;
+        // Settings config is sent by the proxy after auth. We just stream audio now.
       };
 
       ws.onmessage = async (event) => {

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-29T05:56:02.897Z",
+    "generatedAt": "2026-05-29T08:24:34.345Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "e6e5492d780b8804ac753368d36c58a11c673905",
+      "commit": "0e7f22c063b4f007c8c0d156c600799ed2798e04",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "625e2d8379fdf94c8728ab4f50d49e10cff72e8e59a7125ae2445f189b9dd3b1"
+    "sourceHash": "1acf0e74100b87053667c55ddc74551d8d62755274847ec58aa5498a1092daff"
   },
   "dependencies": {
     "generate-brain.ts": [
@@ -57,6 +57,7 @@
       "multer",
       "@google/genai",
       "ws",
+      "http",
       "."
     ],
     "brain/drift-check.ts": [
@@ -249,6 +250,7 @@
     "src/components/PdfViewer.tsx": [
       "react",
       "react-pdf",
+      "pdfjs-dist",
       "react-pdf",
       "react-pdf",
       "src/store/index.ts",
@@ -344,16 +346,6 @@
       "motion",
       "src/store/index.ts",
       "src/lib/translations.ts"
-    ],
-    "src/views/BrainView.tsx": [
-      "react",
-      "react-force-graph-3d",
-      "src/store/index.ts",
-      "lucide-react",
-      "three",
-      "motion",
-      "src/memory/longterm.memory.ts",
-      "dexie-react-hooks"
     ],
     "src/views/RevisionView.tsx": [
       "react",

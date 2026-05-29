@@ -1,18 +1,18 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-29T06:01:27.905Z",
+    "generatedAt": "2026-05-29T08:25:26.203Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "625e2d8379fdf94c8728ab4f50d49e10cff72e8e59a7125ae2445f189b9dd3b1",
+    "sourceHash": "1acf0e74100b87053667c55ddc74551d8d62755274847ec58aa5498a1092daff",
     "url": "http://127.0.0.1:3210",
-    "eventCount": 44,
+    "eventCount": 43,
     "confidence": 0.82
   },
   "propagation": [
     {
       "state": "messages",
-      "timestamp": 10055.300000000745,
+      "timestamp": 722.8000000007451,
       "nextRender": "route:study",
-      "lagMs": 47,
+      "lagMs": 12.900000000372529,
       "metadata": {
         "previousType": "object",
         "nextType": "object"
@@ -20,9 +20,9 @@
     },
     {
       "state": "activeLearningBookId",
-      "timestamp": 10513.599999999627,
+      "timestamp": 759.6000000014901,
       "nextRender": "route:study",
-      "lagMs": 20.100000001490116,
+      "lagMs": 6.899999998509884,
       "metadata": {
         "previousType": "object",
         "nextType": "string"
@@ -30,9 +30,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 11424.099999999627,
+      "timestamp": 1925,
       "nextRender": "route:study",
-      "lagMs": 13.400000000372529,
+      "lagMs": 5.200000001117587,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -40,9 +40,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 12629.300000000745,
+      "timestamp": 2773.4000000003725,
       "nextRender": "route:analytics",
-      "lagMs": 9.599999999627471,
+      "lagMs": 2.800000000745058,
       "metadata": {
         "previousType": "string",
         "nextType": "string"
@@ -50,9 +50,9 @@
     },
     {
       "state": "activeView",
-      "timestamp": 13726.099999999627,
+      "timestamp": 3583.10000000149,
       "nextRender": "route:revision",
-      "lagMs": 19.700000001117587,
+      "lagMs": 7.199999999254942,
       "metadata": {
         "previousType": "string",
         "nextType": "string"

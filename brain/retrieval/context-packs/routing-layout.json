@@ -6,7 +6,6 @@
     "src/components/Navigation.tsx",
     "src/views/AdminView.tsx",
     "src/views/AnalyticsView.tsx",
-    "src/views/BrainView.tsx",
     "src/views/RevisionView.tsx",
     "src/views/StudyView.tsx"
   ],
@@ -76,7 +75,7 @@
     "ff5e137a6e00f03fcbc4"
   ],
   "confidence": 0.78,
-  "generatedAt": "2026-05-29T05:56:03.161Z",
+  "generatedAt": "2026-05-29T08:24:34.380Z",
   "dependencyReferences": [
     "00ac6975375b44cd8f70",
     "01d5a54b42acf0db3b6c",

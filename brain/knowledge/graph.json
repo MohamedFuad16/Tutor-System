@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-29T05:56:02.897Z",
+    "generatedAt": "2026-05-29T08:24:34.345Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "e6e5492d780b8804ac753368d36c58a11c673905",
+      "commit": "0e7f22c063b4f007c8c0d156c600799ed2798e04",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "625e2d8379fdf94c8728ab4f50d49e10cff72e8e59a7125ae2445f189b9dd3b1"
+    "sourceHash": "1acf0e74100b87053667c55ddc74551d8d62755274847ec58aa5498a1092daff"
   },
   "nodes": [
     {
@@ -97,7 +97,7 @@
       "file": "src/App.tsx",
       "symbol": "App",
       "loc": {
-        "line": 32,
+        "line": 34,
         "column": 1
       }
     },
@@ -120,17 +120,6 @@
       "symbol": "BrainRenderProfiler",
       "loc": {
         "line": 4,
-        "column": 1
-      }
-    },
-    {
-      "id": "component:BrainView",
-      "type": "component",
-      "label": "BrainView",
-      "file": "src/views/BrainView.tsx",
-      "symbol": "BrainView",
-      "loc": {
-        "line": 80,
         "column": 1
       }
     },
@@ -339,7 +328,7 @@
       "file": "src/components/PdfViewer.tsx",
       "symbol": "PdfViewer",
       "loc": {
-        "line": 25,
+        "line": 26,
         "column": 1
       }
     },
@@ -405,7 +394,7 @@
       "file": "src/App.tsx",
       "symbol": "RouteFallback",
       "loc": {
-        "line": 24,
+        "line": 26,
         "column": 1
       }
     },
@@ -1245,9 +1234,9 @@
       "type": "file",
       "label": "package-lock.json",
       "file": "package-lock.json",
-      "hash": "5db16f64c83885688b0ddfe491128a36641cfa9e6380dff85b8618f6de0c0ac5",
+      "hash": "b12ca1becf8b6f1cfac477795f97ab611772b728f24143e82db77053e67b9f9c",
       "metadata": {
-        "lines": 10947,
+        "lines": 10639,
         "nonAst": true
       }
     },
@@ -1256,9 +1245,9 @@
       "type": "file",
       "label": "package.json",
       "file": "package.json",
-      "hash": "d5d8aa09857a4bd71e6c9e77fff40edb55119464ed445ac6aae3bbccab7bde0f",
+      "hash": "1a83defc672a735b7a16710ab930f7359ca04aea7143d336ea5555ff5856e15c",
       "metadata": {
-        "lines": 91,
+        "lines": 88,
         "nonAst": true
       }
     },
@@ -1277,9 +1266,9 @@
       "type": "file",
       "label": "server.ts",
       "file": "server.ts",
-      "hash": "5d46c360774e6434e265cfdea1f4a51f0eddb46f55f05e6bdb0a4b9a61310279",
+      "hash": "7d1e6b7055c5af3dfa9b2fed6d7fdbfc5b9225a6d1db4474613f29121ae4124b",
       "metadata": {
-        "lines": 2170
+        "lines": 2322
       }
     },
     {
@@ -1287,9 +1276,9 @@
       "type": "file",
       "label": "src/App.tsx",
       "file": "src/App.tsx",
-      "hash": "6f3cb11c9e90420571369dbfcc1dde2efc42256c12a54d3eedd6d87952c1bb9b",
+      "hash": "c369efdaee806c938b297508ad9ce815820327a613b97e645f3111f5393c1ce9",
       "metadata": {
-        "lines": 152
+        "lines": 154
       }
     },
     {
@@ -1377,9 +1366,9 @@
       "type": "file",
       "label": "src/components/ChatPanel.tsx",
       "file": "src/components/ChatPanel.tsx",
-      "hash": "a695cff19999b975da5733e0d6932936ca01571bfa3d101a7b0a0a47b3f987cf",
+      "hash": "bdbc97397ca56a4ba80ad7a9fc26e629fdef7f4e7a9e4986aaea938db37136f0",
       "metadata": {
-        "lines": 4089
+        "lines": 4099
       }
     },
     {
@@ -1427,9 +1416,9 @@
       "type": "file",
       "label": "src/components/PdfViewer.tsx",
       "file": "src/components/PdfViewer.tsx",
-      "hash": "e3b3ccb91a1a28ed2e102ed579df239c79203ac1a9b73731ceba85a7db54c8be",
+      "hash": "fea1bdff373508f5c693062ca210403e7a14a85dfc2435e437271ddcc551a79e",
       "metadata": {
-        "lines": 727
+        "lines": 728
       }
     },
     {
@@ -1704,16 +1693,6 @@
       }
     },
     {
-      "id": "file:src/views/BrainView.tsx",
-      "type": "file",
-      "label": "src/views/BrainView.tsx",
-      "file": "src/views/BrainView.tsx",
-      "hash": "6e88d36e92568751c8d33996112478a4966e72e0ae232fdb12a8b1a6aa96bde1",
-      "metadata": {
-        "lines": 550
-      }
-    },
-    {
       "id": "file:src/views/RevisionView.tsx",
       "type": "file",
       "label": "src/views/RevisionView.tsx",
@@ -1839,6 +1818,11 @@
       "label": "fs"
     },
     {
+      "id": "package:http",
+      "type": "externalPackage",
+      "label": "http"
+    },
+    {
       "id": "package:lucide-react",
       "type": "externalPackage",
       "label": "lucide-react"
@@ -1864,6 +1848,11 @@
       "label": "path"
     },
     {
+      "id": "package:pdfjs-dist",
+      "type": "externalPackage",
+      "label": "pdfjs-dist"
+    },
+    {
       "id": "package:playwright",
       "type": "externalPackage",
       "label": "playwright"
@@ -1877,11 +1866,6 @@
       "id": "package:react-dom",
       "type": "externalPackage",
       "label": "react-dom"
-    },
-    {
-      "id": "package:react-force-graph-3d",
-      "type": "externalPackage",
-      "label": "react-force-graph-3d"
     },
     {
       "id": "package:react-markdown",
@@ -1902,11 +1886,6 @@
       "id": "package:remark-gfm",
       "type": "externalPackage",
       "label": "remark-gfm"
-    },
-    {
-      "id": "package:three",
-      "type": "externalPackage",
-      "label": "three"
     },
     {
       "id": "package:ts-morph",
@@ -2397,17 +2376,6 @@
       "id": "01749e9890a50b19ca14"
     },
     {
-      "type": "servedBy",
-      "source": "websocket:/ws/debug",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1926
-      },
-      "id": "01957113fe9c3a6fd6c8"
-    },
-    {
       "type": "renders",
       "source": "file:src/components/StatusBadge.tsx",
       "target": "component:SuccessIcon",
@@ -2439,6 +2407,18 @@
         "text": "activeView === analytics"
       },
       "id": "02183df120da6f232606"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "endpoint:ANY /api/title",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 95,
+        "text": "fetch(\"/api/title\", {\n                method: \"POST\",\n                headers: {\n                  \"Content-Type\": \"application/json\",\n                  Authorization: `Bearer ${us"
+      },
+      "id": "025cf81b427f63dd2e79"
     },
     {
       "type": "definedIn",
@@ -2511,28 +2491,6 @@
       "id": "03ce8d23ce25c1fb4c90"
     },
     {
-      "type": "definedIn",
-      "source": "component:App",
-      "target": "file:src/App.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/App.tsx",
-        "line": 32
-      },
-      "id": "03f5a860c7260c731f0b"
-    },
-    {
-      "type": "servedBy",
-      "source": "websocket:/api/voice-agent",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1922
-      },
-      "id": "041b7c38e8483c11d3b1"
-    },
-    {
       "type": "callsEndpoint",
       "source": "file:src/views/StudyView.tsx",
       "target": "endpoint:ANY /api/learning-book-update",
@@ -2567,17 +2525,6 @@
         "text": "FailedIcon"
       },
       "id": "052311018305bb797d6c"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/documents/ingest",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 696
-      },
-      "id": "05381d8875240cbaf115"
     },
     {
       "type": "imports",
@@ -2791,6 +2738,30 @@
       "id": "095abd4565a949ca27bc"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/App.tsx",
+      "target": "storeField:activeView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/App.tsx",
+        "line": 35,
+        "text": "(state) => state.activeView"
+      },
+      "id": "0981e117eac44f0b772b"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:pdfScale",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 29,
+        "text": "(state) => state.pdfScale"
+      },
+      "id": "098ef7bddbff84b11f9e"
+    },
+    {
       "type": "imports",
       "source": "file:src/memory/learner.model.ts",
       "target": "file:src/memory/zpd.calculator.ts",
@@ -2908,18 +2879,6 @@
         "text": "db.learningBookConcepts.get(conceptId)"
       },
       "id": "0bb429ea01d9638ba99e"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:setPdfTotalPages",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 33,
-        "text": "(state) => state.setPdfTotalPages"
-      },
-      "id": "0be4d22020150a44d249"
     },
     {
       "type": "exports",
@@ -3062,6 +3021,18 @@
       "id": "0ef4372a8b6639b6c768"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:pdfUrl",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 28,
+        "text": "(state) => state.pdfUrl"
+      },
+      "id": "0fb5c779db88d2c1aaa0"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "package:lucide-react",
@@ -3084,6 +3055,18 @@
         "text": "recordBrainRuntime"
       },
       "id": "100e77626a3ff56fa366"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:annotations",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 35,
+        "text": "(state) => state.annotations"
+      },
+      "id": "101fddd263f6345bf948"
     },
     {
       "type": "readsStore",
@@ -3170,6 +3153,18 @@
       "id": "1169fffd73bf6eb48513"
     },
     {
+      "type": "dependsOn",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "package:pdfjs-dist",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 3,
+        "text": "import pdfWorkerUrl from \"pdfjs-dist/build/pdf.worker.min.mjs?url\";"
+      },
+      "id": "116ea81cd29973c5071c"
+    },
+    {
       "type": "writesStore",
       "source": "file:src/views/RevisionView.tsx",
       "target": "storeField:setActiveView",
@@ -3190,6 +3185,17 @@
         "text": "setPdfUrl"
       },
       "id": "12d71a84a9f7bbcc2950"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/documents/ingest",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 797
+      },
+      "id": "131a5861101f1bb35185"
     },
     {
       "type": "imports",
@@ -3230,14 +3236,14 @@
     {
       "type": "readsStore",
       "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:setPdfPage",
+      "target": "storeField:pdfPage",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/PdfViewer.tsx",
         "line": 31,
-        "text": "(state) => state.setPdfPage"
+        "text": "(state) => state.pdfPage"
       },
-      "id": "1471dcf98ed1a1871139"
+      "id": "142b4bc3796fa09ff34f"
     },
     {
       "type": "imports",
@@ -3250,18 +3256,6 @@
         "text": "import { db } from \"../memory/longterm.memory\";"
       },
       "id": "1482bb2a99be8d9c3dc8"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "endpoint:ANY /api/chat",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2715,
-        "text": "fetch(\"/api/chat\", {\n        method: \"POST\",\n        headers: {\n          \"Content-Type\": \"application/json\",\n          Authorization: `Bearer ${apiKey}`,\n          ...(serperApiKe"
-      },
-      "id": "14c6e5d2c2aa55db0f9c"
     },
     {
       "type": "dependsOn",
@@ -3286,6 +3280,17 @@
         "text": "import { BrainRenderProfiler } from \"./brain-runtime/RenderProfiler\";"
       },
       "id": "14fdf382d78bd173e9f6"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:GET /api/tts",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1268
+      },
+      "id": "151e53d7b29967e16f00"
     },
     {
       "type": "exports",
@@ -3324,15 +3329,16 @@
       "id": "15f24aa645088a1072ab"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/debug/run",
-      "target": "file:server.ts",
+      "type": "dependsOn",
+      "source": "file:server.ts",
+      "target": "package:http",
       "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 595
+        "line": 16,
+        "text": "import type { IncomingHttpHeaders } from \"http\";"
       },
-      "id": "163a866d4dbd351ce218"
+      "id": "16e838925681f9b05679"
     },
     {
       "type": "definedIn",
@@ -3368,18 +3374,6 @@
         "text": "(state) => state.activeLearningBookId"
       },
       "id": "17741e3701d73c57dfad"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 87,
-        "text": "db.learningBooks.orderBy(\"updatedAt\")"
-      },
-      "id": "177d8cb7d3ea7d72d0ef"
     },
     {
       "type": "readsStore",
@@ -3429,17 +3423,6 @@
       "id": "18a72ecf55b53826e1f7"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:DELETE /api/debug/runs",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 551
-      },
-      "id": "18fe56fe2ad17b70e3a7"
-    },
-    {
       "type": "readsDatabase",
       "source": "file:src/views/RevisionView.tsx",
       "target": "databaseTable:learningBooks",
@@ -3473,17 +3456,6 @@
         "text": "setPdfTotalPages"
       },
       "id": "1a158d322ab9822f0a59"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:GET /api/pricing",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 672
-      },
-      "id": "1a910c72109ab29ebc1b"
     },
     {
       "type": "dependsOn",
@@ -3532,6 +3504,17 @@
         "text": "(state) => state.ttsVoice"
       },
       "id": "1bd32a9631660e4e6cc4"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:DELETE /api/debug/runs",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 652
+      },
+      "id": "1c95b210ea5672ff7332"
     },
     {
       "type": "dependsOn",
@@ -3592,18 +3575,6 @@
       "id": "1f7b178a278aac631add"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:pdfTotalPages",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 32,
-        "text": "(state) => state.pdfTotalPages"
-      },
-      "id": "1f8386870081507b5b8a"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "package:react-pdf",
@@ -3611,7 +3582,7 @@
       "evidence": {
         "file": "src/components/PdfViewer.tsx",
         "line": 4,
-        "text": "import \"react-pdf/dist/Page/TextLayer.css\";"
+        "text": "import \"react-pdf/dist/Page/AnnotationLayer.css\";"
       },
       "id": "1f93331fe13174a838a9"
     },
@@ -3653,30 +3624,6 @@
     },
     {
       "type": "imports",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "file:src/store/index.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 5,
-        "text": "import { useStore, Annotation } from \"../store\";"
-      },
-      "id": "21cd777c3aa08faa42b6"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "storeField:learnerName",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 81,
-        "text": "(state) => state.learnerName"
-      },
-      "id": "21f79f7115ec5330ef1a"
-    },
-    {
-      "type": "imports",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "file:src/components/StatusBadge.tsx",
       "confidence": 1,
@@ -3701,14 +3648,14 @@
     },
     {
       "type": "servedBy",
-      "source": "endpoint:GET /api/debug/runs",
+      "source": "endpoint:POST /api/trace",
       "target": "file:server.ts",
       "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 544
+        "line": 1001
       },
-      "id": "227622d20e50d145fe00"
+      "id": "22a8ba6079594f8d7263"
     },
     {
       "type": "readsStore",
@@ -3780,6 +3727,17 @@
         "text": "import * as fs from \"fs\";"
       },
       "id": "246b5e635be99ac16141"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/debug/runs/:id/cancel",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 752
+      },
+      "id": "249a8c8b1163facb1b5d"
     },
     {
       "type": "definedIn",
@@ -4109,17 +4067,6 @@
       "id": "2bc08fe9e98e32f4781b"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/title",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 804
-      },
-      "id": "2bd729afa631c9c7bf5d"
-    },
-    {
       "type": "mutates",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "storeField:setSerperApiKey",
@@ -4141,18 +4088,6 @@
         "text": "import { recordBrainRuntime } from \"./brain-runtime/runtimeTelemetry\";"
       },
       "id": "2c0800b9f4b99ef91b15"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:setPdfScale",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 29,
-        "text": "(state) => state.setPdfScale"
-      },
-      "id": "2c276af188715d6bc90a"
     },
     {
       "type": "renders",
@@ -4200,18 +4135,6 @@
       "id": "2cfe7773144ddc398aad"
     },
     {
-      "type": "dependsOn",
-      "source": "file:server.ts",
-      "target": "package:.",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 16,
-        "text": "import {\n  detectFreshnessSearch,\n  formatSourcesForPrompt,\n  searchSerper,\n  type NormalizedWebSource,\n  type WebSearchMode,\n} from \"./server/web-search\";"
-      },
-      "id": "2d1949f53288126e89d7"
-    },
-    {
       "type": "renders",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:ProgressIcon",
@@ -4222,27 +4145,16 @@
       "id": "2d7314d9097d66aaf6e6"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/generate-flashcards",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1043
-      },
-      "id": "2e0318bae9eaec5efc39"
-    },
-    {
-      "type": "usesState",
+      "type": "readsStore",
       "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:annotations",
+      "target": "storeField:addAnnotation",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/PdfViewer.tsx",
-        "line": 34,
-        "text": "(state) => state.annotations"
+        "line": 36,
+        "text": "(state) => state.addAnnotation"
       },
-      "id": "2f52d400e1d6df676fd2"
+      "id": "2da8aea17a1b12dda22e"
     },
     {
       "type": "mutates",
@@ -4266,6 +4178,17 @@
         "text": "import {\n  execFileSync,\n  spawn,\n  type ChildProcessWithoutNullStreams,\n} from \"child_process\";"
       },
       "id": "30496bad0e228f411344"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/trace",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1001
+      },
+      "id": "30ab3c720c465375df0a"
     },
     {
       "type": "usesState",
@@ -4432,6 +4355,18 @@
       "id": "335d2b9b7cc898585ca1"
     },
     {
+      "type": "imports",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "file:src/lib/translations.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 8,
+        "text": "import { useTranslation } from \"../lib/translations\";"
+      },
+      "id": "33979ae649be39897e5c"
+    },
+    {
       "type": "callsEndpoint",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "endpoint:ANY /api/learning-book-update",
@@ -4455,18 +4390,6 @@
       "id": "33e49f3934a087f1a50d"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:pdfScale",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 28,
-        "text": "(state) => state.pdfScale"
-      },
-      "id": "33e897ead7f69379201c"
-    },
-    {
       "type": "renders",
       "source": "file:src/App.tsx",
       "target": "component:Navigation",
@@ -4486,6 +4409,17 @@
         "text": "/api/chat"
       },
       "id": "34320e82c17e547cb9b5"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:GET /api/debug/runs/:id",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 682
+      },
+      "id": "3450b12975d8f609cb01"
     },
     {
       "type": "writesStore",
@@ -4660,6 +4594,17 @@
       "id": "37f3b63080f9710cb198"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/generate-persona",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 956
+      },
+      "id": "3809c2dc985d9c6dbabf"
+    },
+    {
       "type": "dependsOn",
       "source": "file:scripts/install-brain-hooks.ts",
       "target": "package:path",
@@ -4719,18 +4664,6 @@
       "id": "398375746dc9781b7358"
     },
     {
-      "type": "exports",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "file:src/views/BrainView.tsx:export:BrainView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 80,
-        "text": "BrainView"
-      },
-      "id": "399298e64aeaa2d96333"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/autonomy/source-scope.ts",
       "target": "package:fs",
@@ -4753,6 +4686,18 @@
         "text": "PrerequisiteDAG"
       },
       "id": "3a0a45870d75ca166b60"
+    },
+    {
+      "type": "dependsOn",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "package:motion",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 7,
+        "text": "import { motion, AnimatePresence } from \"motion/react\";"
+      },
+      "id": "3a6a016d984c80efb668"
     },
     {
       "type": "dependsOn",
@@ -4946,18 +4891,6 @@
       "id": "401604fa94eea56b420d"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:setPdfScale",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 29,
-        "text": "(state) => state.setPdfScale"
-      },
-      "id": "402b9ac91f7621d8be4c"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/components/Navigation.tsx",
       "target": "package:lucide-react",
@@ -5042,18 +4975,6 @@
       "id": "42d6320b15ed640c64ad"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:pdfScale",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 28,
-        "text": "(state) => state.pdfScale"
-      },
-      "id": "43181ceb9d951bcfd21f"
-    },
-    {
       "type": "exports",
       "source": "file:src/store/index.ts",
       "target": "file:src/store/index.ts:export:Annotation",
@@ -5110,18 +5031,6 @@
         "text": "setActiveView"
       },
       "id": "4534eab23d60b74ef4c0"
-    },
-    {
-      "type": "imports",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "file:src/lib/translations.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 7,
-        "text": "import { useTranslation } from \"../lib/translations\";"
-      },
-      "id": "458af9840f2bab978c3f"
     },
     {
       "type": "imports",
@@ -5240,18 +5149,6 @@
       "id": "48cc65b69c07fc339576"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:addAnnotation",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 35,
-        "text": "(state) => state.addAnnotation"
-      },
-      "id": "48e129715b210b2676d6"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/knowledge/query-engine.ts",
       "target": "package:fs",
@@ -5356,18 +5253,6 @@
       "id": "4a93684a185ad72006e4"
     },
     {
-      "type": "dependsOn",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "file:src/store/index.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 5,
-        "text": "import { useStore, Annotation } from \"../store\";"
-      },
-      "id": "4aa2cbe5c7cc9d5443ae"
-    },
-    {
       "type": "imports",
       "source": "file:src/components/Navigation.tsx",
       "target": "file:src/lib/translations.ts",
@@ -5390,18 +5275,6 @@
         "text": "(state) => state.setSelectedTextContext"
       },
       "id": "4b6f60ab0f246b46369e"
-    },
-    {
-      "type": "dependsOn",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "file:src/memory/longterm.memory.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 7,
-        "text": "import { db } from \"../memory/longterm.memory\";"
-      },
-      "id": "4bc043ad3af7e4021eb0"
     },
     {
       "type": "dependsOn",
@@ -5461,17 +5334,6 @@
         "text": "setAskTutorQuery"
       },
       "id": "4cce8d758b04ea0b311a"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/generate-persona",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 855
-      },
-      "id": "4d2243e52de2bc677d47"
     },
     {
       "type": "exports",
@@ -5603,6 +5465,17 @@
       "id": "4f788eb28a20255f229f"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/debug/stop",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 761
+      },
+      "id": "4f80b741f010acd95f22"
+    },
+    {
       "type": "imports",
       "source": "file:src/memory/productive.failure.ts",
       "target": "file:src/memory/longterm.memory.ts",
@@ -5722,15 +5595,16 @@
       "id": "5110279bed9b032c46c1"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/generate-flashcards",
-      "target": "file:server.ts",
+      "type": "dependsOn",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "package:react-pdf",
       "confidence": 1,
       "evidence": {
-        "file": "server.ts",
-        "line": 1043
+        "file": "src/components/PdfViewer.tsx",
+        "line": 5,
+        "text": "import \"react-pdf/dist/Page/TextLayer.css\";"
       },
-      "id": "51121b6498252e376e50"
+      "id": "5158b159f5e57f68f6f4"
     },
     {
       "type": "readsDatabase",
@@ -5828,6 +5702,18 @@
       "id": "532c760308a795142f62"
     },
     {
+      "type": "dependsOn",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "file:src/memory/memory.orchestrator.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 22,
+        "text": "import { brainOrchestrator } from \"../memory/memory.orchestrator\";"
+      },
+      "id": "53de8dd90f8ace47eb96"
+    },
+    {
       "type": "imports",
       "source": "file:src/views/AnalyticsView.tsx",
       "target": "file:src/lib/translations.ts",
@@ -5850,18 +5736,6 @@
       "id": "54351646139a3dfdd9bd"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:setPdfPage",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 31,
-        "text": "(state) => state.setPdfPage"
-      },
-      "id": "543a30428d276278f203"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/brain-runtime/installBrainRuntime.ts",
       "target": "file:src/brain-runtime/runtimeTelemetry.ts",
@@ -5872,6 +5746,18 @@
         "text": "import { ensureBrainRuntime, isBrainRuntimeEnabled } from \"./runtimeTelemetry\";"
       },
       "id": "545cbb56488bca5c2d6c"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:setSelectedTextContext",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 38,
+        "text": "(state) => state.setSelectedTextContext"
+      },
+      "id": "5478ac6cbc18f3c5b201"
     },
     {
       "type": "dependsOn",
@@ -5954,6 +5840,18 @@
       "id": "55caf592166cb126037b"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:setPdfPage",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 32,
+        "text": "(state) => state.setPdfPage"
+      },
+      "id": "5600f2ff271f3b7cec4c"
+    },
+    {
       "type": "callsEndpoint",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "endpoint:ANY /api/trace",
@@ -5988,28 +5886,15 @@
       "id": "569571b3e548f9fb01e8"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:pdfPage",
-      "confidence": 0.9,
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:GET /api/pricing",
+      "confidence": 0.8,
       "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 30,
-        "text": "(state) => state.pdfPage"
+        "file": "server.ts",
+        "line": 773
       },
-      "id": "5749e248014da58f67e5"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:addAnnotation",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 35,
-        "text": "(state) => state.addAnnotation"
-      },
-      "id": "575722efd83437850ffa"
+      "id": "56baf6aa81ddc44c3e1c"
     },
     {
       "type": "definedIn",
@@ -6095,18 +5980,6 @@
     },
     {
       "type": "dependsOn",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "package:lucide-react",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 4,
-        "text": "import { BookOpen, CircleDot, Library, Target } from \"lucide-react\";"
-      },
-      "id": "594fe38613072e78996a"
-    },
-    {
-      "type": "dependsOn",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "file:src/lib/translations.ts",
       "confidence": 1,
@@ -6175,18 +6048,6 @@
     },
     {
       "type": "dependsOn",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "package:react-pdf",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 3,
-        "text": "import \"react-pdf/dist/Page/AnnotationLayer.css\";"
-      },
-      "id": "5b89a54c59db746ccafc"
-    },
-    {
-      "type": "dependsOn",
       "source": "file:src/main.tsx",
       "target": "package:react",
       "confidence": 1,
@@ -6234,17 +6095,6 @@
       "id": "5c4d49c7a869d6f5f10f"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/debug/run",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 595
-      },
-      "id": "5c9666c4a41f5c59017f"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "package:dexie-react-hooks",
@@ -6277,18 +6127,6 @@
         "text": "(state) => state.apiKey"
       },
       "id": "5d8e1e6095795b64e9ef"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:setAskTutorQuery",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 36,
-        "text": "(state) => state.setAskTutorQuery"
-      },
-      "id": "5dab67349d16d0878eaa"
     },
     {
       "type": "renders",
@@ -6474,17 +6312,6 @@
       "id": "6256fcfcb31e4eab21fc"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/trace",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 900
-      },
-      "id": "62ce3004b4a2467046ef"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/runtime/run-runtime-benchmark.ts",
       "target": "package:child_process",
@@ -6495,6 +6322,18 @@
         "text": "import { spawn, type ChildProcess } from \"child_process\";"
       },
       "id": "6316b799e4397de8ea02"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:pdfUrl",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 28,
+        "text": "(state) => state.pdfUrl"
+      },
+      "id": "638bcff5f65d87610df0"
     },
     {
       "type": "dependsOn",
@@ -6509,15 +6348,15 @@
       "id": "63cb2bf4b6520dd40b0b"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:DELETE /api/debug/runs/:id",
-      "target": "file:server.ts",
-      "confidence": 1,
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/generate-flashcards",
+      "confidence": 0.8,
       "evidence": {
         "file": "server.ts",
-        "line": 567
+        "line": 1144
       },
-      "id": "649a76ee3f60d339d977"
+      "id": "646370c4ec8136ac3ff8"
     },
     {
       "type": "exports",
@@ -6530,6 +6369,18 @@
         "text": "MindMapLink"
       },
       "id": "64c92e546d456460f5f2"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "endpoint:ANY /api/tts",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2527,
+        "text": "fetch(\n        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || \"gpt-4o-mini-tts\")}`,\n      )"
+      },
+      "id": "651ab5a6bf4485fed204"
     },
     {
       "type": "mutates",
@@ -6564,17 +6415,6 @@
         "text": "db.concepts.get(conceptId)"
       },
       "id": "667c6d2aa88aaf75f27a"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:GET /api/tts",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1167
-      },
-      "id": "66bea88b0aa90b64f6c2"
     },
     {
       "type": "mutates",
@@ -6625,6 +6465,17 @@
       "id": "67c55b851b3cc8150663"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/generate-persona",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 956
+      },
+      "id": "680f786d11e168c05765"
+    },
+    {
       "type": "definedIn",
       "source": "component:FlashcardUI",
       "target": "file:src/views/RevisionView.tsx",
@@ -6671,17 +6522,6 @@
       "id": "690089205f754c35bfc8"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/debug/stop",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 660
-      },
-      "id": "69712b7ecbc1d00a381a"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/components/ShikiHighlighter.tsx",
       "target": "package:react",
@@ -6692,18 +6532,6 @@
         "text": "import React, { useEffect, useState } from \"react\";"
       },
       "id": "6999bf7d17cb14241814"
-    },
-    {
-      "type": "dependsOn",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "package:three",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 5,
-        "text": "import * as THREE from \"three\";"
-      },
-      "id": "69a610c8d809536dd703"
     },
     {
       "type": "dependsOn",
@@ -6844,6 +6672,17 @@
         "text": "(state) => state.askTutorQuery"
       },
       "id": "6c129216ea35f9187e03"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/learning-book-update",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1043
+      },
+      "id": "6c2608571637f3465b80"
     },
     {
       "type": "exports",
@@ -6998,18 +6837,6 @@
       "id": "6ea1f9e32a3e4bc680d9"
     },
     {
-      "type": "usesState",
-      "source": "file:src/App.tsx",
-      "target": "storeField:setActiveView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/App.tsx",
-        "line": 34,
-        "text": "(state) => state.setActiveView"
-      },
-      "id": "6f1dc98ca7392a2ebbca"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/debug/ui-regression-probe.ts",
       "target": "package:child_process",
@@ -7020,6 +6847,18 @@
         "text": "import { spawn } from \"child_process\";"
       },
       "id": "6fea31517695223fbe9d"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "endpoint:ANY /api/chat",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2725,
+        "text": "fetch(\"/api/chat\", {\n        method: \"POST\",\n        headers: {\n          \"Content-Type\": \"application/json\",\n          Authorization: `Bearer ${apiKey}`,\n          ...(serperApiKe"
+      },
+      "id": "701d82ead4e4671537b0"
     },
     {
       "type": "definedIn",
@@ -7175,6 +7014,29 @@
       "id": "74cd84351ee6019adeec"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:setPdfTotalPages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 34,
+        "text": "(state) => state.setPdfTotalPages"
+      },
+      "id": "74f7bf0f91613574fb9d"
+    },
+    {
+      "type": "definedIn",
+      "source": "component:App",
+      "target": "file:src/App.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/App.tsx",
+        "line": 34
+      },
+      "id": "7511390e7eae510dd884"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "package:react",
@@ -7185,6 +7047,28 @@
         "text": "import React, { useState, useRef, useEffect } from \"react\";"
       },
       "id": "75265eb2c2c60544c009"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "websocket:/api/voice-agent",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 2023
+      },
+      "id": "758368599c6ca016fc40"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:GET /api/debug/runs/:id",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 682
+      },
+      "id": "75a57410f672db0167da"
     },
     {
       "type": "renders",
@@ -7208,6 +7092,17 @@
         "text": "Language"
       },
       "id": "75cdc5ed95c82adb5917"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "websocket:/ws/debug",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 2027
+      },
+      "id": "7640c341fafd9c7d587c"
     },
     {
       "type": "readsStore",
@@ -7256,6 +7151,18 @@
         "text": "useTranslation"
       },
       "id": "7768e9e7ec05dd08a602"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:pdfTotalPages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 33,
+        "text": "(state) => state.pdfTotalPages"
+      },
+      "id": "778701509effeb25e655"
     },
     {
       "type": "readsStore",
@@ -7374,6 +7281,29 @@
       "id": "7ac492c0e90ae41048d2"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/title",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 905
+      },
+      "id": "7b02fec561540758967f"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:setAskTutorQuery",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 37,
+        "text": "(state) => state.setAskTutorQuery"
+      },
+      "id": "7bb825be8dd8a3518af6"
+    },
+    {
       "type": "imports",
       "source": "file:src/views/StudyView.tsx",
       "target": "file:src/components/PatternCard.tsx",
@@ -7419,6 +7349,17 @@
         "text": "import \"./index.css\";"
       },
       "id": "7c47a38e1a67888a4ed3"
+    },
+    {
+      "type": "definedIn",
+      "source": "component:RouteFallback",
+      "target": "file:src/App.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/App.tsx",
+        "line": 26
+      },
+      "id": "7c997fc2dd4ae0ff549e"
     },
     {
       "type": "writesDatabase",
@@ -7468,28 +7409,6 @@
       "id": "7d97c47cf62586bcf13f"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/debug/stop",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 660
-      },
-      "id": "7da6c4354788d1e741b0"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/chat",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1279
-      },
-      "id": "7de0fee84ace21ca82db"
-    },
-    {
       "type": "exports",
       "source": "file:src/store/index.ts",
       "target": "file:src/store/index.ts:export:PricingState",
@@ -7502,6 +7421,28 @@
       "id": "7ea0583a980e3d944f08"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/chat",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1380
+      },
+      "id": "7ee67d165475f50e0981"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/learning-book-update",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1043
+      },
+      "id": "7f5eb0f068403b98f731"
+    },
+    {
       "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:recordWebSearchEvent",
@@ -7512,18 +7453,6 @@
         "text": "(state) => state.recordWebSearchEvent"
       },
       "id": "7fb8a258e3e1dc8bc710"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:pdfTotalPages",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 32,
-        "text": "(state) => state.pdfTotalPages"
-      },
-      "id": "7fd4a9d3ad3f034846ea"
     },
     {
       "type": "renders",
@@ -7546,6 +7475,18 @@
         "text": "import { useStore, type NormalizedWebSource } from \"../store\";"
       },
       "id": "7fff442add472f6e798e"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:setPdfPage",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 32,
+        "text": "(state) => state.setPdfPage"
+      },
+      "id": "800cf74486aa16d84187"
     },
     {
       "type": "dependsOn",
@@ -7734,6 +7675,17 @@
       "id": "82f4b5f6dc67b23f5893"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/debug/run",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 696
+      },
+      "id": "83333b6751d52cdadebc"
+    },
+    {
       "type": "renders",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:FloatingSkillsMenu",
@@ -7764,6 +7716,17 @@
         "file": "src/views/StudyView.tsx"
       },
       "id": "837a3cf478ed2e628540"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:GET /api/debug/runs",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 645
+      },
+      "id": "83e715704b9c89ea9f2b"
     },
     {
       "type": "usesState",
@@ -7823,14 +7786,14 @@
     },
     {
       "type": "servedBy",
-      "source": "endpoint:POST /api/documents/ingest",
+      "source": "endpoint:POST /api/title",
       "target": "file:server.ts",
       "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 696
+        "line": 905
       },
-      "id": "854d7aa69f8f4ef6c5db"
+      "id": "85987f911e86f72fc4bf"
     },
     {
       "type": "imports",
@@ -7855,6 +7818,18 @@
         "text": "db.concepts.get(prereqId)"
       },
       "id": "85eac041e467c0efadd4"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:setPdfTotalPages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 34,
+        "text": "(state) => state.setPdfTotalPages"
+      },
+      "id": "8673001d50f29edfd949"
     },
     {
       "type": "writesStore",
@@ -7891,15 +7866,15 @@
       "id": "86bb2894daafed8751bc"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/title",
-      "confidence": 0.8,
+      "type": "servedBy",
+      "source": "websocket:/api/voice-agent",
+      "target": "file:server.ts",
+      "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 804
+        "line": 2023
       },
-      "id": "86c03904a9200911e972"
+      "id": "86e5734677847d7e4d18"
     },
     {
       "type": "imports",
@@ -7946,17 +7921,6 @@
         "text": "(state) => state.systemPrompt"
       },
       "id": "87bc3767e635cfecdd6e"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/learning-book-update",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 942
-      },
-      "id": "87f932de39e1acf664e4"
     },
     {
       "type": "writesDatabase",
@@ -8092,18 +8056,6 @@
     },
     {
       "type": "dependsOn",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "file:src/lib/translations.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 7,
-        "text": "import { useTranslation } from \"../lib/translations\";"
-      },
-      "id": "8bc144f0ddefcb55c6ac"
-    },
-    {
-      "type": "dependsOn",
       "source": "file:src/components/PatternCard.tsx",
       "target": "file:src/components/PatternSVGs.tsx",
       "confidence": 1,
@@ -8205,6 +8157,17 @@
       "id": "8d094f6f23b261e0e9d1"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/generate-flashcards",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1144
+      },
+      "id": "8d690f25ed92134506bb"
+    },
+    {
       "type": "definedIn",
       "source": "component:FlashcardDeck",
       "target": "file:src/views/RevisionView.tsx",
@@ -8226,6 +8189,18 @@
         "text": "import { recordBrainRuntime } from \"./runtimeTelemetry\";"
       },
       "id": "8dcfefb2886e73a876f9"
+    },
+    {
+      "type": "imports",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "file:src/memory/memory.orchestrator.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 22,
+        "text": "import { brainOrchestrator } from \"../memory/memory.orchestrator\";"
+      },
+      "id": "8dd1085f4bb43f177b1a"
     },
     {
       "type": "readsDatabase",
@@ -8250,17 +8225,6 @@
         "text": "import { useStore } from \"../store\";"
       },
       "id": "8dde8bbb09118e9a701f"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "websocket:/api/voice-agent",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1922
-      },
-      "id": "8e1a853e1a730da0ada8"
     },
     {
       "type": "dependsOn",
@@ -8331,17 +8295,6 @@
         "line": 38
       },
       "id": "8f8e6a48e08134b6d913"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:GET /api/debug/runs/:id",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 581
-      },
-      "id": "8f9f2b854e5f79f467ca"
     },
     {
       "type": "renders",
@@ -8445,18 +8398,6 @@
         "text": "import * as fs from \"fs\";"
       },
       "id": "919d71f4f1dc06038527"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:setSelectedTextContext",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 37,
-        "text": "(state) => state.setSelectedTextContext"
-      },
-      "id": "92dffffdc40cfb228164"
     },
     {
       "type": "exports",
@@ -8763,6 +8704,18 @@
       "id": "98d03c8c86da68a57101"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:setPdfScale",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 30,
+        "text": "(state) => state.setPdfScale"
+      },
+      "id": "991d0d3c061317cbf208"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/debug/debug-runner.ts",
       "target": "package:crypto",
@@ -8799,17 +8752,6 @@
       "id": "9ac6d5fba7ca4c28e562"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/chat",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1279
-      },
-      "id": "9af7eb5943019d98673a"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/retrieval/retrieve-context.ts",
       "target": "file:brain/retrieval/retrieve-semantic.ts",
@@ -8831,18 +8773,6 @@
         "line": 1797
       },
       "id": "9c01f3ead7c0f641f5b8"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/App.tsx",
-      "target": "storeField:activeView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/App.tsx",
-        "line": 33,
-        "text": "(state) => state.activeView"
-      },
-      "id": "9c4ec207dbfd450452bf"
     },
     {
       "type": "mutates",
@@ -8950,18 +8880,6 @@
       "id": "9f26cea1897c342a9ed4"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:setSelectedTextContext",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 37,
-        "text": "(state) => state.setSelectedTextContext"
-      },
-      "id": "9fbe033c33a7e76d346c"
-    },
-    {
       "type": "mutates",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "databaseTable:learningBooks",
@@ -9007,6 +8925,18 @@
         "text": "import { motion, AnimatePresence } from \"motion/react\";"
       },
       "id": "a17770184c896be43818"
+    },
+    {
+      "type": "dependsOn",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "package:lucide-react",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 9,
+        "text": "import {\n  ZoomIn,\n  ZoomOut,\n  ChevronLeft,\n  ChevronRight,\n  Maximize,\n  Minimize,\n  Highlighter,\n  MessageSquare,\n  Underline,\n  Strikethrough,\n  StickyNote,\n} from \"lucide-react\";"
+      },
+      "id": "a255f3841ad7863f79c6"
     },
     {
       "type": "definedIn",
@@ -9067,14 +8997,14 @@
     },
     {
       "type": "servedBy",
-      "source": "endpoint:GET /api/debug/runs/:id/events",
+      "source": "endpoint:POST /api/debug/run",
       "target": "file:server.ts",
       "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 589
+        "line": 696
       },
-      "id": "a2fb65bd879dcaf7be08"
+      "id": "a2e6ca264c966e3b4ea6"
     },
     {
       "type": "dependsOn",
@@ -9170,29 +9100,6 @@
       "id": "a561cffeebac185286d3"
     },
     {
-      "type": "definedIn",
-      "source": "component:BrainView",
-      "target": "file:src/views/BrainView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 80
-      },
-      "id": "a58d72625c23ece22c02"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "endpoint:ANY /api/tts",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2517,
-        "text": "fetch(\n        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || \"gpt-4o-mini-tts\")}`,\n      )"
-      },
-      "id": "a5af11dd005af587a4f5"
-    },
-    {
       "type": "imports",
       "source": "file:src/components/Navigation.tsx",
       "target": "file:src/store/index.ts",
@@ -9261,6 +9168,18 @@
         "text": "import * as fs from \"fs\";"
       },
       "id": "a75a554d0619444231a9"
+    },
+    {
+      "type": "dependsOn",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "file:src/lib/translations.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 8,
+        "text": "import { useTranslation } from \"../lib/translations\";"
+      },
+      "id": "a78ca78cb8b70d2d8188"
     },
     {
       "type": "listensTo",
@@ -9346,17 +9265,6 @@
       "id": "a8218a14c87d70819d2e"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/debug/runs/:id/cancel",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 651
-      },
-      "id": "a8b0a09e5676172fad2c"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/debug/ui-regression-probe.ts",
       "target": "package:fs",
@@ -9438,6 +9346,18 @@
       "id": "ac5f7b630ae299f5705f"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:addAnnotation",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 36,
+        "text": "(state) => state.addAnnotation"
+      },
+      "id": "ac95b04969796353bc3f"
+    },
+    {
       "type": "mutates",
       "source": "file:src/App.tsx",
       "target": "storeField:setActiveView",
@@ -9470,6 +9390,18 @@
         "text": "import multer from \"multer\";"
       },
       "id": "ad6cd2acda4677098017"
+    },
+    {
+      "type": "dependsOn",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "file:src/store/index.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 6,
+        "text": "import { useStore, Annotation } from \"../store\";"
+      },
+      "id": "adb68b5cc2a61dbb3a9e"
     },
     {
       "type": "mutates",
@@ -9507,27 +9439,15 @@
       "id": "af1094d29756e1804927"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:setAskTutorQuery",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 36,
-        "text": "(state) => state.setAskTutorQuery"
-      },
-      "id": "af6d5458746e23f35c07"
-    },
-    {
       "type": "servedBy",
-      "source": "endpoint:POST /api/debug/runs/:id/cancel",
+      "source": "endpoint:DELETE /api/debug/runs/:id",
       "target": "file:server.ts",
       "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 651
+        "line": 668
       },
-      "id": "aff5705963acf08ac8ff"
+      "id": "afc7655abf7b4ef87fee"
     },
     {
       "type": "exports",
@@ -9555,18 +9475,6 @@
     },
     {
       "type": "dependsOn",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "package:motion",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 6,
-        "text": "import { motion, AnimatePresence } from \"motion/react\";"
-      },
-      "id": "b0acfea144fd1df50b7c"
-    },
-    {
-      "type": "dependsOn",
       "source": "file:server.ts",
       "target": "package:fs",
       "confidence": 1,
@@ -9589,27 +9497,26 @@
       "id": "b144acd4ed51fa4b5f5a"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "websocket:/ws/debug",
-      "confidence": 0.8,
+      "type": "servedBy",
+      "source": "endpoint:DELETE /api/debug/runs",
+      "target": "file:server.ts",
+      "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 1926
+        "line": 652
       },
-      "id": "b1a52f3284f464b26ec2"
+      "id": "b1508d172144a9376145"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/App.tsx",
-      "target": "storeField:activeView",
-      "confidence": 0.9,
+      "type": "definedIn",
+      "source": "component:PdfViewer",
+      "target": "file:src/components/PdfViewer.tsx",
+      "confidence": 1,
       "evidence": {
-        "file": "src/App.tsx",
-        "line": 33,
-        "text": "(state) => state.activeView"
+        "file": "src/components/PdfViewer.tsx",
+        "line": 26
       },
-      "id": "b1bae4fbc4554e108cfe"
+      "id": "b1cdc672e4a1aee00598"
     },
     {
       "type": "callsEndpoint",
@@ -9693,17 +9600,6 @@
         "line": 389
       },
       "id": "b39f5a2c0ea37ee78688"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:GET *",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1903
-      },
-      "id": "b3b54c492e7313904447"
     },
     {
       "type": "usesState",
@@ -9813,16 +9709,16 @@
       "id": "b4f37080d67b6c0b95e6"
     },
     {
-      "type": "imports",
+      "type": "usesState",
       "source": "file:src/components/PdfViewer.tsx",
-      "target": "file:src/memory/memory.orchestrator.ts",
-      "confidence": 1,
+      "target": "storeField:setAskTutorQuery",
+      "confidence": 0.9,
       "evidence": {
         "file": "src/components/PdfViewer.tsx",
-        "line": 21,
-        "text": "import { brainOrchestrator } from \"../memory/memory.orchestrator\";"
+        "line": 37,
+        "text": "(state) => state.setAskTutorQuery"
       },
-      "id": "b542c8fc02973a901b3d"
+      "id": "b55bccca5981a0594cec"
     },
     {
       "type": "imports",
@@ -9880,17 +9776,6 @@
         "text": "setPdfPage"
       },
       "id": "b6132747d2e2aa8db5b2"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:GET /api/debug/runs/:id",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 581
-      },
-      "id": "b68fd853c4897990cb72"
     },
     {
       "type": "dependsOn",
@@ -9973,6 +9858,18 @@
       "id": "b88de535bdd53092b275"
     },
     {
+      "type": "usesState",
+      "source": "file:src/App.tsx",
+      "target": "storeField:activeView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/App.tsx",
+        "line": 35,
+        "text": "(state) => state.activeView"
+      },
+      "id": "b8b059ffb4a36a224fbb"
+    },
+    {
       "type": "imports",
       "source": "file:src/views/StudyView.tsx",
       "target": "file:src/memory/memory.orchestrator.ts",
@@ -10043,6 +9940,18 @@
         "text": "import * as path from \"path\";"
       },
       "id": "bb11bd8b413785ae998c"
+    },
+    {
+      "type": "exports",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "file:src/components/PdfViewer.tsx:export:PdfViewer",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 26,
+        "text": "PdfViewer"
+      },
+      "id": "bb16c6c0dd1443f1d6d1"
     },
     {
       "type": "usesState",
@@ -10185,6 +10094,18 @@
     },
     {
       "type": "dependsOn",
+      "source": "file:server.ts",
+      "target": "package:.",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 17,
+        "text": "import {\n  detectFreshnessSearch,\n  formatSourcesForPrompt,\n  searchSerper,\n  type NormalizedWebSource,\n  type WebSearchMode,\n} from \"./server/web-search\";"
+      },
+      "id": "bec4c21998273257ff6c"
+    },
+    {
+      "type": "dependsOn",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "file:src/memory/longterm.memory.ts",
       "confidence": 1,
@@ -10232,6 +10153,28 @@
       "id": "bf84184da900f5e3e342"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:GET /api/debug/runs/:id/events",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 690
+      },
+      "id": "bf9b3e11bae13d67b48f"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/documents/ingest",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 797
+      },
+      "id": "bfa0c43e344d8cb4a228"
+    },
+    {
       "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:recordVoiceUsage",
@@ -10242,6 +10185,18 @@
         "text": "(state) => state.recordVoiceUsage"
       },
       "id": "bfaac846bae7109d5461"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:pdfScale",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 29,
+        "text": "(state) => state.pdfScale"
+      },
+      "id": "bfd0024970e22d4838cc"
     },
     {
       "type": "exports",
@@ -10265,18 +10220,6 @@
         "line": 12
       },
       "id": "c0088954900a3eff853c"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "file:src/components/PdfViewer.tsx:export:PdfViewer",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 25,
-        "text": "PdfViewer"
-      },
-      "id": "c01e27a20128777e6f6e"
     },
     {
       "type": "imports",
@@ -10350,18 +10293,6 @@
       "id": "c2494941cbe4a0df91c3"
     },
     {
-      "type": "exports",
-      "source": "file:src/App.tsx",
-      "target": "file:src/App.tsx:export:default",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/App.tsx",
-        "line": 32,
-        "text": "default"
-      },
-      "id": "c25db24a132772cf432a"
-    },
-    {
       "type": "imports",
       "source": "file:src/views/StudyView.tsx",
       "target": "file:src/store/index.ts",
@@ -10406,40 +10337,6 @@
         "line": 77
       },
       "id": "c40c234ed1e7682d9be7"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:GET /api/tts",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1167
-      },
-      "id": "c43ae0bcbf51eff814e6"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:pdfUrl",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 27,
-        "text": "(state) => state.pdfUrl"
-      },
-      "id": "c43e8145386b0b89c32c"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/generate-persona",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 855
-      },
-      "id": "c441b5c65b8dd3520137"
     },
     {
       "type": "callsEndpoint",
@@ -10512,29 +10409,6 @@
       "id": "c60fd8b30553ff2e7046"
     },
     {
-      "type": "dependsOn",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "package:react",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 1,
-        "text": "import React, { useRef, useEffect, useState } from \"react\";"
-      },
-      "id": "c6653f85293a043ce4bb"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:GET /api/debug/runs/:id/events",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 589
-      },
-      "id": "c6b37c43cc77ab813bb1"
-    },
-    {
       "type": "definedIn",
       "source": "component:PendingIcon",
       "target": "file:src/components/StatusBadge.tsx",
@@ -10579,6 +10453,17 @@
         "text": "(state) => state.resetUsageAnalytics"
       },
       "id": "c7c5ade88f1fddcd2114"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:GET /api/debug/runs/:id/events",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 690
+      },
+      "id": "c7d123bae20f658667c9"
     },
     {
       "type": "exports",
@@ -10661,6 +10546,18 @@
         "line": 54
       },
       "id": "ca8d46514f2557128256"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:pdfTotalPages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 33,
+        "text": "(state) => state.pdfTotalPages"
+      },
+      "id": "caa5892b4ef75beed062"
     },
     {
       "type": "dependsOn",
@@ -10768,6 +10665,17 @@
         "line": 26
       },
       "id": "cd0c21a31514880b7e02"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:GET /api/pricing",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 773
+      },
+      "id": "ce42ec69594eb2764991"
     },
     {
       "type": "dependsOn",
@@ -10887,18 +10795,6 @@
       "id": "d0e626e995852553f2e7"
     },
     {
-      "type": "dependsOn",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "file:src/memory/memory.orchestrator.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 21,
-        "text": "import { brainOrchestrator } from \"../memory/memory.orchestrator\";"
-      },
-      "id": "d1a91243fa0c9cbb8df6"
-    },
-    {
       "type": "writesStore",
       "source": "file:src/views/StudyView.tsx",
       "target": "storeField:setMessages",
@@ -10934,15 +10830,39 @@
       "id": "d246e3c5aa96d712f7fb"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:DELETE /api/debug/runs/:id",
-      "confidence": 0.8,
+      "type": "servedBy",
+      "source": "endpoint:POST /api/debug/runs/:id/cancel",
+      "target": "file:server.ts",
+      "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 567
+        "line": 752
       },
-      "id": "d34747972259661eabb0"
+      "id": "d25c1a79f073f197db74"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:pdfPage",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 31,
+        "text": "(state) => state.pdfPage"
+      },
+      "id": "d2b19f609a91b83503cd"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/App.tsx",
+      "target": "storeField:setActiveView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/App.tsx",
+        "line": 36,
+        "text": "(state) => state.setActiveView"
+      },
+      "id": "d3b595bec92337de2f36"
     },
     {
       "type": "dependsOn",
@@ -11061,17 +10981,6 @@
       "id": "d5bd79f3779d4d2bd1ad"
     },
     {
-      "type": "definedIn",
-      "source": "component:RouteFallback",
-      "target": "file:src/App.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/App.tsx",
-        "line": 24
-      },
-      "id": "d5f6f6d600a5a35e8d8a"
-    },
-    {
       "type": "dependsOn",
       "source": "file:server.ts",
       "target": "package:ws",
@@ -11084,27 +10993,15 @@
       "id": "d6276393f37bf20f68ff"
     },
     {
-      "type": "imports",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "file:src/store/index.ts",
+      "type": "servedBy",
+      "source": "endpoint:GET *",
+      "target": "file:server.ts",
       "confidence": 1,
       "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 3,
-        "text": "import { useStore } from \"../store\";"
-      },
-      "id": "d6c832b3c0a45880f9b5"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/learning-book-update",
-      "confidence": 0.8,
-      "evidence": {
         "file": "server.ts",
-        "line": 942
+        "line": 2004
       },
-      "id": "d6e527c767c0b0da47b5"
+      "id": "d72c137b9f0482c01c6c"
     },
     {
       "type": "mutates",
@@ -11118,18 +11015,6 @@
       "id": "d77158bddcd65cd1e1bb"
     },
     {
-      "type": "dependsOn",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "package:dexie-react-hooks",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 8,
-        "text": "import { useLiveQuery } from \"dexie-react-hooks\";"
-      },
-      "id": "d771c0f94b8b2ffe6bca"
-    },
-    {
       "type": "callsEndpoint",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "endpoint:ANY /api/generate-persona",
@@ -11139,18 +11024,6 @@
         "text": "/api/generate-persona"
       },
       "id": "d7f4181340e0c5d215bc"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "endpoint:ANY /api/title",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 94,
-        "text": "fetch(\"/api/title\", {\n                method: \"POST\",\n                headers: {\n                  \"Content-Type\": \"application/json\",\n                  Authorization: `Bearer ${us"
-      },
-      "id": "d7f51fb46f7064c4d4fd"
     },
     {
       "type": "dependsOn",
@@ -11175,17 +11048,6 @@
         "text": "import { db, Misconception } from \"./longterm.memory\";"
       },
       "id": "d8581290b9ed267f751d"
-    },
-    {
-      "type": "definedIn",
-      "source": "component:PdfViewer",
-      "target": "file:src/components/PdfViewer.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 25
-      },
-      "id": "d866bc08e79d33612c9c"
     },
     {
       "type": "writesDatabase",
@@ -11308,18 +11170,6 @@
       "id": "db406511eac499591496"
     },
     {
-      "type": "dependsOn",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "package:react-force-graph-3d",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 2,
-        "text": "import ForceGraph3D from \"react-force-graph-3d\";"
-      },
-      "id": "dc4249d216e5dcafce72"
-    },
-    {
       "type": "exports",
       "source": "file:src/memory/prerequisite.dag.ts",
       "target": "file:src/memory/prerequisite.dag.ts:export:prerequisiteDAG",
@@ -11378,18 +11228,6 @@
       "id": "dd968ff742265d7160b8"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:pdfUrl",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 27,
-        "text": "(state) => state.pdfUrl"
-      },
-      "id": "de5a657b9fb3a454dd01"
-    },
-    {
       "type": "renders",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:GeminiVoicePill",
@@ -11412,16 +11250,16 @@
       "id": "df21f823fa355e0542f3"
     },
     {
-      "type": "callsEndpoint",
-      "source": "file:server.ts",
-      "target": "endpoint:ANY /api/v1/models",
-      "confidence": 0.8,
+      "type": "readsStore",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:setPdfScale",
+      "confidence": 0.9,
       "evidence": {
-        "file": "server.ts",
-        "line": 106,
-        "text": "fetch(\"https://openrouter.ai/api/v1/models\")"
+        "file": "src/components/PdfViewer.tsx",
+        "line": 30,
+        "text": "(state) => state.setPdfScale"
       },
-      "id": "e0357cba1dea4af71fcf"
+      "id": "e0779b61388f7985a7da"
     },
     {
       "type": "dependsOn",
@@ -11553,6 +11391,17 @@
       "id": "e354754f1a15a4de14b6"
     },
     {
+      "type": "servedBy",
+      "source": "websocket:/ws/debug",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 2027
+      },
+      "id": "e3659dd32d29973600b7"
+    },
+    {
       "type": "exports",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "file:src/memory/memory.orchestrator.ts:export:MemoryOrchestrator",
@@ -11575,6 +11424,30 @@
         "text": "WebSearchMode"
       },
       "id": "e379be8721b66e93b1a1"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "storeField:annotations",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 35,
+        "text": "(state) => state.annotations"
+      },
+      "id": "e39c94a213dc02d844bf"
+    },
+    {
+      "type": "imports",
+      "source": "file:src/components/PdfViewer.tsx",
+      "target": "file:src/store/index.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/PdfViewer.tsx",
+        "line": 6,
+        "text": "import { useStore, Annotation } from \"../store\";"
+      },
+      "id": "e3c96b55d6c8384df1f6"
     },
     {
       "type": "readsDatabase",
@@ -11610,18 +11483,6 @@
         "text": "ExpiredIcon"
       },
       "id": "e50dd40877392d5cbf3f"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:annotations",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 34,
-        "text": "(state) => state.annotations"
-      },
-      "id": "e5381d980229e7acadc2"
     },
     {
       "type": "exports",
@@ -11697,14 +11558,14 @@
     {
       "type": "readsStore",
       "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:pdfPage",
+      "target": "storeField:setSelectedTextContext",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/PdfViewer.tsx",
-        "line": 30,
-        "text": "(state) => state.pdfPage"
+        "line": 38,
+        "text": "(state) => state.setSelectedTextContext"
       },
-      "id": "e8da9430478a03a20da7"
+      "id": "e811ee5ad570eb580fdd"
     },
     {
       "type": "renders",
@@ -11764,17 +11625,6 @@
       "id": "e9da00360f4873a839e4"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:DELETE /api/debug/runs",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 551
-      },
-      "id": "ea1e8f74e8679ce2e05f"
-    },
-    {
       "type": "exports",
       "source": "file:src/memory/scaffolding.engine.ts",
       "target": "file:src/memory/scaffolding.engine.ts:export:ScaffoldingEngine",
@@ -11785,18 +11635,6 @@
         "text": "ScaffoldingEngine"
       },
       "id": "ea3ae534ece25a6fb97f"
-    },
-    {
-      "type": "dependsOn",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "package:motion",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 6,
-        "text": "import { motion } from \"motion/react\";"
-      },
-      "id": "eab1a18684809ab40ff7"
     },
     {
       "type": "exports",
@@ -11858,6 +11696,17 @@
       "id": "ebe13cb32904ec4f4f43"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:GET /api/debug/runs",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 645
+      },
+      "id": "ebec995519f287d8cdd0"
+    },
+    {
       "type": "readsDatabase",
       "source": "file:src/views/AnalyticsView.tsx",
       "target": "databaseTable:concepts",
@@ -11868,6 +11717,18 @@
         "text": "db.concepts.toArray()"
       },
       "id": "ec1fc04e065f0811cda4"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:server.ts",
+      "target": "endpoint:ANY /api/v1/models",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 192,
+        "text": "fetch(\"https://openrouter.ai/api/v1/models\")"
+      },
+      "id": "ec92bef2d54e8240f1d6"
     },
     {
       "type": "dependsOn",
@@ -11892,29 +11753,6 @@
         "text": "import { PdfViewer } from \"../components/PdfViewer\";"
       },
       "id": "ed413b0d28a5f34d5517"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:GET /api/debug/runs",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 544
-      },
-      "id": "ed99efe587b4a3d89a5d"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "storeField:learnerName",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 81,
-        "text": "(state) => state.learnerName"
-      },
-      "id": "edaf5498dc564a23f125"
     },
     {
       "type": "renders",
@@ -11949,6 +11787,18 @@
         "text": "import { db } from \"./longterm.memory\";"
       },
       "id": "ef5592453757f945df3b"
+    },
+    {
+      "type": "exports",
+      "source": "file:src/App.tsx",
+      "target": "file:src/App.tsx:export:default",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/App.tsx",
+        "line": 34,
+        "text": "default"
+      },
+      "id": "eff1a6298d57d75f1e84"
     },
     {
       "type": "exports",
@@ -12022,6 +11872,17 @@
       "id": "f21e4a9714c0c3c470fd"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:DELETE /api/debug/runs/:id",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 668
+      },
+      "id": "f26015cbd6c8349ffc7a"
+    },
+    {
       "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:setPricing",
@@ -12032,6 +11893,18 @@
         "text": "(state) => state.setPricing"
       },
       "id": "f27613b0bed9a5db7530"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/App.tsx",
+      "target": "storeField:setActiveView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/App.tsx",
+        "line": 36,
+        "text": "(state) => state.setActiveView"
+      },
+      "id": "f289290261bc7b231567"
     },
     {
       "type": "exports",
@@ -12078,18 +11951,6 @@
       "id": "f3c4cc5d84896d7a2312"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "databaseTable:learningBookConcepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 92,
-        "text": "db.learningBookConcepts.orderBy(\"updatedAt\")"
-      },
-      "id": "f3fc52b459a644dfcb09"
-    },
-    {
       "type": "mutates",
       "source": "file:src/memory/misconception.graph.ts",
       "target": "databaseTable:misconceptions",
@@ -12102,18 +11963,6 @@
       "id": "f40869f2379331d530ba"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/App.tsx",
-      "target": "storeField:setActiveView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/App.tsx",
-        "line": 34,
-        "text": "(state) => state.setActiveView"
-      },
-      "id": "f4219350b50d7b144b50"
-    },
-    {
       "type": "exports",
       "source": "file:src/memory/bkt.engine.ts",
       "target": "file:src/memory/bkt.engine.ts:export:BKTEngine",
@@ -12124,6 +11973,28 @@
         "text": "BKTEngine"
       },
       "id": "f4687942d6aa8a2694a5"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/chat",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1380
+      },
+      "id": "f499a95f2913a73eaa1b"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:GET /api/tts",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1268
+      },
+      "id": "f4a05b6401f21f3e3b16"
     },
     {
       "type": "usesState",
@@ -12183,29 +12054,6 @@
         "text": "(state) => state.animationsEnabled"
       },
       "id": "f5a25009aa0cc8ad9af6"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "databaseTable:concepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 97,
-        "text": "db.concepts.orderBy(\"lastReviewedAt\")"
-      },
-      "id": "f65614e56120227da016"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:GET /api/pricing",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 672
-      },
-      "id": "f65a12b5885914952080"
     },
     {
       "type": "exports",
@@ -12290,6 +12138,17 @@
       "id": "f9161f3391ad7aefa916"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/debug/stop",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 761
+      },
+      "id": "f91ad45ddef502043ba2"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/memory/learner.model.ts",
       "target": "file:src/memory/zpd.calculator.ts",
@@ -12348,30 +12207,6 @@
         "text": "import { useTranslation } from \"../lib/translations\";"
       },
       "id": "f9f0d230a61e554de56f"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "storeField:setPdfTotalPages",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 33,
-        "text": "(state) => state.setPdfTotalPages"
-      },
-      "id": "fa475e5f0af380e63072"
-    },
-    {
-      "type": "dependsOn",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "file:src/store/index.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 3,
-        "text": "import { useStore } from \"../store\";"
-      },
-      "id": "fa630f7a579cab0d2466"
     },
     {
       "type": "usesState",
@@ -12454,17 +12289,6 @@
       "id": "fcec3567a469493e03ab"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/trace",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 900
-      },
-      "id": "fd388bc3170ce66c1ab0"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/brain-runtime/instrumentDexie.ts",
       "target": "file:src/brain-runtime/runtimeTelemetry.ts",
@@ -12475,18 +12299,6 @@
         "text": "import { recordBrainRuntime } from \"./runtimeTelemetry\";"
       },
       "id": "fd9cc27f9e87e1cf53d8"
-    },
-    {
-      "type": "dependsOn",
-      "source": "file:src/components/PdfViewer.tsx",
-      "target": "package:lucide-react",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/PdfViewer.tsx",
-        "line": 8,
-        "text": "import {\n  ZoomIn,\n  ZoomOut,\n  ChevronLeft,\n  ChevronRight,\n  Maximize,\n  Minimize,\n  Highlighter,\n  MessageSquare,\n  Underline,\n  Strikethrough,\n  StickyNote,\n} from \"lucide-react\";"
-      },
-      "id": "fda17488d5ccedcbbf18"
     },
     {
       "type": "usesState",
@@ -12510,18 +12322,6 @@
         "text": "setSelectedTextContext"
       },
       "id": "fe400929791281be4cfe"
-    },
-    {
-      "type": "imports",
-      "source": "file:src/views/BrainView.tsx",
-      "target": "file:src/memory/longterm.memory.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/BrainView.tsx",
-        "line": 7,
-        "text": "import { db } from \"../memory/longterm.memory\";"
-      },
-      "id": "fec57b6658e91071ef2f"
     },
     {
       "type": "callsEndpoint",

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-29T05:56:02.897Z",
+    "generatedAt": "2026-05-29T08:24:34.345Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "e6e5492d780b8804ac753368d36c58a11c673905",
+      "commit": "0e7f22c063b4f007c8c0d156c600799ed2798e04",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "625e2d8379fdf94c8728ab4f50d49e10cff72e8e59a7125ae2445f189b9dd3b1"
+    "sourceHash": "1acf0e74100b87053667c55ddc74551d8d62755274847ec58aa5498a1092daff"
   },
   "files": {
     "generate-brain.ts": {
@@ -865,7 +865,6 @@
         "src/memory/zpd.calculator.ts",
         "src/views/AdminView.tsx",
         "src/views/AnalyticsView.tsx",
-        "src/views/BrainView.tsx",
         "src/views/RevisionView.tsx"
       ],
       "semanticFactors": {
@@ -883,7 +882,6 @@
           "src/memory/zpd.calculator.ts",
           "src/views/AdminView.tsx",
           "src/views/AnalyticsView.tsx",
-          "src/views/BrainView.tsx",
           "src/views/RevisionView.tsx"
         ],
         "renderedBy": [],
@@ -900,7 +898,6 @@
           "src/memory/zpd.calculator.ts",
           "src/views/AdminView.tsx",
           "src/views/AnalyticsView.tsx",
-          "src/views/BrainView.tsx",
           "src/views/RevisionView.tsx"
         ]
       },
@@ -1056,7 +1053,6 @@
         "src/lib/translations.ts",
         "src/views/AdminView.tsx",
         "src/views/AnalyticsView.tsx",
-        "src/views/BrainView.tsx",
         "src/views/RevisionView.tsx",
         "src/views/StudyView.tsx"
       ],
@@ -1071,7 +1067,6 @@
           "src/lib/translations.ts",
           "src/views/AdminView.tsx",
           "src/views/AnalyticsView.tsx",
-          "src/views/BrainView.tsx",
           "src/views/RevisionView.tsx",
           "src/views/StudyView.tsx"
         ],
@@ -1083,7 +1078,6 @@
           "src/components/PdfViewer.tsx",
           "src/components/SettingsModal.tsx",
           "src/lib/translations.ts",
-          "src/views/BrainView.tsx",
           "src/views/RevisionView.tsx",
           "src/views/StudyView.tsx"
         ],
@@ -1117,18 +1111,6 @@
         "renderedBy": [
           "file:src/App.tsx"
         ],
-        "clientCallers": [],
-        "storeReaders": [],
-        "databaseUsers": []
-      },
-      "affectedTests": []
-    },
-    "src/views/BrainView.tsx": {
-      "riskScore": 0,
-      "blastRadius": [],
-      "semanticFactors": {
-        "directImportDependents": [],
-        "renderedBy": [],
         "clientCallers": [],
         "storeReaders": [],
         "databaseUsers": []
