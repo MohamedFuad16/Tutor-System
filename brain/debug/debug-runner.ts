@@ -15,7 +15,7 @@ const UI_REGRESSION_REPORT = path.join(
   "latest.json",
 );
 
-type Mode = "audit" | "fix";
+type Mode = "audit" | "fix" | "scan" | "long-horizon";
 
 type CommandResult = {
   command: string;
@@ -1268,8 +1268,13 @@ function writeRunSnapshot(
 }
 
 function main() {
-  const mode = (arg("mode", "fix") as Mode) || "fix";
-  const scope = arg("scope", "all");
+  const requestedMode = arg("mode", "fix");
+  const mode: Mode = ["audit", "fix", "scan", "long-horizon"].includes(
+    requestedMode,
+  )
+    ? (requestedMode as Mode)
+    : "fix";
+  const scope = mode === "long-horizon" ? "all" : arg("scope", "all");
   const resume = arg("resume");
   const runId =
     resume || `debug-${new Date().toISOString().replace(/[:.]/g, "-")}`;
@@ -1632,14 +1637,18 @@ function main() {
     const patchSafetyPhase = startPhase("gate-patch-safety");
     finishPhase(patchSafetyPhase, {
       mode,
-      canPatch: mode === "fix" && !isGeneratedOrArtifactTarget(target),
+      canPatch:
+        (mode === "fix" || mode === "long-horizon") &&
+        !isGeneratedOrArtifactTarget(target),
       hashGuard: beforeHash,
       patchPolicy:
-        mode !== "fix"
+        mode !== "fix" && mode !== "long-horizon"
           ? "Audit mode records findings only."
           : isGeneratedOrArtifactTarget(target)
             ? "Generated or artifact target is not patched directly."
-            : "Fix mode may apply deterministic local patches with hash guard and rollback backup.",
+            : mode === "long-horizon"
+              ? "Long-Horizon Task Mode audits every queued target and may apply deterministic local patches with hash guard and rollback backup."
+              : "Fix mode may apply deterministic local patches with hash guard and rollback backup.",
     });
 
     const patchPhase = startPhase("apply-patch");
@@ -1655,7 +1664,10 @@ function main() {
 
     if (!formatCheck.ok) findings.push("Prettier reported formatting drift.");
 
-    if (mode === "fix" && !isGeneratedOrArtifactTarget(target)) {
+    if (
+      (mode === "fix" || mode === "long-horizon") &&
+      !isGeneratedOrArtifactTarget(target)
+    ) {
       const currentHash = sha256(fs.readFileSync(filePath));
       if (currentHash !== beforeHash)
         throw new Error(`Source hash changed before fix for ${target.file}`);

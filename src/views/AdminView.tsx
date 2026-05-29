@@ -95,6 +95,8 @@ type DebugRunDetails = DebugRunSummary & {
   unresolvedRisks?: string[];
 };
 
+type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
+
 const compactCommand = (command: string) =>
   command
     .replace(/^npm run --silent /, "npm ")
@@ -181,6 +183,76 @@ const getDebugHealth = (details: DebugRunDetails) => {
   };
 };
 
+const inferDebugRunDate = (run: Pick<DebugRunSummary, "id" | "startedAt">) => {
+  if (run.startedAt) return run.startedAt;
+  const match = run.id.match(
+    /^debug-(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})(?:-(\d{3}))?Z$/,
+  );
+  if (!match) return null;
+  const [, year, month, day, hour, minute, second, ms = "000"] = match;
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}.${ms}Z`;
+};
+
+const formatDebugRunTime = (
+  run: Pick<DebugRunSummary, "id" | "startedAt">,
+  style: "short" | "long" = "short",
+) => {
+  const value = inferDebugRunDate(run);
+  if (!value) return "Time unknown";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Time unknown";
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    year: style === "long" ? "numeric" : undefined,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: style === "long" ? "2-digit" : undefined,
+  });
+};
+
+const titleCaseToken = (value?: string | null) =>
+  String(value || "debug")
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((token) => token.charAt(0).toUpperCase() + token.slice(1))
+    .join(" ");
+
+const formatDebugRunTitle = (run: Pick<DebugRunSummary, "mode" | "scope">) => {
+  const mode = run.mode || "debug";
+  const modeLabel =
+    mode === "long-horizon"
+      ? "Long-Horizon Audit"
+      : mode === "scan"
+        ? "Source Scan"
+        : mode === "audit"
+          ? "Audit Pass"
+          : "Repair Audit";
+  const scopeLabel =
+    run.scope && run.scope !== "changed" ? titleCaseToken(run.scope) : null;
+  return scopeLabel ? `${modeLabel} · ${scopeLabel}` : modeLabel;
+};
+
+const debugStatusClasses = (status?: string | null) => {
+  const normalized = String(status || "").toLowerCase();
+  if (normalized === "completed") {
+    return "border-emerald-100 bg-emerald-50 text-emerald-700";
+  }
+  if (normalized === "running") {
+    return "border-blue-100 bg-blue-50 text-blue-700";
+  }
+  if (normalized.includes("fail")) {
+    return "border-red-100 bg-red-50 text-red-700";
+  }
+  if (normalized === "cancelled" || normalized === "interrupted") {
+    return "border-amber-100 bg-amber-50 text-amber-700";
+  }
+  return "border-zinc-200 bg-zinc-50 text-zinc-600";
+};
+
+const changeStatusLabel = (changed?: boolean) =>
+  changed ? "Changed" : "No source change";
+
 export function AdminView() {
   const { setActiveView, learnerName } = useStore();
   const logs = useLiveQuery(() =>
@@ -205,6 +277,8 @@ export function AdminView() {
   const [serverLogs, setServerLogs] = useState<
     { type: string; msg: string; time: number }[]
   >([]);
+  const [serverConsoleStatus, setServerConsoleStatus] =
+    useState<ServerConsoleStatus>("idle");
   const [debugRuns, setDebugRuns] = useState<DebugRunSummary[]>([]);
   const [activeDebugJobId, setActiveDebugJobId] = useState<string | null>(null);
   const [activeDebugRunId, setActiveDebugRunId] = useState<string | null>(null);
@@ -212,10 +286,13 @@ export function AdminView() {
     useState<DebugRunDetails | null>(null);
   const [debugRunsLoading, setDebugRunsLoading] = useState(false);
   const [debugActionPending, setDebugActionPending] = useState<
-    "stop" | "delete" | null
+    "stop" | "delete" | "delete-selected" | null
   >(null);
   const consoleRef = useRef<HTMLDivElement>(null);
   const auditEventsRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<"traces" | "console" | "debug">(
+    "traces",
+  );
 
   // Auto-scroll console
   useEffect(() => {
@@ -225,74 +302,128 @@ export function AdminView() {
   }, [serverLogs]);
 
   useEffect(() => {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    // When running under Vite dev server (e.g. port 5173), hardcode the server port to 3000
-    // When running under production build, use the same host and port.
+    if (activeTab !== "console") {
+      setServerConsoleStatus("idle");
+      return;
+    }
+
+    let cancelled = false;
+    let ws: WebSocket | null = null;
+    const httpProtocol =
+      window.location.protocol === "https:" ? "https:" : "http:";
+    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const hostPort = import.meta.env.DEV
       ? `${window.location.hostname}:3000`
       : window.location.host;
-    const ws = new WebSocket(`${protocol}//${hostPort}/ws/debug`);
+    const serverBaseUrl = `${httpProtocol}//${hostPort}`;
+    const appendLog = (entry: { type: string; msg: string; time: number }) => {
+      setServerLogs((prev) => [...prev.slice(-99), entry]);
+    };
 
-    ws.onmessage = (event) => {
+    const connect = async () => {
+      setServerConsoleStatus("connecting");
+
       try {
-        const data = JSON.parse(event.data);
-        setServerLogs((prev) => [
-          ...prev.slice(-99),
-          {
+        const response = await fetch(`${serverBaseUrl}/api/debug/runs`, {
+          cache: "no-store",
+          mode: import.meta.env.DEV ? "no-cors" : "same-origin",
+        });
+        if (!response.ok && response.type !== "opaque") {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch {
+        if (!cancelled) {
+          setServerConsoleStatus("unavailable");
+          appendLog({
+            type: "warn",
+            msg: "Server console is offline. Start the Tutor backend to stream live logs.",
+            time: Date.now(),
+          });
+        }
+        return;
+      }
+
+      if (cancelled) return;
+
+      ws = new WebSocket(`${wsProtocol}//${hostPort}/ws/debug`);
+
+      ws.onopen = () => {
+        if (!cancelled) {
+          setServerConsoleStatus("connected");
+        }
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          appendLog({
             type: data.type || "log",
             msg: data.msg || "",
             time: data.timestamp || Date.now(),
-          },
-        ]);
-      } catch (e) {
-        // Fallback for non-JSON logs
-        setServerLogs((prev) => [
-          ...prev.slice(-99),
-          {
+          });
+        } catch (e) {
+          appendLog({
             type: "log",
             msg: event.data,
             time: Date.now(),
-          },
-        ]);
-      }
+          });
+        }
+      };
+
+      ws.onerror = () => {
+        ws?.close();
+      };
+
+      ws.onclose = () => {
+        if (!cancelled) {
+          setServerConsoleStatus("unavailable");
+        }
+      };
     };
+
+    void connect();
 
     return () => {
-      ws.close();
+      cancelled = true;
+      ws?.close();
     };
-  }, []);
+  }, [activeTab]);
 
-  const [activeTab, setActiveTab] = useState<"traces" | "console" | "debug">(
-    "traces",
-  );
-
-  const loadDebugRuns = async () => {
-    setDebugRunsLoading(true);
+  const loadDebugRuns = async (options: { silent?: boolean } = {}) => {
+    if (!options.silent) setDebugRunsLoading(true);
     try {
       const response = await fetch("/api/debug/runs");
       const data = await response.json();
       const runs = (data.runs || []) as DebugRunSummary[];
+      const runningRunId =
+        data.activeRunId ||
+        runs.find((run) => String(run.status).toLowerCase() === "running")
+          ?.id ||
+        null;
       setDebugRuns(runs);
-      setActiveDebugJobId(data.activeRunId || null);
+      setActiveDebugJobId(runningRunId);
       setActiveDebugRunId((current) => {
-        if (data.activeRunId) return data.activeRunId;
+        if (runningRunId) return runningRunId;
         if (current && runs.some((run) => run.id === current)) return current;
         return runs[0]?.id || null;
       });
     } catch (error) {
       console.warn("[AdminView] Failed to load debug runs:", error);
     } finally {
-      setDebugRunsLoading(false);
+      if (!options.silent) setDebugRunsLoading(false);
     }
   };
 
   useEffect(() => {
     if (activeTab === "debug") {
       void loadDebugRuns();
-      const timer = window.setInterval(loadDebugRuns, 5000);
+      const timer = window.setInterval(
+        () => void loadDebugRuns({ silent: true }),
+        activeDebugJobId ? 1200 : 2200,
+      );
       return () => window.clearInterval(timer);
     }
-  }, [activeTab]);
+  }, [activeTab, activeDebugJobId]);
 
   useEffect(() => {
     if (!activeDebugRunId || activeTab !== "debug") return;
@@ -304,7 +435,33 @@ export function AdminView() {
           `/api/debug/runs/${encodeURIComponent(activeDebugRunId)}`,
         );
         const details = await response.json();
-        if (!cancelled) setDebugRunDetails(details);
+        if (!cancelled) {
+          setDebugRunDetails(details);
+          setDebugRuns((current) =>
+            current.map((run) =>
+              run.id === details.id
+                ? {
+                    ...run,
+                    status: details.status,
+                    startedAt: details.startedAt,
+                    finishedAt: details.finishedAt,
+                    mode: details.mode,
+                    scope: details.scope,
+                    targetCount: details.targetCount,
+                    completedCount: details.completedCount,
+                    changedCount: details.changedCount,
+                  }
+                : run,
+            ),
+          );
+          setActiveDebugJobId((current) =>
+            details.status === "running"
+              ? details.id
+              : current === details.id
+                ? null
+                : current,
+          );
+        }
       } catch (error) {
         if (!cancelled) {
           console.warn("[AdminView] Failed to load debug run details:", error);
@@ -350,6 +507,107 @@ export function AdminView() {
   ).length;
   const debugHealth = debugRunDetails ? getDebugHealth(debugRunDetails) : null;
   const liveAuditEvents = (debugRunDetails?.events || []).slice(-18);
+  const selectedDebugRun = debugRuns.find((run) => run.id === activeDebugRunId);
+  const serverConsoleLabel =
+    serverConsoleStatus === "connected"
+      ? "Connected"
+      : serverConsoleStatus === "connecting"
+        ? "Connecting"
+        : "Offline";
+  const serverConsoleTone =
+    serverConsoleStatus === "connected"
+      ? "border-green-200 bg-green-50 text-green-600"
+      : serverConsoleStatus === "connecting"
+        ? "border-blue-200 bg-blue-50 text-blue-600"
+        : "border-zinc-200 bg-zinc-50 text-zinc-500";
+  const stopTargetId =
+    activeDebugJobId ||
+    (debugRunDetails?.status === "running" ? debugRunDetails.id : null);
+
+  const handleDeleteAllDebugRuns = async () => {
+    if (!window.confirm("Are you sure you want to delete all debug history?")) {
+      return;
+    }
+    setDebugActionPending("delete");
+    try {
+      await fetch("/api/debug/runs", { method: "DELETE" });
+      setDebugRuns([]);
+      setActiveDebugRunId(null);
+      setDebugRunDetails(null);
+      setActiveDebugJobId(null);
+    } catch (e) {
+      console.error("Failed to delete debug runs:", e);
+    } finally {
+      setDebugActionPending(null);
+    }
+  };
+
+  const handleDeleteSelectedDebugRun = async () => {
+    if (!activeDebugRunId) return;
+    const title = selectedDebugRun
+      ? `${formatDebugRunTitle(selectedDebugRun)} from ${formatDebugRunTime(
+          selectedDebugRun,
+        )}`
+      : activeDebugRunId;
+    if (!window.confirm(`Delete ${title}?`)) return;
+    setDebugActionPending("delete-selected");
+    try {
+      await fetch(`/api/debug/runs/${encodeURIComponent(activeDebugRunId)}`, {
+        method: "DELETE",
+      });
+      setDebugRuns((current) =>
+        current.filter((run) => run.id !== activeDebugRunId),
+      );
+      setDebugRunDetails(null);
+      setActiveDebugJobId((current) =>
+        current === activeDebugRunId ? null : current,
+      );
+      setActiveDebugRunId((current) => {
+        const remaining = debugRuns.filter(
+          (run) => run.id !== activeDebugRunId,
+        );
+        return current === activeDebugRunId
+          ? remaining[0]?.id || null
+          : current;
+      });
+      void loadDebugRuns({ silent: true });
+    } catch (e) {
+      console.error("Failed to delete selected debug run:", e);
+    } finally {
+      setDebugActionPending(null);
+    }
+  };
+
+  const handleStopDebugging = async () => {
+    if (!stopTargetId) return;
+    setDebugActionPending("stop");
+    setActiveDebugJobId(null);
+    setDebugRuns((current) =>
+      current.map((run) =>
+        run.id === stopTargetId ? { ...run, status: "cancelled" } : run,
+      ),
+    );
+    if (debugRunDetails?.id === stopTargetId) {
+      setDebugRunDetails({
+        ...debugRunDetails,
+        status: "cancelled",
+        finishedAt: new Date().toISOString(),
+      });
+    }
+    try {
+      await fetch(
+        `/api/debug/runs/${encodeURIComponent(stopTargetId)}/cancel`,
+        {
+          method: "POST",
+        },
+      );
+      await loadDebugRuns({ silent: true });
+    } catch (e) {
+      console.error("Failed to stop debugging:", e);
+    } finally {
+      setDebugActionPending(null);
+    }
+  };
 
   return (
     <div className="w-full h-full bg-[#faf9f6] text-zinc-900 flex flex-col overflow-y-auto custom-scroll pt-20 md:pt-0 relative font-serif">
@@ -461,13 +719,25 @@ export function AdminView() {
                           : "Live Server Console"}
                     </h1>
                     {activeTab === "console" && (
-                      <div className="flex gap-1.5 items-center px-2 py-1 bg-green-50 text-green-600 border border-green-200 rounded-md shadow-sm">
+                      <div
+                        className={`flex gap-1.5 items-center px-2 py-1 border rounded-md shadow-sm ${serverConsoleTone}`}
+                      >
                         <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                          {serverConsoleStatus === "connected" && (
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          )}
+                          <span
+                            className={`relative inline-flex rounded-full h-2 w-2 ${
+                              serverConsoleStatus === "connected"
+                                ? "bg-green-500"
+                                : serverConsoleStatus === "connecting"
+                                  ? "bg-blue-500"
+                                  : "bg-zinc-400"
+                            }`}
+                          ></span>
                         </span>
                         <span className="text-[10px] font-mono uppercase font-bold tracking-wider">
-                          Connected
+                          {serverConsoleLabel}
                         </span>
                       </div>
                     )}
@@ -815,89 +1085,72 @@ export function AdminView() {
                       )}
                     </div>
                   ) : activeTab === "debug" ? (
-                    <div className="grid gap-6 font-sans xl:grid-cols-[340px_minmax(0,1fr)]">
-                      <section className="rounded-[24px] border border-zinc-200 bg-white p-4 shadow-sm xl:sticky xl:top-28 xl:self-start">
-                        <div className="mb-4 flex items-center justify-between gap-3">
-                          <div>
-                            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500">
-                              <Bug size={13} /> Debug Skill
+                    <div className="grid gap-6 font-sans xl:grid-cols-[380px_minmax(0,1fr)]">
+                      <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-[0_24px_70px_rgba(24,24,27,0.08)] xl:sticky xl:top-28 xl:self-start">
+                        <div className="mb-5 space-y-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500">
+                                <Bug size={13} /> Debug Skill
+                              </div>
+                              <h2 className="mt-2 text-xl font-serif font-medium text-zinc-900">
+                                Version Tracker
+                              </h2>
+                              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                                Live audit history with smooth status refresh.
+                              </p>
                             </div>
-                            <h2 className="mt-2 text-xl font-serif font-medium text-zinc-900">
-                              Version Tracker
-                            </h2>
-                          </div>
-                          <div className="flex flex-wrap items-center justify-end gap-2">
                             <motion.button
-                              whileTap={{ scale: 0.98 }}
+                              whileTap={{ scale: 0.96 }}
                               type="button"
-                              onClick={async () => {
-                                if (
-                                  window.confirm(
-                                    "Are you sure you want to delete all debug history?",
-                                  )
-                                ) {
-                                  setDebugActionPending("delete");
-                                  try {
-                                    await fetch("/api/debug/runs", {
-                                      method: "DELETE",
-                                    });
-                                    setDebugRuns([]);
-                                    setActiveDebugRunId(null);
-                                    setDebugRunDetails(null);
-                                    setActiveDebugJobId(null);
-                                  } catch (e) {
-                                    console.error(
-                                      "Failed to delete debug runs:",
-                                      e,
-                                    );
-                                  } finally {
-                                    setDebugActionPending(null);
-                                  }
-                                }
-                              }}
-                              disabled={debugActionPending !== null}
-                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-gradient-to-b from-red-500 to-red-600 px-3 text-[11px] font-semibold text-white shadow-[0_10px_24px_rgba(239,68,68,0.22)] transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(239,68,68,0.26)] disabled:cursor-wait disabled:opacity-60"
-                            >
-                              <Trash2 size={13} />
-                              Delete History
-                            </motion.button>
-                            <motion.button
-                              whileTap={{ scale: 0.98 }}
-                              type="button"
-                              onClick={async () => {
-                                setDebugActionPending("stop");
-                                try {
-                                  await fetch("/api/debug/stop", {
-                                    method: "POST",
-                                  });
-                                  loadDebugRuns();
-                                } catch (e) {
-                                  console.error("Failed to stop debugging:", e);
-                                } finally {
-                                  setDebugActionPending(null);
-                                }
-                              }}
-                              disabled={
-                                !activeDebugJobId || debugActionPending !== null
-                              }
-                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-amber-200 bg-gradient-to-b from-amber-100 to-orange-100 px-3 text-[11px] font-semibold text-orange-800 shadow-[0_10px_22px_rgba(251,146,60,0.18)] transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:border-orange-300 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              <Square size={12} />
-                              Stop Debugging
-                            </motion.button>
-                            <motion.button
-                              whileTap={{ scale: 0.98 }}
-                              type="button"
-                              onClick={loadDebugRuns}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950 text-white shadow-[0_10px_24px_rgba(0,0,0,0.16)] transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:bg-zinc-800"
+                              onClick={() => void loadDebugRuns()}
+                              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950 text-white shadow-[0_14px_26px_rgba(0,0,0,0.16)] transition-[background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:bg-zinc-800"
                               aria-label="Refresh debug runs"
                             >
                               <RefreshCw
-                                size={15}
+                                size={16}
                                 className={
                                   debugRunsLoading ? "animate-spin" : ""
                                 }
                               />
+                            </motion.button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <motion.button
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={handleDeleteSelectedDebugRun}
+                              disabled={
+                                !activeDebugRunId || debugActionPending !== null
+                              }
+                              className="inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 text-[11px] font-semibold text-zinc-700 shadow-sm transition-[background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:bg-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-45"
+                            >
+                              <Trash2 size={13} />
+                              <span className="truncate">Delete Selected</span>
+                            </motion.button>
+                            <motion.button
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={handleDeleteAllDebugRuns}
+                              disabled={debugActionPending !== null}
+                              className="inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-2xl border border-red-200 bg-gradient-to-b from-red-500 to-red-600 px-3 text-[11px] font-semibold text-white shadow-[0_14px_30px_rgba(239,68,68,0.22)] transition-[background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgba(239,68,68,0.26)] disabled:cursor-wait disabled:opacity-60"
+                            >
+                              <Trash2 size={13} />
+                              <span className="truncate">Delete History</span>
+                            </motion.button>
+                            <motion.button
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={handleStopDebugging}
+                              disabled={
+                                !stopTargetId || debugActionPending !== null
+                              }
+                              className="col-span-2 inline-flex h-10 items-center justify-center gap-1.5 rounded-2xl border border-amber-200 bg-gradient-to-b from-amber-50 to-orange-100 px-3 text-[11px] font-semibold text-orange-800 shadow-[0_12px_26px_rgba(251,146,60,0.16)] transition-[background-color,border-color,box-shadow,transform,opacity] hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-[0_16px_34px_rgba(251,146,60,0.2)] disabled:cursor-not-allowed disabled:opacity-45"
+                            >
+                              <Square size={12} />
+                              {debugActionPending === "stop"
+                                ? "Stopping..."
+                                : "Stop Debugging"}
                             </motion.button>
                           </div>
                         </div>
@@ -923,11 +1176,12 @@ export function AdminView() {
                               hidden: {},
                               show: { transition: { staggerChildren: 0.05 } },
                             }}
-                            className="space-y-2"
+                            className="space-y-3"
                           >
                             {debugRuns.map((run, index) => (
                               <motion.button
                                 key={run.id}
+                                layout
                                 custom={index}
                                 variants={{
                                   hidden: {
@@ -947,27 +1201,60 @@ export function AdminView() {
                                   },
                                 }}
                                 type="button"
-                                onClick={() => setActiveDebugRunId(run.id)}
-                                className={`w-full rounded-2xl border p-3 text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ${activeDebugRunId === run.id ? "border-blue-200 bg-blue-50 shadow-[0_14px_30px_rgba(59,130,246,0.16)]" : "border-zinc-200 bg-white hover:-translate-y-0.5 hover:bg-zinc-50 hover:shadow-sm"}`}
+                                onClick={() => {
+                                  setActiveDebugRunId(run.id);
+                                  if (debugRunDetails?.id !== run.id) {
+                                    setDebugRunDetails(null);
+                                  }
+                                }}
+                                className={`w-full rounded-3xl border p-3.5 text-left transition-[background-color,border-color,box-shadow,transform,opacity] ${activeDebugRunId === run.id ? "border-blue-200 bg-blue-50 shadow-[0_18px_34px_rgba(59,130,246,0.16)]" : "border-zinc-200 bg-white hover:-translate-y-0.5 hover:bg-zinc-50 hover:shadow-sm"}`}
                               >
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="truncate font-mono text-[11px] font-semibold text-zinc-800">
-                                    {run.id}
+                                <div className="flex items-start justify-between gap-3">
+                                  <span className="min-w-0">
+                                    <span className="block truncate text-sm font-semibold text-zinc-900">
+                                      {formatDebugRunTitle(run)}
+                                    </span>
+                                    <span className="mt-0.5 block truncate font-mono text-[10px] text-zinc-500">
+                                      {formatDebugRunTime(run)} ·{" "}
+                                      {run.completedCount}/
+                                      {run.targetCount || 0} targets
+                                    </span>
                                   </span>
                                   <span
-                                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${run.status === "completed" ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : run.status?.includes("fail") ? "bg-red-50 text-red-700 border border-red-100" : "bg-amber-50 text-amber-700 border border-amber-100"}`}
+                                    className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${debugStatusClasses(run.status)}`}
                                   >
                                     {run.status || "unknown"}
                                   </span>
                                 </div>
-                                <div className="mt-2 grid grid-cols-3 gap-2 text-center text-[11px] text-zinc-500">
-                                  <span className="rounded-lg bg-zinc-50 px-2 py-1">
-                                    {run.completedCount}/{run.targetCount}
-                                  </span>
-                                  <span className="rounded-lg bg-zinc-50 px-2 py-1">
+                                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-100">
+                                  <motion.span
+                                    className="block h-full rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-orange-400"
+                                    initial={false}
+                                    animate={{
+                                      width: `${
+                                        run.targetCount
+                                          ? Math.min(
+                                              100,
+                                              (run.completedCount /
+                                                run.targetCount) *
+                                                100,
+                                            )
+                                          : run.status === "completed"
+                                            ? 100
+                                            : 0
+                                      }%`,
+                                    }}
+                                    transition={{
+                                      duration: 0.45,
+                                      ease: [0.16, 1, 0.3, 1],
+                                    }}
+                                  />
+                                </div>
+                                <div className="mt-3 grid grid-cols-2 gap-2 text-center text-[11px] text-zinc-500">
+                                  <span className="rounded-xl bg-zinc-50 px-2 py-1.5">
                                     {run.changedCount} changed
                                   </span>
-                                  <span className="rounded-lg bg-zinc-50 px-2 py-1">
+                                  <span className="rounded-xl bg-zinc-50 px-2 py-1.5">
                                     {run.mode || "fix"}
                                   </span>
                                 </div>
@@ -977,33 +1264,62 @@ export function AdminView() {
                         )}
                       </section>
 
-                      <section className="rounded-[24px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <section className="overflow-hidden rounded-[28px] border border-zinc-200 bg-white p-5 shadow-[0_24px_70px_rgba(24,24,27,0.08)]">
                         {!debugRunDetails ? (
-                          <div className="flex min-h-[360px] items-center justify-center text-sm text-zinc-500">
-                            Select a debug run to inspect its change ledger.
+                          <div className="flex min-h-[360px] items-center justify-center px-6 text-center text-sm text-zinc-500">
+                            {selectedDebugRun ? (
+                              <motion.div
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="max-w-sm"
+                              >
+                                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-blue-700">
+                                  <RefreshCw
+                                    size={18}
+                                    className="animate-spin"
+                                  />
+                                </div>
+                                <div className="font-serif text-lg font-medium text-zinc-900">
+                                  Loading{" "}
+                                  {formatDebugRunTitle(selectedDebugRun)}
+                                </div>
+                                <div className="mt-1 text-xs leading-relaxed text-zinc-500">
+                                  {formatDebugRunTime(selectedDebugRun, "long")}{" "}
+                                  · preparing the component ledger.
+                                </div>
+                              </motion.div>
+                            ) : (
+                              "Select a debug run to inspect its change ledger."
+                            )}
                           </div>
                         ) : (
-                          <div className="space-y-6">
+                          <motion.div
+                            key={debugRunDetails.id}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                              duration: 0.24,
+                              ease: [0.16, 1, 0.3, 1],
+                            }}
+                            className="space-y-6"
+                          >
                             <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 2xl:flex-row 2xl:items-start 2xl:justify-between">
-                              <div>
+                              <div className="min-w-0">
                                 <div className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">
                                   {debugRunDetails.scope || "all"} ·{" "}
                                   {debugRunDetails.mode || "fix"}
                                 </div>
-                                <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
-                                  {debugRunDetails.id}
+                                <h2 className="mt-2 max-w-3xl text-3xl font-serif font-medium leading-tight text-zinc-900">
+                                  {formatDebugRunTitle(debugRunDetails)}
                                 </h2>
+                                <div className="mt-1 font-mono text-[11px] text-zinc-500">
+                                  Started{" "}
+                                  {formatDebugRunTime(debugRunDetails, "long")}{" "}
+                                  · {debugRunDetails.id}
+                                </div>
                                 <div className="mt-3 flex flex-wrap items-center gap-2">
                                   <span
-                                    className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${
-                                      debugRunDetails.status === "completed"
-                                        ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
-                                        : debugRunDetails.status?.includes(
-                                              "fail",
-                                            )
-                                          ? "border border-red-100 bg-red-50 text-red-700"
-                                          : "border border-amber-100 bg-amber-50 text-amber-700"
-                                    }`}
+                                    className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${debugStatusClasses(debugRunDetails.status)}`}
                                   >
                                     {debugRunDetails.status || "unknown"}
                                   </span>
@@ -1110,10 +1426,10 @@ export function AdminView() {
                                             : "Stable"}
                                       </div>
                                     </div>
-                                    <div className="relative h-12 w-28 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50">
+                                    <div className="relative h-12 w-32 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50">
                                       <motion.div
-                                        className={`absolute bottom-0 left-0 top-0 ${debugHealth.trend === "down" ? "bg-red-500" : "bg-blue-600"}`}
-                                        initial={{ width: 0 }}
+                                        className={`absolute bottom-0 left-0 top-0 ${debugHealth.trend === "down" ? "bg-gradient-to-r from-red-500 to-orange-400" : "bg-gradient-to-r from-blue-600 via-violet-500 to-emerald-400"}`}
+                                        initial={false}
                                         animate={{
                                           width: `${Math.max(6, debugHealth.score)}%`,
                                         }}
@@ -1144,15 +1460,15 @@ export function AdminView() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-zinc-100">
+                                <div className="mt-4 h-2 overflow-hidden rounded-full bg-zinc-100">
                                   <motion.div
-                                    className="h-full rounded-full bg-zinc-950"
-                                    initial={{ width: 0 }}
+                                    className="h-full rounded-full bg-gradient-to-r from-zinc-950 via-blue-600 to-emerald-400"
+                                    initial={false}
                                     animate={{
                                       width: `${Math.round(debugHealth.completion * 100)}%`,
                                     }}
                                     transition={{
-                                      duration: 0.5,
+                                      duration: 0.7,
                                       ease: [0.16, 1, 0.3, 1],
                                     }}
                                   />
@@ -1238,10 +1554,10 @@ export function AdminView() {
                                         delay: Math.min(index * 0.03, 0.24),
                                       }}
                                       key={`${component.file}-${index}`}
-                                      className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm"
+                                      className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm"
                                     >
                                       <details className="group" open={false}>
-                                        <summary className="flex cursor-pointer list-none flex-col gap-3 rounded-xl outline-none transition-colors hover:bg-white/60 sm:flex-row sm:items-start sm:justify-between">
+                                        <summary className="flex cursor-pointer list-none flex-col gap-3 rounded-2xl outline-none transition-colors hover:bg-white/60 sm:flex-row sm:items-start sm:justify-between">
                                           <div className="min-w-0">
                                             <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
                                               {component.changed ? (
@@ -1259,12 +1575,12 @@ export function AdminView() {
                                                 component.target?.kind ||
                                                 "component"}
                                             </div>
-                                            <h3 className="mt-1 truncate text-lg font-semibold text-zinc-900">
+                                            <h3 className="mt-1 text-lg font-semibold leading-tight text-zinc-900">
                                               {component.componentName ||
                                                 component.target?.name ||
                                                 component.file}
                                             </h3>
-                                            <div className="mt-1 break-all font-mono text-[11px] text-zinc-500">
+                                            <div className="mt-1 break-words font-mono text-[11px] leading-5 text-zinc-500">
                                               {component.file}
                                             </div>
                                             {(component.technology || [])
@@ -1284,47 +1600,55 @@ export function AdminView() {
                                             )}
                                           </div>
                                           <span
-                                            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${component.changed ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-white text-zinc-600 border border-zinc-200"}`}
+                                            className={`inline-flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] font-semibold shadow-sm ${component.changed ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-zinc-200 bg-white text-zinc-600"}`}
                                           >
-                                            {component.changed
-                                              ? "Changed"
-                                              : "No source change"}
+                                            {changeStatusLabel(
+                                              component.changed,
+                                            )}
                                             <ChevronRight
                                               size={13}
-                                              className="ml-1 inline-block transition-transform group-open:rotate-90"
+                                              className="transition-transform group-open:rotate-90"
                                             />
                                           </span>
                                         </summary>
 
-                                        <div className="mt-4 grid gap-3 lg:grid-cols-3">
-                                          <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                                        <div className="mt-5 grid gap-4 2xl:grid-cols-3">
+                                          <div className="min-w-0 rounded-2xl border border-zinc-200 bg-white p-4">
                                             <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
                                               What Changed
                                             </div>
-                                            <ul className="space-y-1 text-sm leading-relaxed text-zinc-700">
+                                            <ul className="space-y-2 text-[13px] leading-6 text-zinc-700">
                                               {(
                                                 component.whatChanged ||
                                                 component.changes || [
                                                   "No source patch was applied.",
                                                 ]
                                               ).map((item) => (
-                                                <li key={item}>{item}</li>
+                                                <li
+                                                  key={item}
+                                                  className="flex gap-2"
+                                                >
+                                                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-300" />
+                                                  <span className="min-w-0 break-words">
+                                                    {item}
+                                                  </span>
+                                                </li>
                                               ))}
                                             </ul>
                                           </div>
-                                          <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                                          <div className="min-w-0 rounded-2xl border border-zinc-200 bg-white p-4">
                                             <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
                                               Why
                                             </div>
-                                            <p className="text-sm leading-relaxed text-zinc-700">
+                                            <p className="break-words text-[13px] leading-6 text-zinc-700">
                                               {friendlyWhy(component)}
                                             </p>
                                           </div>
-                                          <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                                          <div className="min-w-0 rounded-2xl border border-zinc-200 bg-white p-4">
                                             <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
                                               Improvements
                                             </div>
-                                            <ul className="space-y-1 text-sm leading-relaxed text-zinc-700">
+                                            <ul className="space-y-2 text-[13px] leading-6 text-zinc-700">
                                               {visibleAuditItems(
                                                 component,
                                                 component.improvements || [
@@ -1334,7 +1658,15 @@ export function AdminView() {
                                               )
                                                 .slice(0, 4)
                                                 .map((item) => (
-                                                  <li key={item}>{item}</li>
+                                                  <li
+                                                    key={item}
+                                                    className="flex gap-2"
+                                                  >
+                                                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-300" />
+                                                    <span className="min-w-0 break-words">
+                                                      {item}
+                                                    </span>
+                                                  </li>
                                                 ))}
                                             </ul>
                                           </div>
@@ -1511,7 +1843,7 @@ export function AdminView() {
                                 </div>
                               </div>
                             )}
-                          </div>
+                          </motion.div>
                         )}
                       </section>
                     </div>

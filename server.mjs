@@ -3,7 +3,10 @@ import dotenv from "dotenv";
 import express from "express";
 import * as fs from "fs";
 import path from "path";
-import { spawn } from "child_process";
+import {
+  execFileSync,
+  spawn
+} from "child_process";
 import compression from "compression";
 import OpenAI from "openai";
 import multer from "multer";
@@ -353,6 +356,20 @@ async function startServer() {
   };
   const debugRunsDir = path.join(process.cwd(), "brain/debug/runs");
   let activeDebugJob = null;
+  const appendDebugRunEvent = (runId, type, message, data = {}) => {
+    const runDir = path.join(debugRunsDir, runId);
+    if (!fs.existsSync(runDir)) return;
+    fs.appendFileSync(
+      path.join(runDir, "events.ndjson"),
+      `${JSON.stringify({
+        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        type,
+        message,
+        data
+      })}
+`
+    );
+  };
   const readJsonFile = (file) => {
     try {
       return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -467,6 +484,47 @@ async function startServer() {
     writeJsonFile(path.join(runDir, "summary.json"), finished);
     writeJsonFile(path.join(runDir, "run.json"), finished);
   };
+  const stopExternalDebugProcesses = (runId) => {
+    let killed = 0;
+    try {
+      const output = execFileSync("pgrep", ["-fl", runId], {
+        encoding: "utf8"
+      });
+      for (const line of output.split("\n").filter(Boolean)) {
+        const match = line.match(/^(\d+)\s+(.+)$/);
+        if (!match) continue;
+        const pid = Number(match[1]);
+        const command = match[2] || "";
+        const isDebugRunner = command.includes("brain:debug") || command.includes("debug-runner") || command.includes("--resume");
+        if (!Number.isFinite(pid) || !isDebugRunner) continue;
+        try {
+          process.kill(pid, "SIGTERM");
+          killed += 1;
+        } catch (error) {
+          console.warn(`[DEBUG] Failed to stop process ${pid}:`, error);
+        }
+      }
+    } catch {
+      return killed;
+    }
+    return killed;
+  };
+  const stopDebugRun = (runId) => {
+    let stopped = false;
+    if (activeDebugJob?.id === runId) {
+      activeDebugJob.child.kill("SIGTERM");
+      activeDebugJob = null;
+      stopped = true;
+    }
+    const externalCount = stopExternalDebugProcesses(runId);
+    stopped = stopped || externalCount > 0;
+    persistDebugExit(runId, null);
+    appendDebugRunEvent(runId, "run-cancelled", `Debug run ${runId} stopped`, {
+      stopped,
+      externalCount
+    });
+    return { stopped, externalCount };
+  };
   const listDebugRuns = () => {
     if (!fs.existsSync(debugRunsDir)) return [];
     return fs.readdirSync(debugRunsDir, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => {
@@ -493,13 +551,12 @@ async function startServer() {
     });
   });
   app.delete("/api/debug/runs", (_req, res) => {
-    if (activeDebugJob) {
-      activeDebugJob.child.kill("SIGTERM");
-      persistDebugExit(activeDebugJob.id, null);
-      activeDebugJob = null;
-    }
     if (fs.existsSync(debugRunsDir)) {
       for (const entry of fs.readdirSync(debugRunsDir)) {
+        const summary = summarizeDebugRun(entry);
+        if (summary.status === "running" || activeDebugJob?.id === entry) {
+          stopDebugRun(entry);
+        }
         fs.rmSync(path.join(debugRunsDir, entry), {
           recursive: true,
           force: true
@@ -507,6 +564,19 @@ async function startServer() {
       }
     }
     res.json({ ok: true, deleted: true });
+  });
+  app.delete("/api/debug/runs/:id", (req, res) => {
+    const safeId = path.basename(req.params.id);
+    const runDir = path.join(debugRunsDir, safeId);
+    if (!fs.existsSync(runDir)) {
+      return res.status(404).json({ error: "Debug run not found." });
+    }
+    const summary = summarizeDebugRun(safeId);
+    if (summary.status === "running" || activeDebugJob?.id === safeId) {
+      stopDebugRun(safeId);
+    }
+    fs.rmSync(runDir, { recursive: true, force: true });
+    res.json({ ok: true, deleted: safeId });
   });
   app.get("/api/debug/runs/:id", (req, res) => {
     const safeId = path.basename(req.params.id);
@@ -527,8 +597,13 @@ async function startServer() {
         activeRunId: activeDebugJob.id
       });
     const requestedMode = String(req.body?.mode || "fix");
-    const mode = ["audit", "fix", "scan"].includes(requestedMode) ? requestedMode : "fix";
-    const scope = String(req.body?.scope || "changed").replace(/[^a-zA-Z0-9_./:-]/g, "") || "changed";
+    const mode = ["audit", "fix", "scan", "long-horizon"].includes(
+      requestedMode
+    ) ? requestedMode : "fix";
+    const scope = (mode === "long-horizon" ? "all" : String(req.body?.scope || "changed").replace(
+      /[^a-zA-Z0-9_./:-]/g,
+      ""
+    )) || "changed";
     const runId = `debug-${(/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-")}`;
     seedDebugRun(runId, mode, scope);
     const child = spawn(
@@ -569,20 +644,22 @@ async function startServer() {
   });
   app.post("/api/debug/runs/:id/cancel", (req, res) => {
     const safeId = path.basename(req.params.id);
-    if (!activeDebugJob || activeDebugJob.id !== safeId)
-      return res.status(404).json({ error: "No active debug run with that id." });
-    activeDebugJob.child.kill("SIGTERM");
-    persistDebugExit(safeId, null);
-    activeDebugJob = null;
-    res.json({ ok: true, cancelled: safeId });
+    const runDir = path.join(debugRunsDir, safeId);
+    if (!fs.existsSync(runDir))
+      return res.status(404).json({ error: "Debug run not found." });
+    const result = stopDebugRun(safeId);
+    res.json({ ok: true, cancelled: safeId, ...result });
   });
   app.post("/api/debug/stop", (_req, res) => {
-    if (!activeDebugJob) return res.json({ ok: true, stopped: null });
-    const stopped = activeDebugJob.id;
-    activeDebugJob.child.kill("SIGTERM");
-    persistDebugExit(stopped, null);
-    activeDebugJob = null;
-    res.json({ ok: true, stopped });
+    if (activeDebugJob) {
+      const stopped = activeDebugJob.id;
+      const result2 = stopDebugRun(stopped);
+      return res.json({ ok: true, stopped, ...result2 });
+    }
+    const running = listDebugRuns().find((run) => run.status === "running");
+    if (!running) return res.json({ ok: true, stopped: null });
+    const result = stopDebugRun(running.id);
+    res.json({ ok: true, stopped: running.id, ...result });
   });
   app.get("/api/pricing", async (_req, res) => {
     const openRouter = await fetchOpenRouterPricing();

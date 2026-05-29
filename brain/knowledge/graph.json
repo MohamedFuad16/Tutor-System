@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T23:28:02.702Z",
+    "generatedAt": "2026-05-29T05:16:01.504Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "e87720b8c7911337554502014fbf63ae2d009701",
+      "commit": "13886f2ea49e03d484df9bccb3b8059401556418",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "bbdf281ff88a05e043e4c500dfe3dc5698c543a1926da64ec8744aa8d0ec1f44"
+    "sourceHash": "a6b6fff6527080c612e2283d574e0ac2c830cf4c0db0b652eaea330aea44940f"
   },
   "nodes": [
     {
@@ -42,7 +42,7 @@
       "file": "src/views/AdminView.tsx",
       "symbol": "AdminView",
       "loc": {
-        "line": 184,
+        "line": 256,
         "column": 1
       }
     },
@@ -64,7 +64,7 @@
       "file": "src/components/ChatPanel.tsx",
       "symbol": "AnimatedMarkdown",
       "loc": {
-        "line": 1709,
+        "line": 1708,
         "column": 7
       }
     },
@@ -141,7 +141,7 @@
       "file": "src/components/ChatPanel.tsx",
       "symbol": "ChatPanel",
       "loc": {
-        "line": 2038,
+        "line": 2037,
         "column": 1
       }
     },
@@ -295,7 +295,7 @@
       "file": "src/components/ChatPanel.tsx",
       "symbol": "MessageItem",
       "loc": {
-        "line": 1798,
+        "line": 1797,
         "column": 7
       }
     },
@@ -306,7 +306,7 @@
       "file": "src/components/ChatPanel.tsx",
       "symbol": "MessageUsageFooter",
       "loc": {
-        "line": 1770,
+        "line": 1769,
         "column": 7
       }
     },
@@ -592,7 +592,7 @@
       "file": "src/components/ChatPanel.tsx",
       "symbol": "ThinkingPanel",
       "loc": {
-        "line": 1413,
+        "line": 1412,
         "column": 7
       }
     },
@@ -727,6 +727,14 @@
       }
     },
     {
+      "id": "endpoint:ANY /$%7BserverBaseUrl%7D/api/debug/runs",
+      "type": "endpoint",
+      "label": "ANY /$%7BserverBaseUrl%7D/api/debug/runs",
+      "metadata": {
+        "discoveredFromClient": true
+      }
+    },
+    {
       "id": "endpoint:ANY /api/chat",
       "type": "endpoint",
       "label": "ANY /api/chat",
@@ -770,9 +778,9 @@
       }
     },
     {
-      "id": "endpoint:ANY /api/debug/stop",
+      "id": "endpoint:ANY /api/debug/runs/$%7BencodeURIComponent(stopTargetId)%7D/cancel",
       "type": "endpoint",
-      "label": "ANY /api/debug/stop",
+      "label": "ANY /api/debug/runs/$%7BencodeURIComponent(stopTargetId)%7D/cancel",
       "metadata": {
         "discoveredFromClient": true
       }
@@ -859,6 +867,16 @@
       "metadata": {
         "method": "DELETE",
         "path": "/api/debug/runs"
+      }
+    },
+    {
+      "id": "endpoint:DELETE /api/debug/runs/:id",
+      "type": "endpoint",
+      "label": "DELETE /api/debug/runs/:id",
+      "file": "server.ts",
+      "metadata": {
+        "method": "DELETE",
+        "path": "/api/debug/runs/:id"
       }
     },
     {
@@ -1056,9 +1074,9 @@
       "type": "file",
       "label": "brain/debug/debug-runner.ts",
       "file": "brain/debug/debug-runner.ts",
-      "hash": "ecbedd044e6fea6a72a50421906f117948f3f96d6f02207427c8af97b487a69f",
+      "hash": "9659a6724603682d2f724c58e02a24d4c08e705429a6838b9ec0c29bdf2f189c",
       "metadata": {
-        "lines": 1950
+        "lines": 1962
       }
     },
     {
@@ -1268,9 +1286,9 @@
       "type": "file",
       "label": "server.ts",
       "file": "server.ts",
-      "hash": "b310ae3f865486285db94799add6a177d579ab792c10e7339e72fc16e1eddf96",
+      "hash": "5d46c360774e6434e265cfdea1f4a51f0eddb46f55f05e6bdb0a4b9a61310279",
       "metadata": {
-        "lines": 2082
+        "lines": 2170
       }
     },
     {
@@ -1368,9 +1386,9 @@
       "type": "file",
       "label": "src/components/ChatPanel.tsx",
       "file": "src/components/ChatPanel.tsx",
-      "hash": "364ab4b0e04e7c32dd840c78c25e954b12fd75618739dc6e4bfda0abb7b207f2",
+      "hash": "a695cff19999b975da5733e0d6932936ca01571bfa3d101a7b0a0a47b3f987cf",
       "metadata": {
-        "lines": 4090
+        "lines": 4089
       }
     },
     {
@@ -1398,9 +1416,9 @@
       "type": "file",
       "label": "src/components/PatternCard.tsx",
       "file": "src/components/PatternCard.tsx",
-      "hash": "37a4c5589a104d28e703528cba97e6768c3572e6f7968ac7ca0f98e9e21ce1eb",
+      "hash": "b56824c917d945d70d5c926117dc5772ccfeee37c1964bed7aeb6e11598d9106",
       "metadata": {
-        "lines": 220
+        "lines": 219
       }
     },
     {
@@ -1499,7 +1517,7 @@
       "type": "file",
       "label": "src/lib/tutorBook.json",
       "file": "src/lib/tutorBook.json",
-      "hash": "8776928f9c2016ef5188eed325f3f36794f9651b13bd64af72bc89f5d74a4ef8",
+      "hash": "9b2db433af73cc5061b50d5b5a28311a0bb479b30a463eaa0949aa16e0f815af",
       "metadata": {
         "lines": 55
       }
@@ -1679,9 +1697,9 @@
       "type": "file",
       "label": "src/views/AdminView.tsx",
       "file": "src/views/AdminView.tsx",
-      "hash": "7474db023a2e802d9e4ab923a710ed6e78e9d2e80552f0a1dd86bc95bb996398",
+      "hash": "41726e640a5a42f261683693ebaec57722bc055757588d7b3b6b26beef6d779b",
       "metadata": {
-        "lines": 1566
+        "lines": 1898
       }
     },
     {
@@ -1753,7 +1771,7 @@
       "file": "src/components/ChatPanel.tsx",
       "symbol": "useSmoothStreamingText",
       "loc": {
-        "line": 1636,
+        "line": 1635,
         "column": 1
       }
     },
@@ -2388,6 +2406,17 @@
       "id": "01749e9890a50b19ca14"
     },
     {
+      "type": "servedBy",
+      "source": "websocket:/ws/debug",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1926
+      },
+      "id": "01957113fe9c3a6fd6c8"
+    },
+    {
       "type": "renders",
       "source": "file:src/components/StatusBadge.tsx",
       "target": "component:SuccessIcon",
@@ -2419,28 +2448,6 @@
         "text": "activeView === analytics"
       },
       "id": "02183df120da6f232606"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:GET /api/debug/runs/:id",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 499
-      },
-      "id": "022579119b10ca1fe3c7"
-    },
-    {
-      "type": "definedIn",
-      "source": "component:AnimatedMarkdown",
-      "target": "file:src/components/ChatPanel.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 1709
-      },
-      "id": "0241c2cf8d083bdbf302"
     },
     {
       "type": "definedIn",
@@ -2524,6 +2531,17 @@
       "id": "03f5a860c7260c731f0b"
     },
     {
+      "type": "servedBy",
+      "source": "websocket:/api/voice-agent",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1922
+      },
+      "id": "041b7c38e8483c11d3b1"
+    },
+    {
       "type": "callsEndpoint",
       "source": "file:src/views/StudyView.tsx",
       "target": "endpoint:ANY /api/learning-book-update",
@@ -2534,6 +2552,18 @@
         "text": "fetch(\"/api/learning-book-update\", {\n          method: \"POST\",\n          headers: {\n            \"Content-Type\": \"application/json\",\n            ...(apiKey && { Authorization: `Bear"
       },
       "id": "044ab768d68b906532d8"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setIsVoiceActive",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2070,
+        "text": "(state) => state.setIsVoiceActive"
+      },
+      "id": "04725acbdb5e82325e5c"
     },
     {
       "type": "readsStore",
@@ -2571,6 +2601,17 @@
       "id": "052428d7c9209b145d39"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/documents/ingest",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 696
+      },
+      "id": "05381d8875240cbaf115"
+    },
+    {
       "type": "imports",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "file:src/types.ts",
@@ -2593,6 +2634,18 @@
         "text": "illusionDetector"
       },
       "id": "055411ffb2bb2ec00749"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/AdminView.tsx",
+      "target": "databaseTable:traceLogs",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/AdminView.tsx",
+        "line": 259,
+        "text": "db.traceLogs.orderBy(\"timestamp\")"
+      },
+      "id": "05bf3f6bfcadd3ef9344"
     },
     {
       "type": "usesState",
@@ -2630,6 +2683,30 @@
       "id": "06e92c98a1d5bfd4de72"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:ttsVoice",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2051,
+        "text": "(state) => state.ttsVoice"
+      },
+      "id": "073f1f8db8f5dc85381c"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:activeProject",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2045,
+        "text": "(state) => state.activeProject"
+      },
+      "id": "0740901449a7c872c78a"
+    },
+    {
       "type": "wraps",
       "source": "file:src/App.tsx",
       "target": "route:admin",
@@ -2663,17 +2740,6 @@
         "text": "db.traceLogs.add({\n        id: traceId,\n        timestamp: Date.now(),\n        action,\n        payload,\n        llmExplanation: explanation,\n      })"
       },
       "id": "07dae002c11f5290bcc7"
-    },
-    {
-      "type": "definedIn",
-      "source": "component:AdminView",
-      "target": "file:src/views/AdminView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/AdminView.tsx",
-        "line": 184
-      },
-      "id": "080f6f05507896a0e390"
     },
     {
       "type": "renders",
@@ -2710,6 +2776,18 @@
       "id": "087291d388a8abfaa257"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setMessages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2069,
+        "text": "(state) => state.setMessages"
+      },
+      "id": "087edbd2724e093b1bca"
+    },
+    {
       "type": "definedIn",
       "source": "component:SubmittedIcon",
       "target": "file:src/components/StatusBadge.tsx",
@@ -2719,18 +2797,6 @@
         "line": 148
       },
       "id": "08a38220f04a8ae77344"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setMessages",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2070,
-        "text": "(state) => state.setMessages"
-      },
-      "id": "094a220f3cc149cdbf69"
     },
     {
       "type": "dependsOn",
@@ -2743,6 +2809,18 @@
         "text": "import {\n  Brain,\n  Search,\n  BookOpen,\n  Layers,\n  Zap,\n  Clock,\n  AlertTriangle,\n  Code,\n  Menu,\n  X,\n  ChevronRight,\n  ChevronDown,\n  RefreshCw,\n  Trash2,\n  MessageSquare,\n  Highlighter,\n  Underline,\n  Strikethrough,\n  StickyNote,\n  Settings,\n  Mic,\n  Activity,\n  ArrowUp,\n  Folder,\n  Check,\n} from \"lucide-react\";"
       },
       "id": "095154a3b567e63a9b39"
+    },
+    {
+      "type": "dependsOn",
+      "source": "file:server.ts",
+      "target": "package:@google/genai",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 14,
+        "text": "import { GoogleGenAI } from \"@google/genai\";"
+      },
+      "id": "095abd4565a949ca27bc"
     },
     {
       "type": "imports",
@@ -2805,6 +2883,18 @@
       "id": "0aa0b8ad53b9834c9d2e"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:recordChatUsage",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2056,
+        "text": "(state) => state.recordChatUsage"
+      },
+      "id": "0ae7da20e40710081e8b"
+    },
+    {
       "type": "mutates",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "storeField:setTtsVoice",
@@ -2814,18 +2904,6 @@
         "text": "setTtsVoice"
       },
       "id": "0b02edb310b568a01e87"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setPdfPage",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2067,
-        "text": "(state) => state.setPdfPage"
-      },
-      "id": "0b11a3af0e9aa84974c5"
     },
     {
       "type": "exports",
@@ -2933,6 +3011,18 @@
         "line": 891
       },
       "id": "0d249e18e46210cf0828"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setActiveProject",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2046,
+        "text": "(state) => state.setActiveProject"
+      },
+      "id": "0d4d91f08cbffe51b0fd"
     },
     {
       "type": "dependsOn",
@@ -3051,6 +3141,18 @@
       "id": "100e77626a3ff56fa366"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setPdfTotalPages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2067,
+        "text": "(state) => state.setPdfTotalPages"
+      },
+      "id": "102d7c470abd3a266ac3"
+    },
+    {
       "type": "readsDatabase",
       "source": "file:src/memory/zpd.calculator.ts",
       "target": "databaseTable:concepts",
@@ -3073,18 +3175,6 @@
         "text": "(state) => state.isVoiceActive"
       },
       "id": "108c37f8fa44279094f9"
-    },
-    {
-      "type": "dependsOn",
-      "source": "file:server.ts",
-      "target": "package:multer",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 9,
-        "text": "import multer from \"multer\";"
-      },
-      "id": "10e0bb950acf1129700e"
     },
     {
       "type": "exports",
@@ -3146,18 +3236,6 @@
       "id": "11c80bbf9e3bf58f9ebc"
     },
     {
-      "type": "exports",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "file:src/components/ChatPanel.tsx:export:ChatPanel",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2038,
-        "text": "ChatPanel"
-      },
-      "id": "127e748428ab3893df3f"
-    },
-    {
       "type": "mutates",
       "source": "file:src/views/StudyView.tsx",
       "target": "storeField:setPdfUrl",
@@ -3190,17 +3268,6 @@
         "line": 957
       },
       "id": "139a287ad0d31575e0d4"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/debug/run",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 513
-      },
-      "id": "13a4f2b0d23951d0ff9b"
     },
     {
       "type": "imports",
@@ -3249,6 +3316,18 @@
         "text": "import { db } from \"../memory/longterm.memory\";"
       },
       "id": "1482bb2a99be8d9c3dc8"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "endpoint:ANY /api/chat",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2715,
+        "text": "fetch(\"/api/chat\", {\n        method: \"POST\",\n        headers: {\n          \"Content-Type\": \"application/json\",\n          Authorization: `Bearer ${apiKey}`,\n          ...(serperApiKe"
+      },
+      "id": "14c6e5d2c2aa55db0f9c"
     },
     {
       "type": "dependsOn",
@@ -3310,16 +3389,26 @@
       "id": "15cb4862fca8291783ff"
     },
     {
-      "type": "dependsOn",
-      "source": "file:server.ts",
-      "target": "package:ws",
+      "type": "servedBy",
+      "source": "endpoint:POST /api/debug/run",
+      "target": "file:server.ts",
       "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 11,
-        "text": "import { WebSocketServer, WebSocket as WSWebSocket } from \"ws\";"
+        "line": 595
       },
-      "id": "17023085e940ab71842e"
+      "id": "163a866d4dbd351ce218"
+    },
+    {
+      "type": "definedIn",
+      "source": "component:AnimatedMarkdown",
+      "target": "file:src/components/ChatPanel.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 1708
+      },
+      "id": "1749fe12e3edecd33ac5"
     },
     {
       "type": "imports",
@@ -3334,6 +3423,18 @@
       "id": "1770129372d2e12a7dec"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:activeLearningBookId",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2047,
+        "text": "(state) => state.activeLearningBookId"
+      },
+      "id": "17741e3701d73c57dfad"
+    },
+    {
       "type": "readsDatabase",
       "source": "file:src/views/BrainView.tsx",
       "target": "databaseTable:learningBooks",
@@ -3346,16 +3447,16 @@
       "id": "177d8cb7d3ea7d72d0ef"
     },
     {
-      "type": "readsDatabase",
+      "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "databaseTable:learningBooks",
+      "target": "storeField:setAskTutorQuery",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 2121,
-        "text": "db.learningBooks.orderBy(\"updatedAt\")"
+        "line": 2044,
+        "text": "(state) => state.setAskTutorQuery"
       },
-      "id": "182a9e680c369131264c"
+      "id": "18680e22358374cf04dd"
     },
     {
       "type": "definedIn",
@@ -3383,13 +3484,13 @@
     {
       "type": "emits",
       "source": "file:server.ts",
-      "target": "endpoint:POST /api/title",
+      "target": "endpoint:DELETE /api/debug/runs",
       "confidence": 0.8,
       "evidence": {
         "file": "server.ts",
-        "line": 716
+        "line": 551
       },
-      "id": "190806d80779520fdbab"
+      "id": "18fe56fe2ad17b70e3a7"
     },
     {
       "type": "dependsOn",
@@ -3415,6 +3516,17 @@
       "id": "1a158d322ab9822f0a59"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:GET /api/pricing",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 672
+      },
+      "id": "1a910c72109ab29ebc1b"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/debug/docs-sync.ts",
       "target": "package:path",
@@ -3437,6 +3549,30 @@
         "text": "import * as path from \"path\";"
       },
       "id": "1af47981d6c898d58c39"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setActiveView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2052,
+        "text": "(state) => state.setActiveView"
+      },
+      "id": "1bb52ab351b78672cbb2"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:ttsVoice",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2051,
+        "text": "(state) => state.ttsVoice"
+      },
+      "id": "1bd32a9631660e4e6cc4"
     },
     {
       "type": "dependsOn",
@@ -3473,17 +3609,6 @@
         "text": "import path from \"path\";"
       },
       "id": "1ed379e30231da150f69"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:GET /api/pricing",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 584
-      },
-      "id": "1f1d6a2095683b435682"
     },
     {
       "type": "renders",
@@ -3532,6 +3657,18 @@
       "id": "1f93331fe13174a838a9"
     },
     {
+      "type": "callsEndpoint",
+      "source": "file:src/views/AdminView.tsx",
+      "target": "endpoint:ANY /api/debug/runs/$%7BencodeURIComponent(activeDebugRunId)%7D",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/AdminView.tsx",
+        "line": 555,
+        "text": "fetch(`/api/debug/runs/${encodeURIComponent(activeDebugRunId)}`, {\n        method: \"DELETE\",\n      })"
+      },
+      "id": "1fa23b1a9d96a3d9ac40"
+    },
+    {
       "type": "writesDatabase",
       "source": "file:src/memory/revision.memory.ts",
       "target": "databaseTable:concepts",
@@ -3542,18 +3679,6 @@
         "text": "db.concepts.put(concept)"
       },
       "id": "20fc75d09a88de5e5994"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:language",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2040,
-        "text": "(state) => state.language"
-      },
-      "id": "219971dc3a7111a41eac"
     },
     {
       "type": "imports",
@@ -3578,18 +3703,6 @@
         "text": "import { useStore, Annotation } from \"../store\";"
       },
       "id": "21cd777c3aa08faa42b6"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:recordWebUsage",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2059,
-        "text": "(state) => state.recordWebUsage"
-      },
-      "id": "21f453e79be1ece2af81"
     },
     {
       "type": "readsStore",
@@ -3626,6 +3739,17 @@
         "text": "(state) => state.setActiveView"
       },
       "id": "225e5766b7e6fc320648"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:GET /api/debug/runs",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 544
+      },
+      "id": "227622d20e50d145fe00"
     },
     {
       "type": "readsStore",
@@ -3734,18 +3858,6 @@
       "id": "24bd94b5c8896ac8a50b"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:activeProject",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2046,
-        "text": "(state) => state.activeProject"
-      },
-      "id": "24cba84d877e7c7dc405"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/tasks/task-memory.ts",
       "target": "package:path",
@@ -3852,17 +3964,6 @@
       "id": "270cdc5f6c39480fecbf"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/debug/stop",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 575
-      },
-      "id": "276e2b3de7323eb2a44a"
-    },
-    {
       "type": "dependsOn",
       "source": "file:generate-brain.ts",
       "target": "package:fs",
@@ -3918,18 +4019,6 @@
         "text": "setLearnerName"
       },
       "id": "28419b14e49608ffa350"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/views/AdminView.tsx",
-      "target": "file:src/views/AdminView.tsx:export:AdminView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AdminView.tsx",
-        "line": 184,
-        "text": "AdminView"
-      },
-      "id": "2850f1d1a5692b316925"
     },
     {
       "type": "readsDatabase",
@@ -4026,18 +4115,6 @@
       "id": "2a76059ba230594159cf"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setPdfUrl",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2066,
-        "text": "(state) => state.setPdfUrl"
-      },
-      "id": "2ae05a0b9be98380945c"
-    },
-    {
       "type": "definedIn",
       "source": "component:SuccessIcon",
       "target": "file:src/components/StatusBadge.tsx",
@@ -4047,17 +4124,6 @@
         "line": 214
       },
       "id": "2b0c10ef68903a1f6a1a"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/title",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 716
-      },
-      "id": "2b57677ff18692b42ab1"
     },
     {
       "type": "mutates",
@@ -4082,6 +4148,29 @@
         "text": "import * as crypto from \"crypto\";"
       },
       "id": "2bb6d5fb3f7617e535db"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setActiveLearningBookId",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2048,
+        "text": "(state) => state.setActiveLearningBookId"
+      },
+      "id": "2bc08fe9e98e32f4781b"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/title",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 804
+      },
+      "id": "2bd729afa631c9c7bf5d"
     },
     {
       "type": "mutates",
@@ -4140,6 +4229,18 @@
       "id": "2c9591d8d6437c0975ea"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setIsVoiceActive",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2070,
+        "text": "(state) => state.setIsVoiceActive"
+      },
+      "id": "2cbfd7a7a3e81dfbe52b"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "package:react",
@@ -4158,10 +4259,10 @@
       "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 12,
+        "line": 16,
         "text": "import {\n  detectFreshnessSearch,\n  formatSourcesForPrompt,\n  searchSerper,\n  type NormalizedWebSource,\n  type WebSearchMode,\n} from \"./server/web-search\";"
       },
-      "id": "2d1266530b416d79f785"
+      "id": "2d1949f53288126e89d7"
     },
     {
       "type": "renders",
@@ -4176,25 +4277,13 @@
     {
       "type": "emits",
       "source": "file:server.ts",
-      "target": "endpoint:GET /api/debug/runs/:id/events",
+      "target": "endpoint:POST /api/generate-flashcards",
       "confidence": 0.8,
       "evidence": {
         "file": "server.ts",
-        "line": 507
+        "line": 1043
       },
-      "id": "2e1f87c270ace1be98fa"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:aiModel",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2054,
-        "text": "(state) => state.aiModel"
-      },
-      "id": "2e2ced0694a2276db9fc"
+      "id": "2e0318bae9eaec5efc39"
     },
     {
       "type": "usesState",
@@ -4207,18 +4296,6 @@
         "text": "(state) => state.annotations"
       },
       "id": "2f52d400e1d6df676fd2"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:ttsVoice",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2052,
-        "text": "(state) => state.ttsVoice"
-      },
-      "id": "3000b670ab1abba5188f"
     },
     {
       "type": "mutates",
@@ -4239,9 +4316,21 @@
       "evidence": {
         "file": "server.ts",
         "line": 6,
-        "text": "import { spawn, type ChildProcessWithoutNullStreams } from \"child_process\";"
+        "text": "import {\n  execFileSync,\n  spawn,\n  type ChildProcessWithoutNullStreams,\n} from \"child_process\";"
       },
       "id": "30496bad0e228f411344"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:animationsEnabled",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2054,
+        "text": "(state) => state.animationsEnabled"
+      },
+      "id": "30ff9617cde135f6394a"
     },
     {
       "type": "dependsOn",
@@ -4328,6 +4417,17 @@
       "id": "32f3f1c9572ea8dc3689"
     },
     {
+      "type": "definedIn",
+      "source": "component:ThinkingPanel",
+      "target": "file:src/components/ChatPanel.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 1412
+      },
+      "id": "32fdb940489cf739bb99"
+    },
+    {
       "type": "mutates",
       "source": "file:src/views/RevisionView.tsx",
       "target": "storeField:setActiveView",
@@ -4349,18 +4449,6 @@
         "text": "import { cognitiveLoadMonitor } from \"./cognitive.load\";"
       },
       "id": "3319e996e864af7b6ae6"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setSelectedTextContext",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2063,
-        "text": "(state) => state.setSelectedTextContext"
-      },
-      "id": "332c0b45ecb9d28ab7f8"
     },
     {
       "type": "renders",
@@ -4512,30 +4600,6 @@
       "id": "3577e75d0057fa9598d5"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:recordChatUsage",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2057,
-        "text": "(state) => state.recordChatUsage"
-      },
-      "id": "359f4888e2d801467575"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:apiKey",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2041,
-        "text": "(state) => state.apiKey"
-      },
-      "id": "35aa117e42b1539663dd"
-    },
-    {
       "type": "renders",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:AnimatedNumberText",
@@ -4581,17 +4645,6 @@
       "id": "3647e15cfa41154879e0"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:GET *",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1815
-      },
-      "id": "3652a370028050b528b8"
-    },
-    {
       "type": "exports",
       "source": "file:src/brain-runtime/instrumentDexie.ts",
       "target": "file:src/brain-runtime/instrumentDexie.ts:export:instrumentDexie",
@@ -4602,18 +4655,6 @@
         "text": "instrumentDexie"
       },
       "id": "36c4949995c2d9130280"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setMessages",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2070,
-        "text": "(state) => state.setMessages"
-      },
-      "id": "36c884d3c1005356c869"
     },
     {
       "type": "renders",
@@ -4684,17 +4725,6 @@
       "id": "3887a364935677e6d949"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:GET /api/debug/runs",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 475
-      },
-      "id": "38c2d98323fc7941a31f"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/App.tsx",
       "target": "file:src/components/Navigation.tsx",
@@ -4717,18 +4747,6 @@
         "text": "fetch(\n                                    \"/api/generate-persona\",\n                                    {\n                                      method: \"POST\",\n                    "
       },
       "id": "38feea67c7a426365ddb"
-    },
-    {
-      "type": "writesDatabase",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "databaseTable:flashcards",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 1858,
-        "text": "db.flashcards.add({\n                id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,\n                conceptId: card.conceptId || \"general\",\n    "
-      },
-      "id": "39040a58bc919cb14c5d"
     },
     {
       "type": "mutates",
@@ -4826,17 +4844,6 @@
       "id": "3aa4c5d1114eab6448f0"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:GET /api/debug/runs/:id/events",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 507
-      },
-      "id": "3adc6d6fed6d7e7cff80"
-    },
-    {
       "type": "writesDatabase",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "databaseTable:learningBooks",
@@ -4929,6 +4936,18 @@
         "text": "import { PatternCard, themes } from \"../components/PatternCard\";"
       },
       "id": "3d3784daa541292114e2"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:activeProject",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2045,
+        "text": "(state) => state.activeProject"
+      },
+      "id": "3e08fe3e1cee1bba1787"
     },
     {
       "type": "imports",
@@ -5051,18 +5070,6 @@
       "id": "4231d4ddf38d0914d7d5"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:language",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2040,
-        "text": "(state) => state.language"
-      },
-      "id": "4260359f0919a05b6b2b"
-    },
-    {
       "type": "exports",
       "source": "file:src/store/index.ts",
       "target": "file:src/store/index.ts:export:VoiceUsage",
@@ -5099,18 +5106,6 @@
       "id": "432c0c0b90e0d5621bbd"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/AdminView.tsx",
-      "target": "databaseTable:traceLogs",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AdminView.tsx",
-        "line": 187,
-        "text": "db.traceLogs.orderBy(\"timestamp\")"
-      },
-      "id": "43310595afa2a7207c0c"
-    },
-    {
       "type": "imports",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "file:src/components/SiriLiquidGlass.tsx",
@@ -5121,18 +5116,6 @@
         "text": "import { SiriLiquidGlass } from \"./SiriLiquidGlass\";"
       },
       "id": "43682517242e13d38ffe"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:animationsEnabled",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2055,
-        "text": "(state) => state.animationsEnabled"
-      },
-      "id": "44553d63c8b280df4eec"
     },
     {
       "type": "readsDatabase",
@@ -5157,18 +5140,6 @@
         "text": "import { chromium, type Browser } from \"playwright\";"
       },
       "id": "447f4445ad40644b0bd4"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:recordVoiceUsage",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2058,
-        "text": "(state) => state.recordVoiceUsage"
-      },
-      "id": "448a857440df8854d367"
     },
     {
       "type": "writesStore",
@@ -5205,28 +5176,6 @@
       "id": "458af9840f2bab978c3f"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:GET /api/debug/runs/:id",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 499
-      },
-      "id": "45a5647ad6cfc40073ee"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "websocket:/ws/debug",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1838
-      },
-      "id": "45b6bcd64f6d5a5c1055"
-    },
-    {
       "type": "imports",
       "source": "file:brain/runtime/task-executor.ts",
       "target": "file:brain/runtime/impact-orchestrator.ts",
@@ -5237,6 +5186,18 @@
         "text": "import { analyzeImpactForFiles } from \"./impact-orchestrator\";"
       },
       "id": "46871f01f03f46cb0b4d"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/views/AdminView.tsx",
+      "target": "endpoint:ANY /api/debug/runs",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/AdminView.tsx",
+        "line": 533,
+        "text": "fetch(\"/api/debug/runs\", { method: \"DELETE\" })"
+      },
+      "id": "46cd210721ba629b9905"
     },
     {
       "type": "imports",
@@ -5320,17 +5281,6 @@
       "id": "481cba321168985c13c2"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/debug/stop",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 575
-      },
-      "id": "483fc20fb5313804405c"
-    },
-    {
       "type": "writesStore",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "storeField:setSelectedTextContext",
@@ -5352,18 +5302,6 @@
         "text": "(state) => state.addAnnotation"
       },
       "id": "48e129715b210b2676d6"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:serperApiKey",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2042,
-        "text": "(state) => state.serperApiKey"
-      },
-      "id": "495c4cb3a77912c058e4"
     },
     {
       "type": "dependsOn",
@@ -5412,18 +5350,6 @@
       "id": "4a316d40ab10da84624d"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/AdminView.tsx",
-      "target": "databaseTable:learningBookConcepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AdminView.tsx",
-        "line": 196,
-        "text": "db.learningBookConcepts.orderBy(\"updatedAt\")"
-      },
-      "id": "4a46c902f79bd5c6bbb8"
-    },
-    {
       "type": "dependsOn",
       "source": "file:generate-brain.ts",
       "target": "package:path",
@@ -5436,6 +5362,18 @@
       "id": "4a4ab18f3c48184782bd"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2120,
+        "text": "db.learningBooks.orderBy(\"updatedAt\")"
+      },
+      "id": "4a52258898aab036b779"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/components/PatternCard.tsx",
       "target": "package:motion",
@@ -5446,6 +5384,18 @@
         "text": "import { motion } from \"motion/react\";"
       },
       "id": "4a6f1d39f1312af7cec2"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setActiveView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2052,
+        "text": "(state) => state.setActiveView"
+      },
+      "id": "4a83d0b2e6e63d0aa934"
     },
     {
       "type": "renders",
@@ -5530,18 +5480,6 @@
       "id": "4c44f0f0f0fa68cde0f9"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:apiKey",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2041,
-        "text": "(state) => state.apiKey"
-      },
-      "id": "4c4de83a959a6fb1a1e2"
-    },
-    {
       "type": "readsDatabase",
       "source": "file:src/memory/revision.memory.ts",
       "target": "databaseTable:concepts",
@@ -5552,6 +5490,18 @@
         "text": "db.concepts.toArray()"
       },
       "id": "4c92265228deb307566d"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:language",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2039,
+        "text": "(state) => state.language"
+      },
+      "id": "4ca53965f0c67989d3b5"
     },
     {
       "type": "writesStore",
@@ -5565,16 +5515,15 @@
       "id": "4cce8d758b04ea0b311a"
     },
     {
-      "type": "callsEndpoint",
-      "source": "file:server.ts",
-      "target": "endpoint:ANY /api/v1/models",
-      "confidence": 0.8,
+      "type": "servedBy",
+      "source": "endpoint:POST /api/generate-persona",
+      "target": "file:server.ts",
+      "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 102,
-        "text": "fetch(\"https://openrouter.ai/api/v1/models\")"
+        "line": 855
       },
-      "id": "4d01e7112df6225ef4f4"
+      "id": "4d2243e52de2bc677d47"
     },
     {
       "type": "exports",
@@ -5623,16 +5572,28 @@
       "id": "4d89eab8757d91b7393e"
     },
     {
-      "type": "dependsOn",
-      "source": "file:server.ts",
-      "target": "package:@google/genai",
-      "confidence": 1,
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:recordWebSearchEvent",
+      "confidence": 0.9,
       "evidence": {
-        "file": "server.ts",
-        "line": 10,
-        "text": "import { GoogleGenAI } from \"@google/genai\";"
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2059,
+        "text": "(state) => state.recordWebSearchEvent"
       },
-      "id": "4e7364053f08dd058b29"
+      "id": "4df815a791bbd9ea23f3"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setPdfPage",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2066,
+        "text": "(state) => state.setPdfPage"
+      },
+      "id": "4e4de8d977b4cd3f4c5c"
     },
     {
       "type": "exports",
@@ -5741,18 +5702,6 @@
       "id": "4ffdb616865b65dfd3cc"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:aiModel",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2054,
-        "text": "(state) => state.aiModel"
-      },
-      "id": "50084cad0130d247213f"
-    },
-    {
       "type": "imports",
       "source": "file:src/memory/learner.model.ts",
       "target": "file:src/memory/scaffolding.engine.ts",
@@ -5765,16 +5714,28 @@
       "id": "503dfcdb054a002f59ce"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:selectedTextContext",
+      "type": "exports",
+      "source": "file:src/views/AdminView.tsx",
+      "target": "file:src/views/AdminView.tsx:export:AdminView",
       "confidence": 0.9,
       "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2062,
-        "text": "(state) => state.selectedTextContext"
+        "file": "src/views/AdminView.tsx",
+        "line": 256,
+        "text": "AdminView"
       },
-      "id": "50c94f82a08dbb120bad"
+      "id": "50b987839f1b31a50373"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/views/AdminView.tsx",
+      "target": "endpoint:ANY /api/debug/runs/$%7BencodeURIComponent(activeDebugRunId)%7D",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/AdminView.tsx",
+        "line": 434,
+        "text": "fetch(\n          `/api/debug/runs/${encodeURIComponent(activeDebugRunId)}`,\n        )"
+      },
+      "id": "50d99babd679ec44edda"
     },
     {
       "type": "exports",
@@ -5813,6 +5774,17 @@
       "id": "5110279bed9b032c46c1"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/generate-flashcards",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1043
+      },
+      "id": "51121b6498252e376e50"
+    },
+    {
       "type": "mutates",
       "source": "file:src/views/RevisionView.tsx",
       "target": "databaseTable:learningBooks",
@@ -5847,6 +5819,17 @@
         "text": "import { db } from \"../memory/longterm.memory\";"
       },
       "id": "518c02bb2643da550e45"
+    },
+    {
+      "type": "definedIn",
+      "source": "hook:useSmoothStreamingText",
+      "target": "file:src/components/ChatPanel.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 1635
+      },
+      "id": "51f50c47c605e3a38e02"
     },
     {
       "type": "dependsOn",
@@ -5907,18 +5890,6 @@
         "text": "TraceLog"
       },
       "id": "532c760308a795142f62"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:serperApiKey",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2042,
-        "text": "(state) => state.serperApiKey"
-      },
-      "id": "5378d2636e43ee9f83af"
     },
     {
       "type": "imports",
@@ -6164,15 +6135,15 @@
       "id": "587cf5c7aa55fe21f7f5"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/chat",
-      "target": "file:server.ts",
+      "type": "definedIn",
+      "source": "component:ChatPanel",
+      "target": "file:src/components/ChatPanel.tsx",
       "confidence": 1,
       "evidence": {
-        "file": "server.ts",
-        "line": 1191
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2037
       },
-      "id": "58e7347696a4a3e22065"
+      "id": "58f53ca9e1c0fa108a92"
     },
     {
       "type": "usesState",
@@ -6316,6 +6287,17 @@
       "id": "5c4d49c7a869d6f5f10f"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/debug/run",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 595
+      },
+      "id": "5c9666c4a41f5c59017f"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "package:dexie-react-hooks",
@@ -6336,6 +6318,18 @@
         "file": "src/views/StudyView.tsx"
       },
       "id": "5d81031facc59a450cca"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:apiKey",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2040,
+        "text": "(state) => state.apiKey"
+      },
+      "id": "5d8e1e6095795b64e9ef"
     },
     {
       "type": "usesState",
@@ -6370,18 +6364,6 @@
         "text": "NormalizedWebSource"
       },
       "id": "5e1fd2078054b3f09829"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:learnerName",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2043,
-        "text": "(state) => state.learnerName"
-      },
-      "id": "5ece3ffbd6edb71a9499"
     },
     {
       "type": "definedIn",
@@ -6557,6 +6539,17 @@
       "id": "6256fcfcb31e4eab21fc"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/trace",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 900
+      },
+      "id": "62ce3004b4a2467046ef"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/runtime/run-runtime-benchmark.ts",
       "target": "package:child_process",
@@ -6581,6 +6574,17 @@
       "id": "63cb2bf4b6520dd40b0b"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:DELETE /api/debug/runs/:id",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 567
+      },
+      "id": "649a76ee3f60d339d977"
+    },
+    {
       "type": "exports",
       "source": "file:src/types.ts",
       "target": "file:src/types.ts:export:MindMapLink",
@@ -6602,17 +6606,6 @@
         "text": "setPdfUrl"
       },
       "id": "65df51b14bf976835218"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/generate-persona",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 767
-      },
-      "id": "6622f7d92c8ce2b08193"
     },
     {
       "type": "writesStore",
@@ -6639,14 +6632,14 @@
     },
     {
       "type": "servedBy",
-      "source": "endpoint:GET /api/debug/runs",
+      "source": "endpoint:GET /api/tts",
       "target": "file:server.ts",
       "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 475
+        "line": 1167
       },
-      "id": "66a9747f761f5b778534"
+      "id": "66bea88b0aa90b64f6c2"
     },
     {
       "type": "mutates",
@@ -6661,17 +6654,6 @@
       "id": "66e8e7211da850b5da25"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:GET /api/tts",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1079
-      },
-      "id": "672b8a0ef3b6405a6d33"
-    },
-    {
       "type": "imports",
       "source": "file:src/App.tsx",
       "target": "file:src/brain-runtime/RenderProfiler.tsx",
@@ -6684,6 +6666,18 @@
       "id": "67420a26bc7613961085"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:messages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2068,
+        "text": "(state) => state.messages"
+      },
+      "id": "6770d432b3cdf0fd5095"
+    },
+    {
       "type": "exports",
       "source": "file:src/memory/productive.failure.ts",
       "target": "file:src/memory/productive.failure.ts:export:productiveFailureEngine",
@@ -6694,17 +6688,6 @@
         "text": "productiveFailureEngine"
       },
       "id": "67c55b851b3cc8150663"
-    },
-    {
-      "type": "definedIn",
-      "source": "hook:useSmoothStreamingText",
-      "target": "file:src/components/ChatPanel.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 1636
-      },
-      "id": "68299e93dc7d3c4f1483"
     },
     {
       "type": "definedIn",
@@ -6730,6 +6713,29 @@
       "id": "68e33b82e941f7b0f02a"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setPdfTotalPages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2067,
+        "text": "(state) => state.setPdfTotalPages"
+      },
+      "id": "690089205f754c35bfc8"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/debug/stop",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 660
+      },
+      "id": "69712b7ecbc1d00a381a"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/components/ShikiHighlighter.tsx",
       "target": "package:react",
@@ -6740,18 +6746,6 @@
         "text": "import React, { useEffect, useState } from \"react\";"
       },
       "id": "6999bf7d17cb14241814"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setActiveProject",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2047,
-        "text": "(state) => state.setActiveProject"
-      },
-      "id": "69a0703020756d4282ed"
     },
     {
       "type": "dependsOn",
@@ -6813,16 +6807,16 @@
       "id": "6a4a1ffb2547738431cc"
     },
     {
-      "type": "usesState",
+      "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:recordChatUsage",
+      "target": "storeField:learnerName",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 2057,
-        "text": "(state) => state.recordChatUsage"
+        "line": 2042,
+        "text": "(state) => state.learnerName"
       },
-      "id": "6a67a316a2575ee86437"
+      "id": "6ab61380bca3fb3fcfd3"
     },
     {
       "type": "definedIn",
@@ -6894,6 +6888,18 @@
       "id": "6c017b9abb451d538f53"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:askTutorQuery",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2043,
+        "text": "(state) => state.askTutorQuery"
+      },
+      "id": "6c129216ea35f9187e03"
+    },
+    {
       "type": "callsEndpoint",
       "source": "file:src/lib/tutorBook.json",
       "target": "endpoint:ANY /api/debug/runs",
@@ -6929,27 +6935,16 @@
       "id": "6cbeff3924cd67900a51"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "websocket:/api/voice-agent",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1834
-      },
-      "id": "6d2ee0fe2cac00de6700"
-    },
-    {
       "type": "callsEndpoint",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "endpoint:ANY /api/tts",
+      "source": "file:src/views/AdminView.tsx",
+      "target": "endpoint:ANY /api/debug/runs",
       "confidence": 0.8,
       "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2518,
-        "text": "fetch(\n        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || \"gpt-4o-mini-tts\")}`,\n      )"
+        "file": "src/views/AdminView.tsx",
+        "line": 395,
+        "text": "fetch(\"/api/debug/runs\")"
       },
-      "id": "6d5cbe054340258463c5"
+      "id": "6cd4c139e119c6a6e3b5"
     },
     {
       "type": "mutates",
@@ -6972,6 +6967,18 @@
         "text": "setApiKey"
       },
       "id": "6dc9d8ef7f511c090639"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "endpoint:ANY /api/generate-flashcards",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 1836,
+        "text": "fetch(\"/api/generate-flashcards\", {\n          method: \"POST\",\n          headers: {\n            \"Content-Type\": \"application/json\",\n            Authorization: openRouterKey ? `Beare"
+      },
+      "id": "6dfab06b1a5204a9544b"
     },
     {
       "type": "imports",
@@ -7080,18 +7087,6 @@
       "id": "6f1dc98ca7392a2ebbca"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setAskTutorQuery",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2045,
-        "text": "(state) => state.setAskTutorQuery"
-      },
-      "id": "6f5c047a41a883ad0d41"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/debug/ui-regression-probe.ts",
       "target": "package:child_process",
@@ -7102,29 +7097,6 @@
         "text": "import { spawn } from \"child_process\";"
       },
       "id": "6fea31517695223fbe9d"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/views/AdminView.tsx",
-      "target": "endpoint:ANY /api/debug/runs",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/views/AdminView.tsx",
-        "line": 272,
-        "text": "fetch(\"/api/debug/runs\")"
-      },
-      "id": "702039a56f2c66b3b59f"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/views/AdminView.tsx",
-      "target": "endpoint:ANY /api/debug/stop",
-      "confidence": 0.55,
-      "evidence": {
-        "file": "src/views/AdminView.tsx",
-        "text": "/api/debug/stop"
-      },
-      "id": "70a734fc511c4d8b26a9"
     },
     {
       "type": "definedIn",
@@ -7162,6 +7134,18 @@
       "id": "7111a87f9db34a5a051a"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:aiModel",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2053,
+        "text": "(state) => state.aiModel"
+      },
+      "id": "71156f3328cbc0e47e90"
+    },
+    {
       "type": "usesState",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "storeField:webUsage",
@@ -7195,29 +7179,6 @@
         "text": "(state) => state.webUsage"
       },
       "id": "715da8fa20e1510ea328"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:systemPrompt",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2056,
-        "text": "(state) => state.systemPrompt"
-      },
-      "id": "730e3934a785735db0a7"
-    },
-    {
-      "type": "servedBy",
-      "source": "websocket:/api/voice-agent",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1834
-      },
-      "id": "735da65cc7433bcb3390"
     },
     {
       "type": "imports",
@@ -7326,16 +7287,28 @@
       "id": "75cdc5ed95c82adb5917"
     },
     {
-      "type": "usesState",
+      "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:systemPrompt",
+      "target": "storeField:cacheWebSources",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 2056,
-        "text": "(state) => state.systemPrompt"
+        "line": 2060,
+        "text": "(state) => state.cacheWebSources"
       },
-      "id": "7700e988eebcf708953a"
+      "id": "766938c09989e4b0ef42"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:serperApiKey",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2041,
+        "text": "(state) => state.serperApiKey"
+      },
+      "id": "76cfc6b29647791fd877"
     },
     {
       "type": "dependsOn",
@@ -7360,6 +7333,18 @@
         "text": "useTranslation"
       },
       "id": "7768e9e7ec05dd08a602"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setPdfUrl",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2065,
+        "text": "(state) => state.setPdfUrl"
+      },
+      "id": "779ffd732069b68c66c4"
     },
     {
       "type": "wraps",
@@ -7560,6 +7545,28 @@
       "id": "7d97c47cf62586bcf13f"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/debug/stop",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 660
+      },
+      "id": "7da6c4354788d1e741b0"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/chat",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1279
+      },
+      "id": "7de0fee84ace21ca82db"
+    },
+    {
       "type": "exports",
       "source": "file:src/store/index.ts",
       "target": "file:src/store/index.ts:export:PricingState",
@@ -7570,6 +7577,18 @@
         "text": "PricingState"
       },
       "id": "7ea0583a980e3d944f08"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:recordWebSearchEvent",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2059,
+        "text": "(state) => state.recordWebSearchEvent"
+      },
+      "id": "7fb8a258e3e1dc8bc710"
     },
     {
       "type": "usesState",
@@ -7655,26 +7674,14 @@
     {
       "type": "callsEndpoint",
       "source": "file:src/views/AdminView.tsx",
-      "target": "endpoint:ANY /api/debug/stop",
+      "target": "endpoint:ANY /$%7BserverBaseUrl%7D/api/debug/runs",
       "confidence": 0.8,
       "evidence": {
         "file": "src/views/AdminView.tsx",
-        "line": 870,
-        "text": "fetch(\"/api/debug/stop\", {\n                                    method: \"POST\",\n                                  })"
+        "line": 327,
+        "text": "fetch(`${serverBaseUrl}/api/debug/runs`, {\n          cache: \"no-store\",\n          mode: import.meta.env.DEV ? \"no-cors\" : \"same-origin\",\n        })"
       },
-      "id": "80d688175a25e66fc6d8"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "endpoint:ANY /api/chat",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2716,
-        "text": "fetch(\"/api/chat\", {\n        method: \"POST\",\n        headers: {\n          \"Content-Type\": \"application/json\",\n          Authorization: `Bearer ${apiKey}`,\n          ...(serperApiKe"
-      },
-      "id": "815e63b3eb02abebacf7"
+      "id": "80e03528d7e668ff6fe4"
     },
     {
       "type": "dependsOn",
@@ -7720,18 +7727,6 @@
         "text": "import * as path from \"path\";"
       },
       "id": "81f72115dcd4cfbc0a73"
-    },
-    {
-      "type": "mutates",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "databaseTable:flashcards",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 1858,
-        "text": "db.flashcards.add({\n                id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,\n                conceptId: card.conceptId || \"general\",\n    "
-      },
-      "id": "8211b689bbd2d9fb918c"
     },
     {
       "type": "exports",
@@ -7848,17 +7843,6 @@
       "id": "837a3cf478ed2e628540"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/debug/run",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 513
-      },
-      "id": "83d1ac621e95e3b05a86"
-    },
-    {
       "type": "usesState",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "storeField:voiceUsage",
@@ -7895,41 +7879,6 @@
       "id": "848f6de343817cf54bc6"
     },
     {
-      "type": "definedIn",
-      "source": "component:MessageItem",
-      "target": "file:src/components/ChatPanel.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 1798
-      },
-      "id": "849e5f43d72d0f057cfc"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:cacheWebSources",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2061,
-        "text": "(state) => state.cacheWebSources"
-      },
-      "id": "84d2493f0f7e63c9000d"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setPdfPage",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2067,
-        "text": "(state) => state.setPdfPage"
-      },
-      "id": "850f578f5d3beb7103f1"
-    },
-    {
       "type": "renders",
       "source": "file:src/views/RevisionView.tsx",
       "target": "component:AppDesignLanguagePage",
@@ -7948,6 +7897,17 @@
         "file": "src/App.tsx"
       },
       "id": "853a694f1ea311269645"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/documents/ingest",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 696
+      },
+      "id": "854d7aa69f8f4ef6c5db"
     },
     {
       "type": "imports",
@@ -8008,6 +7968,17 @@
       "id": "86bb2894daafed8751bc"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/title",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 804
+      },
+      "id": "86c03904a9200911e972"
+    },
+    {
       "type": "imports",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "file:src/components/SiriLiquidGlass.tsx",
@@ -8020,17 +7991,6 @@
       "id": "86ee277a6f6ff7c93131"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/learning-book-update",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 854
-      },
-      "id": "8713ea97ad44108c5b50"
-    },
-    {
       "type": "renders",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:SearchProgressIndicator",
@@ -8039,6 +7999,29 @@
         "file": "src/components/ChatPanel.tsx"
       },
       "id": "872675429658dc170b1b"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:systemPrompt",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2055,
+        "text": "(state) => state.systemPrompt"
+      },
+      "id": "87bc3767e635cfecdd6e"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/learning-book-update",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 942
+      },
+      "id": "87f932de39e1acf664e4"
     },
     {
       "type": "dependsOn",
@@ -8077,6 +8060,18 @@
       "id": "89246bb2e0c2a8e08b7a"
     },
     {
+      "type": "dependsOn",
+      "source": "file:server.ts",
+      "target": "package:openai",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 12,
+        "text": "import OpenAI from \"openai\";"
+      },
+      "id": "8980df551fe11b7b8d39"
+    },
+    {
       "type": "imports",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "file:src/store/index.ts",
@@ -8113,6 +8108,18 @@
       "id": "8ad8b31fff16c5bd8bc5"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:learnerName",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2042,
+        "text": "(state) => state.learnerName"
+      },
+      "id": "8af1abf190e633c3a7b1"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/memory/bkt.engine.ts",
       "target": "file:src/memory/longterm.memory.ts",
@@ -8127,14 +8134,14 @@
     {
       "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setPdfTotalPages",
+      "target": "storeField:setMessages",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 2068,
-        "text": "(state) => state.setPdfTotalPages"
+        "line": 2069,
+        "text": "(state) => state.setMessages"
       },
-      "id": "8b60c5a83b3a4b82e60c"
+      "id": "8b7f02a4489cda7dc9b0"
     },
     {
       "type": "dependsOn",
@@ -8159,6 +8166,18 @@
         "text": "import { SvgDark, SvgOrange, SvgBeige } from \"./PatternSVGs\";"
       },
       "id": "8bc276068863c61f6ecf"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:aiModel",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2053,
+        "text": "(state) => state.aiModel"
+      },
+      "id": "8bc52bcfeed17c5921cd"
     },
     {
       "type": "mutates",
@@ -8204,6 +8223,18 @@
       "id": "8c9d2e0d693bf36cc4a4"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:recordChatUsage",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2056,
+        "text": "(state) => state.recordChatUsage"
+      },
+      "id": "8ceb756d75f4f0d29561"
+    },
+    {
       "type": "exports",
       "source": "file:src/components/StatusBadge.tsx",
       "target": "file:src/components/StatusBadge.tsx:export:StatusBadge",
@@ -8225,18 +8256,6 @@
         "line": 29
       },
       "id": "8d094f6f23b261e0e9d1"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:activeLearningBookId",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2048,
-        "text": "(state) => state.activeLearningBookId"
-      },
-      "id": "8d2ac2f3856e25e6eb5d"
     },
     {
       "type": "imports",
@@ -8263,6 +8282,17 @@
       "id": "8dde8bbb09118e9a701f"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "websocket:/api/voice-agent",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1922
+      },
+      "id": "8e1a853e1a730da0ada8"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/embeddings/embedding-engine.ts",
       "target": "package:fs",
@@ -8273,6 +8303,18 @@
         "text": "import * as fs from \"fs\";"
       },
       "id": "8e56a8316bf6e71f5837"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:selectedTextContext",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2061,
+        "text": "(state) => state.selectedTextContext"
+      },
+      "id": "8e7f86824692fc1a4f3a"
     },
     {
       "type": "wraps",
@@ -8321,6 +8363,17 @@
       "id": "8f8e6a48e08134b6d913"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:GET /api/debug/runs/:id",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 581
+      },
+      "id": "8f9f2b854e5f79f467ca"
+    },
+    {
       "type": "renders",
       "source": "file:src/App.tsx",
       "target": "component:AdminView",
@@ -8343,16 +8396,16 @@
       "id": "8ffc2512d44a73adacc0"
     },
     {
-      "type": "readsStore",
+      "type": "exports",
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setActiveLearningBookId",
+      "target": "file:src/components/ChatPanel.tsx:export:ChatPanel",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 2049,
-        "text": "(state) => state.setActiveLearningBookId"
+        "line": 2037,
+        "text": "ChatPanel"
       },
-      "id": "903064d112f2bdd994b2"
+      "id": "901ac60c2d3a99ca83b3"
     },
     {
       "type": "renders",
@@ -8446,6 +8499,18 @@
         "text": "themes"
       },
       "id": "92fd82e2304c310e51aa"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:messages",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2068,
+        "text": "(state) => state.messages"
+      },
+      "id": "930d62782895e4e6fc14"
     },
     {
       "type": "writesDatabase",
@@ -8612,6 +8677,18 @@
       "id": "96aebb9d1eaeae2f5e4f"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:recordWebUsage",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2058,
+        "text": "(state) => state.recordWebUsage"
+      },
+      "id": "970ce1131bb9864f2bc0"
+    },
+    {
       "type": "imports",
       "source": "file:src/views/AnalyticsView.tsx",
       "target": "file:src/memory/longterm.memory.ts",
@@ -8622,18 +8699,6 @@
         "text": "import {\n  db,\n  PersistentConcept,\n  SessionMemoryRecord,\n  ConversationInteraction,\n} from \"../memory/longterm.memory\";"
       },
       "id": "971473290b7514e65acf"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:askTutorQuery",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2044,
-        "text": "(state) => state.askTutorQuery"
-      },
-      "id": "974271b5a509e533ee7c"
     },
     {
       "type": "dependsOn",
@@ -8672,18 +8737,6 @@
       "id": "97f4993fc2fbb874edaf"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:recordVoiceUsage",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2058,
-        "text": "(state) => state.recordVoiceUsage"
-      },
-      "id": "980a38bb03a46a5a290e"
-    },
-    {
       "type": "dependsOn",
       "source": "file:server.ts",
       "target": "package:express",
@@ -8696,18 +8749,6 @@
       "id": "9845385087d38360a803"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setIsVoiceActive",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2071,
-        "text": "(state) => state.setIsVoiceActive"
-      },
-      "id": "986c015b1a5e62592124"
-    },
-    {
       "type": "writesStore",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "storeField:setAnimationsEnabled",
@@ -8717,17 +8758,6 @@
         "text": "setAnimationsEnabled"
       },
       "id": "987a1de9f549bea78f3f"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/generate-flashcards",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 955
-      },
-      "id": "98ae7c50ad8b4895caa2"
     },
     {
       "type": "renders",
@@ -8788,6 +8818,17 @@
       "id": "9ac6d5fba7ca4c28e562"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/chat",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1279
+      },
+      "id": "9af7eb5943019d98673a"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/retrieval/retrieve-context.ts",
       "target": "file:brain/retrieval/retrieve-semantic.ts",
@@ -8801,14 +8842,14 @@
     },
     {
       "type": "definedIn",
-      "source": "component:MessageUsageFooter",
+      "source": "component:MessageItem",
       "target": "file:src/components/ChatPanel.tsx",
       "confidence": 1,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 1770
+        "line": 1797
       },
-      "id": "9b8da1207761ad99c0d5"
+      "id": "9c01f3ead7c0f641f5b8"
     },
     {
       "type": "usesState",
@@ -8893,18 +8934,6 @@
     },
     {
       "type": "readsDatabase",
-      "source": "file:src/views/AdminView.tsx",
-      "target": "databaseTable:learningEntries",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AdminView.tsx",
-        "line": 202,
-        "text": "db.learningEntries.orderBy(\"timestamp\")"
-      },
-      "id": "9e2efc675da51cc88f80"
-    },
-    {
-      "type": "readsDatabase",
       "source": "file:src/views/AnalyticsView.tsx",
       "target": "databaseTable:sessions",
       "confidence": 0.9,
@@ -8928,6 +8957,18 @@
       "id": "9f008d2d7268b29f42d1"
     },
     {
+      "type": "callsEndpoint",
+      "source": "file:src/views/AdminView.tsx",
+      "target": "endpoint:ANY /api/debug/runs/$%7BencodeURIComponent(stopTargetId)%7D/cancel",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/AdminView.tsx",
+        "line": 598,
+        "text": "fetch(\n        `/api/debug/runs/${encodeURIComponent(stopTargetId)}/cancel`,\n        {\n          method: \"POST\",\n        },\n      )"
+      },
+      "id": "9f26cea1897c342a9ed4"
+    },
+    {
       "type": "usesState",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "storeField:setSelectedTextContext",
@@ -8938,18 +8979,6 @@
         "text": "(state) => state.setSelectedTextContext"
       },
       "id": "9fbe033c33a7e76d346c"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:learnerName",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2043,
-        "text": "(state) => state.learnerName"
-      },
-      "id": "a0749beda989b4baf007"
     },
     {
       "type": "mutates",
@@ -8974,17 +9003,6 @@
         "text": "db"
       },
       "id": "a0f3495b48783cbe5d64"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/trace",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 812
-      },
-      "id": "a11bef6124ce037316fb"
     },
     {
       "type": "writesStore",
@@ -9067,27 +9085,15 @@
       "id": "a2e483379afe0b111b9c"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setActiveView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2053,
-        "text": "(state) => state.setActiveView"
-      },
-      "id": "a2f88661263b00f6da7e"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:DELETE /api/debug/runs",
-      "confidence": 0.8,
+      "type": "servedBy",
+      "source": "endpoint:GET /api/debug/runs/:id/events",
+      "target": "file:server.ts",
+      "confidence": 1,
       "evidence": {
         "file": "server.ts",
-        "line": 482
+        "line": 589
       },
-      "id": "a33afeba42ad1b9c7fb1"
+      "id": "a2fb65bd879dcaf7be08"
     },
     {
       "type": "dependsOn",
@@ -9114,18 +9120,6 @@
       "id": "a40e3bf4ebdc98bea448"
     },
     {
-      "type": "callsEndpoint",
-      "source": "file:src/views/AdminView.tsx",
-      "target": "endpoint:ANY /api/debug/runs/$%7BencodeURIComponent(activeDebugRunId)%7D",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/views/AdminView.tsx",
-        "line": 303,
-        "text": "fetch(\n          `/api/debug/runs/${encodeURIComponent(activeDebugRunId)}`,\n        )"
-      },
-      "id": "a41754179585880ece68"
-    },
-    {
       "type": "exports",
       "source": "file:src/components/PatternSVGs.tsx",
       "target": "file:src/components/PatternSVGs.tsx:export:SvgOrange",
@@ -9147,17 +9141,6 @@
         "line": 585
       },
       "id": "a4a2866a4aeaf4d607e6"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/chat",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1191
-      },
-      "id": "a4af40808aada4e02971"
     },
     {
       "type": "mutates",
@@ -9183,17 +9166,6 @@
       "id": "a50c2a8867b88388ab8f"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:DELETE /api/debug/runs",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 482
-      },
-      "id": "a527d0b3503ced6cda37"
-    },
-    {
       "type": "exports",
       "source": "file:brain/runtime/context-orchestrator.ts",
       "target": "file:brain/runtime/context-orchestrator.ts:export:retrieveContext",
@@ -9215,6 +9187,18 @@
         "line": 80
       },
       "id": "a58d72625c23ece22c02"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "endpoint:ANY /api/tts",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2517,
+        "text": "fetch(\n        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || \"gpt-4o-mini-tts\")}`,\n      )"
+      },
+      "id": "a5af11dd005af587a4f5"
     },
     {
       "type": "imports",
@@ -9370,15 +9354,15 @@
       "id": "a8218a14c87d70819d2e"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/debug/runs/:id/cancel",
-      "target": "file:server.ts",
-      "confidence": 1,
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/debug/runs/:id/cancel",
+      "confidence": 0.8,
       "evidence": {
         "file": "server.ts",
-        "line": 563
+        "line": 651
       },
-      "id": "a82473a69d435b60de61"
+      "id": "a8b0a09e5676172fad2c"
     },
     {
       "type": "dependsOn",
@@ -9484,6 +9468,18 @@
       "id": "acdf6d799af52407832f"
     },
     {
+      "type": "dependsOn",
+      "source": "file:server.ts",
+      "target": "package:multer",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 13,
+        "text": "import multer from \"multer\";"
+      },
+      "id": "ad6cd2acda4677098017"
+    },
+    {
       "type": "mutates",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "databaseTable:learningEntries",
@@ -9494,17 +9490,6 @@
         "text": "db.learningEntries.clear()"
       },
       "id": "ae90a4103f2b4f0ad2a9"
-    },
-    {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:GET /api/pricing",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 584
-      },
-      "id": "aeb4ad83900722c73c67"
     },
     {
       "type": "imports",
@@ -9552,6 +9537,17 @@
         "text": "(state) => state.setAskTutorQuery"
       },
       "id": "af6d5458746e23f35c07"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:POST /api/debug/runs/:id/cancel",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 651
+      },
+      "id": "aff5705963acf08ac8ff"
     },
     {
       "type": "exports",
@@ -9602,18 +9598,6 @@
       "id": "b10c2bb514a3b7450b3c"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setAskTutorQuery",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2045,
-        "text": "(state) => state.setAskTutorQuery"
-      },
-      "id": "b11cd17b25e375c6e481"
-    },
-    {
       "type": "definedIn",
       "source": "component:SvgOrange",
       "target": "file:src/components/PatternSVGs.tsx",
@@ -9625,16 +9609,15 @@
       "id": "b144acd4ed51fa4b5f5a"
     },
     {
-      "type": "callsEndpoint",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "endpoint:ANY /api/generate-flashcards",
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "websocket:/ws/debug",
       "confidence": 0.8,
       "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 1837,
-        "text": "fetch(\"/api/generate-flashcards\", {\n          method: \"POST\",\n          headers: {\n            \"Content-Type\": \"application/json\",\n            Authorization: openRouterKey ? `Beare"
+        "file": "server.ts",
+        "line": 1926
       },
-      "id": "b1ab6b1f1b96dcd2a34c"
+      "id": "b1a52f3284f464b26ec2"
     },
     {
       "type": "readsStore",
@@ -9708,6 +9691,18 @@
       "id": "b31fafb419b8276fdb09"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setPdfPage",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2066,
+        "text": "(state) => state.setPdfPage"
+      },
+      "id": "b370caec71cd128e5037"
+    },
+    {
       "type": "dependsOn",
       "source": "file:brain/runtime/task-executor.ts",
       "target": "package:child_process",
@@ -9729,6 +9724,29 @@
         "line": 389
       },
       "id": "b39f5a2c0ea37ee78688"
+    },
+    {
+      "type": "servedBy",
+      "source": "endpoint:GET *",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1903
+      },
+      "id": "b3b54c492e7313904447"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setSelectedTextContext",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2062,
+        "text": "(state) => state.setSelectedTextContext"
+      },
+      "id": "b3d342c8efaa6bfba5ac"
     },
     {
       "type": "usesState",
@@ -9764,18 +9782,6 @@
         "text": "FloatingSkillsMenu"
       },
       "id": "b416c19f6d408899f079"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setPdfTotalPages",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2068,
-        "text": "(state) => state.setPdfTotalPages"
-      },
-      "id": "b4609815a6d41717a820"
     },
     {
       "type": "exports",
@@ -9884,18 +9890,6 @@
       "id": "b588de3810161437c406"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:messages",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2069,
-        "text": "(state) => state.messages"
-      },
-      "id": "b59df2ae420aa8c54f8b"
-    },
-    {
       "type": "usesState",
       "source": "file:src/views/StudyView.tsx",
       "target": "storeField:setSelectedTextContext",
@@ -9908,18 +9902,6 @@
       "id": "b5c058f9807db90095e6"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:cacheWebSources",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2061,
-        "text": "(state) => state.cacheWebSources"
-      },
-      "id": "b5d581fbd6c0556d9457"
-    },
-    {
       "type": "mutates",
       "source": "file:src/views/RevisionView.tsx",
       "target": "storeField:setPdfPage",
@@ -9929,6 +9911,17 @@
         "text": "setPdfPage"
       },
       "id": "b6132747d2e2aa8db5b2"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:GET /api/debug/runs/:id",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 581
+      },
+      "id": "b68fd853c4897990cb72"
     },
     {
       "type": "dependsOn",
@@ -10059,17 +10052,6 @@
       "id": "ba0e5d136c553a82d1cf"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/learning-book-update",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 854
-      },
-      "id": "ba57e39ce23d42563eba"
-    },
-    {
       "type": "mutates",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "databaseTable:learningBookConcepts",
@@ -10080,17 +10062,6 @@
         "text": "db.learningBookConcepts.clear()"
       },
       "id": "ba8fe3d006a40384968e"
-    },
-    {
-      "type": "definedIn",
-      "source": "component:ThinkingPanel",
-      "target": "file:src/components/ChatPanel.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 1413
-      },
-      "id": "bb0de0eb1011ce64dc02"
     },
     {
       "type": "dependsOn",
@@ -10105,15 +10076,16 @@
       "id": "bb11bd8b413785ae998c"
     },
     {
-      "type": "definedIn",
-      "source": "component:ChatPanel",
-      "target": "file:src/components/ChatPanel.tsx",
-      "confidence": 1,
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:recordWebUsage",
+      "confidence": 0.9,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 2038
+        "line": 2058,
+        "text": "(state) => state.recordWebUsage"
       },
-      "id": "bb6d946855560a087941"
+      "id": "bb9e81fd23ff5f9f6564"
     },
     {
       "type": "dependsOn",
@@ -10140,15 +10112,16 @@
       "id": "bc285b6386957cbf0b6a"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/debug/runs/:id/cancel",
-      "confidence": 0.8,
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:language",
+      "confidence": 0.9,
       "evidence": {
-        "file": "server.ts",
-        "line": 563
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2039,
+        "text": "(state) => state.language"
       },
-      "id": "bc676b608fe32ef022ef"
+      "id": "bc76e30696f6585d3185"
     },
     {
       "type": "renders",
@@ -10163,14 +10136,14 @@
     {
       "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setActiveProject",
+      "target": "storeField:setActiveLearningBookId",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 2047,
-        "text": "(state) => state.setActiveProject"
+        "line": 2048,
+        "text": "(state) => state.setActiveLearningBookId"
       },
-      "id": "bd21837bca822cc04f33"
+      "id": "bd0c0f8126e413ba6798"
     },
     {
       "type": "dependsOn",
@@ -10290,6 +10263,18 @@
       "id": "bf84184da900f5e3e342"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:recordVoiceUsage",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2057,
+        "text": "(state) => state.recordVoiceUsage"
+      },
+      "id": "bfaac846bae7109d5461"
+    },
+    {
       "type": "exports",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "file:src/memory/memory.orchestrator.ts:export:LearningBookUpdateInput",
@@ -10347,18 +10332,6 @@
         "text": "import {\n  CallExpression,\n  JsxElement,\n  JsxSelfClosingElement,\n  Node,\n  Project,\n  SourceFile,\n  SyntaxKind,\n} from \"ts-morph\";"
       },
       "id": "c0d72e36c102d2b4e52c"
-    },
-    {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:recordWebSearchEvent",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2060,
-        "text": "(state) => state.recordWebSearchEvent"
-      },
-      "id": "c0dd447de482190f129b"
     },
     {
       "type": "readsStore",
@@ -10489,6 +10462,17 @@
       "id": "c40c234ed1e7682d9be7"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:GET /api/tts",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 1167
+      },
+      "id": "c43ae0bcbf51eff814e6"
+    },
+    {
       "type": "readsStore",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "storeField:pdfUrl",
@@ -10499,6 +10483,17 @@
         "text": "(state) => state.pdfUrl"
       },
       "id": "c43e8145386b0b89c32c"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/generate-persona",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 855
+      },
+      "id": "c441b5c65b8dd3520137"
     },
     {
       "type": "callsEndpoint",
@@ -10536,18 +10531,6 @@
       "id": "c5a3cf96672aa74f940d"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:selectedTextContext",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2062,
-        "text": "(state) => state.selectedTextContext"
-      },
-      "id": "c5ac3f928ce9bfce742c"
-    },
-    {
       "type": "definedIn",
       "source": "component:ExpiredIcon",
       "target": "file:src/components/StatusBadge.tsx",
@@ -10557,18 +10540,6 @@
         "line": 287
       },
       "id": "c5b6c991944fff02f720"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/views/AdminView.tsx",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/AdminView.tsx",
-        "line": 191,
-        "text": "db.learningBooks.orderBy(\"updatedAt\")"
-      },
-      "id": "c5f9fff68895245c4bd5"
     },
     {
       "type": "readsStore",
@@ -10607,16 +10578,15 @@
       "id": "c6653f85293a043ce4bb"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setActiveLearningBookId",
-      "confidence": 0.9,
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:GET /api/debug/runs/:id/events",
+      "confidence": 0.8,
       "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2049,
-        "text": "(state) => state.setActiveLearningBookId"
+        "file": "server.ts",
+        "line": 589
       },
-      "id": "c6e16849f02d208cbd2a"
+      "id": "c6b37c43cc77ab813bb1"
     },
     {
       "type": "definedIn",
@@ -10689,6 +10659,18 @@
       "id": "c81c994e9b78b7c5e8e7"
     },
     {
+      "type": "dependsOn",
+      "source": "file:server.ts",
+      "target": "package:compression",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 11,
+        "text": "import compression from \"compression\";"
+      },
+      "id": "c8235b1d10d387f06d80"
+    },
+    {
       "type": "callsEndpoint",
       "source": "file:src/views/AdminView.tsx",
       "target": "endpoint:ANY /api/debug/runs",
@@ -10698,17 +10680,6 @@
         "text": "/api/debug/runs"
       },
       "id": "c965d8d6b6b2da7e6b11"
-    },
-    {
-      "type": "servedBy",
-      "source": "endpoint:GET /api/tts",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1079
-      },
-      "id": "c9aa5ceca7654ec2c5f5"
     },
     {
       "type": "writesDatabase",
@@ -10723,16 +10694,16 @@
       "id": "c9c1d2e09b99c6a83960"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:recordWebUsage",
+      "type": "readsDatabase",
+      "source": "file:src/views/AdminView.tsx",
+      "target": "databaseTable:learningEntries",
       "confidence": 0.9,
       "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2059,
-        "text": "(state) => state.recordWebUsage"
+        "file": "src/views/AdminView.tsx",
+        "line": 274,
+        "text": "db.learningEntries.orderBy(\"timestamp\")"
       },
-      "id": "c9e3bb7ccd6ab22f951d"
+      "id": "ca18a00596d1d461f797"
     },
     {
       "type": "definedIn",
@@ -10756,6 +10727,18 @@
         "text": "import { SiriLiquidGlass } from \"./SiriLiquidGlass\";"
       },
       "id": "cacf9335edc79a236fc6"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:systemPrompt",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2055,
+        "text": "(state) => state.systemPrompt"
+      },
+      "id": "cae6a89aa4a58e53acb4"
     },
     {
       "type": "dependsOn",
@@ -10841,18 +10824,6 @@
       "id": "cd0c21a31514880b7e02"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setSelectedTextContext",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2063,
-        "text": "(state) => state.setSelectedTextContext"
-      },
-      "id": "cd41be87926aef3c6fa2"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/views/AnalyticsView.tsx",
       "target": "file:src/lib/translations.ts",
@@ -10863,18 +10834,6 @@
         "text": "import { useTranslation } from \"../lib/translations\";"
       },
       "id": "ce78ae7b8dfbab14561b"
-    },
-    {
-      "type": "dependsOn",
-      "source": "file:server.ts",
-      "target": "package:openai",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 8,
-        "text": "import OpenAI from \"openai\";"
-      },
-      "id": "ce934978240b6515432d"
     },
     {
       "type": "renders",
@@ -10958,18 +10917,6 @@
       "id": "d05f8cf8014d24e1ae33"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setPdfUrl",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2066,
-        "text": "(state) => state.setPdfUrl"
-      },
-      "id": "d0943d4012db4841ea9c"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/views/AnalyticsView.tsx",
       "target": "file:src/store/index.ts",
@@ -11041,16 +10988,15 @@
       "id": "d246e3c5aa96d712f7fb"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setIsVoiceActive",
-      "confidence": 0.9,
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:DELETE /api/debug/runs/:id",
+      "confidence": 0.8,
       "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2071,
-        "text": "(state) => state.setIsVoiceActive"
+        "file": "server.ts",
+        "line": 567
       },
-      "id": "d2daab5d5aee591ad908"
+      "id": "d34747972259661eabb0"
     },
     {
       "type": "dependsOn",
@@ -11101,6 +11047,18 @@
       "id": "d44803004afdeec6ea7a"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:serperApiKey",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2041,
+        "text": "(state) => state.serperApiKey"
+      },
+      "id": "d4c84ad738aa1896bcfe"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/store/index.ts",
       "target": "file:src/types.ts",
@@ -11146,17 +11104,6 @@
       "id": "d5511346ddf17855d659"
     },
     {
-      "type": "servedBy",
-      "source": "websocket:/ws/debug",
-      "target": "file:server.ts",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 1838
-      },
-      "id": "d5872e8b1db920b8f606"
-    },
-    {
       "type": "mutates",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:setPdfPage",
@@ -11179,6 +11126,18 @@
       "id": "d5f6f6d600a5a35e8d8a"
     },
     {
+      "type": "dependsOn",
+      "source": "file:server.ts",
+      "target": "package:ws",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 15,
+        "text": "import { WebSocketServer, WebSocket as WSWebSocket } from \"ws\";"
+      },
+      "id": "d6276393f37bf20f68ff"
+    },
+    {
       "type": "imports",
       "source": "file:src/views/BrainView.tsx",
       "target": "file:src/store/index.ts",
@@ -11189,6 +11148,17 @@
         "text": "import { useStore } from \"../store\";"
       },
       "id": "d6c832b3c0a45880f9b5"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/learning-book-update",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 942
+      },
+      "id": "d6e527c767c0b0da47b5"
     },
     {
       "type": "mutates",
@@ -11356,18 +11326,6 @@
       "id": "da761df96212bb706b76"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:activeProject",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2046,
-        "text": "(state) => state.activeProject"
-      },
-      "id": "dafd83e9c46c44460b63"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/main.tsx",
       "target": "file:src/App.tsx",
@@ -11380,26 +11338,28 @@
       "id": "db0a65ecfd0a0b873f01"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/generate-flashcards",
-      "confidence": 0.8,
+      "type": "readsDatabase",
+      "source": "file:src/views/AdminView.tsx",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
       "evidence": {
-        "file": "server.ts",
-        "line": 955
+        "file": "src/views/AdminView.tsx",
+        "line": 263,
+        "text": "db.learningBooks.orderBy(\"updatedAt\")"
       },
-      "id": "db443aaa81843248449c"
+      "id": "db18aec344c9f3342b11"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/documents/ingest",
-      "confidence": 0.8,
+      "type": "mutates",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "databaseTable:flashcards",
+      "confidence": 0.9,
       "evidence": {
-        "file": "server.ts",
-        "line": 608
+        "file": "src/components/ChatPanel.tsx",
+        "line": 1857,
+        "text": "db.flashcards.add({\n                id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,\n                conceptId: card.conceptId || \"general\",\n    "
       },
-      "id": "dbac931b6f50fdd63891"
+      "id": "db406511eac499591496"
     },
     {
       "type": "dependsOn",
@@ -11436,18 +11396,6 @@
         "text": "import React, { useState, useRef, useEffect } from \"react\";"
       },
       "id": "dd043622a7b990228614"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:activeLearningBookId",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2048,
-        "text": "(state) => state.activeLearningBookId"
-      },
-      "id": "dd253496f4e818333730"
     },
     {
       "type": "definedIn",
@@ -11495,6 +11443,30 @@
       "id": "df00612de441ae377fed"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setSelectedTextContext",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2062,
+        "text": "(state) => state.setSelectedTextContext"
+      },
+      "id": "df21f823fa355e0542f3"
+    },
+    {
+      "type": "callsEndpoint",
+      "source": "file:server.ts",
+      "target": "endpoint:ANY /api/v1/models",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 106,
+        "text": "fetch(\"https://openrouter.ai/api/v1/models\")"
+      },
+      "id": "e0357cba1dea4af71fcf"
+    },
+    {
       "type": "definedIn",
       "source": "component:FlashcardDeck",
       "target": "file:src/views/RevisionView.tsx",
@@ -11529,18 +11501,6 @@
       "id": "e0de6c635f0be6c6821e"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:animationsEnabled",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2055,
-        "text": "(state) => state.animationsEnabled"
-      },
-      "id": "e13baf403417121cde00"
-    },
-    {
       "type": "readsDatabase",
       "source": "file:src/memory/bkt.engine.ts",
       "target": "databaseTable:concepts",
@@ -11551,6 +11511,17 @@
         "text": "db.concepts.get(conceptId)"
       },
       "id": "e174497b546f0c61bd39"
+    },
+    {
+      "type": "definedIn",
+      "source": "component:AdminView",
+      "target": "file:src/views/AdminView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/AdminView.tsx",
+        "line": 256
+      },
+      "id": "e177b71dc1ae9ba2c324"
     },
     {
       "type": "dependsOn",
@@ -11574,18 +11545,6 @@
         "line": 260
       },
       "id": "e1a1ea1a5451a7fa44de"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/views/AdminView.tsx",
-      "target": "endpoint:ANY /api/debug/runs",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "src/views/AdminView.tsx",
-        "line": 841,
-        "text": "fetch(\"/api/debug/runs\", {\n                                      method: \"DELETE\",\n                                    })"
-      },
-      "id": "e1d231377ae5a64db708"
     },
     {
       "type": "dependsOn",
@@ -11766,16 +11725,16 @@
       "id": "e79dd07bb4a15ae2488e"
     },
     {
-      "type": "usesState",
+      "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:recordWebSearchEvent",
+      "target": "storeField:recordVoiceUsage",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 2060,
-        "text": "(state) => state.recordWebSearchEvent"
+        "line": 2057,
+        "text": "(state) => state.recordVoiceUsage"
       },
-      "id": "e7ab8f21df661c79b616"
+      "id": "e7d2d16b8c96717fc7ba"
     },
     {
       "type": "readsStore",
@@ -11790,18 +11749,6 @@
       "id": "e8da9430478a03a20da7"
     },
     {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:ttsVoice",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2052,
-        "text": "(state) => state.ttsVoice"
-      },
-      "id": "e8db088733a079ad6e2f"
-    },
-    {
       "type": "renders",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:SourceGlyph",
@@ -11812,15 +11759,16 @@
       "id": "e8dc9926bdb3b24ab2ea"
     },
     {
-      "type": "servedBy",
-      "source": "endpoint:POST /api/documents/ingest",
-      "target": "file:server.ts",
-      "confidence": 1,
+      "type": "writesDatabase",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "databaseTable:flashcards",
+      "confidence": 0.9,
       "evidence": {
-        "file": "server.ts",
-        "line": 608
+        "file": "src/components/ChatPanel.tsx",
+        "line": 1857,
+        "text": "db.flashcards.add({\n                id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,\n                conceptId: card.conceptId || \"general\",\n    "
       },
-      "id": "e8fd5fb5407500e28113"
+      "id": "e941dd5cd6e254ced8f5"
     },
     {
       "type": "dependsOn",
@@ -11835,6 +11783,17 @@
       "id": "e9487fcac0625204a7c8"
     },
     {
+      "type": "definedIn",
+      "source": "component:MessageUsageFooter",
+      "target": "file:src/components/ChatPanel.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 1769
+      },
+      "id": "e9d9d6767f55b7174b02"
+    },
+    {
       "type": "imports",
       "source": "file:src/brain-runtime/installBrainRuntime.ts",
       "target": "file:src/brain-runtime/instrumentFetch.ts",
@@ -11847,6 +11806,17 @@
       "id": "e9da00360f4873a839e4"
     },
     {
+      "type": "servedBy",
+      "source": "endpoint:DELETE /api/debug/runs",
+      "target": "file:server.ts",
+      "confidence": 1,
+      "evidence": {
+        "file": "server.ts",
+        "line": 551
+      },
+      "id": "ea1e8f74e8679ce2e05f"
+    },
+    {
       "type": "exports",
       "source": "file:src/memory/scaffolding.engine.ts",
       "target": "file:src/memory/scaffolding.engine.ts:export:ScaffoldingEngine",
@@ -11857,18 +11827,6 @@
         "text": "ScaffoldingEngine"
       },
       "id": "ea3ae534ece25a6fb97f"
-    },
-    {
-      "type": "usesState",
-      "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:askTutorQuery",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/components/ChatPanel.tsx",
-        "line": 2044,
-        "text": "(state) => state.askTutorQuery"
-      },
-      "id": "eaac13452992c152e871"
     },
     {
       "type": "dependsOn",
@@ -11893,18 +11851,6 @@
         "text": "useStore"
       },
       "id": "eabc30bd7e27909cf2c9"
-    },
-    {
-      "type": "dependsOn",
-      "source": "file:server.ts",
-      "target": "package:compression",
-      "confidence": 1,
-      "evidence": {
-        "file": "server.ts",
-        "line": 7,
-        "text": "import compression from \"compression\";"
-      },
-      "id": "eb4e09323c820d05d30e"
     },
     {
       "type": "writesDatabase",
@@ -12002,6 +11948,17 @@
       "id": "ed413b0d28a5f34d5517"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:GET /api/debug/runs",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 544
+      },
+      "id": "ed99efe587b4a3d89a5d"
+    },
+    {
       "type": "usesState",
       "source": "file:src/views/BrainView.tsx",
       "target": "storeField:learnerName",
@@ -12069,6 +12026,30 @@
         "text": "/api/debug/run"
       },
       "id": "f08a40b8e3fd47b73a15"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:selectedTextContext",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2061,
+        "text": "(state) => state.selectedTextContext"
+      },
+      "id": "f1783fff7ca2aafab481"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:apiKey",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2040,
+        "text": "(state) => state.apiKey"
+      },
+      "id": "f20f76f5d4598df93d38"
     },
     {
       "type": "dependsOn",
@@ -12199,6 +12180,18 @@
       "id": "f4687942d6aa8a2694a5"
     },
     {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setActiveProject",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2046,
+        "text": "(state) => state.setActiveProject"
+      },
+      "id": "f4cbcf7f078f0fb09fbf"
+    },
+    {
       "type": "writesStore",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:setIsVoiceActive",
@@ -12208,6 +12201,18 @@
         "text": "setIsVoiceActive"
       },
       "id": "f55e02275ded00851009"
+    },
+    {
+      "type": "readsStore",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:animationsEnabled",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2054,
+        "text": "(state) => state.animationsEnabled"
+      },
+      "id": "f5a25009aa0cc8ad9af6"
     },
     {
       "type": "readsDatabase",
@@ -12220,6 +12225,17 @@
         "text": "db.concepts.orderBy(\"lastReviewedAt\")"
       },
       "id": "f65614e56120227da016"
+    },
+    {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:GET /api/pricing",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 672
+      },
+      "id": "f65a12b5885914952080"
     },
     {
       "type": "exports",
@@ -12245,15 +12261,16 @@
       "id": "f76ee22f3e72f7735b17"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/trace",
-      "confidence": 0.8,
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:cacheWebSources",
+      "confidence": 0.9,
       "evidence": {
-        "file": "server.ts",
-        "line": 812
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2060,
+        "text": "(state) => state.cacheWebSources"
       },
-      "id": "f7aff0e1d977f339ada8"
+      "id": "f7fccfdd7ae35a7d2adb"
     },
     {
       "type": "dependsOn",
@@ -12291,16 +12308,16 @@
       "id": "f87a538a8b6680fd6b10"
     },
     {
-      "type": "usesState",
+      "type": "readsStore",
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:setActiveView",
+      "target": "storeField:setAskTutorQuery",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 2053,
-        "text": "(state) => state.setActiveView"
+        "line": 2044,
+        "text": "(state) => state.setAskTutorQuery"
       },
-      "id": "f8bbb492f4d362c5c22f"
+      "id": "f9161f3391ad7aefa916"
     },
     {
       "type": "dependsOn",
@@ -12337,6 +12354,18 @@
         "text": "import { db } from \"../memory/longterm.memory\";"
       },
       "id": "f97476fb412f7c18adf9"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:setPdfUrl",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2065,
+        "text": "(state) => state.setPdfUrl"
+      },
+      "id": "f9a15d271fed97d8763c"
     },
     {
       "type": "imports",
@@ -12455,6 +12484,17 @@
       "id": "fcec3567a469493e03ab"
     },
     {
+      "type": "emits",
+      "source": "file:server.ts",
+      "target": "endpoint:POST /api/trace",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "server.ts",
+        "line": 900
+      },
+      "id": "fd388bc3170ce66c1ab0"
+    },
+    {
       "type": "dependsOn",
       "source": "file:src/brain-runtime/instrumentDexie.ts",
       "target": "file:src/brain-runtime/runtimeTelemetry.ts",
@@ -12479,27 +12519,16 @@
       "id": "fda17488d5ccedcbbf18"
     },
     {
-      "type": "emits",
-      "source": "file:server.ts",
-      "target": "endpoint:POST /api/generate-persona",
-      "confidence": 0.8,
-      "evidence": {
-        "file": "server.ts",
-        "line": 767
-      },
-      "id": "fdc65ff0aa0fd3e6cc27"
-    },
-    {
       "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "storeField:messages",
+      "target": "storeField:askTutorQuery",
       "confidence": 0.9,
       "evidence": {
         "file": "src/components/ChatPanel.tsx",
-        "line": 2069,
-        "text": "(state) => state.messages"
+        "line": 2043,
+        "text": "(state) => state.askTutorQuery"
       },
-      "id": "fe304058bfd7215e3d10"
+      "id": "fe2061956482eb04906b"
     },
     {
       "type": "mutates",
@@ -12534,6 +12563,30 @@
         "text": "/api/documents/ingest"
       },
       "id": "fed6fe4256a699309848"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "storeField:activeLearningBookId",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx",
+        "line": 2047,
+        "text": "(state) => state.activeLearningBookId"
+      },
+      "id": "feeea74dd9eb3fb4bf0b"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/AdminView.tsx",
+      "target": "databaseTable:learningBookConcepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/AdminView.tsx",
+        "line": 268,
+        "text": "db.learningBookConcepts.orderBy(\"updatedAt\")"
+      },
+      "id": "ff188af7ba04f0d77117"
     },
     {
       "type": "readsDatabase",

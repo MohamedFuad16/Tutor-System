@@ -90,8 +90,8 @@
     {
       "field": "language",
       "readers": [
-        "src/components/ChatPanel.tsx",
-        "src/lib/translations.ts"
+        "src/lib/translations.ts",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": []
     },
@@ -254,8 +254,8 @@
     {
       "field": "setAskTutorQuery",
       "readers": [
-        "src/components/ChatPanel.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfViewer.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": [
         "src/components/ChatPanel.tsx",
@@ -305,9 +305,9 @@
     {
       "field": "setPdfPage",
       "readers": [
-        "src/components/ChatPanel.tsx",
         "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx"
+        "src/views/StudyView.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": [
         "src/views/StudyView.tsx",
@@ -327,8 +327,8 @@
       "field": "setPdfTotalPages",
       "readers": [
         "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": [
         "src/components/ChatPanel.tsx",
@@ -339,8 +339,8 @@
     {
       "field": "setPdfUrl",
       "readers": [
-        "src/views/StudyView.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": [
         "src/components/ChatPanel.tsx",

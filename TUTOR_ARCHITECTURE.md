@@ -274,6 +274,18 @@ npm run brain:debug -- --mode fix --scope changed
 
 The orchestrator starts from the narrowest truthful scope: `changed`, a named component, route, or file. `--scope all` is reserved for explicit full-system audits and sorts UI routes/components before `/brain` tooling. Every target follows a tightened 35-step process:
 
+The tutor-debug skill defines three operating modes:
+
+- **Focused Fix Mode**: a named bug, file, component, or route.
+- **Changed-Work Audit Mode**: the current changed source surface after normal implementation.
+- **Long-Horizon Task Mode**: an explicit complete audit that forces `scope=all`, walks every source-scoped target, runs all 35 steps per target, and applies guarded deterministic fixes whenever the safety gate passes.
+
+Long-Horizon Task Mode is invoked with:
+
+```bash
+npm run brain:debug -- --mode long-horizon --scope all
+```
+
 1.  **Parse architecture**: Scans targets.
 2.  **Understand purpose**: Analyzes product role.
 3.  **Lock scope**: Prevents accidental all-repo expansion.

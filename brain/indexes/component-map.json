@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-28T23:28:02.702Z",
+    "generatedAt": "2026-05-29T05:16:01.504Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "e87720b8c7911337554502014fbf63ae2d009701",
+      "commit": "13886f2ea49e03d484df9bccb3b8059401556418",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "bbdf281ff88a05e043e4c500dfe3dc5698c543a1926da64ec8744aa8d0ec1f44"
+    "sourceHash": "a6b6fff6527080c612e2283d574e0ac2c830cf4c0db0b652eaea330aea44940f"
   },
   "files": {
     "generate-brain.ts": {
@@ -162,7 +162,7 @@
     },
     "server.ts": {
       "file": "server.ts",
-      "hash": "b310ae3f865486285db94799add6a177d579ab792c10e7339e72fc16e1eddf96",
+      "hash": "5d46c360774e6434e265cfdea1f4a51f0eddb46f55f05e6bdb0a4b9a61310279",
       "imports": [
         {
           "specifier": "dotenv",
@@ -680,7 +680,7 @@
     },
     "brain/debug/debug-runner.ts": {
       "file": "brain/debug/debug-runner.ts",
-      "hash": "ecbedd044e6fea6a72a50421906f117948f3f96d6f02207427c8af97b487a69f",
+      "hash": "9659a6724603682d2f724c58e02a24d4c08e705429a6838b9ec0c29bdf2f189c",
       "imports": [
         {
           "specifier": "child_process",
@@ -1621,7 +1621,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "364ab4b0e04e7c32dd840c78c25e954b12fd75618739dc6e4bfda0abb7b207f2",
+      "hash": "a695cff19999b975da5733e0d6932936ca01571bfa3d101a7b0a0a47b3f987cf",
       "imports": [
         {
           "specifier": "react",
@@ -2101,7 +2101,7 @@
     },
     "src/components/PatternCard.tsx": {
       "file": "src/components/PatternCard.tsx",
-      "hash": "37a4c5589a104d28e703528cba97e6768c3572e6f7968ac7ca0f98e9e21ce1eb",
+      "hash": "b56824c917d945d70d5c926117dc5772ccfeee37c1964bed7aeb6e11598d9106",
       "imports": [
         {
           "specifier": "react",
@@ -2604,7 +2604,7 @@
     },
     "src/lib/tutorBook.json": {
       "file": "src/lib/tutorBook.json",
-      "hash": "8776928f9c2016ef5188eed325f3f36794f9651b13bd64af72bc89f5d74a4ef8",
+      "hash": "9b2db433af73cc5061b50d5b5a28311a0bb479b30a463eaa0949aa16e0f815af",
       "imports": [],
       "exports": [],
       "functions": [],
@@ -3336,7 +3336,7 @@
     },
     "src/views/AdminView.tsx": {
       "file": "src/views/AdminView.tsx",
-      "hash": "7474db023a2e802d9e4ab923a710ed6e78e9d2e80552f0a1dd86bc95bb996398",
+      "hash": "41726e640a5a42f261683693ebaec57722bc055757588d7b3b6b26beef6d779b",
       "imports": [
         {
           "specifier": "react",
@@ -3376,7 +3376,13 @@
         "friendlyWhy",
         "dateMs",
         "formatDebugDuration",
-        "getDebugHealth"
+        "getDebugHealth",
+        "inferDebugRunDate",
+        "formatDebugRunTime",
+        "titleCaseToken",
+        "formatDebugRunTitle",
+        "debugStatusClasses",
+        "changeStatusLabel"
       ],
       "classes": [],
       "components": [
@@ -3388,10 +3394,11 @@
         "setActiveView"
       ],
       "apiCalls": [
+        "/$%7BserverBaseUrl%7D/api/debug/runs",
         "/api/debug/runs",
         "/api/debug/runs/",
         "/api/debug/runs/$%7BencodeURIComponent(activeDebugRunId)%7D",
-        "/api/debug/stop"
+        "/api/debug/runs/$%7BencodeURIComponent(stopTargetId)%7D/cancel"
       ],
       "websocketCalls": [
         "/ws/debug"

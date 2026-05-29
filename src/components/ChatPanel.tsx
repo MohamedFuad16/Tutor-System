@@ -1407,7 +1407,6 @@ const reasoningShimmerTextStyle: React.CSSProperties = {
   backgroundClip: "text",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
-  willChange: "background-position, opacity, transform",
 };
 
 const ThinkingPanel = ({
@@ -1538,7 +1537,7 @@ const ThinkingPanel = ({
                       <motion.div
                         custom={idx}
                         variants={reasoningLineVariants}
-                        className="absolute bottom-[-12px] left-[26px] top-10 w-px origin-top bg-black/10 will-change-transform"
+                        className="absolute bottom-[-12px] left-[26px] top-10 w-px origin-top bg-black/10"
                       />
                     )}
 
