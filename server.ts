@@ -15,7 +15,7 @@ import {
   searchSerper,
   type NormalizedWebSource,
   type WebSearchMode,
-} from "./server/web-search";
+} from "./server/web-search.js";
 
 const DEEPGRAM_PRICING = {
   voiceAgentPerMinute: 0.075,
