@@ -4,8 +4,6 @@ import { Navigation } from "./components/Navigation";
 import { SettingsButton } from "./components/SettingsModal";
 import { StudyView } from "./views/StudyView";
 import { AnimatePresence, motion } from "motion/react";
-import { BrainRenderProfiler } from "./brain-runtime/RenderProfiler";
-import { recordBrainRuntime } from "./brain-runtime/runtimeTelemetry";
 
 const AnalyticsView = React.lazy(() =>
   import("./views/AnalyticsView").then((module) => ({
@@ -65,14 +63,6 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [setActiveView]);
 
-  useEffect(() => {
-    recordBrainRuntime({
-      type: "route",
-      name: activeView,
-      metadata: { source: "App.activeView" },
-    });
-  }, [activeView]);
-
   return (
     <div className="h-screen w-screen bg-[#050505] text-zinc-100 overflow-hidden font-sans selection:bg-blue-500/30 selection:text-blue-100 relative">
       {activeView !== "admin" && (
@@ -93,9 +83,7 @@ export default function App() {
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="absolute inset-0"
             >
-              <BrainRenderProfiler id="route:study">
-                <StudyView />
-              </BrainRenderProfiler>
+              <StudyView />
             </motion.div>
           )}
           {activeView === "analytics" && (
@@ -107,11 +95,9 @@ export default function App() {
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="absolute inset-0"
             >
-              <BrainRenderProfiler id="route:analytics">
-                <Suspense fallback={<RouteFallback />}>
-                  <AnalyticsView />
-                </Suspense>
-              </BrainRenderProfiler>
+              <Suspense fallback={<RouteFallback />}>
+                <AnalyticsView />
+              </Suspense>
             </motion.div>
           )}
           {activeView === "revision" && (
@@ -123,11 +109,9 @@ export default function App() {
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="absolute inset-0"
             >
-              <BrainRenderProfiler id="route:revision">
-                <Suspense fallback={<RouteFallback />}>
-                  <RevisionView />
-                </Suspense>
-              </BrainRenderProfiler>
+              <Suspense fallback={<RouteFallback />}>
+                <RevisionView />
+              </Suspense>
             </motion.div>
           )}
           {activeView === "admin" && (
@@ -139,11 +123,9 @@ export default function App() {
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="absolute inset-0"
             >
-              <BrainRenderProfiler id="route:admin">
-                <Suspense fallback={<RouteFallback />}>
-                  <AdminView />
-                </Suspense>
-              </BrainRenderProfiler>
+              <Suspense fallback={<RouteFallback />}>
+                <AdminView />
+              </Suspense>
             </motion.div>
           )}
         </AnimatePresence>

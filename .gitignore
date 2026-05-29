@@ -6,8 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
-brain/embeddings/cache.json
-brain/embeddings/query-cache.json
-brain/debug/backups/
-brain/debug/runs/
-brain/debug/ui-regression/
+server.mjs
+graphify-out/cache/
+graphify-out/memory/
+graphify-out/.graphify_root
+graphify-out/.rebuild.lock

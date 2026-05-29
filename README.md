@@ -1,16 +1,14 @@
 <div align="center">
 
   <h1>Tutor: Cognitive Learning Interface</h1>
-  
-  <p><strong>A hyper-advanced, type-safe learning system powered by agentic retrieval, real-time audio tutoring, and autonomous `/brain` self-healing cognition.</strong></p>
 
-  <!-- Adaptive Theme-Aware Banner -->
+  <p><strong>A high-fidelity learning system powered by source-aware tutoring, real-time audio, local learner memory, and Graphify architecture navigation.</strong></p>
+
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="public/banner.png">
     <img alt="Tutor System Architecture Banner" src="public/banner.png" width="100%" style="border-radius: 8px; margin-top: 10px; margin-bottom: 20px;" />
   </picture>
 
-  <!-- Branded Neon Color-Coordinated Badges -->
   <p>
     <a href="https://github.com/MohamedFuad16/Tutor-System-Architecture-/blob/main/LICENSE">
       <img src="https://img.shields.io/badge/License-MIT-3B82F6?style=for-the-badge&logo=github&logoColor=white" alt="License MIT" />
@@ -28,76 +26,75 @@
       <img src="https://img.shields.io/badge/Voice_TTS-Deepgram-F97316?style=for-the-badge&logo=deepgram&logoColor=white" alt="Deepgram Voice" />
     </a>
   </p>
-  
+
   <p align="center">
     <a href="#core-surfaces">Core Surfaces</a> •
     <a href="#system-architecture">System Architecture</a> •
-    <a href="#cognitive-autonomy-layer-brain">Cognitive Autonomy Layer</a> •
+    <a href="#graphify-architecture-layer">Graphify Architecture Layer</a> •
     <a href="#getting-started">Getting Started</a> •
     <a href="#design-system">Design System</a>
   </p>
-  
+
 </div>
 
 ---
 
 > [!TIP]
-> **Experience the Cosmic Obsidian DX:** Tutor is engineered under a strict **Bring Your Own Key (BYOK)** model. Connect your personal APIs and experience ultra-low latency SSE chat, instant text-to-speech, and deep local concept mapping right in your browser.
-
----
+> Tutor is built around a Bring Your Own Key model. Connect your own OpenRouter,
+> Deepgram, and Serper keys for streaming tutoring, voice, search, and local
+> concept mapping.
 
 ## Overview
 
-**Tutor** is not just a PDF reader—it is an intelligent, high-fidelity learning environment that builds a persistent structural memory of your academic study progress. By synthesizing a 3D learner model, real-time streaming tutor agents, automated book-scoped flashcards, local browser databases, dynamic search, and built-in architecture/design-language books, Tutor turns passive reading material into an active, multi-sensory masterclass.
-
-It features a custom-built **`/brain` Cognitive Autonomy Layer** that monitors local codebase health, calculates code dependencies, runs runtime performance benchmarks, and employs long-horizon AI self-healing agents to automatically audit and patch system bugs.
-
----
+Tutor is a high-fidelity learning environment for reading papers and textbooks,
+asking source-aware tutor questions, building a persistent learning library, and
+reviewing knowledge over time. It combines a PDF study surface, streaming AI
+chat, voice tutoring, web search, revision notebooks, analytics, admin
+diagnostics, built-in architecture/design-language books, and a Graphify-backed
+repository architecture graph for maintainers.
 
 ## Core Surfaces
 
-Tutor transitions seamlessly between a dark-mode **Cosmic Obsidian** control panel for live studying, and a clean **Paper Reading Style** for deep-focus revision reviews.
+Tutor transitions between a dark Cosmic Obsidian study workspace and a clean
+paper reading style for revision.
 
 <table width="100%">
   <tr>
     <td width="50%" valign="top">
       <h3>Study Workspace</h3>
-      <p>Interactive PDF study surface using <code>react-pdf</code>. Supports rich-text selection, sticky highlights, annotations, and active page extraction. Page images are sent directly to multi-modal vision layers (Qwen-VL / GPT-4o-Mini) to extract titles and diagram contexts.</p>
+      <p>Interactive PDF study surface using <code>react-pdf</code>. Supports text selection, highlights, annotations, and page context extraction.</p>
     </td>
     <td width="50%" valign="top">
       <h3>Streaming Chat Panel</h3>
-      <p>Streaming SSE tutor response window loaded with custom Markdown, native <strong>Mermaid diagrams</strong>, runnable JS/Python sandboxes, TTS audio, and source-material-first web search via Serper only when fresh external facts are actually needed. Includes a smooth reasoning trace, non-jumping token streaming, fresh-chat reload behavior, and previous-chat restoration from the library context menu.</p>
+      <p>SSE tutor responses with custom Markdown, Mermaid diagrams, code rendering, TTS audio, source-material-first search, and smooth reasoning trace UI.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
       <h3>Active Recall Library</h3>
-      <p>A classic paper-style textbook interface. Houses generated learning books with substantial notebook-style conversation learnings, custom-mapped concept graphs, personal notes, revision flashcards, the built-in Tutor System Architecture book, and a live App Design Language book with cleaned wireframes, theme tokens, and interactive component previews.</p>
+      <p>Paper-style generated learning books, concept notes, active recall cards, and built-in architecture/design-language references.</p>
     </td>
     <td width="50%" valign="top">
       <h3>Three-Dimensional Brain Graph</h3>
-      <p>An interactive, hardware-accelerated 3D concept matrix rendered using Three.js and <code>react-force-graph-3d</code>. Maps out the learner's knowledge nodes, linking books, prerequisites, and concepts together dynamically.</p>
+      <p>A learner-facing concept matrix that maps books, prerequisites, and concepts into a local knowledge graph.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
       <h3>BKT Analytics Matrix</h3>
-      <p>Dynamic charts tracking concept mastery and session metrics powered by Recharts. Operates on a local <strong>Bayesian Knowledge Tracing (BKT)</strong> engine to calculate knowledge retention, scaffolding levels, and illusion-of-knowing alerts.</p>
+      <p>Charts for mastery, confidence, interactions, study sessions, and retention signals.</p>
     </td>
     <td width="50%" valign="top">
       <h3>Admin Diagnostics Console</h3>
-      <p>A master telemetry room. Inspect deep LLM trace chains, watch active WebSocket server logs, and monitor long-horizon <code>brain:debug</code> refactoring tasks as they execute across targets.</p>
+      <p>Inspect DeepSeek trace entries and watch live backend logs from the server console.</p>
     </td>
   </tr>
 </table>
 
----
-
 ## System Architecture
 
-Tutor integrates heavy-performance browser surfaces with an agile local server proxy to coordinate high-speed streaming, voice synthesizers, and database mutations.
-
-Document upload now runs through a classifier-first extraction path:
+Tutor integrates browser-heavy learning surfaces with a local Express proxy for
+model, search, document-ingestion, voice, and telemetry routes.
 
 ```text
 Upload
@@ -109,134 +106,99 @@ Upload
 
 ```mermaid
 graph TD
-    %% Nodes
     A[Study Workspace PDF Selection]
     B[AI Streaming Chat & Voice Engine]
     C[Express Server API Broker]
     D[(Local Dexie NeuralNestBrain DB)]
-
     E[OpenRouter Core LLMs]
     F[Deepgram Audio STT/TTS]
     G[Serper Web Search Index]
+    H[Graphify Architecture Graph]
 
-    H[Cognitive Autonomy Tooling]
-
-    %% Layout / Flow
-    A -->|Text annotations & page selection| B
-    B <-->|Bidirectional state & visual components| D
-    B -->|Streaming SSE prompts & voice streams| C
-
+    A -->|Text annotations and page selection| B
+    B <-->|Learning state and visual components| D
+    B -->|Streaming SSE prompts and voice streams| C
     C <-->|Federated query dispatch| E
     C <-->|Low-latency audio synthesis| F
-    C -->|Real-time web search request| G
-
-    H -.->|Continuous layout & invariant verification| B
-    H -.->|Performance auditing & telemetry| C
+    C -->|Fresh web search requests| G
+    H -.->|Agent architecture navigation| A
+    H -.->|Dependency and impact context| C
 ```
 
----
+## Graphify Architecture Layer
 
-## Cognitive Autonomy Layer (`/brain`)
+Graphify replaces the old custom repository architecture runtime. Architecture
+artifacts live in `graphify-out/`.
 
-The `/brain` folder represents the cognitive core of Tutor's development architecture. It is designed to allow coding agents and local environments to maintain high system cohesion, prevent architectural drift, and automatically fix bugs.
+Useful local commands:
 
-> [!IMPORTANT]
-> When executing codebase refactoring or feature additions, you **must** follow the agentic cycle:
-> `LOAD` ➔ `RETRIEVE` ➔ `IMPACT ANALYSIS` ➔ `VERIFY RULES` ➔ `PLAN` ➔ `MODIFY` ➔ `VERIFY` ➔ `REGENERATE` ➔ `UPDATE MEMORY`
+```bash
+npm run graphify:query -- "how does chat streaming work?"
+npm run graphify:path -- "ChatPanel" "server.ts"
+npm run graphify:tree
+```
 
-### Core Development Commands
+Graph rebuild policy:
 
-| Command                                                         | Action / Operational Purpose                                                                                           |
-| :-------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| `npm run brain:generate`                                        | Scans the codebase and regenerates the dependency, graph, and API maps.                                                |
-| `npm run brain:embed`                                           | Updates the semantic retrieval index using local Xenova embeddings.                                                    |
-| `npm run brain:verify`                                          | Audits the codebase against mutation boundaries and structural architecture rules.                                     |
-| `npm run brain:drift-check`                                     | Assesses codebase files to detect any non-compliant structural or layout deviations.                                   |
-| `npm run brain:runtime-benchmark`                               | Profiles app rendering performance and logs microsecond telemetry.                                                     |
-| `npm run brain:ui-regression`                                   | Runs the browser-backed UI probe for viewport, interaction, runtime, visual-regression, and state-transition evidence. |
-| `npm run brain:postchange`                                      | Executed after every code change to automatically regenerate maps, verify rules, and update cache.                     |
-| `npm run brain:debug -- --mode fix --scope changed`             | Invokes the long-horizon autonomous debugger against the narrowest truthful changed-file scope first.                  |
-| `npm run brain:debug -- --mode fix --scope component:ChatPanel` | Runs the debugger against a named route, component, or file when the defect is localized.                              |
-
----
+- Graphify artifacts are refreshed by `.github/workflows/graphify-refresh.yml`
+  only when code is pushed to GitHub.
+- The workflow runs `graphify update .`, regenerates `GRAPH_TREE.html`, and
+  commits changed `graphify-out` artifacts back with `[skip graphify]`.
+- Pull requests run `npm run lint` and `npm run build` without rewriting graph
+  artifacts.
+- Local agents should use Graphify queries before broad code reads, but should
+  not run watch-mode or commit/checkout hooks in this repo.
 
 ## Getting Started
 
 ### 1. Prerequisites
 
-- **Node.js** (v18+ recommended)
-- A valid set of API keys (BYOK Model):
-  - **OpenRouter Key:** To power chat intelligence models (`deepseek/deepseek-v4-flash`, `claude-3.5-sonnet`, `gemini-1.5-pro`)
-  - **Deepgram Key:** To broker low-latency voice, text-to-speech, and transcriptions
-  - **Serper Key:** To fetch real-time web news and search indexes
+- Node.js 22 recommended.
+- OpenRouter key for chat intelligence.
+- Deepgram key for voice and TTS.
+- Serper key for live web search.
 
-### 2. Quickstart Installation
+### 2. Install
 
 ```bash
-# Clone the repository
 git clone https://github.com/MohamedFuad16/Tutor-System-Architecture-.git
 cd Tutor-System-Architecture-
-
-# Install dependencies
 npm install
 ```
 
-### 3. Environment Variables Configuration
+### 3. Configure Environment
 
-Create a `.env` file in the root directory:
+Create a `.env` file:
 
 ```ini
-# Core LLM API Provider Key
 OPENROUTER_API_KEY=your_openrouter_key_here
-
-# Audio, Voice & TTS Engine Provider Key
 DEEPGRAM_API_KEY=your_deepgram_key_here
-
-# Live Google Search Index Key
 SERPER_API_KEY=your_serper_key_here
 ```
 
-### 4. Running the Application
-
-Start the integrated client and backend proxy servers concurrently:
+### 4. Run
 
 ```bash
 npm run dev
 ```
 
-Navigate to `http://localhost:5173` to start learning!
-
----
+Open `http://localhost:3000`.
 
 ## Design System
 
-The application combines two contrasting high-impact themes, carefully selected to balance active system diagnostics with deep reading focus:
-
-- **Cosmic Obsidian Theme (Study, Graph, Settings, Admin views):**
-  - **Primary Backgrounds:** Ultra-dark obsidian `#030303` and glass-obsidian panel `#0A0A0B`.
-  - **Accents:** Neon Violet (`#8B5CF6`), Neon Blue (`#3B82F6`), and Neon Orange (`#F97316`) glow borders and motion transitions.
-  - **Details:** Transparent layouts, liquid progress indicators, and custom glowing focus rings.
-- **Paper Reading Theme (Revision & Trace views):**
-  - **Primary Background:** `#faf9f6` paper texture.
-  - **Typography:** Serif fonts styled like high-quality printed textbooks and notes.
-  - **Details:** Soft shadows, minimal high-contrast dividers, and warm-toned review markers.
-- **App Design Language Library:**
-  - **Wireframes:** Live connection map for Study, PDF Viewer, Chat Panel, Memory, Brain, Revision, Analytics, and Admin.
-  - **Theme Tokens:** Cosmic Obsidian colors, paper contrast, neon accents, liquid glass, radius, shadow, motion, and typography rules.
-  - **Component Previews:** Interactive rendered miniatures for the app's major UI components so contributors can test behavior instead of reading static screenshots.
-
----
+- Cosmic Obsidian for Study, Graph, Settings, and Admin: ultra-dark surfaces,
+  neon violet/blue/orange accents, glass panels, liquid details, and motion.
+- Paper Reading Style for Revision and Trace views: `#faf9f6`, serif type, soft
+  borders, and quiet reading density.
+- App Design Language Library: live wireframes, theme tokens, and interactive
+  component previews.
 
 ## Contributing
 
-Contributions are highly welcome! Please follow these guidelines:
-
-1. Ensure all changes are verified using `npm run brain:verify`.
-2. Run `npm run brain:postchange` to sync cognitive dependency maps before creating a pull request.
-3. Review `TUTOR_ARCHITECTURE.md` to understand high-risk mutation boundaries before modifying Dexie database structures.
-
----
+1. Use Graphify graph traversal before broad repository reads.
+2. Run `npm run lint` and `npm run build` before opening a pull request.
+3. Let GitHub Actions refresh `graphify-out` after code is pushed.
 
 ## License
 
-Distributed under the **MIT License**. See `LICENSE` for details.
+Distributed under the MIT License. See `LICENSE` for details.

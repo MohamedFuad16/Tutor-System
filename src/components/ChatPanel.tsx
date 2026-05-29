@@ -51,7 +51,6 @@ import { brainOrchestrator } from "../memory/memory.orchestrator";
 import { db } from "../memory/longterm.memory";
 import type { Message } from "../types";
 import { FloatingSkillsMenu } from "./FloatingSkillsMenu";
-import { recordBrainRuntime } from "../brain-runtime/runtimeTelemetry";
 import { useTranslation } from "../lib/translations";
 
 type MermaidApi = typeof import("mermaid").default;
@@ -2039,6 +2038,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const language = useStore((state) => state.language);
   const apiKey = useStore((state) => state.apiKey);
   const serperApiKey = useStore((state) => state.serperApiKey);
+  const deepgramApiKey = useStore((state) => state.deepgramApiKey);
   const learnerName = useStore((state) => state.learnerName);
   const askTutorQuery = useStore((state) => state.askTutorQuery);
   const setAskTutorQuery = useStore((state) => state.setAskTutorQuery);
@@ -2268,6 +2268,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       );
       return;
     }
+    if (window.location.hostname.endsWith(".vercel.app")) {
+      alert(
+        "Live Voice uses a WebSocket backend, which cannot run inside this Vercel deployment. Read Aloud still works through the HTTP TTS route; deploy the Node server separately for live voice.",
+      );
+      return;
+    }
 
     try {
       setVoiceState("listening");
@@ -2321,6 +2327,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           JSON.stringify({
             type: "voice_auth",
             openRouterKey: apiKey,
+            deepgramKey: deepgramApiKey,
             language,
           }),
         );
@@ -2526,6 +2533,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           : cleanText;
       const res = await fetch(
         `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || "gpt-4o-mini-tts")}`,
+        deepgramApiKey
+          ? {
+              headers: {
+                "x-deepgram-key": deepgramApiKey,
+              },
+            }
+          : undefined,
       );
       if (!res.ok) {
         const err = await res
@@ -2821,15 +2835,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         usage: messageUsage,
       }));
       const recordWebTelemetry = (
-        name: string,
-        metadata: Record<string, unknown>,
-      ) => {
-        recordBrainRuntime({
-          type: "web_search",
-          name,
-          metadata,
-        });
-      };
+        _name: string,
+        _metadata: Record<string, unknown>,
+      ) => {};
 
       while (true) {
         const { done, value } = await reader.read();

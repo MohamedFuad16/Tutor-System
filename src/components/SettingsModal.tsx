@@ -238,6 +238,8 @@ export function SettingsButton() {
     setApiKey,
     serperApiKey,
     setSerperApiKey,
+    deepgramApiKey,
+    setDeepgramApiKey,
     learnerName,
     setLearnerName,
     ttsVoice,
@@ -254,6 +256,7 @@ export function SettingsButton() {
   } = useStore();
   const [inputKey, setInputKey] = useState(apiKey);
   const [inputSerperKey, setInputSerperKey] = useState(serperApiKey);
+  const [inputDeepgramKey, setInputDeepgramKey] = useState(deepgramApiKey);
   const [inputLearnerName, setInputLearnerName] = useState(learnerName);
   const [inputVoice, setInputVoice] = useState(ttsVoice || "gpt-4o-mini-tts");
   const [inputModel, setInputModel] = useState(aiModel || "gpt-4o-mini");
@@ -292,6 +295,7 @@ export function SettingsButton() {
     if (isOpen) {
       setInputKey(apiKey);
       setInputSerperKey(serperApiKey);
+      setInputDeepgramKey(deepgramApiKey);
       setInputLearnerName(learnerName);
       setInputVoice(ttsVoice || "gpt-4o-mini-tts");
       setInputModel(aiModel || "gpt-4o-mini");
@@ -305,6 +309,7 @@ export function SettingsButton() {
     isOpen,
     apiKey,
     serperApiKey,
+    deepgramApiKey,
     learnerName,
     ttsVoice,
     aiModel,
@@ -316,11 +321,13 @@ export function SettingsButton() {
   const handleSave = async () => {
     setValidationError(null);
     const trimmedSerperKey = inputSerperKey.trim();
+    const trimmedDeepgramKey = inputDeepgramKey.trim();
 
     // Auto-save if key is empty
     if (!inputKey || inputKey.trim() === "") {
       setApiKey("");
       setSerperApiKey(trimmedSerperKey);
+      setDeepgramApiKey(trimmedDeepgramKey);
       setLearnerName(inputLearnerName);
       setTtsVoice(inputVoice);
       setAiModel(inputModel);
@@ -352,6 +359,7 @@ export function SettingsButton() {
 
       setApiKey(inputKey);
       setSerperApiKey(trimmedSerperKey);
+      setDeepgramApiKey(trimmedDeepgramKey);
       setLearnerName(inputLearnerName);
       setTtsVoice(inputVoice);
       setAiModel(inputModel);
@@ -582,6 +590,28 @@ export function SettingsButton() {
                             Stored locally and sent only to this app's backend
                             when live web search is needed. Server environment
                             keys still work as a fallback.
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                            <Mic size={14} className="text-violet-400" />
+                            {t("deepgram_key")}
+                          </label>
+                          <input
+                            type="password"
+                            value={inputDeepgramKey}
+                            onChange={(e) =>
+                              setInputDeepgramKey(e.target.value)
+                            }
+                            placeholder="DEEPGRAM_API_KEY"
+                            disabled={isValidating}
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
+                          />
+                          <p className="text-xs text-zinc-500 leading-relaxed">
+                            Stored locally and sent only to this app's backend
+                            for voice and Deepgram read-aloud requests. Server
+                            environment keys still work as a fallback.
                           </p>
                         </div>
 

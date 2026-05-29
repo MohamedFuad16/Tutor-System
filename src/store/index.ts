@@ -217,6 +217,8 @@ interface AppState {
   setApiKey: (key: string) => void;
   serperApiKey: string;
   setSerperApiKey: (key: string) => void;
+  deepgramApiKey: string;
+  setDeepgramApiKey: (key: string) => void;
   learnerName: string;
   setLearnerName: (name: string) => void;
   activeView: ViewState;
@@ -309,6 +311,11 @@ export const useStore = create<AppState>()(
       setSerperApiKey: (key: string) => {
         localStorage.setItem("serper_api_key", key);
         set({ serperApiKey: key });
+      },
+      deepgramApiKey: localStorage.getItem("deepgram_api_key") || "",
+      setDeepgramApiKey: (key: string) => {
+        localStorage.setItem("deepgram_api_key", key);
+        set({ deepgramApiKey: key });
       },
       learnerName: localStorage.getItem("learner_name") || "Learner",
       setLearnerName: (name: string) => {

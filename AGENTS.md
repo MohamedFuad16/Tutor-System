@@ -1,277 +1,142 @@
 # Tutor - AI-Powered Learning Interface
 
 ## Objective
-To build an advanced, visually stunning "Tutor" application that assists users in reading academic papers and textbooks (e.g., Fluent Python) with semantic intelligence, real-time knowledge graph generation, and an active recall revision system.
 
-## Design Philosophy & Directives
-- **Visual Theme**: "Cosmic Obsidian" — extremely heavy, dark backgrounds (`#030303`, `#0A0A0B`) interspersed with glowing neons (violet, blue, orange), heavily utilizing `mix-blend-mode` for cinematic overlays.
-- **Micro-Interactions**: Use fluid, satisfying, motion-heavy interactions. Use physics-spring animations on buttons, and dynamic liquid glass effects for AI elements.
-- **Premium UI Signatures**:
-  - The AI Assistant avatar uses an animated Siri-like "liquid glass" shader using noise SVGs for gradients and CSS overlays.
-  - The Revision/notes view uses a classic analog "Book/Notebook" rendering style (using `#faf9f6` paper background, serif typography, page textures) contrasting with the tech-heavy dark UI.
-  - The Knowledge Graph (`react-force-graph-3d`) renders nodes as beautiful glass orbs with wireframes and glowing cores instead of hard geometric solids.
+Build an advanced, visually stunning Tutor application that assists users in
+reading academic papers and textbooks with semantic intelligence, real-time
+knowledge graph generation, and active recall revision.
 
-## Core Features
-1. **Interactive PDF Viewer**: Highlights and annotations directly on the PDF surface with custom overlays. Liquid metal backdrop-blur toolbars for text selection with dark-themed visual alignment and precision vertical offset tuning.
-2. **AI Chat Panel**: Claude/o1-style Animated Thinking Panel showing real-time streaming "Thought Process" expansions, glowing dynamic input boxes, and contextual awareness.
-3. **Brain View (Knowledge Graph)**: Real-time 3D Force-Directed Graph mapping out Python concepts (or any text concepts).
-4. **Revision Notebook**: A highly polished reading space for reviewing concept mastery using a "Book Pages" physical aesthetic, including long-press functionality for IndexedDB concept deletion.
+## Design Philosophy
 
-## Frameworks & Layout
-- React 18, Vite, TypeScript, Tailwind CSS
-- Component boundaries must remain strict: `PdfViewer`, `ChatPanel`, `BrainView`, `RevisionView`. 
-- No default UI slop — no telemetry labels, no margins of unneeded data. Everything serves the learning experience or visual luxury.
+- Visual theme: Cosmic Obsidian, with extremely dark surfaces (`#030303`,
+  `#0A0A0B`) and focused neon accents in violet, blue, and orange.
+- Micro-interactions: use fluid, motion-heavy interactions and physics-spring
+  motion for meaningful controls.
+- AI surfaces: use liquid glass effects for assistant elements.
+- Revision and notes: keep the classic analog book/notebook feel with paper
+  backgrounds, serif typography, and page texture.
+- Knowledge graph: render learner concepts as premium glass-orb style nodes
+  rather than hard geometric solids.
 
-# Universal Brain Agent Runtime
+## Core Product Boundaries
 
-This file is the single canonical runtime contract for AI coding agents working in this repository.
+- `PdfViewer`: PDF reading, selection, highlights, annotations, and overlay
+  controls.
+- `ChatPanel`: streaming tutor chat, source-aware reasoning, tool output, TTS,
+  and voice interactions.
+- `BrainView` / learner graph surfaces: the user-facing study concept graph.
+- `RevisionView`: paper-style review, generated learning books, notes, and
+  active recall.
 
-It is editor-agnostic. Use it in Codex, Claude Code, Cursor, Gemini, Antigravity, Roo, Aider, VSCode AI, OpenHands, or any future coding agent.
+Do not confuse the user-facing learner brain graph with the repository
+architecture graph. The repository architecture graph is Graphify.
 
-Do not create extra agent frameworks, swarms, orchestration layers, recursive runtimes, or editor-specific protocols. The `/brain` system is complete enough. The goal now is reliable, portable, low-maintenance operation.
+# Graphify-First Development
 
-## What `/brain` Is
+Graphify is the repository architecture cognition layer for agents in this
+repo. The old custom architecture runtime has been removed.
 
-`/brain` is a generated architecture cognition layer for this repository.
+## Required Navigation Habit
 
-It contains:
+Always use graph traversal before large repository reads.
 
-- source-scoped architecture graphs
-- semantic retrieval indexes
-- runtime impact telemetry
-- route, state, render, API, WebSocket, and database maps
-- architecture rules and mutation boundaries
-- drift and freshness checks
-- self-audit reports
-- longitudinal engineering memory
+Prefer:
 
-Treat `/brain` as decision support, not magic. It helps agents retrieve relevant context, estimate impact, verify invariants, detect stale artifacts, and preserve architecture during changes.
+- `query_graph`
+- `get_neighbors`
+- `shortest_path`
+- `graphify query`
+- `graphify path`
 
-## Mandatory Pipeline
+Avoid:
 
-All agents must follow this exact pipeline:
+- repository-wide scanning before graph retrieval
+- repeated rereads
+- opening files before graph results identify them as relevant
+
+Use Graphify as decision support, then verify important claims against the live
+source before editing.
+
+## Graph Location
+
+Graphify writes generated architecture artifacts to:
 
 ```text
-LOAD
--> RETRIEVE
--> IMPACT ANALYSIS
--> VERIFY RULES
--> PLAN
--> MODIFY
--> VERIFY
--> REGENERATE
--> UPDATE MEMORY
+graphify-out/
 ```
 
-Do not skip steps because a change looks small.
+Important files:
 
-## Minimal Commands
+- `graphify-out/graph.json`: architecture graph used by CLI and MCP tools.
+- `graphify-out/GRAPH_REPORT.md`: human-readable graph report.
+- `graphify-out/GRAPH_TREE.html`: browsable graph tree generated by CI.
 
-Use only these commands as the standard agent workflow:
+Do not manually edit `graphify-out` artifacts. Regenerate them with Graphify.
+
+## Local Commands
+
+Use these commands when graph context is needed:
 
 ```bash
-npm run brain:generate
-npm run brain:retrieve -- "<task>"
-npm run brain:impact -- "<file-or-symbol>"
-npm run brain:verify
-npm run brain:drift-check
-npm run brain:execute -- --task "<task>" --mode plan
-npm run brain:self-audit
+graphify query "your question" --budget 2000 --graph graphify-out/graph.json
+graphify path "SourceSymbol" "TargetSymbol" --graph graphify-out/graph.json
+npm run graphify:tree
 ```
 
-Command meanings:
+The local `npm run graphify:update` command exists for explicit manual recovery
+or migration work. Do not run it automatically after every message, file save,
+commit, or ordinary local edit.
 
-- `brain:generate`: regenerates source-scoped brain artifacts from the current repository.
-- `brain:retrieve`: retrieves relevant context for a task using semantic retrieval, graph neighbors, context packs, invariants, and task memory.
-- `brain:impact`: reports static and observed runtime impact for a file, symbol, route, API, store, or subsystem.
-- `brain:verify`: validates architecture rules, freshness, contracts, routes, runtime maps, vector indexes, loaders, and self-audit status.
-- `brain:drift-check`: detects whether source files changed since the last brain generation and reports regeneration targets.
-- `brain:execute`: creates a plan in `--mode plan`; in explicit `--mode execute`, applies guarded model-generated patches only when configured and verification passes.
-- `brain:self-audit`: scores graph freshness, vector freshness, retrieval quality, runtime coverage, rule compliance, route/state coverage, loader coverage, and memory continuity.
+## Rebuild Policy
 
-Other internal commands may exist, but they are not part of the universal agent protocol.
+Graphify rebuilds are push-time only.
 
-## LOAD
+- GitHub Actions runs `.github/workflows/graphify-refresh.yml` on `push`.
+- The workflow runs `graphify update .`, regenerates `GRAPH_TREE.html`, and
+  commits changed `graphify-out` artifacts back with `[skip graphify]`.
+- Pull requests run normal quality gates but do not rewrite graph artifacts.
+- Local agents should not install Graphify git hooks that rebuild on commit or
+  checkout.
+- Local agents should not run Graphify watch mode for this repo.
 
-Start by reading this file and identifying the user task.
+This keeps architecture context current after code reaches GitHub without
+rebuilding it after every chat turn or local file change.
 
-Then run:
+## Change Workflow
+
+1. Load this file and identify the user task.
+2. Retrieve relevant graph context with Graphify MCP or CLI.
+3. Inspect only the directly connected source files needed for the task.
+4. Check downstream impact from graph neighbors and imports before editing.
+5. Make the smallest source-aware change.
+6. Run focused verification, then broader checks when the change touches shared
+   state, routing, API contracts, or UI primitives.
+7. Do not refresh `graphify-out` locally unless the user explicitly asks for a
+   graph refresh or the task is this migration.
+
+## Standard Verification
+
+For ordinary source changes, run:
 
 ```bash
-npm run brain:drift-check
+npm run lint
+npm run build
 ```
 
-If drift is reported, do not trust generated artifacts until regeneration has run:
+For visual changes, also verify the live app in the browser at relevant mobile
+and desktop viewports.
 
-```bash
-npm run brain:generate
-```
+## Architecture Boundaries
 
-After regeneration, continue with retrieval and impact analysis.
+Treat these areas as high risk:
 
-## RETRIEVE
+- Dexie schema in `src/memory/longterm.memory.ts`
+- Server routes, SSE event shapes, WebSocket paths, and API contracts in
+  `server.ts`
+- Zustand state fields in `src/store/index.ts`
+- Chat streaming parser and tool handling in `src/components/ChatPanel.tsx`
+- Document ingestion and Python extraction behavior
+- Generated Graphify artifacts in `graphify-out/`
 
-Before reading broad areas of the repository, retrieve focused context:
-
-```bash
-npm run brain:retrieve -- "<task>"
-```
-
-Retrieval rules:
-
-- retrieve only context relevant to the task
-- prioritize directly impacted systems
-- prioritize architecture invariants and mutation boundaries
-- prioritize runtime telemetry when available
-- include dependency neighbors and downstream consumers
-- include relevant task history when present
-- minimize token usage
-- avoid unrelated files and broad repository reads
-
-Use retrieved files to decide what to inspect. Do not use retrieval output as proof by itself; verify important claims against source before editing.
-
-## IMPACT ANALYSIS
-
-Before modifying any source file, run impact analysis for the likely mutation targets:
-
-```bash
-npm run brain:impact -- "<file-or-symbol>"
-```
-
-Impact analysis should guide:
-
-- downstream files to inspect
-- rerender and route propagation risk
-- Zustand state propagation risk
-- API, SSE, and WebSocket coupling
-- Dexie/database mutation risk
-- shared UI and animation inheritance
-- affected verification or test surfaces
-
-Never bypass impact analysis for shared state, routing, server contracts, database code, shared UI primitives, or generated brain tooling.
-
-## VERIFY RULES
-
-Before planning edits, check that the current architecture state is valid:
-
-```bash
-npm run brain:verify
-```
-
-If verification fails, fix the verification failure or explain why the requested task is blocked. Do not build on a known-invalid brain state.
-
-## PLAN
-
-Create a short plan before modifying files.
-
-The plan must include:
-
-- files to inspect or edit
-- retrieved context used
-- impact-analysis findings
-- architecture invariants to preserve
-- verification commands to run
-- known risks or unresolved questions
-
-Prefer the built-in plan mode:
-
-```bash
-npm run brain:execute -- --task "<task>" --mode plan
-```
-
-Plan mode must not modify source files.
-
-## MODIFY
-
-Modify only the source files needed for the task.
-
-Mutation boundaries:
-
-- Do not manually edit generated artifacts such as graph, flow, contract, impact, vector, runtime, snapshot, or verification outputs.
-- Regenerate generated artifacts with `brain:generate` instead.
-- Treat Dexie schema changes as high risk; require explicit schema or migration intent.
-- Treat server contract, SSE, WebSocket, and API changes as high risk; verify client and contract impact.
-- Treat shared store, routing, layout, and UI primitive changes as broad-impact.
-- Keep edits small and source-aware.
-
-Autonomous safety rules:
-
-- never modify blindly
-- never trust stale artifacts
-- never bypass verification
-- never bypass impact analysis
-- never mutate generated artifacts manually
-- never bypass architecture invariants
-- prefer plan mode before execute mode
-- do not use execute mode unless the user explicitly wants autonomous patch application
-
-## VERIFY
-
-After source edits, run:
-
-```bash
-npm run brain:verify
-```
-
-Also run normal project checks requested by the user or required by the repository, such as typecheck, lint, build, or tests.
-
-If verification fails, fix the source issue or stop and report the failure honestly.
-
-## REGENERATE
-
-After source changes that affect architecture, routes, state, contracts, runtime maps, retrieval, or brain tooling, regenerate:
-
-```bash
-npm run brain:generate
-```
-
-Then verify freshness:
-
-```bash
-npm run brain:drift-check
-npm run brain:verify
-npm run brain:self-audit
-```
-
-Do not claim `/brain` is current unless drift-check and verification pass.
-
-## UPDATE MEMORY
-
-At the end of a completed task, record enough information for future agents to understand why the change happened.
-
-Task memory should capture:
-
-- objective
-- files changed
-- systems affected
-- invariants touched
-- risks introduced
-- verification results
-- unresolved issues
-- regeneration status
-
-When `brain:execute --mode execute` performs a change successfully, it is responsible for updating memory after verification passes.
-
-For manual agent edits, include the task-memory payload in the final response if no canonical memory update command is available in the universal workflow. Do not mark memory successful when verification failed.
-
-## Final Completion Checklist
-
-Before reporting done:
-
-```bash
-npm run brain:generate
-npm run brain:verify
-npm run brain:drift-check
-npm run brain:self-audit
-```
-
-Then summarize:
-
-- what changed
-- what context was used
-- what impact was checked
-- which commands passed
-- any remaining risks
-
-Keep the workflow simple. The universal runtime is this file plus retrieved context.
-
+Keep edits scoped. Preserve existing app behavior unless the task explicitly
+requires a behavior change.

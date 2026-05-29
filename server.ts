@@ -3,17 +3,12 @@ dotenv.config();
 import express from "express";
 import * as fs from "fs";
 import path from "path";
-import {
-  execFileSync,
-  spawn,
-  type ChildProcessWithoutNullStreams,
-} from "child_process";
 import compression from "compression";
 import OpenAI from "openai";
 import multer from "multer";
 import { GoogleGenAI } from "@google/genai";
 import { WebSocketServer, WebSocket as WSWebSocket } from "ws";
-import type { IncomingHttpHeaders } from "http";
+import type { IncomingHttpHeaders, Server as HttpServer } from "http";
 import {
   detectFreshnessSearch,
   formatSourcesForPrompt,
@@ -154,7 +149,7 @@ const isAuthorizedDebugRequest = (request: RequestLike) => {
 
 const redactSensitiveUrl = (url: string) =>
   url.replace(
-    /([?&](?:openRouterKey|apiKey|debugToken|token|key)=)[^&]*/gi,
+    /([?&](?:openRouterKey|deepgramKey|apiKey|debugToken|token|key)=)[^&]*/gi,
     "$1[redacted]",
   );
 
@@ -163,6 +158,16 @@ const normalizeVoiceLanguage = (value: unknown) => {
   const language = typeof raw === "string" ? raw.trim().toLowerCase() : "";
   return language === "ja" || language === "ko" ? language : "en";
 };
+
+const deepgramKeyFromRequest = (request: {
+  headers: IncomingHttpHeaders;
+  query?: Record<string, unknown>;
+}) =>
+  sanitizeApiKey(
+    request.headers["x-deepgram-key"] ||
+      request.headers["x-voice-key"] ||
+      request.query?.deepgramKey,
+  );
 
 const normalizeModelPricing = (raw: any): OpenRouterPricing => {
   const models: OpenRouterPricing = {};
@@ -295,15 +300,24 @@ const fallbackLearningUpdate = (body: any) => {
   };
 };
 
-async function startServer() {
+type TutorServerAppOptions = {
+  serveClient?: boolean;
+};
+
+export async function createTutorServerApp(
+  options: TutorServerAppOptions = {},
+) {
   const app = express();
-  const PORT = Number(process.env.PORT || 3000);
 
   app.use(compression());
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "100mb", extended: true }));
 
-  const uploadDir = path.join(process.cwd(), "uploads");
+  const uploadDir =
+    process.env.TUTOR_UPLOAD_DIR ||
+    (process.env.VERCEL
+      ? path.join("/tmp", "tutor-uploads")
+      : path.join(process.cwd(), "uploads"));
   fs.mkdirSync(uploadDir, { recursive: true });
   const upload = multer({ dest: uploadDir });
 
@@ -318,17 +332,6 @@ async function startServer() {
     }
     next();
   });
-
-  const requireDebugAccess: express.RequestHandler = (req, res, next) => {
-    if (isAuthorizedDebugRequest(req)) {
-      next();
-      return;
-    }
-    res.status(403).json({
-      error:
-        "Debug access denied. Use localhost in development or provide x-debug-token with TUTOR_DEBUG_TOKEN.",
-    });
-  };
 
   // WebSocket Server for Console Broadcaster
   const wssDebug = new WebSocketServer({ noServer: true });
@@ -390,384 +393,8 @@ async function startServer() {
     originalWarn.apply(console, args);
   };
 
-  const debugRunsDir = path.join(process.cwd(), "brain/debug/runs");
-  let activeDebugJob: {
-    id: string;
-    child: ChildProcessWithoutNullStreams;
-  } | null = null;
-
-  const appendDebugRunEvent = (
-    runId: string,
-    type: string,
-    message: string,
-    data: Record<string, unknown> = {},
-  ) => {
-    const runDir = path.join(debugRunsDir, runId);
-    if (!fs.existsSync(runDir)) return;
-    fs.appendFileSync(
-      path.join(runDir, "events.ndjson"),
-      `${JSON.stringify({
-        timestamp: new Date().toISOString(),
-        type,
-        message,
-        data,
-      })}\n`,
-    );
-  };
-
-  const readJsonFile = (file: string) => {
-    try {
-      return JSON.parse(fs.readFileSync(file, "utf8"));
-    } catch {
-      return null;
-    }
-  };
-
-  const writeJsonFile = (file: string, value: unknown) => {
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
-  };
-
-  const readDebugEvents = (runDir: string) => {
-    const eventsPath = path.join(runDir, "events.ndjson");
-    if (!fs.existsSync(eventsPath)) return [];
-    return fs
-      .readFileSync(eventsPath, "utf8")
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => {
-        try {
-          return JSON.parse(line);
-        } catch {
-          return null;
-        }
-      })
-      .filter(Boolean);
-  };
-
-  const readDebugComponents = (runDir: string, summary: any = {}) => {
-    const componentsDir = path.join(runDir, "components");
-    const componentFiles = fs.existsSync(componentsDir)
-      ? fs
-          .readdirSync(componentsDir)
-          .filter((file) => file.endsWith(".json"))
-          .map((file) => readJsonFile(path.join(componentsDir, file)))
-          .filter(Boolean)
-      : [];
-    const storedComponents = Array.isArray(summary.components)
-      ? summary.components
-      : [];
-    return (componentFiles.length ? componentFiles : storedComponents).sort(
-      (a: any, b: any) =>
-        String(a.finishedAt || a.timestamp || "").localeCompare(
-          String(b.finishedAt || b.timestamp || ""),
-        ),
-    );
-  };
-
-  const summarizeDebugRun = (id: string) => {
-    const runDir = path.join(debugRunsDir, id);
-    const summary =
-      readJsonFile(path.join(runDir, "summary.json")) ||
-      readJsonFile(path.join(runDir, "run.json")) ||
-      {};
-    const events = readDebugEvents(runDir);
-    const components = readDebugComponents(runDir, summary);
-    const startEvent = events.find(
-      (event: any) => event.type === "run-started",
-    );
-    const completeEvent = [...events]
-      .reverse()
-      .find((event: any) => event.type === "run-completed");
-    const active = activeDebugJob?.id === id;
-    const updatedAtMs = summary.updatedAt ? Date.parse(summary.updatedAt) : 0;
-    const staleRunning =
-      summary.status === "running" &&
-      !active &&
-      !completeEvent &&
-      (!updatedAtMs || Date.now() - updatedAtMs > 60_000);
-    const status = active
-      ? "running"
-      : staleRunning
-        ? "interrupted"
-        : summary.status ||
-          completeEvent?.data?.status ||
-          (completeEvent ? "completed" : "unknown");
-
-    return {
-      ...summary,
-      id,
-      status,
-      startedAt: summary.startedAt || startEvent?.timestamp || null,
-      finishedAt: summary.finishedAt || completeEvent?.timestamp || null,
-      updatedAt: summary.updatedAt || null,
-      mode: summary.mode || startEvent?.data?.mode || null,
-      scope: summary.scope || startEvent?.data?.scope || null,
-      targetCount: Number(summary.targetCount || 0),
-      completedCount: Number(summary.completedCount ?? components.length),
-      changedCount: Number(
-        summary.changedCount ??
-          components.filter((item: any) => item.changed).length,
-      ),
-      activeTarget: active ? summary.activeTarget || null : null,
-      components,
-      events: events.slice(-160),
-    };
-  };
-
-  const seedDebugRun = (runId: string, mode: string, scope: string) => {
-    const now = new Date().toISOString();
-    const runDir = path.join(debugRunsDir, runId);
-    fs.mkdirSync(path.join(runDir, "components"), { recursive: true });
-    const seed = {
-      id: runId,
-      status: "running",
-      startedAt: now,
-      finishedAt: null,
-      updatedAt: now,
-      mode,
-      scope,
-      targetCount: 0,
-      completedCount: 0,
-      changedCount: 0,
-      activeTarget: null,
-      components: [],
-      finalCommands: [],
-      unresolvedRisks: [],
-    };
-    writeJsonFile(path.join(runDir, "summary.json"), seed);
-    writeJsonFile(path.join(runDir, "run.json"), seed);
-    fs.appendFileSync(
-      path.join(runDir, "events.ndjson"),
-      `${JSON.stringify({
-        timestamp: now,
-        type: "run-queued",
-        message: `Debug run ${runId} queued by Admin`,
-        data: { id: runId, mode, scope },
-      })}\n`,
-    );
-  };
-
-  const persistDebugExit = (runId: string, code: number | null) => {
-    const runDir = path.join(debugRunsDir, runId);
-    if (!fs.existsSync(runDir)) return;
-    const current = summarizeDebugRun(runId) as any;
-    if (current.status !== "running" && current.status !== "unknown") return;
-    const { events: _events, ...persistable } = current;
-    const finished = {
-      ...persistable,
-      status:
-        code === 0
-          ? "completed"
-          : code === null
-            ? "cancelled"
-            : "failed-process",
-      finishedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      activeTarget: null,
-    };
-    writeJsonFile(path.join(runDir, "summary.json"), finished);
-    writeJsonFile(path.join(runDir, "run.json"), finished);
-  };
-
-  const stopExternalDebugProcesses = (runId: string) => {
-    let killed = 0;
-    try {
-      const output = execFileSync("pgrep", ["-fl", runId], {
-        encoding: "utf8",
-      });
-      for (const line of output.split("\n").filter(Boolean)) {
-        const match = line.match(/^(\d+)\s+(.+)$/);
-        if (!match) continue;
-        const pid = Number(match[1]);
-        const command = match[2] || "";
-        const isDebugRunner =
-          command.includes("brain:debug") ||
-          command.includes("debug-runner") ||
-          command.includes("--resume");
-        if (!Number.isFinite(pid) || !isDebugRunner) continue;
-        try {
-          process.kill(pid, "SIGTERM");
-          killed += 1;
-        } catch (error) {
-          console.warn(`[DEBUG] Failed to stop process ${pid}:`, error);
-        }
-      }
-    } catch {
-      return killed;
-    }
-    return killed;
-  };
-
-  const stopDebugRun = (runId: string) => {
-    let stopped = false;
-    if (activeDebugJob?.id === runId) {
-      activeDebugJob.child.kill("SIGTERM");
-      activeDebugJob = null;
-      stopped = true;
-    }
-    const externalCount = stopExternalDebugProcesses(runId);
-    stopped = stopped || externalCount > 0;
-    persistDebugExit(runId, null);
-    appendDebugRunEvent(runId, "run-cancelled", `Debug run ${runId} stopped`, {
-      stopped,
-      externalCount,
-    });
-    return { stopped, externalCount };
-  };
-
-  const listDebugRuns = () => {
-    if (!fs.existsSync(debugRunsDir)) return [];
-    return fs
-      .readdirSync(debugRunsDir, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => {
-        const summary = summarizeDebugRun(entry.name);
-        return {
-          id: entry.name,
-          status: summary.status,
-          startedAt: summary.startedAt || null,
-          finishedAt: summary.finishedAt || null,
-          mode: summary.mode || null,
-          scope: summary.scope || null,
-          targetCount: summary.targetCount || 0,
-          completedCount: summary.completedCount || 0,
-          changedCount: summary.changedCount || 0,
-        };
-      })
-      .sort((a, b) =>
-        String(b.startedAt || b.id).localeCompare(String(a.startedAt || a.id)),
-      );
-  };
-
-  app.use("/api/debug", requireDebugAccess);
-
-  app.get("/api/debug/runs", (_req, res) => {
-    res.json({
-      activeRunId: activeDebugJob?.id || null,
-      runs: listDebugRuns(),
-    });
-  });
-
-  app.delete("/api/debug/runs", (_req, res) => {
-    if (fs.existsSync(debugRunsDir)) {
-      for (const entry of fs.readdirSync(debugRunsDir)) {
-        const summary = summarizeDebugRun(entry);
-        if (summary.status === "running" || activeDebugJob?.id === entry) {
-          stopDebugRun(entry);
-        }
-        fs.rmSync(path.join(debugRunsDir, entry), {
-          recursive: true,
-          force: true,
-        });
-      }
-    }
-    res.json({ ok: true, deleted: true });
-  });
-
-  app.delete("/api/debug/runs/:id", (req, res) => {
-    const safeId = path.basename(req.params.id);
-    const runDir = path.join(debugRunsDir, safeId);
-    if (!fs.existsSync(runDir)) {
-      return res.status(404).json({ error: "Debug run not found." });
-    }
-    const summary = summarizeDebugRun(safeId);
-    if (summary.status === "running" || activeDebugJob?.id === safeId) {
-      stopDebugRun(safeId);
-    }
-    fs.rmSync(runDir, { recursive: true, force: true });
-    res.json({ ok: true, deleted: safeId });
-  });
-
-  app.get("/api/debug/runs/:id", (req, res) => {
-    const safeId = path.basename(req.params.id);
-    const runDir = path.join(debugRunsDir, safeId);
-    if (!fs.existsSync(runDir))
-      return res.status(404).json({ error: "Debug run not found." });
-    res.json(summarizeDebugRun(safeId));
-  });
-
-  app.get("/api/debug/runs/:id/events", (req, res) => {
-    const safeId = path.basename(req.params.id);
-    const runDir = path.join(debugRunsDir, safeId);
-    res.json({ events: readDebugEvents(runDir) });
-  });
-
-  app.post("/api/debug/run", (req, res) => {
-    if (activeDebugJob)
-      return res.status(409).json({
-        error: "A debug run is already active.",
-        activeRunId: activeDebugJob.id,
-      });
-    const requestedMode = String(req.body?.mode || "fix");
-    const mode = ["audit", "fix", "scan", "long-horizon"].includes(
-      requestedMode,
-    )
-      ? requestedMode
-      : "fix";
-    const scope =
-      (mode === "long-horizon"
-        ? "all"
-        : String(req.body?.scope || "changed").replace(
-            /[^a-zA-Z0-9_./:-]/g,
-            "",
-          )) || "changed";
-    const runId = `debug-${new Date().toISOString().replace(/[:.]/g, "-")}`;
-    seedDebugRun(runId, mode, scope);
-    const child = spawn(
-      "npm",
-      [
-        "run",
-        "brain:debug",
-        "--",
-        "--mode",
-        mode,
-        "--scope",
-        scope,
-        "--resume",
-        runId,
-      ],
-      {
-        cwd: process.cwd(),
-        env: process.env,
-        stdio: ["ignore", "pipe", "pipe"],
-      },
-    );
-    activeDebugJob = { id: runId, child };
-    console.log(`[DEBUG] Started ${runId} (${mode}, ${scope})`);
-    child.stdout.on("data", (data) =>
-      console.log(`[DEBUG:${runId}] ${String(data).trim()}`),
-    );
-    child.stderr.on("data", (data) =>
-      console.warn(`[DEBUG:${runId}] ${String(data).trim()}`),
-    );
-    child.on("exit", (code) => {
-      console.log(`[DEBUG] ${runId} exited with code ${code}`);
-      if (activeDebugJob?.id === runId) activeDebugJob = null;
-      persistDebugExit(runId, code);
-    });
-    res.status(202).json({ ok: true, runId, mode, scope });
-  });
-
-  app.post("/api/debug/runs/:id/cancel", (req, res) => {
-    const safeId = path.basename(req.params.id);
-    const runDir = path.join(debugRunsDir, safeId);
-    if (!fs.existsSync(runDir))
-      return res.status(404).json({ error: "Debug run not found." });
-    const result = stopDebugRun(safeId);
-    res.json({ ok: true, cancelled: safeId, ...result });
-  });
-
-  app.post("/api/debug/stop", (_req, res) => {
-    if (activeDebugJob) {
-      const stopped = activeDebugJob.id;
-      const result = stopDebugRun(stopped);
-      return res.json({ ok: true, stopped, ...result });
-    }
-    const running = listDebugRuns().find((run) => run.status === "running");
-    if (!running) return res.json({ ok: true, stopped: null });
-    const result = stopDebugRun(running.id);
-    res.json({ ok: true, stopped: running.id, ...result });
+  app.get("/api/health", (_req, res) => {
+    res.json({ ok: true, service: "tutor-server" });
   });
 
   app.get("/api/pricing", async (_req, res) => {
@@ -1320,7 +947,8 @@ CRITICAL RULES:
 
       const ttsModelForDeepgram =
         ttsModel === "gpt-4o-mini-tts" ? "aura-asteria-en" : ttsModel;
-      const deepgramKey = process.env.DEEPGRAM_API_KEY;
+      const deepgramKey =
+        deepgramKeyFromRequest(req) || process.env.DEEPGRAM_API_KEY;
       if (!deepgramKey) throw new Error("Deepgram API Key is missing");
 
       const response = await fetch(
@@ -1990,332 +1618,359 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
     }
   });
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true, hmr: false },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
+  if (options.serveClient !== false) {
+    // Vite middleware for development
+    if (process.env.NODE_ENV !== "production") {
+      const { createServer: createViteServer } = await import("vite");
+      const vite = await createViteServer({
+        server: { middlewareMode: true, hmr: false },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+    } else {
+      const distPath = path.join(process.cwd(), "dist");
+      app.use(express.static(distPath));
+      app.get("*", (req, res) => {
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    }
   }
+
+  const attachWebSockets = (server: HttpServer) => {
+    console.log(`[SYS] WebSocket trace broadcaster active on /ws/debug`);
+
+    // WebSocket Servers
+    const wss = new WebSocketServer({ noServer: true });
+
+    server.on("upgrade", (request, socket, head) => {
+      const pathname = new URL(
+        request.url || "",
+        `http://${request.headers.host}`,
+      ).pathname;
+
+      if (pathname === "/api/voice-agent") {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          wss.emit("connection", ws, request);
+        });
+      } else if (pathname === "/ws/debug") {
+        if (!isAuthorizedDebugRequest(request)) {
+          socket.write("HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n");
+          socket.destroy();
+          return;
+        }
+        wssDebug.handleUpgrade(request, socket, head, (ws) => {
+          wssDebug.emit("connection", ws, request);
+        });
+      } else {
+        socket.destroy();
+      }
+    });
+
+    wss.on("connection", (ws, req) => {
+      const url = new URL(req.url || "", `http://${req.headers.host}`);
+      let language = normalizeVoiceLanguage(url.searchParams.get("language"));
+      let dgWs: WSWebSocket | null = null;
+      let isDeepgramReady = false;
+      let messageBuffer: Array<{ data: any; isBinary: boolean }> = [];
+      let isVoiceSessionStarted = false;
+      let usageInterval: ReturnType<typeof setInterval> | null = null;
+      const voiceStartedAt = Date.now();
+      let lastUsageAt = voiceStartedAt;
+      let clientInputBytes = 0;
+      let deepgramOutputBytes = 0;
+
+      const sendVoiceUsage = (sessions = 0) => {
+        if (ws.readyState !== ws.OPEN) return;
+        const now = Date.now();
+        const deltaSeconds = Math.max(0, (now - lastUsageAt) / 1000);
+        const connectionSeconds = Math.max(0, (now - voiceStartedAt) / 1000);
+        lastUsageAt = now;
+        ws.send(
+          JSON.stringify({
+            type: "usage",
+            usage: {
+              provider: "deepgram",
+              voiceAgentModel: "Deepgram Voice Agent Standard",
+              listenModel:
+                language === "ja" || language === "ko"
+                  ? "flux-general-multi"
+                  : "flux-general-en",
+              speakModel: "gpt-4o-mini-tts",
+              ttsModel: "gpt-4o-mini-tts",
+              connectionSeconds,
+              inputAudioSeconds:
+                clientInputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
+              outputAudioSeconds:
+                deepgramOutputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
+              cost: voiceAgentCostForSeconds(deltaSeconds),
+              estimated: false,
+              sessions,
+            },
+          }),
+        );
+      };
+
+      const parseVoiceAuth = (data: any, isBinary: boolean) => {
+        if (isBinary) return null;
+        const text = Buffer.isBuffer(data)
+          ? data.toString("utf8")
+          : String(data);
+        try {
+          const payload = JSON.parse(text);
+          return payload?.type === "voice_auth" ? payload : null;
+        } catch {
+          return null;
+        }
+      };
+
+      const startVoiceSession = (
+        providedOpenRouterKey: string,
+        selectedLanguage: string,
+        providedDeepgramKey = "",
+      ) => {
+        if (isVoiceSessionStarted) return true;
+
+        const openRouterKey =
+          sanitizeApiKey(providedOpenRouterKey) ||
+          sanitizeApiKey(process.env.OPENROUTER_API_KEY);
+        if (!openRouterKey) {
+          ws.close(1008, "OpenRouter API key is required");
+          return false;
+        }
+
+        const deepgramKey =
+          sanitizeApiKey(providedDeepgramKey) ||
+          sanitizeApiKey(process.env.DEEPGRAM_API_KEY);
+        if (!deepgramKey) {
+          ws.close(1011, "Deepgram API Key is missing");
+          return false;
+        }
+
+        language = normalizeVoiceLanguage(selectedLanguage);
+        isVoiceSessionStarted = true;
+        usageInterval = setInterval(() => sendVoiceUsage(0), 1000);
+
+        try {
+          const dgUrl = "wss://agent.deepgram.com/v1/agent/converse";
+          console.log(`Connecting to Deepgram at: ${dgUrl}`);
+          dgWs = new WSWebSocket(dgUrl, {
+            headers: {
+              Authorization: `Token ${deepgramKey}`,
+            },
+          });
+
+          dgWs.on("open", () => {
+            // Send initial configuration
+            const listenModel =
+              language === "ja" || language === "ko"
+                ? "flux-general-multi"
+                : "flux-general-en";
+            const listenProvider: any = {
+              type: "deepgram",
+              model: listenModel,
+              version: "v2",
+            };
+            if (language === "ja" || language === "ko") {
+              listenProvider.language_hints = ["en", "ja", "ko"];
+            }
+
+            let thinkPrompt =
+              "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks — you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate.";
+            let greeting =
+              "Hello! I am Aria, your CS tutor. What are you studying today?";
+
+            if (language === "ja") {
+              thinkPrompt =
+                "あなたはAriaという名前の優秀なコンピュータサイエンスおよびプログラミングのチューターです。現在、技術的な内容を学習している学生をサポートしています。シニアエンジニアがジュニアデベロッパーを指導するように概念を説明してください。現実世界の例え話を使用してください。回答は3〜5文に抑えてください。音声での対話であるため、箇条書き、マークダウン、コードブロックは絶対に使用しないでください。記号は言葉で説明してください。最後は必ず次の質問をするか、詳しく説明することを提案して終えてください。必ず日本語で自然に会話してください。";
+              greeting =
+                "こんにちは！CSチューターのAriaです。今日は何を勉強しますか？";
+            } else if (language === "ko") {
+              thinkPrompt =
+                "당신은 Aria라는 이름의 우수한 컴퓨터 과학 및 프로그래밍 튜터입니다. 현재 기술적인 내용을 학습하고 있는 학생을 돕고 있습니다. 시니어 엔지니어가 주니어 개발자를 멘토링하듯이 개념을 설명해 주세요. 현실 세계의 비유를 사용해 주세요. 답변은 3~5문장으로 제한해 주세요. 음성으로 대화 중이므로 글머리 기호, 마크다운, 코드 블록은 절대 사용하지 마세요. 기호는 말로 설명해 주세요. 각 답변의 끝에는 후속 질문을 하거나 더 자세히 설명하겠다고 제안해 주세요. 반드시 한국어로 자연스럽게 대화해 주세요.";
+              greeting =
+                "안녕하세요! CS 튜터 Aria입니다. 오늘 어떤 내용을 공부하시겠어요?";
+            }
+
+            const config = {
+              type: "Settings",
+              audio: {
+                input: {
+                  encoding: "linear16",
+                  sample_rate: 48000,
+                },
+                output: {
+                  encoding: "linear16",
+                  sample_rate: 48000,
+                  container: "none",
+                },
+              },
+              agent: {
+                listen: {
+                  provider: listenProvider,
+                },
+                think: {
+                  provider: {
+                    type: "open_ai",
+                    model: "gpt-4o-mini",
+                  },
+                  prompt: thinkPrompt,
+                },
+                speak: {
+                  provider: {
+                    type: "open_ai",
+                    model: "gpt-4o-mini-tts",
+                  },
+                },
+                greeting: greeting,
+              },
+            };
+            console.log(
+              "Sending Deepgram settings config:",
+              JSON.stringify(config, null, 2),
+            );
+            dgWs?.send(JSON.stringify(config));
+          });
+
+          dgWs.on("unexpected-response", (req, res) => {
+            console.error(
+              `Deepgram WS Unexpected Response: ${res.statusCode} ${res.statusMessage}`,
+            );
+            console.error(
+              "Deepgram Headers:",
+              JSON.stringify(res.headers, null, 2),
+            );
+            if (res.statusCode === 404) {
+              console.error(
+                "This usually means the Deepgram API key does not have access to the Voice Agent API, or the endpoint is incorrect.",
+              );
+            }
+
+            let body = "";
+            res.on("data", (chunk) => {
+              body += chunk;
+            });
+            res.on("end", () => {
+              if (body) console.error("Deepgram Error Body:", body);
+              if (ws.readyState === ws.OPEN) {
+                ws.close(1011, `Deepgram returned ${res.statusCode}`);
+              }
+            });
+          });
+
+          dgWs.on("message", (data, isBinary) => {
+            if (ws.readyState === ws.OPEN) {
+              if (isBinary) {
+                deepgramOutputBytes += rawByteLength(data);
+                ws.send(data);
+              } else {
+                const messageStr = data.toString();
+                try {
+                  const parsed = JSON.parse(messageStr);
+                  if (
+                    parsed.type === "SettingsApplied" ||
+                    parsed.type === "Welcome"
+                  ) {
+                    isDeepgramReady = true;
+                    messageBuffer.forEach((msg) => {
+                      if (dgWs?.readyState === WSWebSocket.OPEN) {
+                        dgWs.send(msg.data);
+                      }
+                    });
+                    messageBuffer = [];
+                  }
+                } catch (e) {}
+                ws.send(messageStr);
+              }
+            }
+          });
+
+          dgWs.on("close", () => {
+            if (ws.readyState === ws.OPEN) {
+              sendVoiceUsage(1);
+              ws.close();
+            }
+          });
+
+          dgWs.on("error", (error) => {
+            console.error("Deepgram WS Error:", error);
+            if (ws.readyState === ws.OPEN) {
+              ws.close();
+            }
+          });
+        } catch (e) {
+          if (usageInterval) {
+            clearInterval(usageInterval);
+            usageInterval = null;
+          }
+          console.error("Failed to connect to Deepgram", e);
+          ws.close(1011, "Failed to connect to Deepgram");
+        }
+
+        return true;
+      };
+
+      const forwardClientMessage = (data: any, isBinary: boolean) => {
+        if (isBinary) {
+          clientInputBytes += rawByteLength(data);
+        }
+        // Proxy messages to Deepgram once ready
+        if (isDeepgramReady && dgWs && dgWs.readyState === dgWs.OPEN) {
+          dgWs.send(data);
+        } else {
+          messageBuffer.push({ data, isBinary });
+        }
+      };
+
+      ws.on("message", (data, isBinary) => {
+        if (!isVoiceSessionStarted) {
+          const authPayload = parseVoiceAuth(data, isBinary);
+          if (authPayload) {
+            startVoiceSession(
+              sanitizeApiKey(authPayload.openRouterKey),
+              authPayload.language || language,
+              sanitizeApiKey(authPayload.deepgramKey),
+            );
+            return;
+          }
+
+          const started = startVoiceSession("", language);
+          if (!started) return;
+        }
+
+        forwardClientMessage(data, isBinary);
+      });
+
+      ws.on("close", () => {
+        if (usageInterval) clearInterval(usageInterval);
+        if (dgWs && dgWs.readyState === dgWs.OPEN) {
+          dgWs.close();
+        }
+      });
+    });
+  };
+
+  return { app, attachWebSockets };
+}
+
+async function startServer() {
+  const PORT = Number(process.env.PORT || 3000);
+  const { app, attachWebSockets } = await createTutorServerApp({
+    serveClient: true,
+  });
 
   const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`[SYS] Server running on http://localhost:${PORT}`);
-    console.log(`[SYS] WebSocket trace broadcaster active on /ws/debug`);
   });
-
-  // WebSocket Servers
-  const wss = new WebSocketServer({ noServer: true });
-
-  server.on("upgrade", (request, socket, head) => {
-    const pathname = new URL(
-      request.url || "",
-      `http://${request.headers.host}`,
-    ).pathname;
-
-    if (pathname === "/api/voice-agent") {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit("connection", ws, request);
-      });
-    } else if (pathname === "/ws/debug") {
-      if (!isAuthorizedDebugRequest(request)) {
-        socket.write("HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n");
-        socket.destroy();
-        return;
-      }
-      wssDebug.handleUpgrade(request, socket, head, (ws) => {
-        wssDebug.emit("connection", ws, request);
-      });
-    } else {
-      socket.destroy();
-    }
-  });
-
-  wss.on("connection", (ws, req) => {
-    const url = new URL(req.url || "", `http://${req.headers.host}`);
-    let language = normalizeVoiceLanguage(url.searchParams.get("language"));
-    let dgWs: WSWebSocket | null = null;
-    let isDeepgramReady = false;
-    let messageBuffer: Array<{ data: any; isBinary: boolean }> = [];
-    let isVoiceSessionStarted = false;
-    let usageInterval: ReturnType<typeof setInterval> | null = null;
-    const voiceStartedAt = Date.now();
-    let lastUsageAt = voiceStartedAt;
-    let clientInputBytes = 0;
-    let deepgramOutputBytes = 0;
-
-    const sendVoiceUsage = (sessions = 0) => {
-      if (ws.readyState !== ws.OPEN) return;
-      const now = Date.now();
-      const deltaSeconds = Math.max(0, (now - lastUsageAt) / 1000);
-      const connectionSeconds = Math.max(0, (now - voiceStartedAt) / 1000);
-      lastUsageAt = now;
-      ws.send(
-        JSON.stringify({
-          type: "usage",
-          usage: {
-            provider: "deepgram",
-            voiceAgentModel: "Deepgram Voice Agent Standard",
-            listenModel:
-              language === "ja" || language === "ko"
-                ? "flux-general-multi"
-                : "flux-general-en",
-            speakModel: "gpt-4o-mini-tts",
-            ttsModel: "gpt-4o-mini-tts",
-            connectionSeconds,
-            inputAudioSeconds:
-              clientInputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
-            outputAudioSeconds:
-              deepgramOutputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
-            cost: voiceAgentCostForSeconds(deltaSeconds),
-            estimated: false,
-            sessions,
-          },
-        }),
-      );
-    };
-
-    const parseVoiceAuth = (data: any, isBinary: boolean) => {
-      if (isBinary) return null;
-      const text = Buffer.isBuffer(data) ? data.toString("utf8") : String(data);
-      try {
-        const payload = JSON.parse(text);
-        return payload?.type === "voice_auth" ? payload : null;
-      } catch {
-        return null;
-      }
-    };
-
-    const startVoiceSession = (
-      providedOpenRouterKey: string,
-      selectedLanguage: string,
-    ) => {
-      if (isVoiceSessionStarted) return true;
-
-      const openRouterKey =
-        sanitizeApiKey(providedOpenRouterKey) ||
-        sanitizeApiKey(process.env.OPENROUTER_API_KEY);
-      if (!openRouterKey) {
-        ws.close(1008, "OpenRouter API key is required");
-        return false;
-      }
-
-      const deepgramKey = process.env.DEEPGRAM_API_KEY;
-      if (!deepgramKey) {
-        ws.close(1011, "Deepgram API Key is missing");
-        return false;
-      }
-
-      language = normalizeVoiceLanguage(selectedLanguage);
-      isVoiceSessionStarted = true;
-      usageInterval = setInterval(() => sendVoiceUsage(0), 1000);
-
-      try {
-        const dgUrl = "wss://agent.deepgram.com/v1/agent/converse";
-        console.log(`Connecting to Deepgram at: ${dgUrl}`);
-        dgWs = new WSWebSocket(dgUrl, {
-          headers: {
-            Authorization: `Token ${deepgramKey}`,
-          },
-        });
-
-        dgWs.on("open", () => {
-          // Send initial configuration
-          const listenModel =
-            language === "ja" || language === "ko"
-              ? "flux-general-multi"
-              : "flux-general-en";
-          const listenProvider: any = {
-            type: "deepgram",
-            model: listenModel,
-            version: "v2",
-          };
-          if (language === "ja" || language === "ko") {
-            listenProvider.language_hints = ["en", "ja", "ko"];
-          }
-
-          let thinkPrompt =
-            "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks — you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate.";
-          let greeting =
-            "Hello! I am Aria, your CS tutor. What are you studying today?";
-
-          if (language === "ja") {
-            thinkPrompt =
-              "あなたはAriaという名前の優秀なコンピュータサイエンスおよびプログラミングのチューターです。現在、技術的な内容を学習している学生をサポートしています。シニアエンジニアがジュニアデベロッパーを指導するように概念を説明してください。現実世界の例え話を使用してください。回答は3〜5文に抑えてください。音声での対話であるため、箇条書き、マークダウン、コードブロックは絶対に使用しないでください。記号は言葉で説明してください。最後は必ず次の質問をするか、詳しく説明することを提案して終えてください。必ず日本語で自然に会話してください。";
-            greeting =
-              "こんにちは！CSチューターのAriaです。今日は何を勉強しますか？";
-          } else if (language === "ko") {
-            thinkPrompt =
-              "당신은 Aria라는 이름의 우수한 컴퓨터 과학 및 프로그래밍 튜터입니다. 현재 기술적인 내용을 학습하고 있는 학생을 돕고 있습니다. 시니어 엔지니어가 주니어 개발자를 멘토링하듯이 개념을 설명해 주세요. 현실 세계의 비유를 사용해 주세요. 답변은 3~5문장으로 제한해 주세요. 음성으로 대화 중이므로 글머리 기호, 마크다운, 코드 블록은 절대 사용하지 마세요. 기호는 말로 설명해 주세요. 각 답변의 끝에는 후속 질문을 하거나 더 자세히 설명하겠다고 제안해 주세요. 반드시 한국어로 자연스럽게 대화해 주세요.";
-            greeting =
-              "안녕하세요! CS 튜터 Aria입니다. 오늘 어떤 내용을 공부하시겠어요?";
-          }
-
-          const config = {
-            type: "Settings",
-            audio: {
-              input: {
-                encoding: "linear16",
-                sample_rate: 48000,
-              },
-              output: {
-                encoding: "linear16",
-                sample_rate: 48000,
-                container: "none",
-              },
-            },
-            agent: {
-              listen: {
-                provider: listenProvider,
-              },
-              think: {
-                provider: {
-                  type: "open_ai",
-                  model: "gpt-4o-mini",
-                },
-                prompt: thinkPrompt,
-              },
-              speak: {
-                provider: {
-                  type: "open_ai",
-                  model: "gpt-4o-mini-tts",
-                },
-              },
-              greeting: greeting,
-            },
-          };
-          console.log(
-            "Sending Deepgram settings config:",
-            JSON.stringify(config, null, 2),
-          );
-          dgWs?.send(JSON.stringify(config));
-        });
-
-        dgWs.on("unexpected-response", (req, res) => {
-          console.error(
-            `Deepgram WS Unexpected Response: ${res.statusCode} ${res.statusMessage}`,
-          );
-          console.error(
-            "Deepgram Headers:",
-            JSON.stringify(res.headers, null, 2),
-          );
-          if (res.statusCode === 404) {
-            console.error(
-              "This usually means the Deepgram API key does not have access to the Voice Agent API, or the endpoint is incorrect.",
-            );
-          }
-
-          let body = "";
-          res.on("data", (chunk) => {
-            body += chunk;
-          });
-          res.on("end", () => {
-            if (body) console.error("Deepgram Error Body:", body);
-            if (ws.readyState === ws.OPEN) {
-              ws.close(1011, `Deepgram returned ${res.statusCode}`);
-            }
-          });
-        });
-
-        dgWs.on("message", (data, isBinary) => {
-          if (ws.readyState === ws.OPEN) {
-            if (isBinary) {
-              deepgramOutputBytes += rawByteLength(data);
-              ws.send(data);
-            } else {
-              const messageStr = data.toString();
-              try {
-                const parsed = JSON.parse(messageStr);
-                if (
-                  parsed.type === "SettingsApplied" ||
-                  parsed.type === "Welcome"
-                ) {
-                  isDeepgramReady = true;
-                  messageBuffer.forEach((msg) => {
-                    if (dgWs?.readyState === WSWebSocket.OPEN) {
-                      dgWs.send(msg.data);
-                    }
-                  });
-                  messageBuffer = [];
-                }
-              } catch (e) {}
-              ws.send(messageStr);
-            }
-          }
-        });
-
-        dgWs.on("close", () => {
-          if (ws.readyState === ws.OPEN) {
-            sendVoiceUsage(1);
-            ws.close();
-          }
-        });
-
-        dgWs.on("error", (error) => {
-          console.error("Deepgram WS Error:", error);
-          if (ws.readyState === ws.OPEN) {
-            ws.close();
-          }
-        });
-      } catch (e) {
-        if (usageInterval) {
-          clearInterval(usageInterval);
-          usageInterval = null;
-        }
-        console.error("Failed to connect to Deepgram", e);
-        ws.close(1011, "Failed to connect to Deepgram");
-      }
-
-      return true;
-    };
-
-    const forwardClientMessage = (data: any, isBinary: boolean) => {
-      if (isBinary) {
-        clientInputBytes += rawByteLength(data);
-      }
-      // Proxy messages to Deepgram once ready
-      if (isDeepgramReady && dgWs && dgWs.readyState === dgWs.OPEN) {
-        dgWs.send(data);
-      } else {
-        messageBuffer.push({ data, isBinary });
-      }
-    };
-
-    ws.on("message", (data, isBinary) => {
-      if (!isVoiceSessionStarted) {
-        const authPayload = parseVoiceAuth(data, isBinary);
-        if (authPayload) {
-          startVoiceSession(
-            sanitizeApiKey(authPayload.openRouterKey),
-            authPayload.language || language,
-          );
-          return;
-        }
-
-        const started = startVoiceSession("", language);
-        if (!started) return;
-      }
-
-      forwardClientMessage(data, isBinary);
-    });
-
-    ws.on("close", () => {
-      if (usageInterval) clearInterval(usageInterval);
-      if (dgWs && dgWs.readyState === dgWs.OPEN) {
-        dgWs.close();
-      }
-    });
-  });
+  attachWebSockets(server);
 }
 
-startServer().catch((err) => {
-  console.error("Failed to start server:", err);
-  process.exit(1);
-});
+const isDirectRun =
+  !process.env.VERCEL &&
+  /(?:^|[/\\])server\.(?:ts|js|mjs|cjs)$/.test(process.argv[1] || "");
+
+if (isDirectRun) {
+  startServer().catch((err) => {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  });
+}

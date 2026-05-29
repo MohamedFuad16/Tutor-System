@@ -91,204 +91,350 @@ type WireframeNode = {
   lane: string;
 };
 
+type WireframeLinkSide = "top" | "right" | "bottom" | "left";
+
 type WireframeLink = {
   from: string;
   to: string;
   label: string;
+  labelX: number;
+  labelY: number;
+  fromSide?: WireframeLinkSide;
+  toSide?: WireframeLinkSide;
 };
 
 const wireframeNodes = [
   {
     id: "App Shell",
-    x: 90,
-    y: 92,
+    x: 95,
+    y: 112,
     tone: "dark",
     summary: "view host",
     lane: "Navigation",
   },
   {
     id: "Navigation",
-    x: 300,
-    y: 92,
+    x: 265,
+    y: 112,
     tone: "dark",
     summary: "activeView",
     lane: "Navigation",
   },
   {
     id: "Settings",
-    x: 510,
-    y: 92,
+    x: 435,
+    y: 112,
     tone: "light",
     summary: "keys + voice",
     lane: "Navigation",
   },
   {
     id: "Study View",
-    x: 90,
-    y: 245,
+    x: 95,
+    y: 300,
     tone: "dark",
     summary: "workspace",
     lane: "Study",
   },
   {
     id: "Document Intake",
-    x: 300,
-    y: 208,
+    x: 265,
+    y: 300,
     tone: "paper",
     summary: "upload",
     lane: "Study",
   },
   {
     id: "PDF Viewer",
-    x: 510,
-    y: 208,
+    x: 435,
+    y: 300,
     tone: "light",
     summary: "read + mark",
     lane: "Study",
   },
   {
     id: "Selection Toolbar",
-    x: 720,
-    y: 208,
+    x: 605,
+    y: 300,
     tone: "light",
     summary: "quote tools",
     lane: "Study",
   },
   {
     id: "Chat Panel",
-    x: 930,
-    y: 245,
+    x: 770,
+    y: 300,
     tone: "dark",
     summary: "ask tutor",
     lane: "Tutor",
   },
   {
     id: "Thinking Trace",
-    x: 1140,
-    y: 245,
+    x: 435,
+    y: 485,
     tone: "blue",
     summary: "stream",
     lane: "Tutor",
   },
   {
     id: "Tutor Tools",
-    x: 1350,
-    y: 245,
+    x: 605,
+    y: 485,
     tone: "accent",
     summary: "actions",
     lane: "Tutor",
   },
   {
     id: "Server API",
-    x: 1560,
-    y: 245,
+    x: 770,
+    y: 485,
     tone: "dark",
     summary: "models",
     lane: "Tutor",
   },
   {
+    id: "Voice + TTS",
+    x: 95,
+    y: 485,
+    tone: "blue",
+    summary: "speech",
+    lane: "Tutor",
+  },
+  {
     id: "Memory Orchestrator",
-    x: 510,
-    y: 405,
+    x: 265,
+    y: 670,
     tone: "accent",
     summary: "maps learning",
     lane: "Memory",
   },
   {
     id: "Dexie DB",
-    x: 720,
-    y: 405,
+    x: 435,
+    y: 670,
     tone: "paper",
     summary: "browser store",
     lane: "Memory",
   },
   {
     id: "Brain Graph",
-    x: 930,
-    y: 405,
+    x: 605,
+    y: 670,
     tone: "dark",
     summary: "concepts",
     lane: "Memory",
   },
   {
     id: "Learning Books",
-    x: 1140,
-    y: 405,
+    x: 770,
+    y: 670,
     tone: "paper",
     summary: "chapters",
     lane: "Memory",
   },
   {
     id: "Revision Library",
-    x: 1350,
-    y: 405,
+    x: 435,
+    y: 850,
     tone: "paper",
     summary: "review",
     lane: "Review",
   },
   {
     id: "Flashcards",
-    x: 1560,
-    y: 405,
+    x: 605,
+    y: 850,
     tone: "light",
     summary: "recall",
     lane: "Review",
   },
   {
     id: "Analytics",
-    x: 1140,
-    y: 565,
+    x: 265,
+    y: 850,
     tone: "light",
     summary: "progress",
     lane: "Ops",
   },
   {
     id: "Admin Console",
-    x: 1350,
-    y: 565,
+    x: 95,
+    y: 850,
     tone: "accent",
-    summary: "debug",
-    lane: "Ops",
-  },
-  {
-    id: "Voice + TTS",
-    x: 1560,
-    y: 565,
-    tone: "blue",
-    summary: "speech",
+    summary: "logs",
     lane: "Ops",
   },
 ] satisfies WireframeNode[];
 
 const wireframeLinks = [
-  { from: "App Shell", to: "Navigation", label: "renders tabs" },
-  { from: "Navigation", to: "Study View", label: "opens workspace" },
-  { from: "Navigation", to: "Revision Library", label: "opens library" },
-  { from: "Navigation", to: "Analytics", label: "opens progress" },
-  { from: "Settings", to: "Chat Panel", label: "model + voice" },
-  { from: "Study View", to: "Document Intake", label: "adds file" },
-  { from: "Document Intake", to: "PDF Viewer", label: "loads pages" },
-  { from: "PDF Viewer", to: "Selection Toolbar", label: "selected text" },
-  { from: "Selection Toolbar", to: "Chat Panel", label: "ask tutor" },
-  { from: "Chat Panel", to: "Thinking Trace", label: "streams reasoning" },
-  { from: "Chat Panel", to: "Tutor Tools", label: "calls tools" },
-  { from: "Tutor Tools", to: "Server API", label: "model/search" },
-  { from: "Server API", to: "Chat Panel", label: "returns answer" },
-  { from: "Chat Panel", to: "Memory Orchestrator", label: "saves exchange" },
-  { from: "PDF Viewer", to: "Memory Orchestrator", label: "adds notes" },
-  { from: "Tutor Tools", to: "Memory Orchestrator", label: "updates graph" },
-  { from: "Memory Orchestrator", to: "Dexie DB", label: "persists" },
-  { from: "Memory Orchestrator", to: "Brain Graph", label: "creates nodes" },
+  {
+    from: "App Shell",
+    to: "Navigation",
+    label: "renders tabs",
+    labelX: 180,
+    labelY: 78,
+  },
+  {
+    from: "Navigation",
+    to: "Study View",
+    label: "opens workspace",
+    labelX: 145,
+    labelY: 205,
+  },
+  {
+    from: "Navigation",
+    to: "Revision Library",
+    label: "opens library",
+    labelX: 440,
+    labelY: 790,
+  },
+  {
+    from: "Navigation",
+    to: "Analytics",
+    label: "opens progress",
+    labelX: 205,
+    labelY: 790,
+  },
+  {
+    from: "Settings",
+    to: "Chat Panel",
+    label: "model + voice",
+    labelX: 607,
+    labelY: 190,
+  },
+  {
+    from: "Study View",
+    to: "Document Intake",
+    label: "adds file",
+    labelX: 180,
+    labelY: 246,
+  },
+  {
+    from: "Document Intake",
+    to: "PDF Viewer",
+    label: "loads pages",
+    labelX: 350,
+    labelY: 246,
+  },
+  {
+    from: "PDF Viewer",
+    to: "Selection Toolbar",
+    label: "selected text",
+    labelX: 520,
+    labelY: 246,
+  },
+  {
+    from: "Selection Toolbar",
+    to: "Chat Panel",
+    label: "ask tutor",
+    labelX: 688,
+    labelY: 246,
+  },
+  {
+    from: "Chat Panel",
+    to: "Thinking Trace",
+    label: "streams reasoning",
+    labelX: 607,
+    labelY: 390,
+  },
+  {
+    from: "Chat Panel",
+    to: "Tutor Tools",
+    label: "calls tools",
+    labelX: 686,
+    labelY: 410,
+  },
+  {
+    from: "Tutor Tools",
+    to: "Server API",
+    label: "model/search",
+    labelX: 686,
+    labelY: 455,
+  },
+  {
+    from: "Server API",
+    to: "Chat Panel",
+    label: "returns answer",
+    labelX: 795,
+    labelY: 390,
+  },
+  {
+    from: "Chat Panel",
+    to: "Memory Orchestrator",
+    label: "saves exchange",
+    labelX: 554,
+    labelY: 560,
+  },
+  {
+    from: "PDF Viewer",
+    to: "Memory Orchestrator",
+    label: "adds notes",
+    labelX: 360,
+    labelY: 505,
+  },
+  {
+    from: "Tutor Tools",
+    to: "Memory Orchestrator",
+    label: "updates graph",
+    labelX: 458,
+    labelY: 600,
+  },
+  {
+    from: "Voice + TTS",
+    to: "Chat Panel",
+    label: "speech input",
+    labelX: 422,
+    labelY: 455,
+  },
+  {
+    from: "Memory Orchestrator",
+    to: "Dexie DB",
+    label: "persists",
+    labelX: 350,
+    labelY: 640,
+  },
+  {
+    from: "Memory Orchestrator",
+    to: "Brain Graph",
+    label: "creates nodes",
+    labelX: 440,
+    labelY: 610,
+  },
   {
     from: "Memory Orchestrator",
     to: "Learning Books",
     label: "writes chapters",
+    labelX: 528,
+    labelY: 700,
   },
-  { from: "Learning Books", to: "Revision Library", label: "appears as book" },
-  { from: "Learning Books", to: "Flashcards", label: "review queue" },
-  { from: "Dexie DB", to: "Analytics", label: "aggregates" },
-  { from: "Dexie DB", to: "Admin Console", label: "trace records" },
-  { from: "Voice + TTS", to: "Chat Panel", label: "speech input" },
+  {
+    from: "Learning Books",
+    to: "Revision Library",
+    label: "appears as book",
+    labelX: 600,
+    labelY: 785,
+  },
+  {
+    from: "Learning Books",
+    to: "Flashcards",
+    label: "review queue",
+    labelX: 745,
+    labelY: 790,
+  },
+  {
+    from: "Dexie DB",
+    to: "Analytics",
+    label: "aggregates",
+    labelX: 335,
+    labelY: 790,
+  },
+  {
+    from: "Dexie DB",
+    to: "Admin Console",
+    label: "trace records",
+    labelX: 190,
+    labelY: 725,
+  },
 ] satisfies WireframeLink[];
 
 const snapshotCards: {
@@ -363,8 +509,18 @@ const GalleryPanel = ({
 );
 
 const WireframeMap = () => {
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const [mapScale, setMapScale] = useState(1);
   const nodeById = new Map(wireframeNodes.map((node) => [node.id, node]));
-  const canvas = { width: 1680, height: 780 };
+  const canvas = { width: 860, height: 960 };
+  const nodeSize = { width: 136, height: 86 };
+  const lanes = [
+    ["Navigation", 58],
+    ["Study", 246],
+    ["Tutor", 430],
+    ["Memory", 615],
+    ["Review + Ops", 795],
+  ] as const;
   const nodeClass = (tone: WireframeNodeTone) => {
     if (tone === "dark") return "border-zinc-700 bg-[#07070a] text-white";
     if (tone === "accent") return "border-orange-300 bg-white text-orange-600";
@@ -372,13 +528,71 @@ const WireframeMap = () => {
     if (tone === "blue") return "border-blue-200 bg-white text-blue-600";
     return "border-white bg-white text-zinc-700";
   };
-  const linkPath = (source: WireframeNode, target: WireframeNode) => {
-    const offset = Math.max(70, Math.abs(target.x - source.x) * 0.45);
-    return `M ${source.x} ${source.y} C ${source.x + offset} ${source.y}, ${target.x - offset} ${target.y}, ${target.x} ${target.y}`;
+  useEffect(() => {
+    const updateScale = () => {
+      const width = viewportRef.current?.clientWidth ?? canvas.width;
+      setMapScale(Math.min(1, Math.max(0.72, (width - 24) / canvas.width)));
+    };
+    updateScale();
+
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateScale)
+        : null;
+    if (viewportRef.current) resizeObserver?.observe(viewportRef.current);
+    window.addEventListener("resize", updateScale);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", updateScale);
+    };
+  }, [canvas.width]);
+  const defaultSide = (
+    source: WireframeNode,
+    target: WireframeNode,
+    role: "source" | "target",
+  ): WireframeLinkSide => {
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (role === "source") return dx >= 0 ? "right" : "left";
+      return dx >= 0 ? "left" : "right";
+    }
+    if (role === "source") return dy >= 0 ? "bottom" : "top";
+    return dy >= 0 ? "top" : "bottom";
+  };
+  const anchorFor = (node: WireframeNode, side: WireframeLinkSide) => {
+    if (side === "left") return { x: node.x - nodeSize.width / 2, y: node.y };
+    if (side === "right") return { x: node.x + nodeSize.width / 2, y: node.y };
+    if (side === "top") return { x: node.x, y: node.y - nodeSize.height / 2 };
+    return { x: node.x, y: node.y + nodeSize.height / 2 };
+  };
+  const linkPath = (
+    link: WireframeLink,
+    source: WireframeNode,
+    target: WireframeNode,
+  ) => {
+    const sourceSide = link.fromSide ?? defaultSide(source, target, "source");
+    const targetSide = link.toSide ?? defaultSide(source, target, "target");
+    const start = anchorFor(source, sourceSide);
+    const end = anchorFor(target, targetSide);
+    const horizontal = sourceSide === "left" || sourceSide === "right";
+    const distance = horizontal
+      ? Math.abs(end.x - start.x)
+      : Math.abs(end.y - start.y);
+    const offset = Math.max(74, Math.min(170, distance * 0.55));
+
+    if (horizontal) {
+      const direction = sourceSide === "right" ? 1 : -1;
+      return `M ${start.x} ${start.y} C ${start.x + direction * offset} ${start.y}, ${end.x - direction * offset} ${end.y}, ${end.x} ${end.y}`;
+    }
+
+    const direction = sourceSide === "bottom" ? 1 : -1;
+    return `M ${start.x} ${start.y} C ${start.x} ${start.y + direction * offset}, ${end.x} ${end.y - direction * offset}, ${end.x} ${end.y}`;
   };
 
   return (
-    <GalleryPanel className="relative overflow-hidden bg-[#f3f3f4] p-0">
+    <GalleryPanel className="relative left-1/2 w-full -translate-x-1/2 overflow-hidden bg-[#f3f3f4] p-0 lg:w-[min(1040px,calc(100vw-18rem))] xl:w-[min(1120px,calc(100vw-24rem))]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.88),transparent_56%)]" />
       <div className="relative border-b border-white/80 px-5 py-4 sm:px-6">
         <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
@@ -386,97 +600,107 @@ const WireframeMap = () => {
         </div>
         <div className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
           Scroll the canvas to follow how the app shell hands work to the study
-          surface, tutor tools, memory layer, review surfaces, and debug views.
+          surface, tutor tools, memory layer, review surfaces, and diagnostic
+          views.
         </div>
       </div>
       <div
-        className="relative max-h-[min(62vh,620px)] overflow-auto custom-scroll"
+        ref={viewportRef}
+        className="relative max-h-[min(70vh,720px)] overflow-x-hidden overflow-y-auto custom-scroll"
         aria-label="Scrollable wireframe map of the Tutor UI components"
       >
         <div
-          className="relative"
-          style={{ width: canvas.width, height: canvas.height }}
+          className="relative mx-auto w-full"
+          style={{ height: canvas.height * mapScale }}
         >
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(212,212,216,0.32)_1px,transparent_1px),linear-gradient(180deg,rgba(212,212,216,0.32)_1px,transparent_1px)] bg-[size:70px_70px]" />
-          {["Navigation", "Study", "Tutor", "Memory", "Review", "Ops"].map(
-            (lane, index) => (
+          <div
+            className="absolute left-1/2 top-0"
+            style={{
+              width: canvas.width,
+              height: canvas.height,
+              transform: `translateX(-50%) scale(${mapScale})`,
+              transformOrigin: "top center",
+            }}
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(212,212,216,0.28)_1px,transparent_1px),linear-gradient(180deg,rgba(212,212,216,0.28)_1px,transparent_1px)] bg-[size:80px_80px]" />
+            {lanes.map(([lane, top]) => (
               <div
                 key={lane}
-                className="absolute left-5 right-5 border-t border-dashed border-zinc-300/70 pt-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400"
-                style={{ top: 45 + index * 104 }}
+                className="absolute left-6 right-6 border-t border-dashed border-zinc-300/70 pt-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400"
+                style={{ top }}
               >
                 {lane}
               </div>
-            ),
-          )}
-          <svg
-            className="absolute inset-0"
-            width={canvas.width}
-            height={canvas.height}
-            viewBox={`0 0 ${canvas.width} ${canvas.height}`}
-            aria-hidden="true"
-          >
-            <defs>
-              <marker
-                id="wire-arrow"
-                markerHeight="8"
-                markerWidth="8"
-                orient="auto"
-                refX="7"
-                refY="4"
-              >
-                <path d="M0,0 L8,4 L0,8 Z" fill="rgba(113,113,122,0.82)" />
-              </marker>
-            </defs>
-            {wireframeLinks.map((link) => {
-              const source = nodeById.get(link.from);
-              const target = nodeById.get(link.to);
-              if (!source || !target) return null;
-              const midX = (source.x + target.x) / 2;
-              const midY = (source.y + target.y) / 2;
-              return (
-                <g key={`${link.from}-${link.to}`}>
-                  <path
-                    d={linkPath(source, target)}
-                    fill="none"
-                    stroke="rgba(113,113,122,0.52)"
-                    strokeWidth="2"
-                    markerEnd="url(#wire-arrow)"
-                  />
-                  <text
-                    x={midX}
-                    y={midY - 8}
-                    textAnchor="middle"
-                    className="fill-zinc-400 text-[11px] font-semibold"
-                  >
-                    {link.label}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-
-          {wireframeNodes.map((node) => (
-            <motion.div
-              key={node.id}
-              whileHover={{ y: -4, scale: 1.03 }}
-              className={`absolute flex min-h-[82px] w-[156px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[24px] border px-4 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${nodeClass(
-                node.tone,
-              )}`}
-              style={{ left: node.x, top: node.y }}
+            ))}
+            <svg
+              className="absolute inset-0 z-10"
+              width={canvas.width}
+              height={canvas.height}
+              viewBox={`0 0 ${canvas.width} ${canvas.height}`}
+              aria-hidden="true"
             >
-              <div className="text-base font-bold leading-tight tracking-tight">
-                {node.id}
-              </div>
+              <defs>
+                <marker
+                  id="wire-arrow"
+                  markerHeight="8"
+                  markerWidth="8"
+                  orient="auto"
+                  refX="7"
+                  refY="4"
+                >
+                  <path d="M0,0 L8,4 L0,8 Z" fill="rgba(113,113,122,0.82)" />
+                </marker>
+              </defs>
+              {wireframeLinks.map((link) => {
+                const source = nodeById.get(link.from);
+                const target = nodeById.get(link.to);
+                if (!source || !target) return null;
+                return (
+                  <g key={`${link.from}-${link.to}`}>
+                    <path
+                      d={linkPath(link, source, target)}
+                      fill="none"
+                      stroke="rgba(113,113,122,0.46)"
+                      strokeWidth="2"
+                      markerEnd="url(#wire-arrow)"
+                    />
+                  </g>
+                );
+              })}
+            </svg>
+
+            {wireframeLinks.map((link) => (
               <div
-                className={`mt-2 text-[10px] font-bold uppercase tracking-[0.16em] ${
-                  node.tone === "dark" ? "text-white/40" : "text-zinc-400"
-                }`}
+                key={`${link.from}-${link.to}-label`}
+                className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-zinc-200/80 bg-white/95 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.02em] text-zinc-600 shadow-[0_8px_20px_rgba(24,24,27,0.08)]"
+                style={{ left: link.labelX, top: link.labelY }}
               >
-                {node.summary}
+                {link.label}
               </div>
-            </motion.div>
-          ))}
+            ))}
+
+            {wireframeNodes.map((node) => (
+              <motion.div
+                key={node.id}
+                whileHover={{ y: -4, scale: 1.03 }}
+                className={`absolute z-30 flex min-h-[86px] w-[136px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[24px] border px-3 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${nodeClass(
+                  node.tone,
+                )}`}
+                style={{ left: node.x, top: node.y }}
+              >
+                <div className="text-[14px] font-bold leading-tight tracking-tight">
+                  {node.id}
+                </div>
+                <div
+                  className={`mt-2 text-[10px] font-bold uppercase tracking-[0.16em] ${
+                    node.tone === "dark" ? "text-white/40" : "text-zinc-400"
+                  }`}
+                >
+                  {node.summary}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </GalleryPanel>
