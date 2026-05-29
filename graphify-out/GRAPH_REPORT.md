@@ -1,16 +1,16 @@
 # Graph Report - Tutor-System-Architecture-  (2026-05-29)
 
 ## Corpus Check
-- 55 files · ~89,494 words
+- 57 files · ~90,079 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 570 nodes · 816 edges · 36 communities (26 shown, 10 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.8)
+- 575 nodes · 826 edges · 36 communities (26 shown, 10 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5fe0cb1d`
+- Built from commit: `54e3073f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -53,9 +53,9 @@
 ## God Nodes (most connected - your core abstractions)
 1. `useStore` - 24 edges
 2. `useTranslation()` - 15 edges
-3. `useMotionPreference()` - 14 edges
-4. `MemoryOrchestrator` - 14 edges
-5. `scripts` - 13 edges
+3. `scripts` - 14 edges
+4. `useMotionPreference()` - 14 edges
+5. `MemoryOrchestrator` - 14 edges
 6. `compilerOptions` - 13 edges
 7. `db` - 12 edges
 8. `PersistentConcept` - 11 edges
@@ -63,6 +63,8 @@
 10. `Tutor System Architecture` - 9 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `startApp()` --calls--> `createTutorServerApp()`  [INFERRED]
+  tests/document-ingest.test.mjs → server.ts
 - `vercelHandler()` --calls--> `App()`  [INFERRED]
   server/vercel-handler.ts → src/App.tsx
 - `getTutorApp()` --calls--> `createTutorServerApp()`  [EXTRACTED]
@@ -71,8 +73,6 @@
   server/vercel-handler.ts → server.ts
 - `AnalyticsView()` --calls--> `useTranslation()`  [EXTRACTED]
   src/views/AnalyticsView.tsx → src/lib/translations.ts
-- `RevisionView()` --calls--> `useStore`  [EXTRACTED]
-  src/views/RevisionView.tsx → src/store/index.ts
 
 ## Communities (36 total, 10 thin omitted)
 
@@ -121,16 +121,16 @@ Cohesion: 0.20
 Nodes (8): ExpiredIcon(), PendingIcon(), ProgressIcon(), ReviewIcon(), Status, StatusBadge(), SubmittedIcon(), SuccessIcon()
 
 ### Community 11 - "Community 11"
-Cohesion: 0.33
-Nodes (8): createTutorServerApp(), startServer(), config, getTutorApp(), normalizeVercelCatchAllUrl(), vercelHandler(), createTutorServerApp(), startServer()
+Cohesion: 0.26
+Nodes (9): createTutorServerApp(), startServer(), config, getTutorApp(), normalizeVercelCatchAllUrl(), vercelHandler(), startApp(), createTutorServerApp() (+1 more)
 
 ### Community 12 - "Community 12"
 Cohesion: 0.38
 Nodes (7): compactModel(), formatCount(), formatCurrency(), formatSeconds(), MessageUsageFooter(), UsageAnalyticsStrip(), useAnimatedNumber()
 
 ### Community 14 - "Community 14"
-Cohesion: 0.06
-Nodes (31): devDependencies, autoprefixer, esbuild, prettier, tailwindcss, @types/d3, @types/express, @types/multer (+23 more)
+Cohesion: 0.14
+Nodes (14): scripts, build, clean, dev, format, format:check, graphify:path, graphify:query (+6 more)
 
 ### Community 15 - "Community 15"
 Cohesion: 0.50
@@ -141,12 +141,12 @@ Cohesion: 0.67
 Nodes (3): codeFileName(), codeLanguageLabel(), PremiumCodeShell()
 
 ### Community 23 - "Community 23"
-Cohesion: 0.07
-Nodes (29): dependencies, compression, d3, dexie, dexie-react-hooks, dotenv, express, @fontsource/geist-sans (+21 more)
+Cohesion: 0.04
+Nodes (47): dependencies, compression, d3, dexie, dexie-react-hooks, dotenv, express, @fontsource/geist-sans (+39 more)
 
 ### Community 24 - "Community 24"
-Cohesion: 0.15
-Nodes (10): cache, detectFreshnessSearch(), formatSourcesForPrompt(), NormalizedWebSource, normalizeRows(), SearchOptions, searchSerper(), SERPER_ENDPOINTS (+2 more)
+Cohesion: 0.17
+Nodes (12): abortError(), cache, detectFreshnessSearch(), formatSourcesForPrompt(), NormalizedWebSource, normalizeRows(), SearchOptions, searchSerper() (+4 more)
 
 ### Community 26 - "Community 26"
 Cohesion: 0.13
@@ -173,7 +173,7 @@ Cohesion: 0.50
 Nodes (4): openRouterCost(), roundCost(), ttsCostForModel(), voiceAgentCostForSeconds()
 
 ## Knowledge Gaps
-- **239 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+234 more)
+- **240 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+235 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -181,13 +181,13 @@ Nodes (4): openRouterCost(), roundCost(), ttsCostForModel(), voiceAgentCostForSe
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `App()` connect `Community 1` to `Community 11`?**
-  _High betweenness centrality (0.133) - this node is a cross-community bridge._
+  _High betweenness centrality (0.137) - this node is a cross-community bridge._
 - **Why does `vercelHandler()` connect `Community 11` to `Community 1`?**
-  _High betweenness centrality (0.132) - this node is a cross-community bridge._
+  _High betweenness centrality (0.136) - this node is a cross-community bridge._
 - **Why does `useStore` connect `Community 1` to `Community 0`, `Community 5`, `Community 12`, `Community 4`?**
-  _High betweenness centrality (0.131) - this node is a cross-community bridge._
+  _High betweenness centrality (0.134) - this node is a cross-community bridge._
 - **What connects `name`, `private`, `version` to the rest of the system?**
-  _239 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _240 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.06386066763425254 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**

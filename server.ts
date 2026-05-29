@@ -40,6 +40,8 @@ const PCM16_MONO_48K_BYTES_PER_SECOND = 48000 * 2;
 const DEFAULT_CHAT_MODEL = "deepseek/deepseek-v4-flash";
 const LEARNING_AGENT_MODEL = "deepseek/deepseek-v4-flash";
 const OPENROUTER_SERVER_FALLBACK_FLAG = "ALLOW_SERVER_OPENROUTER_FALLBACK";
+const MAX_DOCUMENT_UPLOAD_MB = 50;
+const MAX_DOCUMENT_UPLOAD_BYTES = MAX_DOCUMENT_UPLOAD_MB * 1024 * 1024;
 
 const roundCost = (value: number) =>
   Math.round((value || 0) * 1_000_000) / 1_000_000;
@@ -335,7 +337,50 @@ export async function createTutorServerApp(
       ? path.join("/tmp", "tutor-uploads")
       : path.join(process.cwd(), "uploads"));
   fs.mkdirSync(uploadDir, { recursive: true });
-  const upload = multer({ dest: uploadDir });
+  const upload = multer({
+    dest: uploadDir,
+    limits: { fileSize: MAX_DOCUMENT_UPLOAD_BYTES, files: 1 },
+    fileFilter: (_req, file, cb) => {
+      const originalName = file.originalname.toLowerCase();
+      const mimeType = file.mimetype.toLowerCase();
+      const isPdf =
+        originalName.endsWith(".pdf") &&
+        [
+          "application/pdf",
+          "application/x-pdf",
+          "application/octet-stream",
+        ].includes(mimeType);
+      if (!isPdf) {
+        cb(new Error("Only PDF documents are supported."));
+        return;
+      }
+      cb(null, true);
+    },
+  });
+
+  const documentUpload: express.RequestHandler = (req, res, next) => {
+    upload.single("file")(req, res, (error) => {
+      if (!error) {
+        next();
+        return;
+      }
+
+      if (error instanceof multer.MulterError) {
+        const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+        const message =
+          error.code === "LIMIT_FILE_SIZE"
+            ? `Document is too large. Upload a PDF up to ${MAX_DOCUMENT_UPLOAD_MB} MB.`
+            : error.message;
+        res.status(status).json({ error: message });
+        return;
+      }
+
+      res.status(400).json({
+        error:
+          error instanceof Error ? error.message : "Invalid document upload.",
+      });
+    });
+  };
 
   // Log incoming requests for the Admin Server Console
   app.use((req, res, next) => {
@@ -447,7 +492,7 @@ export async function createTutorServerApp(
   });
 
   // API Route to Ingest and Classify Documents
-  app.post("/api/documents/ingest", upload.single("file"), async (req, res) => {
+  app.post("/api/documents/ingest", documentUpload, async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }

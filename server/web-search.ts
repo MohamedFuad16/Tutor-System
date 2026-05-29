@@ -28,7 +28,13 @@ const SERPER_ENDPOINTS: Record<WebSearchMode, string> = {
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 8000;
 const MAX_ATTEMPTS = 2;
-const cache = new Map<string, { expiresAt: number; results: NormalizedWebSource[] }>();
+const cache = new Map<
+  string,
+  { expiresAt: number; results: NormalizedWebSource[] }
+>();
+
+const abortError = () =>
+  new DOMException("The operation was aborted.", "AbortError");
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -63,9 +69,14 @@ const domainFromUrl = (url: string) => {
   }
 };
 
-const faviconForDomain = (domain: string) => `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
+const faviconForDomain = (domain: string) =>
+  `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
 
-const normalizeRows = (payload: any, mode: WebSearchMode, maxResults: number) => {
+const normalizeRows = (
+  payload: any,
+  mode: WebSearchMode,
+  maxResults: number,
+) => {
   const rows = [
     ...(Array.isArray(payload?.organic) ? payload.organic : []),
     ...(Array.isArray(payload?.news) ? payload.news : []),
@@ -91,7 +102,9 @@ const normalizeRows = (payload: any, mode: WebSearchMode, maxResults: number) =>
       url,
       domain,
       faviconUrl: faviconForDomain(domain),
-      snippet: String(row.snippet || row.summary || row.description || "").trim(),
+      snippet: String(
+        row.snippet || row.summary || row.description || "",
+      ).trim(),
       date: row.date || row.publishedAt || undefined,
       position: Number(row.position || index + 1),
     });
@@ -123,7 +136,8 @@ export function detectFreshnessSearch(
     );
   if (sourceMaterialRequest && !explicitExternal) return null;
 
-  const explicit = explicitExternal || /\b(search the web|browse the web)\b/.test(value);
+  const explicit =
+    explicitExternal || /\b(search the web|browse the web)\b/.test(value);
   const fresh =
     /\b(latest|recent|today|yesterday|this week|this month|right now|breaking|news|trend|trending|pricing|price|release|released|ranking|rankings|best .*20\d{2}|who won|score|game|election|weather)\b/.test(
       value,
@@ -132,13 +146,16 @@ export function detectFreshnessSearch(
       value,
     );
   if (!explicit && !fresh) return null;
-  const mode: WebSearchMode = /\b(news|today|headline|headlines|happened)\b/.test(value)
-    ? "news"
-    : "search";
+  const mode: WebSearchMode =
+    /\b(news|today|headline|headlines|happened)\b/.test(value)
+      ? "news"
+      : "search";
   return { query: text.trim().slice(0, 240), mode };
 }
 
-export async function searchSerper(options: SearchOptions): Promise<NormalizedWebSource[]> {
+export async function searchSerper(
+  options: SearchOptions,
+): Promise<NormalizedWebSource[]> {
   const query = options.query.trim();
   const mode = options.mode || "search";
   const maxResults = Math.min(Math.max(options.maxResults || 6, 1), 10);
@@ -146,9 +163,12 @@ export async function searchSerper(options: SearchOptions): Promise<NormalizedWe
   if (!key) throw new Error("SERPER_API_KEY is not configured.");
   if (!query) return [];
 
-  const cacheKey = `${mode}:${query.toLowerCase()}:${maxResults}`;
+  const apiKeyFingerprint = stableId(key);
+  const cacheKey = `${mode}:${apiKeyFingerprint}:${query.toLowerCase()}:${maxResults}`;
   const cached = cache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) return cached.results;
+
+  if (options.signal?.aborted) throw abortError();
 
   let lastError: unknown = null;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
@@ -177,6 +197,7 @@ export async function searchSerper(options: SearchOptions): Promise<NormalizedWe
       cache.set(cacheKey, { expiresAt: Date.now() + CACHE_TTL_MS, results });
       return results;
     } catch (error) {
+      if (options.signal?.aborted) throw error;
       lastError = error;
       if (attempt < MAX_ATTEMPTS) await wait(250 * attempt);
     } finally {
@@ -185,13 +206,17 @@ export async function searchSerper(options: SearchOptions): Promise<NormalizedWe
     }
   }
 
-  throw lastError instanceof Error ? lastError : new Error("SERPER search failed.");
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("SERPER search failed.");
 }
 
 export function formatSourcesForPrompt(sources: NormalizedWebSource[]) {
   if (sources.length === 0) return "No web sources were returned.";
-  return sources.map((source, index) => {
-    const date = source.date ? ` | ${source.date}` : "";
-    return `[${index + 1}] ${source.title} | ${source.domain}${date} | ${source.snippet} | ${source.url}`;
-  }).join("\n");
+  return sources
+    .map((source, index) => {
+      const date = source.date ? ` | ${source.date}` : "";
+      return `[${index + 1}] ${source.title} | ${source.domain}${date} | ${source.snippet} | ${source.url}`;
+    })
+    .join("\n");
 }
