@@ -1,4 +1,4 @@
-import { createTutorServerApp } from "../server";
+import { createTutorServerApp } from "../server.js";
 
 let appPromise: Promise<
   Awaited<ReturnType<typeof createTutorServerApp>>
