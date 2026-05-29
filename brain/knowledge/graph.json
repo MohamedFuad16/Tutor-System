@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-29T05:30:44.181Z",
+    "generatedAt": "2026-05-29T05:56:02.897Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "170dd1e1b89ff0542e6347a3e1e045b593a09d4a",
+      "commit": "e6e5492d780b8804ac753368d36c58a11c673905",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "70f92de4571a201e720bb1d34e5153630f9fdfd8e3b1097dfadac8c273683845"
+    "sourceHash": "625e2d8379fdf94c8728ab4f50d49e10cff72e8e59a7125ae2445f189b9dd3b1"
   },
   "nodes": [
     {
@@ -108,7 +108,7 @@
       "file": "src/views/RevisionView.tsx",
       "symbol": "AppDesignLanguagePage",
       "loc": {
-        "line": 754,
+        "line": 952,
         "column": 7
       }
     },
@@ -196,7 +196,7 @@
       "file": "src/views/RevisionView.tsx",
       "symbol": "FlashcardDeck",
       "loc": {
-        "line": 1067,
+        "line": 1265,
         "column": 7
       }
     },
@@ -207,7 +207,7 @@
       "file": "src/views/RevisionView.tsx",
       "symbol": "FlashcardUI",
       "loc": {
-        "line": 957,
+        "line": 1155,
         "column": 7
       }
     },
@@ -229,7 +229,7 @@
       "file": "src/views/RevisionView.tsx",
       "symbol": "GalleryPanel",
       "loc": {
-        "line": 162,
+        "line": 351,
         "column": 7
       }
     },
@@ -262,7 +262,7 @@
       "file": "src/views/RevisionView.tsx",
       "symbol": "LiveComponentPreview",
       "loc": {
-        "line": 288,
+        "line": 486,
         "column": 7
       }
     },
@@ -273,7 +273,7 @@
       "file": "src/views/RevisionView.tsx",
       "symbol": "LongPressWrapper",
       "loc": {
-        "line": 912,
+        "line": 1110,
         "column": 7
       }
     },
@@ -394,7 +394,7 @@
       "file": "src/views/RevisionView.tsx",
       "symbol": "RevisionView",
       "loc": {
-        "line": 1117,
+        "line": 1315,
         "column": 1
       }
     },
@@ -636,7 +636,7 @@
       "file": "src/views/RevisionView.tsx",
       "symbol": "WireframeMap",
       "loc": {
-        "line": 176,
+        "line": 365,
         "column": 7
       }
     },
@@ -1718,9 +1718,9 @@
       "type": "file",
       "label": "src/views/RevisionView.tsx",
       "file": "src/views/RevisionView.tsx",
-      "hash": "1127b183f4a1799e451ec9b0c0d3c3a07b7c059de9fab1075c1d9b65899388af",
+      "hash": "b15736d39e708a858f35b75b50371aefb712a19cbb3e407ca2c03c30242f9f88",
       "metadata": {
-        "lines": 1769
+        "lines": 1977
       }
     },
     {
@@ -2557,18 +2557,6 @@
       "id": "04725acbdb5e82325e5c"
     },
     {
-      "type": "readsStore",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "storeField:setActiveView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1118,
-        "text": "(state) => state.setActiveView"
-      },
-      "id": "04d3ca53595780d937cd"
-    },
-    {
       "type": "exports",
       "source": "file:src/components/StatusBadge.tsx",
       "target": "file:src/components/StatusBadge.tsx:export:FailedIcon",
@@ -2579,17 +2567,6 @@
         "text": "FailedIcon"
       },
       "id": "052311018305bb797d6c"
-    },
-    {
-      "type": "definedIn",
-      "source": "component:AppDesignLanguagePage",
-      "target": "file:src/views/RevisionView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 754
-      },
-      "id": "052428d7c9209b145d39"
     },
     {
       "type": "emits",
@@ -2969,18 +2946,6 @@
       "id": "0c7afe627162641c08ca"
     },
     {
-      "type": "usesState",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "storeField:setActiveView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1118,
-        "text": "(state) => state.setActiveView"
-      },
-      "id": "0cc68911a5716277bf16"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/self-audit.ts",
       "target": "package:child_process",
@@ -3239,17 +3204,6 @@
       "id": "13743f8c8a2709bb9de1"
     },
     {
-      "type": "definedIn",
-      "source": "component:FlashcardUI",
-      "target": "file:src/views/RevisionView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 957
-      },
-      "id": "139a287ad0d31575e0d4"
-    },
-    {
       "type": "imports",
       "source": "file:brain/autonomy/watch.ts",
       "target": "file:brain/autonomy/source-scope.ts",
@@ -3358,6 +3312,18 @@
       "id": "15cb4862fca8291783ff"
     },
     {
+      "type": "mutates",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:flashcards",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1381,
+        "text": "db.flashcards.update(card.id, {\n      nextReviewAt: Date.now() + nextDays * 24 * 60 * 60 * 1000,\n    })"
+      },
+      "id": "15f24aa645088a1072ab"
+    },
+    {
       "type": "servedBy",
       "source": "endpoint:POST /api/debug/run",
       "target": "file:server.ts",
@@ -3416,6 +3382,18 @@
       "id": "177d8cb7d3ea7d72d0ef"
     },
     {
+      "type": "readsStore",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "storeField:setActiveView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1316,
+        "text": "(state) => state.setActiveView"
+      },
+      "id": "17e74ac98fb1174e2b1c"
+    },
+    {
       "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:setAskTutorQuery",
@@ -3460,6 +3438,18 @@
         "line": 551
       },
       "id": "18fe56fe2ad17b70e3a7"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1329,
+        "text": "db.learningBooks.orderBy(\"updatedAt\")"
+      },
+      "id": "1902f1cc546fec40ef7b"
     },
     {
       "type": "dependsOn",
@@ -3780,29 +3770,6 @@
       "id": "23f401b755b102202d44"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:learningEntries",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1319,
-        "text": "db.learningEntries.where(\"bookId\")"
-      },
-      "id": "23f68c0cbe6bd2f04f2e"
-    },
-    {
-      "type": "definedIn",
-      "source": "component:RevisionView",
-      "target": "file:src/views/RevisionView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1117
-      },
-      "id": "24527b2d474415b7a441"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/runtime/run-runtime-benchmark.ts",
       "target": "package:fs",
@@ -3813,6 +3780,17 @@
         "text": "import * as fs from \"fs\";"
       },
       "id": "246b5e635be99ac16141"
+    },
+    {
+      "type": "definedIn",
+      "source": "component:AppDesignLanguagePage",
+      "target": "file:src/views/RevisionView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 952
+      },
+      "id": "24a5f8e652851f9aa5aa"
     },
     {
       "type": "dependsOn",
@@ -4729,18 +4707,6 @@
       "id": "391ef17ab32e5991918d"
     },
     {
-      "type": "readsDatabase",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:learningBookConcepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1318,
-        "text": "db.learningBookConcepts.where(\"bookId\")"
-      },
-      "id": "391f6ece425963725c74"
-    },
-    {
       "type": "dependsOn",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "file:src/components/StatusBadge.tsx",
@@ -4813,6 +4779,18 @@
       "id": "3aa4c5d1114eab6448f0"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:flashcards",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1535,
+        "text": "db.flashcards.filter((card) => card.bookId === bookId)"
+      },
+      "id": "3acb7a9211bddbe9cccb"
+    },
+    {
       "type": "writesDatabase",
       "source": "file:src/memory/memory.orchestrator.ts",
       "target": "databaseTable:learningBooks",
@@ -4835,17 +4813,6 @@
         "text": "CognitiveLoadState"
       },
       "id": "3b22ca11c4b47c505e69"
-    },
-    {
-      "type": "definedIn",
-      "source": "component:LongPressWrapper",
-      "target": "file:src/views/RevisionView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 912
-      },
-      "id": "3b3a1049b2bd876d81bf"
     },
     {
       "type": "exports",
@@ -5015,6 +4982,18 @@
       "id": "414cc89a5b1edc061faa"
     },
     {
+      "type": "writesDatabase",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1536,
+        "text": "db.learningBooks.delete(bookId)"
+      },
+      "id": "415143ab4c853cf9816e"
+    },
+    {
       "type": "exports",
       "source": "file:src/brain-runtime/instrumentFetch.ts",
       "target": "file:src/brain-runtime/instrumentFetch.ts:export:instrumentFetch",
@@ -5025,6 +5004,18 @@
         "text": "instrumentFetch"
       },
       "id": "4220c4b7c88def613428"
+    },
+    {
+      "type": "usesState",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "storeField:setActiveView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1316,
+        "text": "(state) => state.setActiveView"
+      },
+      "id": "422b3e6f6ab50fe891ee"
     },
     {
       "type": "callsEndpoint",
@@ -5085,18 +5076,6 @@
         "text": "import { SiriLiquidGlass } from \"./SiriLiquidGlass\";"
       },
       "id": "43682517242e13d38ffe"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:flashcards",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1320,
-        "text": "db.flashcards.filter((card) => card.bookId === bookId)"
-      },
-      "id": "4461062c43a61028fae3"
     },
     {
       "type": "dependsOn",
@@ -5754,18 +5733,6 @@
       "id": "51121b6498252e376e50"
     },
     {
-      "type": "mutates",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1321,
-        "text": "db.learningBooks.delete(bookId)"
-      },
-      "id": "5140ed4db904d1cbeb5d"
-    },
-    {
       "type": "readsDatabase",
       "source": "file:src/memory/misconception.graph.ts",
       "target": "databaseTable:misconceptions",
@@ -6151,6 +6118,17 @@
       "id": "59910451617881db278a"
     },
     {
+      "type": "definedIn",
+      "source": "component:GalleryPanel",
+      "target": "file:src/views/RevisionView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 351
+      },
+      "id": "59ca9c00dcf4cc1f75c0"
+    },
+    {
       "type": "usesState",
       "source": "file:src/views/StudyView.tsx",
       "target": "storeField:setPdfPage",
@@ -6336,14 +6314,14 @@
     },
     {
       "type": "definedIn",
-      "source": "component:GalleryPanel",
+      "source": "component:LiveComponentPreview",
       "target": "file:src/views/RevisionView.tsx",
       "confidence": 1,
       "evidence": {
         "file": "src/views/RevisionView.tsx",
-        "line": 162
+        "line": 486
       },
-      "id": "5eefc1f9cdce060d9b32"
+      "id": "5e560d0fb9d34adde89d"
     },
     {
       "type": "dependsOn",
@@ -6380,18 +6358,6 @@
         "text": "import ReactMarkdown from \"react-markdown\";"
       },
       "id": "5f18b0b6419793fa0587"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1131,
-        "text": "db.learningBooks.orderBy(\"updatedAt\")"
-      },
-      "id": "5f30dfa792e513a712f2"
     },
     {
       "type": "renders",
@@ -6657,6 +6623,17 @@
         "text": "productiveFailureEngine"
       },
       "id": "67c55b851b3cc8150663"
+    },
+    {
+      "type": "definedIn",
+      "source": "component:FlashcardUI",
+      "target": "file:src/views/RevisionView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1155
+      },
+      "id": "68486a7816482aeb6d53"
     },
     {
       "type": "definedIn",
@@ -6996,18 +6973,6 @@
         "text": "setAiModel"
       },
       "id": "6e230842f40ca6428e7e"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:learningBookConcepts",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1137,
-        "text": "db.learningBookConcepts.orderBy(\"updatedAt\")"
-      },
-      "id": "6e36e29a5abad0796809"
     },
     {
       "type": "mutates",
@@ -7363,18 +7328,6 @@
       "id": "79cc9c964d1940820dce"
     },
     {
-      "type": "writesDatabase",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:flashcards",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1183,
-        "text": "db.flashcards.update(card.id, {\n      nextReviewAt: Date.now() + nextDays * 24 * 60 * 60 * 1000,\n    })"
-      },
-      "id": "79e104bdb9d574da6876"
-    },
-    {
       "type": "renders",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "component:AnimatedMarkdown",
@@ -7395,6 +7348,18 @@
         "text": "db.learningBookConcepts.clear()"
       },
       "id": "7a60fba00170533f2773"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:flashcards",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1348,
+        "text": "db.flashcards.toArray()"
+      },
+      "id": "7a6e10b969dc2dc2f00f"
     },
     {
       "type": "exports",
@@ -7959,6 +7924,18 @@
       "id": "872675429658dc170b1b"
     },
     {
+      "type": "readsDatabase",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:learningEntries",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1341,
+        "text": "db.learningEntries.orderBy(\"timestamp\")"
+      },
+      "id": "8742ea63fd058bd28091"
+    },
+    {
       "type": "usesState",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:systemPrompt",
@@ -7980,6 +7957,18 @@
         "line": 942
       },
       "id": "87f932de39e1acf664e4"
+    },
+    {
+      "type": "writesDatabase",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:flashcards",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1381,
+        "text": "db.flashcards.update(card.id, {\n      nextReviewAt: Date.now() + nextDays * 24 * 60 * 60 * 1000,\n    })"
+      },
+      "id": "881a9eb46a54ef2bbb90"
     },
     {
       "type": "dependsOn",
@@ -8216,6 +8205,17 @@
       "id": "8d094f6f23b261e0e9d1"
     },
     {
+      "type": "definedIn",
+      "source": "component:FlashcardDeck",
+      "target": "file:src/views/RevisionView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1265
+      },
+      "id": "8da25619094a89562598"
+    },
+    {
       "type": "imports",
       "source": "file:src/brain-runtime/RenderProfiler.tsx",
       "target": "file:src/brain-runtime/runtimeTelemetry.ts",
@@ -8226,6 +8226,18 @@
         "text": "import { recordBrainRuntime } from \"./runtimeTelemetry\";"
       },
       "id": "8dcfefb2886e73a876f9"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:learningBookConcepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1533,
+        "text": "db.learningBookConcepts.where(\"bookId\")"
+      },
+      "id": "8ddb32bdedb772760e61"
     },
     {
       "type": "imports",
@@ -8493,6 +8505,17 @@
         "text": "import { AnimatedScrollText } from \"../components/AnimatedScrollText\";"
       },
       "id": "938d419ecd904cdaf7a5"
+    },
+    {
+      "type": "definedIn",
+      "source": "component:WireframeMap",
+      "target": "file:src/views/RevisionView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 365
+      },
+      "id": "9394f0b8edb4fe5d7ba7"
     },
     {
       "type": "renders",
@@ -9101,6 +9124,17 @@
       "id": "a4a2866a4aeaf4d607e6"
     },
     {
+      "type": "definedIn",
+      "source": "component:LongPressWrapper",
+      "target": "file:src/views/RevisionView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1110
+      },
+      "id": "a4acc466ad0149cd3e3a"
+    },
+    {
       "type": "mutates",
       "source": "file:src/components/ChatPanel.tsx",
       "target": "storeField:setIsVoiceActive",
@@ -9473,18 +9507,6 @@
       "id": "af1094d29756e1804927"
     },
     {
-      "type": "mutates",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:flashcards",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1183,
-        "text": "db.flashcards.update(card.id, {\n      nextReviewAt: Date.now() + nextDays * 24 * 60 * 60 * 1000,\n    })"
-      },
-      "id": "af34f7ee9e3c3ecaeee8"
-    },
-    {
       "type": "readsStore",
       "source": "file:src/components/PdfViewer.tsx",
       "target": "storeField:setAskTutorQuery",
@@ -9636,17 +9658,6 @@
         "text": "db.misconceptions.add(misconception)"
       },
       "id": "b31c04ce69df5d628875"
-    },
-    {
-      "type": "definedIn",
-      "source": "component:LiveComponentPreview",
-      "target": "file:src/views/RevisionView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 288
-      },
-      "id": "b31fafb419b8276fdb09"
     },
     {
       "type": "readsStore",
@@ -10313,29 +10324,6 @@
         "line": 166
       },
       "id": "c16c80dbb9dab05242e3"
-    },
-    {
-      "type": "definedIn",
-      "source": "component:WireframeMap",
-      "target": "file:src/views/RevisionView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 176
-      },
-      "id": "c1c57861ec5bf778f95c"
-    },
-    {
-      "type": "exports",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "file:src/views/RevisionView.tsx:export:RevisionView",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1117,
-        "text": "RevisionView"
-      },
-      "id": "c1e952c740d708d596c1"
     },
     {
       "type": "imports",
@@ -11436,17 +11424,6 @@
       "id": "e0357cba1dea4af71fcf"
     },
     {
-      "type": "definedIn",
-      "source": "component:FlashcardDeck",
-      "target": "file:src/views/RevisionView.tsx",
-      "confidence": 1,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1067
-      },
-      "id": "e096d3342015993b897c"
-    },
-    {
       "type": "dependsOn",
       "source": "file:brain/debug/debug-runner.ts",
       "target": "package:child_process",
@@ -11598,6 +11575,18 @@
         "text": "WebSearchMode"
       },
       "id": "e379be8721b66e93b1a1"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:learningBookConcepts",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1335,
+        "text": "db.learningBookConcepts.orderBy(\"updatedAt\")"
+      },
+      "id": "e4414a51255592dd6086"
     },
     {
       "type": "writesStore",
@@ -11822,18 +11811,6 @@
       "id": "eabc30bd7e27909cf2c9"
     },
     {
-      "type": "writesDatabase",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:learningBooks",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1321,
-        "text": "db.learningBooks.delete(bookId)"
-      },
-      "id": "eb5f732b1422efc129b8"
-    },
-    {
       "type": "readsStore",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "storeField:chatUsage",
@@ -11844,6 +11821,18 @@
         "text": "(state) => state.chatUsage"
       },
       "id": "eb977aecdf020987c3a2"
+    },
+    {
+      "type": "readsDatabase",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:learningEntries",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1534,
+        "text": "db.learningEntries.where(\"bookId\")"
+      },
+      "id": "ebdce0f1d26bf31b5392"
     },
     {
       "type": "dependsOn",
@@ -11891,18 +11880,6 @@
         "text": "import { motion, useMotionValue, useMotionTemplate } from \"motion/react\";"
       },
       "id": "ecd1702da1663d933486"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:flashcards",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1150,
-        "text": "db.flashcards.toArray()"
-      },
-      "id": "ed3d9eb7970aa2e0a832"
     },
     {
       "type": "dependsOn",
@@ -11984,6 +11961,17 @@
         "text": "cognitiveLoadMonitor"
       },
       "id": "f020f76c8813bd7dcae0"
+    },
+    {
+      "type": "definedIn",
+      "source": "component:RevisionView",
+      "target": "file:src/views/RevisionView.tsx",
+      "confidence": 1,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1315
+      },
+      "id": "f1593c27b9c8e72f0e71"
     },
     {
       "type": "readsStore",
@@ -12148,6 +12136,30 @@
         "text": "(state) => state.setActiveProject"
       },
       "id": "f4cbcf7f078f0fb09fbf"
+    },
+    {
+      "type": "exports",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "file:src/views/RevisionView.tsx:export:RevisionView",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1315,
+        "text": "RevisionView"
+      },
+      "id": "f4dd9abcfa5044babcfc"
+    },
+    {
+      "type": "mutates",
+      "source": "file:src/views/RevisionView.tsx",
+      "target": "databaseTable:learningBooks",
+      "confidence": 0.9,
+      "evidence": {
+        "file": "src/views/RevisionView.tsx",
+        "line": 1536,
+        "text": "db.learningBooks.delete(bookId)"
+      },
+      "id": "f55385d06261b5f47904"
     },
     {
       "type": "writesStore",
@@ -12545,18 +12557,6 @@
         "text": "db.learningBookConcepts.orderBy(\"updatedAt\")"
       },
       "id": "ff188af7ba04f0d77117"
-    },
-    {
-      "type": "readsDatabase",
-      "source": "file:src/views/RevisionView.tsx",
-      "target": "databaseTable:learningEntries",
-      "confidence": 0.9,
-      "evidence": {
-        "file": "src/views/RevisionView.tsx",
-        "line": 1143,
-        "text": "db.learningEntries.orderBy(\"timestamp\")"
-      },
-      "id": "ff4c4bc957ec1c2230ac"
     },
     {
       "type": "renders",

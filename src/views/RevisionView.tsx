@@ -80,27 +80,216 @@ type SnapshotPreviewId =
   | "settings"
   | "analytics";
 
+type WireframeNodeTone = "dark" | "light" | "accent" | "paper" | "blue";
+
+type WireframeNode = {
+  id: string;
+  x: number;
+  y: number;
+  tone: WireframeNodeTone;
+  summary: string;
+  lane: string;
+};
+
+type WireframeLink = {
+  from: string;
+  to: string;
+  label: string;
+};
+
 const wireframeNodes = [
-  { id: "Study", x: 12, y: 48, tone: "dark", summary: "workspace" },
-  { id: "PDF Viewer", x: 32, y: 22, tone: "light", summary: "read + mark" },
-  { id: "Chat Panel", x: 32, y: 74, tone: "dark", summary: "ask + stream" },
-  { id: "Memory", x: 52, y: 48, tone: "accent", summary: "map learning" },
-  { id: "Brain Graph", x: 72, y: 22, tone: "dark", summary: "concepts" },
-  { id: "Analytics", x: 72, y: 48, tone: "light", summary: "progress" },
-  { id: "Revision", x: 72, y: 74, tone: "paper", summary: "review" },
-  { id: "Admin", x: 92, y: 48, tone: "accent", summary: "debug" },
-];
+  {
+    id: "App Shell",
+    x: 90,
+    y: 92,
+    tone: "dark",
+    summary: "view host",
+    lane: "Navigation",
+  },
+  {
+    id: "Navigation",
+    x: 300,
+    y: 92,
+    tone: "dark",
+    summary: "activeView",
+    lane: "Navigation",
+  },
+  {
+    id: "Settings",
+    x: 510,
+    y: 92,
+    tone: "light",
+    summary: "keys + voice",
+    lane: "Navigation",
+  },
+  {
+    id: "Study View",
+    x: 90,
+    y: 245,
+    tone: "dark",
+    summary: "workspace",
+    lane: "Study",
+  },
+  {
+    id: "Document Intake",
+    x: 300,
+    y: 208,
+    tone: "paper",
+    summary: "upload",
+    lane: "Study",
+  },
+  {
+    id: "PDF Viewer",
+    x: 510,
+    y: 208,
+    tone: "light",
+    summary: "read + mark",
+    lane: "Study",
+  },
+  {
+    id: "Selection Toolbar",
+    x: 720,
+    y: 208,
+    tone: "light",
+    summary: "quote tools",
+    lane: "Study",
+  },
+  {
+    id: "Chat Panel",
+    x: 930,
+    y: 245,
+    tone: "dark",
+    summary: "ask tutor",
+    lane: "Tutor",
+  },
+  {
+    id: "Thinking Trace",
+    x: 1140,
+    y: 245,
+    tone: "blue",
+    summary: "stream",
+    lane: "Tutor",
+  },
+  {
+    id: "Tutor Tools",
+    x: 1350,
+    y: 245,
+    tone: "accent",
+    summary: "actions",
+    lane: "Tutor",
+  },
+  {
+    id: "Server API",
+    x: 1560,
+    y: 245,
+    tone: "dark",
+    summary: "models",
+    lane: "Tutor",
+  },
+  {
+    id: "Memory Orchestrator",
+    x: 510,
+    y: 405,
+    tone: "accent",
+    summary: "maps learning",
+    lane: "Memory",
+  },
+  {
+    id: "Dexie DB",
+    x: 720,
+    y: 405,
+    tone: "paper",
+    summary: "browser store",
+    lane: "Memory",
+  },
+  {
+    id: "Brain Graph",
+    x: 930,
+    y: 405,
+    tone: "dark",
+    summary: "concepts",
+    lane: "Memory",
+  },
+  {
+    id: "Learning Books",
+    x: 1140,
+    y: 405,
+    tone: "paper",
+    summary: "chapters",
+    lane: "Memory",
+  },
+  {
+    id: "Revision Library",
+    x: 1350,
+    y: 405,
+    tone: "paper",
+    summary: "review",
+    lane: "Review",
+  },
+  {
+    id: "Flashcards",
+    x: 1560,
+    y: 405,
+    tone: "light",
+    summary: "recall",
+    lane: "Review",
+  },
+  {
+    id: "Analytics",
+    x: 1140,
+    y: 565,
+    tone: "light",
+    summary: "progress",
+    lane: "Ops",
+  },
+  {
+    id: "Admin Console",
+    x: 1350,
+    y: 565,
+    tone: "accent",
+    summary: "debug",
+    lane: "Ops",
+  },
+  {
+    id: "Voice + TTS",
+    x: 1560,
+    y: 565,
+    tone: "blue",
+    summary: "speech",
+    lane: "Ops",
+  },
+] satisfies WireframeNode[];
 
 const wireframeLinks = [
-  ["Study", "PDF Viewer"],
-  ["Study", "Chat Panel"],
-  ["PDF Viewer", "Memory"],
-  ["Chat Panel", "Memory"],
-  ["Memory", "Brain Graph"],
-  ["Memory", "Analytics"],
-  ["Memory", "Revision"],
-  ["Analytics", "Admin"],
-];
+  { from: "App Shell", to: "Navigation", label: "renders tabs" },
+  { from: "Navigation", to: "Study View", label: "opens workspace" },
+  { from: "Navigation", to: "Revision Library", label: "opens library" },
+  { from: "Navigation", to: "Analytics", label: "opens progress" },
+  { from: "Settings", to: "Chat Panel", label: "model + voice" },
+  { from: "Study View", to: "Document Intake", label: "adds file" },
+  { from: "Document Intake", to: "PDF Viewer", label: "loads pages" },
+  { from: "PDF Viewer", to: "Selection Toolbar", label: "selected text" },
+  { from: "Selection Toolbar", to: "Chat Panel", label: "ask tutor" },
+  { from: "Chat Panel", to: "Thinking Trace", label: "streams reasoning" },
+  { from: "Chat Panel", to: "Tutor Tools", label: "calls tools" },
+  { from: "Tutor Tools", to: "Server API", label: "model/search" },
+  { from: "Server API", to: "Chat Panel", label: "returns answer" },
+  { from: "Chat Panel", to: "Memory Orchestrator", label: "saves exchange" },
+  { from: "PDF Viewer", to: "Memory Orchestrator", label: "adds notes" },
+  { from: "Tutor Tools", to: "Memory Orchestrator", label: "updates graph" },
+  { from: "Memory Orchestrator", to: "Dexie DB", label: "persists" },
+  { from: "Memory Orchestrator", to: "Brain Graph", label: "creates nodes" },
+  {
+    from: "Memory Orchestrator",
+    to: "Learning Books",
+    label: "writes chapters",
+  },
+  { from: "Learning Books", to: "Revision Library", label: "appears as book" },
+  { from: "Learning Books", to: "Flashcards", label: "review queue" },
+  { from: "Dexie DB", to: "Analytics", label: "aggregates" },
+  { from: "Dexie DB", to: "Admin Console", label: "trace records" },
+  { from: "Voice + TTS", to: "Chat Panel", label: "speech input" },
+] satisfies WireframeLink[];
 
 const snapshotCards: {
   id: SnapshotPreviewId;
@@ -175,110 +364,119 @@ const GalleryPanel = ({
 
 const WireframeMap = () => {
   const nodeById = new Map(wireframeNodes.map((node) => [node.id, node]));
+  const canvas = { width: 1680, height: 780 };
+  const nodeClass = (tone: WireframeNodeTone) => {
+    if (tone === "dark") return "border-zinc-700 bg-[#07070a] text-white";
+    if (tone === "accent") return "border-orange-300 bg-white text-orange-600";
+    if (tone === "paper") return "border-zinc-200 bg-[#faf9f6] text-zinc-900";
+    if (tone === "blue") return "border-blue-200 bg-white text-blue-600";
+    return "border-white bg-white text-zinc-700";
+  };
+  const linkPath = (source: WireframeNode, target: WireframeNode) => {
+    const offset = Math.max(70, Math.abs(target.x - source.x) * 0.45);
+    return `M ${source.x} ${source.y} C ${source.x + offset} ${source.y}, ${target.x - offset} ${target.y}, ${target.x} ${target.y}`;
+  };
+
   return (
-    <GalleryPanel className="relative overflow-hidden bg-[#f3f3f4]">
+    <GalleryPanel className="relative overflow-hidden bg-[#f3f3f4] p-0">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.88),transparent_56%)]" />
-      <div className="relative min-h-[620px]">
-        <svg
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
+      <div className="relative border-b border-white/80 px-5 py-4 sm:px-6">
+        <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+          Component Map
+        </div>
+        <div className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
+          Scroll the canvas to follow how the app shell hands work to the study
+          surface, tutor tools, memory layer, review surfaces, and debug views.
+        </div>
+      </div>
+      <div
+        className="relative max-h-[min(62vh,620px)] overflow-auto custom-scroll"
+        aria-label="Scrollable wireframe map of the Tutor UI components"
+      >
+        <div
+          className="relative"
+          style={{ width: canvas.width, height: canvas.height }}
         >
-          <defs>
-            <marker
-              id="wire-arrow"
-              markerHeight="6"
-              markerWidth="6"
-              orient="auto"
-              refX="5"
-              refY="3"
-            >
-              <path d="M0,0 L6,3 L0,6 Z" fill="rgba(161,161,170,0.72)" />
-            </marker>
-          </defs>
-          {wireframeLinks.map(([from, to]) => {
-            const source = nodeById.get(from)!;
-            const target = nodeById.get(to)!;
-            return (
-              <line
-                key={`${from}-${to}`}
-                x1={source.x}
-                y1={source.y}
-                x2={target.x}
-                y2={target.y}
-                stroke="rgba(161,161,170,0.62)"
-                strokeWidth="0.42"
-                markerEnd="url(#wire-arrow)"
-              />
-            );
-          })}
-          <line
-            x1="52"
-            y1="13"
-            x2="52"
-            y2="83"
-            stroke="rgba(212,212,216,0.78)"
-            strokeWidth="0.2"
-          />
-          <line
-            x1="8"
-            y1="48"
-            x2="92"
-            y2="48"
-            stroke="rgba(212,212,216,0.78)"
-            strokeWidth="0.2"
-          />
-        </svg>
-
-        {wireframeNodes.map((node) => (
-          <motion.div
-            key={node.id}
-            whileHover={{ y: -4, scale: 1.03 }}
-            className={`absolute flex min-h-[80px] w-[125px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[28px] border px-2 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] sm:w-[145px] sm:px-4 xl:w-[160px] ${
-              node.tone === "dark"
-                ? "border-zinc-700 bg-[#07070a] text-white"
-                : node.tone === "accent"
-                  ? "border-orange-300 bg-white text-orange-600"
-                  : node.tone === "paper"
-                    ? "border-zinc-200 bg-[#faf9f6] text-zinc-900"
-                    : "border-white bg-white text-zinc-700"
-            }`}
-            style={{ left: `${node.x}%`, top: `${node.y}%` }}
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(212,212,216,0.32)_1px,transparent_1px),linear-gradient(180deg,rgba(212,212,216,0.32)_1px,transparent_1px)] bg-[size:70px_70px]" />
+          {["Navigation", "Study", "Tutor", "Memory", "Review", "Ops"].map(
+            (lane, index) => (
+              <div
+                key={lane}
+                className="absolute left-5 right-5 border-t border-dashed border-zinc-300/70 pt-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400"
+                style={{ top: 45 + index * 104 }}
+              >
+                {lane}
+              </div>
+            ),
+          )}
+          <svg
+            className="absolute inset-0"
+            width={canvas.width}
+            height={canvas.height}
+            viewBox={`0 0 ${canvas.width} ${canvas.height}`}
+            aria-hidden="true"
           >
-            <div className="text-sm font-bold leading-snug tracking-tight sm:text-base md:text-lg">
-              {node.id}
-            </div>
-            <div
-              className={`mt-1 text-[9px] font-bold uppercase tracking-[0.16em] sm:text-[10px] ${
-                node.tone === "dark" ? "text-white/40" : "text-zinc-400"
-              }`}
-            >
-              {node.summary}
-            </div>
-          </motion.div>
-        ))}
+            <defs>
+              <marker
+                id="wire-arrow"
+                markerHeight="8"
+                markerWidth="8"
+                orient="auto"
+                refX="7"
+                refY="4"
+              >
+                <path d="M0,0 L8,4 L0,8 Z" fill="rgba(113,113,122,0.82)" />
+              </marker>
+            </defs>
+            {wireframeLinks.map((link) => {
+              const source = nodeById.get(link.from);
+              const target = nodeById.get(link.to);
+              if (!source || !target) return null;
+              const midX = (source.x + target.x) / 2;
+              const midY = (source.y + target.y) / 2;
+              return (
+                <g key={`${link.from}-${link.to}`}>
+                  <path
+                    d={linkPath(source, target)}
+                    fill="none"
+                    stroke="rgba(113,113,122,0.52)"
+                    strokeWidth="2"
+                    markerEnd="url(#wire-arrow)"
+                  />
+                  <text
+                    x={midX}
+                    y={midY - 8}
+                    textAnchor="middle"
+                    className="fill-zinc-400 text-[11px] font-semibold"
+                  >
+                    {link.label}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
 
-        <div className="absolute bottom-5 left-5 right-5 rounded-[32px] bg-white/90 p-6 shadow-[0_24px_70px_rgba(24,24,27,0.09)] backdrop-blur">
-          <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">
-            Connection Contract
-          </div>
-          <div className="mt-4 grid gap-4 text-[15px] leading-7 text-zinc-600 md:grid-cols-3">
-            <div>
-              <strong className="text-zinc-950">Study</strong> owns the live
-              PDF, selection toolbar, and chat workspace.
-            </div>
-            <div>
-              <strong className="text-orange-600">Memory</strong> translates
-              reading and conversation into books, concepts, and entries.
-            </div>
-            <div>
-              <strong className="text-zinc-950">
-                Revision, analytics, and admin
-              </strong>{" "}
-              read the mapped record without owning the study session.
-            </div>
-          </div>
+          {wireframeNodes.map((node) => (
+            <motion.div
+              key={node.id}
+              whileHover={{ y: -4, scale: 1.03 }}
+              className={`absolute flex min-h-[82px] w-[156px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[24px] border px-4 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${nodeClass(
+                node.tone,
+              )}`}
+              style={{ left: node.x, top: node.y }}
+            >
+              <div className="text-base font-bold leading-tight tracking-tight">
+                {node.id}
+              </div>
+              <div
+                className={`mt-2 text-[10px] font-bold uppercase tracking-[0.16em] ${
+                  node.tone === "dark" ? "text-white/40" : "text-zinc-400"
+                }`}
+              >
+                {node.summary}
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </GalleryPanel>
@@ -1307,6 +1505,23 @@ export function RevisionView() {
     ? activeBuiltInBook.chapters.length
     : activeLearningBook?.chapters?.length || 0;
 
+  const scrollBookToTop = (behavior: ScrollBehavior = "smooth") => {
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: 0, behavior });
+    });
+  };
+
+  const returnToLibrary = () => {
+    setActiveConceptId(null);
+    setCurrentChapterIndex(0);
+    scrollBookToTop("auto");
+  };
+
+  const selectChapter = (index: number) => {
+    setCurrentChapterIndex(index);
+    scrollBookToTop();
+  };
+
   const deleteLearningBookRecords = async (bookId: string) => {
     await db.transaction(
       "rw",
@@ -1363,17 +1578,17 @@ export function RevisionView() {
         }}
       />
       {activeConcept || activeLearningBook ? (
-        <div className="min-h-full flex w-full relative z-10 pt-16 md:pt-20 shrink-0">
+        <div className="min-h-full flex w-full relative z-10 pt-24 md:pt-28 lg:pt-24 shrink-0">
           {/* Sidebar Navigation */}
           {(isBuiltInBook || activeLearningBook) && (
-            <div className="w-64 border-r border-zinc-200/50 bg-[#faf9f6] hidden lg:block px-4 py-6 flex-shrink-0 sticky top-20 h-[calc(100vh-80px)] overflow-y-auto custom-scroll self-start">
-              <div className="sticky top-0 z-20 -mt-2 mb-4 border-b border-zinc-200/70 bg-[#faf9f6] pb-4 pt-2 shadow-[0_14px_28px_rgba(250,249,246,0.96)]">
+            <div className="sticky top-24 hidden h-[calc(100vh-96px)] w-72 flex-shrink-0 flex-col overflow-hidden border-r border-zinc-200/50 bg-[#faf9f6] px-4 py-5 self-start lg:flex">
+              <div className="z-20 flex-shrink-0 border-b border-zinc-200/70 bg-[#faf9f6] pb-4 shadow-[0_14px_28px_rgba(250,249,246,0.96)]">
+                <div className="mb-3 line-clamp-2 px-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+                  {activeTitle}
+                </div>
                 <button
-                  onClick={() => {
-                    setActiveConceptId(null);
-                    setCurrentChapterIndex(0);
-                  }}
-                  className="flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-2"
+                  onClick={returnToLibrary}
+                  className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
                 >
                   <Menu size={16} /> Back to Library
                 </button>
@@ -1381,7 +1596,7 @@ export function RevisionView() {
                   Contents
                 </div>
               </div>
-              <nav className="flex flex-col gap-1">
+              <nav className="custom-scroll -mr-2 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto py-4 pr-2">
                 {(
                   activeBuiltInBook?.chapters ||
                   activeLearningBook?.chapters ||
@@ -1389,7 +1604,7 @@ export function RevisionView() {
                 ).map((ch: any, idx: number) => (
                   <button
                     key={idx}
-                    onClick={() => setCurrentChapterIndex(idx)}
+                    onClick={() => selectChapter(idx)}
                     className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 ${idx === currentChapterIndex ? "bg-zinc-900 text-white font-medium shadow-sm border border-zinc-900" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
                   >
                     <span className="line-clamp-2 leading-snug">
@@ -1405,13 +1620,10 @@ export function RevisionView() {
             {/* Header for mobile or non-book views */}
             <div className="sticky left-0 right-0 top-16 z-50 flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/70 bg-[#faf9f6] px-4 py-3 shadow-[0_14px_28px_rgba(250,249,246,0.98)] md:top-20 md:px-6 md:py-4 lg:hidden">
               <button
-                onClick={() => {
-                  setActiveConceptId(null);
-                  setCurrentChapterIndex(0);
-                }}
+                onClick={returnToLibrary}
                 className="flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
               >
-                <Menu size={16} /> Back
+                <Menu size={16} /> Back to Library
               </button>
               <div className="min-w-0 flex-1 truncate text-center text-sm font-semibold tracking-wide text-zinc-800 md:max-w-md">
                 {activeTitle}
@@ -1431,7 +1643,7 @@ export function RevisionView() {
                   ).map((ch: any, idx: number) => (
                     <button
                       key={idx}
-                      onClick={() => setCurrentChapterIndex(idx)}
+                      onClick={() => selectChapter(idx)}
                       className={`max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors ${idx === currentChapterIndex ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100"}`}
                     >
                       <span className="line-clamp-1">{ch.title}</span>
@@ -1497,38 +1709,34 @@ export function RevisionView() {
                 </motion.div>
               </AnimatePresence>
 
-              {isBuiltInBook && (
-                <div className="flex justify-between items-center mt-12 pt-8 border-t border-zinc-200/50 font-sans">
-                  <button
-                    disabled={currentChapterIndex === 0}
-                    onClick={() => {
-                      setCurrentChapterIndex((c) => Math.max(0, c - 1));
-                      scrollRef.current?.scrollTo({
-                        top: 0,
-                        behavior: "smooth",
-                      });
-                    }}
-                    className="px-5 py-2.5 rounded-full border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-40 disabled:pointer-events-none transition-[color,background-color,border-color,box-shadow,transform,opacity] flex items-center gap-2"
-                  >
-                    &larr; Previous
-                  </button>
-                  <button
-                    disabled={currentChapterIndex === activeChapterCount - 1}
-                    onClick={() => {
-                      setCurrentChapterIndex((c) =>
-                        Math.min(activeChapterCount - 1, c + 1),
-                      );
-                      scrollRef.current?.scrollTo({
-                        top: 0,
-                        behavior: "smooth",
-                      });
-                    }}
-                    className="px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 disabled:opacity-40 disabled:pointer-events-none transition-[color,background-color,border-color,box-shadow,transform,opacity] flex items-center gap-2 shadow-sm"
-                  >
-                    Next &rarr;
-                  </button>
-                </div>
-              )}
+              {(isBuiltInBook || activeLearningBook) &&
+                activeChapterCount > 1 && (
+                  <div className="flex justify-between items-center mt-12 pt-8 border-t border-zinc-200/50 font-sans">
+                    <button
+                      disabled={currentChapterIndex === 0}
+                      onClick={() => {
+                        selectChapter(Math.max(0, currentChapterIndex - 1));
+                      }}
+                      className="px-5 py-2.5 rounded-full border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-40 disabled:pointer-events-none transition-[color,background-color,border-color,box-shadow,transform,opacity] flex items-center gap-2"
+                    >
+                      &larr; Previous
+                    </button>
+                    <button
+                      disabled={currentChapterIndex === activeChapterCount - 1}
+                      onClick={() => {
+                        selectChapter(
+                          Math.min(
+                            activeChapterCount - 1,
+                            currentChapterIndex + 1,
+                          ),
+                        );
+                      }}
+                      className="px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 disabled:opacity-40 disabled:pointer-events-none transition-[color,background-color,border-color,box-shadow,transform,opacity] flex items-center gap-2 shadow-sm"
+                    >
+                      Next &rarr;
+                    </button>
+                  </div>
+                )}
 
               {activeLearningBook && activeBookFlashcards.length > 0 && (
                 <div className="mt-20 border-t border-zinc-200 pt-16 font-sans">
