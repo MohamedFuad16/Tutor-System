@@ -2595,12 +2595,6 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || sendState !== "idle") return;
-    if (!apiKey) {
-      alert(
-        "Please configure your OpenRouter API Key in the settings (top right).",
-      );
-      return;
-    }
 
     audio.playClick();
     setSendState("sending");
@@ -2740,7 +2734,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
+          ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
           ...(serperApiKey ? { "X-Serper-API-Key": serperApiKey } : {}),
         },
         body: JSON.stringify({

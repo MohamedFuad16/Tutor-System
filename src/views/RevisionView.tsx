@@ -101,165 +101,166 @@ type WireframeLink = {
   labelY: number;
   fromSide?: WireframeLinkSide;
   toSide?: WireframeLinkSide;
+  waypoints?: { x: number; y: number }[];
 };
 
 const wireframeNodes = [
   {
     id: "App Shell",
-    x: 95,
-    y: 112,
+    x: 120,
+    y: 145,
     tone: "dark",
     summary: "view host",
     lane: "Navigation",
   },
   {
     id: "Navigation",
-    x: 265,
-    y: 112,
+    x: 310,
+    y: 145,
     tone: "dark",
     summary: "activeView",
     lane: "Navigation",
   },
   {
     id: "Settings",
-    x: 435,
-    y: 112,
+    x: 500,
+    y: 145,
     tone: "light",
     summary: "keys + voice",
     lane: "Navigation",
   },
   {
     id: "Study View",
-    x: 95,
-    y: 300,
+    x: 120,
+    y: 355,
     tone: "dark",
     summary: "workspace",
     lane: "Study",
   },
   {
     id: "Document Intake",
-    x: 265,
-    y: 300,
+    x: 310,
+    y: 355,
     tone: "paper",
     summary: "upload",
     lane: "Study",
   },
   {
     id: "PDF Viewer",
-    x: 435,
-    y: 300,
+    x: 500,
+    y: 355,
     tone: "light",
     summary: "read + mark",
     lane: "Study",
   },
   {
     id: "Selection Toolbar",
-    x: 605,
-    y: 300,
+    x: 690,
+    y: 355,
     tone: "light",
     summary: "quote tools",
     lane: "Study",
   },
   {
     id: "Chat Panel",
-    x: 770,
-    y: 300,
+    x: 865,
+    y: 355,
     tone: "dark",
     summary: "ask tutor",
     lane: "Tutor",
   },
   {
     id: "Thinking Trace",
-    x: 435,
-    y: 485,
+    x: 500,
+    y: 565,
     tone: "blue",
     summary: "stream",
     lane: "Tutor",
   },
   {
     id: "Tutor Tools",
-    x: 605,
-    y: 485,
+    x: 690,
+    y: 565,
     tone: "accent",
     summary: "actions",
     lane: "Tutor",
   },
   {
     id: "Server API",
-    x: 770,
-    y: 485,
+    x: 865,
+    y: 565,
     tone: "dark",
     summary: "models",
     lane: "Tutor",
   },
   {
     id: "Voice + TTS",
-    x: 95,
-    y: 485,
+    x: 120,
+    y: 565,
     tone: "blue",
     summary: "speech",
     lane: "Tutor",
   },
   {
     id: "Memory Orchestrator",
-    x: 265,
-    y: 670,
+    x: 310,
+    y: 775,
     tone: "accent",
     summary: "maps learning",
     lane: "Memory",
   },
   {
     id: "Dexie DB",
-    x: 435,
-    y: 670,
+    x: 500,
+    y: 775,
     tone: "paper",
     summary: "browser store",
     lane: "Memory",
   },
   {
     id: "Brain Graph",
-    x: 605,
-    y: 670,
+    x: 690,
+    y: 775,
     tone: "dark",
     summary: "concepts",
     lane: "Memory",
   },
   {
     id: "Learning Books",
-    x: 770,
-    y: 670,
+    x: 865,
+    y: 775,
     tone: "paper",
     summary: "chapters",
     lane: "Memory",
   },
   {
     id: "Revision Library",
-    x: 435,
-    y: 850,
+    x: 500,
+    y: 985,
     tone: "paper",
     summary: "review",
     lane: "Review",
   },
   {
     id: "Flashcards",
-    x: 605,
-    y: 850,
+    x: 690,
+    y: 985,
     tone: "light",
     summary: "recall",
     lane: "Review",
   },
   {
     id: "Analytics",
-    x: 265,
-    y: 850,
+    x: 310,
+    y: 985,
     tone: "light",
     summary: "progress",
     lane: "Ops",
   },
   {
     id: "Admin Console",
-    x: 95,
-    y: 850,
+    x: 120,
+    y: 985,
     tone: "accent",
     summary: "logs",
     lane: "Ops",
@@ -271,169 +272,222 @@ const wireframeLinks = [
     from: "App Shell",
     to: "Navigation",
     label: "renders tabs",
-    labelX: 180,
-    labelY: 78,
+    labelX: 215,
+    labelY: 70,
   },
   {
     from: "Navigation",
     to: "Study View",
     label: "opens workspace",
-    labelX: 145,
-    labelY: 205,
+    labelX: 220,
+    labelY: 245,
   },
   {
     from: "Navigation",
     to: "Revision Library",
     label: "opens library",
-    labelX: 440,
-    labelY: 790,
+    labelX: 520,
+    labelY: 860,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 210, y: 230 },
+      { x: 210, y: 920 },
+      { x: 500, y: 920 },
+    ],
   },
   {
     from: "Navigation",
     to: "Analytics",
     label: "opens progress",
-    labelX: 205,
-    labelY: 790,
+    labelX: 270,
+    labelY: 900,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 205, y: 230 },
+      { x: 205, y: 920 },
+      { x: 310, y: 920 },
+    ],
   },
   {
     from: "Settings",
     to: "Chat Panel",
     label: "model + voice",
-    labelX: 607,
-    labelY: 190,
+    labelX: 720,
+    labelY: 220,
   },
   {
     from: "Study View",
     to: "Document Intake",
     label: "adds file",
-    labelX: 180,
-    labelY: 246,
+    labelX: 215,
+    labelY: 288,
   },
   {
     from: "Document Intake",
     to: "PDF Viewer",
     label: "loads pages",
-    labelX: 350,
-    labelY: 246,
+    labelX: 405,
+    labelY: 288,
   },
   {
     from: "PDF Viewer",
     to: "Selection Toolbar",
     label: "selected text",
-    labelX: 520,
-    labelY: 246,
+    labelX: 595,
+    labelY: 288,
   },
   {
     from: "Selection Toolbar",
     to: "Chat Panel",
     label: "ask tutor",
-    labelX: 688,
-    labelY: 246,
+    labelX: 780,
+    labelY: 288,
   },
   {
     from: "Chat Panel",
     to: "Thinking Trace",
     label: "streams reasoning",
-    labelX: 607,
-    labelY: 390,
+    labelX: 735,
+    labelY: 465,
   },
   {
     from: "Chat Panel",
     to: "Tutor Tools",
     label: "calls tools",
-    labelX: 686,
-    labelY: 410,
+    labelX: 805,
+    labelY: 500,
   },
   {
     from: "Tutor Tools",
     to: "Server API",
     label: "model/search",
-    labelX: 686,
-    labelY: 455,
+    labelX: 780,
+    labelY: 625,
   },
   {
     from: "Server API",
     to: "Chat Panel",
     label: "returns answer",
-    labelX: 795,
-    labelY: 390,
+    labelX: 920,
+    labelY: 460,
   },
   {
     from: "Chat Panel",
     to: "Memory Orchestrator",
     label: "saves exchange",
-    labelX: 554,
-    labelY: 560,
+    labelX: 725,
+    labelY: 675,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 950, y: 430 },
+      { x: 950, y: 675 },
+      { x: 310, y: 675 },
+    ],
   },
   {
     from: "PDF Viewer",
     to: "Memory Orchestrator",
     label: "adds notes",
-    labelX: 360,
-    labelY: 505,
+    labelX: 405,
+    labelY: 655,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 405, y: 440 },
+      { x: 405, y: 655 },
+      { x: 310, y: 655 },
+    ],
   },
   {
     from: "Tutor Tools",
     to: "Memory Orchestrator",
     label: "updates graph",
-    labelX: 458,
-    labelY: 600,
+    labelX: 560,
+    labelY: 675,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 690, y: 665 },
+      { x: 310, y: 665 },
+    ],
   },
   {
     from: "Voice + TTS",
     to: "Chat Panel",
     label: "speech input",
-    labelX: 422,
-    labelY: 455,
+    labelX: 340,
+    labelY: 625,
+    fromSide: "right",
+    toSide: "bottom",
+    waypoints: [
+      { x: 250, y: 640 },
+      { x: 950, y: 640 },
+      { x: 950, y: 430 },
+    ],
   },
   {
     from: "Memory Orchestrator",
     to: "Dexie DB",
     label: "persists",
-    labelX: 350,
-    labelY: 640,
+    labelX: 405,
+    labelY: 705,
   },
   {
     from: "Memory Orchestrator",
     to: "Brain Graph",
     label: "creates nodes",
-    labelX: 440,
-    labelY: 610,
+    labelX: 525,
+    labelY: 705,
+    fromSide: "top",
+    toSide: "top",
+    waypoints: [
+      { x: 310, y: 690 },
+      { x: 690, y: 690 },
+    ],
   },
   {
     from: "Memory Orchestrator",
     to: "Learning Books",
     label: "writes chapters",
-    labelX: 528,
-    labelY: 700,
+    labelX: 665,
+    labelY: 850,
+    fromSide: "bottom",
+    toSide: "bottom",
+    waypoints: [
+      { x: 310, y: 860 },
+      { x: 865, y: 860 },
+    ],
   },
   {
     from: "Learning Books",
     to: "Revision Library",
     label: "appears as book",
-    labelX: 600,
-    labelY: 785,
+    labelX: 725,
+    labelY: 900,
   },
   {
     from: "Learning Books",
     to: "Flashcards",
     label: "review queue",
-    labelX: 745,
-    labelY: 790,
+    labelX: 850,
+    labelY: 900,
   },
   {
     from: "Dexie DB",
     to: "Analytics",
     label: "aggregates",
-    labelX: 335,
-    labelY: 790,
+    labelX: 400,
+    labelY: 900,
   },
   {
     from: "Dexie DB",
     to: "Admin Console",
     label: "trace records",
-    labelX: 190,
-    labelY: 725,
+    labelX: 225,
+    labelY: 850,
   },
 ] satisfies WireframeLink[];
 
@@ -512,14 +566,14 @@ const WireframeMap = () => {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [mapScale, setMapScale] = useState(1);
   const nodeById = new Map(wireframeNodes.map((node) => [node.id, node]));
-  const canvas = { width: 860, height: 960 };
-  const nodeSize = { width: 136, height: 86 };
+  const canvas = { width: 980, height: 1080 };
+  const nodeSize = { width: 150, height: 86 };
   const lanes = [
-    ["Navigation", 58],
-    ["Study", 246],
-    ["Tutor", 430],
-    ["Memory", 615],
-    ["Review + Ops", 795],
+    ["Navigation", 78],
+    ["Study", 288],
+    ["Tutor", 498],
+    ["Memory", 708],
+    ["Review + Ops", 918],
   ] as const;
   const nodeClass = (tone: WireframeNodeTone) => {
     if (tone === "dark") return "border-zinc-700 bg-[#07070a] text-white";
@@ -576,6 +630,15 @@ const WireframeMap = () => {
     const targetSide = link.toSide ?? defaultSide(source, target, "target");
     const start = anchorFor(source, sourceSide);
     const end = anchorFor(target, targetSide);
+
+    if (link.waypoints?.length) {
+      return [
+        `M ${start.x} ${start.y}`,
+        ...link.waypoints.map((point) => `L ${point.x} ${point.y}`),
+        `L ${end.x} ${end.y}`,
+      ].join(" ");
+    }
+
     const horizontal = sourceSide === "left" || sourceSide === "right";
     const distance = horizontal
       ? Math.abs(end.x - start.x)
@@ -592,7 +655,7 @@ const WireframeMap = () => {
   };
 
   return (
-    <GalleryPanel className="relative left-1/2 w-full -translate-x-1/2 overflow-hidden bg-[#f3f3f4] p-0 lg:w-[min(1040px,calc(100vw-18rem))] xl:w-[min(1120px,calc(100vw-24rem))]">
+    <GalleryPanel className="relative left-1/2 w-full -translate-x-1/2 overflow-hidden bg-[#f3f3f4] p-0 lg:w-[min(1120px,calc(100vw-18rem))] xl:w-[min(1240px,calc(100vw-24rem))]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.88),transparent_56%)]" />
       <div className="relative border-b border-white/80 px-5 py-4 sm:px-6">
         <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
@@ -606,7 +669,7 @@ const WireframeMap = () => {
       </div>
       <div
         ref={viewportRef}
-        className="relative max-h-[min(70vh,720px)] overflow-x-hidden overflow-y-auto custom-scroll"
+        className="relative max-h-[min(76vh,780px)] overflow-x-hidden overflow-y-auto custom-scroll"
         aria-label="Scrollable wireframe map of the Tutor UI components"
       >
         <div
@@ -662,6 +725,8 @@ const WireframeMap = () => {
                       fill="none"
                       stroke="rgba(113,113,122,0.46)"
                       strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       markerEnd="url(#wire-arrow)"
                     />
                   </g>
@@ -683,7 +748,7 @@ const WireframeMap = () => {
               <motion.div
                 key={node.id}
                 whileHover={{ y: -4, scale: 1.03 }}
-                className={`absolute z-30 flex min-h-[86px] w-[136px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[24px] border px-3 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${nodeClass(
+                className={`absolute z-30 flex min-h-[86px] w-[150px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[22px] border px-3 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${nodeClass(
                   node.tone,
                 )}`}
                 style={{ left: node.x, top: node.y }}

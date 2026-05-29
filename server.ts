@@ -394,7 +394,16 @@ export async function createTutorServerApp(
   };
 
   app.get("/api/health", (_req, res) => {
-    res.json({ ok: true, service: "tutor-server" });
+    res.json({
+      ok: true,
+      service: "tutor-server",
+      runtime: process.env.VERCEL ? "vercel" : "node",
+      providers: {
+        openRouter: Boolean(sanitizeApiKey(process.env.OPENROUTER_API_KEY)),
+        serper: Boolean(sanitizeApiKey(process.env.SERPER_API_KEY)),
+        deepgram: Boolean(sanitizeApiKey(process.env.DEEPGRAM_API_KEY)),
+      },
+    });
   });
 
   app.get("/api/pricing", async (_req, res) => {

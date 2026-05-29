@@ -569,7 +569,8 @@ export function SettingsButton() {
                           <p className="text-xs text-zinc-500 leading-relaxed">
                             Your key is stored locally in your browser's
                             localStorage and is only sent directly to the AI
-                            service. Required for Chat via OpenRouter.
+                            service. Optional when the server has an
+                            OpenRouter key configured.
                           </p>
                         </div>
 
