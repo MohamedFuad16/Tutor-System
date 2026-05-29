@@ -9,7 +9,7 @@
       "source_file": "package.json",
       "source_location": "L1",
       "id": "package_json",
-      "community": 14,
+      "community": 23,
       "norm_label": "package.json"
     },
     {
@@ -18,7 +18,7 @@
       "source_file": "package.json",
       "source_location": "L2",
       "id": "tutor_system_architecture_package_name",
-      "community": 14,
+      "community": 23,
       "norm_label": "name"
     },
     {
@@ -27,7 +27,7 @@
       "source_file": "package.json",
       "source_location": "L3",
       "id": "tutor_system_architecture_package_private",
-      "community": 14,
+      "community": 23,
       "norm_label": "private"
     },
     {
@@ -36,7 +36,7 @@
       "source_file": "package.json",
       "source_location": "L4",
       "id": "tutor_system_architecture_package_version",
-      "community": 14,
+      "community": 23,
       "norm_label": "version"
     },
     {
@@ -45,7 +45,7 @@
       "source_file": "package.json",
       "source_location": "L5",
       "id": "tutor_system_architecture_package_type",
-      "community": 14,
+      "community": 23,
       "norm_label": "type"
     },
     {
@@ -166,10 +166,19 @@
       "norm_label": "format"
     },
     {
+      "label": "test",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L19",
+      "id": "tutor_system_architecture_package_scripts_test",
+      "community": 14,
+      "norm_label": "test"
+    },
+    {
       "label": "dependencies",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L20",
+      "source_location": "L21",
       "id": "tutor_system_architecture_package_dependencies",
       "community": 23,
       "norm_label": "dependencies"
@@ -178,7 +187,7 @@
       "label": "@fontsource/geist-sans",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L21",
+      "source_location": "L22",
       "id": "tutor_system_architecture_package_dependencies_fontsource_geist_sans",
       "community": 23,
       "norm_label": "@fontsource/geist-sans"
@@ -187,7 +196,7 @@
       "label": "@fontsource/space-grotesk",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L22",
+      "source_location": "L23",
       "id": "tutor_system_architecture_package_dependencies_fontsource_space_grotesk",
       "community": 23,
       "norm_label": "@fontsource/space-grotesk"
@@ -196,7 +205,7 @@
       "label": "@google/genai",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L23",
+      "source_location": "L24",
       "id": "tutor_system_architecture_package_dependencies_google_genai",
       "community": 23,
       "norm_label": "@google/genai"
@@ -205,7 +214,7 @@
       "label": "@tailwindcss/typography",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L24",
+      "source_location": "L25",
       "id": "tutor_system_architecture_package_dependencies_tailwindcss_typography",
       "community": 23,
       "norm_label": "@tailwindcss/typography"
@@ -214,7 +223,7 @@
       "label": "@tailwindcss/vite",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L25",
+      "source_location": "L26",
       "id": "tutor_system_architecture_package_dependencies_tailwindcss_vite",
       "community": 23,
       "norm_label": "@tailwindcss/vite"
@@ -223,7 +232,7 @@
       "label": "@types/compression",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L27",
       "id": "tutor_system_architecture_package_dependencies_types_compression",
       "community": 23,
       "norm_label": "@types/compression"
@@ -232,7 +241,7 @@
       "label": "@vitejs/plugin-react",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L27",
+      "source_location": "L28",
       "id": "tutor_system_architecture_package_dependencies_vitejs_plugin_react",
       "community": 23,
       "norm_label": "@vitejs/plugin-react"
@@ -241,7 +250,7 @@
       "label": "compression",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L28",
+      "source_location": "L29",
       "id": "tutor_system_architecture_package_dependencies_compression",
       "community": 23,
       "norm_label": "compression"
@@ -250,7 +259,7 @@
       "label": "d3",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L29",
+      "source_location": "L30",
       "id": "tutor_system_architecture_package_dependencies_d3",
       "community": 23,
       "norm_label": "d3"
@@ -259,7 +268,7 @@
       "label": "dexie",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L30",
+      "source_location": "L31",
       "id": "tutor_system_architecture_package_dependencies_dexie",
       "community": 23,
       "norm_label": "dexie"
@@ -268,7 +277,7 @@
       "label": "dexie-react-hooks",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L31",
+      "source_location": "L32",
       "id": "tutor_system_architecture_package_dependencies_dexie_react_hooks",
       "community": 23,
       "norm_label": "dexie-react-hooks"
@@ -277,7 +286,7 @@
       "label": "dotenv",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L32",
+      "source_location": "L33",
       "id": "tutor_system_architecture_package_dependencies_dotenv",
       "community": 23,
       "norm_label": "dotenv"
@@ -286,7 +295,7 @@
       "label": "express",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L33",
+      "source_location": "L34",
       "id": "tutor_system_architecture_package_dependencies_express",
       "community": 23,
       "norm_label": "express"
@@ -295,7 +304,7 @@
       "label": "lucide-react",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L34",
+      "source_location": "L35",
       "id": "tutor_system_architecture_package_dependencies_lucide_react",
       "community": 23,
       "norm_label": "lucide-react"
@@ -304,7 +313,7 @@
       "label": "mermaid",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L35",
+      "source_location": "L36",
       "id": "tutor_system_architecture_package_dependencies_mermaid",
       "community": 23,
       "norm_label": "mermaid"
@@ -313,7 +322,7 @@
       "label": "motion",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L36",
+      "source_location": "L37",
       "id": "tutor_system_architecture_package_dependencies_motion",
       "community": 23,
       "norm_label": "motion"
@@ -322,7 +331,7 @@
       "label": "multer",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L37",
+      "source_location": "L38",
       "id": "tutor_system_architecture_package_dependencies_multer",
       "community": 23,
       "norm_label": "multer"
@@ -331,7 +340,7 @@
       "label": "openai",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L38",
+      "source_location": "L39",
       "id": "tutor_system_architecture_package_dependencies_openai",
       "community": 23,
       "norm_label": "openai"
@@ -340,7 +349,7 @@
       "label": "react",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L39",
+      "source_location": "L40",
       "id": "tutor_system_architecture_package_dependencies_react",
       "community": 23,
       "norm_label": "react"
@@ -349,7 +358,7 @@
       "label": "react-dom",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L40",
+      "source_location": "L41",
       "id": "tutor_system_architecture_package_dependencies_react_dom",
       "community": 23,
       "norm_label": "react-dom"
@@ -358,7 +367,7 @@
       "label": "react-markdown",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L41",
+      "source_location": "L42",
       "id": "tutor_system_architecture_package_dependencies_react_markdown",
       "community": 23,
       "norm_label": "react-markdown"
@@ -367,7 +376,7 @@
       "label": "react-pdf",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L42",
+      "source_location": "L43",
       "id": "tutor_system_architecture_package_dependencies_react_pdf",
       "community": 23,
       "norm_label": "react-pdf"
@@ -376,7 +385,7 @@
       "label": "recharts",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L43",
+      "source_location": "L44",
       "id": "tutor_system_architecture_package_dependencies_recharts",
       "community": 23,
       "norm_label": "recharts"
@@ -385,7 +394,7 @@
       "label": "remark-gfm",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L44",
+      "source_location": "L45",
       "id": "tutor_system_architecture_package_dependencies_remark_gfm",
       "community": 23,
       "norm_label": "remark-gfm"
@@ -394,7 +403,7 @@
       "label": "shiki",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L45",
+      "source_location": "L46",
       "id": "tutor_system_architecture_package_dependencies_shiki",
       "community": 23,
       "norm_label": "shiki"
@@ -403,7 +412,7 @@
       "label": "vite",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L46",
+      "source_location": "L47",
       "id": "tutor_system_architecture_package_dependencies_vite",
       "community": 23,
       "norm_label": "vite"
@@ -412,7 +421,7 @@
       "label": "ws",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L47",
+      "source_location": "L48",
       "id": "tutor_system_architecture_package_dependencies_ws",
       "community": 23,
       "norm_label": "ws"
@@ -421,7 +430,7 @@
       "label": "zustand",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L48",
+      "source_location": "L49",
       "id": "tutor_system_architecture_package_dependencies_zustand",
       "community": 23,
       "norm_label": "zustand"
@@ -430,126 +439,126 @@
       "label": "devDependencies",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L50",
+      "source_location": "L51",
       "id": "tutor_system_architecture_package_devdependencies",
-      "community": 14,
+      "community": 23,
       "norm_label": "devdependencies"
     },
     {
       "label": "@types/d3",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L51",
+      "source_location": "L52",
       "id": "tutor_system_architecture_package_devdependencies_types_d3",
-      "community": 14,
+      "community": 23,
       "norm_label": "@types/d3"
     },
     {
       "label": "@types/express",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L52",
+      "source_location": "L53",
       "id": "tutor_system_architecture_package_devdependencies_types_express",
-      "community": 14,
+      "community": 23,
       "norm_label": "@types/express"
     },
     {
       "label": "@types/multer",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L53",
+      "source_location": "L54",
       "id": "tutor_system_architecture_package_devdependencies_types_multer",
-      "community": 14,
+      "community": 23,
       "norm_label": "@types/multer"
     },
     {
       "label": "@types/node",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L54",
+      "source_location": "L55",
       "id": "tutor_system_architecture_package_devdependencies_types_node",
-      "community": 14,
+      "community": 23,
       "norm_label": "@types/node"
     },
     {
       "label": "@types/ws",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L55",
+      "source_location": "L56",
       "id": "tutor_system_architecture_package_devdependencies_types_ws",
-      "community": 14,
+      "community": 23,
       "norm_label": "@types/ws"
     },
     {
       "label": "autoprefixer",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L57",
       "id": "tutor_system_architecture_package_devdependencies_autoprefixer",
-      "community": 14,
+      "community": 23,
       "norm_label": "autoprefixer"
     },
     {
       "label": "esbuild",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L57",
+      "source_location": "L58",
       "id": "tutor_system_architecture_package_devdependencies_esbuild",
-      "community": 14,
+      "community": 23,
       "norm_label": "esbuild"
     },
     {
       "label": "prettier",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L58",
+      "source_location": "L59",
       "id": "tutor_system_architecture_package_devdependencies_prettier",
-      "community": 14,
+      "community": 23,
       "norm_label": "prettier"
     },
     {
       "label": "tailwindcss",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L59",
+      "source_location": "L60",
       "id": "tutor_system_architecture_package_devdependencies_tailwindcss",
-      "community": 14,
+      "community": 23,
       "norm_label": "tailwindcss"
     },
     {
       "label": "typescript",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L60",
+      "source_location": "L61",
       "id": "tutor_system_architecture_package_devdependencies_typescript",
-      "community": 14,
+      "community": 23,
       "norm_label": "typescript"
     },
     {
       "label": "vite",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L61",
+      "source_location": "L62",
       "id": "tutor_system_architecture_package_devdependencies_vite",
-      "community": 14,
+      "community": 23,
       "norm_label": "vite"
     },
     {
       "label": "overrides",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L63",
+      "source_location": "L64",
       "id": "tutor_system_architecture_package_overrides",
-      "community": 14,
+      "community": 23,
       "norm_label": "overrides"
     },
     {
       "label": "protobufjs",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L64",
+      "source_location": "L65",
       "id": "tutor_system_architecture_package_overrides_protobufjs",
-      "community": 14,
+      "community": 23,
       "norm_label": "protobufjs"
     },
     {
@@ -583,7 +592,7 @@
       "label": "roundCost()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L44",
+      "source_location": "L46",
       "id": "tutor_system_architecture_server_roundcost",
       "community": 31,
       "norm_label": "roundcost()"
@@ -592,7 +601,7 @@
       "label": "estimateTokensFromText()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L47",
+      "source_location": "L49",
       "id": "tutor_system_architecture_server_estimatetokensfromtext",
       "community": 2,
       "norm_label": "estimatetokensfromtext()"
@@ -601,7 +610,7 @@
       "label": "ttsCostForModel()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L52",
+      "source_location": "L54",
       "id": "tutor_system_architecture_server_ttscostformodel",
       "community": 31,
       "norm_label": "ttscostformodel()"
@@ -610,7 +619,7 @@
       "label": "voiceAgentCostForSeconds()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L59",
+      "source_location": "L61",
       "id": "tutor_system_architecture_server_voiceagentcostforseconds",
       "community": 31,
       "norm_label": "voiceagentcostforseconds()"
@@ -619,7 +628,7 @@
       "label": "rawByteLength()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L62",
+      "source_location": "L64",
       "id": "tutor_system_architecture_server_rawbytelength",
       "community": 2,
       "norm_label": "rawbytelength()"
@@ -628,7 +637,7 @@
       "label": "sanitizeApiKey()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L71",
+      "source_location": "L73",
       "id": "tutor_system_architecture_server_sanitizeapikey",
       "community": 29,
       "norm_label": "sanitizeapikey()"
@@ -637,7 +646,7 @@
       "label": "isTruthyEnv()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L78",
+      "source_location": "L80",
       "id": "tutor_system_architecture_server_istruthyenv",
       "community": 29,
       "norm_label": "istruthyenv()"
@@ -646,7 +655,7 @@
       "label": "RequestLike",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L81",
+      "source_location": "L83",
       "id": "tutor_system_architecture_server_requestlike",
       "community": 2,
       "norm_label": "requestlike"
@@ -655,7 +664,7 @@
       "label": "firstHeader()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L87",
+      "source_location": "L89",
       "id": "tutor_system_architecture_server_firstheader",
       "community": 29,
       "norm_label": "firstheader()"
@@ -664,7 +673,7 @@
       "label": "hostNameFromHeader()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L90",
+      "source_location": "L92",
       "id": "tutor_system_architecture_server_hostnamefromheader",
       "community": 29,
       "norm_label": "hostnamefromheader()"
@@ -673,7 +682,7 @@
       "label": "isLoopbackHost()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L100",
+      "source_location": "L102",
       "id": "tutor_system_architecture_server_isloopbackhost",
       "community": 29,
       "norm_label": "isloopbackhost()"
@@ -682,7 +691,7 @@
       "label": "isLoopbackAddress()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L110",
+      "source_location": "L112",
       "id": "tutor_system_architecture_server_isloopbackaddress",
       "community": 29,
       "norm_label": "isloopbackaddress()"
@@ -691,7 +700,7 @@
       "label": "debugAdminToken",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L115",
+      "source_location": "L117",
       "id": "tutor_system_architecture_server_debugadmintoken",
       "community": 2,
       "norm_label": "debugadmintoken"
@@ -700,7 +709,7 @@
       "label": "tokenFromAuthorization()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L119",
+      "source_location": "L121",
       "id": "tutor_system_architecture_server_tokenfromauthorization",
       "community": 29,
       "norm_label": "tokenfromauthorization()"
@@ -709,7 +718,7 @@
       "label": "getOpenRouterServerFallbackKey()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L124",
+      "source_location": "L126",
       "id": "tutor_system_architecture_server_getopenrouterserverfallbackkey",
       "community": 29,
       "norm_label": "getopenrouterserverfallbackkey()"
@@ -718,7 +727,7 @@
       "label": "resolveOpenRouterApiKey()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L129",
+      "source_location": "L131",
       "id": "tutor_system_architecture_server_resolveopenrouterapikey",
       "community": 29,
       "norm_label": "resolveopenrouterapikey()"
@@ -727,7 +736,7 @@
       "label": "debugTokenFromRequest()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L136",
+      "source_location": "L138",
       "id": "tutor_system_architecture_server_debugtokenfromrequest",
       "community": 29,
       "norm_label": "debugtokenfromrequest()"
@@ -736,7 +745,7 @@
       "label": "isAuthorizedDebugRequest()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L155",
+      "source_location": "L157",
       "id": "tutor_system_architecture_server_isauthorizeddebugrequest",
       "community": 29,
       "norm_label": "isauthorizeddebugrequest()"
@@ -745,7 +754,7 @@
       "label": "redactSensitiveUrl()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L166",
+      "source_location": "L168",
       "id": "tutor_system_architecture_server_redactsensitiveurl",
       "community": 2,
       "norm_label": "redactsensitiveurl()"
@@ -754,7 +763,7 @@
       "label": "normalizeVoiceLanguage()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L172",
+      "source_location": "L174",
       "id": "tutor_system_architecture_server_normalizevoicelanguage",
       "community": 2,
       "norm_label": "normalizevoicelanguage()"
@@ -763,7 +772,7 @@
       "label": "deepgramKeyFromRequest()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L178",
+      "source_location": "L180",
       "id": "tutor_system_architecture_server_deepgramkeyfromrequest",
       "community": 29,
       "norm_label": "deepgramkeyfromrequest()"
@@ -772,7 +781,7 @@
       "label": "normalizeModelPricing()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L188",
+      "source_location": "L190",
       "id": "tutor_system_architecture_server_normalizemodelpricing",
       "community": 2,
       "norm_label": "normalizemodelpricing()"
@@ -781,7 +790,7 @@
       "label": "fetchOpenRouterPricing()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L202",
+      "source_location": "L204",
       "id": "tutor_system_architecture_server_fetchopenrouterpricing",
       "community": 2,
       "norm_label": "fetchopenrouterpricing()"
@@ -790,7 +799,7 @@
       "label": "openRouterCost()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L231",
+      "source_location": "L233",
       "id": "tutor_system_architecture_server_openroutercost",
       "community": 31,
       "norm_label": "openroutercost()"
@@ -799,7 +808,7 @@
       "label": "slugifyId()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L247",
+      "source_location": "L249",
       "id": "tutor_system_architecture_server_slugifyid",
       "community": 2,
       "norm_label": "slugifyid()"
@@ -808,7 +817,7 @@
       "label": "extractJsonObject()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L254",
+      "source_location": "L256",
       "id": "tutor_system_architecture_server_extractjsonobject",
       "community": 2,
       "norm_label": "extractjsonobject()"
@@ -817,7 +826,7 @@
       "label": "fallbackLearningUpdate()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L271",
+      "source_location": "L273",
       "id": "tutor_system_architecture_server_fallbacklearningupdate",
       "community": 2,
       "norm_label": "fallbacklearningupdate()"
@@ -826,7 +835,7 @@
       "label": "TutorServerAppOptions",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L319",
+      "source_location": "L321",
       "id": "tutor_system_architecture_server_tutorserverappoptions",
       "community": 2,
       "norm_label": "tutorserverappoptions"
@@ -835,7 +844,7 @@
       "label": "createTutorServerApp()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L323",
+      "source_location": "L325",
       "id": "tutor_system_architecture_server_createtutorserverapp",
       "community": 11,
       "norm_label": "createtutorserverapp()"
@@ -844,7 +853,7 @@
       "label": "startServer()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L1951",
+      "source_location": "L1996",
       "id": "tutor_system_architecture_server_startserver",
       "community": 11,
       "norm_label": "startserver()"
@@ -1309,10 +1318,19 @@
       "norm_label": "cache"
     },
     {
+      "label": "abortError()",
+      "file_type": "code",
+      "source_file": "server/web-search.ts",
+      "source_location": "L36",
+      "id": "server_web_search_aborterror",
+      "community": 24,
+      "norm_label": "aborterror()"
+    },
+    {
       "label": "wait()",
       "file_type": "code",
       "source_file": "server/web-search.ts",
-      "source_location": "L33",
+      "source_location": "L39",
       "id": "server_web_search_wait",
       "community": 24,
       "norm_label": "wait()"
@@ -1321,7 +1339,7 @@
       "label": "stableId()",
       "file_type": "code",
       "source_file": "server/web-search.ts",
-      "source_location": "L35",
+      "source_location": "L41",
       "id": "server_web_search_stableid",
       "community": 24,
       "norm_label": "stableid()"
@@ -1330,7 +1348,7 @@
       "label": "canonicalUrl()",
       "file_type": "code",
       "source_file": "server/web-search.ts",
-      "source_location": "L43",
+      "source_location": "L49",
       "id": "server_web_search_canonicalurl",
       "community": 24,
       "norm_label": "canonicalurl()"
@@ -1339,7 +1357,7 @@
       "label": "domainFromUrl()",
       "file_type": "code",
       "source_file": "server/web-search.ts",
-      "source_location": "L58",
+      "source_location": "L64",
       "id": "server_web_search_domainfromurl",
       "community": 24,
       "norm_label": "domainfromurl()"
@@ -1348,7 +1366,7 @@
       "label": "faviconForDomain()",
       "file_type": "code",
       "source_file": "server/web-search.ts",
-      "source_location": "L66",
+      "source_location": "L72",
       "id": "server_web_search_faviconfordomain",
       "community": 24,
       "norm_label": "faviconfordomain()"
@@ -1357,7 +1375,7 @@
       "label": "normalizeRows()",
       "file_type": "code",
       "source_file": "server/web-search.ts",
-      "source_location": "L68",
+      "source_location": "L75",
       "id": "server_web_search_normalizerows",
       "community": 24,
       "norm_label": "normalizerows()"
@@ -1366,7 +1384,7 @@
       "label": "detectFreshnessSearch()",
       "file_type": "code",
       "source_file": "server/web-search.ts",
-      "source_location": "L103",
+      "source_location": "L116",
       "id": "server_web_search_detectfreshnesssearch",
       "community": 24,
       "norm_label": "detectfreshnesssearch()"
@@ -1375,7 +1393,7 @@
       "label": "searchSerper()",
       "file_type": "code",
       "source_file": "server/web-search.ts",
-      "source_location": "L141",
+      "source_location": "L156",
       "id": "server_web_search_searchserper",
       "community": 24,
       "norm_label": "searchserper()"
@@ -1384,7 +1402,7 @@
       "label": "formatSourcesForPrompt()",
       "file_type": "code",
       "source_file": "server/web-search.ts",
-      "source_location": "L191",
+      "source_location": "L214",
       "id": "server_web_search_formatsourcesforprompt",
       "community": 24,
       "norm_label": "formatsourcesforprompt()"
@@ -3739,6 +3757,33 @@
       "norm_label": "navigation()"
     },
     {
+      "label": "document-ingest.test.mjs",
+      "file_type": "code",
+      "source_file": "tests/document-ingest.test.mjs",
+      "source_location": "L1",
+      "id": "tests_document_ingest_test_mjs",
+      "community": 11,
+      "norm_label": "document-ingest.test.mjs"
+    },
+    {
+      "label": "startApp()",
+      "file_type": "code",
+      "source_file": "tests/document-ingest.test.mjs",
+      "source_location": "L7",
+      "id": "tests_document_ingest_test_startapp",
+      "community": 11,
+      "norm_label": "startapp()"
+    },
+    {
+      "label": "web-search.test.mjs",
+      "file_type": "code",
+      "source_file": "tests/web-search.test.mjs",
+      "source_location": "L1",
+      "id": "tests_web_search_test_mjs",
+      "community": 24,
+      "norm_label": "web-search.test.mjs"
+    },
+    {
       "label": "classify_and_extract.py",
       "file_type": "code",
       "source_file": "scripts/classify_and_extract.py",
@@ -3829,15 +3874,6 @@
       "norm_label": "graph location"
     },
     {
-      "label": "code:text (graphify-out/)",
-      "file_type": "document",
-      "source_file": "AGENTS.md",
-      "source_location": "L64",
-      "id": "tutor_system_architecture_agents_codeblock_1",
-      "community": 8,
-      "norm_label": "code:text (graphify-out/)"
-    },
-    {
       "label": "Local Commands",
       "file_type": "document",
       "source_file": "AGENTS.md",
@@ -3845,15 +3881,6 @@
       "id": "tutor_system_architecture_agents_local_commands",
       "community": 8,
       "norm_label": "local commands"
-    },
-    {
-      "label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)",
-      "file_type": "document",
-      "source_file": "AGENTS.md",
-      "source_location": "L80",
-      "id": "tutor_system_architecture_agents_codeblock_2",
-      "community": 8,
-      "norm_label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)"
     },
     {
       "label": "Rebuild Policy",
@@ -3881,15 +3908,6 @@
       "id": "tutor_system_architecture_agents_standard_verification",
       "community": 8,
       "norm_label": "standard verification"
-    },
-    {
-      "label": "code:bash (npm run lint)",
-      "file_type": "document",
-      "source_file": "AGENTS.md",
-      "source_location": "L121",
-      "id": "tutor_system_architecture_agents_codeblock_3",
-      "community": 8,
-      "norm_label": "code:bash (npm run lint)"
     },
     {
       "label": "Architecture Boundaries",
@@ -4036,15 +4054,6 @@
       "norm_label": "7. graphify architecture layer"
     },
     {
-      "label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)",
-      "file_type": "document",
-      "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L127",
-      "id": "tutor_system_architecture_tutor_architecture_codeblock_1",
-      "community": 7,
-      "norm_label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)"
-    },
-    {
       "label": "8. Maintenance Boundaries",
       "file_type": "document",
       "source_file": "TUTOR_ARCHITECTURE.md",
@@ -4052,15 +4061,6 @@
       "id": "tutor_system_architecture_tutor_architecture_8_maintenance_boundaries",
       "community": 7,
       "norm_label": "8. maintenance boundaries"
-    },
-    {
-      "label": "code:bash (npm run lint)",
-      "file_type": "document",
-      "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L160",
-      "id": "tutor_system_architecture_tutor_architecture_codeblock_2",
-      "community": 7,
-      "norm_label": "code:bash (npm run lint)"
     },
     {
       "label": "RESPONSIVENESS.md",
@@ -4189,24 +4189,6 @@
       "norm_label": "system architecture"
     },
     {
-      "label": "code:text (Upload)",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L99",
-      "id": "tutor_system_architecture_readme_codeblock_1",
-      "community": 6,
-      "norm_label": "code:text (upload)"
-    },
-    {
-      "label": "code:mermaid (graph TD)",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L107",
-      "id": "tutor_system_architecture_readme_codeblock_2",
-      "community": 6,
-      "norm_label": "code:mermaid (graph td)"
-    },
-    {
       "label": "Graphify Architecture Layer",
       "file_type": "document",
       "source_file": "README.md",
@@ -4214,15 +4196,6 @@
       "id": "tutor_system_architecture_readme_graphify_architecture_layer",
       "community": 6,
       "norm_label": "graphify architecture layer"
-    },
-    {
-      "label": "code:bash (npm run graphify:query -- \"how does chat streaming work?\")",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L135",
-      "id": "tutor_system_architecture_readme_codeblock_3",
-      "community": 6,
-      "norm_label": "code:bash (npm run graphify:query -- \"how does chat streaming work?\")"
     },
     {
       "label": "Getting Started",
@@ -4252,15 +4225,6 @@
       "norm_label": "2. install"
     },
     {
-      "label": "code:bash (git clone https://github.com/MohamedFuad16/Tutor-System-Arch)",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L165",
-      "id": "tutor_system_architecture_readme_codeblock_4",
-      "community": 6,
-      "norm_label": "code:bash (git clone https://github.com/mohamedfuad16/tutor-system-arch)"
-    },
-    {
       "label": "3. Configure Environment",
       "file_type": "document",
       "source_file": "README.md",
@@ -4270,15 +4234,6 @@
       "norm_label": "3. configure environment"
     },
     {
-      "label": "code:ini (OPENROUTER_API_KEY=your_openrouter_key_here)",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L175",
-      "id": "tutor_system_architecture_readme_codeblock_5",
-      "community": 6,
-      "norm_label": "code:ini (openrouter_api_key=your_openrouter_key_here)"
-    },
-    {
       "label": "4. Run",
       "file_type": "document",
       "source_file": "README.md",
@@ -4286,15 +4241,6 @@
       "id": "tutor_system_architecture_readme_4_run",
       "community": 6,
       "norm_label": "4. run"
-    },
-    {
-      "label": "code:bash (npm run dev)",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L188",
-      "id": "tutor_system_architecture_readme_codeblock_6",
-      "community": 6,
-      "norm_label": "code:bash (npm run dev)"
     },
     {
       "label": "Design System",
@@ -4322,6 +4268,105 @@
       "id": "tutor_system_architecture_readme_license",
       "community": 6,
       "norm_label": "license"
+    },
+    {
+      "label": "code:text (graphify-out/)",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L64",
+      "community": 8,
+      "norm_label": "code:text (graphify-out/)",
+      "id": "tutor_system_architecture_agents_codeblock_1"
+    },
+    {
+      "label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L80",
+      "community": 8,
+      "norm_label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)",
+      "id": "tutor_system_architecture_agents_codeblock_2"
+    },
+    {
+      "label": "code:bash (npm run lint)",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L121",
+      "community": 8,
+      "norm_label": "code:bash (npm run lint)",
+      "id": "tutor_system_architecture_agents_codeblock_3"
+    },
+    {
+      "label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)",
+      "file_type": "document",
+      "source_file": "TUTOR_ARCHITECTURE.md",
+      "source_location": "L127",
+      "community": 7,
+      "norm_label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)",
+      "id": "tutor_system_architecture_tutor_architecture_codeblock_1"
+    },
+    {
+      "label": "code:bash (npm run lint)",
+      "file_type": "document",
+      "source_file": "TUTOR_ARCHITECTURE.md",
+      "source_location": "L160",
+      "community": 7,
+      "norm_label": "code:bash (npm run lint)",
+      "id": "tutor_system_architecture_tutor_architecture_codeblock_2"
+    },
+    {
+      "label": "code:text (Upload)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L99",
+      "community": 6,
+      "norm_label": "code:text (upload)",
+      "id": "tutor_system_architecture_readme_codeblock_1"
+    },
+    {
+      "label": "code:mermaid (graph TD)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L107",
+      "community": 6,
+      "norm_label": "code:mermaid (graph td)",
+      "id": "tutor_system_architecture_readme_codeblock_2"
+    },
+    {
+      "label": "code:bash (npm run graphify:query -- \"how does chat streaming work?\")",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L135",
+      "community": 6,
+      "norm_label": "code:bash (npm run graphify:query -- \"how does chat streaming work?\")",
+      "id": "tutor_system_architecture_readme_codeblock_3"
+    },
+    {
+      "label": "code:bash (git clone https://github.com/MohamedFuad16/Tutor-System-Arch)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L165",
+      "community": 6,
+      "norm_label": "code:bash (git clone https://github.com/mohamedfuad16/tutor-system-arch)",
+      "id": "tutor_system_architecture_readme_codeblock_4"
+    },
+    {
+      "label": "code:ini (OPENROUTER_API_KEY=your_openrouter_key_here)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L175",
+      "community": 6,
+      "norm_label": "code:ini (openrouter_api_key=your_openrouter_key_here)",
+      "id": "tutor_system_architecture_readme_codeblock_5"
+    },
+    {
+      "label": "code:bash (npm run dev)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L188",
+      "community": 6,
+      "norm_label": "code:bash (npm run dev)",
+      "id": "tutor_system_architecture_readme_codeblock_6"
     },
     {
       "label": "createTutorServerApp()",
@@ -5339,6 +5384,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "tutor_system_architecture_package_scripts",
+      "target": "tutor_system_architecture_package_scripts_test",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
       "source_location": "L28",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -6197,9 +6252,9 @@
       "source_file": "server.ts",
       "source_location": "L124",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "server_ts",
-      "target": "tutor_system_architecture_server_getopenrouterserverfallbackkey",
-      "confidence_score": 1.0
+      "target": "tutor_system_architecture_server_getopenrouterserverfallbackkey"
     },
     {
       "relation": "contains",
@@ -6247,9 +6302,9 @@
       "source_file": "server.ts",
       "source_location": "L78",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "server_ts",
-      "target": "tutor_system_architecture_server_istruthyenv",
-      "confidence_score": 1.0
+      "target": "tutor_system_architecture_server_istruthyenv"
     },
     {
       "relation": "contains",
@@ -6327,9 +6382,9 @@
       "source_file": "server.ts",
       "source_location": "L129",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "server_ts",
-      "target": "tutor_system_architecture_server_resolveopenrouterapikey",
-      "confidence_score": 1.0
+      "target": "tutor_system_architecture_server_resolveopenrouterapikey"
     },
     {
       "relation": "contains",
@@ -6484,9 +6539,9 @@
       "source_file": "server.ts",
       "source_location": "L126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tutor_system_architecture_server_getopenrouterserverfallbackkey",
-      "target": "tutor_system_architecture_server_sanitizeapikey",
-      "confidence_score": 1.0
+      "target": "tutor_system_architecture_server_sanitizeapikey"
     },
     {
       "relation": "calls",
@@ -6495,9 +6550,9 @@
       "source_file": "server.ts",
       "source_location": "L130",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tutor_system_architecture_server_resolveopenrouterapikey",
-      "target": "tutor_system_architecture_server_sanitizeapikey",
-      "confidence_score": 1.0
+      "target": "tutor_system_architecture_server_sanitizeapikey"
     },
     {
       "relation": "calls",
@@ -6506,9 +6561,9 @@
       "source_file": "server.ts",
       "source_location": "L125",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tutor_system_architecture_server_getopenrouterserverfallbackkey",
-      "target": "tutor_system_architecture_server_istruthyenv",
-      "confidence_score": 1.0
+      "target": "tutor_system_architecture_server_istruthyenv"
     },
     {
       "relation": "calls",
@@ -6539,9 +6594,9 @@
       "source_file": "server.ts",
       "source_location": "L130",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tutor_system_architecture_server_resolveopenrouterapikey",
-      "target": "tutor_system_architecture_server_firstheader",
-      "confidence_score": 1.0
+      "target": "tutor_system_architecture_server_firstheader"
     },
     {
       "relation": "calls",
@@ -6594,9 +6649,9 @@
       "source_file": "server.ts",
       "source_location": "L130",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tutor_system_architecture_server_resolveopenrouterapikey",
-      "target": "tutor_system_architecture_server_tokenfromauthorization",
-      "confidence_score": 1.0
+      "target": "tutor_system_architecture_server_tokenfromauthorization"
     },
     {
       "relation": "calls",
@@ -6605,9 +6660,9 @@
       "source_file": "server.ts",
       "source_location": "L131",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tutor_system_architecture_server_resolveopenrouterapikey",
-      "target": "tutor_system_architecture_server_getopenrouterserverfallbackkey",
-      "confidence_score": 1.0
+      "target": "tutor_system_architecture_server_getopenrouterserverfallbackkey"
     },
     {
       "relation": "calls",
@@ -6651,6 +6706,17 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "server_vercel_handler_ts",
+      "target": "tutor_system_architecture_server_createtutorserverapp"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/document-ingest.test.mjs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "tests_document_ingest_test_startapp",
       "target": "tutor_system_architecture_server_createtutorserverapp"
     },
     {
@@ -7169,6 +7235,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/web-search.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "server_web_search_ts",
+      "target": "server_web_search_aborterror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/web-search.ts",
       "source_location": "L31",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -7306,6 +7382,28 @@
       "target": "server_web_search_websearchmode"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/web-search.test.mjs",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "tests_web_search_test_mjs",
+      "target": "server_web_search_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "server/web-search.ts",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "server_web_search_searchserper",
+      "target": "server_web_search_aborterror",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -7321,11 +7419,55 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "server/web-search.ts",
+      "source_location": "L166",
+      "weight": 1.0,
+      "source": "server_web_search_searchserper",
+      "target": "server_web_search_stableid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "server/web-search.ts",
       "source_location": "L176",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "server_web_search_searchserper",
       "target": "server_web_search_normalizerows"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/web-search.test.mjs",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "tests_web_search_test_mjs",
+      "target": "server_web_search_detectfreshnesssearch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/web-search.test.mjs",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "tests_web_search_test_mjs",
+      "target": "server_web_search_searchserper",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/web-search.test.mjs",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "tests_web_search_test_mjs",
+      "target": "server_web_search_formatsourcesforprompt",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -8018,9 +8160,9 @@
       "source_file": "src/hooks/useMotionPreference.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_hooks_usemotionpreference_ts",
-      "target": "src_store_index_ts",
-      "confidence_score": 1.0
+      "target": "src_store_index_ts"
     },
     {
       "relation": "contains",
@@ -8427,9 +8569,9 @@
       "source_file": "src/hooks/useMotionPreference.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_hooks_usemotionpreference_ts",
-      "target": "store_index_usestore",
-      "confidence_score": 1.0
+      "target": "store_index_usestore"
     },
     {
       "relation": "imports",
@@ -8655,9 +8797,9 @@
       "source_file": "src/views/RevisionView.tsx",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_views_revisionview_tsx",
-      "target": "hooks_usemotionpreference_usemotionpreference",
-      "confidence_score": 1.0
+      "target": "hooks_usemotionpreference_usemotionpreference"
     },
     {
       "relation": "imports",
@@ -8732,9 +8874,9 @@
       "source_file": "src/views/RevisionView.tsx",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_views_revisionview_tsx",
-      "target": "src_hooks_usemotionpreference_ts",
-      "confidence_score": 1.0
+      "target": "src_hooks_usemotionpreference_ts"
     },
     {
       "relation": "imports_from",
@@ -9106,9 +9248,9 @@
       "source_file": "src/components/Navigation.tsx",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_navigation_tsx",
-      "target": "src_hooks_usemotionpreference_ts",
-      "confidence_score": 1.0
+      "target": "src_hooks_usemotionpreference_ts"
     },
     {
       "relation": "imports_from",
@@ -9117,9 +9259,9 @@
       "source_file": "src/components/PatternCard.tsx",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_patterncard_tsx",
-      "target": "src_hooks_usemotionpreference_ts",
-      "confidence_score": 1.0
+      "target": "src_hooks_usemotionpreference_ts"
     },
     {
       "relation": "imports_from",
@@ -9128,9 +9270,9 @@
       "source_file": "src/components/PdfViewer.tsx",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_pdfviewer_tsx",
-      "target": "src_hooks_usemotionpreference_ts",
-      "confidence_score": 1.0
+      "target": "src_hooks_usemotionpreference_ts"
     },
     {
       "relation": "imports_from",
@@ -9139,9 +9281,9 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_settingsmodal_tsx",
-      "target": "src_hooks_usemotionpreference_ts",
-      "confidence_score": 1.0
+      "target": "src_hooks_usemotionpreference_ts"
     },
     {
       "relation": "imports_from",
@@ -9150,9 +9292,9 @@
       "source_file": "src/components/SiriLiquidGlass.tsx",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_siriliquidglass_tsx",
-      "target": "src_hooks_usemotionpreference_ts",
-      "confidence_score": 1.0
+      "target": "src_hooks_usemotionpreference_ts"
     },
     {
       "relation": "contains",
@@ -9160,9 +9302,9 @@
       "source_file": "src/hooks/useMotionPreference.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_hooks_usemotionpreference_ts",
-      "target": "hooks_usemotionpreference_usemotionpreference",
-      "confidence_score": 1.0
+      "target": "hooks_usemotionpreference_usemotionpreference"
     },
     {
       "relation": "calls",
@@ -9226,9 +9368,9 @@
       "source_file": "src/components/Navigation.tsx",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_navigation_tsx",
-      "target": "hooks_usemotionpreference_usemotionpreference",
-      "confidence_score": 1.0
+      "target": "hooks_usemotionpreference_usemotionpreference"
     },
     {
       "relation": "imports",
@@ -9237,9 +9379,9 @@
       "source_file": "src/components/PatternCard.tsx",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_patterncard_tsx",
-      "target": "hooks_usemotionpreference_usemotionpreference",
-      "confidence_score": 1.0
+      "target": "hooks_usemotionpreference_usemotionpreference"
     },
     {
       "relation": "imports",
@@ -9248,9 +9390,9 @@
       "source_file": "src/components/PdfViewer.tsx",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_pdfviewer_tsx",
-      "target": "hooks_usemotionpreference_usemotionpreference",
-      "confidence_score": 1.0
+      "target": "hooks_usemotionpreference_usemotionpreference"
     },
     {
       "relation": "imports",
@@ -9259,9 +9401,9 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_settingsmodal_tsx",
-      "target": "hooks_usemotionpreference_usemotionpreference",
-      "confidence_score": 1.0
+      "target": "hooks_usemotionpreference_usemotionpreference"
     },
     {
       "relation": "imports",
@@ -9270,9 +9412,9 @@
       "source_file": "src/components/SiriLiquidGlass.tsx",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_siriliquidglass_tsx",
-      "target": "hooks_usemotionpreference_usemotionpreference",
-      "confidence_score": 1.0
+      "target": "hooks_usemotionpreference_usemotionpreference"
     },
     {
       "relation": "imports_from",
@@ -11659,9 +11801,9 @@
       "source_file": "src/components/ChatPanel.tsx",
       "source_location": "L58",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_chatpanel_tsx",
-      "target": "components_chatpanel_streamingassistantdraft",
-      "confidence_score": 1.0
+      "target": "components_chatpanel_streamingassistantdraft"
     },
     {
       "relation": "contains",
@@ -12251,6 +12393,16 @@
       "confidence_score": 1.0,
       "source": "src_components_navigation_tsx",
       "target": "components_navigation_navigation"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/document-ingest.test.mjs",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "tests_document_ingest_test_mjs",
+      "target": "tests_document_ingest_test_startapp",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -13598,5 +13750,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "5fe0cb1dcdae307dd1e68bf343c2c0b37a8b2f76"
+  "built_at_commit": "54e3073f869d3004030b70e3a53e56d18169aba1"
 }
