@@ -154,7 +154,9 @@ Graph rebuild policy:
 ### 1. Prerequisites
 
 - Node.js 22 recommended.
-- OpenRouter key for chat intelligence.
+- OpenRouter key for chat intelligence. Each user can bring their own key in
+  Settings; a deployment-wide OpenRouter key is optional and must be explicitly
+  enabled as a shared fallback.
 - Deepgram key for voice and TTS.
 - Serper key for live web search.
 
@@ -172,9 +174,14 @@ Create a `.env` file:
 
 ```ini
 OPENROUTER_API_KEY=your_openrouter_key_here
+ALLOW_SERVER_OPENROUTER_FALLBACK=false
 DEEPGRAM_API_KEY=your_deepgram_key_here
 SERPER_API_KEY=your_serper_key_here
 ```
+
+Leave `ALLOW_SERVER_OPENROUTER_FALLBACK=false` when users should provide their
+own OpenRouter keys. Set it to `true` only for deployments where the owner
+intentionally pays for unauthenticated chat fallback.
 
 ### 4. Run
 

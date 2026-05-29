@@ -20,6 +20,7 @@ import {
   StickyNote,
 } from "lucide-react";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
+import { useMotionPreference } from "../hooks/useMotionPreference";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -34,6 +35,7 @@ export function PdfViewer() {
   const setPdfTotalPages = useStore((state) => state.setPdfTotalPages);
   const annotations = useStore((state) => state.annotations);
   const addAnnotation = useStore((state) => state.addAnnotation);
+  const motionEnabled = useMotionPreference();
   const setAskTutorQuery = useStore((state) => state.setAskTutorQuery);
   const setSelectedTextContext = useStore(
     (state) => state.setSelectedTextContext,
@@ -41,6 +43,10 @@ export function PdfViewer() {
   const [isFitWidth, setIsFitWidth] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const pageWrapperRef = useRef<HTMLDivElement>(null);
+  const activePageCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const titleRequestRef = useRef<AbortController | null>(null);
+  const titleScheduleRef = useRef<number | null>(null);
+  const titleGenerationRef = useRef(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -77,49 +83,101 @@ export function PdfViewer() {
   const [titleGenerated, setTitleGenerated] = useState(false);
 
   useEffect(() => {
+    titleGenerationRef.current += 1;
+    titleRequestRef.current?.abort();
+    if (titleScheduleRef.current !== null) {
+      window.clearTimeout(titleScheduleRef.current);
+      titleScheduleRef.current = null;
+    }
     setTitleGenerated(false);
   }, [pdfUrl]);
 
   const handlePageRenderSuccess = () => {
     if (pdfTotalPages > 0 && !titleGenerated) {
-      const activeCanvas = document.querySelector(
-        ".react-pdf__Page__canvas",
-      ) as HTMLCanvasElement;
-      if (activeCanvas && useStore.getState().apiKey) {
+      const activeCanvas = activePageCanvasRef.current;
+      if (activeCanvas) {
         setTitleGenerated(true);
-        activeCanvas.toBlob(
-          (blob) => {
-            if (!blob) return;
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              fetch("/api/title", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${useStore.getState().apiKey}`,
-                },
-                body: JSON.stringify({ image: reader.result }),
-              })
-                .then((res) => res.json())
-                .then((data) => {
-                  if (data.title) {
+        const generation = titleGenerationRef.current;
+        titleRequestRef.current?.abort();
+        const controller = new AbortController();
+        titleRequestRef.current = controller;
+
+        titleScheduleRef.current = window.setTimeout(() => {
+          titleScheduleRef.current = null;
+          if (
+            controller.signal.aborted ||
+            generation !== titleGenerationRef.current
+          ) {
+            return;
+          }
+
+          activeCanvas.toBlob(
+            (blob) => {
+              if (
+                !blob ||
+                controller.signal.aborted ||
+                generation !== titleGenerationRef.current
+              ) {
+                return;
+              }
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                if (
+                  controller.signal.aborted ||
+                  generation !== titleGenerationRef.current
+                ) {
+                  return;
+                }
+                const apiKey = useStore.getState().apiKey;
+                fetch("/api/title", {
+                  method: "POST",
+                  signal: controller.signal,
+                  headers: {
+                    "Content-Type": "application/json",
+                    ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+                  },
+                  body: JSON.stringify({ image: reader.result }),
+                })
+                  .then((res) => {
+                    if (!res.ok) throw new Error(`Title HTTP ${res.status}`);
+                    return res.json();
+                  })
+                  .then((data) => {
+                    if (
+                      !data.title ||
+                      controller.signal.aborted ||
+                      generation !== titleGenerationRef.current
+                    ) {
+                      return;
+                    }
                     const cleanTitle = data.title
                       .replace(/[^a-zA-Z0-9 -]/g, "")
                       .trim();
                     useStore.getState().setActiveProject(cleanTitle);
                     void brainOrchestrator.updateSessionBookTitle(cleanTitle);
-                  }
-                })
-                .catch(console.error);
-            };
-            reader.readAsDataURL(blob);
-          },
-          "image/jpeg",
-          0.5,
-        );
+                  })
+                  .catch((error) => {
+                    if (!controller.signal.aborted) console.error(error);
+                  });
+              };
+              reader.readAsDataURL(blob);
+            },
+            "image/jpeg",
+            0.5,
+          );
+        }, 180);
       }
     }
   };
+
+  useEffect(() => {
+    return () => {
+      titleRequestRef.current?.abort();
+      if (titleScheduleRef.current !== null) {
+        window.clearTimeout(titleScheduleRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -341,8 +399,12 @@ export function PdfViewer() {
             }}
           >
             <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+              animate={motionEnabled ? { rotate: 360 } : { rotate: 0 }}
+              transition={{
+                repeat: motionEnabled ? Infinity : 0,
+                duration: motionEnabled ? 4 : 0,
+                ease: "linear",
+              }}
               className="absolute inset-[-50%] w-[200%] h-[200%]"
               style={{
                 background:
@@ -441,8 +503,12 @@ export function PdfViewer() {
                 }}
               >
                 <motion.div
-                  animate={{ x: ["-100%", "200%"] }}
-                  transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                  animate={motionEnabled ? { x: ["-100%", "200%"] } : { x: 0 }}
+                  transition={{
+                    repeat: motionEnabled ? Infinity : 0,
+                    duration: motionEnabled ? 2 : 0,
+                    ease: "linear",
+                  }}
                   className="absolute inset-0 z-10 bg-gradient-to-r from-transparent via-[#f0f0f0]/60 to-transparent skew-x-12"
                 />
                 <div className="w-1/2 h-8 bg-zinc-100 rounded-md mb-8" />
@@ -469,6 +535,7 @@ export function PdfViewer() {
                 className="bg-white rounded-xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.05)] ring-1 ring-white/10"
                 renderTextLayer={true}
                 renderAnnotationLayer={true}
+                canvasRef={activePageCanvasRef}
                 onRenderSuccess={handlePageRenderSuccess}
               />
               <div className="absolute inset-0 pointer-events-none rounded-xl shadow-[inset_0_0_2px_rgba(255,255,255,0.2)] mix-blend-overlay" />
@@ -569,10 +636,10 @@ export function PdfViewer() {
                     }}
                   >
                     <motion.div
-                      animate={{ rotate: 360 }}
+                      animate={motionEnabled ? { rotate: 360 } : { rotate: 0 }}
                       transition={{
-                        repeat: Infinity,
-                        duration: 4,
+                        repeat: motionEnabled ? Infinity : 0,
+                        duration: motionEnabled ? 4 : 0,
                         ease: "linear",
                       }}
                       className="absolute inset-[-50%] w-[200%] h-[200%]"

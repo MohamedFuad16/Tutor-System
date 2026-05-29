@@ -39,6 +39,7 @@ const PRICING_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PCM16_MONO_48K_BYTES_PER_SECOND = 48000 * 2;
 const DEFAULT_CHAT_MODEL = "deepseek/deepseek-v4-flash";
 const LEARNING_AGENT_MODEL = "deepseek/deepseek-v4-flash";
+const OPENROUTER_SERVER_FALLBACK_FLAG = "ALLOW_SERVER_OPENROUTER_FALLBACK";
 
 const roundCost = (value: number) =>
   Math.round((value || 0) * 1_000_000) / 1_000_000;
@@ -73,6 +74,9 @@ const sanitizeApiKey = (value: unknown) => {
   if (!key || key === "undefined" || key === "null") return "";
   return key;
 };
+
+const isTruthyEnv = (value: unknown) =>
+  /^(1|true|yes|on)$/i.test(String(value || "").trim());
 
 type RequestLike = {
   headers: IncomingHttpHeaders;
@@ -116,6 +120,18 @@ const tokenFromAuthorization = (authorization: string) => {
   const match = authorization.match(/^Bearer\s+(.+)$/i);
   return match ? match[1].trim() : "";
 };
+
+const getOpenRouterServerFallbackKey = () =>
+  isTruthyEnv(process.env[OPENROUTER_SERVER_FALLBACK_FLAG])
+    ? sanitizeApiKey(process.env.OPENROUTER_API_KEY)
+    : "";
+
+const resolveOpenRouterApiKey = (headers: IncomingHttpHeaders) =>
+  sanitizeApiKey(tokenFromAuthorization(firstHeader(headers.authorization))) ||
+  getOpenRouterServerFallbackKey();
+
+const openRouterRequiredMessage =
+  "OpenRouter API key is required. Add your own key in Settings, or set ALLOW_SERVER_OPENROUTER_FALLBACK=true for a shared deployment fallback.";
 
 const debugTokenFromRequest = (request: RequestLike) => {
   const headerToken = sanitizeApiKey(
@@ -399,7 +415,8 @@ export async function createTutorServerApp(
       service: "tutor-server",
       runtime: process.env.VERCEL ? "vercel" : "node",
       providers: {
-        openRouter: Boolean(sanitizeApiKey(process.env.OPENROUTER_API_KEY)),
+        openRouter: Boolean(getOpenRouterServerFallbackKey()),
+        openRouterByok: true,
         serper: Boolean(sanitizeApiKey(process.env.SERPER_API_KEY)),
         deepgram: Boolean(sanitizeApiKey(process.env.DEEPGRAM_API_KEY)),
       },
@@ -474,11 +491,7 @@ export async function createTutorServerApp(
             result.classification === "Scanned" ||
             result.classification === "Mixed"
           ) {
-            const authHeader = req.headers.authorization;
-            const bearerMatch = (authHeader || "").match(/^Bearer\s+(.+)$/i);
-            const apiKey = bearerMatch
-              ? bearerMatch[1].trim()
-              : process.env.OPENROUTER_API_KEY;
+            const apiKey = resolveOpenRouterApiKey(req.headers);
 
             if (apiKey && result.images && result.images.length > 0) {
               try {
@@ -540,15 +553,10 @@ export async function createTutorServerApp(
   // API Route to Generate Title
   app.post("/api/title", async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const bearerMatch = (authHeader || "").match(/^Bearer\s+(.+)$/i);
-      const headerKey = bearerMatch ? bearerMatch[1].trim() : "";
-      const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
+      const apiKey = resolveOpenRouterApiKey(req.headers);
 
       if (!apiKey) {
-        return res
-          .status(401)
-          .json({ error: "OpenRouter API key is required." });
+        return res.status(401).json({ error: openRouterRequiredMessage });
       }
 
       const openai = new OpenAI({
@@ -591,14 +599,9 @@ export async function createTutorServerApp(
   // API Route to Generate Persona
   app.post("/api/generate-persona", async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const bearerMatch = (authHeader || "").match(/^Bearer\s+(.+)$/i);
-      const headerKey = bearerMatch ? bearerMatch[1].trim() : "";
-      const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
+      const apiKey = resolveOpenRouterApiKey(req.headers);
       if (!apiKey)
-        return res
-          .status(401)
-          .json({ error: "OpenRouter API key is required." });
+        return res.status(401).json({ error: openRouterRequiredMessage });
 
       const openai = new OpenAI({
         baseURL: "https://openrouter.ai/api/v1",
@@ -636,14 +639,9 @@ export async function createTutorServerApp(
   // API Route to Trace Action (DeepSeek via OpenRouter)
   app.post("/api/trace", async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const bearerMatch = (authHeader || "").match(/^Bearer\s+(.+)$/i);
-      const headerKey = bearerMatch ? bearerMatch[1].trim() : "";
-      const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
+      const apiKey = resolveOpenRouterApiKey(req.headers);
       if (!apiKey)
-        return res
-          .status(401)
-          .json({ error: "OpenRouter API key is required." });
+        return res.status(401).json({ error: openRouterRequiredMessage });
 
       const openai = new OpenAI({
         baseURL: "https://openrouter.ai/api/v1",
@@ -677,15 +675,12 @@ export async function createTutorServerApp(
   });
 
   app.post("/api/learning-book-update", async (req, res) => {
-    const authHeader = req.headers.authorization || "";
-    const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
-    const headerKey = bearerMatch ? bearerMatch[1].trim() : "";
-    const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
+    const apiKey = resolveOpenRouterApiKey(req.headers);
     const body = req.body || {};
 
     if (!apiKey) {
       return res.status(401).json({
-        error: "OpenRouter API key is required for learning book updates.",
+        error: openRouterRequiredMessage,
       });
     }
 
@@ -778,14 +773,11 @@ CRITICAL RULES:
   });
 
   app.post("/api/generate-flashcards", async (req, res) => {
-    const authHeader = req.headers.authorization || "";
-    const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
-    const headerKey = bearerMatch ? bearerMatch[1].trim() : "";
-    const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
+    const apiKey = resolveOpenRouterApiKey(req.headers);
     const body = req.body || {};
 
     if (!apiKey) {
-      return res.status(401).json({ error: "API key is required." });
+      return res.status(401).json({ error: openRouterRequiredMessage });
     }
 
     const content = String(body.content || "").slice(0, 8000);
@@ -925,8 +917,7 @@ CRITICAL RULES:
 
       if (ttsModel === "gpt-4o-mini-tts") {
         try {
-          const openaiKey =
-            process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || "";
+          const openaiKey = sanitizeApiKey(process.env.OPENAI_API_KEY);
           if (!openaiKey) throw new Error("OpenAI API Key is missing");
           const openai = new OpenAI({
             apiKey: openaiKey,
@@ -1025,11 +1016,7 @@ CRITICAL RULES:
     };
 
     try {
-      const authHeader = req.headers.authorization || "";
-      // Robustly extract Bearer token: match "Bearer <token>" and extract <token>
-      const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
-      const headerKey = bearerMatch ? bearerMatch[1].trim() : "";
-      const apiKey = headerKey || process.env.OPENROUTER_API_KEY;
+      const apiKey = resolveOpenRouterApiKey(req.headers);
       const {
         messages,
         currentPageImage,
@@ -1046,7 +1033,7 @@ CRITICAL RULES:
 
       if (!apiKey) {
         sendEvent("error", {
-          error: "OpenRouter API key is required. Please set it in Settings.",
+          error: openRouterRequiredMessage,
         });
         return res.end();
       }
@@ -1741,9 +1728,9 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
         const openRouterKey =
           sanitizeApiKey(providedOpenRouterKey) ||
-          sanitizeApiKey(process.env.OPENROUTER_API_KEY);
+          getOpenRouterServerFallbackKey();
         if (!openRouterKey) {
-          ws.close(1008, "OpenRouter API key is required");
+          ws.close(1008, openRouterRequiredMessage);
           return false;
         }
 

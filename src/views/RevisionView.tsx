@@ -40,6 +40,7 @@ import {
 import { PatternCard, themes } from "../components/PatternCard";
 import { SvgBeige } from "../components/PatternSVGs";
 import tutorBook from "../lib/tutorBook.json";
+import { useMotionPreference } from "../hooks/useMotionPreference";
 
 type BuiltInBook = {
   id: string;
@@ -108,23 +109,23 @@ const wireframeNodes = [
   {
     id: "App Shell",
     x: 120,
-    y: 145,
+    y: 150,
     tone: "dark",
     summary: "view host",
     lane: "Navigation",
   },
   {
     id: "Navigation",
-    x: 310,
-    y: 145,
+    x: 410,
+    y: 150,
     tone: "dark",
     summary: "activeView",
     lane: "Navigation",
   },
   {
     id: "Settings",
-    x: 500,
-    y: 145,
+    x: 700,
+    y: 150,
     tone: "light",
     summary: "keys + voice",
     lane: "Navigation",
@@ -132,63 +133,63 @@ const wireframeNodes = [
   {
     id: "Study View",
     x: 120,
-    y: 355,
+    y: 375,
     tone: "dark",
     summary: "workspace",
     lane: "Study",
   },
   {
     id: "Document Intake",
-    x: 310,
-    y: 355,
+    x: 360,
+    y: 375,
     tone: "paper",
     summary: "upload",
     lane: "Study",
   },
   {
     id: "PDF Viewer",
-    x: 500,
-    y: 355,
+    x: 600,
+    y: 375,
     tone: "light",
     summary: "read + mark",
     lane: "Study",
   },
   {
     id: "Selection Toolbar",
-    x: 690,
-    y: 355,
+    x: 840,
+    y: 375,
     tone: "light",
     summary: "quote tools",
     lane: "Study",
   },
   {
     id: "Chat Panel",
-    x: 865,
-    y: 355,
+    x: 1040,
+    y: 375,
     tone: "dark",
     summary: "ask tutor",
     lane: "Tutor",
   },
   {
     id: "Thinking Trace",
-    x: 500,
-    y: 565,
+    x: 600,
+    y: 600,
     tone: "blue",
     summary: "stream",
     lane: "Tutor",
   },
   {
     id: "Tutor Tools",
-    x: 690,
-    y: 565,
+    x: 840,
+    y: 600,
     tone: "accent",
     summary: "actions",
     lane: "Tutor",
   },
   {
     id: "Server API",
-    x: 865,
-    y: 565,
+    x: 1040,
+    y: 600,
     tone: "dark",
     summary: "models",
     lane: "Tutor",
@@ -196,63 +197,63 @@ const wireframeNodes = [
   {
     id: "Voice + TTS",
     x: 120,
-    y: 565,
+    y: 600,
     tone: "blue",
     summary: "speech",
     lane: "Tutor",
   },
   {
     id: "Memory Orchestrator",
-    x: 310,
-    y: 775,
+    x: 360,
+    y: 825,
     tone: "accent",
     summary: "maps learning",
     lane: "Memory",
   },
   {
     id: "Dexie DB",
-    x: 500,
-    y: 775,
+    x: 600,
+    y: 825,
     tone: "paper",
     summary: "browser store",
     lane: "Memory",
   },
   {
     id: "Brain Graph",
-    x: 690,
-    y: 775,
+    x: 840,
+    y: 825,
     tone: "dark",
     summary: "concepts",
     lane: "Memory",
   },
   {
     id: "Learning Books",
-    x: 865,
-    y: 775,
+    x: 1040,
+    y: 825,
     tone: "paper",
     summary: "chapters",
     lane: "Memory",
   },
   {
     id: "Revision Library",
-    x: 500,
-    y: 985,
+    x: 600,
+    y: 1050,
     tone: "paper",
     summary: "review",
     lane: "Review",
   },
   {
     id: "Flashcards",
-    x: 690,
-    y: 985,
+    x: 840,
+    y: 1050,
     tone: "light",
     summary: "recall",
     lane: "Review",
   },
   {
     id: "Analytics",
-    x: 310,
-    y: 985,
+    x: 360,
+    y: 1050,
     tone: "light",
     summary: "progress",
     lane: "Ops",
@@ -260,7 +261,7 @@ const wireframeNodes = [
   {
     id: "Admin Console",
     x: 120,
-    y: 985,
+    y: 1050,
     tone: "accent",
     summary: "logs",
     lane: "Ops",
@@ -272,222 +273,271 @@ const wireframeLinks = [
     from: "App Shell",
     to: "Navigation",
     label: "renders tabs",
-    labelX: 215,
-    labelY: 70,
+    labelX: 265,
+    labelY: 150,
   },
   {
     from: "Navigation",
     to: "Study View",
     label: "opens workspace",
-    labelX: 220,
-    labelY: 245,
+    labelX: 248,
+    labelY: 260,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 410, y: 260 },
+      { x: 120, y: 260 },
+    ],
   },
   {
     from: "Navigation",
     to: "Revision Library",
     label: "opens library",
-    labelX: 520,
-    labelY: 860,
+    labelX: 700,
+    labelY: 445,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 210, y: 230 },
-      { x: 210, y: 920 },
-      { x: 500, y: 920 },
+      { x: 720, y: 260 },
+      { x: 720, y: 965 },
+      { x: 600, y: 965 },
     ],
   },
   {
     from: "Navigation",
     to: "Analytics",
     label: "opens progress",
-    labelX: 270,
-    labelY: 900,
+    labelX: 170,
+    labelY: 955,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 205, y: 230 },
-      { x: 205, y: 920 },
-      { x: 310, y: 920 },
+      { x: 240, y: 260 },
+      { x: 240, y: 965 },
+      { x: 360, y: 965 },
     ],
   },
   {
     from: "Settings",
     to: "Chat Panel",
     label: "model + voice",
-    labelX: 720,
-    labelY: 220,
+    labelX: 870,
+    labelY: 250,
   },
   {
     from: "Study View",
     to: "Document Intake",
     label: "adds file",
-    labelX: 215,
-    labelY: 288,
+    labelX: 240,
+    labelY: 308,
   },
   {
     from: "Document Intake",
     to: "PDF Viewer",
     label: "loads pages",
-    labelX: 405,
-    labelY: 288,
+    labelX: 480,
+    labelY: 308,
   },
   {
     from: "PDF Viewer",
     to: "Selection Toolbar",
     label: "selected text",
-    labelX: 595,
-    labelY: 288,
+    labelX: 720,
+    labelY: 308,
   },
   {
     from: "Selection Toolbar",
     to: "Chat Panel",
     label: "ask tutor",
-    labelX: 780,
-    labelY: 288,
+    labelX: 940,
+    labelY: 308,
   },
   {
     from: "Chat Panel",
     to: "Thinking Trace",
     label: "streams reasoning",
-    labelX: 735,
-    labelY: 465,
+    labelX: 800,
+    labelY: 475,
   },
   {
     from: "Chat Panel",
     to: "Tutor Tools",
     label: "calls tools",
-    labelX: 805,
-    labelY: 500,
+    labelX: 950,
+    labelY: 515,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 1040, y: 515 },
+      { x: 840, y: 515 },
+    ],
   },
   {
     from: "Tutor Tools",
     to: "Server API",
     label: "model/search",
-    labelX: 780,
-    labelY: 625,
+    labelX: 940,
+    labelY: 720,
+    fromSide: "bottom",
+    toSide: "bottom",
+    waypoints: [
+      { x: 840, y: 680 },
+      { x: 1040, y: 680 },
+    ],
   },
   {
     from: "Server API",
     to: "Chat Panel",
     label: "returns answer",
-    labelX: 920,
-    labelY: 460,
+    labelX: 1112,
+    labelY: 500,
+    fromSide: "right",
+    toSide: "right",
+    waypoints: [
+      { x: 1135, y: 600 },
+      { x: 1135, y: 375 },
+    ],
   },
   {
     from: "Chat Panel",
     to: "Memory Orchestrator",
     label: "saves exchange",
-    labelX: 725,
-    labelY: 675,
+    labelX: 1030,
+    labelY: 750,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 950, y: 430 },
-      { x: 950, y: 675 },
-      { x: 310, y: 675 },
+      { x: 1135, y: 455 },
+      { x: 1135, y: 700 },
+      { x: 360, y: 700 },
     ],
   },
   {
     from: "PDF Viewer",
     to: "Memory Orchestrator",
     label: "adds notes",
-    labelX: 405,
-    labelY: 655,
+    labelX: 460,
+    labelY: 690,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 405, y: 440 },
-      { x: 405, y: 655 },
-      { x: 310, y: 655 },
+      { x: 500, y: 455 },
+      { x: 500, y: 690 },
+      { x: 360, y: 690 },
     ],
   },
   {
     from: "Tutor Tools",
     to: "Memory Orchestrator",
     label: "updates graph",
-    labelX: 560,
-    labelY: 675,
+    labelX: 700,
+    labelY: 735,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 690, y: 665 },
-      { x: 310, y: 665 },
+      { x: 840, y: 725 },
+      { x: 360, y: 725 },
     ],
   },
   {
     from: "Voice + TTS",
     to: "Chat Panel",
     label: "speech input",
-    labelX: 340,
-    labelY: 625,
+    labelX: 350,
+    labelY: 650,
     fromSide: "right",
     toSide: "bottom",
     waypoints: [
-      { x: 250, y: 640 },
-      { x: 950, y: 640 },
-      { x: 950, y: 430 },
+      { x: 300, y: 690 },
+      { x: 1135, y: 690 },
+      { x: 1135, y: 455 },
+      { x: 1040, y: 455 },
     ],
   },
   {
     from: "Memory Orchestrator",
     to: "Dexie DB",
     label: "persists",
-    labelX: 405,
-    labelY: 705,
+    labelX: 480,
+    labelY: 825,
   },
   {
     from: "Memory Orchestrator",
     to: "Brain Graph",
     label: "creates nodes",
-    labelX: 525,
-    labelY: 705,
+    labelX: 560,
+    labelY: 755,
     fromSide: "top",
     toSide: "top",
     waypoints: [
-      { x: 310, y: 690 },
-      { x: 690, y: 690 },
+      { x: 360, y: 755 },
+      { x: 840, y: 755 },
     ],
   },
   {
     from: "Memory Orchestrator",
     to: "Learning Books",
     label: "writes chapters",
-    labelX: 665,
-    labelY: 850,
+    labelX: 720,
+    labelY: 895,
     fromSide: "bottom",
     toSide: "bottom",
     waypoints: [
-      { x: 310, y: 860 },
-      { x: 865, y: 860 },
+      { x: 360, y: 895 },
+      { x: 1040, y: 895 },
     ],
   },
   {
     from: "Learning Books",
     to: "Revision Library",
     label: "appears as book",
-    labelX: 725,
-    labelY: 900,
+    labelX: 820,
+    labelY: 975,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 1040, y: 950 },
+      { x: 600, y: 950 },
+    ],
   },
   {
     from: "Learning Books",
     to: "Flashcards",
     label: "review queue",
-    labelX: 850,
-    labelY: 900,
+    labelX: 1010,
+    labelY: 935,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 1040, y: 985 },
+      { x: 840, y: 985 },
+    ],
   },
   {
     from: "Dexie DB",
     to: "Analytics",
     label: "aggregates",
-    labelX: 400,
-    labelY: 900,
+    labelX: 500,
+    labelY: 930,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 600, y: 940 },
+      { x: 360, y: 940 },
+    ],
   },
   {
     from: "Dexie DB",
     to: "Admin Console",
     label: "trace records",
-    labelX: 225,
-    labelY: 850,
+    labelX: 300,
+    labelY: 890,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 600, y: 915 },
+      { x: 120, y: 915 },
+    ],
   },
 ] satisfies WireframeLink[];
 
@@ -566,14 +616,14 @@ const WireframeMap = () => {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [mapScale, setMapScale] = useState(1);
   const nodeById = new Map(wireframeNodes.map((node) => [node.id, node]));
-  const canvas = { width: 980, height: 1080 };
-  const nodeSize = { width: 150, height: 86 };
+  const canvas = { width: 1160, height: 1160 };
+  const nodeSize = { width: 160, height: 86 };
   const lanes = [
-    ["Navigation", 78],
-    ["Study", 288],
-    ["Tutor", 498],
-    ["Memory", 708],
-    ["Review + Ops", 918],
+    ["Navigation", 82],
+    ["Study", 300],
+    ["Tutor", 525],
+    ["Memory", 750],
+    ["Review + Ops", 975],
   ] as const;
   const nodeClass = (tone: WireframeNodeTone) => {
     if (tone === "dark") return "border-zinc-700 bg-[#07070a] text-white";
@@ -655,7 +705,7 @@ const WireframeMap = () => {
   };
 
   return (
-    <GalleryPanel className="relative left-1/2 w-full -translate-x-1/2 overflow-hidden bg-[#f3f3f4] p-0 lg:w-[min(1120px,calc(100vw-18rem))] xl:w-[min(1240px,calc(100vw-24rem))]">
+    <GalleryPanel className="relative left-1/2 w-full -translate-x-1/2 overflow-hidden bg-[#f3f3f4] p-0 lg:w-[min(1280px,calc(100vw-18rem))] xl:w-[min(1380px,calc(100vw-24rem))]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.88),transparent_56%)]" />
       <div className="relative border-b border-white/80 px-5 py-4 sm:px-6">
         <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
@@ -669,20 +719,23 @@ const WireframeMap = () => {
       </div>
       <div
         ref={viewportRef}
-        className="relative max-h-[min(76vh,780px)] overflow-x-hidden overflow-y-auto custom-scroll"
+        className="relative max-h-[min(76vh,780px)] overflow-x-auto overflow-y-auto custom-scroll"
         aria-label="Scrollable wireframe map of the Tutor UI components"
       >
         <div
-          className="relative mx-auto w-full"
-          style={{ height: canvas.height * mapScale }}
+          className="relative mx-auto"
+          style={{
+            width: canvas.width * mapScale,
+            height: canvas.height * mapScale,
+          }}
         >
           <div
-            className="absolute left-1/2 top-0"
+            className="absolute left-0 top-0"
             style={{
               width: canvas.width,
               height: canvas.height,
-              transform: `translateX(-50%) scale(${mapScale})`,
-              transformOrigin: "top center",
+              transform: `scale(${mapScale})`,
+              transformOrigin: "top left",
             }}
           >
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(212,212,216,0.28)_1px,transparent_1px),linear-gradient(180deg,rgba(212,212,216,0.28)_1px,transparent_1px)] bg-[size:80px_80px]" />
@@ -737,6 +790,7 @@ const WireframeMap = () => {
             {wireframeLinks.map((link) => (
               <div
                 key={`${link.from}-${link.to}-label`}
+                data-wireframe-label={link.label}
                 className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-zinc-200/80 bg-white/95 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.02em] text-zinc-600 shadow-[0_8px_20px_rgba(24,24,27,0.08)]"
                 style={{ left: link.labelX, top: link.labelY }}
               >
@@ -748,7 +802,8 @@ const WireframeMap = () => {
               <motion.div
                 key={node.id}
                 whileHover={{ y: -4, scale: 1.03 }}
-                className={`absolute z-30 flex min-h-[86px] w-[150px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[22px] border px-3 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${nodeClass(
+                data-wireframe-node={node.id}
+                className={`absolute z-30 flex min-h-[86px] w-[160px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[22px] border px-3 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${nodeClass(
                   node.tone,
                 )}`}
                 style={{ left: node.x, top: node.y }}
@@ -773,6 +828,7 @@ const WireframeMap = () => {
 };
 
 const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
+  const motionEnabled = useMotionPreference();
   const [activeRoute, setActiveRoute] = useState("Study");
   const [bookOpen, setBookOpen] = useState(false);
   const [pdfPage, setPdfPage] = useState(2);
@@ -943,8 +999,12 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
         <div className="relative flex items-center gap-1 overflow-hidden rounded-xl bg-[#121214]/95 p-1 text-white shadow-[0_20px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl">
           <motion.div
             className="absolute inset-[-60%] h-[220%] w-[220%]"
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            animate={motionEnabled ? { rotate: 360 } : { rotate: 0 }}
+            transition={{
+              repeat: motionEnabled ? Infinity : 0,
+              duration: motionEnabled ? 4 : 0,
+              ease: "linear",
+            }}
             style={{
               background:
                 "conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.08) 40%, rgba(255,255,255,0.72) 50%, rgba(255,255,255,0.08) 60%, transparent 100%)",
@@ -1407,13 +1467,25 @@ const LongPressWrapper = ({
 }) => {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isLongPress = useRef(false);
+  const mounted = useRef(true);
   const [pressing, setPressing] = useState(false);
 
-  const clearPress = () => {
+  const clearTimer = React.useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
-    setPressing(false);
-  };
+  }, []);
+
+  const clearPress = React.useCallback(() => {
+    clearTimer();
+    if (mounted.current) setPressing(false);
+  }, [clearTimer]);
+
+  useEffect(() => {
+    return () => {
+      mounted.current = false;
+      clearTimer();
+    };
+  }, [clearTimer]);
 
   return (
     <div
@@ -1421,6 +1493,7 @@ const LongPressWrapper = ({
         isLongPress.current = false;
         setPressing(true);
         timer.current = setTimeout(() => {
+          if (!mounted.current) return;
           isLongPress.current = true;
           setPressing(false);
           onLongPress();
@@ -1641,6 +1714,42 @@ export function RevisionView() {
       }
     }, []) || [];
 
+  const conceptsByBookId = React.useMemo(() => {
+    const map = new Map<string, typeof learningBookConcepts>();
+    learningBookConcepts.forEach((concept) => {
+      const bucket = map.get(concept.bookId) || [];
+      bucket.push(concept);
+      map.set(concept.bookId, bucket);
+    });
+    return map;
+  }, [learningBookConcepts]);
+
+  const entriesByBookId = React.useMemo(() => {
+    const map = new Map<string, typeof learningEntries>();
+    learningEntries.forEach((entry) => {
+      const bucket = map.get(entry.bookId) || [];
+      bucket.push(entry);
+      map.set(entry.bookId, bucket);
+    });
+    return map;
+  }, [learningEntries]);
+
+  const flashcardsByBookId = React.useMemo(() => {
+    const map = new Map<string, Flashcard[]>();
+    flashcards.forEach((card) => {
+      if (!card.bookId) return;
+      const bucket = map.get(card.bookId) || [];
+      bucket.push(card);
+      map.set(card.bookId, bucket);
+    });
+    return map;
+  }, [flashcards]);
+
+  const generalStudyFlashcards = React.useMemo(
+    () => flashcards.filter((card) => !card.bookId),
+    [flashcards],
+  );
+
   const [activeConceptId, setActiveConceptId] = useState<string | null>(null);
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<LibraryDeleteTarget | null>(
@@ -1672,11 +1781,14 @@ export function RevisionView() {
     });
   };
 
-  const sampleNotes: Record<string, string> = {
-    "tutor-book": tutorBook
-      .map((chapter) => chapter.content)
-      .join("\n\n---\n\n"),
-  };
+  const sampleNotes = React.useMemo<Record<string, string>>(
+    () => ({
+      "tutor-book": tutorBook
+        .map((chapter) => chapter.content)
+        .join("\n\n---\n\n"),
+    }),
+    [],
+  );
 
   const activeConcept = concepts.find((c) => c.id === activeConceptId);
   const activeBuiltInBook = builtInBooks.find(
@@ -1685,24 +1797,33 @@ export function RevisionView() {
   const activeLearningBook = learningBooks.find(
     (book) => book.id === activeConceptId,
   );
-  const flashcardsForBook = (book: LearningBook) =>
-    flashcards.filter(
-      (card) =>
-        card.bookId === book.id ||
-        (!card.bookId && book.title.toLowerCase() === "general study"),
-    );
-  const activeBookFlashcards = activeLearningBook
-    ? flashcardsForBook(activeLearningBook)
-    : [];
-  const activeDueFlashcards = activeBookFlashcards
-    .filter((card) => card.nextReviewAt <= Date.now())
-    .sort((a, b) => a.nextReviewAt - b.nextReviewAt);
-  const activeReviewQueue =
-    activeDueFlashcards.length > 0
-      ? activeDueFlashcards
-      : [...activeBookFlashcards].sort(
-          (a, b) => a.nextReviewAt - b.nextReviewAt,
-        );
+  const flashcardsForBook = React.useCallback(
+    (book: LearningBook) => {
+      const directCards = flashcardsByBookId.get(book.id) || [];
+      if (book.title.toLowerCase() !== "general study") return directCards;
+      return [...directCards, ...generalStudyFlashcards];
+    },
+    [flashcardsByBookId, generalStudyFlashcards],
+  );
+  const activeBookFlashcards = React.useMemo(
+    () => (activeLearningBook ? flashcardsForBook(activeLearningBook) : []),
+    [activeLearningBook, flashcardsForBook],
+  );
+  const activeDueFlashcards = React.useMemo(() => {
+    const now = Date.now();
+    return activeBookFlashcards
+      .filter((card) => card.nextReviewAt <= now)
+      .sort((a, b) => a.nextReviewAt - b.nextReviewAt);
+  }, [activeBookFlashcards]);
+  const activeReviewQueue = React.useMemo(
+    () =>
+      activeDueFlashcards.length > 0
+        ? activeDueFlashcards
+        : [...activeBookFlashcards].sort(
+            (a, b) => a.nextReviewAt - b.nextReviewAt,
+          ),
+    [activeBookFlashcards, activeDueFlashcards],
+  );
 
   useEffect(() => {
     const pendingBookId = localStorage.getItem("revision_open_book_id");
@@ -1716,83 +1837,114 @@ export function RevisionView() {
     localStorage.removeItem("revision_open_book_id");
   }, [learningBooks]);
 
-  const cleanRevisionNote = (value?: string) =>
-    String(value || "")
-      .replace(/\bPrompt:\s*/gi, "")
-      .replace(/\bLearning note:\s*/gi, "")
-      .replace(
-        /\bReview hook:\s*restate the idea in your own words, identify the key mechanism, and test it with a fresh example\.?/gi,
-        "",
-      )
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
+  const cleanRevisionNote = React.useCallback(
+    (value?: string) =>
+      String(value || "")
+        .replace(/\bPrompt:\s*/gi, "")
+        .replace(/\bLearning note:\s*/gi, "")
+        .replace(
+          /\bReview hook:\s*restate the idea in your own words, identify the key mechanism, and test it with a fresh example\.?/gi,
+          "",
+        )
+        .replace(/\n{3,}/g, "\n\n")
+        .trim(),
+    [],
+  );
 
-  const formatLearningChapterPage = (book: LearningBook, index: number) => {
-    const chapter = book.chapters?.[index];
-    if (!chapter) return learningBookMarkdown(book);
-    const conceptsForChapter = learningBookConcepts.filter(
-      (concept) =>
-        concept.bookId === book.id && chapter.conceptIds.includes(concept.id),
-    );
-    const note =
-      cleanRevisionNote(chapter.summary) ||
-      cleanRevisionNote(book.summary) ||
-      "This chapter is ready for notes from the next tutor exchange.";
-    const conceptText = conceptsForChapter.length
-      ? conceptsForChapter
-          .map(
-            (concept) =>
-              `### ${concept.name}\n${cleanRevisionNote(concept.summary) || "Summary pending."}`,
-          )
-          .join("\n\n")
-      : "No mapped concepts yet.";
-    return `## Chapter ${index + 1}: ${chapter.title}\n\n${note}\n\n## Concepts To Revise\n\n${conceptText}\n\n## Review Check\n\nExplain the key idea in your own words, name the mechanism that makes it work, and apply it to one fresh example.`;
-  };
+  const learningBookMarkdown = React.useCallback(
+    (book: LearningBook) => {
+      const conceptsForBook = conceptsByBookId.get(book.id) || [];
+      const entriesForBook = entriesByBookId.get(book.id) || [];
+      const chapterText = (book.chapters || []).length
+        ? book.chapters
+            .map((chapter, index) => {
+              const chapterConceptIds = new Set(chapter.conceptIds);
+              const chapterConcepts = conceptsForBook
+                .filter((concept) => chapterConceptIds.has(concept.id))
+                .map((concept) => concept.name);
+              return `### Chapter ${index + 1}: ${chapter.title}\n${cleanRevisionNote(chapter.summary) || "Chapter summary pending."}${chapterConcepts.length ? `\n\nConcepts: ${chapterConcepts.join(", ")}` : ""}`;
+            })
+            .join("\n\n")
+        : "No chapters mapped yet.";
+      const conceptText = conceptsForBook.length
+        ? conceptsForBook
+            .map((concept) => {
+              const branches = concept.childConcepts.length
+                ? `\n  - Branches: ${concept.childConcepts.join(", ")}`
+                : "";
+              const parents = concept.parentConcepts.length
+                ? `\n  - Parent concepts: ${concept.parentConcepts.join(", ")}`
+                : "";
+              return `### ${concept.name}\n${cleanRevisionNote(concept.summary) || "Summary pending."}${parents}${branches}`;
+            })
+            .join("\n\n")
+        : "No concepts mapped yet.";
+      const entryText = entriesForBook
+        .slice(0, 5)
+        .map(
+          (entry, index) =>
+            `### Page ${index + 1}\n${cleanRevisionNote(entry.conversationSummary || entry.assistantSummary) || "Learning note pending."}`,
+        )
+        .join("\n\n");
+      return `## Overview\n${cleanRevisionNote(book.overview) || "Overview pending."}\n\n## Knowledge Summary\n${cleanRevisionNote(book.knowledgeSummary || book.summary) || "Summary pending."}\n\n## Chapters\n${chapterText}\n\n## Mapped Concepts\n${conceptText}\n\n## Learning Pages\n${entryText || "No learning notes recorded yet."}`;
+    },
+    [cleanRevisionNote, conceptsByBookId, entriesByBookId],
+  );
 
-  const learningBookMarkdown = (book: LearningBook) => {
-    const conceptsForBook = learningBookConcepts.filter(
-      (concept) => concept.bookId === book.id,
-    );
-    const entriesForBook = learningEntries.filter(
-      (entry) => entry.bookId === book.id,
-    );
-    const chapterText = (book.chapters || []).length
-      ? book.chapters
-          .map((chapter, index) => {
-            const chapterConcepts = conceptsForBook
-              .filter((concept) => chapter.conceptIds.includes(concept.id))
-              .map((concept) => concept.name);
-            return `### Chapter ${index + 1}: ${chapter.title}\n${cleanRevisionNote(chapter.summary) || "Chapter summary pending."}${chapterConcepts.length ? `\n\nConcepts: ${chapterConcepts.join(", ")}` : ""}`;
-          })
-          .join("\n\n")
-      : "No chapters mapped yet.";
-    const conceptText = conceptsForBook.length
-      ? conceptsForBook
-          .map((concept) => {
-            const branches = concept.childConcepts.length
-              ? `\n  - Branches: ${concept.childConcepts.join(", ")}`
-              : "";
-            const parents = concept.parentConcepts.length
-              ? `\n  - Parent concepts: ${concept.parentConcepts.join(", ")}`
-              : "";
-            return `### ${concept.name}\n${cleanRevisionNote(concept.summary) || "Summary pending."}${parents}${branches}`;
-          })
-          .join("\n\n")
-      : "No concepts mapped yet.";
-    const entryText = entriesForBook
-      .slice(0, 5)
-      .map(
-        (entry, index) =>
-          `### Page ${index + 1}\n${cleanRevisionNote(entry.conversationSummary || entry.assistantSummary) || "Learning note pending."}`,
-      )
-      .join("\n\n");
-    return `## Overview\n${cleanRevisionNote(book.overview) || "Overview pending."}\n\n## Knowledge Summary\n${cleanRevisionNote(book.knowledgeSummary || book.summary) || "Summary pending."}\n\n## Chapters\n${chapterText}\n\n## Mapped Concepts\n${conceptText}\n\n## Learning Pages\n${entryText || "No learning notes recorded yet."}`;
-  };
+  const formatLearningChapterPage = React.useCallback(
+    (book: LearningBook, index: number) => {
+      const chapter = book.chapters?.[index];
+      if (!chapter) return learningBookMarkdown(book);
+      const chapterConceptIds = new Set(chapter.conceptIds);
+      const conceptsForChapter = (conceptsByBookId.get(book.id) || []).filter(
+        (concept) => chapterConceptIds.has(concept.id),
+      );
+      const note =
+        cleanRevisionNote(chapter.summary) ||
+        cleanRevisionNote(book.summary) ||
+        "This chapter is ready for notes from the next tutor exchange.";
+      const conceptText = conceptsForChapter.length
+        ? conceptsForChapter
+            .map(
+              (concept) =>
+                `### ${concept.name}\n${cleanRevisionNote(concept.summary) || "Summary pending."}`,
+            )
+            .join("\n\n")
+        : "No mapped concepts yet.";
+      return `## Chapter ${index + 1}: ${chapter.title}\n\n${note}\n\n## Concepts To Revise\n\n${conceptText}\n\n## Review Check\n\nExplain the key idea in your own words, name the mechanism that makes it work, and apply it to one fresh example.`;
+    },
+    [cleanRevisionNote, conceptsByBookId, learningBookMarkdown],
+  );
   const isBuiltInBook = Boolean(activeBuiltInBook);
   const activeTitle = activeLearningBook?.title || activeConcept?.name || "";
   const activeChapterCount = activeBuiltInBook
     ? activeBuiltInBook.chapters.length
     : activeLearningBook?.chapters?.length || 0;
+  const activeMarkdown = React.useMemo(() => {
+    if (activeBuiltInBook) {
+      return activeBuiltInBook.chapters[currentChapterIndex]?.content || "";
+    }
+    if (activeLearningBook) {
+      return activeLearningBook.chapters &&
+        activeLearningBook.chapters.length > 0
+        ? formatLearningChapterPage(activeLearningBook, currentChapterIndex)
+        : learningBookMarkdown(activeLearningBook);
+    }
+    if (!activeConcept) return "";
+    return (
+      sampleNotes[activeConcept.id as keyof typeof sampleNotes] ||
+      activeConcept.description ||
+      "Notes unavailable."
+    );
+  }, [
+    activeBuiltInBook,
+    activeConcept,
+    activeLearningBook,
+    currentChapterIndex,
+    formatLearningChapterPage,
+    learningBookMarkdown,
+    sampleNotes,
+  ]);
 
   const scrollBookToTop = (behavior: ScrollBehavior = "smooth") => {
     requestAnimationFrame(() => {
@@ -1976,22 +2128,7 @@ export function RevisionView() {
                   ) : (
                     <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-zinc-900 prose-li:leading-[1.8] prose-li:text-zinc-800 prose-li:font-light prose-ul:my-5 prose-pre:bg-zinc-100 prose-pre:text-zinc-800 prose-pre:border prose-pre:border-zinc-200 prose-pre:shadow-inner prose-pre:my-8 prose-code:before:content-none prose-code:after:content-none prose-code:bg-transparent prose-code:px-0 prose-code:py-0 prose-code:font-mono prose-code:text-[0.88em] prose-code:font-normal prose-code:text-zinc-700 prose-strong:text-zinc-900 prose-strong:font-medium selection:bg-zinc-200 selection:text-zinc-950">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {activeBuiltInBook
-                          ? activeBuiltInBook.chapters[currentChapterIndex]
-                              ?.content || ""
-                          : activeLearningBook
-                            ? activeLearningBook.chapters &&
-                              activeLearningBook.chapters.length > 0
-                              ? formatLearningChapterPage(
-                                  activeLearningBook,
-                                  currentChapterIndex,
-                                )
-                              : learningBookMarkdown(activeLearningBook)
-                            : sampleNotes[
-                                activeConcept!.id as keyof typeof sampleNotes
-                              ] ||
-                              activeConcept!.description ||
-                              "Notes unavailable."}
+                        {activeMarkdown}
                       </ReactMarkdown>
                     </div>
                   )}
@@ -2059,9 +2196,7 @@ export function RevisionView() {
             )}
             {visibleLearningBooks.map((book, index) => {
               const theme = themes[index % themes.length];
-              const conceptCount = learningBookConcepts.filter(
-                (concept) => concept.bookId === book.id,
-              ).length;
+              const conceptCount = conceptsByBookId.get(book.id)?.length || 0;
               const cardCount = flashcardsForBook(book).length;
               return (
                 <LongPressWrapper

@@ -19,6 +19,7 @@ import {
 import { useStore } from "../store";
 import { SiriLiquidGlass } from "./SiriLiquidGlass";
 import { useTranslation } from "../lib/translations";
+import { useMotionPreference } from "../hooks/useMotionPreference";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -233,6 +234,7 @@ function UsageInsightsPanel() {
 export function SettingsButton() {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
+  const motionEnabled = useMotionPreference();
   const {
     apiKey,
     setApiKey,
@@ -400,8 +402,12 @@ export function SettingsButton() {
           }}
         >
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            animate={motionEnabled ? { rotate: 360 } : { rotate: 0 }}
+            transition={{
+              repeat: motionEnabled ? Infinity : 0,
+              duration: motionEnabled ? 4 : 0,
+              ease: "linear",
+            }}
             className="absolute inset-[-50%] w-[200%] h-[200%]"
             style={{
               background:
@@ -568,9 +574,11 @@ export function SettingsButton() {
                           />
                           <p className="text-xs text-zinc-500 leading-relaxed">
                             Your key is stored locally in your browser's
-                            localStorage and is only sent directly to the AI
-                            service. Optional when the server has an
-                            OpenRouter key configured.
+                            localStorage and is sent as a bearer key only for
+                            your own AI requests. Hosted deployments use this
+                            key by default; a server OpenRouter key is used only
+                            when the deployment owner explicitly enables the
+                            shared fallback.
                           </p>
                         </div>
 

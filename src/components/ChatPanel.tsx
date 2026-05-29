@@ -55,6 +55,12 @@ import { useTranslation } from "../lib/translations";
 
 type MermaidApi = typeof import("mermaid").default;
 
+type StreamingAssistantDraft = {
+  id: string;
+  content: string;
+  usage?: NonNullable<Message["usage"]>;
+};
+
 let mermaidPromise: Promise<MermaidApi> | null = null;
 
 const loadMermaid = () => {
@@ -1885,6 +1891,7 @@ const MessageItem = React.memo(
 
     return (
       <motion.div
+        data-message-id={msg.id}
         initial={{
           opacity: 0,
           y: msg.role === "user" ? 15 : 10,
@@ -2068,6 +2075,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const messages = useStore((state) => state.messages);
   const setMessages = useStore((state) => state.setMessages);
   const setIsVoiceActive = useStore((state) => state.setIsVoiceActive);
+  const [streamingAssistant, setStreamingAssistant] =
+    useState<StreamingAssistantDraft | null>(null);
+  const streamingAssistantRef = useRef<StreamingAssistantDraft | null>(null);
+  const streamingFrameRef = useRef<number | null>(null);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -2086,6 +2097,50 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAutoScrollPaused = useRef(false);
   const [isSkillsMenuOpen, setIsSkillsMenuOpen] = useState(false);
+
+  const flushStreamingAssistant = useCallback(() => {
+    streamingFrameRef.current = null;
+    setStreamingAssistant(streamingAssistantRef.current);
+  }, []);
+
+  const scheduleStreamingAssistant = useCallback(
+    (draft: StreamingAssistantDraft) => {
+      streamingAssistantRef.current = draft;
+      if (streamingFrameRef.current !== null) return;
+      if (typeof requestAnimationFrame === "undefined") {
+        flushStreamingAssistant();
+        return;
+      }
+      streamingFrameRef.current = requestAnimationFrame(
+        flushStreamingAssistant,
+      );
+    },
+    [flushStreamingAssistant],
+  );
+
+  const clearStreamingAssistant = useCallback(() => {
+    if (streamingFrameRef.current !== null) {
+      cancelAnimationFrame(streamingFrameRef.current);
+      streamingFrameRef.current = null;
+    }
+    streamingAssistantRef.current = null;
+    setStreamingAssistant(null);
+  }, []);
+
+  useEffect(() => clearStreamingAssistant, [clearStreamingAssistant]);
+
+  const displayMessages = React.useMemo(() => {
+    if (!streamingAssistant) return messages;
+    return messages.map((message) =>
+      message.id === streamingAssistant.id
+        ? {
+            ...message,
+            content: streamingAssistant.content,
+            usage: streamingAssistant.usage || message.usage,
+          }
+        : message,
+    );
+  }, [messages, streamingAssistant]);
 
   const [voiceState, setVoiceState] = useState<
     "idle" | "listening" | "speaking"
@@ -2640,6 +2695,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         sources: [],
       },
     ]);
+    clearStreamingAssistant();
     isAutoScrollPaused.current = false;
     forceScrollToBottom("smooth");
     setIsTyping(true);
@@ -2784,7 +2840,6 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       const decoder = new TextDecoder("utf-8");
       let currentContent = "";
       let buffer = "";
-      let lastUpdateTime = Date.now();
       const liveInputEstimate = estimateTokens(userMsgContent);
       let liveOutputEstimate = 0;
       let messageUsage: NonNullable<Message["usage"]> = {
@@ -2880,24 +2935,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   requests: 0,
                 });
               }
-              const now = Date.now();
-              if (now - lastUpdateTime > 50) {
-                lastUpdateTime = now;
-                setMessages((prev) => {
-                  const newM = [...prev];
-                  const msgIndex = newM.findIndex(
-                    (m) => m.id === assistantMsgId,
-                  );
-                  if (msgIndex !== -1) {
-                    newM[msgIndex] = {
-                      ...newM[msgIndex],
-                      content: currentContent,
-                      usage: messageUsage,
-                    };
-                  }
-                  return newM;
-                });
-              }
+              scheduleStreamingAssistant({
+                id: assistantMsgId,
+                content: currentContent,
+                usage: messageUsage,
+              });
             } else if (data.type === "web_search_started") {
               recordWebSearchEvent({
                 type: "started",
@@ -3028,6 +3070,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               });
             } else if (data.type === "done") {
               setSendState("success");
+              clearStreamingAssistant();
               const hasFlashcards =
                 data.flashcardsUpdates && data.flashcardsUpdates.length > 0;
               const finalSources = (data.sources ||
@@ -3221,6 +3264,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       setSendState("idle");
     } catch (err: any) {
       console.error(err);
+      clearStreamingAssistant();
       setMessages((prev) =>
         prev.map((m) =>
           m.id === assistantMsgId
@@ -3257,7 +3301,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     }
   }, [selectedTextContext]);
 
-  const lastMessage = messages[messages.length - 1];
+  const lastMessage = displayMessages[displayMessages.length - 1];
   const lastAutoScrolledMessageIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -3309,18 +3353,17 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       });
     });
 
-    // Observe the single direct child (the inner container) or the scrollEl itself
-    resizeObserver.observe(scrollEl);
-    if (scrollEl.firstElementChild) {
-      resizeObserver.observe(scrollEl.firstElementChild);
-    }
+    const activeBubble = lastMessage
+      ? scrollEl.querySelector(`[data-message-id="${lastMessage.id}"]`)
+      : null;
+    resizeObserver.observe((activeBubble as Element | null) || scrollEl);
 
     return () => {
       scrollEl.removeEventListener("scroll", handleScroll);
       resizeObserver.disconnect();
       if (scrollFrame) cancelAnimationFrame(scrollFrame);
     };
-  }, [sendState]);
+  }, [lastMessage?.id, sendState]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -3571,12 +3614,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         ref={scrollRef}
       >
         <AnimatePresence initial={false}>
-          {messages.map((msg, index) => (
+          {displayMessages.map((msg, index) => (
             <MessageItem
               key={msg.id}
               msg={msg}
               sendState={sendState}
-              isLast={index === messages.length - 1}
+              isLast={index === displayMessages.length - 1}
               animationsEnabled={animationsEnabled}
               isPlayingTTS={isPlayingTTS}
               onSendMessage={sendMessage}
@@ -3622,10 +3665,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   }}
                 >
                   <motion.div
-                    animate={{ rotate: 360 }}
+                    animate={
+                      animationsEnabled ? { rotate: 360 } : { rotate: 0 }
+                    }
                     transition={{
-                      repeat: Infinity,
-                      duration: 5,
+                      repeat: animationsEnabled ? Infinity : 0,
+                      duration: animationsEnabled ? 5 : 0,
                       ease: "linear",
                     }}
                     className="absolute inset-[-50%] w-[200%] h-[200%]"
@@ -4038,8 +4083,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     <motion.div
                       animate={{ rotate: sendState === "sending" ? 360 : 0 }}
                       transition={{
-                        repeat: Infinity,
-                        duration: 1,
+                        repeat:
+                          animationsEnabled && sendState === "sending"
+                            ? Infinity
+                            : 0,
+                        duration: animationsEnabled ? 1 : 0,
                         ease: "linear",
                       }}
                       className="flex items-center justify-center"

@@ -15,12 +15,17 @@ import { motion, AnimatePresence } from "motion/react";
 import { useStore } from "../store";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
+const TRACE_PAGE_SIZE = 100;
 
 export function AdminView() {
   const { setActiveView, learnerName } = useStore();
-  const logs = useLiveQuery(() =>
-    db.traceLogs.orderBy("timestamp").reverse().toArray(),
+  const [traceLimit, setTraceLimit] = useState(TRACE_PAGE_SIZE);
+  const logs = useLiveQuery(
+    () =>
+      db.traceLogs.orderBy("timestamp").reverse().limit(traceLimit).toArray(),
+    [traceLimit],
   );
+  const totalTraceCount = useLiveQuery(() => db.traceLogs.count(), []) || 0;
   const learningBooks =
     useLiveQuery(
       () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
@@ -153,7 +158,7 @@ export function AdminView() {
     if (!acc[entry.bookId]) acc[entry.bookId] = entry;
     return acc;
   }, {});
-  const traceCount = logs?.length || 0;
+  const traceCount = totalTraceCount || logs?.length || 0;
   const latestTrace = logs?.[0];
   const mappedConceptCount = learningBookConcepts.length;
   const tracedBookCount = learningBooks.filter(
@@ -572,67 +577,93 @@ export function AdminView() {
                           </div>
                         </div>
                       ) : (
-                        logs.map((log, index) => (
-                          <motion.div
-                            key={log.id}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{
-                              duration: 0.3,
-                              delay: Math.min(index * 0.05, 1),
-                            }}
-                            className="relative pl-8 pb-8"
+                        logs.map((log, index) => {
+                          const animateTraceRow = index < 24;
+                          return (
+                            <motion.div
+                              key={log.id}
+                              initial={
+                                animateTraceRow ? { opacity: 0, x: -10 } : false
+                              }
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{
+                                duration: animateTraceRow ? 0.22 : 0,
+                                delay: animateTraceRow
+                                  ? Math.min(index * 0.02, 0.32)
+                                  : 0,
+                              }}
+                              className="relative pl-8 pb-8"
+                            >
+                              <motion.div
+                                className="absolute left-[0px] top-4 w-[2px] bg-zinc-200/60"
+                                initial={
+                                  animateTraceRow ? { height: 0 } : false
+                                }
+                                animate={{ height: "100%" }}
+                                transition={{
+                                  duration: animateTraceRow ? 0.35 : 0,
+                                  ease: "easeInOut",
+                                  delay: animateTraceRow
+                                    ? Math.min(index * 0.02, 0.32)
+                                    : 0,
+                                }}
+                              />
+                              <motion.div
+                                initial={animateTraceRow ? { scale: 0 } : false}
+                                animate={{ scale: 1 }}
+                                transition={{
+                                  type: "spring",
+                                  stiffness: 300,
+                                  damping: 20,
+                                  delay: animateTraceRow
+                                    ? Math.min(index * 0.02, 0.32)
+                                    : 0,
+                                }}
+                                className="absolute w-3 h-3 rounded-full bg-blue-500 border-2 border-[#faf9f6] shadow-sm -left-[5px] top-1 z-10"
+                              />
+
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="text-xs font-mono text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200 font-medium">
+                                  {log.action}
+                                </span>
+                                <span className="text-xs text-zinc-500 flex items-center gap-1.5 font-mono">
+                                  <Clock size={12} />{" "}
+                                  {new Date(log.timestamp).toLocaleTimeString()}
+                                </span>
+                              </div>
+
+                              <div className="text-[15px] text-zinc-800 mb-4 leading-relaxed mt-3 bg-white p-5 rounded-xl border border-zinc-200 shadow-sm font-serif">
+                                {log.llmExplanation}
+                              </div>
+
+                              <details className="group">
+                                <summary className="text-xs font-mono text-zinc-500 cursor-pointer hover:text-zinc-800 transition-colors flex items-center gap-1.5 select-none font-medium">
+                                  <ChevronRight
+                                    size={14}
+                                    className="group-open:rotate-90 transition-transform"
+                                  />
+                                  Raw JSON Payload
+                                </summary>
+                                <pre className="mt-3 text-[11px] text-zinc-600 bg-zinc-50 p-4 rounded-xl overflow-x-auto border border-zinc-200 font-mono shadow-inner">
+                                  {JSON.stringify(log.payload, null, 2)}
+                                </pre>
+                              </details>
+                            </motion.div>
+                          );
+                        })
+                      )}
+                      {logs && logs.length > 0 && logs.length < traceCount && (
+                        <div className="flex justify-center pt-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setTraceLimit((limit) => limit + TRACE_PAGE_SIZE)
+                            }
+                            className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 hover:text-zinc-900"
                           >
-                            <motion.div
-                              className="absolute left-[0px] top-4 w-[2px] bg-zinc-200/60"
-                              initial={{ height: 0 }}
-                              animate={{ height: "100%" }}
-                              transition={{
-                                duration: 0.8,
-                                ease: "easeInOut",
-                                delay: Math.min(index * 0.05, 1),
-                              }}
-                            />
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{
-                                type: "spring",
-                                stiffness: 300,
-                                damping: 20,
-                                delay: Math.min(index * 0.05, 1),
-                              }}
-                              className="absolute w-3 h-3 rounded-full bg-blue-500 border-2 border-[#faf9f6] shadow-sm -left-[5px] top-1 z-10"
-                            />
-
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className="text-xs font-mono text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200 font-medium">
-                                {log.action}
-                              </span>
-                              <span className="text-xs text-zinc-500 flex items-center gap-1.5 font-mono">
-                                <Clock size={12} />{" "}
-                                {new Date(log.timestamp).toLocaleTimeString()}
-                              </span>
-                            </div>
-
-                            <div className="text-[15px] text-zinc-800 mb-4 leading-relaxed mt-3 bg-white p-5 rounded-xl border border-zinc-200 shadow-sm font-serif">
-                              {log.llmExplanation}
-                            </div>
-
-                            <details className="group">
-                              <summary className="text-xs font-mono text-zinc-500 cursor-pointer hover:text-zinc-800 transition-colors flex items-center gap-1.5 select-none font-medium">
-                                <ChevronRight
-                                  size={14}
-                                  className="group-open:rotate-90 transition-transform"
-                                />
-                                Raw JSON Payload
-                              </summary>
-                              <pre className="mt-3 text-[11px] text-zinc-600 bg-zinc-50 p-4 rounded-xl overflow-x-auto border border-zinc-200 font-mono shadow-inner">
-                                {JSON.stringify(log.payload, null, 2)}
-                              </pre>
-                            </details>
-                          </motion.div>
-                        ))
+                            Load more traces
+                          </button>
+                        </div>
                       )}
                     </div>
                   ) : (

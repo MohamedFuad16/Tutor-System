@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { motion } from "motion/react";
 import { SvgDark, SvgOrange, SvgBeige } from "./PatternSVGs";
+import { useMotionPreference } from "../hooks/useMotionPreference";
 
 export const themes = [
   {
@@ -60,6 +61,7 @@ export const PatternCard = ({
   onDrop?: (e: React.DragEvent) => void;
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const motionEnabled = useMotionPreference();
   const resolvedDotColor =
     pressDotColor || (bgClass.includes("ecebe9") ? "#ff6e00" : "#fefefe");
   const resolvedRingColor =
@@ -105,8 +107,8 @@ export const PatternCard = ({
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={motionEnabled ? { scale: 1.02 } : undefined}
+      whileTap={motionEnabled ? { scale: 0.98 } : undefined}
       className={`group cursor-pointer shrink-0 w-[min(324px,calc(100vw-2rem))] h-[min(414px,calc((100vw-2rem)*1.2778))] min-h-[366px] mx-auto transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-400 ease-[cubic-bezier(0.22,0.61,0.36,1)] relative overflow-hidden rounded-[36px] sm:rounded-[44.875px] origin-top ${bgClass} ${isDragging ? "ring-4 ring-blue-500/50 scale-[1.02]" : ""}`}
     >
       {/* Background Bloom Layer from reference */}
@@ -149,8 +151,11 @@ export const PatternCard = ({
             transformOrigin: "left top",
           }}
           initial={{ opacity: 0 }}
-          animate={{ opacity: isPressing || isDragging ? 1 : 0.68 }}
+          animate={{
+            opacity: isPressing || isDragging ? 1 : motionEnabled ? 0.68 : 0.58,
+          }}
           exit={{ opacity: 0 }}
+          transition={{ duration: motionEnabled ? 0.2 : 0 }}
         >
           {pressDots.map((dot, index) => (
             <motion.span
@@ -167,22 +172,33 @@ export const PatternCard = ({
                   ? `0 0 14px ${resolvedRingColor}`
                   : `0 0 18px ${resolvedDotColor}`,
               }}
-              animate={{
-                scale: [
-                  dot.s ?? 1,
-                  (dot.s ?? 1) * (isPressing || isDragging ? 1.36 : 1.12),
-                  dot.s ?? 1,
-                ],
-                opacity: dot.ring
-                  ? [0.24, isPressing || isDragging ? 0.95 : 0.52, 0.24]
-                  : [0.42, isPressing || isDragging ? 1 : 0.76, 0.42],
-                y: [0, isPressing || isDragging ? -2.5 : -1.1, 0],
-              }}
+              animate={
+                motionEnabled
+                  ? {
+                      scale: [
+                        dot.s ?? 1,
+                        (dot.s ?? 1) * (isPressing || isDragging ? 1.36 : 1.12),
+                        dot.s ?? 1,
+                      ],
+                      opacity: dot.ring
+                        ? [0.24, isPressing || isDragging ? 0.95 : 0.52, 0.24]
+                        : [0.42, isPressing || isDragging ? 1 : 0.76, 0.42],
+                      y: [0, isPressing || isDragging ? -2.5 : -1.1, 0],
+                    }
+                  : {
+                      scale: dot.s ?? 1,
+                      opacity: dot.ring ? 0.32 : 0.5,
+                      y: 0,
+                    }
+              }
               transition={{
-                repeat: Infinity,
-                duration:
-                  isPressing || isDragging ? 0.82 : 2.8 + (index % 4) * 0.18,
-                delay: index * 0.045,
+                repeat: motionEnabled ? Infinity : 0,
+                duration: motionEnabled
+                  ? isPressing || isDragging
+                    ? 0.82
+                    : 2.8 + (index % 4) * 0.18
+                  : 0,
+                delay: motionEnabled ? index * 0.045 : 0,
                 ease: "easeInOut",
               }}
             />

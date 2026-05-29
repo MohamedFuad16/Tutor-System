@@ -3,10 +3,12 @@ import { useStore, ViewState } from "../store";
 import { BookOpen, Zap, Activity } from "lucide-react";
 import { motion, useMotionValue, useMotionTemplate } from "motion/react";
 import { useTranslation } from "../lib/translations";
+import { useMotionPreference } from "../hooks/useMotionPreference";
 
 export function Navigation() {
   const { activeView, setActiveView } = useStore();
   const { t } = useTranslation();
+  const motionEnabled = useMotionPreference();
   const [isHoveringContainer, setIsHoveringContainer] = useState(false);
 
   const mouseX = useMotionValue(0);
@@ -55,8 +57,12 @@ export function Navigation() {
           }}
         >
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            animate={motionEnabled ? { rotate: 360 } : { rotate: 0 }}
+            transition={{
+              repeat: motionEnabled ? Infinity : 0,
+              duration: motionEnabled ? 4 : 0,
+              ease: "linear",
+            }}
             className="absolute inset-[-50%] w-[200%] h-[200%]"
             style={{
               background:
@@ -71,6 +77,7 @@ export function Navigation() {
           <motion.div
             className="absolute inset-0 transition-opacity duration-300 mix-blend-screen"
             animate={{ opacity: isHoveringContainer ? 1 : 0 }}
+            transition={{ duration: motionEnabled ? 0.3 : 0 }}
             style={{
               background: useMotionTemplate`radial-gradient(150px circle at ${mouseX}px ${mouseY}px, rgba(255,255,255,0.15), transparent 100%)`,
             }}
@@ -78,6 +85,7 @@ export function Navigation() {
           <motion.div
             className="absolute inset-0 transition-opacity duration-300 mix-blend-overlay"
             animate={{ opacity: isHoveringContainer ? 1 : 0 }}
+            transition={{ duration: motionEnabled ? 0.3 : 0 }}
             style={{
               background: useMotionTemplate`radial-gradient(100px circle at ${mouseX}px ${mouseY}px, rgba(10,61,207,0.4), transparent 100%)`,
             }}
@@ -102,7 +110,11 @@ export function Navigation() {
                 <motion.div
                   layoutId="navigation-active-pill"
                   className="absolute inset-0 bg-white/10 border border-white/10 rounded-full mix-blend-screen"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  transition={
+                    motionEnabled
+                      ? { type: "spring", stiffness: 500, damping: 30 }
+                      : { duration: 0 }
+                  }
                 />
               )}
               <span className="relative z-[15] flex items-center justify-center gap-1.5 sm:gap-2">
