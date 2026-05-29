@@ -1,9 +1,9 @@
 # Architecture Confidence Report
 
-Generated: 2026-05-29T05:17:44.853Z
+Generated: 2026-05-29T05:32:42.372Z
 
-- Graph nodes: 270
-- Graph edges: 881
+- Graph nodes: 269
+- Graph edges: 878
 - Vector chunks: 491
 - Runtime events: 42
 - Retrieval benchmark recall: 1.00

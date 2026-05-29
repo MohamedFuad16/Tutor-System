@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-29T05:17:16.132Z",
+    "generatedAt": "2026-05-29T05:32:00.813Z",
     "source": "brain/runtime/run-runtime-benchmark.ts",
-    "sourceHash": "a6b6fff6527080c612e2283d574e0ac2c830cf4c0db0b652eaea330aea44940f",
+    "sourceHash": "70f92de4571a201e720bb1d34e5153630f9fdfd8e3b1097dfadac8c273683845",
     "url": "http://127.0.0.1:3210",
     "eventCount": 42,
     "confidence": 0.82
@@ -11,14 +11,14 @@
     {
       "type": "render",
       "name": "route:study",
-      "durationMs": 25,
+      "durationMs": 24.90000000037253,
       "metadata": {
         "phase": "mount",
-        "baseDuration": 19.300000000745058,
-        "startTime": 319,
-        "commitTime": 344.20000000018626
+        "baseDuration": 18.699999999254942,
+        "startTime": 342,
+        "commitTime": 367.29999999981374
       },
-      "timestamp": 348.3999999994412
+      "timestamp": 371.29999999981374
     },
     {
       "type": "state",
@@ -27,7 +27,7 @@
         "previousType": "object",
         "nextType": "object"
       },
-      "timestamp": 378.79999999981374
+      "timestamp": 403
     },
     {
       "type": "route",
@@ -35,7 +35,7 @@
       "metadata": {
         "source": "App.activeView"
       },
-      "timestamp": 378.8999999994412
+      "timestamp": 403.1000000005588
     },
     {
       "type": "route",
@@ -43,43 +43,43 @@
       "metadata": {
         "source": "App.activeView"
       },
-      "timestamp": 381.8999999994412
+      "timestamp": 406
     },
     {
       "type": "render",
       "name": "route:study",
-      "durationMs": 4.400000000372529,
+      "durationMs": 5.2999999998137355,
       "metadata": {
         "phase": "update",
-        "baseDuration": 17.700000000186265,
-        "startTime": 384.09999999962747,
-        "commitTime": 388.5
+        "baseDuration": 18,
+        "startTime": 408.1000000005588,
+        "commitTime": 413.40000000037253
       },
-      "timestamp": 389.59999999962747
+      "timestamp": 414.6000000005588
     },
     {
       "type": "render",
       "name": "route:study",
-      "durationMs": 3.7999999998137355,
+      "durationMs": 3.599999999627471,
       "metadata": {
         "phase": "update",
-        "baseDuration": 17.40000000037253,
-        "startTime": 402.70000000018626,
-        "commitTime": 406.59999999962747
+        "baseDuration": 16.700000000186265,
+        "startTime": 428.90000000037253,
+        "commitTime": 432.6000000005588
       },
-      "timestamp": 407.09999999962747
+      "timestamp": 433.1000000005588
     },
     {
       "type": "render",
       "name": "route:study",
-      "durationMs": 4.299999998882413,
+      "durationMs": 3.5,
       "metadata": {
         "phase": "update",
-        "baseDuration": 17.999999999068677,
-        "startTime": 408.70000000018626,
-        "commitTime": 413.09999999962747
+        "baseDuration": 16.40000000130385,
+        "startTime": 435.20000000018626,
+        "commitTime": 438.79999999981374
       },
-      "timestamp": 413.3999999994412
+      "timestamp": 439.1000000005588
     },
     {
       "type": "state",
@@ -88,19 +88,19 @@
         "previousType": "object",
         "nextType": "string"
       },
-      "timestamp": 415.09999999962747
+      "timestamp": 439.6000000005588
     },
     {
       "type": "render",
       "name": "route:study",
-      "durationMs": 4.6000000005587935,
+      "durationMs": 4.599999999627471,
       "metadata": {
         "phase": "update",
-        "baseDuration": 17.700000000186265,
-        "startTime": 416.59999999962747,
-        "commitTime": 421.29999999981374
+        "baseDuration": 17.200000000186265,
+        "startTime": 441.20000000018626,
+        "commitTime": 445.90000000037253
       },
-      "timestamp": 422.8999999994412
+      "timestamp": 447.20000000018626
     },
     {
       "type": "render",
@@ -108,23 +108,23 @@
       "durationMs": 0.5,
       "metadata": {
         "phase": "update",
-        "baseDuration": 17.799999999813735,
-        "startTime": 722,
-        "commitTime": 722.5
+        "baseDuration": 17.100000000558794,
+        "startTime": 741.5,
+        "commitTime": 742
       },
-      "timestamp": 722.8999999994412
+      "timestamp": 742.4000000003725
     },
     {
       "type": "render",
       "name": "route:study",
-      "durationMs": 0.09999999962747097,
+      "durationMs": 0.20000000018626451,
       "metadata": {
         "phase": "update",
-        "baseDuration": 17.899999999441206,
-        "startTime": 784,
-        "commitTime": 784.2000000001863
+        "baseDuration": 17.100000001490116,
+        "startTime": 807.7999999998137,
+        "commitTime": 808
       },
-      "timestamp": 784.2000000001863
+      "timestamp": 808
     },
     {
       "type": "state",
@@ -133,19 +133,19 @@
         "previousType": "string",
         "nextType": "string"
       },
-      "timestamp": 1564.0999999996275
+      "timestamp": 1583.7000000001863
     },
     {
       "type": "render",
       "name": "route:study",
-      "durationMs": 2.2000000001862645,
+      "durationMs": 1.7999999998137355,
       "metadata": {
         "phase": "update",
-        "baseDuration": 16.30000000447035,
-        "startTime": 1566.0999999996275,
-        "commitTime": 1568.2999999998137
+        "baseDuration": 15.599999998696148,
+        "startTime": 1585.7999999998137,
+        "commitTime": 1587.9000000003725
       },
-      "timestamp": 1569.5999999996275
+      "timestamp": 1589.2000000001863
     },
     {
       "type": "route",
@@ -153,67 +153,67 @@
       "metadata": {
         "source": "App.activeView"
       },
-      "timestamp": 1570
+      "timestamp": 1589.6000000005588
     },
     {
       "type": "render",
       "name": "route:analytics",
-      "durationMs": 0.7000000001862645,
+      "durationMs": 0.599999999627471,
       "metadata": {
         "phase": "mount",
-        "baseDuration": 0,
-        "startTime": 1872.8999999994412,
-        "commitTime": 1874
+        "baseDuration": 0.09999999962747097,
+        "startTime": 1892.4000000003725,
+        "commitTime": 1893.2999999998137
       },
-      "timestamp": 1875.7000000001863
+      "timestamp": 1895.5
     },
     {
       "type": "render",
       "name": "route:analytics",
-      "durationMs": 2.2000000001862645,
+      "durationMs": 2.5,
       "metadata": {
         "phase": "update",
-        "baseDuration": 1.900000000372529,
-        "startTime": 1919.3999999994412,
-        "commitTime": 2176.7999999998137
+        "baseDuration": 2.2000000001862645,
+        "startTime": 1941,
+        "commitTime": 2195.2000000001863
       },
-      "timestamp": 2177
+      "timestamp": 2195.5
     },
     {
       "type": "render",
       "name": "route:analytics",
-      "durationMs": 5.400000000372529,
+      "durationMs": 5.5,
       "metadata": {
         "phase": "update",
-        "baseDuration": 5.400000000372529,
-        "startTime": 2178.899999999441,
-        "commitTime": 2184.2999999998137
+        "baseDuration": 5.5,
+        "startTime": 2197.7000000001863,
+        "commitTime": 2203.2000000001863
       },
-      "timestamp": 2184.5
+      "timestamp": 2203.4000000003725
     },
     {
       "type": "render",
       "name": "route:analytics",
-      "durationMs": 10.299999998882413,
+      "durationMs": 10.399999999441206,
       "metadata": {
         "phase": "nested-update",
-        "baseDuration": 12.900000001303852,
-        "startTime": 2185.899999999441,
-        "commitTime": 2196.399999999441
+        "baseDuration": 13.099999997764826,
+        "startTime": 2204.9000000003725,
+        "commitTime": 2215.4000000003725
       },
-      "timestamp": 2198.0999999996275
+      "timestamp": 2217.100000000559
     },
     {
       "type": "render",
       "name": "route:analytics",
-      "durationMs": 6.399999998509884,
+      "durationMs": 6.499999999068677,
       "metadata": {
         "phase": "nested-update",
-        "baseDuration": 13.200000000186265,
-        "startTime": 2201.7000000001863,
-        "commitTime": 2208.399999999441
+        "baseDuration": 13.799999998882413,
+        "startTime": 2220.7000000001863,
+        "commitTime": 2227.2999999998137
       },
-      "timestamp": 2209
+      "timestamp": 2227.9000000003725
     },
     {
       "type": "render",
@@ -221,11 +221,11 @@
       "durationMs": 0,
       "metadata": {
         "phase": "nested-update",
-        "baseDuration": 13.200000000186265,
-        "startTime": 2210.2999999998137,
-        "commitTime": 2210.899999999441
+        "baseDuration": 13.799999998882413,
+        "startTime": 2229,
+        "commitTime": 2229.7999999998137
       },
-      "timestamp": 2210.899999999441
+      "timestamp": 2229.7999999998137
     },
     {
       "type": "render",
@@ -233,23 +233,23 @@
       "durationMs": 4.5,
       "metadata": {
         "phase": "update",
-        "baseDuration": 8.799999998882413,
-        "startTime": 2212.2999999998137,
-        "commitTime": 2217.0999999996275
+        "baseDuration": 8.600000000558794,
+        "startTime": 2231.2000000001863,
+        "commitTime": 2235.7999999998137
       },
-      "timestamp": 2217.2999999998137
+      "timestamp": 2236.100000000559
     },
     {
       "type": "render",
       "name": "route:analytics",
-      "durationMs": 4.299999998882413,
+      "durationMs": 4.2999999998137355,
       "metadata": {
         "phase": "update",
-        "baseDuration": 8.69999999832362,
-        "startTime": 2218.7000000001863,
-        "commitTime": 2223.0999999996275
+        "baseDuration": 8.300000000745058,
+        "startTime": 2237.4000000003725,
+        "commitTime": 2241.7000000001863
       },
-      "timestamp": 2223.399999999441
+      "timestamp": 2242
     },
     {
       "type": "render",
@@ -257,35 +257,35 @@
       "durationMs": 0.10000000055879354,
       "metadata": {
         "phase": "nested-update",
-        "baseDuration": 8.599999998696148,
-        "startTime": 2224.0999999996275,
-        "commitTime": 2224.5
+        "baseDuration": 8.30000000167638,
+        "startTime": 2242.7000000001863,
+        "commitTime": 2242.9000000003725
       },
-      "timestamp": 2224.5
+      "timestamp": 2243
     },
     {
       "type": "render",
       "name": "route:analytics",
-      "durationMs": 3.9999999990686774,
+      "durationMs": 4.5,
       "metadata": {
         "phase": "update",
-        "baseDuration": 8.399999998509884,
-        "startTime": 2225.5,
-        "commitTime": 2229.5999999996275
+        "baseDuration": 8.500000000931323,
+        "startTime": 2244.4000000003725,
+        "commitTime": 2248.9000000003725
       },
-      "timestamp": 2229.899999999441
+      "timestamp": 2249.2999999998137
     },
     {
       "type": "render",
       "name": "route:analytics",
-      "durationMs": 5.7000000001862645,
+      "durationMs": 5.599999999627471,
       "metadata": {
         "phase": "update",
-        "baseDuration": 10.099999999627471,
-        "startTime": 2230.7999999998137,
-        "commitTime": 2236.5
+        "baseDuration": 9.600000000558794,
+        "startTime": 2250.100000000559,
+        "commitTime": 2255.7999999998137
       },
-      "timestamp": 2236.7000000001863
+      "timestamp": 2256
     },
     {
       "type": "render",
@@ -293,11 +293,11 @@
       "durationMs": 0,
       "metadata": {
         "phase": "nested-update",
-        "baseDuration": 10.099999999627471,
-        "startTime": 2237.399999999441,
-        "commitTime": 2237.5
+        "baseDuration": 9.600000000558794,
+        "startTime": 2256.5,
+        "commitTime": 2256.5
       },
-      "timestamp": 2237.5
+      "timestamp": 2256.7000000001863
     },
     {
       "type": "state",
@@ -306,19 +306,19 @@
         "previousType": "string",
         "nextType": "string"
       },
-      "timestamp": 2441.5999999996275
+      "timestamp": 2445.2999999998137
     },
     {
       "type": "render",
       "name": "route:analytics",
-      "durationMs": 0.20000000018626451,
+      "durationMs": 0.09999999962747097,
       "metadata": {
         "phase": "update",
-        "baseDuration": 10.099999999627471,
-        "startTime": 2444.2999999998137,
-        "commitTime": 2444.5
+        "baseDuration": 9.599999999627471,
+        "startTime": 2448.100000000559,
+        "commitTime": 2448.2000000001863
       },
-      "timestamp": 2445
+      "timestamp": 2448.7999999998137
     },
     {
       "type": "route",
@@ -326,55 +326,55 @@
       "metadata": {
         "source": "App.activeView"
       },
-      "timestamp": 2445.2000000001863
+      "timestamp": 2448.9000000003725
     },
     {
       "type": "render",
       "name": "route:revision",
-      "durationMs": 0.7000000001862645,
+      "durationMs": 0.2999999998137355,
       "metadata": {
         "phase": "mount",
         "baseDuration": 0.09999999962747097,
-        "startTime": 2756,
-        "commitTime": 2756.7000000001863
+        "startTime": 2757,
+        "commitTime": 2757.4000000003725
       },
-      "timestamp": 2758.7000000001863
+      "timestamp": 2758.5
     },
     {
       "type": "render",
       "name": "route:revision",
-      "durationMs": 9.200000000186265,
+      "durationMs": 7.199999999254942,
       "metadata": {
         "phase": "update",
-        "baseDuration": 7.499999998137355,
-        "startTime": 2779.899999999441,
-        "commitTime": 3059.5
+        "baseDuration": 6.5,
+        "startTime": 2771.9000000003725,
+        "commitTime": 3058.7999999998137
       },
-      "timestamp": 3061.0999999996275
+      "timestamp": 3060.100000000559
     },
     {
       "type": "render",
       "name": "route:revision",
-      "durationMs": 10.5,
+      "durationMs": 10.800000000745058,
       "metadata": {
         "phase": "update",
-        "baseDuration": 9.400000000372529,
-        "startTime": 3082.5,
-        "commitTime": 3093.0999999996275
+        "baseDuration": 9.5,
+        "startTime": 3074,
+        "commitTime": 3084.9000000003725
       },
-      "timestamp": 3095
+      "timestamp": 3086.7000000001863
     },
     {
       "type": "render",
       "name": "route:revision",
-      "durationMs": 7.400000000372529,
+      "durationMs": 6.900000000372529,
       "metadata": {
         "phase": "update",
-        "baseDuration": 7.400000001303852,
-        "startTime": 3103.399999999441,
-        "commitTime": 3110.899999999441
+        "baseDuration": 6.800000000745058,
+        "startTime": 3100.5,
+        "commitTime": 3107.4000000003725
       },
-      "timestamp": 3112.7999999998137
+      "timestamp": 3109.2000000001863
     },
     {
       "type": "state",
@@ -383,19 +383,19 @@
         "previousType": "string",
         "nextType": "string"
       },
-      "timestamp": 3251.0999999996275
+      "timestamp": 3255.100000000559
     },
     {
       "type": "render",
       "name": "route:revision",
-      "durationMs": 4.099999998696148,
+      "durationMs": 4.2999999998137355,
       "metadata": {
         "phase": "update",
-        "baseDuration": 7.099999997764826,
-        "startTime": 3253.7000000001863,
-        "commitTime": 3258
+        "baseDuration": 7.100000001490116,
+        "startTime": 3257.600000000559,
+        "commitTime": 3262
       },
-      "timestamp": 3260.0999999996275
+      "timestamp": 3263.7999999998137
     },
     {
       "type": "route",
@@ -403,55 +403,19 @@
       "metadata": {
         "source": "App.activeView"
       },
-      "timestamp": 3260.5999999996275
+      "timestamp": 3264.2999999998137
     },
     {
       "type": "render",
       "name": "route:study",
-      "durationMs": 12.099999999627471,
+      "durationMs": 13.400000000372529,
       "metadata": {
         "phase": "mount",
-        "baseDuration": 11.000000000931323,
-        "startTime": 3556.7999999998137,
-        "commitTime": 3568.899999999441
+        "baseDuration": 12,
+        "startTime": 3559,
+        "commitTime": 3572.600000000559
       },
-      "timestamp": 3570.899999999441
-    },
-    {
-      "type": "render",
-      "name": "route:study",
-      "durationMs": 0,
-      "metadata": {
-        "phase": "update",
-        "baseDuration": 11.000000000931323,
-        "startTime": 3582.899999999441,
-        "commitTime": 3582.899999999441
-      },
-      "timestamp": 3583.2999999998137
-    },
-    {
-      "type": "render",
-      "name": "route:study",
-      "durationMs": 4.000000000931323,
-      "metadata": {
-        "phase": "update",
-        "baseDuration": 10.800000000745058,
-        "startTime": 3583.899999999441,
-        "commitTime": 3588
-      },
-      "timestamp": 3588.5999999996275
-    },
-    {
-      "type": "render",
-      "name": "route:study",
-      "durationMs": 0.40000000037252903,
-      "metadata": {
-        "phase": "update",
-        "baseDuration": 10.900000001303852,
-        "startTime": 3905.2999999998137,
-        "commitTime": 3905.7000000001863
-      },
-      "timestamp": 3905.7000000001863
+      "timestamp": 3574.600000000559
     },
     {
       "type": "render",
@@ -459,23 +423,59 @@
       "durationMs": 0.09999999962747097,
       "metadata": {
         "phase": "update",
-        "baseDuration": 10.900000001303852,
-        "startTime": 3982.7999999998137,
-        "commitTime": 3982.899999999441
+        "baseDuration": 12,
+        "startTime": 3586.2000000001863,
+        "commitTime": 3586.2999999998137
       },
-      "timestamp": 3982.899999999441
+      "timestamp": 3586.5
     },
     {
       "type": "render",
       "name": "route:study",
-      "durationMs": 10.799999999813735,
+      "durationMs": 3.8999999994412065,
       "metadata": {
         "phase": "update",
-        "baseDuration": 13.900000001303852,
-        "startTime": 5438.700000000186,
-        "commitTime": 5449.5
+        "baseDuration": 11,
+        "startTime": 3587.100000000559,
+        "commitTime": 3591.100000000559
       },
-      "timestamp": 5451.299999999814
+      "timestamp": 3591.7999999998137
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 0.5,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 11.200000000186265,
+        "startTime": 3907.4000000003725,
+        "commitTime": 3907.9000000003725
+      },
+      "timestamp": 3908.100000000559
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 0.09999999962747097,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 11.299999999813735,
+        "startTime": 3986.9000000003725,
+        "commitTime": 3987
+      },
+      "timestamp": 3987
+    },
+    {
+      "type": "render",
+      "name": "route:study",
+      "durationMs": 10.500000000931323,
+      "metadata": {
+        "phase": "update",
+        "baseDuration": 13.400000001303852,
+        "startTime": 5441.799999999814,
+        "commitTime": 5452.4000000003725
+      },
+      "timestamp": 5454.200000000186
     }
   ],
   "summary": {
@@ -483,23 +483,23 @@
       {
         "component": "route:study",
         "count": 14,
-        "totalDurationMs": 72.29999999981374,
-        "maxDurationMs": 25,
-        "averageDurationMs": 5.16428571427241
+        "totalDurationMs": 72.8999999994412,
+        "maxDurationMs": 24.90000000037253,
+        "averageDurationMs": 5.2071428571029434
       },
       {
         "component": "route:analytics",
         "count": 13,
-        "totalDurationMs": 43.79999999701977,
-        "maxDurationMs": 10.299999998882413,
-        "averageDurationMs": 3.3692307690015206
+        "totalDurationMs": 44.599999997764826,
+        "maxDurationMs": 10.399999999441206,
+        "averageDurationMs": 3.4307692305972943
       },
       {
         "component": "route:revision",
         "count": 5,
-        "totalDurationMs": 31.899999999441206,
-        "maxDurationMs": 10.5,
-        "averageDurationMs": 6.379999999888241
+        "totalDurationMs": 29.5,
+        "maxDurationMs": 10.800000000745058,
+        "averageDurationMs": 5.9
       }
     ],
     "routeTransitions": [
@@ -509,7 +509,7 @@
         "metadata": {
           "source": "App.activeView"
         },
-        "timestamp": 378.8999999994412
+        "timestamp": 403.1000000005588
       },
       {
         "type": "route",
@@ -517,7 +517,7 @@
         "metadata": {
           "source": "App.activeView"
         },
-        "timestamp": 381.8999999994412
+        "timestamp": 406
       },
       {
         "type": "route",
@@ -525,7 +525,7 @@
         "metadata": {
           "source": "App.activeView"
         },
-        "timestamp": 1570
+        "timestamp": 1589.6000000005588
       },
       {
         "type": "route",
@@ -533,7 +533,7 @@
         "metadata": {
           "source": "App.activeView"
         },
-        "timestamp": 2445.2000000001863
+        "timestamp": 2448.9000000003725
       },
       {
         "type": "route",
@@ -541,7 +541,7 @@
         "metadata": {
           "source": "App.activeView"
         },
-        "timestamp": 3260.5999999996275
+        "timestamp": 3264.2999999998137
       }
     ],
     "fetchEvents": [],
@@ -550,9 +550,9 @@
     "propagation": [
       {
         "state": "messages",
-        "timestamp": 378.79999999981374,
+        "timestamp": 403,
         "nextRender": "route:study",
-        "lagMs": 10.799999999813735,
+        "lagMs": 11.600000000558794,
         "metadata": {
           "previousType": "object",
           "nextType": "object"
@@ -560,9 +560,9 @@
       },
       {
         "state": "activeLearningBookId",
-        "timestamp": 415.09999999962747,
+        "timestamp": 439.6000000005588,
         "nextRender": "route:study",
-        "lagMs": 7.7999999998137355,
+        "lagMs": 7.599999999627471,
         "metadata": {
           "previousType": "object",
           "nextType": "string"
@@ -570,7 +570,7 @@
       },
       {
         "state": "activeView",
-        "timestamp": 1564.0999999996275,
+        "timestamp": 1583.7000000001863,
         "nextRender": "route:study",
         "lagMs": 5.5,
         "metadata": {
@@ -580,9 +580,9 @@
       },
       {
         "state": "activeView",
-        "timestamp": 2441.5999999996275,
+        "timestamp": 2445.2999999998137,
         "nextRender": "route:analytics",
-        "lagMs": 3.400000000372529,
+        "lagMs": 3.5,
         "metadata": {
           "previousType": "string",
           "nextType": "string"
@@ -590,9 +590,9 @@
       },
       {
         "state": "activeView",
-        "timestamp": 3251.0999999996275,
+        "timestamp": 3255.100000000559,
         "nextRender": "route:revision",
-        "lagMs": 9,
+        "lagMs": 8.699999999254942,
         "metadata": {
           "previousType": "string",
           "nextType": "string"
@@ -607,9 +607,9 @@
         "evidence": {
           "component": "route:study",
           "count": 14,
-          "totalDurationMs": 72.29999999981374,
-          "maxDurationMs": 25,
-          "averageDurationMs": 5.16428571427241
+          "totalDurationMs": 72.8999999994412,
+          "maxDurationMs": 24.90000000037253,
+          "averageDurationMs": 5.2071428571029434
         }
       },
       {
@@ -619,9 +619,9 @@
         "evidence": {
           "component": "route:analytics",
           "count": 13,
-          "totalDurationMs": 43.79999999701977,
-          "maxDurationMs": 10.299999998882413,
-          "averageDurationMs": 3.3692307690015206
+          "totalDurationMs": 44.599999997764826,
+          "maxDurationMs": 10.399999999441206,
+          "averageDurationMs": 3.4307692305972943
         }
       },
       {
@@ -631,9 +631,9 @@
         "evidence": {
           "component": "route:revision",
           "count": 5,
-          "totalDurationMs": 31.899999999441206,
-          "maxDurationMs": 10.5,
-          "averageDurationMs": 6.379999999888241
+          "totalDurationMs": 29.5,
+          "maxDurationMs": 10.800000000745058,
+          "averageDurationMs": 5.9
         }
       }
     ]

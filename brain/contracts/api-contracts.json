@@ -6,7 +6,6 @@
       "path": "/api/debug/runs",
       "serverFile": "server.ts",
       "clients": [
-        "src/lib/tutorBook.json",
         "src/views/AdminView.tsx"
       ],
       "responseFormat": "application/json",
@@ -33,7 +32,6 @@
       "path": "/api/debug/runs",
       "serverFile": "server.ts",
       "clients": [
-        "src/lib/tutorBook.json",
         "src/views/AdminView.tsx"
       ],
       "responseFormat": "application/json",
@@ -60,8 +58,7 @@
       "path": "/api/pricing",
       "serverFile": "server.ts",
       "clients": [
-        "src/components/ChatPanel.tsx",
-        "src/lib/tutorBook.json"
+        "src/components/ChatPanel.tsx"
       ],
       "responseFormat": "application/json",
       "generatedFromSource": true
@@ -92,7 +89,6 @@
       "path": "/api/debug/run",
       "serverFile": "server.ts",
       "clients": [
-        "src/lib/tutorBook.json",
         "src/views/AdminView.tsx"
       ],
       "responseFormat": "application/json",
@@ -119,6 +115,7 @@
       "path": "/api/documents/ingest",
       "serverFile": "server.ts",
       "clients": [
+        "src/lib/tutorBook.json",
         "src/views/StudyView.tsx"
       ],
       "responseFormat": "application/json",
@@ -235,23 +232,11 @@
     },
     {
       "file": "src/lib/tutorBook.json",
-      "endpoint": "/api/debug/run"
-    },
-    {
-      "file": "src/lib/tutorBook.json",
-      "endpoint": "/api/debug/runs"
-    },
-    {
-      "file": "src/lib/tutorBook.json",
-      "endpoint": "/api/debug/runs/"
+      "endpoint": "/api/documents/ingest"
     },
     {
       "file": "src/lib/tutorBook.json",
       "endpoint": "/api/learning-book-update"
-    },
-    {
-      "file": "src/lib/tutorBook.json",
-      "endpoint": "/api/pricing"
     },
     {
       "file": "src/lib/tutorBook.json",

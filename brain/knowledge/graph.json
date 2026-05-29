@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-29T05:16:01.504Z",
+    "generatedAt": "2026-05-29T05:30:44.181Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "13886f2ea49e03d484df9bccb3b8059401556418",
+      "commit": "170dd1e1b89ff0542e6347a3e1e045b593a09d4a",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "a6b6fff6527080c612e2283d574e0ac2c830cf4c0db0b652eaea330aea44940f"
+    "sourceHash": "70f92de4571a201e720bb1d34e5153630f9fdfd8e3b1097dfadac8c273683845"
   },
   "nodes": [
     {
@@ -743,21 +743,11 @@
       }
     },
     {
-      "id": "endpoint:ANY /api/debug/run",
-      "type": "endpoint",
-      "label": "ANY /api/debug/run",
-      "metadata": {
-        "discoveredFromClient": true,
-        "path": "/api/debug/run"
-      }
-    },
-    {
       "id": "endpoint:ANY /api/debug/runs",
       "type": "endpoint",
       "label": "ANY /api/debug/runs",
       "metadata": {
-        "discoveredFromClient": true,
-        "path": "/api/debug/runs"
+        "discoveredFromClient": true
       }
     },
     {
@@ -790,7 +780,8 @@
       "type": "endpoint",
       "label": "ANY /api/documents/ingest",
       "metadata": {
-        "discoveredFromClient": true
+        "discoveredFromClient": true,
+        "path": "/api/documents/ingest"
       }
     },
     {
@@ -1517,7 +1508,7 @@
       "type": "file",
       "label": "src/lib/tutorBook.json",
       "file": "src/lib/tutorBook.json",
-      "hash": "9b2db433af73cc5061b50d5b5a28311a0bb479b30a463eaa0949aa16e0f815af",
+      "hash": "22a6e1a5f3ed1b8ea9b9ad982ebbad6ae736a602428a51578482ca91876c1821",
       "metadata": {
         "lines": 55
       }
@@ -3037,17 +3028,6 @@
       "id": "0d529c6ad9842c9779fb"
     },
     {
-      "type": "callsEndpoint",
-      "source": "file:src/lib/tutorBook.json",
-      "target": "endpoint:ANY /api/debug/runs/",
-      "confidence": 0.55,
-      "evidence": {
-        "file": "src/lib/tutorBook.json",
-        "text": "/api/debug/runs/"
-      },
-      "id": "0d5759ad16682df5a5d9"
-    },
-    {
       "type": "writesStore",
       "source": "file:src/components/SettingsModal.tsx",
       "target": "storeField:setSerperApiKey",
@@ -3364,17 +3344,6 @@
         "text": "SessionMemoryRecord"
       },
       "id": "156f3fd8c77b0bab5c24"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/lib/tutorBook.json",
-      "target": "endpoint:ANY /api/pricing",
-      "confidence": 0.55,
-      "evidence": {
-        "file": "src/lib/tutorBook.json",
-        "text": "/api/pricing"
-      },
-      "id": "15731873c68bd6ceba5e"
     },
     {
       "type": "mutates",
@@ -6898,17 +6867,6 @@
         "text": "(state) => state.askTutorQuery"
       },
       "id": "6c129216ea35f9187e03"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/lib/tutorBook.json",
-      "target": "endpoint:ANY /api/debug/runs",
-      "confidence": 0.55,
-      "evidence": {
-        "file": "src/lib/tutorBook.json",
-        "text": "/api/debug/runs"
-      },
-      "id": "6c652b9ad2764498dc5d"
     },
     {
       "type": "exports",
@@ -11398,6 +11356,17 @@
       "id": "dd043622a7b990228614"
     },
     {
+      "type": "callsEndpoint",
+      "source": "file:src/lib/tutorBook.json",
+      "target": "endpoint:ANY /api/documents/ingest",
+      "confidence": 0.55,
+      "evidence": {
+        "file": "src/lib/tutorBook.json",
+        "text": "/api/documents/ingest"
+      },
+      "id": "dd4cd85382be15cd1d2b"
+    },
+    {
       "type": "definedIn",
       "source": "component:AnimatedScrollText",
       "target": "file:src/components/AnimatedScrollText.tsx",
@@ -12015,17 +11984,6 @@
         "text": "cognitiveLoadMonitor"
       },
       "id": "f020f76c8813bd7dcae0"
-    },
-    {
-      "type": "callsEndpoint",
-      "source": "file:src/lib/tutorBook.json",
-      "target": "endpoint:ANY /api/debug/run",
-      "confidence": 0.55,
-      "evidence": {
-        "file": "src/lib/tutorBook.json",
-        "text": "/api/debug/run"
-      },
-      "id": "f08a40b8e3fd47b73a15"
     },
     {
       "type": "readsStore",
