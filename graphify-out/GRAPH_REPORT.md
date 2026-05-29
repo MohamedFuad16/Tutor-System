@@ -1,16 +1,16 @@
 # Graph Report - Tutor-System-Architecture-  (2026-05-29)
 
 ## Corpus Check
-- 54 files · ~88,547 words
+- 55 files · ~89,494 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 564 nodes · 784 edges · 36 communities (26 shown, 10 thin omitted)
+- 570 nodes · 816 edges · 36 communities (26 shown, 10 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `285fd4d7`
+- Built from commit: `5fe0cb1d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -51,16 +51,16 @@
 - [[_COMMUNITY_Community 35|Community 35]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `useStore` - 22 edges
+1. `useStore` - 24 edges
 2. `useTranslation()` - 15 edges
-3. `MemoryOrchestrator` - 14 edges
-4. `scripts` - 13 edges
-5. `compilerOptions` - 13 edges
-6. `db` - 12 edges
-7. `PersistentConcept` - 11 edges
-8. `Tutor System Architecture` - 9 edges
+3. `useMotionPreference()` - 14 edges
+4. `MemoryOrchestrator` - 14 edges
+5. `scripts` - 13 edges
+6. `compilerOptions` - 13 edges
+7. `db` - 12 edges
+8. `PersistentConcept` - 11 edges
 9. `Tutor System Architecture` - 9 edges
-10. `Graphify-First Development` - 8 edges
+10. `Tutor System Architecture` - 9 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `vercelHandler()` --calls--> `App()`  [INFERRED]
@@ -78,27 +78,27 @@
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
-Nodes (24): BKTEngine, DEFAULT_BKT, CognitiveLoadMonitor, CognitiveLoadState, IllusionDetector, LearnerModel, BrainDatabase, ConversationInteraction (+16 more)
+Nodes (22): BKTEngine, DEFAULT_BKT, CognitiveLoadMonitor, CognitiveLoadState, IllusionDetector, LearnerModel, BrainDatabase, ConversationInteraction (+14 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.06
-Nodes (43): AnimatedScrollText(), AnimatedScrollTextProps, ChatPanel(), Navigation(), PdfViewer(), formatCount(), formatCurrency(), SettingsButton() (+35 more)
+Nodes (46): AnimatedScrollText(), AnimatedScrollTextProps, ChatPanel(), Navigation(), PatternCard(), PdfViewer(), formatCount(), formatCurrency() (+38 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.07
-Nodes (18): debugAdminToken, DEEPGRAM_PRICING, fetchOpenRouterPricing(), normalizeModelPricing(), OpenRouterPricing, RequestLike, TutorServerAppOptions, debugAdminToken (+10 more)
+Nodes (18): debugAdminToken, DEEPGRAM_PRICING, fetchOpenRouterPricing(), normalizeModelPricing(), openRouterCost(), OpenRouterPricing, RequestLike, roundCost() (+10 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.11
-Nodes (19): LearningBook, cosineSimilarity(), generateEmbedding(), normalize(), TOKEN_STOPWORDS, tokenize(), announceActiveLearningBook(), buildStudyNoteFallback() (+11 more)
+Nodes (20): LearningBook, LearningBookConcept, cosineSimilarity(), generateEmbedding(), normalize(), TOKEN_STOPWORDS, tokenize(), announceActiveLearningBook() (+12 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.06
-Nodes (16): AnimatedMarkdown, ChatArchive, InteractiveCodeBlock, languageExtensions, languageLabels, markdownComponents, MermaidApi, MessageItem (+8 more)
+Nodes (15): AnimatedMarkdown, ChatArchive, InteractiveCodeBlock, languageExtensions, languageLabels, markdownComponents, MermaidApi, MessageItem (+7 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.09
-Nodes (18): PatternCard(), themes, SvgBeige(), SvgDark(), SvgOrange(), BuiltInBook, builtInBookIds, builtInBooks (+10 more)
+Cohesion: 0.08
+Nodes (19): themes, SvgBeige(), SvgDark(), SvgOrange(), Flashcard, BuiltInBook, builtInBookIds, builtInBooks (+11 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.05
@@ -161,8 +161,8 @@ Cohesion: 0.25
 Nodes (9): debugTokenFromRequest(), deepgramKeyFromRequest(), firstHeader(), hostNameFromHeader(), isAuthorizedDebugRequest(), isLoopbackAddress(), isLoopbackHost(), sanitizeApiKey() (+1 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.25
-Nodes (9): debugTokenFromRequest(), deepgramKeyFromRequest(), firstHeader(), hostNameFromHeader(), isAuthorizedDebugRequest(), isLoopbackAddress(), isLoopbackHost(), sanitizeApiKey() (+1 more)
+Cohesion: 0.23
+Nodes (12): debugTokenFromRequest(), deepgramKeyFromRequest(), firstHeader(), getOpenRouterServerFallbackKey(), hostNameFromHeader(), isAuthorizedDebugRequest(), isLoopbackAddress(), isLoopbackHost() (+4 more)
 
 ### Community 30 - "Community 30"
 Cohesion: 0.40
@@ -173,7 +173,7 @@ Cohesion: 0.50
 Nodes (4): openRouterCost(), roundCost(), ttsCostForModel(), voiceAgentCostForSeconds()
 
 ## Knowledge Gaps
-- **238 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+233 more)
+- **239 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+234 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -181,16 +181,16 @@ Nodes (4): openRouterCost(), roundCost(), ttsCostForModel(), voiceAgentCostForSe
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `App()` connect `Community 1` to `Community 11`?**
-  _High betweenness centrality (0.130) - this node is a cross-community bridge._
+  _High betweenness centrality (0.133) - this node is a cross-community bridge._
 - **Why does `vercelHandler()` connect `Community 11` to `Community 1`?**
-  _High betweenness centrality (0.128) - this node is a cross-community bridge._
+  _High betweenness centrality (0.132) - this node is a cross-community bridge._
 - **Why does `useStore` connect `Community 1` to `Community 0`, `Community 5`, `Community 12`, `Community 4`?**
-  _High betweenness centrality (0.128) - this node is a cross-community bridge._
+  _High betweenness centrality (0.131) - this node is a cross-community bridge._
 - **What connects `name`, `private`, `version` to the rest of the system?**
-  _238 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _239 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.06060606060606061 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06386066763425254 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.06078316773816481 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.062003968253968256 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.07007575757575757 - nodes in this community are weakly interconnected._
