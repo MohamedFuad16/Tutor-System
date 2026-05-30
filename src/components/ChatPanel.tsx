@@ -4097,7 +4097,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 >
                   <Plus
                     size={18}
-                    className={isSkillsMenuOpen ? "text-white" : "text-zinc-300"}
+                    className={
+                      isSkillsMenuOpen
+                        ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.35)]"
+                        : "text-zinc-100 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                    }
                     strokeWidth={isSkillsMenuOpen ? 3 : 2.5}
                     style={{
                       filter: isSkillsMenuOpen
@@ -4243,7 +4247,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     {voiceState === "idle" ? (
                       <Mic
                         size={18}
-                        className="text-zinc-300"
+                        className="text-zinc-100 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
                       />
                     ) : voiceState === "listening" ? (
                       <div className="relative flex items-center justify-center">
@@ -4377,13 +4381,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     }
                   >
                     <ArrowUp
-                      className="h-[18px] w-[18px] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300"
-                      color={isActive && isValid ? "#ECECEC" : "#555555"}
+                      className={`h-[18px] w-[18px] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 ${
+                        isActive && isValid ? "text-zinc-50" : "text-zinc-400"
+                      }`}
+                      stroke="currentColor"
                       style={{
                         filter:
                           isActive && isValid
-                            ? "drop-shadow(0 0 4px rgba(255,255,255,0.4))"
-                            : "drop-shadow(0 1px 2px rgba(0,0,0,1))",
+                            ? "drop-shadow(0 0 6px rgba(255,255,255,0.34))"
+                            : "drop-shadow(0 1px 3px rgba(0,0,0,1))",
                       }}
                       strokeWidth={2.5}
                     />

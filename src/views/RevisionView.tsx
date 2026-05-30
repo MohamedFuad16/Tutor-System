@@ -56,9 +56,6 @@ type LibraryDeleteTarget = {
   kind: "built-in" | "learning";
 };
 
-const coreLearningBookTitlePattern =
-  /\b(admin\s*dashboard|app\s*design|system\s*architecture|tutor\s*system\s*architecture)\b/i;
-
 const designTokens = [
   { label: "Obsidian", value: "#030303", swatch: "bg-[#030303]" },
   { label: "Panel", value: "#0A0A0B", swatch: "bg-[#0A0A0B]" },
@@ -1654,6 +1651,11 @@ const FlashcardDeck = ({
 export function RevisionView() {
   const setActiveView = useStore((state) => state.setActiveView);
   const accessMode = useStore((state) => state.accessMode);
+  const activeLearningBookId = useStore((state) => state.activeLearningBookId);
+  const setActiveLearningBookId = useStore(
+    (state) => state.setActiveLearningBookId,
+  );
+  const setActiveProject = useStore((state) => state.setActiveProject);
   const [libraryRevision, setLibraryRevision] = useState(0);
 
   const concepts = React.useMemo(
@@ -1941,7 +1943,7 @@ export function RevisionView() {
     scrollBookToTop();
   };
 
-  const deleteLearningBookRecords = async (bookId: string) => {
+  const deleteLearningBookRecords = React.useCallback(async (bookId: string) => {
     await db.transaction(
       "rw",
       db.learningBooks,
@@ -1949,13 +1951,55 @@ export function RevisionView() {
       db.learningEntries,
       db.flashcards,
       async () => {
+        const relatedFlashcardIds = (
+          await db.flashcards
+            .filter((card) => card.bookId === bookId)
+            .toArray()
+        ).map((card) => card.id);
         await db.learningBookConcepts.where("bookId").equals(bookId).delete();
         await db.learningEntries.where("bookId").equals(bookId).delete();
-        await db.flashcards.filter((card) => card.bookId === bookId).delete();
+        if (relatedFlashcardIds.length > 0) {
+          await db.flashcards.bulkDelete(relatedFlashcardIds);
+        }
         await db.learningBooks.delete(bookId);
       },
     );
-  };
+  }, []);
+
+  useEffect(() => {
+    const cleanSlateKey = "revision_clean_slate_default_books_v1";
+    if (localStorage.getItem(cleanSlateKey) === "1") return;
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const books = await db.learningBooks.toArray();
+        await Promise.all(
+          books.map((book) => deleteLearningBookRecords(book.id)),
+        );
+        if (cancelled) return;
+        localStorage.setItem(cleanSlateKey, "1");
+        if (activeLearningBookId) {
+          setActiveLearningBookId(null);
+          setActiveProject("General Study");
+        }
+        setActiveConceptId((current) =>
+          current && books.some((book) => book.id === current) ? null : current,
+        );
+      } catch (error) {
+        console.warn("[RevisionView] Clean slate reset skipped:", error);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    activeLearningBookId,
+    deleteLearningBookRecords,
+    setActiveLearningBookId,
+    setActiveProject,
+  ]);
 
   const deleteConcept = async () => {
     if (!deleteTarget) return;
@@ -1970,6 +2014,10 @@ export function RevisionView() {
         setLibraryRevision((version) => version + 1);
       } else {
         await deleteLearningBookRecords(deleteTarget.id);
+        if (activeLearningBookId === deleteTarget.id) {
+          setActiveLearningBookId(null);
+          setActiveProject("General Study");
+        }
       }
     } catch (error) {
       console.warn(
@@ -2156,7 +2204,10 @@ export function RevisionView() {
               Library
             </h1>
             <div className="text-sm font-mono text-zinc-500">
-              {visibleLearningBooks.length + concepts.length + 1} Books
+              {visibleLearningBooks.length +
+                concepts.length +
+                (accessMode === "admin" ? 1 : 0)}{" "}
+              Books
             </div>
           </div>
 

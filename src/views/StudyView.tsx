@@ -29,14 +29,25 @@ const splitCardTitle = (title: string) => {
 
 const AnimatedHeadlineWords = ({
   text,
+  headlineIndex,
   motionEnabled,
+  onFirstWord,
   onComplete,
 }: {
   text: string;
+  headlineIndex: number;
   motionEnabled: boolean;
-  onComplete?: () => void;
+  onFirstWord?: (index: number) => void;
+  onComplete?: (index: number) => void;
 }) => {
   const wordRefs = useRef<HTMLSpanElement[]>([]);
+  const onFirstWordRef = useRef(onFirstWord);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onFirstWordRef.current = onFirstWord;
+    onCompleteRef.current = onComplete;
+  }, [onComplete, onFirstWord]);
 
   useLayoutEffect(() => {
     const words = wordRefs.current.filter(Boolean);
@@ -44,10 +55,15 @@ const AnimatedHeadlineWords = ({
     gsap.killTweensOf(words);
     if (!motionEnabled) {
       gsap.set(words, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
-      onComplete?.();
+      onFirstWordRef.current?.(headlineIndex);
+      onCompleteRef.current?.(headlineIndex);
       return;
     }
-    const tween = gsap.fromTo(
+    const timeline = gsap.timeline({
+      onComplete: () => onCompleteRef.current?.(headlineIndex),
+    });
+    timeline.call(() => onFirstWordRef.current?.(headlineIndex), [], 0.08);
+    timeline.fromTo(
       words,
       { autoAlpha: 0, y: 16, filter: "blur(16px)" },
       {
@@ -57,13 +73,13 @@ const AnimatedHeadlineWords = ({
         duration: 1.95,
         stagger: 0.18,
         ease: "power4.out",
-        onComplete,
       },
+      0,
     );
     return () => {
-      tween.kill();
+      timeline.kill();
     };
-  }, [motionEnabled, onComplete, text]);
+  }, [headlineIndex, motionEnabled, text]);
 
   wordRefs.current = [];
 
@@ -97,6 +113,7 @@ type StudyIntroSplashProps = {
   setIsDragging: (dragging: boolean) => void;
   handleDrop: (event: React.DragEvent) => void;
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onHeadlineStart: (index: number) => void;
   onHeadlineComplete: (index: number) => void;
   t: (key: string) => string;
 };
@@ -120,6 +137,7 @@ function StudyIntroSplash({
   setIsDragging,
   handleDrop,
   handleFileChange,
+  onHeadlineStart,
   onHeadlineComplete,
   t,
 }: StudyIntroSplashProps) {
@@ -289,12 +307,12 @@ function StudyIntroSplash({
       }
       return {
         opacity: 1,
-          xPercent: -35,
-          y: 6,
-          scale: 0.95,
-          rotate: 5.5,
-          filter: "blur(0px)",
-        };
+        xPercent: -35,
+        y: 6,
+        scale: 0.95,
+        rotate: 5.5,
+        filter: "blur(0px)",
+      };
     }
 
     return {
@@ -376,8 +394,10 @@ function StudyIntroSplash({
         <div key={introCards[activeIndex].key} className="flex justify-center">
           <AnimatedHeadlineWords
             text={introCards[activeIndex].headline}
+            headlineIndex={activeIndex}
             motionEnabled={motionEnabled}
-            onComplete={() => onHeadlineComplete(activeIndex)}
+            onFirstWord={onHeadlineStart}
+            onComplete={onHeadlineComplete}
           />
         </div>
 
@@ -492,6 +512,7 @@ export function StudyView() {
   const [introCardStep, setIntroCardStep] = useState(0);
   const [introHeadlineIndex, setIntroHeadlineIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const startedHeadlineRefs = useRef<Set<number>>(new Set());
   const completedHeadlineRefs = useRef<Set<number>>(new Set());
   const introTimersRef = useRef<number[]>([]);
   const chatSurfaceRef = useRef<HTMLElement | null>(null);
@@ -528,6 +549,7 @@ export function StudyView() {
       setIsChatOpen(true);
       return;
     }
+    startedHeadlineRefs.current = new Set();
     completedHeadlineRefs.current = new Set();
     clearIntroTimers();
     if (!motionEnabled) {
@@ -540,24 +562,27 @@ export function StudyView() {
     return clearIntroTimers;
   }, [clearIntroTimers, motionEnabled, pdfUrl]);
 
+  const handleIntroHeadlineStart = useCallback((index: number) => {
+    if (pdfUrl || startedHeadlineRefs.current.has(index)) return;
+    startedHeadlineRefs.current.add(index);
+    setIntroCardStep(Math.max(1, Math.min(3, index + 1)));
+  }, [pdfUrl]);
+
   const handleIntroHeadlineComplete = useCallback((index: number) => {
     if (pdfUrl || completedHeadlineRefs.current.has(index)) return;
     completedHeadlineRefs.current.add(index);
 
     if (index === 0) {
-      setIntroCardStep(1);
-      scheduleIntro(() => setIntroHeadlineIndex(1), 1180);
+      scheduleIntro(() => setIntroHeadlineIndex(1), 420);
       return;
     }
 
     if (index === 1) {
-      setIntroCardStep(2);
-      scheduleIntro(() => setIntroHeadlineIndex(2), 1240);
+      scheduleIntro(() => setIntroHeadlineIndex(2), 440);
       return;
     }
 
-    setIntroCardStep(3);
-    scheduleIntro(() => setIntroCardStep(4), 1280);
+    scheduleIntro(() => setIntroCardStep(4), 880);
   }, [pdfUrl, scheduleIntro]);
 
   const revealChatNode = (
@@ -749,6 +774,7 @@ export function StudyView() {
             setIsDragging={setIsDragging}
             handleDrop={handleDrop}
             handleFileChange={handleFileChange}
+            onHeadlineStart={handleIntroHeadlineStart}
             onHeadlineComplete={handleIntroHeadlineComplete}
             t={t}
           />
