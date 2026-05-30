@@ -26,6 +26,7 @@ import { useTranslation } from "../lib/translations";
 import { useMotionPreference } from "../hooks/useMotionPreference";
 import {
   type AccessMode,
+  type PlanTier,
   estimateServiceMinutes,
   formatServiceTime,
   getPlanOption,
@@ -46,6 +47,27 @@ const formatCount = (value: number) => {
     return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
   return n.toString();
+};
+
+const planCardMeta: Record<
+  PlanTier,
+  { eyebrow: string; promise: string; badge: string }
+> = {
+  free: {
+    eyebrow: "Starter",
+    promise: "Quick tutor checks with enough room for light PDF study.",
+    badge: "Included",
+  },
+  plus: {
+    eyebrow: "Focused",
+    promise: "Longer reading sessions, richer tutor turns, and recall work.",
+    badge: "Popular",
+  },
+  pro: {
+    eyebrow: "Research",
+    promise: "Heavy document analysis, voice, search, and revision cycles.",
+    badge: "Max",
+  },
 };
 
 const UsageGraphBar = ({
@@ -260,50 +282,65 @@ function UserUsagePanel({
     voiceSeconds: voiceUsage.connectionSeconds,
   });
   const serviceProgress = Math.min(100, (serviceMinutes / 180) * 100);
+  const usedPercent = Math.max(
+    0,
+    Math.min(100, (usedRequests / Math.max(1, plan.dailyRequests)) * 100),
+  );
+  const reachedMilestones = serviceMilestones.filter(
+    (milestone) => serviceMinutes >= milestone.minutes,
+  );
+  const currentMilestone =
+    reachedMilestones[reachedMilestones.length - 1] || serviceMilestones[0];
+  const nextMilestone =
+    serviceMilestones.find((milestone) => serviceMinutes < milestone.minutes) ||
+    null;
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f12] p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+      <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[#101012] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_0%,rgba(255,110,0,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),transparent_42%)]" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
               <Gauge size={13} className="text-[#ff6e00]" />
-              Rate limit left
+              {plan.name} allowance
             </div>
-            <div className="mt-2 flex items-end gap-2">
-              <span className="text-3xl font-semibold tracking-tight text-white">
+            <div className="mt-4 flex items-end gap-3">
+              <span className="text-4xl font-semibold leading-none tracking-tight text-white">
                 {formatCount(remainingRequests)}
               </span>
-              <span className="pb-1 text-xs font-medium text-zinc-500">
-                / {formatCount(plan.dailyRequests)} requests today
+              <span className="pb-1.5 text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+                left today
               </span>
             </div>
+            <div className="mt-2 text-xs text-zinc-500">
+              {formatCount(usedRequests)} used of{" "}
+              {formatCount(plan.dailyRequests)} daily tutor requests.
+            </div>
           </div>
-          <div
-            className="rounded-full border px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em]"
-            style={{
-              borderColor: `${plan.accent}55`,
-              background: `${plan.accent}1a`,
-              color: plan.accent,
-            }}
-          >
-            {plan.name} plan
+          <div className="w-full rounded-2xl border border-white/10 bg-black/25 p-3 sm:w-44">
+            <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+              <span>Limit used</span>
+              <span className="text-zinc-300">{Math.round(usedPercent)}%</span>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.08]">
+              <div
+                style={{ width: `${Math.max(4, usedPercent)}%` }}
+                className="h-full rounded-full bg-gradient-to-r from-[#ff6e00] via-[#ff9a3c] to-white shadow-[0_0_20px_rgba(255,110,0,0.35)] transition-[width] duration-500 ease-out"
+              />
+            </div>
+            <div className="mt-3 flex items-center gap-2 text-[11px] text-zinc-500">
+              <ShieldCheck size={13} className="text-[#ffb17a]" />
+              Rate limited per browser
+            </div>
           </div>
-        </div>
-
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.08]">
-          <div
-            style={{
-              width: `${Math.max(4, Math.min(100, (usedRequests / plan.dailyRequests) * 100))}%`,
-            }}
-            className="h-full rounded-full bg-[#ff6e00] shadow-[0_0_20px_rgba(255,110,0,0.45)] transition-[width] duration-500 ease-out"
-          />
         </div>
       </div>
 
       {showMilestones && (
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.035] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,110,0,0.13),transparent_32%),radial-gradient(circle_at_92%_100%,rgba(255,255,255,0.08),transparent_34%)]" />
+          <div className="relative mb-4 flex items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold text-white">
                 <TimerReset size={15} className="text-zinc-300" />
@@ -313,37 +350,51 @@ function UserUsagePanel({
                 {formatServiceTime(serviceMinutes)} studied in this browser.
               </div>
             </div>
-            <div className="text-right text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
-              3 hr path
+            <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1.5 text-right text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+              {nextMilestone
+                ? `${nextMilestone.label} next`
+                : `${currentMilestone.label} complete`}
             </div>
           </div>
-          <div className="relative pt-2">
-            <div className="absolute left-0 right-0 top-[1.05rem] h-1 rounded-full bg-white/[0.08]" />
+          <div className="relative">
+            <div className="absolute left-3 right-3 top-[1.35rem] h-px bg-white/10" />
             <div
               style={{ width: `${serviceProgress}%` }}
-              className="absolute left-0 top-[1.05rem] h-1 rounded-full bg-gradient-to-r from-[#ff6e00] to-white shadow-[0_0_18px_rgba(255,110,0,0.24)] transition-[width] duration-700 ease-out"
+              className="absolute left-3 top-[1.35rem] h-px max-w-[calc(100%-1.5rem)] bg-gradient-to-r from-[#ff6e00] to-white shadow-[0_0_18px_rgba(255,110,0,0.24)] transition-[width] duration-700 ease-out"
             />
-            <div className="relative grid grid-cols-3 gap-3">
-              {serviceMilestones.map((milestone) => {
+            <div className="relative grid grid-cols-3 gap-2">
+              {serviceMilestones.map((milestone, index) => {
                 const reached = serviceMinutes >= milestone.minutes;
+                const active =
+                  reached ||
+                  (!reached &&
+                    serviceMilestones.findIndex(
+                      (item) => serviceMinutes < item.minutes,
+                    ) === index);
                 return (
-                  <div
-                    key={milestone.label}
-                    className="flex flex-col items-center gap-2 text-center transition-[transform,opacity] duration-300 ease-out"
-                  >
+                  <div key={milestone.label} className="min-w-0">
                     <div
-                      className={`h-4 w-4 rounded-full border ${
+                      className={`relative mx-auto flex h-11 w-11 items-center justify-center rounded-full border transition-[color,background-color,border-color,box-shadow,transform,opacity] ${
                         reached
-                          ? "border-[#ffb17a] bg-[#ff6e00] shadow-[0_0_20px_rgba(255,110,0,0.45)]"
-                          : "border-white/15 bg-[#101014]"
-                      }`}
-                    />
-                    <div
-                      className={`text-[11px] font-semibold ${
-                        reached ? "text-white" : "text-zinc-500"
+                          ? "border-[#ffb17a]/80 bg-[#ff6e00] text-white shadow-[0_0_24px_rgba(255,110,0,0.34)]"
+                          : active
+                            ? "border-white/20 bg-white/[0.08] text-zinc-200"
+                            : "border-white/10 bg-black/30 text-zinc-600"
                       }`}
                     >
-                      {milestone.label}
+                      <TimerReset size={15} />
+                    </div>
+                    <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 px-2.5 py-2 text-center">
+                      <div
+                        className={`text-[12px] font-semibold ${
+                          reached ? "text-white" : "text-zinc-500"
+                        }`}
+                      >
+                        {milestone.label}
+                      </div>
+                      <div className="mt-0.5 text-[10px] uppercase tracking-[0.13em] text-zinc-600">
+                        {reached ? "Reached" : "Locked"}
+                      </div>
                     </div>
                   </div>
                 );
@@ -357,39 +408,55 @@ function UserUsagePanel({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {planOptions.map((option) => {
             const selected = option.id === planTier;
+            const meta = planCardMeta[option.id];
             return (
               <button
                 key={option.id}
                 type="button"
                 onClick={() => setPlanTier(option.id)}
-                className={`relative overflow-hidden rounded-2xl border p-3 text-left transition-[color,background-color,border-color,box-shadow,transform] hover:-translate-y-0.5 active:scale-[0.98] ${
+                className={`group relative overflow-hidden rounded-[24px] border p-4 text-left transition-[color,background-color,border-color,box-shadow,transform] hover:-translate-y-0.5 active:scale-[0.98] ${
                   selected
-                    ? "border-white/20 bg-white/[0.09]"
-                    : "border-white/10 bg-white/[0.04] hover:bg-white/[0.07]"
+                    ? "border-[#ff8d3a]/70 bg-white/[0.08] shadow-[0_18px_50px_rgba(255,110,0,0.1),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    : "border-white/10 bg-white/[0.035] hover:border-white/20 hover:bg-white/[0.06]"
                 }`}
               >
-                <div
-                  className="absolute inset-x-0 top-0 h-1"
-                  style={{ background: option.accent }}
-                />
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                    <Crown size={14} style={{ color: option.accent }} />
-                    {option.name}
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.07),transparent_42%)] opacity-80" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ff6e00] to-transparent opacity-80" />
+                <div className="relative flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                      <Crown size={15} style={{ color: option.accent }} />
+                      {option.name}
+                    </div>
+                    <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                      {meta.eyebrow}
+                    </div>
                   </div>
-                  {selected && (
-                    <ShieldCheck size={15} className="text-[#ffb17a]" />
-                  )}
+                  <span
+                    className={`rounded-full border px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] ${
+                      selected
+                        ? "border-[#ffb17a]/40 bg-[#ff6e00]/15 text-[#ffb17a]"
+                        : "border-white/10 bg-black/20 text-zinc-500"
+                    }`}
+                  >
+                    {meta.badge}
+                  </span>
                 </div>
-                <div className="mt-2 text-lg font-semibold text-white">
+                <div className="relative mt-5 text-3xl font-semibold leading-none text-white">
                   {formatCount(option.dailyRequests)}
                 </div>
-                <div className="text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+                <div className="relative mt-1 text-[10px] uppercase tracking-[0.14em] text-zinc-500">
                   daily requests
                 </div>
-                <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-                  {option.description}
+                <p className="relative mt-4 min-h-[3rem] text-xs leading-relaxed text-zinc-500">
+                  {meta.promise}
                 </p>
+                <div className="relative mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-[11px] text-zinc-500">
+                  <span>{option.description}</span>
+                  {selected && (
+                    <ShieldCheck size={15} className="shrink-0 text-[#ffb17a]" />
+                  )}
+                </div>
               </button>
             );
           })}
@@ -492,6 +559,7 @@ export function SettingsButton() {
       setInputLanguage(language || "en");
       setValidationError(null);
       setPersonaStatus(null);
+      setActiveTab("general");
     }
   }, [
     isOpen,
@@ -819,7 +887,11 @@ export function SettingsButton() {
                       settingsTabButtonRefs.current.general = node;
                     }}
                     onClick={() => setActiveTab("general")}
-                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${activeTab === "general" ? "text-white" : "text-zinc-500 hover:text-zinc-200"}`}
+                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-[color,background-color,box-shadow] ${
+                      activeTab === "general"
+                        ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                        : "text-zinc-500 hover:text-zinc-200"
+                    }`}
                   >
                     {t("general")}
                   </button>
@@ -828,7 +900,11 @@ export function SettingsButton() {
                       settingsTabButtonRefs.current.usage = node;
                     }}
                     onClick={() => setActiveTab("usage")}
-                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${activeTab === "usage" ? "text-white" : "text-zinc-500 hover:text-zinc-200"}`}
+                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-[color,background-color,box-shadow] ${
+                      activeTab === "usage"
+                        ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                        : "text-zinc-500 hover:text-zinc-200"
+                    }`}
                   >
                     {t("usage")}
                   </button>
@@ -837,7 +913,11 @@ export function SettingsButton() {
                       settingsTabButtonRefs.current.persona = node;
                     }}
                     onClick={() => setActiveTab("persona")}
-                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${activeTab === "persona" ? "text-white" : "text-zinc-500 hover:text-zinc-200"}`}
+                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-[color,background-color,box-shadow] ${
+                      activeTab === "persona"
+                        ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                        : "text-zinc-500 hover:text-zinc-200"
+                    }`}
                   >
                     {t("persona_studio")}
                   </button>

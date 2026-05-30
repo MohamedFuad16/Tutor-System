@@ -70,8 +70,8 @@ const AnimatedHeadlineWords = ({
         autoAlpha: 1,
         y: 0,
         filter: "blur(0px)",
-        duration: 1.95,
-        stagger: 0.18,
+        duration: 1.28,
+        stagger: 0.105,
         ease: "power4.out",
       },
       0,
@@ -573,16 +573,16 @@ export function StudyView() {
     completedHeadlineRefs.current.add(index);
 
     if (index === 0) {
-      scheduleIntro(() => setIntroHeadlineIndex(1), 420);
+      scheduleIntro(() => setIntroHeadlineIndex(1), 220);
       return;
     }
 
     if (index === 1) {
-      scheduleIntro(() => setIntroHeadlineIndex(2), 440);
+      scheduleIntro(() => setIntroHeadlineIndex(2), 240);
       return;
     }
 
-    scheduleIntro(() => setIntroCardStep(4), 880);
+    scheduleIntro(() => setIntroCardStep(4), 520);
   }, [pdfUrl, scheduleIntro]);
 
   const revealChatNode = (
