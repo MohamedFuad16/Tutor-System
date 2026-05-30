@@ -1,4 +1,10 @@
-import React, { useCallback, useState, useEffect, useRef } from "react";
+import React, {
+  useCallback,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ShikiHighlighter } from "./ShikiHighlighter";
@@ -42,7 +48,7 @@ import {
   Code2,
   Clock,
 } from "lucide-react";
-import { motion, AnimatePresence, type Variants } from "motion/react";
+import { gsap } from "gsap";
 import { useLiveQuery } from "dexie-react-hooks";
 import { audio } from "../lib/audio";
 import { SiriLiquidGlass } from "./SiriLiquidGlass";
@@ -52,8 +58,184 @@ import { db } from "../memory/longterm.memory";
 import type { Message } from "../types";
 import { FloatingSkillsMenu } from "./FloatingSkillsMenu";
 import { useTranslation } from "../lib/translations";
+import {
+  estimateServiceMinutes,
+  formatServiceTime,
+  getPlanOption,
+  serviceMilestones,
+} from "../lib/accessPlans";
 
 type MermaidApi = typeof import("mermaid").default;
+type Variants = Record<string, Record<string, any>>;
+type MotionTarget = string | false | null | undefined | Record<string, any>;
+type MotionTransition = {
+  delay?: number;
+  duration?: number;
+  ease?: string | number[];
+  repeat?: number;
+  type?: string;
+};
+type MotionLikeProps = {
+  animate?: MotionTarget;
+  exit?: MotionTarget;
+  initial?: MotionTarget;
+  layout?: boolean | string;
+  layoutId?: string;
+  transition?: MotionTransition;
+  variants?: Variants;
+  whileHover?: MotionTarget;
+  whileTap?: MotionTarget;
+};
+
+const AnimatePresence = ({ children }: { children: React.ReactNode; initial?: boolean; mode?: string }) => (
+  <>{children}</>
+);
+
+const toMotionTarget = (target: MotionTarget, variants?: Variants) => {
+  if (!target) return undefined;
+  if (typeof target === "string") return variants?.[target];
+  return target;
+};
+
+const normalizeGsapVars = (target?: Record<string, any>) => {
+  if (!target) return undefined;
+  return Object.entries(target).reduce<Record<string, any>>(
+    (acc, [key, value]) => {
+      if (value === undefined) return acc;
+      acc[key] = Array.isArray(value) ? value[value.length - 1] : value;
+      return acc;
+    },
+    {},
+  );
+};
+
+const resolveEase = (transition?: MotionTransition) => {
+  if (!transition?.ease) return "power3.out";
+  if (Array.isArray(transition.ease)) return "power3.out";
+  if (transition.ease === "linear") return "none";
+  if (transition.ease === "easeInOut") return "power2.inOut";
+  if (transition.ease === "easeOut") return "power3.out";
+  if (transition.ease === "easeIn") return "power2.in";
+  return transition.type === "spring" ? "power3.out" : transition.ease;
+};
+
+const transitionToGsap = (transition?: MotionTransition) => ({
+  delay: transition?.delay ?? 0,
+  duration:
+    transition?.duration ?? (transition?.type === "spring" ? 0.34 : 0.24),
+  ease: resolveEase(transition),
+  repeat: transition?.repeat === Infinity ? -1 : transition?.repeat,
+});
+
+function createMotionElement(tag: string) {
+  return React.forwardRef<HTMLElement, MotionLikeProps & Record<string, any>>(
+    (
+      {
+        animate,
+        children,
+        exit: _exit,
+        initial,
+        layout: _layout,
+        layoutId,
+        onMouseDown,
+        onMouseEnter,
+        onMouseLeave,
+        onMouseUp,
+        transition,
+        variants,
+        whileHover,
+        whileTap,
+        ...rest
+      }: any,
+      forwardedRef,
+    ) => {
+      const localRef = useRef<HTMLElement | null>(null);
+      const animateKey = JSON.stringify({ animate, transition, variants });
+      const initialKey = JSON.stringify(initial);
+
+      const assignRef = (node: HTMLElement | null) => {
+        localRef.current = node;
+        if (typeof forwardedRef === "function") {
+          forwardedRef(node);
+        } else if (forwardedRef) {
+          (forwardedRef as React.MutableRefObject<HTMLElement | null>).current =
+            node;
+        }
+      };
+
+      const animateTo = (target: MotionTarget) => {
+        const node = localRef.current;
+        if (!node) return;
+        const vars = normalizeGsapVars(toMotionTarget(target, variants));
+        if (!vars) return;
+        gsap.to(node, {
+          ...vars,
+          ...transitionToGsap(transition),
+          overwrite: "auto",
+        });
+      };
+
+      useLayoutEffect(() => {
+        const node = localRef.current;
+        if (!node) return;
+        const from = normalizeGsapVars(toMotionTarget(initial, variants));
+        const to = normalizeGsapVars(toMotionTarget(animate, variants));
+        gsap.killTweensOf(node);
+
+        if (from && to) {
+          gsap.fromTo(node, from, {
+            ...to,
+            ...transitionToGsap(transition),
+            overwrite: "auto",
+          });
+          return;
+        }
+
+        if (to) {
+          gsap.to(node, {
+            ...to,
+            ...transitionToGsap(transition),
+            overwrite: "auto",
+          });
+        }
+      }, [animateKey, initialKey]);
+
+      return React.createElement(
+        tag,
+        {
+          ...rest,
+          "data-layout-id": layoutId,
+          ref: assignRef,
+          onMouseDown: (event: React.MouseEvent<HTMLElement>) => {
+            onMouseDown?.(event);
+            animateTo(whileTap);
+          },
+          onMouseEnter: (event: React.MouseEvent<HTMLElement>) => {
+            onMouseEnter?.(event);
+            animateTo(whileHover);
+          },
+          onMouseLeave: (event: React.MouseEvent<HTMLElement>) => {
+            onMouseLeave?.(event);
+            animateTo(animate || initial);
+          },
+          onMouseUp: (event: React.MouseEvent<HTMLElement>) => {
+            onMouseUp?.(event);
+            animateTo(whileHover || animate || initial);
+          },
+        },
+        children,
+      );
+    },
+  );
+}
+
+const gsapMotion = {
+  a: createMotionElement("a"),
+  button: createMotionElement("button"),
+  div: createMotionElement("div"),
+  span: createMotionElement("span"),
+  textarea: createMotionElement("textarea"),
+};
 
 type StreamingAssistantDraft = {
   id: string;
@@ -182,7 +364,7 @@ const PremiumCodeShell = ({
   };
 
   return (
-    <motion.div
+    <gsapMotion.div
       initial={{ opacity: 0, y: 10, scale: 0.995 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
@@ -237,7 +419,7 @@ const PremiumCodeShell = ({
       </div>
       <AnimatePresence>
         {output !== undefined && output !== null && (
-          <motion.div
+          <gsapMotion.div
             data-reasoning-steps
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -255,10 +437,10 @@ const PremiumCodeShell = ({
                 {output}
               </pre>
             </div>
-          </motion.div>
+          </gsapMotion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </gsapMotion.div>
   );
 };
 
@@ -412,7 +594,7 @@ const InteractiveCodeBlock = React.memo(
     }
 
     return (
-      <motion.div
+      <gsapMotion.div
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
@@ -429,7 +611,7 @@ const InteractiveCodeBlock = React.memo(
             {children}
           </code>
         )}
-      </motion.div>
+      </gsapMotion.div>
     );
   },
 );
@@ -603,6 +785,8 @@ const AnimatedNumberText = ({
 );
 
 export const UsageAnalyticsStrip = () => {
+  const accessMode = useStore((state) => state.accessMode);
+  const planTier = useStore((state) => state.planTier);
   const chatUsage = useStore((state) => state.chatUsage);
   const voiceUsage = useStore((state) => state.voiceUsage);
   const webUsage = useStore((state) => state.webUsage);
@@ -647,6 +831,7 @@ export const UsageAnalyticsStrip = () => {
   }, [isVoiceActive]);
 
   useEffect(() => {
+    if (accessMode !== "admin") return;
     let cancelled = false;
     fetch("/api/pricing")
       .then((res) =>
@@ -672,7 +857,7 @@ export const UsageAnalyticsStrip = () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [accessMode]);
 
   const chatTotal = chatUsage.inputTokens + chatUsage.outputTokens;
   const voiceBillable =
@@ -680,9 +865,124 @@ export const UsageAnalyticsStrip = () => {
   const chatWidth = `${Math.max(6, Math.min(100, (chatTotal / 1_000_000) * 100))}%`;
   const voiceWidth = `${Math.max(6, Math.min(100, (voiceBillable / 3600) * 100))}%`;
   const totalCost = chatUsage.cost + voiceUsage.cost + webUsage.cost;
+  const plan = getPlanOption(planTier);
+  const usedRequests = chatUsage.requests + webUsage.requests;
+  const remainingRequests = Math.max(0, plan.dailyRequests - usedRequests);
+  const requestWidth = `${Math.max(6, Math.min(100, (usedRequests / plan.dailyRequests) * 100))}%`;
+  const serviceMinutes = estimateServiceMinutes({
+    chatRequests: chatUsage.requests,
+    webRequests: webUsage.requests,
+    voiceSeconds: liveVoiceSec,
+  });
+  const serviceWidth = `${Math.max(6, Math.min(100, (serviceMinutes / 180) * 100))}%`;
+
+  if (accessMode === "user") {
+    return (
+      <gsapMotion.div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] text-[#fefefe] shadow-[0_18px_54px_rgba(0,0,0,0.34)]">
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_16%_0%,rgba(255,110,0,0.26),transparent_36%),radial-gradient(circle_at_90%_110%,rgba(34,211,238,0.12),transparent_38%)]" />
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.14]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at center, rgba(255,255,255,0.22) 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="relative w-full px-4 py-3 text-left focus:outline-none"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[#ff6e00]/25 bg-[#ff6e00]/12 text-[#ffb17a]">
+                <Clock size={17} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">
+                  {plan.name} plan
+                </div>
+                <div className="truncate text-[13px] font-semibold text-white">
+                  {formatCount(remainingRequests)} requests left
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-2 sm:min-w-[390px] sm:grid-cols-2">
+              <div className="rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 backdrop-blur">
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
+                  <span>Rate limit</span>
+                  <span>
+                    {formatCount(usedRequests)} /{" "}
+                    {formatCount(plan.dailyRequests)}
+                  </span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <gsapMotion.div
+                    className="h-full rounded-full bg-[#ff6e00] shadow-[0_0_14px_rgba(255,110,0,0.55)]"
+                    animate={{ width: requestWidth }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  />
+                </div>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 backdrop-blur">
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
+                  <span>Study time</span>
+                  <span>{formatServiceTime(serviceMinutes)}</span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <gsapMotion.div
+                    className="h-full rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.42)]"
+                    animate={{ width: serviceWidth }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </button>
+
+        <AnimatePresence>
+          {expanded && (
+            <gsapMotion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="relative overflow-hidden border-t border-white/10"
+            >
+              <div className="grid gap-2 p-3 text-[11px] text-white/55 md:grid-cols-3">
+                {serviceMilestones.map((milestone) => {
+                  const reached = serviceMinutes >= milestone.minutes;
+                  return (
+                    <div
+                      key={milestone.label}
+                      className="rounded-xl border border-white/10 bg-white/[0.06] p-3"
+                    >
+                      <div
+                        className={`mb-2 h-2 rounded-full ${
+                          reached
+                            ? "bg-[#ff6e00] shadow-[0_0_14px_rgba(255,110,0,0.45)]"
+                            : "bg-white/10"
+                        }`}
+                      />
+                      <div className="font-semibold text-white">
+                        {milestone.label}
+                      </div>
+                      <div>
+                        {reached ? "Milestone reached" : "Keep studying"}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </gsapMotion.div>
+          )}
+        </AnimatePresence>
+      </gsapMotion.div>
+    );
+  }
 
   return (
-    <motion.div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] text-[#fefefe] shadow-[0_18px_54px_rgba(0,0,0,0.34)]">
+    <gsapMotion.div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] text-[#fefefe] shadow-[0_18px_54px_rgba(0,0,0,0.34)]">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_16%_0%,rgba(255,110,0,0.28),transparent_36%),radial-gradient(circle_at_90%_110%,rgba(255,255,255,0.13),transparent_38%)]" />
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.14]"
@@ -730,7 +1030,7 @@ export const UsageAnalyticsStrip = () => {
                 <span>out</span>
               </div>
               <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                <motion.div
+                <gsapMotion.div
                   className="h-full rounded-full bg-[#ff6e00] shadow-[0_0_14px_rgba(255,110,0,0.55)]"
                   animate={{ width: chatWidth }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
@@ -754,7 +1054,7 @@ export const UsageAnalyticsStrip = () => {
                 {" chars"}
               </div>
               <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                <motion.div
+                <gsapMotion.div
                   className="h-full rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.42)]"
                   animate={{ width: voiceWidth }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
@@ -779,7 +1079,7 @@ export const UsageAnalyticsStrip = () => {
                 {" sources"}
               </div>
               <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                <motion.div
+                <gsapMotion.div
                   className="h-full rounded-full bg-white/60 shadow-[0_0_12px_rgba(255,255,255,0.3)]"
                   animate={{
                     width: `${Math.max(6, Math.min(100, (webUsage.requests / 2500) * 100))}%`,
@@ -794,7 +1094,7 @@ export const UsageAnalyticsStrip = () => {
 
       <AnimatePresence>
         {expanded && (
-          <motion.div
+          <gsapMotion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -886,10 +1186,10 @@ export const UsageAnalyticsStrip = () => {
             >
               <RotateCcw size={12} /> Reset usage
             </button>
-          </motion.div>
+          </gsapMotion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </gsapMotion.div>
   );
 };
 
@@ -922,7 +1222,7 @@ const GeminiVoicePill = ({
   }, [state]);
 
   return (
-    <motion.div
+    <gsapMotion.div
       initial={{ y: 50, opacity: 0, scale: 0.9 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       exit={{ y: 50, opacity: 0, scale: 0.9 }}
@@ -934,7 +1234,7 @@ const GeminiVoicePill = ({
       }}
     >
       <div className="absolute inset-0 overflow-hidden blur-[10px] opacity-70">
-        <motion.div
+        <gsapMotion.div
           className="absolute w-[200%] h-[200%] top-[-50%] left-[-50%]"
           animate={{ rotate: 360 }}
           transition={{
@@ -943,22 +1243,22 @@ const GeminiVoicePill = ({
             ease: "linear",
           }}
         >
-          <motion.div
+          <gsapMotion.div
             className="absolute top-[10%] right-[30%] w-[40%] h-[40%] bg-[#0a84ff] rounded-full mix-blend-screen"
             animate={{ scale: 1 + vol * 1.5, x: vol * 10, y: vol * 10 }}
             transition={{ type: "spring", bounce: 0.5 }}
           />
-          <motion.div
+          <gsapMotion.div
             className="absolute bottom-[30%] right-[10%] w-[45%] h-[45%] bg-[#bf5af2] rounded-full mix-blend-screen"
             animate={{ scale: 1 + vol * 1.2, x: -(vol * 10) }}
             transition={{ type: "spring", bounce: 0.5 }}
           />
-          <motion.div
+          <gsapMotion.div
             className="absolute bottom-[10%] left-[30%] w-[50%] h-[50%] bg-[#ff375f] rounded-full mix-blend-screen"
             animate={{ scale: 1 + vol * 1.4, y: -(vol * 15) }}
             transition={{ type: "spring", bounce: 0.5 }}
           />
-        </motion.div>
+        </gsapMotion.div>
       </div>
 
       <div className="relative z-10 flex items-center gap-3 rounded-2xl border border-white/80 bg-white/80 px-6 py-2 font-medium tracking-wide text-zinc-950 shadow-[0_12px_34px_rgba(24,24,27,0.12)] backdrop-blur-md">
@@ -974,7 +1274,7 @@ const GeminiVoicePill = ({
           </>
         )}
       </div>
-    </motion.div>
+    </gsapMotion.div>
   );
 };
 
@@ -1045,7 +1345,7 @@ const SearchProgressIndicator = ({
       <Check size={15} className="relative z-10 text-[#36AA55]" />
     )}
     {active && (
-      <motion.div
+      <gsapMotion.div
         className="absolute inset-[-3px] rounded-[18px] border border-[#ff6e00]/55"
         animate={{ rotate: 360, opacity: [0.25, 0.8, 0.25] }}
         transition={{
@@ -1071,7 +1371,7 @@ const SourceCards = ({
   return (
     <div className={`grid gap-2 ${compact ? "sm:grid-cols-2" : ""}`}>
       {sources.slice(0, compact ? 6 : 4).map((source, index) => (
-        <motion.a
+        <gsapMotion.a
           key={source.id || source.url}
           href={source.url}
           target="_blank"
@@ -1112,7 +1412,7 @@ const SourceCards = ({
               className={`mt-0.5 shrink-0 ${dark ? "text-zinc-600 group-hover:text-zinc-300" : "text-zinc-300 group-hover:text-zinc-500"}`}
             />
           </div>
-        </motion.a>
+        </gsapMotion.a>
       ))}
     </div>
   );
@@ -1136,7 +1436,7 @@ const SearchActivityPanel = ({
         `Reviewed ${webSearch.sources.length} source${webSearch.sources.length === 1 ? "" : "s"}`
       : webSearch.status || "Searching web...");
   return (
-    <motion.div
+    <gsapMotion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
@@ -1171,7 +1471,7 @@ const SearchActivityPanel = ({
           {webSearch.sources.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {webSearch.sources.slice(0, 4).map((source) => (
-                <motion.a
+                <gsapMotion.a
                   key={`chip-${source.id || source.url}`}
                   href={source.url}
                   target="_blank"
@@ -1182,7 +1482,7 @@ const SearchActivityPanel = ({
                 >
                   <SourceGlyph domain={source.domain} className="h-4 w-4" />
                   <span className="truncate">{source.domain}</span>
-                </motion.a>
+                </gsapMotion.a>
               ))}
             </div>
           )}
@@ -1201,7 +1501,7 @@ const SearchActivityPanel = ({
           )}
         </div>
       </div>
-    </motion.div>
+    </gsapMotion.div>
   );
 };
 
@@ -1219,20 +1519,20 @@ const FinalSourcesPanel = ({ sources }: { sources: NormalizedWebSource[] }) => {
           <Globe2 size={14} className="text-indigo-500" />
           {sources.length} source{sources.length === 1 ? "" : "s"} reviewed
         </span>
-        <motion.span animate={{ rotate: expanded ? 180 : 0 }}>
+        <gsapMotion.span animate={{ rotate: expanded ? 180 : 0 }}>
           <ChevronDown size={14} className="text-zinc-400" />
-        </motion.span>
+        </gsapMotion.span>
       </button>
       <AnimatePresence initial={false}>
         {expanded && (
-          <motion.div
+          <gsapMotion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden border-t border-black/5 p-3"
           >
             <SourceCards sources={sources} compact />
-          </motion.div>
+          </gsapMotion.div>
         )}
       </AnimatePresence>
     </div>
@@ -1474,7 +1774,7 @@ const ThinkingPanel = ({
           <div
             className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl ${latestMeta.bg} ${latestMeta.text}`}
           >
-            <motion.div
+            <gsapMotion.div
               animate={
                 !isComplete
                   ? { rotate: [0, -6, 6, 0], y: [0, -1, 0] }
@@ -1488,7 +1788,7 @@ const ThinkingPanel = ({
               className="scale-[0.68]"
             >
               <LatestIcon />
-            </motion.div>
+            </gsapMotion.div>
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -1504,21 +1804,21 @@ const ThinkingPanel = ({
             </div>
           </div>
         </div>
-        <motion.span animate={{ rotate: expanded ? 180 : 0 }}>
+        <gsapMotion.span animate={{ rotate: expanded ? 180 : 0 }}>
           <ChevronDown size={16} className="text-zinc-400" />
-        </motion.span>
+        </gsapMotion.span>
       </button>
 
       <AnimatePresence initial={false}>
         {expanded && (
-          <motion.div
+          <gsapMotion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden border-t border-zinc-100"
           >
-            <motion.div
+            <gsapMotion.div
               key={`reasoning-trace-open-${traceKey}`}
               initial="hidden"
               animate="show"
@@ -1532,14 +1832,14 @@ const ThinkingPanel = ({
                   idx === visibleSteps.length - 1 &&
                   phase !== "complete";
                 return (
-                  <motion.div
+                  <gsapMotion.div
                     key={step.id}
                     custom={idx}
                     variants={reasoningStepVariants}
                     className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
                   >
                     {idx < visibleSteps.length - 1 && (
-                      <motion.div
+                      <gsapMotion.div
                         custom={idx}
                         variants={reasoningLineVariants}
                         className="absolute bottom-[-12px] left-[26px] top-10 w-px origin-top bg-black/10"
@@ -1550,13 +1850,13 @@ const ThinkingPanel = ({
                       <div
                         className={`inline-flex items-center gap-1.5 rounded-[12px] px-3 py-1.5 text-[11px] font-medium tracking-tight ${meta.bg} ${meta.text}`}
                       >
-                        <motion.div
+                        <gsapMotion.div
                           custom={idx}
                           variants={reasoningIconVariants}
                           className="-mx-1 flex origin-center items-center justify-center"
                         >
                           <meta.icon />
-                        </motion.div>
+                        </gsapMotion.div>
                         {meta.label}
                       </div>
                       {active && (
@@ -1564,57 +1864,57 @@ const ThinkingPanel = ({
                       )}
                     </div>
 
-                    <motion.div
+                    <gsapMotion.div
                       custom={idx}
                       variants={reasoningTextVariants}
                       style={reasoningShimmerTextStyle}
                       className="mt-1 pl-[32px] text-[12px] leading-relaxed tracking-tight transition-colors"
                     >
                       {step.content}
-                    </motion.div>
-                  </motion.div>
+                    </gsapMotion.div>
+                  </gsapMotion.div>
                 );
               })}
               {webSearch && (
-                <motion.div
+                <gsapMotion.div
                   custom={steps.length}
                   variants={reasoningStepVariants}
                 >
                   <SearchActivityPanel webSearch={webSearch} />
-                </motion.div>
+                </gsapMotion.div>
               )}
 
               {!isComplete && (
-                <motion.div
+                <gsapMotion.div
                   custom={steps.length}
                   variants={reasoningStepVariants}
                   className="group/step relative flex flex-col items-start gap-1.5 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
                 >
                   <div className="flex items-center gap-2">
                     <div className="inline-flex items-center gap-1.5 rounded-[12px] bg-[#E7F3FF] px-3 py-1.5 text-[11px] font-medium tracking-tight text-[#0A7DFF]">
-                      <motion.div
+                      <gsapMotion.div
                         custom={steps.length}
                         variants={reasoningIconVariants}
                         className="-mx-1 flex origin-center items-center justify-center"
                       >
                         <ProgressIcon />
-                      </motion.div>
+                      </gsapMotion.div>
                       {activeLabel}
                     </div>
                   </div>
 
-                  <motion.div
+                  <gsapMotion.div
                     custom={steps.length}
                     variants={reasoningTextVariants}
                     style={reasoningShimmerTextStyle}
                     className="mt-1 pl-[32px] text-[12px] italic tracking-tight"
                   >
                     Loading...
-                  </motion.div>
-                </motion.div>
+                  </gsapMotion.div>
+                </gsapMotion.div>
               )}
-            </motion.div>
-          </motion.div>
+            </gsapMotion.div>
+          </gsapMotion.div>
         )}
       </AnimatePresence>
     </div>
@@ -1782,7 +2082,7 @@ const MessageUsageFooter = ({
   const animatedTotal = useAnimatedNumber(total, 1100);
 
   return (
-    <motion.div
+    <gsapMotion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
@@ -1795,7 +2095,7 @@ const MessageUsageFooter = ({
         </AnimatedNumberText>{" "}
         tokens · {formatCurrency(usage.cost || 0)}
       </span>
-    </motion.div>
+    </gsapMotion.div>
   );
 };
 
@@ -1890,7 +2190,7 @@ const MessageItem = React.memo(
     };
 
     return (
-      <motion.div
+      <gsapMotion.div
         data-message-id={msg.id}
         initial={{
           opacity: 0,
@@ -2024,7 +2324,7 @@ const MessageItem = React.memo(
             </button>
           </div>
         )}
-      </motion.div>
+      </gsapMotion.div>
     );
   },
   (prevProps, nextProps) => {
@@ -2080,6 +2380,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const streamingAssistantRef = useRef<StreamingAssistantDraft | null>(null);
   const streamingFrameRef = useRef<number | null>(null);
   const [input, setInput] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isSearchSkillActive, setIsSearchSkillActive] = useState(false);
@@ -2277,6 +2578,17 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const isValid =
     input.length === 0 || /^[a-zA-Z0-9\s.,!?'"()\-:;\n]*$/.test(input);
   const isActive = input.length > 0;
+
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea || voiceState !== "idle") return;
+    const maxHeight = 150;
+    textarea.style.height = "0px";
+    const nextHeight = Math.min(maxHeight, Math.max(52, textarea.scrollHeight));
+    textarea.style.height = `${nextHeight}px`;
+    textarea.style.overflowY =
+      textarea.scrollHeight > maxHeight ? "auto" : "hidden";
+  }, [input, isSearchSkillActive, voiceState]);
 
   const thinkingSteps = [
     "Reading context...",
@@ -3404,7 +3716,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 className="text-zinc-600 group-hover:text-zinc-800 transition-colors"
               />
               <AnimatePresence mode="popLayout">
-                <motion.span
+                <gsapMotion.span
                   key={activeLearningBook?.id || activeProject}
                   initial={animationsEnabled ? { opacity: 0, y: 5 } : undefined}
                   animate={animationsEnabled ? { opacity: 1, y: 0 } : undefined}
@@ -3412,14 +3724,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   className="text-xs font-medium whitespace-nowrap inline-block"
                 >
                   {activeLearningBook?.title || activeProject}
-                </motion.span>
+                </gsapMotion.span>
               </AnimatePresence>
               <ChevronDown size={12} className="text-zinc-500" />
             </button>
 
             <AnimatePresence>
               {isProjectDropdownOpen && (
-                <motion.div
+                <gsapMotion.div
                   initial={{ opacity: 0, y: -5, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -5, scale: 0.95 }}
@@ -3566,7 +3878,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       </div>
                     </>
                   )}
-                </motion.div>
+                </gsapMotion.div>
               )}
             </AnimatePresence>
           </div>
@@ -3639,7 +3951,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         {/* Selected Text Context Chip */}
         <AnimatePresence>
           {selectedTextContext && (
-            <motion.div
+            <gsapMotion.div
               initial={{ opacity: 0, y: 12, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.96 }}
@@ -3664,7 +3976,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     maskComposite: "exclude",
                   }}
                 >
-                  <motion.div
+                  <gsapMotion.div
                     animate={
                       animationsEnabled ? { rotate: 360 } : { rotate: 0 }
                     }
@@ -3704,14 +4016,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   <X size={12} strokeWidth={2.5} />
                 </button>
               </div>
-            </motion.div>
+            </gsapMotion.div>
           )}
         </AnimatePresence>
 
-        <div className="relative flex items-end w-full max-w-3xl mx-auto bg-[#18181b] rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] mb-2 overflow-visible">
+        <div className="relative mx-auto mb-2 flex w-full max-w-3xl items-end overflow-visible rounded-[32px] bg-[#18181b] shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-[height,min-height] duration-200 ease-out">
           {/* Menu Trigger Button */}
           <div className="relative flex items-center justify-center shrink-0 z-50 ml-2 mb-2 rounded-full h-[48px] w-[48px] p-[2px]">
-            <motion.button
+            <gsapMotion.button
               onClick={() => setIsSkillsMenuOpen(!isSkillsMenuOpen)}
               className="relative flex items-center justify-center w-full h-full rounded-full group focus:outline-none shrink-0"
               whileHover="hover"
@@ -3747,7 +4059,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   <div className="absolute inset-0 rounded-full shadow-[inset_0_0_2px_1px_rgba(255,255,255,0.3)] pointer-events-none mix-blend-screen" />
                 </div>
               </div>
-              <motion.div
+              <gsapMotion.div
                 className="absolute z-10 flex items-center justify-center rounded-full group-hover:brightness-110 overflow-hidden"
                 variants={{
                   idle: {
@@ -3775,26 +4087,37 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     "linear-gradient(180deg, #262626 0%, #1a1a1a 45%, #080808 100%)",
                 }}
               >
-                <motion.div
+                <gsapMotion.div
                   className="absolute z-20 flex items-center justify-center"
                   animate={{ rotate: isSkillsMenuOpen ? 45 : 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 >
                   <Plus
-                    size={18}
-                    className={
-                      isSkillsMenuOpen ? "text-white" : "text-zinc-300"
-                    }
+                    size={20}
+                    className={`relative z-[80] ${
+                      isSkillsMenuOpen ? "text-white" : "text-zinc-100"
+                    }`}
                     strokeWidth={isSkillsMenuOpen ? 3 : 2.5}
                     style={{
                       filter: isSkillsMenuOpen
                         ? "drop-shadow(0 0 4px rgba(255,255,255,0.4))"
-                        : "none",
+                        : "drop-shadow(0 1px 3px rgba(0,0,0,0.9))",
                     }}
                   />
-                </motion.div>
-              </motion.div>
-            </motion.button>
+                </gsapMotion.div>
+              </gsapMotion.div>
+              <div className="pointer-events-none absolute inset-0 z-[100] flex items-center justify-center">
+                <Plus
+                  size={20}
+                  className="text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                  strokeWidth={isSkillsMenuOpen ? 3 : 2.5}
+                  style={{
+                    transform: isSkillsMenuOpen ? "rotate(45deg)" : "none",
+                    transition: "transform 180ms ease",
+                  }}
+                />
+              </div>
+            </gsapMotion.button>
             <FloatingSkillsMenu
               isOpen={isSkillsMenuOpen}
               onClose={() => setIsSkillsMenuOpen(false)}
@@ -3804,7 +4127,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             />
           </div>
 
-          <div className="relative flex-1 flex items-center justify-center min-h-[60px]">
+          <div className="relative flex min-h-[60px] flex-1 items-end justify-center">
             {isSearchSkillActive && (
               <div className="absolute top-2 left-4 flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-md text-[10px] font-bold uppercase tracking-wider z-20">
                 <Search size={10} strokeWidth={3} /> Web Search
@@ -3818,8 +4141,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             )}
             <AnimatePresence mode="popLayout">
               {voiceState === "idle" ? (
-                <motion.textarea
+                <gsapMotion.textarea
                   key="text-input"
+                  ref={textareaRef}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
@@ -3837,14 +4161,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   placeholder={
                     isSearchSkillActive
                       ? "Search the web..."
-                      : t("ask_question_placeholder")
+                      : "Ask about the document..."
                   }
-                  className={`w-full h-full bg-transparent border-none outline-none text-[15px] px-4 ${isSearchSkillActive ? "pt-8 pb-3" : "py-5"} max-h-[200px] min-h-[60px] resize-none text-zinc-100 placeholder:text-zinc-500 caret-white custom-scroll z-10`}
+                  className={`custom-scroll z-10 w-full resize-none border-none bg-transparent px-4 text-[15px] leading-[1.42] text-zinc-100 outline-none transition-[height] duration-200 ease-out caret-white placeholder:text-zinc-500 ${isSearchSkillActive ? "pt-8 pb-3" : "py-[18px]"}`}
                   rows={1}
-                  style={{ fieldSizing: "content" } as any}
                 />
               ) : (
-                <motion.div
+                <gsapMotion.div
                   key="voice-pill"
                   initial={{ opacity: 0, scale: 0.85 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -3853,13 +4176,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
                 >
                   <GeminiVoicePill state={voiceState} />
-                </motion.div>
+                </gsapMotion.div>
               )}
             </AnimatePresence>
           </div>
           <div className="relative flex items-center gap-2 shrink-0 z-50 mr-2 mb-2">
             <div className="relative flex items-center justify-center shrink-0 rounded-full h-[48px] w-[48px] p-[2px]">
-              <motion.button
+              <gsapMotion.button
                 className="relative flex items-center justify-center w-full h-full rounded-full group focus:outline-none shrink-0"
                 onClick={toggleVoice}
                 whileHover="hover"
@@ -3897,7 +4220,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   </div>
                 </div>
 
-                <motion.div
+                <gsapMotion.div
                   className="absolute z-10 flex items-center justify-center rounded-full group-hover:brightness-110 overflow-hidden"
                   variants={{
                     idle: {
@@ -3926,15 +4249,18 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       "linear-gradient(180deg, #262626 0%, #1a1a1a 45%, #080808 100%)",
                   }}
                 >
-                  <motion.div className="absolute z-20 flex items-center justify-center">
+                  <gsapMotion.div className="absolute z-20 flex items-center justify-center">
                     {voiceState === "idle" ? (
-                      <Mic size={18} className="text-zinc-300" />
+                      <Mic
+                        size={20}
+                        className="relative z-[80] text-zinc-100 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
+                      />
                     ) : voiceState === "listening" ? (
                       <div className="relative flex items-center justify-center">
                         <div className="absolute inset-0 rounded-full border border-emerald-400 animate-ping opacity-50" />
                         <div className="absolute inset-[-4px] rounded-full bg-emerald-500/20 blur animate-pulse" />
                         <Mic
-                          size={18}
+                          size={20}
                           className="relative z-10 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"
                         />
                       </div>
@@ -3942,18 +4268,36 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       <div className="relative flex items-center justify-center">
                         <div className="absolute inset-[-4px] rounded-full bg-blue-500/20 blur animate-pulse" />
                         <Activity
-                          size={18}
+                          size={20}
                           className="relative z-10 animate-pulse text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]"
                         />
                       </div>
                     )}
-                  </motion.div>
-                </motion.div>
-              </motion.button>
+                  </gsapMotion.div>
+                </gsapMotion.div>
+                <div className="pointer-events-none absolute inset-0 z-[100] flex items-center justify-center">
+                  {voiceState === "idle" ? (
+                    <Mic
+                      size={20}
+                      className="text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                    />
+                  ) : voiceState === "listening" ? (
+                    <Mic
+                      size={20}
+                      className="text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.9)]"
+                    />
+                  ) : (
+                    <Activity
+                      size={20}
+                      className="text-blue-300 drop-shadow-[0_0_8px_rgba(96,165,250,0.9)]"
+                    />
+                  )}
+                </div>
+              </gsapMotion.button>
             </div>
 
             <div className="relative flex items-center justify-center shrink-0 z-50 rounded-full h-[48px] w-[48px] p-[2px]">
-              <motion.button
+              <gsapMotion.button
                 className="relative flex items-center justify-center w-full h-full rounded-full group focus:outline-none shrink-0"
                 onMouseEnter={() => {
                   setIsHovered(true);
@@ -3982,7 +4326,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               >
                 <AnimatePresence>
                   {sendState === "sending" && (
-                    <motion.div
+                    <gsapMotion.div
                       initial={{ scale: 0.8, opacity: 0.6, borderWidth: "2px" }}
                       animate={{ scale: 2.2, opacity: 0, borderWidth: "0px" }}
                       transition={{ duration: 0.6, ease: "easeOut" }}
@@ -4015,7 +4359,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   </div>
                 </div>
 
-                <motion.div
+                <gsapMotion.div
                   className="absolute z-10 flex items-center justify-center rounded-full group-hover:brightness-110 overflow-hidden"
                   variants={{
                     idle: {
@@ -4045,7 +4389,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       "linear-gradient(180deg, #262626 0%, #1a1a1a 45%, #080808 100%)",
                   }}
                 >
-                  <motion.div
+                  <gsapMotion.div
                     variants={{
                       idle: { y: 0, opacity: 1, scale: 1 },
                       hover: { y: 0, opacity: 1, scale: 1 },
@@ -4054,22 +4398,23 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       success: { y: 30, opacity: 0, scale: 0.5 },
                     }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    className="absolute z-20 flex items-center justify-center"
+                    className="hidden"
                   >
                     <ArrowUp
-                      className="w-[18px] h-[18px] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300"
-                      color={isActive && isValid ? "#ECECEC" : "#555555"}
+                      className="relative z-[80] h-5 w-5 transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300"
+                      color={isActive && isValid ? "#FFFFFF" : "#D7D7D7"}
                       style={{
                         filter:
                           isActive && isValid
                             ? "drop-shadow(0 0 4px rgba(255,255,255,0.4))"
-                            : "drop-shadow(0 1px 2px rgba(0,0,0,1))",
+                            : "drop-shadow(0 1px 3px rgba(0,0,0,1))",
+                        opacity: isActive && isValid ? 1 : 0.72,
                       }}
                       strokeWidth={2.5}
                     />
-                  </motion.div>
+                  </gsapMotion.div>
 
-                  <motion.div
+                  <gsapMotion.div
                     variants={{
                       idle: { opacity: 0, scale: 0.5 },
                       hover: { opacity: 0, scale: 0.5 },
@@ -4078,9 +4423,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       success: { opacity: 0, scale: 1.5 },
                     }}
                     transition={{ duration: 0.2 }}
-                    className="absolute z-30 flex items-center justify-center mix-blend-screen"
+                    className="hidden"
                   >
-                    <motion.div
+                    <gsapMotion.div
                       animate={{ rotate: sendState === "sending" ? 360 : 0 }}
                       transition={{
                         repeat:
@@ -4103,10 +4448,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       >
                         <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                       </svg>
-                    </motion.div>
-                  </motion.div>
+                    </gsapMotion.div>
+                  </gsapMotion.div>
 
-                  <motion.div
+                  <gsapMotion.div
                     variants={{
                       idle: { opacity: 0, scale: 0.5, y: -20 },
                       hover: { opacity: 0, scale: 0.5, y: -20 },
@@ -4115,20 +4460,44 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       success: { opacity: 1, scale: 1, y: 0 },
                     }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    className="absolute z-40 flex items-center justify-center"
+                    className="hidden"
                   >
                     <Check
                       className="w-[18px] h-[18px] text-white"
                       strokeWidth={3}
                     />
-                  </motion.div>
-                </motion.div>
-              </motion.button>
+                  </gsapMotion.div>
+                </gsapMotion.div>
+                <div className="pointer-events-none absolute inset-0 z-[100] flex items-center justify-center">
+                  {sendState === "sending" ? (
+                    <LoaderCircle
+                      size={20}
+                      className="animate-spin text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
+                    />
+                  ) : sendState === "success" ? (
+                    <Check
+                      size={20}
+                      className="text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
+                      strokeWidth={3}
+                    />
+                  ) : (
+                    <ArrowUp
+                      className="h-5 w-5 text-white drop-shadow-[0_0_8px_rgba(0,0,0,0.95)] transition-opacity duration-200"
+                      color="#FFFFFF"
+                      style={{
+                        opacity: isActive && isValid ? 1 : 0.9,
+                      }}
+                      stroke="currentColor"
+                      strokeWidth={3}
+                    />
+                  )}
+                </div>
+              </gsapMotion.button>
             </div>
 
             <AnimatePresence>
               {!isValid && (
-                <motion.div
+                <gsapMotion.div
                   initial={{ opacity: 0, y: -4, filter: "blur(4px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, y: -4, filter: "blur(4px)" }}
@@ -4137,7 +4506,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 >
                   <X size={12} strokeWidth={3} />
                   Special characters are limited.
-                </motion.div>
+                </gsapMotion.div>
               )}
             </AnimatePresence>
           </div>

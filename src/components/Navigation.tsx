@@ -1,39 +1,108 @@
-import React, { useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useStore, ViewState } from "../store";
-import { BookOpen, Zap, Activity } from "lucide-react";
-import { motion, useMotionValue, useMotionTemplate } from "motion/react";
+import { BookOpen, Zap, Activity, ShieldCheck } from "lucide-react";
+import { gsap } from "gsap";
 import { useTranslation } from "../lib/translations";
 import { useMotionPreference } from "../hooks/useMotionPreference";
 
 export function Navigation() {
-  const { activeView, setActiveView } = useStore();
+  const { activeView, setActiveView, accessMode } = useStore();
   const { t } = useTranslation();
   const motionEnabled = useMotionPreference();
-  const [isHoveringContainer, setIsHoveringContainer] = useState(false);
-
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  const navContainerRef = useRef<HTMLDivElement>(null);
+  const activePillRef = useRef<HTMLDivElement>(null);
+  const borderSpinRef = useRef<HTMLDivElement>(null);
+  const buttonRefs = useRef<Partial<Record<ViewState, HTMLButtonElement | null>>>({});
+  const [spotlight, setSpotlight] = useState({
+    x: 0,
+    y: 0,
+    active: false,
+  });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (window.matchMedia?.("(pointer: coarse)").matches) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    mouseX.set(e.clientX - rect.left);
-    mouseY.set(e.clientY - rect.top);
+    setSpotlight({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+      active: true,
+    });
   };
 
   const navItems: { id: ViewState; label: string; icon: React.ReactNode }[] = [
-    { id: "study", label: t("study"), icon: <BookOpen size={16} /> },
-    { id: "analytics", label: t("analytics"), icon: <Activity size={16} /> },
-    { id: "revision", label: t("revision"), icon: <Zap size={16} /> },
+    { id: "study", label: t("study"), icon: <BookOpen size={14} /> },
+    { id: "analytics", label: t("analytics"), icon: <Activity size={14} /> },
+    { id: "revision", label: t("revision"), icon: <Zap size={14} /> },
+    ...(accessMode === "admin"
+      ? [
+          {
+            id: "admin" as ViewState,
+            label: t("admin"),
+            icon: <ShieldCheck size={14} />,
+          },
+        ]
+      : []),
   ];
 
+  useEffect(() => {
+    const border = borderSpinRef.current;
+    if (!border) return;
+    gsap.killTweensOf(border);
+    gsap.set(border, { rotate: 0 });
+    if (!motionEnabled) return;
+    const tween = gsap.to(border, {
+      rotate: 360,
+      duration: 4,
+      repeat: -1,
+      ease: "none",
+    });
+    return () => {
+      tween.kill();
+    };
+  }, [motionEnabled]);
+
+  useLayoutEffect(() => {
+    const updateActivePill = () => {
+      const container = navContainerRef.current;
+      const pill = activePillRef.current;
+      const button = buttonRefs.current[activeView];
+      if (!container || !pill || !button) {
+        if (activePillRef.current) {
+          gsap.set(activePillRef.current, { autoAlpha: 0 });
+        }
+        return;
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      const buttonRect = button.getBoundingClientRect();
+      gsap.to(pill, {
+        autoAlpha: 1,
+        x: buttonRect.left - containerRect.left,
+        y: buttonRect.top - containerRect.top,
+        width: buttonRect.width,
+        height: buttonRect.height,
+        duration: motionEnabled ? 0.42 : 0,
+        ease: "power3.out",
+      });
+    };
+
+    updateActivePill();
+    window.addEventListener("resize", updateActivePill);
+    return () => window.removeEventListener("resize", updateActivePill);
+  }, [activeView, accessMode, motionEnabled]);
+
   return (
-    <div className="absolute left-1/2 top-4 z-50 w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 pointer-events-auto sm:w-auto">
-      <motion.div
+    <div className="absolute left-1/2 top-4 z-50 w-[calc(100%-1.25rem)] max-w-[28rem] -translate-x-1/2 pointer-events-auto sm:w-fit">
+      <div
+        ref={navContainerRef}
         onMouseMove={handleMouseMove}
-        onMouseEnter={() => setIsHoveringContainer(true)}
-        onMouseLeave={() => setIsHoveringContainer(false)}
-        className="relative flex w-full items-center justify-between gap-1 overflow-hidden rounded-full p-1.5 shadow-2xl transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 sm:justify-center"
+        onMouseEnter={() =>
+          setSpotlight((current) => ({ ...current, active: true }))
+        }
+        onMouseLeave={() =>
+          setSpotlight((current) => ({ ...current, active: false }))
+        }
+        className="relative flex w-full items-center justify-between gap-1 overflow-hidden rounded-full p-1 shadow-2xl transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 sm:justify-center"
         style={{
           background:
             activeView === "revision"
@@ -45,6 +114,11 @@ export function Navigation() {
             "0 20px 50px -10px rgba(0,0,0,1), inset 0 1px 1px rgba(255,255,255,0.1)",
         }}
       >
+        <div
+          ref={activePillRef}
+          className="pointer-events-none absolute left-0 top-0 z-[8] rounded-full border border-white/10 bg-white/[0.1] opacity-0 shadow-[0_2px_10px_rgba(0,0,0,0.45)] mix-blend-screen"
+        />
+
         {/* Animated Liquid Metal Border */}
         <div
           className="absolute inset-0 rounded-full pointer-events-none overflow-hidden"
@@ -56,13 +130,8 @@ export function Navigation() {
             maskComposite: "exclude",
           }}
         >
-          <motion.div
-            animate={motionEnabled ? { rotate: 360 } : { rotate: 0 }}
-            transition={{
-              repeat: motionEnabled ? Infinity : 0,
-              duration: motionEnabled ? 4 : 0,
-              ease: "linear",
-            }}
+          <div
+            ref={borderSpinRef}
             className="absolute inset-[-50%] w-[200%] h-[200%]"
             style={{
               background:
@@ -74,20 +143,20 @@ export function Navigation() {
 
         {/* Mouse Tracking Metallic Spotlight Glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <motion.div
+          <div
             className="absolute inset-0 transition-opacity duration-300 mix-blend-screen"
-            animate={{ opacity: isHoveringContainer ? 1 : 0 }}
-            transition={{ duration: motionEnabled ? 0.3 : 0 }}
             style={{
-              background: useMotionTemplate`radial-gradient(150px circle at ${mouseX}px ${mouseY}px, rgba(255,255,255,0.15), transparent 100%)`,
+              opacity: spotlight.active ? 1 : 0,
+              transitionDuration: motionEnabled ? "300ms" : "0ms",
+              background: `radial-gradient(150px circle at ${spotlight.x}px ${spotlight.y}px, rgba(255,255,255,0.15), transparent 100%)`,
             }}
           />
-          <motion.div
+          <div
             className="absolute inset-0 transition-opacity duration-300 mix-blend-overlay"
-            animate={{ opacity: isHoveringContainer ? 1 : 0 }}
-            transition={{ duration: motionEnabled ? 0.3 : 0 }}
             style={{
-              background: useMotionTemplate`radial-gradient(100px circle at ${mouseX}px ${mouseY}px, rgba(10,61,207,0.4), transparent 100%)`,
+              opacity: spotlight.active ? 1 : 0,
+              transitionDuration: motionEnabled ? "300ms" : "0ms",
+              background: `radial-gradient(100px circle at ${spotlight.x}px ${spotlight.y}px, rgba(10,61,207,0.4), transparent 100%)`,
             }}
           />
         </div>
@@ -98,26 +167,19 @@ export function Navigation() {
             <button
               type="button"
               key={item.id}
+              ref={(node) => {
+                buttonRefs.current[item.id] = node;
+              }}
               onClick={() => setActiveView(item.id)}
-              className={`relative z-10 flex min-w-[5.7rem] flex-1 transform-gpu select-none items-center justify-center gap-1 rounded-full px-2.5 py-2 text-[11px] font-medium transition-colors focus:outline-none sm:min-w-[7.1rem] sm:flex-none sm:gap-2 sm:px-4 sm:text-[13px] ${
+              className={`relative z-10 flex min-w-0 flex-1 transform-gpu select-none items-center justify-center gap-1 rounded-full px-1.5 py-1.5 text-[9.5px] font-medium transition-colors focus:outline-none sm:min-w-[4.35rem] sm:flex-none sm:gap-[0.3125rem] sm:px-[0.5625rem] sm:py-1.5 sm:text-[10.5px] ${
                 isActive
-                  ? "text-white shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
+                  ? "text-white"
                   : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
               }`}
               style={{ contain: "layout paint" }}
+              aria-current={isActive ? "page" : undefined}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="navigation-active-pill"
-                  className="absolute inset-0 bg-white/10 border border-white/10 rounded-full mix-blend-screen"
-                  transition={
-                    motionEnabled
-                      ? { type: "spring", stiffness: 500, damping: 30 }
-                      : { duration: 0 }
-                  }
-                />
-              )}
-              <span className="relative z-[15] flex items-center justify-center gap-1.5 sm:gap-2">
+              <span className="relative z-[15] flex items-center justify-center gap-1.5 sm:gap-1.5">
                 {item.icon}
                 <span className="hidden sm:inline-block">{item.label}</span>
                 <span className="sm:hidden">{item.label.split(" ")[0]}</span>
@@ -125,7 +187,7 @@ export function Navigation() {
             </button>
           );
         })}
-      </motion.div>
+      </div>
     </div>
   );
 }

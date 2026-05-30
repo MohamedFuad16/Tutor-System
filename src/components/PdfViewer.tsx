@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { useStore, Annotation } from "../store";
-import { motion, AnimatePresence } from "motion/react";
+import { gsap } from "gsap";
 import { useTranslation } from "../lib/translations";
 import {
   ZoomIn,
@@ -44,13 +44,16 @@ export function PdfViewer() {
   const containerRef = useRef<HTMLDivElement>(null);
   const pageWrapperRef = useRef<HTMLDivElement>(null);
   const activePageCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const actionBorderRef = useRef<HTMLDivElement | null>(null);
+  const loadingShimmerRef = useRef<HTMLDivElement | null>(null);
+  const selectionTooltipRef = useRef<HTMLDivElement | null>(null);
+  const selectionBorderRef = useRef<HTMLDivElement | null>(null);
+  const draftNoteRef = useRef<HTMLDivElement | null>(null);
   const titleRequestRef = useRef<AbortController | null>(null);
   const titleScheduleRef = useRef<number | null>(null);
   const titleGenerationRef = useRef(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHoveringContainer, setIsHoveringContainer] = useState(false);
   const [selectionTooltip, setSelectionTooltip] = useState<{
     x: number;
     y: number;
@@ -205,14 +208,6 @@ export function PdfViewer() {
     setIsFitWidth(!isFitWidth);
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
-
   const handleSelection = () => {
     if (selectionTooltip) setSelectionTooltip(null);
     const selection = window.getSelection();
@@ -361,6 +356,78 @@ export function PdfViewer() {
 
   const pageAnnotations = annotations.filter((a) => a.pageNumber === pdfPage);
 
+  useEffect(() => {
+    const borders = [actionBorderRef.current, selectionBorderRef.current].filter(
+      Boolean,
+    ) as HTMLDivElement[];
+    gsap.killTweensOf(borders);
+    gsap.set(borders, { rotate: 0 });
+    if (!motionEnabled || !borders.length) return;
+    const tween = gsap.to(borders, {
+      rotate: 360,
+      duration: 4,
+      repeat: -1,
+      ease: "none",
+    });
+    return () => {
+      tween.kill();
+    };
+  }, [motionEnabled, selectionTooltip]);
+
+  useLayoutEffect(() => {
+    if (!loadingShimmerRef.current) return;
+    gsap.killTweensOf(loadingShimmerRef.current);
+    if (!motionEnabled) {
+      gsap.set(loadingShimmerRef.current, { xPercent: 0 });
+      return;
+    }
+    const tween = gsap.fromTo(
+      loadingShimmerRef.current,
+      { xPercent: -100 },
+      {
+        xPercent: 200,
+        duration: 2,
+        repeat: -1,
+        ease: "none",
+      },
+    );
+    return () => {
+      tween.kill();
+    };
+  }, [motionEnabled, pdfUrl]);
+
+  useLayoutEffect(() => {
+    if (!selectionTooltip || !selectionTooltipRef.current) return;
+    gsap.fromTo(
+      selectionTooltipRef.current,
+      { autoAlpha: 0, xPercent: -50, y: 10, scale: 0.95 },
+      {
+        autoAlpha: 1,
+        xPercent: -50,
+        y: 0,
+        scale: 1,
+        duration: motionEnabled ? 0.16 : 0,
+        ease: "power2.out",
+      },
+    );
+  }, [motionEnabled, selectionTooltip]);
+
+  useLayoutEffect(() => {
+    if (!draftNote || !draftNoteRef.current) return;
+    gsap.fromTo(
+      draftNoteRef.current,
+      { autoAlpha: 0, xPercent: -50, y: 10, scale: 0.95 },
+      {
+        autoAlpha: 1,
+        xPercent: -50,
+        y: 0,
+        scale: 1,
+        duration: motionEnabled ? 0.16 : 0,
+        ease: "power2.out",
+      },
+    );
+  }, [draftNote, motionEnabled]);
+
   return (
     <div
       className="w-full h-full flex flex-col relative bg-[#0A0A0B]"
@@ -376,10 +443,7 @@ export function PdfViewer() {
 
       {/* Action Bar Floating (Liquid Metal style) */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
-        <motion.div
-          onMouseMove={handleMouseMove}
-          onMouseEnter={() => setIsHoveringContainer(true)}
-          onMouseLeave={() => setIsHoveringContainer(false)}
+        <div
           className="relative flex items-center gap-1 p-1.5 rounded-full overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300"
           style={{
             background: "rgba(20, 20, 22, 0.85)",
@@ -398,13 +462,8 @@ export function PdfViewer() {
               maskComposite: "exclude",
             }}
           >
-            <motion.div
-              animate={motionEnabled ? { rotate: 360 } : { rotate: 0 }}
-              transition={{
-                repeat: motionEnabled ? Infinity : 0,
-                duration: motionEnabled ? 4 : 0,
-                ease: "linear",
-              }}
+            <div
+              ref={actionBorderRef}
               className="absolute inset-[-50%] w-[200%] h-[200%]"
               style={{
                 background:
@@ -473,7 +532,7 @@ export function PdfViewer() {
           >
             <Maximize size={14} />
           </button>
-        </motion.div>
+        </div>
       </div>
 
       <div className="flex-1 w-full h-full overflow-auto pt-8 pb-32 flex justify-center custom-scroll bg-[#0A0A0B] relative">
@@ -502,13 +561,8 @@ export function PdfViewer() {
                   height: (widthVal || defaultWidth) * 1.414,
                 }}
               >
-                <motion.div
-                  animate={motionEnabled ? { x: ["-100%", "200%"] } : { x: 0 }}
-                  transition={{
-                    repeat: motionEnabled ? Infinity : 0,
-                    duration: motionEnabled ? 2 : 0,
-                    ease: "linear",
-                  }}
+                <div
+                  ref={loadingShimmerRef}
                   className="absolute inset-0 z-10 bg-gradient-to-r from-transparent via-[#f0f0f0]/60 to-transparent skew-x-12"
                 />
                 <div className="w-1/2 h-8 bg-zinc-100 rounded-md mb-8" />
@@ -609,18 +663,13 @@ export function PdfViewer() {
           </Document>
 
           {/* Selection Tooltip */}
-          <AnimatePresence>
             {selectionTooltip && (
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
+              <div
+                ref={selectionTooltipRef}
                 className="absolute z-50 selection-tooltip-container"
                 style={{
                   left: selectionTooltip.x,
                   top: selectionTooltip.y,
-                  transform: "translateX(-50%)",
                 }}
               >
                 <div className="relative flex items-center gap-1 p-1 bg-[#121214]/95 backdrop-blur-xl rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.8)] overflow-hidden">
@@ -635,13 +684,8 @@ export function PdfViewer() {
                       maskComposite: "exclude",
                     }}
                   >
-                    <motion.div
-                      animate={motionEnabled ? { rotate: 360 } : { rotate: 0 }}
-                      transition={{
-                        repeat: motionEnabled ? Infinity : 0,
-                        duration: motionEnabled ? 4 : 0,
-                        ease: "linear",
-                      }}
+                    <div
+                      ref={selectionBorderRef}
                       className="absolute inset-[-50%] w-[200%] h-[200%]"
                       style={{
                         background:
@@ -713,23 +757,17 @@ export function PdfViewer() {
                     </span>
                   </button>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
 
           {/* Draft Note Input */}
-          <AnimatePresence>
             {draftNote && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                transition={{ duration: 0.15 }}
+              <div
+                ref={draftNoteRef}
                 className="absolute z-50 selection-tooltip-container w-64"
                 style={{
                   left: draftNote.x,
                   top: draftNote.y,
-                  transform: "translateX(-50%)",
                 }}
               >
                 <div className="bg-[#121214] border border-[#2A2A30] rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
@@ -784,9 +822,8 @@ export function PdfViewer() {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
         </div>
       </div>
     </div>

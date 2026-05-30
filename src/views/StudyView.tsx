@@ -1,72 +1,467 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { PdfViewer } from "../components/PdfViewer";
 import { ChatPanel } from "../components/ChatPanel";
 import { useStore } from "../store";
-import { UploadCloud, MessageSquare, X, RefreshCw } from "lucide-react";
+import { UploadCloud, MessageSquare, X, RefreshCw, Network } from "lucide-react";
 import { PatternCard, themes } from "../components/PatternCard";
-import { AnimatedScrollText } from "../components/AnimatedScrollText";
-import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
+import { gsap } from "gsap";
 import { useTranslation } from "../lib/translations";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
+import { useMotionPreference } from "../hooks/useMotionPreference";
 
-const CurvedArrow = ({ color }: { color: string }) => (
-  <svg
-    width="60"
-    height="220"
-    viewBox="0 0 60 220"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ filter: `drop-shadow(0px 0px 12px ${color}80)` }}
-  >
-    {/* Background faint path */}
-    <path
-      d="M 30 10 C 30 50, 50 70, 30 120 S 10 170, 30 205 L 30 215"
-      stroke={color}
-      strokeOpacity="0.2"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M 30 215 L 20 205 M 30 215 L 40 205"
-      stroke={color}
-      strokeOpacity="0.2"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+const splitCardTitle = (title: string) => {
+  const words = title.split(" ");
+  if (words.length < 2) return title;
+  return (
+    <>
+      {words[0]}
+      <br />
+      {words.slice(1).join(" ")}
+    </>
+  );
+};
 
-    {/* Animated glowing path */}
-    <motion.path
-      d="M 30 10 C 30 50, 50 70, 30 120 S 10 170, 30 205 L 30 215"
-      stroke={color}
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      initial={{ pathLength: 0, pathOffset: 0 }}
-      animate={{ pathLength: [0, 0.4, 0], pathOffset: [0, 0.6, 1] }}
-      transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-    />
-    <motion.path
-      d="M 30 215 L 20 205 M 30 215 L 40 205"
-      stroke={color}
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: [0, 1, 0] }}
-      transition={{
-        duration: 2.5,
-        repeat: Infinity,
-        ease: "easeInOut",
-        times: [0, 0.8, 1],
-      }}
-    />
-  </svg>
-);
+const AnimatedHeadlineWords = ({
+  text,
+  motionEnabled,
+}: {
+  text: string;
+  motionEnabled: boolean;
+}) => {
+  const wordRefs = useRef<HTMLSpanElement[]>([]);
+
+  useLayoutEffect(() => {
+    const words = wordRefs.current.filter(Boolean);
+    if (!words.length) return;
+    gsap.killTweensOf(words);
+    if (!motionEnabled) {
+      gsap.set(words, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+      return;
+    }
+    gsap.fromTo(
+      words,
+      { autoAlpha: 0, y: 16, filter: "blur(16px)" },
+      {
+        autoAlpha: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: 1.95,
+        stagger: 0.18,
+        ease: "power4.out",
+      },
+    );
+  }, [motionEnabled, text]);
+
+  wordRefs.current = [];
+
+  return (
+    <h2
+      data-testid="intro-heading"
+      className="flex max-w-[30rem] flex-wrap justify-center gap-x-[0.28em] gap-y-1.5 overflow-visible text-center font-serif text-[clamp(1.18rem,2.15vw,2rem)] leading-[1.18] tracking-normal text-white/92 sm:max-w-[42rem]"
+    >
+      {text.split(" ").map((word, index) => (
+        <span
+          key={`${word}-${index}`}
+          ref={(node) => {
+            if (node) wordRefs.current[index] = node;
+          }}
+          className="inline-block will-change-transform"
+        >
+          {word}
+        </span>
+      ))}
+    </h2>
+  );
+};
+
+type StudyIntroSplashProps = {
+  introStep: number;
+  motionEnabled: boolean;
+  isDragging: boolean;
+  isIngesting: boolean;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  setIsDragging: (dragging: boolean) => void;
+  handleDrop: (event: React.DragEvent) => void;
+  handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  t: (key: string) => string;
+};
+
+type CardTarget = {
+  opacity: number;
+  xPercent: number;
+  y: number;
+  scale: number;
+  rotate: number;
+  filter: string;
+};
+
+function StudyIntroSplash({
+  introStep,
+  motionEnabled,
+  isDragging,
+  isIngesting,
+  fileInputRef,
+  setIsDragging,
+  handleDrop,
+  handleFileChange,
+  t,
+}: StudyIntroSplashProps) {
+  const activeIndex = introStep <= 1 ? 0 : introStep === 2 ? 1 : 2;
+  const finalStack = introStep >= 4;
+  const cardRefs = useRef<HTMLDivElement[]>([]);
+  const lastCardTargetsRef = useRef<Array<CardTarget | null>>([]);
+  const [isDocumentHidden, setIsDocumentHidden] = useState(() =>
+    typeof document === "undefined" ? false : document.hidden,
+  );
+  const introCards = [
+    {
+      key: "tutor",
+      headline: t("study_hero_1"),
+      theme: themes[2],
+      icon: <MessageSquare className="h-5 w-5" />,
+      iconClass: "bg-black/10 text-black border-black/10",
+      title: t("study_card_tutor_title"),
+      subtitle: t("study_card_tutor_subtitle"),
+      textClass: "text-black",
+      subtextClass: "text-black",
+    },
+    {
+      key: "graph",
+      headline: t("study_scroll_text_2"),
+      theme: themes[0],
+      icon: <Network className="h-5 w-5" />,
+      iconClass: "bg-white/10 text-white border-white/20",
+      title: t("study_card_graph_title"),
+      subtitle: t("study_card_graph_subtitle"),
+      textClass: "text-[#fefefe]",
+      subtextClass: "text-[#fefefe]",
+      bgClass: `${themes[0].bg} border border-white/10`,
+    },
+    {
+      key: "upload",
+      headline: t("study_scroll_text_3"),
+      theme: themes[1],
+      icon: <UploadCloud className="h-5 w-5" />,
+      iconClass: "bg-[#ff6e00]/20 text-white border-white/20",
+      title: isIngesting
+        ? t("study_card_ingest_title")
+        : t("study_card_upload_title"),
+      subtitle: isIngesting
+        ? t("study_card_ingest_subtitle")
+        : t("study_card_upload_subtitle"),
+      textClass: "text-[#fefefe]",
+      subtextClass: "text-[#fefefe]",
+    },
+  ];
+
+  const getCardTarget = (index: number): CardTarget => {
+    if (finalStack) {
+      if (index === 0) {
+        return {
+          opacity: 1,
+          xPercent: -72,
+          y: 18,
+          scale: 0.9,
+          rotate: -4.5,
+          filter: "blur(0px)",
+        };
+      }
+      if (index === 1) {
+        return {
+          opacity: 1,
+          xPercent: -50,
+          y: 9,
+          scale: 0.94,
+          rotate: -1.6,
+          filter: "blur(0px)",
+        };
+      }
+      return {
+        opacity: 1,
+        xPercent: -28,
+        y: 0,
+        scale: 1,
+        rotate: 1.8,
+        filter: "blur(0px)",
+      };
+    }
+
+    if (introStep === 0) {
+      return {
+        opacity: 0,
+        xPercent: index === 0 ? -50 : index === 1 ? -18 : 8,
+        y: 42,
+        scale: 0.82,
+        rotate: index === 0 ? 0 : index === 1 ? 8 : 14,
+        filter: "blur(16px)",
+      };
+    }
+
+    if (introStep === 1) {
+      if (index === 0) {
+        return {
+          opacity: 1,
+          xPercent: -50,
+          y: 0,
+          scale: 1,
+          rotate: 0,
+          filter: "blur(0px)",
+        };
+      }
+      return {
+        opacity: 0,
+        xPercent: index === 1 ? -18 : 8,
+        y: 32,
+        scale: 0.78,
+        rotate: index === 1 ? 8 : 14,
+        filter: "blur(14px)",
+      };
+    }
+
+    if (introStep === 2) {
+      if (index === 0) {
+        return {
+          opacity: 0.9,
+          xPercent: -82,
+          y: 10,
+          scale: 0.84,
+          rotate: -7,
+          filter: "blur(0px)",
+        };
+      }
+      if (index === 1) {
+        return {
+          opacity: 1,
+          xPercent: -50,
+          y: 0,
+          scale: 1,
+          rotate: 0,
+          filter: "blur(0px)",
+        };
+      }
+      return {
+        opacity: 0,
+        xPercent: -10,
+        y: 34,
+        scale: 0.82,
+        rotate: 12,
+        filter: "blur(14px)",
+      };
+    }
+
+    if (introStep === 3) {
+      if (index === 0) {
+        return {
+          opacity: 0.86,
+          xPercent: -98,
+          y: 10,
+          scale: 0.78,
+          rotate: -8,
+          filter: "blur(0px)",
+        };
+      }
+      if (index === 1) {
+        return {
+          opacity: 0.94,
+          xPercent: -63,
+          y: 2,
+          scale: 0.89,
+          rotate: -3,
+          filter: "blur(0px)",
+        };
+      }
+      return {
+        opacity: 1,
+          xPercent: -35,
+          y: 6,
+          scale: 0.95,
+          rotate: 5.5,
+          filter: "blur(0px)",
+        };
+    }
+
+    return {
+      opacity: 0,
+      xPercent: -50,
+      y: 74,
+      scale: 0.9,
+      rotate: 0,
+      filter: "blur(14px)",
+    };
+  };
+
+  const toGsapTarget = (target: CardTarget) => ({
+    autoAlpha: target.opacity,
+    xPercent: target.xPercent,
+    y: target.y,
+    scale: target.scale,
+    rotate: target.rotate,
+    filter: target.filter,
+  });
+
+  useEffect(() => {
+    const updateVisibility = () => setIsDocumentHidden(document.hidden);
+    updateVisibility();
+    document.addEventListener("visibilitychange", updateVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", updateVisibility);
+  }, []);
+
+  useLayoutEffect(() => {
+    cardRefs.current.forEach((card, index) => {
+      if (!card) return;
+      const target = getCardTarget(index);
+      const previous = lastCardTargetsRef.current[index] || {
+        opacity: 0,
+        xPercent: -50,
+        y: 80,
+        scale: 0.9,
+        rotate: 0,
+        filter: "blur(14px)",
+      };
+      gsap.killTweensOf(card);
+      if (!motionEnabled || isDocumentHidden) {
+        gsap.set(card, toGsapTarget(target));
+        lastCardTargetsRef.current[index] = target;
+        return;
+      }
+      gsap.fromTo(card, toGsapTarget(previous), {
+        ...toGsapTarget(target),
+        duration: introStep <= 1 ? 1.18 : 1.28,
+        ease: introStep >= 4 ? "expo.inOut" : "power4.out",
+        immediateRender: false,
+      });
+      lastCardTargetsRef.current[index] = target;
+    });
+  }, [finalStack, introStep, isDocumentHidden, motionEnabled]);
+
+  return (
+    <div className="relative flex h-full w-full flex-1 overflow-hidden">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at center, rgba(255,255,255,0.035) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,110,0,0.1),transparent_38%),radial-gradient(circle_at_50%_100%,rgba(139,92,246,0.12),transparent_42%)]" />
+
+      <input
+        type="file"
+        accept="application/pdf,image/*"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-5xl flex-col items-center justify-start px-4 pb-5 pt-4 sm:px-6 sm:pt-5 md:px-10 md:pt-5">
+        <div key={introCards[activeIndex].key} className="flex justify-center">
+          <AnimatedHeadlineWords
+            text={introCards[activeIndex].headline}
+            motionEnabled={motionEnabled}
+          />
+        </div>
+
+        <div className="relative mt-1 h-[250px] w-full sm:mt-2 sm:h-[286px] md:h-[330px] lg:h-[372px] xl:h-[404px]">
+          {introCards.map((card, index) => {
+            const isUpload = index === 2;
+            const cardTarget = getCardTarget(index);
+            return (
+              <div
+                key={card.key}
+                data-intro-card={card.key}
+                ref={(node) => {
+                  if (node) cardRefs.current[index] = node;
+                }}
+                className={`absolute left-1/2 top-0 origin-top ${
+                  isUpload ? "pointer-events-auto" : "pointer-events-none"
+                }`}
+                style={{
+                  opacity: 0,
+                  transform: "translate(-50%, 80px) scale(0.9)",
+                  filter: "blur(14px)",
+                  zIndex: finalStack
+                    ? index === 2
+                      ? 30
+                      : 10 + index * 10
+                    : index === activeIndex
+                      ? 30
+                      : 10 + index,
+                }}
+              >
+                <div className="origin-top scale-[0.56] sm:scale-[0.64] md:scale-[0.73] lg:scale-[0.82] xl:scale-[0.89]">
+                  <PatternCard
+                    onClick={
+                      isUpload
+                        ? () => fileInputRef.current?.click()
+                        : undefined
+                    }
+                    onDragOver={
+                      isUpload
+                        ? (event) => {
+                            event.preventDefault();
+                            setIsDragging(true);
+                          }
+                        : undefined
+                    }
+                    onDragLeave={
+                      isUpload ? () => setIsDragging(false) : undefined
+                    }
+                    onDrop={isUpload ? handleDrop : undefined}
+                    isDragging={isUpload && isDragging}
+                    bgClass={card.bgClass || card.theme.bg}
+                    SvgComponent={card.theme.SvgComponent}
+                    bloomColor={card.theme.bloom}
+                    bloomOpacity={card.theme.bloomOpacity}
+                    animateDots={introStep >= index}
+                  >
+                    <div
+                      className="absolute bottom-[38px] left-[38px] right-[38px] z-20 flex flex-col gap-[7px] pointer-events-none"
+                    >
+                      <div
+                        className={`mb-2 w-fit rounded-full border p-3 shadow-lg transition-colors ${card.iconClass}`}
+                      >
+                        {card.icon}
+                      </div>
+                      <div
+                        className={`text-[27px] font-medium leading-[1.04] tracking-tight ${card.textClass}`}
+                      >
+                        {splitCardTitle(card.title)}
+                      </div>
+                      <div
+                        className={`text-[17px] font-light leading-[1.25] tracking-tight opacity-70 ${card.subtextClass}`}
+                      >
+                        {card.subtitle}
+                      </div>
+                    </div>
+                  </PatternCard>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-1 flex items-center gap-2">
+          {introCards.map((card, index) => (
+            <span
+              key={`${card.key}-dot`}
+              className={`h-1.5 rounded-full transition-[width,opacity,transform,background-color] duration-300 ${
+                index === activeIndex ? "w-8 bg-[#ff6e00]" : "w-1.5 bg-white/25"
+              } ${index <= activeIndex ? "opacity-100" : "opacity-30"} ${
+                index === activeIndex ? "scale-110" : "scale-100"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function StudyView() {
   const { t } = useTranslation();
+  const motionEnabled = useMotionPreference();
   const pdfUrl = useStore((state) => state.pdfUrl);
   const setPdfUrl = useStore((state) => state.setPdfUrl);
   const setPdfPage = useStore((state) => state.setPdfPage);
@@ -74,26 +469,15 @@ export function StudyView() {
   const setSelectedTextContext = useStore(
     (state) => state.setSelectedTextContext,
   );
-  const setActiveView = useStore((state) => state.setActiveView);
   const [isDragging, setIsDragging] = useState(false);
   const [isIngesting, setIsIngesting] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(true);
-  const [card1DotsReady, setCard1DotsReady] = useState(false);
-  const [card2DotsReady, setCard2DotsReady] = useState(false);
-  const [card3DotsReady, setCard3DotsReady] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(Boolean(pdfUrl));
+  const [introStep, setIntroStep] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const { scrollYProgress } = useScroll({
-    container: scrollContainerRef,
-  });
-
-  const arrow1Opacity = useTransform(scrollYProgress, [0.3, 0.45], [0.9, 0]);
-  const arrow2Opacity = useTransform(
-    scrollYProgress,
-    [0.3, 0.45, 0.75, 0.9],
-    [0, 0.7, 0.7, 0],
-  );
+  const introOpenedChatRef = useRef(false);
+  const chatSurfaceRef = useRef<HTMLElement | null>(null);
+  const chatPanelFrameRef = useRef<HTMLDivElement | null>(null);
+  const minimizedChatButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     // Clear the chat automatically as requested
@@ -109,13 +493,67 @@ export function StudyView() {
     }
   }, []);
 
-  const handleScrollToNext = (pageIndex: number) => {
-    if (!scrollContainerRef.current) return;
-    const scroller = scrollContainerRef.current;
-    scroller.scrollTo({
-      top: pageIndex * scroller.clientHeight * 0.72,
-      behavior: "smooth",
-    });
+  useEffect(() => {
+    if (pdfUrl) return;
+    if (!motionEnabled) {
+      setIntroStep(4);
+      return;
+    }
+    setIntroStep(0);
+    const timers = [
+      window.setTimeout(() => setIntroStep(1), 2050),
+      window.setTimeout(() => setIntroStep(2), 3600),
+      window.setTimeout(() => setIntroStep(3), 5100),
+      window.setTimeout(() => setIntroStep(4), 6500),
+    ];
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [motionEnabled, pdfUrl]);
+
+  useEffect(() => {
+    if (pdfUrl) {
+      setIsChatOpen(true);
+      return;
+    }
+    if (introStep !== 4 || introOpenedChatRef.current) return;
+    const timer = window.setTimeout(
+      () => {
+        introOpenedChatRef.current = true;
+        setIsChatOpen(true);
+      },
+      motionEnabled ? 580 : 80,
+    );
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [introStep, motionEnabled, pdfUrl]);
+
+  const revealChatNode = (
+    node: HTMLElement,
+    from: { y: number; scale: number; filter: string },
+    duration: number,
+  ) => {
+    gsap.killTweensOf(node);
+    if (!motionEnabled || document.hidden) {
+      gsap.set(node, {
+        autoAlpha: 1,
+        y: 0,
+        scale: 1,
+        filter: "blur(0px)",
+      });
+      return;
+    }
+    gsap.fromTo(
+      node,
+      { autoAlpha: 0, ...from },
+      {
+        autoAlpha: 1,
+        y: 0,
+        scale: 1,
+        filter: "blur(0px)",
+        duration,
+        ease: "power4.out",
+      },
+    );
   };
 
   const ingestDocument = async (file: File) => {
@@ -199,10 +637,42 @@ export function StudyView() {
     setSelectedTextContext("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+  const shouldRenderChatSurface =
+    Boolean(pdfUrl) || isChatOpen || introOpenedChatRef.current;
+
+  useLayoutEffect(() => {
+    if (!shouldRenderChatSurface || !chatSurfaceRef.current) return;
+    revealChatNode(
+      chatSurfaceRef.current,
+      { y: 28, scale: 0.985, filter: "blur(12px)" },
+      0.86,
+    );
+  }, [motionEnabled, shouldRenderChatSurface]);
+
+  useLayoutEffect(() => {
+    if (!shouldRenderChatSurface) return;
+    const activeChatNode = isChatOpen
+      ? chatPanelFrameRef.current
+      : minimizedChatButtonRef.current;
+    if (!activeChatNode) return;
+    revealChatNode(
+      activeChatNode,
+      {
+        y: isChatOpen ? 16 : 10,
+        scale: 0.985,
+        filter: "blur(8px)",
+      },
+      0.42,
+    );
+  }, [isChatOpen, motionEnabled, shouldRenderChatSurface]);
 
   return (
     <div className="flex h-[100dvh] w-full flex-col gap-3 overflow-hidden bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:flex-row xl:gap-8 xl:px-8 xl:pb-8 xl:pt-24">
-      <div className="relative flex min-h-[38vh] w-full flex-1 shrink flex-col overflow-hidden rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B] shadow-2xl xl:h-full xl:min-h-0">
+      <div
+        className={`relative flex w-full flex-1 shrink flex-col overflow-hidden rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B] shadow-2xl xl:h-full xl:min-h-0 ${
+          pdfUrl ? "min-h-[38vh]" : "min-h-[56vh]"
+        }`}
+      >
         {pdfUrl ? (
           <>
             <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
@@ -232,286 +702,39 @@ export function StudyView() {
             <PdfViewer />
           </>
         ) : (
-          <div
-            ref={scrollContainerRef}
-            className="flex-1 w-full h-full flex flex-col overflow-auto relative custom-scroll"
-          >
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at center, rgba(255,255,255,0.03) 1px, transparent 1px)",
-                backgroundSize: "24px 24px",
-                backgroundAttachment: "local",
-              }}
-            />
-
-            <div className="z-10 mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-start overflow-visible p-5 pb-[12vh] pt-[6vh] sm:p-6 md:p-10 lg:p-12 xl:p-10">
-              {/* Text 1: Automatic Reveal */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mb-6 w-full overflow-visible py-3 text-center md:mb-8"
-              >
-                <h2 className="flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 overflow-visible font-serif text-2xl leading-[1.35] tracking-tight text-white/90 sm:text-3xl lg:text-4xl">
-                  {t("study_hero_1")
-                    .split(" ")
-                    .map((word, i, arr) => (
-                      <motion.span
-                        key={i}
-                        className="inline-block"
-                        initial={{ opacity: 0, filter: "blur(12px)", y: 10 }}
-                        animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-                        transition={{
-                          duration: 0.8,
-                          delay: i * 0.15,
-                          ease: "easeOut",
-                        }}
-                        onAnimationComplete={() => {
-                          if (i === arr.length - 1) setCard1DotsReady(true);
-                        }}
-                      >
-                        {word}
-                      </motion.span>
-                    ))}
-                </h2>
-              </motion.div>
-
-              {/* Card 1: Interactive Tutor Container */}
-              <div className="flex flex-col items-center w-full justify-center relative mb-8">
-                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center">
-                  <PatternCard
-                    bgClass={themes[2].bg}
-                    SvgComponent={themes[2].SvgComponent}
-                    bloomColor={themes[2].bloom}
-                    bloomOpacity={themes[2].bloomOpacity}
-                    animateDots={card1DotsReady}
-                  >
-                    <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
-                      <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-black/10 text-black border border-black/10 shadow-lg">
-                        <MessageSquare className="w-5 h-5" />
-                      </div>
-                      <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-black">
-                        {t("study_card_tutor_title").includes(" ") ? (
-                          <>
-                            {t("study_card_tutor_title").split(" ")[0]}
-                            <br />
-                            {t("study_card_tutor_title")
-                              .split(" ")
-                              .slice(1)
-                              .join(" ")}
-                          </>
-                        ) : (
-                          t("study_card_tutor_title")
-                        )}
-                      </div>
-                      <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-black">
-                        {t("study_card_tutor_subtitle")}
-                      </div>
-                    </div>
-                  </PatternCard>
-                </div>
-
-                {/* Scroll Indicator 1 (Beige card -> Orange accent) in normal flow */}
-                <motion.button
-                  type="button"
-                  onClick={() => handleScrollToNext(1)}
-                  className="mt-12 flex flex-col items-center group focus:outline-none cursor-pointer z-30"
-                  style={{ opacity: arrow1Opacity }}
-                >
-                  <span
-                    className="text-[10px] uppercase tracking-[0.25em] font-semibold mb-1 transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 group-hover:scale-110 group-hover:text-orange-400"
-                    style={{
-                      color: "#ff6e00",
-                      textShadow: "0 0 12px rgba(255,110,0,0.4)",
-                    }}
-                  >
-                    {t("scroll")}
-                  </span>
-                  <CurvedArrow color="#ff6e00" />
-                </motion.button>
-              </div>
-
-              <div className="h-[8vh] w-full shrink-0" />
-
-              {/* Text 2: Brain Graph */}
-              <div className="w-full mb-16 text-center">
-                <AnimatedScrollText
-                  text={t("study_scroll_text_2")}
-                  className="justify-center font-serif text-2xl leading-[1.4] tracking-tight text-white/90 sm:text-3xl lg:text-4xl"
-                  scrollContainerRef={scrollContainerRef}
-                  fullRevealDistance={300}
-                  onRevealComplete={setCard2DotsReady}
-                />
-              </div>
-
-              {/* Card 2: Knowledge Graph Container */}
-              <div className="flex flex-col items-center w-full justify-center relative mb-8">
-                <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center">
-                  <PatternCard
-                    bgClass={`${themes[0].bg} border border-white/10`}
-                    SvgComponent={themes[0].SvgComponent}
-                    bloomColor={themes[0].bloom}
-                    bloomOpacity={themes[0].bloomOpacity}
-                    animateDots={card2DotsReady}
-                  >
-                    <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
-                      <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-white/10 text-white border border-white/20 shadow-lg">
-                        <RefreshCw className="w-5 h-5" />
-                      </div>
-                      <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
-                        {t("study_card_graph_title").includes(" ") ? (
-                          <>
-                            {t("study_card_graph_title").split(" ")[0]}
-                            <br />
-                            {t("study_card_graph_title")
-                              .split(" ")
-                              .slice(1)
-                              .join(" ")}
-                          </>
-                        ) : (
-                          t("study_card_graph_title")
-                        )}
-                      </div>
-                      <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
-                        {t("study_card_graph_subtitle")}
-                      </div>
-                    </div>
-                  </PatternCard>
-                </div>
-
-                {/* Scroll Indicator 2 (Dark card -> White accent) in normal flow */}
-                <motion.button
-                  type="button"
-                  onClick={() => handleScrollToNext(2)}
-                  className="mt-12 flex flex-col items-center group focus:outline-none cursor-pointer z-30"
-                  style={{ opacity: arrow2Opacity }}
-                >
-                  <span
-                    className="text-[10px] uppercase tracking-[0.25em] font-semibold mb-1 transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 group-hover:scale-110 group-hover:text-zinc-200"
-                    style={{
-                      color: "#ffffff",
-                      textShadow: "0 0 12px rgba(255,255,255,0.4)",
-                    }}
-                  >
-                    {t("scroll")}
-                  </span>
-                  <CurvedArrow color="#ffffff" />
-                </motion.button>
-              </div>
-
-              <div className="h-[8vh] w-full shrink-0" />
-
-              {/* Text 3: Upload Document */}
-              <div className="w-full text-center pb-16">
-                <AnimatedScrollText
-                  text={t("study_scroll_text_3")}
-                  className="justify-center font-serif text-2xl leading-[1.4] tracking-tight text-white/90 sm:text-3xl lg:text-4xl"
-                  scrollContainerRef={scrollContainerRef}
-                  fullRevealDistance={300}
-                  onRevealComplete={setCard3DotsReady}
-                />
-              </div>
-
-              {/* Card 3: Final Upload Button */}
-              <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center">
-                <input
-                  type="file"
-                  accept="application/pdf,image/*"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-
-                <PatternCard
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDragging(true);
-                  }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={handleDrop}
-                  isDragging={isDragging}
-                  bgClass={themes[1].bg} // Orange theme
-                  SvgComponent={themes[1].SvgComponent}
-                  bloomColor={themes[1].bloom}
-                  bloomOpacity={themes[1].bloomOpacity}
-                  animateDots={card3DotsReady}
-                >
-                  <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
-                    <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-[#ff6e00]/20 text-white border border-white/20 shadow-lg">
-                      <UploadCloud className="w-5 h-5" />
-                    </div>
-                    <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#fefefe]">
-                      {isIngesting ? (
-                        t("study_card_ingest_title")
-                      ) : t("study_card_upload_title").includes(" ") ? (
-                        <>
-                          {t("study_card_upload_title").split(" ")[0]}
-                          <br />
-                          {t("study_card_upload_title")
-                            .split(" ")
-                            .slice(1)
-                            .join(" ")}
-                        </>
-                      ) : (
-                        t("study_card_upload_title")
-                      )}
-                    </div>
-                    <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#fefefe]">
-                      {isIngesting
-                        ? t("study_card_ingest_subtitle")
-                        : t("study_card_upload_subtitle")}
-                    </div>
-                  </div>
-                </PatternCard>
-              </div>
-            </div>
-          </div>
+          <StudyIntroSplash
+            introStep={introStep}
+            motionEnabled={motionEnabled}
+            isDragging={isDragging}
+            isIngesting={isIngesting}
+            fileInputRef={fileInputRef}
+            setIsDragging={setIsDragging}
+            handleDrop={handleDrop}
+            handleFileChange={handleFileChange}
+            t={t}
+          />
         )}
       </div>
 
-      <motion.aside
-        layout="position"
-        transition={{ type: "spring", stiffness: 260, damping: 34, mass: 0.8 }}
-        className="flex min-h-0 w-full flex-1 origin-bottom-right flex-col gap-2 md:gap-3 xl:h-[calc(100%-0.5rem)] xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center"
-      >
-        <AnimatePresence initial={false} mode="popLayout">
+      {shouldRenderChatSurface && (
+          <aside
+            ref={chatSurfaceRef}
+            className="flex min-h-0 w-full flex-1 origin-bottom-right flex-col gap-2 md:gap-3 xl:h-[calc(100%-0.5rem)] xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center"
+          >
           {isChatOpen ? (
-            <motion.div
+            <div
               key="chat-panel"
-              layout="position"
-              initial={{ opacity: 0, y: 18, scale: 0.98, filter: "blur(8px)" }}
-              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-              exit={{
-                opacity: 0,
-                y: 10,
-                scale: 0.985,
-                filter: "blur(5px)",
-                transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 260,
-                damping: 32,
-                mass: 0.8,
-              }}
+              ref={chatPanelFrameRef}
               className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-black/5 bg-[#fdfdfd] text-[#050505] shadow-[0_20px_60px_rgba(0,0,0,0.15)] origin-bottom"
             >
               <ChatPanel onClose={() => setIsChatOpen(false)} />
-            </motion.div>
+            </div>
           ) : (
-            <motion.button
+            <button
               key="chat-minimized"
-              layout="position"
-              initial={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: 8, scale: 0.98, filter: "blur(4px)" }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.98 }}
+              ref={minimizedChatButtonRef}
               onClick={() => setIsChatOpen(true)}
-              className="group relative flex min-h-[92px] items-center justify-between overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] px-5 py-4 text-left text-white shadow-[0_18px_54px_rgba(0,0,0,0.34)] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 hover:border-white/20 hover:shadow-[0_22px_60px_rgba(255,110,0,0.1)]"
+              className="group relative flex min-h-[92px] items-center justify-between overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] px-5 py-4 text-left text-white shadow-[0_18px_54px_rgba(0,0,0,0.34)] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_22px_60px_rgba(255,110,0,0.1)] active:scale-[0.98]"
             >
               {/* Radial Gradients matching Usage UI */}
               <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_16%_0%,rgba(255,110,0,0.24),transparent_36%),radial-gradient(circle_at_90%_110%,rgba(255,255,255,0.08),transparent_38%)] transition-opacity duration-300 group-hover:opacity-100 opacity-80" />
@@ -543,10 +766,10 @@ export function StudyView() {
                   {t("open")}
                 </div>
               </div>
-            </motion.button>
+            </button>
           )}
-        </AnimatePresence>
-      </motion.aside>
+          </aside>
+        )}
     </div>
   );
 }

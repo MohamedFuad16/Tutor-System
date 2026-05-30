@@ -1,9 +1,9 @@
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect, useLayoutEffect, useRef } from "react";
 import { useStore } from "./store";
 import { Navigation } from "./components/Navigation";
 import { SettingsButton } from "./components/SettingsModal";
 import { StudyView } from "./views/StudyView";
-import { AnimatePresence, motion } from "motion/react";
+import { gsap } from "gsap";
 
 const AnalyticsView = React.lazy(() =>
   import("./views/AnalyticsView").then((module) => ({
@@ -29,15 +29,62 @@ function RouteFallback() {
   );
 }
 
+function GsapRouteFrame({
+  children,
+  routeKey,
+  variant,
+}: {
+  children: React.ReactNode;
+  routeKey: string;
+  variant: "rise" | "scale" | "slide" | "admin";
+}) {
+  const frameRef = useRef<HTMLDivElement | null>(null);
+
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    const from =
+      variant === "slide"
+        ? { autoAlpha: 0, x: 20, y: 0, scale: 1 }
+        : variant === "scale"
+          ? { autoAlpha: 0, x: 0, y: 0, scale: 0.96 }
+          : { autoAlpha: 0, x: 0, y: variant === "admin" ? 20 : 10, scale: 0.985 };
+
+    gsap.fromTo(
+      frame,
+      from,
+      {
+        autoAlpha: 1,
+        x: 0,
+        y: 0,
+        scale: 1,
+        duration: 0.3,
+        ease: "power3.out",
+      },
+    );
+  }, [routeKey, variant]);
+
+  return (
+    <div ref={frameRef} className="absolute inset-0">
+      {children}
+    </div>
+  );
+}
+
 export default function App() {
   const activeView = useStore((state) => state.activeView);
   const setActiveView = useStore((state) => state.setActiveView);
+  const accessMode = useStore((state) => state.accessMode);
 
   useEffect(() => {
     if (!VALID_VIEWS.has(activeView as string)) {
       setActiveView("study");
+      return;
     }
-  }, [activeView, setActiveView]);
+    if (accessMode === "user" && activeView === "admin") {
+      setActiveView("study");
+    }
+  }, [accessMode, activeView, setActiveView]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -57,11 +104,12 @@ export default function App() {
       if (e.key === "1") setActiveView("study");
       if (e.key === "2") setActiveView("analytics");
       if (e.key === "3") setActiveView("revision");
+      if (e.key === "4" && accessMode === "admin") setActiveView("admin");
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setActiveView]);
+  }, [accessMode, setActiveView]);
 
   return (
     <div className="h-screen w-screen bg-[#050505] text-zinc-100 overflow-hidden font-sans selection:bg-blue-500/30 selection:text-blue-100 relative">
@@ -73,62 +121,48 @@ export default function App() {
       )}
 
       <main className="h-full w-full relative overflow-hidden">
-        <AnimatePresence mode="wait">
           {activeView === "study" && (
-            <motion.div
+            <GsapRouteFrame
               key="study"
-              initial={{ opacity: 0, y: 10, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.98 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="absolute inset-0"
+              routeKey="study"
+              variant="rise"
             >
               <StudyView />
-            </motion.div>
+            </GsapRouteFrame>
           )}
           {activeView === "analytics" && (
-            <motion.div
+            <GsapRouteFrame
               key="analytics"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="absolute inset-0"
+              routeKey="analytics"
+              variant="scale"
             >
               <Suspense fallback={<RouteFallback />}>
                 <AnalyticsView />
               </Suspense>
-            </motion.div>
+            </GsapRouteFrame>
           )}
           {activeView === "revision" && (
-            <motion.div
+            <GsapRouteFrame
               key="revision"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="absolute inset-0"
+              routeKey="revision"
+              variant="slide"
             >
               <Suspense fallback={<RouteFallback />}>
                 <RevisionView />
               </Suspense>
-            </motion.div>
+            </GsapRouteFrame>
           )}
           {activeView === "admin" && (
-            <motion.div
+            <GsapRouteFrame
               key="admin"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="absolute inset-0"
+              routeKey="admin"
+              variant="admin"
             >
               <Suspense fallback={<RouteFallback />}>
                 <AdminView />
               </Suspense>
-            </motion.div>
+            </GsapRouteFrame>
           )}
-        </AnimatePresence>
       </main>
     </div>
   );

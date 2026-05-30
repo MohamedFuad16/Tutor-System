@@ -28,7 +28,6 @@ import {
   Folder,
   Check,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -799,11 +798,10 @@ const WireframeMap = () => {
             ))}
 
             {wireframeNodes.map((node) => (
-              <motion.div
+              <div
                 key={node.id}
-                whileHover={{ y: -4, scale: 1.03 }}
                 data-wireframe-node={node.id}
-                className={`absolute z-30 flex min-h-[86px] w-[160px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[22px] border px-3 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] ${nodeClass(
+                className={`absolute z-30 flex min-h-[86px] w-[160px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[22px] border px-3 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] transition-transform duration-300 hover:scale-[1.03] ${nodeClass(
                   node.tone,
                 )}`}
                 style={{ left: node.x, top: node.y }}
@@ -818,7 +816,7 @@ const WireframeMap = () => {
                 >
                   {node.summary}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -864,20 +862,18 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
               }`}
             >
               {activeRoute === label && (
-                <motion.span
-                  layoutId="adl-nav-active-pill"
+                <span
                   className="absolute inset-0 rounded-full bg-white/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_22px_rgba(0,0,0,0.35)]"
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
-              <motion.span
-                className="relative z-10 inline-flex items-center gap-2"
-                animate={{ y: activeRoute === label ? -1 : 0 }}
-                transition={{ type: "spring", stiffness: 420, damping: 28 }}
+              <span
+                className={`relative z-10 inline-flex items-center gap-2 transition-transform duration-200 ${
+                  activeRoute === label ? "-translate-y-px" : ""
+                }`}
               >
                 <Icon size={14} />
                 {label}
-              </motion.span>
+              </span>
             </button>
           ))}
         </div>
@@ -997,14 +993,10 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
     return (
       <div className="flex justify-center rounded-[28px] bg-[#f7f7f8] p-6 shadow-inner">
         <div className="relative flex items-center gap-1 overflow-hidden rounded-xl bg-[#121214]/95 p-1 text-white shadow-[0_20px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl">
-          <motion.div
-            className="absolute inset-[-60%] h-[220%] w-[220%]"
-            animate={motionEnabled ? { rotate: 360 } : { rotate: 0 }}
-            transition={{
-              repeat: motionEnabled ? Infinity : 0,
-              duration: motionEnabled ? 4 : 0,
-              ease: "linear",
-            }}
+          <div
+            className={`absolute inset-[-60%] h-[220%] w-[220%] ${
+              motionEnabled ? "animate-[spin_4s_linear_infinite]" : ""
+            }`}
             style={{
               background:
                 "conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.08) 40%, rgba(255,255,255,0.72) 50%, rgba(255,255,255,0.08) 60%, transparent 100%)",
@@ -1130,19 +1122,16 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
               </div>
             </div>
           </div>
-          <motion.span animate={{ rotate: thinkingOpen ? 180 : 0 }}>
+          <span
+            className={`transition-transform duration-200 ${
+              thinkingOpen ? "rotate-180" : ""
+            }`}
+          >
             <ChevronDown size={16} className="text-zinc-400" />
-          </motion.span>
+          </span>
         </button>
-        <AnimatePresence initial={false}>
           {thinkingOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
-              className="overflow-hidden border-t border-zinc-100"
-            >
+            <div className="overflow-hidden border-t border-zinc-100">
               <div className="space-y-2 px-4 py-3 text-[12px] text-zinc-500">
                 {["Retrieving relevant context", "Linking concepts"].map(
                   (item) => (
@@ -1155,9 +1144,8 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
                   ),
                 )}
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
       </div>
     );
   }
@@ -1235,23 +1223,16 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
               }`}
             >
               {settingsTab === tab && (
-                <motion.span
-                  layoutId="adl-settings-tab"
+                <span
                   className="absolute inset-0 rounded-full bg-zinc-950/5 shadow-[0_8px_18px_rgba(24,24,27,0.08)]"
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
               <span className="relative z-10">{tab}</span>
             </button>
           ))}
         </div>
-        <AnimatePresence mode="popLayout">
-          <motion.div
+          <div
             key={settingsTab}
-            initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
-            transition={{ duration: 0.2 }}
             className="mt-4 rounded-2xl border border-zinc-200 bg-white/80 p-4 text-xs text-zinc-600 shadow-sm"
           >
             <div className="flex items-center gap-2 font-semibold text-zinc-950">
@@ -1260,8 +1241,7 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
             </div>
             <div className="mt-3 h-2 rounded-full bg-zinc-200" />
             <div className="mt-2 h-2 w-2/3 rounded-full bg-zinc-200" />
-          </motion.div>
-        </AnimatePresence>
+          </div>
       </div>
     );
   }
@@ -1526,19 +1506,21 @@ const FlashcardUI = React.memo(
 
     return (
       <div className="w-full max-w-sm mx-auto mb-8 h-[240px] relative perspective-[1000px]">
-        <motion.div
+        <div
           className="w-full h-full relative cursor-pointer"
-          animate={{ rotateY: flipped ? 180 : 0 }}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          style={{ transformStyle: "preserve-3d" }}
+          style={{
+            transform: `rotateY(${flipped ? 180 : 0}deg)`,
+            transformStyle: "preserve-3d",
+            transition: "transform 420ms cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
           onClick={() => setFlipped(!flipped)}
         >
           {/* Front */}
-          <motion.div
+          <div
             className="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-6 bg-[#0A0A0B] border border-white/10 rounded-2xl shadow-xl"
-            animate={{ opacity: flipped ? 0 : 1 }}
-            transition={{ duration: 0.1, delay: flipped ? 0 : 0.1 }}
             style={{
+              opacity: flipped ? 0 : 1,
+              transition: `opacity 120ms ease ${flipped ? "0ms" : "100ms"}`,
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               pointerEvents: flipped ? "none" : "auto",
@@ -1550,15 +1532,15 @@ const FlashcardUI = React.memo(
               </span>
               <p className="text-lg font-serif text-white">{card.front}</p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Back */}
-          <motion.div
+          <div
             className="absolute inset-0 w-full h-full flex flex-col p-6 bg-white/5 border border-white/10 rounded-2xl shadow-xl bg-gradient-to-br from-[#1A1A1E] to-[#0A0A0B]"
-            animate={{ opacity: flipped ? 1 : 0 }}
-            transition={{ duration: 0.1, delay: flipped ? 0.1 : 0 }}
             style={{
               transform: "rotateY(180deg)",
+              opacity: flipped ? 1 : 0,
+              transition: `opacity 120ms ease ${flipped ? "100ms" : "0ms"}`,
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               pointerEvents: flipped ? "auto" : "none",
@@ -1617,8 +1599,8 @@ const FlashcardUI = React.memo(
                 EASY
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     );
   },
@@ -1655,27 +1637,23 @@ const FlashcardDeck = ({
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
         {cards.slice(0, 1).map((card) => (
-          <motion.div
+          <div
             key={card.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94 }}
           >
             <FlashcardUI
               card={card}
               onReview={(quality) => onReview(card, quality)}
             />
-          </motion.div>
+          </div>
         ))}
-      </AnimatePresence>
     </div>
   );
 };
 
 export function RevisionView() {
   const setActiveView = useStore((state) => state.setActiveView);
+  const accessMode = useStore((state) => state.accessMode);
   const [libraryRevision, setLibraryRevision] = useState(0);
 
   const concepts = React.useMemo(
@@ -2095,13 +2073,8 @@ export function RevisionView() {
             )}
 
             <div className="relative isolate mx-auto w-full max-w-4xl flex-1 p-5 sm:p-6 md:p-10 lg:p-16 xl:p-20">
-              <AnimatePresence mode="wait">
-                <motion.div
+                <div
                   key={currentChapterIndex}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
                   className="relative z-10 font-serif pb-12"
                 >
                   <div className="mb-10 border-b border-zinc-200 pb-8 pt-4 font-sans cursor-default">
@@ -2132,8 +2105,7 @@ export function RevisionView() {
                       </ReactMarkdown>
                     </div>
                   )}
-                </motion.div>
-              </AnimatePresence>
+                </div>
 
               {(isBuiltInBook || activeLearningBook) &&
                 activeChapterCount > 1 && (
@@ -2309,45 +2281,38 @@ export function RevisionView() {
               );
             })}
 
-            {/* Admin Book */}
-            <PatternCard
-              layoutId="card-admin-dashboard"
-              onClick={() => setActiveView("admin")}
-              bgClass="bg-[#ecebe9]"
-              SvgComponent={SvgBeige}
-              bloomColor="rgb(255, 110, 0)"
-              bloomOpacity={0.18}
-            >
-              <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
-                <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-[#ff6e00]/10 text-[#ff6e00]">
-                  <BookOpen className="w-5 h-5" />
+            {accessMode === "admin" && (
+              <PatternCard
+                layoutId="card-admin-dashboard"
+                onClick={() => setActiveView("admin")}
+                bgClass="bg-[#ecebe9]"
+                SvgComponent={SvgBeige}
+                bloomColor="rgb(255, 110, 0)"
+                bloomOpacity={0.18}
+              >
+                <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
+                  <div className="p-3 rounded-full w-fit mb-2 transition-colors bg-[#ff6e00]/10 text-[#ff6e00]">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#1f1f1f]">
+                    Admin
+                    <br />
+                    Dashboard
+                  </div>
+                  <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#1f1f1f]">
+                    View live DeepSeek LLM traces and server console logs.
+                  </div>
                 </div>
-                <div className="text-[25px] font-medium tracking-tight leading-[1.05] text-[#1f1f1f]">
-                  Admin
-                  <br />
-                  Dashboard
-                </div>
-                <div className="text-[16px] font-light tracking-tight leading-[1.25] opacity-70 text-[#1f1f1f]">
-                  View live DeepSeek LLM traces and server console logs.
-                </div>
-              </div>
-            </PatternCard>
+              </PatternCard>
+            )}
           </div>
         </div>
       )}
-      <AnimatePresence>
         {deleteTarget && (
-          <motion.div
+          <div
             className="fixed inset-0 z-[120] flex items-center justify-center bg-zinc-950/35 px-4 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
           >
-            <motion.div
-              initial={{ opacity: 0, y: 18, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 14, scale: 0.96 }}
-              transition={{ type: "spring", stiffness: 420, damping: 30 }}
+            <div
               className="relative w-full max-w-md overflow-hidden rounded-[28px] border border-zinc-900/10 bg-[#faf9f6] p-6 shadow-[0_30px_90px_rgba(46,36,22,0.28)]"
             >
               <div
@@ -2391,10 +2356,9 @@ export function RevisionView() {
                   Delete
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 }

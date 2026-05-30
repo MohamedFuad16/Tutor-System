@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { gsap } from "gsap";
 import {
   BarChart3,
   Coins,
@@ -15,11 +15,23 @@ import {
   RotateCcw,
   Search,
   Volume2,
+  Crown,
+  Gauge,
+  ShieldCheck,
+  TimerReset,
+  UserCog,
 } from "lucide-react";
 import { useStore } from "../store";
-import { SiriLiquidGlass } from "./SiriLiquidGlass";
 import { useTranslation } from "../lib/translations";
 import { useMotionPreference } from "../hooks/useMotionPreference";
+import {
+  type AccessMode,
+  estimateServiceMinutes,
+  formatServiceTime,
+  getPlanOption,
+  planOptions,
+  serviceMilestones,
+} from "../lib/accessPlans";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -56,10 +68,8 @@ const UsageGraphBar = ({
         <span className="font-mono text-zinc-300">{formatCount(value)}</span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-white/[0.07]">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${width}%` }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
+        <div
+          style={{ width: `${width}%` }}
           className={`h-full rounded-full ${color}`}
         />
       </div>
@@ -96,13 +106,13 @@ function UsageInsightsPanel() {
       key: "voice",
       label: "Voice",
       value: voiceUsage.cost,
-      color: "bg-violet-400",
+      color: "bg-white/70",
     },
     {
       key: "search",
       label: "Search",
       value: webUsage.cost,
-      color: "bg-cyan-300",
+      color: "bg-white/40",
     },
   ];
 
@@ -138,17 +148,15 @@ function UsageInsightsPanel() {
           <div className="relative mt-4 h-2 overflow-hidden rounded-full bg-white/[0.08]">
             <div className="flex h-full w-full">
               {costSegments.map((segment) => (
-                <motion.div
+                <div
                   key={segment.key}
-                  initial={{ width: 0 }}
-                  animate={{
+                  style={{
                     width:
                       totalCost > 0
                         ? `${Math.max(3, (segment.value / totalCost) * 100)}%`
                         : "33.333%",
                   }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className={segment.color}
+                  className={`${segment.color} transition-[width] duration-500 ease-out`}
                   title={`${segment.label}: ${formatCurrency(segment.value)}`}
                 />
               ))}
@@ -207,7 +215,7 @@ function UsageInsightsPanel() {
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-white/10 bg-[#121214] p-4">
             <div className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
-              <Volume2 size={15} className="text-violet-400" />
+              <Volume2 size={15} className="text-zinc-400" />
               Voice
             </div>
             <div className="text-xl font-semibold text-white">
@@ -217,7 +225,7 @@ function UsageInsightsPanel() {
           </div>
           <div className="rounded-2xl border border-white/10 bg-[#121214] p-4">
             <div className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
-              <Search size={15} className="text-cyan-300" />
+              <Search size={15} className="text-zinc-400" />
               Search
             </div>
             <div className="text-xl font-semibold text-white">
@@ -231,11 +239,173 @@ function UsageInsightsPanel() {
   );
 }
 
+function UserUsagePanel({
+  showPlanSelector = true,
+  showMilestones = true,
+}: {
+  showPlanSelector?: boolean;
+  showMilestones?: boolean;
+}) {
+  const chatUsage = useStore((state) => state.chatUsage);
+  const voiceUsage = useStore((state) => state.voiceUsage);
+  const webUsage = useStore((state) => state.webUsage);
+  const planTier = useStore((state) => state.planTier);
+  const setPlanTier = useStore((state) => state.setPlanTier);
+  const plan = getPlanOption(planTier);
+  const usedRequests = chatUsage.requests + webUsage.requests;
+  const remainingRequests = Math.max(0, plan.dailyRequests - usedRequests);
+  const serviceMinutes = estimateServiceMinutes({
+    chatRequests: chatUsage.requests,
+    webRequests: webUsage.requests,
+    voiceSeconds: voiceUsage.connectionSeconds,
+  });
+  const serviceProgress = Math.min(100, (serviceMinutes / 180) * 100);
+
+  return (
+    <div className="space-y-4">
+      <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f12] p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+              <Gauge size={13} className="text-[#ff6e00]" />
+              Rate limit left
+            </div>
+            <div className="mt-2 flex items-end gap-2">
+              <span className="text-3xl font-semibold tracking-tight text-white">
+                {formatCount(remainingRequests)}
+              </span>
+              <span className="pb-1 text-xs font-medium text-zinc-500">
+                / {formatCount(plan.dailyRequests)} requests today
+              </span>
+            </div>
+          </div>
+          <div
+            className="rounded-full border px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em]"
+            style={{
+              borderColor: `${plan.accent}55`,
+              background: `${plan.accent}1a`,
+              color: plan.accent,
+            }}
+          >
+            {plan.name} plan
+          </div>
+        </div>
+
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.08]">
+          <div
+            style={{
+              width: `${Math.max(4, Math.min(100, (usedRequests / plan.dailyRequests) * 100))}%`,
+            }}
+            className="h-full rounded-full bg-[#ff6e00] shadow-[0_0_20px_rgba(255,110,0,0.45)] transition-[width] duration-500 ease-out"
+          />
+        </div>
+      </div>
+
+      {showMilestones && (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                <TimerReset size={15} className="text-zinc-300" />
+                Service milestones
+              </div>
+              <div className="mt-1 text-xs text-zinc-500">
+                {formatServiceTime(serviceMinutes)} studied in this browser.
+              </div>
+            </div>
+            <div className="text-right text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+              3 hr path
+            </div>
+          </div>
+          <div className="relative pt-2">
+            <div className="absolute left-0 right-0 top-[1.05rem] h-1 rounded-full bg-white/[0.08]" />
+            <div
+              style={{ width: `${serviceProgress}%` }}
+              className="absolute left-0 top-[1.05rem] h-1 rounded-full bg-gradient-to-r from-[#ff6e00] to-white shadow-[0_0_18px_rgba(255,110,0,0.24)] transition-[width] duration-700 ease-out"
+            />
+            <div className="relative grid grid-cols-3 gap-3">
+              {serviceMilestones.map((milestone) => {
+                const reached = serviceMinutes >= milestone.minutes;
+                return (
+                  <div
+                    key={milestone.label}
+                    className="flex flex-col items-center gap-2 text-center transition-[transform,opacity] duration-300 ease-out"
+                  >
+                    <div
+                      className={`h-4 w-4 rounded-full border ${
+                        reached
+                          ? "border-[#ffb17a] bg-[#ff6e00] shadow-[0_0_20px_rgba(255,110,0,0.45)]"
+                          : "border-white/15 bg-[#101014]"
+                      }`}
+                    />
+                    <div
+                      className={`text-[11px] font-semibold ${
+                        reached ? "text-white" : "text-zinc-500"
+                      }`}
+                    >
+                      {milestone.label}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPlanSelector && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {planOptions.map((option) => {
+            const selected = option.id === planTier;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setPlanTier(option.id)}
+                className={`relative overflow-hidden rounded-2xl border p-3 text-left transition-[color,background-color,border-color,box-shadow,transform] hover:-translate-y-0.5 active:scale-[0.98] ${
+                  selected
+                    ? "border-white/20 bg-white/[0.09]"
+                    : "border-white/10 bg-white/[0.04] hover:bg-white/[0.07]"
+                }`}
+              >
+                <div
+                  className="absolute inset-x-0 top-0 h-1"
+                  style={{ background: option.accent }}
+                />
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                    <Crown size={14} style={{ color: option.accent }} />
+                    {option.name}
+                  </div>
+                  {selected && (
+                    <ShieldCheck size={15} className="text-[#ffb17a]" />
+                  )}
+                </div>
+                <div className="mt-2 text-lg font-semibold text-white">
+                  {formatCount(option.dailyRequests)}
+                </div>
+                <div className="text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+                  daily requests
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+                  {option.description}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SettingsButton() {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
   const motionEnabled = useMotionPreference();
   const {
+    accessMode,
+    setAccessMode,
     apiKey,
     setApiKey,
     serperApiKey,
@@ -255,6 +425,7 @@ export function SettingsButton() {
     language,
     setLanguage,
     activeView,
+    setActiveView,
   } = useStore();
   const [inputKey, setInputKey] = useState(apiKey);
   const [inputSerperKey, setInputSerperKey] = useState(serperApiKey);
@@ -268,10 +439,25 @@ export function SettingsButton() {
   const [personaDesc, setPersonaDesc] = useState("");
   const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
   const [personaStatus, setPersonaStatus] = useState<string | null>(null);
-  const [isHovered, setIsHovered] = useState(false);
+  const [switchingMode, setSwitchingMode] = useState<AccessMode | null>(null);
   const [activeTab, setActiveTab] = useState<"general" | "persona" | "usage">(
     "general",
   );
+  const settingsBorderRef = useRef<HTMLDivElement | null>(null);
+  const modalBackdropRef = useRef<HTMLDivElement | null>(null);
+  const modalFrameRef = useRef<HTMLDivElement | null>(null);
+  const tabPanelRef = useRef<HTMLDivElement | null>(null);
+  const settingsTabBarRef = useRef<HTMLDivElement | null>(null);
+  const settingsTabPillRef = useRef<HTMLSpanElement | null>(null);
+  const settingsTabButtonRefs = useRef<
+    Record<"general" | "persona" | "usage", HTMLButtonElement | null>
+  >({
+    general: null,
+    persona: null,
+    usage: null,
+  });
+  const switchingOverlayRef = useRef<HTMLDivElement | null>(null);
+  const switchingCardRef = useRef<HTMLDivElement | null>(null);
 
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -320,10 +506,136 @@ export function SettingsButton() {
     language,
   ]);
 
+  useEffect(() => {
+    const border = settingsBorderRef.current;
+    if (!border) return;
+    gsap.killTweensOf(border);
+    gsap.set(border, { rotate: 0 });
+    if (!motionEnabled) return;
+    const tween = gsap.to(border, {
+      rotate: 360,
+      duration: 4,
+      repeat: -1,
+      ease: "none",
+    });
+    return () => {
+      tween.kill();
+    };
+  }, [motionEnabled]);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    if (modalBackdropRef.current) {
+      gsap.fromTo(
+        modalBackdropRef.current,
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: motionEnabled ? 0.16 : 0, ease: "power2.out" },
+      );
+    }
+    if (modalFrameRef.current) {
+      gsap.fromTo(
+        modalFrameRef.current,
+        { autoAlpha: 0, y: 16, scale: 0.975, filter: "blur(8px)" },
+        {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          filter: "blur(0px)",
+          duration: motionEnabled ? 0.28 : 0,
+          ease: "power4.out",
+        },
+      );
+    }
+  }, [isOpen, motionEnabled]);
+
+  useLayoutEffect(() => {
+    const panel = tabPanelRef.current;
+    if (!panel) return;
+    gsap.killTweensOf(panel);
+    gsap.fromTo(
+      panel,
+      { autoAlpha: 0, y: 10, filter: "blur(6px)" },
+      {
+        autoAlpha: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: motionEnabled ? 0.18 : 0,
+        ease: "power2.out",
+      },
+    );
+  }, [activeTab, motionEnabled]);
+
+  useLayoutEffect(() => {
+    const bar = settingsTabBarRef.current;
+    const pill = settingsTabPillRef.current;
+    const activeButton = settingsTabButtonRefs.current[activeTab];
+    if (!bar || !pill || !activeButton) return;
+    const barRect = bar.getBoundingClientRect();
+    const buttonRect = activeButton.getBoundingClientRect();
+    gsap.killTweensOf(pill);
+    gsap.to(pill, {
+      autoAlpha: 1,
+      x: buttonRect.left - barRect.left,
+      y: buttonRect.top - barRect.top,
+      width: buttonRect.width,
+      height: buttonRect.height,
+      duration: motionEnabled ? 0.2 : 0,
+      ease: "power3.out",
+    });
+  }, [activeTab, motionEnabled]);
+
+  useLayoutEffect(() => {
+    if (!switchingMode) return;
+    if (switchingOverlayRef.current) {
+      gsap.fromTo(
+        switchingOverlayRef.current,
+        { autoAlpha: 0, filter: "blur(10px)" },
+        {
+          autoAlpha: 1,
+          filter: "blur(0px)",
+          duration: motionEnabled ? 0.18 : 0,
+          ease: "power2.out",
+        },
+      );
+    }
+    if (switchingCardRef.current) {
+      gsap.fromTo(
+        switchingCardRef.current,
+        { y: 18, scale: 0.96 },
+        {
+          y: 0,
+          scale: 1,
+          duration: motionEnabled ? 0.28 : 0,
+          ease: "power4.out",
+        },
+      );
+    }
+  }, [motionEnabled, switchingMode]);
+
+  const handleAccessModeChange = (mode: AccessMode) => {
+    if (mode === accessMode || switchingMode) return;
+    setSwitchingMode(mode);
+    setAccessMode(mode);
+    if (mode === "user" && activeView === "admin") {
+      setActiveView("study");
+    }
+    window.setTimeout(() => {
+      window.location.reload();
+    }, motionEnabled ? 480 : 120);
+  };
+
   const handleSave = async () => {
     setValidationError(null);
     const trimmedSerperKey = inputSerperKey.trim();
     const trimmedDeepgramKey = inputDeepgramKey.trim();
+
+    if (accessMode === "user") {
+      setLearnerName(inputLearnerName);
+      setAnimationsEnabled(inputAnimations);
+      setLanguage(inputLanguage);
+      setIsOpen(false);
+      return;
+    }
 
     // Auto-save if key is empty
     if (!inputKey || inputKey.trim() === "") {
@@ -382,8 +694,6 @@ export function SettingsButton() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         className="fixed right-4 top-[4.35rem] z-50 flex h-[42px] w-[42px] items-center justify-center overflow-visible rounded-full p-[1px] transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:outline-none group sm:right-8 sm:top-8 sm:h-[46px] sm:w-[46px]"
         style={{
           boxShadow:
@@ -401,13 +711,8 @@ export function SettingsButton() {
             maskComposite: "exclude",
           }}
         >
-          <motion.div
-            animate={motionEnabled ? { rotate: 360 } : { rotate: 0 }}
-            transition={{
-              repeat: motionEnabled ? Infinity : 0,
-              duration: motionEnabled ? 4 : 0,
-              ease: "linear",
-            }}
+          <div
+            ref={settingsBorderRef}
             className="absolute inset-[-50%] w-[200%] h-[200%]"
             style={{
               background:
@@ -435,26 +740,21 @@ export function SettingsButton() {
         </div>
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                if (!isValidating) setIsOpen(false);
-              }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-2xl px-4"
-            >
-              <div className="relative overflow-hidden bg-[#09090b]/95 border border-white/10 rounded-[30px] p-6 shadow-[0_34px_110px_rgba(0,0,0,0.58),inset_0_1px_0_rgba(255,255,255,0.08)] flex flex-col gap-6 backdrop-blur-2xl">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,110,0,0.18),transparent_34%),radial-gradient(circle_at_88%_10%,rgba(124,58,237,0.16),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.055),transparent_42%)]" />
+      {isOpen && (
+        <>
+          <div
+            ref={modalBackdropRef}
+            onClick={() => {
+              if (!isValidating) setIsOpen(false);
+            }}
+            className="fixed inset-0 z-[100] bg-black/64 backdrop-blur-sm"
+          />
+          <div
+            ref={modalFrameRef}
+            className="fixed inset-0 z-[101] flex items-center justify-center px-3 py-4 pointer-events-none sm:px-6"
+          >
+            <div className="pointer-events-auto relative flex max-h-[min(720px,calc(100dvh-2rem))] w-full max-w-2xl flex-col gap-4 overflow-hidden rounded-[28px] border border-white/10 bg-[#09090b]/95 p-4 shadow-[0_34px_110px_rgba(0,0,0,0.58),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl sm:gap-5 sm:rounded-[30px] sm:p-6">
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),transparent_42%)]" />
                 <div className="flex justify-between items-center">
                   <h2 className="relative z-10 text-xl font-medium tracking-tight text-white flex items-center gap-2">
                     <Settings size={20} className="text-[#ff6e00]" />
@@ -471,66 +771,95 @@ export function SettingsButton() {
                   </button>
                 </div>
 
-                <div className="flex bg-white/[0.05] border border-white/10 rounded-full p-1 relative z-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                <div className="relative z-10 overflow-visible rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+                  <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_11.5rem] sm:items-center">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                        <UserCog size={15} className="text-[#ff6e00]" />
+                        Access style
+                      </div>
+                      <p className="mt-1 max-w-md text-xs leading-relaxed text-zinc-500">
+                        User mode shows plan limits and milestones. Admin keeps
+                        the developer controls available.
+                      </p>
+                    </div>
+                    <div className="grid h-9 w-full max-w-[11.5rem] grid-cols-2 gap-0.5 justify-self-stretch overflow-hidden rounded-full border border-white/10 bg-black/35 p-0.5 sm:justify-self-end">
+                      {(["user", "admin"] as AccessMode[]).map((mode) => {
+                        const selected = accessMode === mode;
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => handleAccessModeChange(mode)}
+                            disabled={Boolean(switchingMode)}
+                            className={`relative rounded-full px-1.5 text-[11px] font-semibold capitalize transition-[color,background-color,border-color,box-shadow] disabled:cursor-wait ${
+                              selected
+                                ? "border border-white/10 bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                                : "text-zinc-500 hover:text-zinc-200"
+                            }`}
+                          >
+                            <span className="relative z-10">{mode}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  ref={settingsTabBarRef}
+                  className="relative z-10 flex rounded-full border border-white/10 bg-white/[0.05] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                >
+                  <span
+                    ref={settingsTabPillRef}
+                    className="pointer-events-none absolute left-0 top-0 z-10 rounded-full border border-white/10 bg-white/[0.09] opacity-0 shadow-[0_10px_24px_rgba(0,0,0,0.25)]"
+                  />
                   <button
+                    ref={(node) => {
+                      settingsTabButtonRefs.current.general = node;
+                    }}
                     onClick={() => setActiveTab("general")}
-                    className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors relative z-20 ${activeTab === "general" ? "text-white" : "text-zinc-500 hover:text-zinc-200"}`}
+                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${activeTab === "general" ? "text-white" : "text-zinc-500 hover:text-zinc-200"}`}
                   >
-                    {activeTab === "general" && (
-                      <motion.div
-                        layoutId="settings-tab-bg"
-                        className="absolute inset-0 bg-white/[0.09] rounded-full shadow-[0_10px_24px_rgba(0,0,0,0.25)] border border-white/10 z-[-1]"
-                      />
-                    )}
                     {t("general")}
                   </button>
                   <button
+                    ref={(node) => {
+                      settingsTabButtonRefs.current.usage = node;
+                    }}
                     onClick={() => setActiveTab("usage")}
-                    className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors relative z-20 ${activeTab === "usage" ? "text-[#ffb17a]" : "text-zinc-500 hover:text-zinc-200"}`}
+                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${activeTab === "usage" ? "text-white" : "text-zinc-500 hover:text-zinc-200"}`}
                   >
-                    {activeTab === "usage" && (
-                      <motion.div
-                        layoutId="settings-tab-bg"
-                        className="absolute inset-0 bg-[#ff6e00]/15 rounded-full shadow-[0_10px_26px_rgba(255,110,0,0.16)] border border-[#ff6e00]/20 z-[-1]"
-                      />
-                    )}
                     {t("usage")}
                   </button>
                   <button
+                    ref={(node) => {
+                      settingsTabButtonRefs.current.persona = node;
+                    }}
                     onClick={() => setActiveTab("persona")}
-                    className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors relative z-20 ${activeTab === "persona" ? "text-emerald-300" : "text-zinc-500 hover:text-zinc-200"}`}
+                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${activeTab === "persona" ? "text-white" : "text-zinc-500 hover:text-zinc-200"}`}
                   >
-                    {activeTab === "persona" && (
-                      <motion.div
-                        layoutId="settings-tab-bg"
-                        className="absolute inset-0 bg-emerald-500/12 rounded-full shadow-[0_10px_26px_rgba(16,185,129,0.16)] border border-emerald-500/20 z-[-1]"
-                      />
-                    )}
                     {t("persona_studio")}
                   </button>
                 </div>
 
-                <div className="flex flex-col gap-5 overflow-y-auto overflow-x-hidden h-[420px] pr-2 custom-scrollbar relative">
-                  <AnimatePresence mode="wait">
+                <div className="custom-scrollbar relative flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden pr-2">
                     {activeTab === "general" && (
-                      <motion.div
+                      <div
+                        ref={tabPanelRef}
                         key="general"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
                         className="flex flex-col gap-5"
                       >
                         <div className="flex flex-col gap-2">
                           <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                            <Globe2 size={14} className="text-emerald-400" />
+                            <Globe2 size={14} className="text-zinc-400" />
                             {t("language")}
                           </label>
                           <select
                             value={inputLanguage}
                             onChange={(e) => setInputLanguage(e.target.value)}
                             disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <option value="en">English (US)</option>
                             <option value="ja">日本語 (Japanese)</option>
@@ -540,7 +869,7 @@ export function SettingsButton() {
 
                         <div className="flex flex-col gap-2">
                           <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                            <UserRound size={14} className="text-orange-400" />
+                            <UserRound size={14} className="text-zinc-400" />
                             {t("learner_name")}
                           </label>
                           <input
@@ -551,7 +880,7 @@ export function SettingsButton() {
                             }
                             placeholder="Your name"
                             disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] disabled:opacity-50"
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] disabled:opacity-50"
                           />
                           <p className="text-xs text-zinc-500 leading-relaxed">
                             Used as the root node of your virtual brain map and
@@ -559,128 +888,145 @@ export function SettingsButton() {
                           </p>
                         </div>
 
-                        <div className="flex flex-col gap-2">
-                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                            <Key size={14} className="text-blue-400" />
-                            {t("openrouter_key")}
-                          </label>
-                          <input
-                            type="password"
-                            value={inputKey}
-                            onChange={(e) => setInputKey(e.target.value)}
-                            placeholder="sk-or-v1-..."
-                            disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
+                        {accessMode === "user" ? (
+                          <UserUsagePanel
+                            showPlanSelector={false}
+                            showMilestones={false}
                           />
-                          <p className="text-xs text-zinc-500 leading-relaxed">
-                            Your key is stored locally in your browser's
-                            localStorage and is sent as a bearer key only for
-                            your own AI requests. Hosted deployments use this
-                            key by default; a server OpenRouter key is used only
-                            when the deployment owner explicitly enables the
-                            shared fallback.
-                          </p>
-                        </div>
+                        ) : (
+                          <>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                                <Key size={14} className="text-zinc-400" />
+                                {t("openrouter_key")}
+                              </label>
+                              <input
+                                type="password"
+                                value={inputKey}
+                                onChange={(e) => setInputKey(e.target.value)}
+                                placeholder="sk-or-v1-..."
+                                disabled={isValidating}
+                                className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
+                              />
+                              <p className="text-xs text-zinc-500 leading-relaxed">
+                                Your key is stored locally in your browser's
+                                localStorage and is sent as a bearer key only
+                                for your own AI requests. Hosted deployments
+                                use this key by default; a server OpenRouter
+                                key is used only when the deployment owner
+                                explicitly enables the shared fallback.
+                              </p>
+                            </div>
 
-                        <div className="flex flex-col gap-2">
-                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                            <Globe2 size={14} className="text-cyan-400" />
-                            {t("serper_key")}
-                          </label>
-                          <input
-                            type="password"
-                            value={inputSerperKey}
-                            onChange={(e) => setInputSerperKey(e.target.value)}
-                            placeholder="SERPER_API_KEY"
-                            disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
-                          />
-                          <p className="text-xs text-zinc-500 leading-relaxed">
-                            Stored locally and sent only to this app's backend
-                            when live web search is needed. Server environment
-                            keys still work as a fallback.
-                          </p>
-                        </div>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                                <Globe2 size={14} className="text-zinc-400" />
+                                {t("serper_key")}
+                              </label>
+                              <input
+                                type="password"
+                                value={inputSerperKey}
+                                onChange={(e) =>
+                                  setInputSerperKey(e.target.value)
+                                }
+                                placeholder="SERPER_API_KEY"
+                                disabled={isValidating}
+                                className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
+                              />
+                              <p className="text-xs text-zinc-500 leading-relaxed">
+                                Stored locally and sent only to this app's
+                                backend when live web search is needed. Server
+                                environment keys still work as a fallback.
+                              </p>
+                            </div>
 
-                        <div className="flex flex-col gap-2">
-                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                            <Mic size={14} className="text-violet-400" />
-                            {t("deepgram_key")}
-                          </label>
-                          <input
-                            type="password"
-                            value={inputDeepgramKey}
-                            onChange={(e) =>
-                              setInputDeepgramKey(e.target.value)
-                            }
-                            placeholder="DEEPGRAM_API_KEY"
-                            disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
-                          />
-                          <p className="text-xs text-zinc-500 leading-relaxed">
-                            Stored locally and sent only to this app's backend
-                            for voice and Deepgram read-aloud requests. Server
-                            environment keys still work as a fallback.
-                          </p>
-                        </div>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                                <Mic size={14} className="text-zinc-400" />
+                                {t("deepgram_key")}
+                              </label>
+                              <input
+                                type="password"
+                                value={inputDeepgramKey}
+                                onChange={(e) =>
+                                  setInputDeepgramKey(e.target.value)
+                                }
+                                placeholder="DEEPGRAM_API_KEY"
+                                disabled={isValidating}
+                                className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
+                              />
+                              <p className="text-xs text-zinc-500 leading-relaxed">
+                                Stored locally and sent only to this app's
+                                backend for voice and Deepgram read-aloud
+                                requests. Server environment keys still work as
+                                a fallback.
+                              </p>
+                            </div>
 
-                        <div className="flex flex-col gap-2">
-                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                            <Mic size={14} className="text-violet-400" />
-                            {t("tts_voice")}
-                          </label>
-                          <select
-                            value={inputVoice}
-                            onChange={(e) => setInputVoice(e.target.value)}
-                            disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {TTS_VOICES.map((voice) => (
-                              <option key={voice.id} value={voice.id}>
-                                {voice.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                                <Mic size={14} className="text-zinc-400" />
+                                {t("tts_voice")}
+                              </label>
+                              <select
+                                value={inputVoice}
+                                onChange={(e) =>
+                                  setInputVoice(e.target.value)
+                                }
+                                disabled={isValidating}
+                                className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {TTS_VOICES.map((voice) => (
+                                  <option key={voice.id} value={voice.id}>
+                                    {voice.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
 
-                        <div className="flex flex-col gap-2">
-                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                            <Settings size={14} className="text-pink-400" />
-                            {t("ai_model")}
-                          </label>
-                          <select
-                            value={inputModel}
-                            onChange={(e) => setInputModel(e.target.value)}
-                            disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <option value="gpt-4o-mini">
-                              GPT-4o Mini (Fast/Cheap)
-                            </option>
-                            <option value="gpt-4o">GPT-4o (Smart)</option>
-                            <option value="anthropic/claude-3.5-sonnet">
-                              Claude 3.5 Sonnet
-                            </option>
-                            <option value="google/gemini-1.5-pro">
-                              Gemini 1.5 Pro
-                            </option>
-                            <option value="deepseek/deepseek-v4-flash">
-                              DeepSeek V4 Flash
-                            </option>
-                          </select>
-                        </div>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                                <Settings
+                                  size={14}
+                                  className="text-zinc-400"
+                                />
+                                {t("ai_model")}
+                              </label>
+                              <select
+                                value={inputModel}
+                                onChange={(e) =>
+                                  setInputModel(e.target.value)
+                                }
+                                disabled={isValidating}
+                                className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <option value="gpt-4o-mini">
+                                  GPT-4o Mini (Fast/Cheap)
+                                </option>
+                                <option value="gpt-4o">GPT-4o (Smart)</option>
+                                <option value="anthropic/claude-3.5-sonnet">
+                                  Claude 3.5 Sonnet
+                                </option>
+                                <option value="google/gemini-1.5-pro">
+                                  Gemini 1.5 Pro
+                                </option>
+                                <option value="deepseek/deepseek-v4-flash">
+                                  DeepSeek V4 Flash
+                                </option>
+                              </select>
+                            </div>
+                          </>
+                        )}
 
                         <div className="flex items-center justify-between mt-2">
                           <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                            <div className="w-5 h-5 relative overflow-hidden rounded-full shrink-0">
-                              <SiriLiquidGlass isActive={false} />
-                            </div>
+                            <Settings size={14} className="text-zinc-400" />
                             {t("ui_animations")}
                           </label>
                           <button
                             type="button"
                             onClick={() => setInputAnimations(!inputAnimations)}
-                            className={`w-11 h-6 rounded-full transition-colors relative ${inputAnimations ? "bg-blue-500" : "bg-zinc-700"}`}
+                            className={`w-11 h-6 rounded-full transition-colors relative ${inputAnimations ? "bg-[#ff6e00]" : "bg-zinc-700"}`}
                           >
                             <div
                               className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${inputAnimations ? "translate-x-5" : "translate-x-0"}`}
@@ -694,52 +1040,54 @@ export function SettingsButton() {
                             <p>{validationError}</p>
                           </div>
                         )}
-                      </motion.div>
+                      </div>
                     )}
 
                     {activeTab === "usage" && (
-                      <motion.div
+                      <div
+                        ref={tabPanelRef}
                         key="usage"
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -12 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
                       >
                         <div className="mb-4 flex items-center gap-2">
                           <BarChart3 size={16} className="text-[#ff6e00]" />
                           <div>
                             <div className="text-sm font-semibold text-white">
-                              Usage analytics
+                              {accessMode === "user"
+                                ? "Plan and milestones"
+                                : "Usage analytics"}
                             </div>
                             <div className="text-xs text-zinc-500">
-                              Tokens, requests, and cost for this browser.
+                              {accessMode === "user"
+                                ? "Service time, rate limit left, and simple plan controls."
+                                : "Tokens, requests, and cost for this browser."}
                             </div>
                           </div>
                         </div>
-                        <UsageInsightsPanel />
-                      </motion.div>
+                        {accessMode === "user" ? (
+                          <UserUsagePanel />
+                        ) : (
+                          <UsageInsightsPanel />
+                        )}
+                      </div>
                     )}
 
                     {activeTab === "persona" && (
-                      <motion.div
+                      <div
+                        ref={tabPanelRef}
                         key="persona"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
                         className="flex flex-col gap-5"
                       >
-                        <div className="overflow-hidden rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.04] p-4">
+                        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                           <div className="flex flex-col gap-3">
                             <label className="text-sm font-medium text-zinc-200 flex items-center justify-between">
                               <span className="flex items-center gap-2">
                                 <Settings
                                   size={14}
-                                  className="text-emerald-400"
+                                  className="text-zinc-400"
                                 />
                                 AI Persona Studio
                               </span>
-                              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-emerald-300">
+                              <span className="rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-zinc-400">
                                 Live prompt
                               </span>
                             </label>
@@ -758,7 +1106,7 @@ export function SettingsButton() {
                                   key={preset}
                                   type="button"
                                   onClick={() => setPersonaDesc(preset)}
-                                  className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] text-zinc-400 transition-colors hover:border-emerald-400/30 hover:text-emerald-300"
+                                  className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] text-zinc-400 transition-colors hover:border-[#ff6e00]/35 hover:text-white"
                                 >
                                   {preset}
                                 </button>
@@ -771,7 +1119,7 @@ export function SettingsButton() {
                               value={personaDesc}
                               onChange={(e) => setPersonaDesc(e.target.value)}
                               placeholder="I want an AI tutor specialized in..."
-                              className="flex-1 bg-[#121214] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-[color,background-color,border-color,box-shadow,transform,opacity]"
+                              className="flex-1 bg-[#121214] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 transition-[color,background-color,border-color,box-shadow,transform,opacity]"
                             />
                             <button
                               onClick={async () => {
@@ -820,7 +1168,7 @@ export function SettingsButton() {
                                 }
                               }}
                               disabled={isGeneratingPersona}
-                              className="px-4 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                              className="px-4 py-2 bg-white/[0.08] text-white hover:bg-white/[0.12] rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2 border border-white/10"
                             >
                               {isGeneratingPersona ? (
                                 <Loader2 size={14} className="animate-spin" />
@@ -837,12 +1185,11 @@ export function SettingsButton() {
                             value={inputPrompt}
                             onChange={(e) => setInputPrompt(e.target.value)}
                             placeholder="You are a precise, professional tutor. Use clear markdown, ask targeted questions, and do not use emojis unless explicitly requested."
-                            className="mt-3 min-h-[170px] w-full resize-y rounded-xl border border-white/10 bg-[#121214] px-4 py-3 font-mono text-sm leading-relaxed text-white transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                            className="mt-3 min-h-[170px] w-full resize-y rounded-xl border border-white/10 bg-[#121214] px-4 py-3 font-mono text-sm leading-relaxed text-white transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:border-[#ff6e00]/45 focus:outline-none focus:ring-1 focus:ring-[#ff6e00]/30"
                           />
                         </div>
-                      </motion.div>
+                      </div>
                     )}
-                  </AnimatePresence>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
@@ -865,10 +1212,32 @@ export function SettingsButton() {
                   </button>
                 </div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </div>
+        </>
+      )}
+
+      {switchingMode && (
+          <div
+            ref={switchingOverlayRef}
+            className="fixed inset-0 z-[140] flex items-center justify-center bg-[#030303]/90 backdrop-blur-2xl"
+          >
+            <div
+              ref={switchingCardRef}
+              className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.06] px-8 py-6 text-center shadow-[0_30px_100px_rgba(0,0,0,0.55)]"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,110,0,0.25),transparent_45%)]" />
+              <div className="relative text-[10px] font-bold uppercase tracking-[0.22em] text-[#ffb17a]">
+                Switching access
+              </div>
+              <div className="relative mt-2 text-2xl font-semibold capitalize text-white">
+                {switchingMode} mode
+              </div>
+              <div className="relative mt-3 flex justify-center">
+                <Loader2 size={22} className="animate-spin text-[#ff6e00]" />
+              </div>
+            </div>
+          </div>
+      )}
     </>
   );
 }

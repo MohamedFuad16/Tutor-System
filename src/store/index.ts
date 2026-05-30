@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { type Message } from "../types";
+import type { AccessMode, PlanTier } from "../lib/accessPlans";
 
 export type ViewState = "study" | "analytics" | "revision" | "admin";
 
@@ -213,6 +214,10 @@ const persistUsage = (
 };
 
 interface AppState {
+  accessMode: AccessMode;
+  setAccessMode: (mode: AccessMode) => void;
+  planTier: PlanTier;
+  setPlanTier: (tier: PlanTier) => void;
   apiKey: string;
   setApiKey: (key: string) => void;
   serperApiKey: string;
@@ -291,10 +296,26 @@ interface AppState {
 }
 
 const storedUsage = readStoredUsage();
+const readAccessMode = (): AccessMode =>
+  localStorage.getItem("access_mode") === "admin" ? "admin" : "user";
+const readPlanTier = (): PlanTier => {
+  const stored = localStorage.getItem("plan_tier");
+  return stored === "plus" || stored === "pro" ? stored : "free";
+};
 
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
+      accessMode: readAccessMode(),
+      setAccessMode: (mode) => {
+        localStorage.setItem("access_mode", mode);
+        set({ accessMode: mode });
+      },
+      planTier: readPlanTier(),
+      setPlanTier: (tier) => {
+        localStorage.setItem("plan_tier", tier);
+        set({ planTier: tier });
+      },
       activeView: "study",
       setActiveView: (view) => set({ activeView: view }),
       language: localStorage.getItem("learning_ai_language") || "en",

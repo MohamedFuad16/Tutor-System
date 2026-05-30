@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import { motion } from "motion/react";
+import React, { useEffect, useRef } from "react";
+import { gsap } from "gsap";
 import { SvgDark, SvgOrange, SvgBeige } from "./PatternSVGs";
 import { useMotionPreference } from "../hooks/useMotionPreference";
 
@@ -25,6 +25,25 @@ export const themes = [
     bloom: "rgb(255, 110, 0)",
     bloomOpacity: 0.18,
   },
+];
+
+const pressDots = [
+  { x: 63.5, y: 12.7, s: 1 },
+  { x: 38.1, y: 38.1, s: 0.9 },
+  { x: 63.5, y: 38.1, s: 1 },
+  { x: 88.9, y: 38.1, s: 0.82 },
+  { x: 114.3, y: 38.1, ring: true },
+  { x: 12.7, y: 63.5, ring: true, s: 0.52 },
+  { x: 38.1, y: 63.5, s: 1 },
+  { x: 63.5, y: 63.5, s: 1 },
+  { x: 88.9, y: 63.5, ring: true },
+  { x: 114.3, y: 63.5, ring: true, s: 0.55 },
+  { x: 38.1, y: 88.9, s: 1 },
+  { x: 63.5, y: 88.9, ring: true, s: 0.48 },
+  { x: 88.9, y: 88.9, ring: true },
+  { x: 114.3, y: 88.9, s: 1 },
+  { x: 12.7, y: 117.9, s: 0.55 },
+  { x: 63.5, y: 114.3, ring: true },
 ];
 
 export const PatternCard = ({
@@ -61,6 +80,7 @@ export const PatternCard = ({
   onDrop?: (e: React.DragEvent) => void;
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const dotRefs = useRef<HTMLSpanElement[]>([]);
   const motionEnabled = useMotionPreference();
   const resolvedDotColor =
     pressDotColor || (bgClass.includes("ecebe9") ? "#ff6e00" : "#fefefe");
@@ -69,24 +89,6 @@ export const PatternCard = ({
     (bgClass.includes("ecebe9")
       ? "rgba(255,110,0,0.58)"
       : "rgba(254,254,254,0.55)");
-  const pressDots = [
-    { x: 63.5, y: 12.7, s: 1 },
-    { x: 38.1, y: 38.1, s: 0.9 },
-    { x: 63.5, y: 38.1, s: 1 },
-    { x: 88.9, y: 38.1, s: 0.82 },
-    { x: 114.3, y: 38.1, ring: true },
-    { x: 12.7, y: 63.5, ring: true, s: 0.52 },
-    { x: 38.1, y: 63.5, s: 1 },
-    { x: 63.5, y: 63.5, s: 1 },
-    { x: 88.9, y: 63.5, ring: true },
-    { x: 114.3, y: 63.5, ring: true, s: 0.55 },
-    { x: 38.1, y: 88.9, s: 1 },
-    { x: 63.5, y: 88.9, ring: true, s: 0.48 },
-    { x: 88.9, y: 88.9, ring: true },
-    { x: 114.3, y: 88.9, s: 1 },
-    { x: 12.7, y: 117.9, s: 0.55 },
-    { x: 63.5, y: 114.3, ring: true },
-  ];
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!cardRef.current) return;
@@ -98,18 +100,71 @@ export const PatternCard = ({
     cardRef.current.style.setProperty("--mouse-y", `${y}px`);
   };
 
+  const animateCardScale = (scale: number) => {
+    if (!motionEnabled || !cardRef.current) return;
+    gsap.to(cardRef.current, {
+      scale,
+      duration: scale < 1 ? 0.14 : 0.28,
+      ease: "power3.out",
+    });
+  };
+
+  useEffect(() => {
+    const dots = dotRefs.current.filter(Boolean);
+    if (!dots.length) return;
+    gsap.killTweensOf(dots);
+
+    dots.forEach((dotNode, index) => {
+      const dot = pressDots[index];
+      const baseScale = dot?.s ?? 1;
+      const active = isPressing || isDragging;
+      const targetOpacity = dot?.ring
+        ? active
+          ? 0.95
+          : 0.52
+        : active
+          ? 1
+          : 0.76;
+      const baseOpacity = dot?.ring ? 0.28 : 0.42;
+
+      gsap.set(dotNode, {
+        scale: baseScale,
+        opacity: animateDots ? baseOpacity : 0,
+        y: 0,
+      });
+
+      if (!motionEnabled || !animateDots) return;
+      gsap.to(dotNode, {
+        scale: baseScale * (active ? 1.36 : 1.12),
+        opacity: targetOpacity,
+        y: active ? -2.5 : -1.1,
+        duration: active ? 0.82 : 2.8 + (index % 4) * 0.18,
+        delay: index * 0.045,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+    });
+
+    return () => {
+      gsap.killTweensOf(dots);
+    };
+  }, [animateDots, isDragging, isPressing, motionEnabled, pressDots]);
+
   return (
-    <motion.div
+    <div
       ref={cardRef}
-      layoutId={layoutId}
       onClick={onClick}
       onMouseMove={handleMouseMove}
+      onMouseEnter={() => animateCardScale(1.02)}
+      onMouseLeave={() => animateCardScale(1)}
+      onMouseDown={() => animateCardScale(0.98)}
+      onMouseUp={() => animateCardScale(1.02)}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      whileHover={motionEnabled ? { scale: 1.02 } : undefined}
-      whileTap={motionEnabled ? { scale: 0.98 } : undefined}
       className={`group cursor-pointer shrink-0 w-[min(324px,calc(100vw-2rem))] h-[min(414px,calc((100vw-2rem)*1.2778))] min-h-[366px] mx-auto transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-400 ease-[cubic-bezier(0.22,0.61,0.36,1)] relative overflow-hidden rounded-[36px] sm:rounded-[44.875px] origin-top ${bgClass} ${isDragging ? "ring-4 ring-blue-500/50 scale-[1.02]" : ""}`}
+      data-layout-id={layoutId}
     >
       {/* Background Bloom Layer from reference */}
       <div
@@ -140,7 +195,7 @@ export const PatternCard = ({
       </div>
 
       {animateDots && (
-        <motion.div
+        <div
           className="absolute z-30 pointer-events-none"
           style={{
             top: "38px",
@@ -150,16 +205,13 @@ export const PatternCard = ({
             transform: "scale(0.66)",
             transformOrigin: "left top",
           }}
-          initial={{ opacity: 0 }}
-          animate={{
-            opacity: isPressing || isDragging ? 1 : motionEnabled ? 0.68 : 0.58,
-          }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: motionEnabled ? 0.2 : 0 }}
         >
           {pressDots.map((dot, index) => (
-            <motion.span
+            <span
               key={`${dot.x}-${dot.y}`}
+              ref={(node) => {
+                if (node) dotRefs.current[index] = node;
+              }}
               className="absolute rounded-full"
               style={{
                 left: dot.x - 10.9,
@@ -172,38 +224,9 @@ export const PatternCard = ({
                   ? `0 0 14px ${resolvedRingColor}`
                   : `0 0 18px ${resolvedDotColor}`,
               }}
-              animate={
-                motionEnabled
-                  ? {
-                      scale: [
-                        dot.s ?? 1,
-                        (dot.s ?? 1) * (isPressing || isDragging ? 1.36 : 1.12),
-                        dot.s ?? 1,
-                      ],
-                      opacity: dot.ring
-                        ? [0.24, isPressing || isDragging ? 0.95 : 0.52, 0.24]
-                        : [0.42, isPressing || isDragging ? 1 : 0.76, 0.42],
-                      y: [0, isPressing || isDragging ? -2.5 : -1.1, 0],
-                    }
-                  : {
-                      scale: dot.s ?? 1,
-                      opacity: dot.ring ? 0.32 : 0.5,
-                      y: 0,
-                    }
-              }
-              transition={{
-                repeat: motionEnabled ? Infinity : 0,
-                duration: motionEnabled
-                  ? isPressing || isDragging
-                    ? 0.82
-                    : 2.8 + (index % 4) * 0.18
-                  : 0,
-                delay: motionEnabled ? index * 0.045 : 0,
-                ease: "easeInOut",
-              }}
             />
           ))}
-        </motion.div>
+        </div>
       )}
 
       {/* Sweeping Sheen Hover Effect from reference */}
@@ -229,6 +252,6 @@ export const PatternCard = ({
 
       {/* Content Layer */}
       {children}
-    </motion.div>
+    </div>
   );
 };

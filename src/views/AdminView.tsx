@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../memory/longterm.memory";
 import {
@@ -11,14 +11,16 @@ import {
   Network,
   Sparkles,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { gsap } from "gsap";
 import { useStore } from "../store";
+import { useMotionPreference } from "../hooks/useMotionPreference";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
 const TRACE_PAGE_SIZE = 100;
 
 export function AdminView() {
   const { setActiveView, learnerName } = useStore();
+  const motionEnabled = useMotionPreference();
   const [traceLimit, setTraceLimit] = useState(TRACE_PAGE_SIZE);
   const logs = useLiveQuery(
     () =>
@@ -48,6 +50,7 @@ export function AdminView() {
   const [serverConsoleStatus, setServerConsoleStatus] =
     useState<ServerConsoleStatus>("idle");
   const consoleRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<"traces" | "console">("traces");
 
   // Auto-scroll console
@@ -176,6 +179,40 @@ export function AdminView() {
       : serverConsoleStatus === "connecting"
         ? "border-blue-200 bg-blue-50 text-blue-600"
         : "border-zinc-200 bg-zinc-50 text-zinc-500";
+
+  useLayoutEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+    gsap.killTweensOf(content);
+    gsap.fromTo(
+      content,
+      { autoAlpha: 0, x: 20 },
+      {
+        autoAlpha: 1,
+        x: 0,
+        duration: motionEnabled ? 0.24 : 0,
+        ease: "power3.out",
+      },
+    );
+
+    const animatedItems = Array.from(
+      content.querySelectorAll<HTMLElement>(".admin-animated-item"),
+    );
+    if (animatedItems.length) {
+      gsap.fromTo(
+        animatedItems,
+        { autoAlpha: 0, y: 14 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: motionEnabled ? 0.26 : 0,
+          stagger: motionEnabled ? 0.035 : 0,
+          ease: "power2.out",
+        },
+      );
+    }
+  }, [activeTab, learningBooks.length, logs?.length, motionEnabled]);
+
   return (
     <div className="w-full h-full bg-[#faf9f6] text-zinc-900 flex flex-col overflow-y-auto custom-scroll pt-20 md:pt-0 relative font-serif">
       {/* Subtle Paper Texture Overlay */}
@@ -236,13 +273,9 @@ export function AdminView() {
           </div>
 
           <div className="flex-1 p-6 md:p-12 lg:p-16 xl:p-24 relative isolate w-full">
-            <AnimatePresence mode="wait">
-              <motion.div
+              <div
+                ref={contentRef}
                 key={activeTab}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
                 className="relative z-10 font-serif pb-12"
               >
                 {/* Admin Center Preface */}
@@ -397,17 +430,9 @@ export function AdminView() {
                                   ) / concepts.length
                                 : 0;
                               return (
-                                <motion.article
+                                <article
                                   key={book.id}
-                                  initial={{ opacity: 0, y: 16 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{
-                                    delay: index * 0.04,
-                                    type: "spring",
-                                    stiffness: 360,
-                                    damping: 28,
-                                  }}
-                                  className="relative overflow-hidden rounded-[24px] border border-zinc-200 bg-white p-4 shadow-sm"
+                                  className={`relative overflow-hidden rounded-[24px] border border-zinc-200 bg-white p-4 shadow-sm ${index < 12 ? "admin-animated-item" : ""}`}
                                 >
                                   <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_10%_0%,rgba(255,110,0,0.04),transparent_34%),radial-gradient(circle_at_100%_100%,rgba(59,130,246,0.03),transparent_38%)]" />
                                   <div className="relative">
@@ -555,7 +580,7 @@ export function AdminView() {
                                       </div>
                                     )}
                                   </div>
-                                </motion.article>
+                                </article>
                               );
                             })}
                           </div>
@@ -580,45 +605,15 @@ export function AdminView() {
                         logs.map((log, index) => {
                           const animateTraceRow = index < 24;
                           return (
-                            <motion.div
+                            <div
                               key={log.id}
-                              initial={
-                                animateTraceRow ? { opacity: 0, x: -10 } : false
-                              }
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{
-                                duration: animateTraceRow ? 0.22 : 0,
-                                delay: animateTraceRow
-                                  ? Math.min(index * 0.02, 0.32)
-                                  : 0,
-                              }}
-                              className="relative pl-8 pb-8"
+                              className={`relative pl-8 pb-8 ${animateTraceRow ? "admin-animated-item" : ""}`}
                             >
-                              <motion.div
+                              <div
                                 className="absolute left-[0px] top-4 w-[2px] bg-zinc-200/60"
-                                initial={
-                                  animateTraceRow ? { height: 0 } : false
-                                }
-                                animate={{ height: "100%" }}
-                                transition={{
-                                  duration: animateTraceRow ? 0.35 : 0,
-                                  ease: "easeInOut",
-                                  delay: animateTraceRow
-                                    ? Math.min(index * 0.02, 0.32)
-                                    : 0,
-                                }}
+                                style={{ height: "100%" }}
                               />
-                              <motion.div
-                                initial={animateTraceRow ? { scale: 0 } : false}
-                                animate={{ scale: 1 }}
-                                transition={{
-                                  type: "spring",
-                                  stiffness: 300,
-                                  damping: 20,
-                                  delay: animateTraceRow
-                                    ? Math.min(index * 0.02, 0.32)
-                                    : 0,
-                                }}
+                              <div
                                 className="absolute w-3 h-3 rounded-full bg-blue-500 border-2 border-[#faf9f6] shadow-sm -left-[5px] top-1 z-10"
                               />
 
@@ -648,7 +643,7 @@ export function AdminView() {
                                   {JSON.stringify(log.payload, null, 2)}
                                 </pre>
                               </details>
-                            </motion.div>
+                            </div>
                           );
                         })
                       )}
@@ -706,8 +701,7 @@ export function AdminView() {
                     </div>
                   )}
                 </div>
-              </motion.div>
-            </AnimatePresence>
+              </div>
           </div>
         </div>
       </div>

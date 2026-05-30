@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -19,12 +19,15 @@ import {
   SessionMemoryRecord,
   ConversationInteraction,
 } from "../memory/longterm.memory";
-import { motion } from "motion/react";
+import { gsap } from "gsap";
 import { useStore } from "../store";
 import { useTranslation } from "../lib/translations";
+import { useMotionPreference } from "../hooks/useMotionPreference";
 
 export function AnalyticsView() {
   const { t } = useTranslation();
+  const motionEnabled = useMotionPreference();
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const [concepts, setConcepts] = useState<PersistentConcept[]>([]);
   const [interactions, setInteractions] = useState<ConversationInteraction[]>(
     [],
@@ -39,6 +42,20 @@ export function AnalyticsView() {
     };
     fetchData();
   }, []);
+
+  useLayoutEffect(() => {
+    if (!contentRef.current) return;
+    gsap.fromTo(
+      contentRef.current,
+      { autoAlpha: 0, y: 20 },
+      {
+        autoAlpha: 1,
+        y: 0,
+        duration: motionEnabled ? 0.42 : 0,
+        ease: "power3.out",
+      },
+    );
+  }, [motionEnabled]);
 
   const masteryData = concepts.map((c) => ({
     name: c.name,
@@ -61,9 +78,8 @@ export function AnalyticsView() {
 
   return (
     <div className="w-full h-full bg-[#030303] overflow-y-auto custom-scroll pt-24 px-4 md:px-8 pb-12 text-white">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <div
+        ref={contentRef}
         className="max-w-6xl mx-auto space-y-12"
       >
         <header>
@@ -215,7 +231,7 @@ export function AnalyticsView() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
