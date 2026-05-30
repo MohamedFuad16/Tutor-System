@@ -28,7 +28,10 @@ export function Navigation() {
   ];
 
   return (
-    <div className="absolute left-1/2 top-4 z-50 w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 pointer-events-auto sm:w-auto">
+    <nav
+      className="absolute left-1/2 top-4 z-50 w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 pointer-events-auto sm:w-auto"
+      aria-label="Primary views"
+    >
       <motion.div
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHoveringContainer(true)}
@@ -99,6 +102,7 @@ export function Navigation() {
               type="button"
               key={item.id}
               onClick={() => setActiveView(item.id)}
+              aria-current={isActive ? "page" : undefined}
               className={`relative z-10 flex min-w-[5.7rem] flex-1 transform-gpu select-none items-center justify-center gap-1 rounded-full px-2.5 py-2 text-[11px] font-medium transition-colors focus:outline-none sm:min-w-[7.1rem] sm:flex-none sm:gap-2 sm:px-4 sm:text-[13px] ${
                 isActive
                   ? "text-white shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
@@ -126,6 +130,6 @@ export function Navigation() {
           );
         })}
       </motion.div>
-    </div>
+    </nav>
   );
 }

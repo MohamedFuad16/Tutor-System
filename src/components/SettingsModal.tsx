@@ -382,6 +382,8 @@ export function SettingsButton() {
     <>
       <button
         onClick={() => setIsOpen(true)}
+        type="button"
+        aria-label="Open app settings"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className="fixed right-4 top-[4.35rem] z-50 flex h-[42px] w-[42px] items-center justify-center overflow-visible rounded-full p-[1px] transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:outline-none group sm:right-8 sm:top-8 sm:h-[46px] sm:w-[46px]"
@@ -446,17 +448,24 @@ export function SettingsButton() {
                 if (!isValidating) setIsOpen(false);
               }}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+              aria-hidden="true"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-2xl px-4"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="settings-modal-title"
             >
               <div className="relative overflow-hidden bg-[#09090b]/95 border border-white/10 rounded-[30px] p-6 shadow-[0_34px_110px_rgba(0,0,0,0.58),inset_0_1px_0_rgba(255,255,255,0.08)] flex flex-col gap-6 backdrop-blur-2xl">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,110,0,0.18),transparent_34%),radial-gradient(circle_at_88%_10%,rgba(124,58,237,0.16),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.055),transparent_42%)]" />
                 <div className="flex justify-between items-center">
-                  <h2 className="relative z-10 text-xl font-medium tracking-tight text-white flex items-center gap-2">
+                  <h2
+                    id="settings-modal-title"
+                    className="relative z-10 text-xl font-medium tracking-tight text-white flex items-center gap-2"
+                  >
                     <Settings size={20} className="text-[#ff6e00]" />
                     {t("app_settings")}
                   </h2>
@@ -465,14 +474,22 @@ export function SettingsButton() {
                       if (!isValidating) setIsOpen(false);
                     }}
                     className="relative z-10 rounded-full p-1 text-zinc-500 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50"
+                    aria-label="Close settings"
                     disabled={isValidating}
                   >
                     <X size={20} />
                   </button>
                 </div>
 
-                <div className="flex bg-white/[0.05] border border-white/10 rounded-full p-1 relative z-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                <div
+                  className="flex bg-white/[0.05] border border-white/10 rounded-full p-1 relative z-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                  role="tablist"
+                  aria-label="Settings sections"
+                >
                   <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === "general"}
                     onClick={() => setActiveTab("general")}
                     className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors relative z-20 ${activeTab === "general" ? "text-white" : "text-zinc-500 hover:text-zinc-200"}`}
                   >
@@ -485,6 +502,9 @@ export function SettingsButton() {
                     {t("general")}
                   </button>
                   <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === "usage"}
                     onClick={() => setActiveTab("usage")}
                     className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors relative z-20 ${activeTab === "usage" ? "text-[#ffb17a]" : "text-zinc-500 hover:text-zinc-200"}`}
                   >
@@ -497,6 +517,9 @@ export function SettingsButton() {
                     {t("usage")}
                   </button>
                   <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === "persona"}
                     onClick={() => setActiveTab("persona")}
                     className={`flex-1 py-2 px-3 rounded-full text-sm font-medium transition-colors relative z-20 ${activeTab === "persona" ? "text-emerald-300" : "text-zinc-500 hover:text-zinc-200"}`}
                   >
@@ -680,6 +703,9 @@ export function SettingsButton() {
                           <button
                             type="button"
                             onClick={() => setInputAnimations(!inputAnimations)}
+                            role="switch"
+                            aria-checked={inputAnimations}
+                            aria-label="Toggle UI animations"
                             className={`w-11 h-6 rounded-full transition-colors relative ${inputAnimations ? "bg-blue-500" : "bg-zinc-700"}`}
                           >
                             <div

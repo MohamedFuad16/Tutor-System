@@ -14,8 +14,9 @@
     "graphify:query": "graphify query",
     "graphify:path": "graphify path",
     "graphify:tree": "graphify tree --graph graphify-out/graph.json --output graphify-out/GRAPH_TREE.html --root . --label Tutor",
-    "format:check": "prettier --check AGENTS.md README.md TUTOR_ARCHITECTURE.md package.json .github/workflows/graphify-refresh.yml server.ts src/views/AdminView.tsx src/views/RevisionView.tsx src/lib/tutorBook.json",
-    "format": "prettier --write AGENTS.md README.md TUTOR_ARCHITECTURE.md package.json .github/workflows/graphify-refresh.yml server.ts src/views/AdminView.tsx src/views/RevisionView.tsx src/lib/tutorBook.json"
+    "format:check": "prettier --check AGENTS.md README.md TUTOR_ARCHITECTURE.md package.json .github/workflows/graphify-refresh.yml server.ts src/views/AdminView.tsx src/views/RevisionView.tsx src/lib/tutorBook.json server/web-search.ts tests/*.test.mjs src/components/AnimatedScrollText.tsx src/components/ChatPanel.tsx src/components/FloatingSkillsMenu.tsx src/components/Navigation.tsx src/components/PatternCard.tsx src/components/PdfViewer.tsx src/components/SettingsModal.tsx src/views/StudyView.tsx",
+    "format": "prettier --write AGENTS.md README.md TUTOR_ARCHITECTURE.md package.json .github/workflows/graphify-refresh.yml server.ts src/views/AdminView.tsx src/views/RevisionView.tsx src/lib/tutorBook.json server/web-search.ts tests/*.test.mjs src/components/AnimatedScrollText.tsx src/components/ChatPanel.tsx src/components/FloatingSkillsMenu.tsx src/components/Navigation.tsx src/components/PatternCard.tsx src/components/PdfViewer.tsx src/components/SettingsModal.tsx src/views/StudyView.tsx",
+    "test": "rm -rf .tmp-test && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=.tmp-test/server.mjs && node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@fontsource/geist-sans": "^5.2.5",

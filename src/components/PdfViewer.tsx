@@ -415,7 +415,9 @@ export function PdfViewer() {
           </div>
 
           <button
+            type="button"
             onClick={() => setPdfPage(Math.max(1, pdfPage - 1))}
+            aria-label="Previous PDF page"
             className="relative z-10 p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors flex items-center justify-center shrink-0 w-8 h-8 focus:outline-none"
           >
             <ChevronLeft size={16} />
@@ -427,6 +429,7 @@ export function PdfViewer() {
                 type="text"
                 value={pageInputValue !== null ? pageInputValue : pdfPage}
                 onChange={(e) => setPageInputValue(e.target.value)}
+                aria-label="PDF page number"
                 onBlur={() => {
                   const val = parseInt(pageInputValue || "");
                   if (!isNaN(val) && val >= 1 && val <= pdfTotalPages) {
@@ -451,7 +454,9 @@ export function PdfViewer() {
           </div>
 
           <button
+            type="button"
             onClick={() => setPdfPage(Math.min(pdfTotalPages, pdfPage + 1))}
+            aria-label="Next PDF page"
             className="relative z-10 p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors flex items-center justify-center shrink-0 w-8 h-8 focus:outline-none"
           >
             <ChevronRight size={16} />
@@ -460,14 +465,18 @@ export function PdfViewer() {
           <div className="relative z-10 w-px h-5 bg-white/10 mx-1" />
 
           <button
+            type="button"
             onClick={() => setIsFitWidth(false)}
+            aria-label={t("fit_height")}
             className={`relative z-10 p-2 rounded-full transition-colors w-8 h-8 flex items-center justify-center focus:outline-none ${!isFitWidth ? "text-white shadow-[0_2px_10px_rgba(0,0,0,0.5)] bg-white/10 border border-white/10 mix-blend-screen" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
             title={t("fit_height")}
           >
             <Minimize size={14} />
           </button>
           <button
+            type="button"
             onClick={() => setIsFitWidth(true)}
+            aria-label={t("fit_width")}
             className={`relative z-10 p-2 rounded-full transition-colors w-8 h-8 flex items-center justify-center focus:outline-none ${isFitWidth ? "text-white shadow-[0_2px_10px_rgba(0,0,0,0.5)] bg-white/10 border border-white/10 mix-blend-screen" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
             title={t("fit_width")}
           >
@@ -653,36 +662,44 @@ export function PdfViewer() {
 
                   <div className="flex gap-1 pr-1.5 border-r border-white/10 relative z-10">
                     <button
+                      type="button"
                       onClick={() =>
                         addSelectionAnnotation("highlight", "#fde047")
                       } // yellow
+                      aria-label={t("highlight")}
                       className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-yellow-400 tooltip-trigger"
                       title={t("highlight")}
                     >
                       <Highlighter size={14} />
                     </button>
                     <button
+                      type="button"
                       onClick={() =>
                         addSelectionAnnotation("underline", "#3b82f6")
                       } // blue
+                      aria-label={t("underline")}
                       className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-blue-500"
                       title={t("underline")}
                     >
                       <Underline size={14} />
                     </button>
                     <button
+                      type="button"
                       onClick={() =>
                         addSelectionAnnotation("strikethrough", "#ef4444")
                       } // red
+                      aria-label={t("strikethrough")}
                       className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-red-500"
                       title={t("strikethrough")}
                     >
                       <Strikethrough size={14} />
                     </button>
                     <button
+                      type="button"
                       onClick={() =>
                         addSelectionAnnotation("sticky", "#fde047")
                       } // yellow
+                      aria-label={t("sticky_note")}
                       className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-yellow-400"
                       title={t("sticky_note")}
                     >
@@ -690,6 +707,7 @@ export function PdfViewer() {
                     </button>
                   </div>
                   <button
+                    type="button"
                     onClick={() => {
                       if (selectionTooltip) {
                         setSelectedTextContext(selectionTooltip.text);
@@ -739,7 +757,9 @@ export function PdfViewer() {
                       {t("sticky_note")}
                     </div>
                     <button
+                      type="button"
                       onClick={() => setDraftNote(null)}
+                      aria-label="Close sticky note editor"
                       className="text-zinc-500 hover:text-white transition-colors"
                     >
                       <svg
@@ -766,17 +786,21 @@ export function PdfViewer() {
                         }
                       }}
                       placeholder={t("add_annotation_note")}
+                      aria-label={t("add_annotation_note")}
                       className="w-full bg-transparent border-none outline-none text-sm text-zinc-200 placeholder:text-zinc-650 resize-none min-h-[80px]"
                     />
                   </div>
                   <div className="px-3 py-2 bg-[#1A1A1E]/50 border-t border-[#2A2A30] flex justify-end gap-2">
                     <button
+                      type="button"
                       onClick={() => setDraftNote(null)}
+                      aria-label="Close sticky note editor"
                       className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
                     >
                       {t("cancel")}
                     </button>
                     <button
+                      type="button"
                       onClick={saveStickyNote}
                       className="px-3 py-1.5 text-xs font-semibold bg-yellow-400/10 text-yellow-400 hover:bg-yellow-400/20 border border-yellow-400/20 rounded pl-2 pr-3 flex items-center gap-1 transition-colors"
                     >

@@ -33,7 +33,7 @@ export const PatternCard = ({
   SvgComponent,
   bloomColor,
   bloomOpacity,
-  onClick = () => {},
+  onClick,
   layoutId,
   isDragging = false,
   isPressing = false,
@@ -43,6 +43,7 @@ export const PatternCard = ({
   onDragOver,
   onDragLeave,
   onDrop,
+  ariaLabel,
 }: {
   children: React.ReactNode;
   bgClass: string;
@@ -59,6 +60,7 @@ export const PatternCard = ({
   onDragOver?: (e: React.DragEvent) => void;
   onDragLeave?: () => void;
   onDrop?: (e: React.DragEvent) => void;
+  ariaLabel?: string;
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const motionEnabled = useMotionPreference();
@@ -69,6 +71,7 @@ export const PatternCard = ({
     (bgClass.includes("ecebe9")
       ? "rgba(255,110,0,0.58)"
       : "rgba(254,254,254,0.55)");
+  const hasAction = Boolean(onClick);
   const pressDots = [
     { x: 63.5, y: 12.7, s: 1 },
     { x: 38.1, y: 38.1, s: 0.9 },
@@ -103,13 +106,21 @@ export const PatternCard = ({
       ref={cardRef}
       layoutId={layoutId}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (!hasAction || (e.key !== "Enter" && e.key !== " ")) return;
+        e.preventDefault();
+        onClick?.();
+      }}
+      role={hasAction ? "button" : undefined}
+      tabIndex={hasAction ? 0 : undefined}
+      aria-label={ariaLabel}
       onMouseMove={handleMouseMove}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
       whileHover={motionEnabled ? { scale: 1.02 } : undefined}
       whileTap={motionEnabled ? { scale: 0.98 } : undefined}
-      className={`group cursor-pointer shrink-0 w-[min(324px,calc(100vw-2rem))] h-[min(414px,calc((100vw-2rem)*1.2778))] min-h-[366px] mx-auto transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-400 ease-[cubic-bezier(0.22,0.61,0.36,1)] relative overflow-hidden rounded-[36px] sm:rounded-[44.875px] origin-top ${bgClass} ${isDragging ? "ring-4 ring-blue-500/50 scale-[1.02]" : ""}`}
+      className={`group ${hasAction ? "cursor-pointer" : ""} shrink-0 w-[min(324px,calc(100vw-2rem))] h-[min(414px,calc((100vw-2rem)*1.2778))] min-h-[366px] mx-auto transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-400 ease-[cubic-bezier(0.22,0.61,0.36,1)] relative overflow-hidden rounded-[36px] sm:rounded-[44.875px] origin-top focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff6e00]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030303] ${bgClass} ${isDragging ? "ring-4 ring-blue-500/50 scale-[1.02]" : ""}`}
     >
       {/* Background Bloom Layer from reference */}
       <div

@@ -70,7 +70,7 @@ const loadMermaid = () => {
       mermaid.initialize({
         startOnLoad: false,
         theme: "dark",
-        securityLevel: "loose",
+        securityLevel: "strict",
         fontFamily: "Inter, sans-serif",
       });
       return mermaid;
@@ -3397,6 +3397,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             <button
               type="button"
               onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+              aria-expanded={isProjectDropdownOpen}
+              aria-haspopup="menu"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-zinc-50 border border-black/10 text-zinc-800 transition-colors group focus:outline-none shadow-[0_2px_8px_rgba(0,0,0,0.06)] font-medium"
             >
               <Folder
@@ -3435,6 +3437,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     <input
                       type="text"
                       placeholder="Rename current book..."
+                      aria-label="Rename current library book"
                       className="w-full bg-transparent text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none"
                       onKeyDown={(e) => {
                         if (
@@ -3592,6 +3595,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               }
             }}
             title="Clear Chat History"
+            aria-label="Clear chat history"
             className="p-1.5 rounded-full hover:bg-black/5 text-[#9a9a9f] hover:text-zinc-800 transition-colors focus:outline-none"
           >
             <RotateCcw size={15} />
@@ -3599,7 +3603,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
           {onClose && (
             <button
+              type="button"
               onClick={onClose}
+              aria-label="Minimize tutor chat"
               className="p-1.5 rounded-full hover:bg-black/5 text-zinc-400 hover:text-zinc-600 transition-colors focus:outline-none"
             >
               <Minus size={16} />
@@ -3712,7 +3718,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           {/* Menu Trigger Button */}
           <div className="relative flex items-center justify-center shrink-0 z-50 ml-2 mb-2 rounded-full h-[48px] w-[48px] p-[2px]">
             <motion.button
+              type="button"
               onClick={() => setIsSkillsMenuOpen(!isSkillsMenuOpen)}
+              aria-label={
+                isSkillsMenuOpen ? "Close skills menu" : "Open skills menu"
+              }
+              aria-expanded={isSkillsMenuOpen}
               className="relative flex items-center justify-center w-full h-full rounded-full group focus:outline-none shrink-0"
               whileHover="hover"
               whileTap="tap"
@@ -3809,7 +3820,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               <div className="absolute top-2 left-4 flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-md text-[10px] font-bold uppercase tracking-wider z-20">
                 <Search size={10} strokeWidth={3} /> Web Search
                 <button
+                  type="button"
                   onClick={() => setIsSearchSkillActive(false)}
+                  aria-label="Disable web search skill"
                   className="ml-1 hover:text-white transition-colors"
                 >
                   <X size={10} strokeWidth={3} />
@@ -3834,6 +3847,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       handleSend();
                     }
                   }}
+                  aria-label={
+                    isSearchSkillActive
+                      ? "Search the web"
+                      : "Ask the tutor a question"
+                  }
                   placeholder={
                     isSearchSkillActive
                       ? "Search the web..."
@@ -3860,8 +3878,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           <div className="relative flex items-center gap-2 shrink-0 z-50 mr-2 mb-2">
             <div className="relative flex items-center justify-center shrink-0 rounded-full h-[48px] w-[48px] p-[2px]">
               <motion.button
+                type="button"
                 className="relative flex items-center justify-center w-full h-full rounded-full group focus:outline-none shrink-0"
                 onClick={toggleVoice}
+                aria-label={
+                  voiceState === "idle"
+                    ? "Start voice input"
+                    : "Stop voice input"
+                }
                 whileHover="hover"
                 whileTap="tap"
                 animate={voiceState === "idle" ? "idle" : "sending"}
@@ -3954,6 +3978,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
             <div className="relative flex items-center justify-center shrink-0 z-50 rounded-full h-[48px] w-[48px] p-[2px]">
               <motion.button
+                type="button"
+                aria-label="Send message"
                 className="relative flex items-center justify-center w-full h-full rounded-full group focus:outline-none shrink-0"
                 onMouseEnter={() => {
                   setIsHovered(true);

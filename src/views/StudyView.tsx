@@ -163,13 +163,12 @@ export function StudyView() {
     const file = e.target.files?.[0];
     if (
       file &&
-      (file.type === "application/pdf" || file.type.startsWith("image/"))
+      (file.type === "application/pdf" ||
+        file.name.toLowerCase().endsWith(".pdf"))
     ) {
-      if (file.type === "application/pdf") {
-        if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-        const url = URL.createObjectURL(file);
-        setPdfUrl(url);
-      }
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+      const url = URL.createObjectURL(file);
+      setPdfUrl(url);
       ingestDocument(file);
     }
   };
@@ -180,13 +179,12 @@ export function StudyView() {
     const file = e.dataTransfer.files?.[0];
     if (
       file &&
-      (file.type === "application/pdf" || file.type.startsWith("image/"))
+      (file.type === "application/pdf" ||
+        file.name.toLowerCase().endsWith(".pdf"))
     ) {
-      if (file.type === "application/pdf") {
-        if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-        const url = URL.createObjectURL(file);
-        setPdfUrl(url);
-      }
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+      const url = URL.createObjectURL(file);
+      setPdfUrl(url);
       ingestDocument(file);
     }
   };
@@ -224,7 +222,7 @@ export function StudyView() {
             </div>
             <input
               type="file"
-              accept="application/pdf,image/*"
+              accept="application/pdf,.pdf"
               ref={fileInputRef}
               className="hidden"
               onChange={handleFileChange}
@@ -417,7 +415,7 @@ export function StudyView() {
               <div className="flex items-center gap-8 flex-col md:flex-row w-full justify-center">
                 <input
                   type="file"
-                  accept="application/pdf,image/*"
+                  accept="application/pdf,.pdf"
                   ref={fileInputRef}
                   className="hidden"
                   onChange={handleFileChange}
@@ -425,6 +423,7 @@ export function StudyView() {
 
                 <PatternCard
                   onClick={() => fileInputRef.current?.click()}
+                  ariaLabel="Upload a PDF document"
                   onDragOver={(e) => {
                     e.preventDefault();
                     setIsDragging(true);

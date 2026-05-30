@@ -22,60 +22,51 @@ export function AnimatedScrollText({
   const containerRef = useRef<HTMLDivElement>(null);
   const words = text.split(" ");
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const scroller = scrollContainerRef?.current;
-    if (!scroller || !containerRef.current) return;
+    const container = containerRef.current;
+    if (!scroller || !container) return;
 
     let startPosition = 0;
     let containerHeight = 0;
+    let visible = false;
+
+    const updateProgress = () => {
+      if (!visible || !containerRef.current) return;
+      const currentScroll = scroller.scrollTop;
+      const elementTop = startPosition - currentScroll;
+      const visibleHeight = scroller.clientHeight - elementTop;
+      const revealDistance = Math.max(1, fullRevealDistance - containerHeight);
+
+      const progress = (visibleHeight - containerHeight) / revealDistance;
+      const clampedProgress = Math.max(0, Math.min(1, progress));
+      setScrollProgress(clampedProgress);
+      onRevealComplete?.(clampedProgress >= 1);
+    };
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          const rect = entry.boundingClientRect;
-          const scrollerRect = scroller.getBoundingClientRect();
+        visible = entry.isIntersecting;
+        if (!visible) return;
 
-          startPosition = scroller.scrollTop + (rect.top - scrollerRect.top);
-          containerHeight = rect.height;
-          handleScroll();
-        } else {
-          setIsVisible(false);
-        }
+        const rect = entry.boundingClientRect;
+        const scrollerRect = scroller.getBoundingClientRect();
+        startPosition = scroller.scrollTop + (rect.top - scrollerRect.top);
+        containerHeight = rect.height;
+        updateProgress();
       },
       { threshold: [0], root: scroller },
     );
 
-    observer.observe(containerRef.current);
-
-    const handleScroll = () => {
-      if (!isVisible || !containerRef.current) return;
-      const currentScroll = scroller.scrollTop;
-      const elementTop = startPosition - currentScroll;
-      const visibleHeight = scroller.clientHeight - elementTop;
-
-      const progress =
-        (visibleHeight - containerHeight) /
-        (fullRevealDistance - containerHeight);
-      const clampedProgress = Math.max(0, Math.min(1, progress));
-      setScrollProgress(clampedProgress);
-
-      if (onRevealComplete) {
-        onRevealComplete(clampedProgress >= 1);
-      }
-    };
-
-    scroller.addEventListener("scroll", handleScroll, { passive: true });
+    observer.observe(container);
+    scroller.addEventListener("scroll", updateProgress, { passive: true });
 
     return () => {
-      scroller.removeEventListener("scroll", handleScroll);
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
-      }
+      scroller.removeEventListener("scroll", updateProgress);
+      observer.unobserve(container);
     };
-  }, [scrollContainerRef, fullRevealDistance, isVisible]);
+  }, [scrollContainerRef, fullRevealDistance, onRevealComplete]);
 
   return (
     <div ref={containerRef} className={`flex flex-wrap ${className}`}>

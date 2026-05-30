@@ -47,6 +47,8 @@ export function FloatingSkillsMenu({
           }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
           className="absolute bottom-full mb-4 left-0 w-[280px] sm:w-[320px] max-w-[calc(100vw-32px)] bg-[#fdfdfd] text-[#050505] dark:bg-[#121214] dark:text-zinc-100 rounded-3xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/10 overflow-hidden z-50 origin-bottom-left"
+          role="dialog"
+          aria-label="Tutor skills"
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
@@ -57,7 +59,9 @@ export function FloatingSkillsMenu({
               Skills
             </motion.h3>
             <button
+              type="button"
               onClick={onClose}
+              aria-label="Close skills menu"
               className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors text-zinc-400"
             >
               <Minus size={14} strokeWidth={2.5} />
@@ -96,8 +100,9 @@ export function FloatingSkillsMenu({
                   className="flex flex-col gap-1"
                 >
                   <AnimatePresence>
-                    {items.map((item, idx) => (
+                    {displayedItems.map((item, idx) => (
                       <motion.button
+                        type="button"
                         key={item}
                         onClick={() => {
                           if (onSelectSkill) onSelectSkill(item);
@@ -108,6 +113,7 @@ export function FloatingSkillsMenu({
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ delay: idx * 0.05 }}
                         className="flex items-center gap-3 text-left p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
+                        aria-label={`Enable ${item} skill`}
                       >
                         <div className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
                           <Sparkles size={12} />

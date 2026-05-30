@@ -900,6 +900,7 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
                 bookOpen ? themes[2].bloomOpacity : themes[0].bloomOpacity
               }
               onClick={() => setBookOpen((open) => !open)}
+              ariaLabel="Toggle App Design Language preview"
               animateDots
             >
               <div
@@ -1459,10 +1460,12 @@ const createBuiltInBookConcept = (book: BuiltInBook): PersistentConcept => ({
 const LongPressWrapper = ({
   onLongPress,
   onClick,
+  ariaLabel,
   children,
 }: {
   onLongPress: () => void;
   onClick: () => void;
+  ariaLabel?: string;
   children: (pressing: boolean) => React.ReactNode;
 }) => {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1507,7 +1510,15 @@ const LongPressWrapper = ({
           onClick();
         }
       }}
-      className="relative cursor-pointer select-none"
+      onKeyDown={(event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        onClick();
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={ariaLabel}
+      className="relative cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff6e00]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030303] rounded-[44.875px]"
     >
       {children(pressing)}
     </div>
@@ -2212,6 +2223,7 @@ export function RevisionView() {
                     setCurrentChapterIndex(0);
                     setActiveConceptId(book.id);
                   }}
+                  ariaLabel={`Open ${book.title}`}
                 >
                   {(pressing) => (
                     <PatternCard
@@ -2273,6 +2285,7 @@ export function RevisionView() {
                     setCurrentChapterIndex(0);
                     setActiveConceptId(concept.id);
                   }}
+                  ariaLabel={`Open ${concept.name}`}
                 >
                   {(pressing) => (
                     <PatternCard
@@ -2313,6 +2326,7 @@ export function RevisionView() {
             <PatternCard
               layoutId="card-admin-dashboard"
               onClick={() => setActiveView("admin")}
+              ariaLabel="Open Admin Dashboard"
               bgClass="bg-[#ecebe9]"
               SvgComponent={SvgBeige}
               bloomColor="rgb(255, 110, 0)"
