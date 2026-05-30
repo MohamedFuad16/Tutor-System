@@ -1,16 +1,16 @@
 # Graph Report - Tutor-System-Architecture-  (2026-05-30)
 
 ## Corpus Check
-- 58 files · ~93,189 words
+- 58 files · ~93,571 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 606 nodes · 895 edges · 37 communities (27 shown, 10 thin omitted)
+- 606 nodes · 896 edges · 36 communities (26 shown, 10 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `19a80db4`
+- Built from commit: `325b47f4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -20,7 +20,6 @@
 - [[_COMMUNITY_Community 2|Community 2]]
 - [[_COMMUNITY_Community 3|Community 3]]
 - [[_COMMUNITY_Community 4|Community 4]]
-- [[_COMMUNITY_Community 5|Community 5]]
 - [[_COMMUNITY_Community 6|Community 6]]
 - [[_COMMUNITY_Community 7|Community 7]]
 - [[_COMMUNITY_Community 8|Community 8]]
@@ -53,7 +52,7 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `useStore` - 25 edges
-2. `useMotionPreference()` - 22 edges
+2. `useMotionPreference()` - 23 edges
 3. `useTranslation()` - 15 edges
 4. `scripts` - 14 edges
 5. `MemoryOrchestrator` - 14 edges
@@ -72,10 +71,10 @@
   server/vercel-handler.ts → server.ts
 - `getTutorApp()` --calls--> `createTutorServerApp()`  [EXTRACTED]
   server/vercel-handler.ts → server.ts
-- `RevisionView()` --calls--> `useStore`  [EXTRACTED]
-  src/views/RevisionView.tsx → src/store/index.ts
+- `ThinkingPanel()` --calls--> `useTranslation()`  [EXTRACTED]
+  src/components/ChatPanel.tsx → src/lib/translations.ts
 
-## Communities (37 total, 10 thin omitted)
+## Communities (36 total, 10 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
@@ -83,7 +82,7 @@ Nodes (23): BKTEngine, DEFAULT_BKT, CognitiveLoadMonitor, CognitiveLoadState, Il
 
 ### Community 1 - "Community 1"
 Cohesion: 0.05
-Nodes (54): AnimatedScrollText(), AnimatedScrollTextProps, ChatPanel(), FloatingSkillsMenu(), SKILLS, Navigation(), PdfViewer(), formatCount() (+46 more)
+Nodes (46): AnimatedScrollText(), AnimatedScrollTextProps, ChatPanel(), FloatingSkillsMenu(), SKILLS, Navigation(), PatternCard(), pressDots (+38 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.07
@@ -96,10 +95,6 @@ Nodes (19): LearningBook, cosineSimilarity(), generateEmbedding(), normalize(), 
 ### Community 4 - "Community 4"
 Cohesion: 0.05
 Nodes (21): AnimatedMarkdown, ChatArchive, gsapMotion, InteractiveCodeBlock, languageExtensions, languageLabels, markdownComponents, MermaidApi (+13 more)
-
-### Community 5 - "Community 5"
-Cohesion: 0.08
-Nodes (20): PatternCard(), pressDots, themes, SvgBeige(), SvgDark(), SvgOrange(), BuiltInBook, builtInBookIds (+12 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.05
@@ -130,8 +125,8 @@ Cohesion: 0.38
 Nodes (7): compactModel(), formatCount(), formatCurrency(), formatSeconds(), MessageUsageFooter(), UsageAnalyticsStrip(), useAnimatedNumber()
 
 ### Community 14 - "Community 14"
-Cohesion: 0.06
-Nodes (32): devDependencies, autoprefixer, esbuild, prettier, tailwindcss, @types/d3, @types/express, @types/multer (+24 more)
+Cohesion: 0.14
+Nodes (14): scripts, build, clean, dev, format, format:check, graphify:path, graphify:query (+6 more)
 
 ### Community 15 - "Community 15"
 Cohesion: 0.50
@@ -142,12 +137,12 @@ Cohesion: 0.67
 Nodes (3): codeFileName(), codeLanguageLabel(), PremiumCodeShell()
 
 ### Community 19 - "Community 19"
-Cohesion: 0.40
-Nodes (4): ChatPhase, Message, MindMapLink, MindMapNode
+Cohesion: 0.07
+Nodes (32): formatCount(), formatCurrency(), planCardMeta, UsageGraphBar(), UsageInsightsPanel(), UserUsagePanel(), AccessMode, estimateServiceMinutes() (+24 more)
 
 ### Community 23 - "Community 23"
-Cohesion: 0.07
-Nodes (30): dependencies, compression, d3, dexie, dexie-react-hooks, dotenv, express, @fontsource/geist-sans (+22 more)
+Cohesion: 0.04
+Nodes (48): dependencies, compression, d3, dexie, dexie-react-hooks, dotenv, express, @fontsource/geist-sans (+40 more)
 
 ### Community 24 - "Community 24"
 Cohesion: 0.17
@@ -189,13 +184,13 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.138) - this node is a cross-community bridge._
 - **Why does `vercelHandler()` connect `Community 11` to `Community 1`?**
   _High betweenness centrality (0.137) - this node is a cross-community bridge._
-- **Why does `useStore` connect `Community 1` to `Community 5`, `Community 12`, `Community 4`?**
+- **Why does `useStore` connect `Community 1` to `Community 19`, `Community 12`, `Community 4`?**
   _High betweenness centrality (0.133) - this node is a cross-community bridge._
 - **What connects `name`, `private`, `version` to the rest of the system?**
   _250 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.06095791001451379 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.05379746835443038 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05257312106627175 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.07007575757575757 - nodes in this community are weakly interconnected._

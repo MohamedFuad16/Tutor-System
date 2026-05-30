@@ -9,7 +9,7 @@
       "source_file": "package.json",
       "source_location": "L1",
       "id": "package_json",
-      "community": 14,
+      "community": 23,
       "norm_label": "package.json"
     },
     {
@@ -18,7 +18,7 @@
       "source_file": "package.json",
       "source_location": "L2",
       "id": "tutor_system_architecture_package_name",
-      "community": 14,
+      "community": 23,
       "norm_label": "name"
     },
     {
@@ -27,7 +27,7 @@
       "source_file": "package.json",
       "source_location": "L3",
       "id": "tutor_system_architecture_package_private",
-      "community": 14,
+      "community": 23,
       "norm_label": "private"
     },
     {
@@ -36,7 +36,7 @@
       "source_file": "package.json",
       "source_location": "L4",
       "id": "tutor_system_architecture_package_version",
-      "community": 14,
+      "community": 23,
       "norm_label": "version"
     },
     {
@@ -45,7 +45,7 @@
       "source_file": "package.json",
       "source_location": "L5",
       "id": "tutor_system_architecture_package_type",
-      "community": 14,
+      "community": 23,
       "norm_label": "type"
     },
     {
@@ -441,7 +441,7 @@
       "source_file": "package.json",
       "source_location": "L51",
       "id": "tutor_system_architecture_package_devdependencies",
-      "community": 14,
+      "community": 23,
       "norm_label": "devdependencies"
     },
     {
@@ -450,7 +450,7 @@
       "source_file": "package.json",
       "source_location": "L52",
       "id": "tutor_system_architecture_package_devdependencies_types_d3",
-      "community": 14,
+      "community": 23,
       "norm_label": "@types/d3"
     },
     {
@@ -459,7 +459,7 @@
       "source_file": "package.json",
       "source_location": "L53",
       "id": "tutor_system_architecture_package_devdependencies_types_express",
-      "community": 14,
+      "community": 23,
       "norm_label": "@types/express"
     },
     {
@@ -468,7 +468,7 @@
       "source_file": "package.json",
       "source_location": "L54",
       "id": "tutor_system_architecture_package_devdependencies_types_multer",
-      "community": 14,
+      "community": 23,
       "norm_label": "@types/multer"
     },
     {
@@ -477,7 +477,7 @@
       "source_file": "package.json",
       "source_location": "L55",
       "id": "tutor_system_architecture_package_devdependencies_types_node",
-      "community": 14,
+      "community": 23,
       "norm_label": "@types/node"
     },
     {
@@ -486,7 +486,7 @@
       "source_file": "package.json",
       "source_location": "L56",
       "id": "tutor_system_architecture_package_devdependencies_types_ws",
-      "community": 14,
+      "community": 23,
       "norm_label": "@types/ws"
     },
     {
@@ -495,7 +495,7 @@
       "source_file": "package.json",
       "source_location": "L57",
       "id": "tutor_system_architecture_package_devdependencies_autoprefixer",
-      "community": 14,
+      "community": 23,
       "norm_label": "autoprefixer"
     },
     {
@@ -504,7 +504,7 @@
       "source_file": "package.json",
       "source_location": "L58",
       "id": "tutor_system_architecture_package_devdependencies_esbuild",
-      "community": 14,
+      "community": 23,
       "norm_label": "esbuild"
     },
     {
@@ -513,7 +513,7 @@
       "source_file": "package.json",
       "source_location": "L59",
       "id": "tutor_system_architecture_package_devdependencies_prettier",
-      "community": 14,
+      "community": 23,
       "norm_label": "prettier"
     },
     {
@@ -522,7 +522,7 @@
       "source_file": "package.json",
       "source_location": "L60",
       "id": "tutor_system_architecture_package_devdependencies_tailwindcss",
-      "community": 14,
+      "community": 23,
       "norm_label": "tailwindcss"
     },
     {
@@ -531,7 +531,7 @@
       "source_file": "package.json",
       "source_location": "L61",
       "id": "tutor_system_architecture_package_devdependencies_typescript",
-      "community": 14,
+      "community": 23,
       "norm_label": "typescript"
     },
     {
@@ -540,7 +540,7 @@
       "source_file": "package.json",
       "source_location": "L62",
       "id": "tutor_system_architecture_package_devdependencies_vite",
-      "community": 14,
+      "community": 23,
       "norm_label": "vite"
     },
     {
@@ -549,7 +549,7 @@
       "source_file": "package.json",
       "source_location": "L64",
       "id": "tutor_system_architecture_package_overrides",
-      "community": 14,
+      "community": 23,
       "norm_label": "overrides"
     },
     {
@@ -558,7 +558,7 @@
       "source_file": "package.json",
       "source_location": "L65",
       "id": "tutor_system_architecture_package_overrides_protobufjs",
-      "community": 14,
+      "community": 23,
       "norm_label": "protobufjs"
     },
     {
@@ -1620,7 +1620,7 @@
       "source_file": "src/lib/tutorBook.json",
       "source_location": "L1",
       "id": "src_lib_tutorbook_json",
-      "community": 5,
+      "community": 1,
       "norm_label": "tutorbook.json"
     },
     {
@@ -1665,7 +1665,7 @@
       "source_file": "src/lib/accessPlans.ts",
       "source_location": "L1",
       "id": "src_lib_accessplans_ts",
-      "community": 1,
+      "community": 19,
       "norm_label": "accessplans.ts"
     },
     {
@@ -1674,7 +1674,7 @@
       "source_file": "src/lib/accessPlans.ts",
       "source_location": "L1",
       "id": "lib_accessplans_accessmode",
-      "community": 1,
+      "community": 19,
       "norm_label": "accessmode"
     },
     {
@@ -1683,7 +1683,7 @@
       "source_file": "src/lib/accessPlans.ts",
       "source_location": "L2",
       "id": "lib_accessplans_plantier",
-      "community": 1,
+      "community": 19,
       "norm_label": "plantier"
     },
     {
@@ -1692,7 +1692,7 @@
       "source_file": "src/lib/accessPlans.ts",
       "source_location": "L4",
       "id": "lib_accessplans_planoptions",
-      "community": 1,
+      "community": 19,
       "norm_label": "planoptions"
     },
     {
@@ -1701,7 +1701,7 @@
       "source_file": "src/lib/accessPlans.ts",
       "source_location": "L34",
       "id": "lib_accessplans_servicemilestones",
-      "community": 1,
+      "community": 19,
       "norm_label": "servicemilestones"
     },
     {
@@ -1710,7 +1710,7 @@
       "source_file": "src/lib/accessPlans.ts",
       "source_location": "L40",
       "id": "lib_accessplans_getplanoption",
-      "community": 1,
+      "community": 19,
       "norm_label": "getplanoption()"
     },
     {
@@ -1719,7 +1719,7 @@
       "source_file": "src/lib/accessPlans.ts",
       "source_location": "L43",
       "id": "lib_accessplans_estimateserviceminutes",
-      "community": 1,
+      "community": 19,
       "norm_label": "estimateserviceminutes()"
     },
     {
@@ -1728,7 +1728,7 @@
       "source_file": "src/lib/accessPlans.ts",
       "source_location": "L58",
       "id": "lib_accessplans_formatservicetime",
-      "community": 1,
+      "community": 19,
       "norm_label": "formatservicetime()"
     },
     {
@@ -1737,7 +1737,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L1",
       "id": "src_store_index_ts",
-      "community": 1,
+      "community": 19,
       "norm_label": "index.ts"
     },
     {
@@ -1746,7 +1746,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L6",
       "id": "store_index_viewstate",
-      "community": 1,
+      "community": 19,
       "norm_label": "viewstate"
     },
     {
@@ -1755,7 +1755,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L8",
       "id": "store_index_concept",
-      "community": 1,
+      "community": 19,
       "norm_label": "concept"
     },
     {
@@ -1764,7 +1764,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L17",
       "id": "store_index_annotation",
-      "community": 1,
+      "community": 19,
       "norm_label": "annotation"
     },
     {
@@ -1773,7 +1773,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L33",
       "id": "store_index_chatusage",
-      "community": 1,
+      "community": 19,
       "norm_label": "chatusage"
     },
     {
@@ -1782,7 +1782,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L43",
       "id": "store_index_webusage",
-      "community": 1,
+      "community": 19,
       "norm_label": "webusage"
     },
     {
@@ -1791,7 +1791,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L54",
       "id": "store_index_voiceusage",
-      "community": 1,
+      "community": 19,
       "norm_label": "voiceusage"
     },
     {
@@ -1800,7 +1800,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L69",
       "id": "store_index_pricingstate",
-      "community": 1,
+      "community": 19,
       "norm_label": "pricingstate"
     },
     {
@@ -1809,7 +1809,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L85",
       "id": "store_index_websearchmode",
-      "community": 1,
+      "community": 19,
       "norm_label": "websearchmode"
     },
     {
@@ -1827,7 +1827,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L99",
       "id": "store_index_websearchevent",
-      "community": 1,
+      "community": 19,
       "norm_label": "websearchevent"
     },
     {
@@ -1836,7 +1836,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L111",
       "id": "store_index_emptychatusage",
-      "community": 1,
+      "community": 19,
       "norm_label": "emptychatusage"
     },
     {
@@ -1845,7 +1845,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L123",
       "id": "store_index_normalizeaimodel",
-      "community": 1,
+      "community": 19,
       "norm_label": "normalizeaimodel()"
     },
     {
@@ -1854,7 +1854,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L128",
       "id": "store_index_emptywebusage",
-      "community": 1,
+      "community": 19,
       "norm_label": "emptywebusage"
     },
     {
@@ -1863,7 +1863,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L139",
       "id": "store_index_emptyvoiceusage",
-      "community": 1,
+      "community": 19,
       "norm_label": "emptyvoiceusage"
     },
     {
@@ -1872,7 +1872,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L154",
       "id": "store_index_emptypricing",
-      "community": 1,
+      "community": 19,
       "norm_label": "emptypricing"
     },
     {
@@ -1881,7 +1881,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L169",
       "id": "store_index_readstoredusage",
-      "community": 1,
+      "community": 19,
       "norm_label": "readstoredusage()"
     },
     {
@@ -1890,7 +1890,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L204",
       "id": "store_index_persistusage",
-      "community": 1,
+      "community": 19,
       "norm_label": "persistusage()"
     },
     {
@@ -1899,7 +1899,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L216",
       "id": "store_index_appstate",
-      "community": 1,
+      "community": 19,
       "norm_label": "appstate"
     },
     {
@@ -1908,7 +1908,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L298",
       "id": "store_index_storedusage",
-      "community": 1,
+      "community": 19,
       "norm_label": "storedusage"
     },
     {
@@ -1917,7 +1917,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L299",
       "id": "store_index_readaccessmode",
-      "community": 1,
+      "community": 19,
       "norm_label": "readaccessmode()"
     },
     {
@@ -1926,7 +1926,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L301",
       "id": "store_index_readplantier",
-      "community": 1,
+      "community": 19,
       "norm_label": "readplantier()"
     },
     {
@@ -1989,187 +1989,187 @@
       "source_file": "src/views/RevisionView.tsx",
       "source_location": "L1",
       "id": "src_views_revisionview_tsx",
-      "community": 5,
+      "community": 1,
       "norm_label": "revisionview.tsx"
     },
     {
       "label": "BuiltInBook",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L44",
+      "source_location": "L45",
       "id": "views_revisionview_builtinbook",
-      "community": 5,
+      "community": 1,
       "norm_label": "builtinbook"
     },
     {
       "label": "LibraryDeleteTarget",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L53",
+      "source_location": "L54",
       "id": "views_revisionview_librarydeletetarget",
-      "community": 5,
+      "community": 1,
       "norm_label": "librarydeletetarget"
     },
     {
       "label": "designTokens",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L59",
+      "source_location": "L60",
       "id": "views_revisionview_designtokens",
-      "community": 5,
+      "community": 1,
       "norm_label": "designtokens"
     },
     {
       "label": "SnapshotPreviewId",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L68",
+      "source_location": "L69",
       "id": "views_revisionview_snapshotpreviewid",
-      "community": 5,
+      "community": 1,
       "norm_label": "snapshotpreviewid"
     },
     {
       "label": "WireframeNodeTone",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L80",
+      "source_location": "L81",
       "id": "views_revisionview_wireframenodetone",
-      "community": 5,
+      "community": 1,
       "norm_label": "wireframenodetone"
     },
     {
       "label": "WireframeNode",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L82",
+      "source_location": "L83",
       "id": "views_revisionview_wireframenode",
-      "community": 5,
+      "community": 1,
       "norm_label": "wireframenode"
     },
     {
       "label": "WireframeLinkSide",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L91",
+      "source_location": "L92",
       "id": "views_revisionview_wireframelinkside",
-      "community": 5,
+      "community": 1,
       "norm_label": "wireframelinkside"
     },
     {
       "label": "WireframeLink",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L93",
+      "source_location": "L94",
       "id": "views_revisionview_wireframelink",
-      "community": 5,
+      "community": 1,
       "norm_label": "wireframelink"
     },
     {
       "label": "snapshotCards",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L540",
+      "source_location": "L545",
       "id": "views_revisionview_snapshotcards",
-      "community": 5,
+      "community": 1,
       "norm_label": "snapshotcards"
     },
     {
       "label": "GalleryPanel()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L597",
+      "source_location": "L602",
       "id": "views_revisionview_gallerypanel",
-      "community": 5,
+      "community": 1,
       "norm_label": "gallerypanel()"
     },
     {
       "label": "WireframeMap()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L611",
+      "source_location": "L616",
       "id": "views_revisionview_wireframemap",
-      "community": 5,
+      "community": 1,
       "norm_label": "wireframemap()"
     },
     {
       "label": "LiveComponentPreview()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L825",
+      "source_location": "L830",
       "id": "views_revisionview_livecomponentpreview",
-      "community": 5,
+      "community": 1,
       "norm_label": "livecomponentpreview()"
     },
     {
       "label": "AppDesignLanguagePage()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1278",
+      "source_location": "L1283",
       "id": "views_revisionview_appdesignlanguagepage",
-      "community": 5,
+      "community": 1,
       "norm_label": "appdesignlanguagepage()"
     },
     {
       "label": "builtInBooks",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1387",
+      "source_location": "L1392",
       "id": "views_revisionview_builtinbooks",
-      "community": 5,
+      "community": 1,
       "norm_label": "builtinbooks"
     },
     {
       "label": "builtInBookIds",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1413",
+      "source_location": "L1418",
       "id": "views_revisionview_builtinbookids",
-      "community": 5,
+      "community": 1,
       "norm_label": "builtinbookids"
     },
     {
       "label": "createBuiltInBookConcept()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1415",
+      "source_location": "L1420",
       "id": "views_revisionview_createbuiltinbookconcept",
-      "community": 5,
+      "community": 1,
       "norm_label": "createbuiltinbookconcept()"
     },
     {
       "label": "LongPressWrapper()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1436",
+      "source_location": "L1441",
       "id": "views_revisionview_longpresswrapper",
-      "community": 5,
+      "community": 1,
       "norm_label": "longpresswrapper()"
     },
     {
       "label": "FlashcardUI",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1494",
+      "source_location": "L1499",
       "id": "views_revisionview_flashcardui",
-      "community": 5,
+      "community": 1,
       "norm_label": "flashcardui"
     },
     {
       "label": "FlashcardDeck()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1606",
+      "source_location": "L1611",
       "id": "views_revisionview_flashcarddeck",
-      "community": 5,
+      "community": 1,
       "norm_label": "flashcarddeck()"
     },
     {
       "label": "RevisionView()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1651",
+      "source_location": "L1656",
       "id": "views_revisionview_revisionview",
-      "community": 5,
+      "community": 1,
       "norm_label": "revisionview()"
     },
     {
@@ -3141,7 +3141,7 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L1",
       "id": "src_components_settingsmodal_tsx",
-      "community": 1,
+      "community": 19,
       "norm_label": "settingsmodal.tsx"
     },
     {
@@ -3150,7 +3150,7 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L37",
       "id": "components_settingsmodal_formatcurrency",
-      "community": 1,
+      "community": 19,
       "norm_label": "formatcurrency()"
     },
     {
@@ -3159,7 +3159,7 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L44",
       "id": "components_settingsmodal_formatcount",
-      "community": 1,
+      "community": 19,
       "norm_label": "formatcount()"
     },
     {
@@ -3168,7 +3168,7 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L52",
       "id": "components_settingsmodal_plancardmeta",
-      "community": 1,
+      "community": 19,
       "norm_label": "plancardmeta"
     },
     {
@@ -3177,7 +3177,7 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L73",
       "id": "components_settingsmodal_usagegraphbar",
-      "community": 1,
+      "community": 19,
       "norm_label": "usagegraphbar()"
     },
     {
@@ -3186,7 +3186,7 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L102",
       "id": "components_settingsmodal_usageinsightspanel",
-      "community": 1,
+      "community": 19,
       "norm_label": "usageinsightspanel()"
     },
     {
@@ -3195,7 +3195,7 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L264",
       "id": "components_settingsmodal_userusagepanel",
-      "community": 1,
+      "community": 19,
       "norm_label": "userusagepanel()"
     },
     {
@@ -3762,7 +3762,7 @@
       "source_file": "src/components/PatternCard.tsx",
       "source_location": "L1",
       "id": "src_components_patterncard_tsx",
-      "community": 5,
+      "community": 1,
       "norm_label": "patterncard.tsx"
     },
     {
@@ -3771,7 +3771,7 @@
       "source_file": "src/components/PatternCard.tsx",
       "source_location": "L6",
       "id": "components_patterncard_themes",
-      "community": 5,
+      "community": 1,
       "norm_label": "themes"
     },
     {
@@ -3780,7 +3780,7 @@
       "source_file": "src/components/PatternCard.tsx",
       "source_location": "L30",
       "id": "components_patterncard_pressdots",
-      "community": 5,
+      "community": 1,
       "norm_label": "pressdots"
     },
     {
@@ -3789,7 +3789,7 @@
       "source_file": "src/components/PatternCard.tsx",
       "source_location": "L49",
       "id": "components_patterncard_patterncard",
-      "community": 5,
+      "community": 1,
       "norm_label": "patterncard()"
     },
     {
@@ -3852,7 +3852,7 @@
       "source_file": "src/components/PatternSVGs.tsx",
       "source_location": "L1",
       "id": "src_components_patternsvgs_tsx",
-      "community": 5,
+      "community": 1,
       "norm_label": "patternsvgs.tsx"
     },
     {
@@ -3861,7 +3861,7 @@
       "source_file": "src/components/PatternSVGs.tsx",
       "source_location": "L3",
       "id": "components_patternsvgs_svgdark",
-      "community": 5,
+      "community": 1,
       "norm_label": "svgdark()"
     },
     {
@@ -3870,7 +3870,7 @@
       "source_file": "src/components/PatternSVGs.tsx",
       "source_location": "L11",
       "id": "components_patternsvgs_svgorange",
-      "community": 5,
+      "community": 1,
       "norm_label": "svgorange()"
     },
     {
@@ -3879,7 +3879,7 @@
       "source_file": "src/components/PatternSVGs.tsx",
       "source_location": "L19",
       "id": "components_patternsvgs_svgbeige",
-      "community": 5,
+      "community": 1,
       "norm_label": "svgbeige()"
     },
     {
@@ -8551,9 +8551,9 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_settingsmodal_tsx",
-      "target": "lib_accessplans_plantier",
-      "confidence_score": 1.0
+      "target": "lib_accessplans_plantier"
     },
     {
       "relation": "imports",
@@ -9828,6 +9828,17 @@
       "source_location": "L831",
       "weight": 1.0,
       "source": "views_revisionview_livecomponentpreview",
+      "target": "hooks_usemotionpreference_usemotionpreference"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/views/RevisionView.tsx",
+      "source_location": "L1659",
+      "weight": 1.0,
+      "source": "views_revisionview_revisionview",
       "target": "hooks_usemotionpreference_usemotionpreference"
     },
     {
@@ -12164,9 +12175,9 @@
       "source_file": "src/components/SettingsModal.tsx",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_settingsmodal_tsx",
-      "target": "components_settingsmodal_plancardmeta",
-      "confidence_score": 1.0
+      "target": "components_settingsmodal_plancardmeta"
     },
     {
       "relation": "contains",
@@ -14758,5 +14769,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "19a80db4172b20faa9ffb8d29efcd02af15f59c4"
+  "built_at_commit": "325b47f4bef45abef5344a252b8897ed1be53c10"
 }
