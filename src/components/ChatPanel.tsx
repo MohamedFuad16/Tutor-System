@@ -3911,7 +3911,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
           {onClose && (
             <button
+              type="button"
               onClick={onClose}
+              aria-label="Close tutor chat"
+              title="Close tutor chat"
               className="p-1.5 rounded-full hover:bg-black/5 text-zinc-400 hover:text-zinc-600 transition-colors focus:outline-none"
             >
               <Minus size={16} />
@@ -4093,10 +4096,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 >
                   <Plus
-                    size={20}
-                    className={`relative z-[80] ${
-                      isSkillsMenuOpen ? "text-white" : "text-zinc-100"
-                    }`}
+                    size={18}
+                    className={isSkillsMenuOpen ? "text-white" : "text-zinc-300"}
                     strokeWidth={isSkillsMenuOpen ? 3 : 2.5}
                     style={{
                       filter: isSkillsMenuOpen
@@ -4106,17 +4107,6 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   />
                 </gsapMotion.div>
               </gsapMotion.div>
-              <div className="pointer-events-none absolute inset-0 z-[100] flex items-center justify-center">
-                <Plus
-                  size={20}
-                  className="text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
-                  strokeWidth={isSkillsMenuOpen ? 3 : 2.5}
-                  style={{
-                    transform: isSkillsMenuOpen ? "rotate(45deg)" : "none",
-                    transition: "transform 180ms ease",
-                  }}
-                />
-              </div>
             </gsapMotion.button>
             <FloatingSkillsMenu
               isOpen={isSkillsMenuOpen}
@@ -4252,15 +4242,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   <gsapMotion.div className="absolute z-20 flex items-center justify-center">
                     {voiceState === "idle" ? (
                       <Mic
-                        size={20}
-                        className="relative z-[80] text-zinc-100 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
+                        size={18}
+                        className="text-zinc-300"
                       />
                     ) : voiceState === "listening" ? (
                       <div className="relative flex items-center justify-center">
                         <div className="absolute inset-0 rounded-full border border-emerald-400 animate-ping opacity-50" />
                         <div className="absolute inset-[-4px] rounded-full bg-emerald-500/20 blur animate-pulse" />
                         <Mic
-                          size={20}
+                          size={18}
                           className="relative z-10 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"
                         />
                       </div>
@@ -4268,31 +4258,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       <div className="relative flex items-center justify-center">
                         <div className="absolute inset-[-4px] rounded-full bg-blue-500/20 blur animate-pulse" />
                         <Activity
-                          size={20}
+                          size={18}
                           className="relative z-10 animate-pulse text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]"
                         />
                       </div>
                     )}
                   </gsapMotion.div>
                 </gsapMotion.div>
-                <div className="pointer-events-none absolute inset-0 z-[100] flex items-center justify-center">
-                  {voiceState === "idle" ? (
-                    <Mic
-                      size={20}
-                      className="text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
-                    />
-                  ) : voiceState === "listening" ? (
-                    <Mic
-                      size={20}
-                      className="text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.9)]"
-                    />
-                  ) : (
-                    <Activity
-                      size={20}
-                      className="text-blue-300 drop-shadow-[0_0_8px_rgba(96,165,250,0.9)]"
-                    />
-                  )}
-                </div>
               </gsapMotion.button>
             </div>
 
@@ -4398,17 +4370,20 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       success: { y: 30, opacity: 0, scale: 0.5 },
                     }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    className="hidden"
+                    className={
+                      sendState === "idle"
+                        ? "absolute z-20 flex items-center justify-center"
+                        : "hidden"
+                    }
                   >
                     <ArrowUp
-                      className="relative z-[80] h-5 w-5 transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300"
-                      color={isActive && isValid ? "#FFFFFF" : "#D7D7D7"}
+                      className="h-[18px] w-[18px] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300"
+                      color={isActive && isValid ? "#ECECEC" : "#555555"}
                       style={{
                         filter:
                           isActive && isValid
                             ? "drop-shadow(0 0 4px rgba(255,255,255,0.4))"
-                            : "drop-shadow(0 1px 3px rgba(0,0,0,1))",
-                        opacity: isActive && isValid ? 1 : 0.72,
+                            : "drop-shadow(0 1px 2px rgba(0,0,0,1))",
                       }}
                       strokeWidth={2.5}
                     />
@@ -4423,7 +4398,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       success: { opacity: 0, scale: 1.5 },
                     }}
                     transition={{ duration: 0.2 }}
-                    className="hidden"
+                    className={
+                      sendState === "sending"
+                        ? "absolute z-30 flex items-center justify-center mix-blend-screen"
+                        : "hidden"
+                    }
                   >
                     <gsapMotion.div
                       animate={{ rotate: sendState === "sending" ? 360 : 0 }}
@@ -4460,7 +4439,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       success: { opacity: 1, scale: 1, y: 0 },
                     }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    className="hidden"
+                    className={
+                      sendState === "success"
+                        ? "absolute z-40 flex items-center justify-center"
+                        : "hidden"
+                    }
                   >
                     <Check
                       className="w-[18px] h-[18px] text-white"
@@ -4468,30 +4451,6 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     />
                   </gsapMotion.div>
                 </gsapMotion.div>
-                <div className="pointer-events-none absolute inset-0 z-[100] flex items-center justify-center">
-                  {sendState === "sending" ? (
-                    <LoaderCircle
-                      size={20}
-                      className="animate-spin text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
-                    />
-                  ) : sendState === "success" ? (
-                    <Check
-                      size={20}
-                      className="text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
-                      strokeWidth={3}
-                    />
-                  ) : (
-                    <ArrowUp
-                      className="h-5 w-5 text-white drop-shadow-[0_0_8px_rgba(0,0,0,0.95)] transition-opacity duration-200"
-                      color="#FFFFFF"
-                      style={{
-                        opacity: isActive && isValid ? 1 : 0.9,
-                      }}
-                      stroke="currentColor"
-                      strokeWidth={3}
-                    />
-                  )}
-                </div>
               </gsapMotion.button>
             </div>
 

@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
+import React, {
+  useCallback,
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+} from "react";
 import { PdfViewer } from "../components/PdfViewer";
 import { ChatPanel } from "../components/ChatPanel";
 import { useStore } from "../store";
@@ -24,9 +30,11 @@ const splitCardTitle = (title: string) => {
 const AnimatedHeadlineWords = ({
   text,
   motionEnabled,
+  onComplete,
 }: {
   text: string;
   motionEnabled: boolean;
+  onComplete?: () => void;
 }) => {
   const wordRefs = useRef<HTMLSpanElement[]>([]);
 
@@ -36,9 +44,10 @@ const AnimatedHeadlineWords = ({
     gsap.killTweensOf(words);
     if (!motionEnabled) {
       gsap.set(words, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+      onComplete?.();
       return;
     }
-    gsap.fromTo(
+    const tween = gsap.fromTo(
       words,
       { autoAlpha: 0, y: 16, filter: "blur(16px)" },
       {
@@ -48,9 +57,13 @@ const AnimatedHeadlineWords = ({
         duration: 1.95,
         stagger: 0.18,
         ease: "power4.out",
+        onComplete,
       },
     );
-  }, [motionEnabled, text]);
+    return () => {
+      tween.kill();
+    };
+  }, [motionEnabled, onComplete, text]);
 
   wordRefs.current = [];
 
@@ -75,7 +88,8 @@ const AnimatedHeadlineWords = ({
 };
 
 type StudyIntroSplashProps = {
-  introStep: number;
+  cardStep: number;
+  headlineIndex: number;
   motionEnabled: boolean;
   isDragging: boolean;
   isIngesting: boolean;
@@ -83,6 +97,7 @@ type StudyIntroSplashProps = {
   setIsDragging: (dragging: boolean) => void;
   handleDrop: (event: React.DragEvent) => void;
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onHeadlineComplete: (index: number) => void;
   t: (key: string) => string;
 };
 
@@ -96,7 +111,8 @@ type CardTarget = {
 };
 
 function StudyIntroSplash({
-  introStep,
+  cardStep,
+  headlineIndex,
   motionEnabled,
   isDragging,
   isIngesting,
@@ -104,10 +120,11 @@ function StudyIntroSplash({
   setIsDragging,
   handleDrop,
   handleFileChange,
+  onHeadlineComplete,
   t,
 }: StudyIntroSplashProps) {
-  const activeIndex = introStep <= 1 ? 0 : introStep === 2 ? 1 : 2;
-  const finalStack = introStep >= 4;
+  const activeIndex = headlineIndex;
+  const finalStack = cardStep >= 4;
   const cardRefs = useRef<HTMLDivElement[]>([]);
   const lastCardTargetsRef = useRef<Array<CardTarget | null>>([]);
   const [isDocumentHidden, setIsDocumentHidden] = useState(() =>
@@ -186,7 +203,7 @@ function StudyIntroSplash({
       };
     }
 
-    if (introStep === 0) {
+    if (cardStep === 0) {
       return {
         opacity: 0,
         xPercent: index === 0 ? -50 : index === 1 ? -18 : 8,
@@ -197,7 +214,7 @@ function StudyIntroSplash({
       };
     }
 
-    if (introStep === 1) {
+    if (cardStep === 1) {
       if (index === 0) {
         return {
           opacity: 1,
@@ -218,7 +235,7 @@ function StudyIntroSplash({
       };
     }
 
-    if (introStep === 2) {
+    if (cardStep === 2) {
       if (index === 0) {
         return {
           opacity: 0.9,
@@ -249,7 +266,7 @@ function StudyIntroSplash({
       };
     }
 
-    if (introStep === 3) {
+    if (cardStep === 3) {
       if (index === 0) {
         return {
           opacity: 0.86,
@@ -327,13 +344,13 @@ function StudyIntroSplash({
       }
       gsap.fromTo(card, toGsapTarget(previous), {
         ...toGsapTarget(target),
-        duration: introStep <= 1 ? 1.18 : 1.28,
-        ease: introStep >= 4 ? "expo.inOut" : "power4.out",
+        duration: cardStep <= 1 ? 1.18 : 1.28,
+        ease: cardStep >= 4 ? "expo.inOut" : "power4.out",
         immediateRender: false,
       });
       lastCardTargetsRef.current[index] = target;
     });
-  }, [finalStack, introStep, isDocumentHidden, motionEnabled]);
+  }, [cardStep, finalStack, isDocumentHidden, motionEnabled]);
 
   return (
     <div className="relative flex h-full w-full flex-1 overflow-hidden">
@@ -360,13 +377,13 @@ function StudyIntroSplash({
           <AnimatedHeadlineWords
             text={introCards[activeIndex].headline}
             motionEnabled={motionEnabled}
+            onComplete={() => onHeadlineComplete(activeIndex)}
           />
         </div>
 
         <div className="relative mt-1 h-[250px] w-full sm:mt-2 sm:h-[286px] md:h-[330px] lg:h-[372px] xl:h-[404px]">
           {introCards.map((card, index) => {
             const isUpload = index === 2;
-            const cardTarget = getCardTarget(index);
             return (
               <div
                 key={card.key}
@@ -414,7 +431,7 @@ function StudyIntroSplash({
                     SvgComponent={card.theme.SvgComponent}
                     bloomColor={card.theme.bloom}
                     bloomOpacity={card.theme.bloomOpacity}
-                    animateDots={introStep >= index}
+                    animateDots={cardStep > index}
                   >
                     <div
                       className="absolute bottom-[38px] left-[38px] right-[38px] z-20 flex flex-col gap-[7px] pointer-events-none"
@@ -472,9 +489,11 @@ export function StudyView() {
   const [isDragging, setIsDragging] = useState(false);
   const [isIngesting, setIsIngesting] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(Boolean(pdfUrl));
-  const [introStep, setIntroStep] = useState(0);
+  const [introCardStep, setIntroCardStep] = useState(0);
+  const [introHeadlineIndex, setIntroHeadlineIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const introOpenedChatRef = useRef(false);
+  const completedHeadlineRefs = useRef<Set<number>>(new Set());
+  const introTimersRef = useRef<number[]>([]);
   const chatSurfaceRef = useRef<HTMLElement | null>(null);
   const chatPanelFrameRef = useRef<HTMLDivElement | null>(null);
   const minimizedChatButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -493,39 +512,53 @@ export function StudyView() {
     }
   }, []);
 
-  useEffect(() => {
-    if (pdfUrl) return;
-    if (!motionEnabled) {
-      setIntroStep(4);
-      return;
-    }
-    setIntroStep(0);
-    const timers = [
-      window.setTimeout(() => setIntroStep(1), 2050),
-      window.setTimeout(() => setIntroStep(2), 3600),
-      window.setTimeout(() => setIntroStep(3), 5100),
-      window.setTimeout(() => setIntroStep(4), 6500),
-    ];
-    return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, [motionEnabled, pdfUrl]);
+  const clearIntroTimers = useCallback(() => {
+    introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    introTimersRef.current = [];
+  }, []);
+
+  const scheduleIntro = useCallback((callback: () => void, delay: number) => {
+    const timer = window.setTimeout(callback, delay);
+    introTimersRef.current.push(timer);
+  }, []);
 
   useEffect(() => {
     if (pdfUrl) {
+      clearIntroTimers();
       setIsChatOpen(true);
       return;
     }
-    if (introStep !== 4 || introOpenedChatRef.current) return;
-    const timer = window.setTimeout(
-      () => {
-        introOpenedChatRef.current = true;
-        setIsChatOpen(true);
-      },
-      motionEnabled ? 580 : 80,
-    );
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [introStep, motionEnabled, pdfUrl]);
+    completedHeadlineRefs.current = new Set();
+    clearIntroTimers();
+    if (!motionEnabled) {
+      setIntroHeadlineIndex(2);
+      setIntroCardStep(4);
+      return;
+    }
+    setIntroHeadlineIndex(0);
+    setIntroCardStep(0);
+    return clearIntroTimers;
+  }, [clearIntroTimers, motionEnabled, pdfUrl]);
+
+  const handleIntroHeadlineComplete = useCallback((index: number) => {
+    if (pdfUrl || completedHeadlineRefs.current.has(index)) return;
+    completedHeadlineRefs.current.add(index);
+
+    if (index === 0) {
+      setIntroCardStep(1);
+      scheduleIntro(() => setIntroHeadlineIndex(1), 1180);
+      return;
+    }
+
+    if (index === 1) {
+      setIntroCardStep(2);
+      scheduleIntro(() => setIntroHeadlineIndex(2), 1240);
+      return;
+    }
+
+    setIntroCardStep(3);
+    scheduleIntro(() => setIntroCardStep(4), 1280);
+  }, [pdfUrl, scheduleIntro]);
 
   const revealChatNode = (
     node: HTMLElement,
@@ -637,8 +670,7 @@ export function StudyView() {
     setSelectedTextContext("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
-  const shouldRenderChatSurface =
-    Boolean(pdfUrl) || isChatOpen || introOpenedChatRef.current;
+  const shouldRenderChatSurface = isChatOpen;
 
   useLayoutEffect(() => {
     if (!shouldRenderChatSurface || !chatSurfaceRef.current) return;
@@ -650,26 +682,31 @@ export function StudyView() {
   }, [motionEnabled, shouldRenderChatSurface]);
 
   useLayoutEffect(() => {
-    if (!shouldRenderChatSurface) return;
-    const activeChatNode = isChatOpen
-      ? chatPanelFrameRef.current
-      : minimizedChatButtonRef.current;
-    if (!activeChatNode) return;
+    if (!isChatOpen || !chatPanelFrameRef.current) return;
     revealChatNode(
-      activeChatNode,
+      chatPanelFrameRef.current,
       {
-        y: isChatOpen ? 16 : 10,
+        y: 16,
         scale: 0.985,
         filter: "blur(8px)",
       },
       0.42,
     );
-  }, [isChatOpen, motionEnabled, shouldRenderChatSurface]);
+  }, [isChatOpen, motionEnabled]);
+
+  useLayoutEffect(() => {
+    if (isChatOpen || !minimizedChatButtonRef.current) return;
+    revealChatNode(
+      minimizedChatButtonRef.current,
+      { y: 8, scale: 0.9, filter: "blur(8px)" },
+      0.42,
+    );
+  }, [isChatOpen, motionEnabled, pdfUrl]);
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col gap-3 overflow-hidden bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:flex-row xl:gap-8 xl:px-8 xl:pb-8 xl:pt-24">
+    <div className="relative flex h-[100dvh] w-full flex-col gap-3 overflow-hidden bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:flex-row xl:gap-8 xl:px-8 xl:pb-8 xl:pt-24">
       <div
-        className={`relative flex w-full flex-1 shrink flex-col overflow-hidden rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B] shadow-2xl xl:h-full xl:min-h-0 ${
+        className={`relative flex w-full flex-1 shrink flex-col overflow-hidden rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B] shadow-2xl transition-[flex-basis,width,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] xl:h-full xl:min-h-0 ${
           pdfUrl ? "min-h-[38vh]" : "min-h-[56vh]"
         }`}
       >
@@ -703,7 +740,8 @@ export function StudyView() {
           </>
         ) : (
           <StudyIntroSplash
-            introStep={introStep}
+            cardStep={introCardStep}
+            headlineIndex={introHeadlineIndex}
             motionEnabled={motionEnabled}
             isDragging={isDragging}
             isIngesting={isIngesting}
@@ -711,65 +749,48 @@ export function StudyView() {
             setIsDragging={setIsDragging}
             handleDrop={handleDrop}
             handleFileChange={handleFileChange}
+            onHeadlineComplete={handleIntroHeadlineComplete}
             t={t}
           />
+        )}
+
+        {!isChatOpen && (
+          <button
+            ref={minimizedChatButtonRef}
+            type="button"
+            onClick={() => setIsChatOpen(true)}
+            aria-label="Open tutor chat"
+            className="group absolute bottom-5 right-5 z-[70] flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-[#0a0a0a] text-white opacity-0 shadow-[0_18px_48px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)] outline-none transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-[#ff6e00]/45 hover:shadow-[0_22px_54px_rgba(255,110,0,0.2)] active:scale-95 md:bottom-6 md:right-6"
+          >
+            <span className="absolute inset-[2px] rounded-full bg-[linear-gradient(180deg,#242427_0%,#111113_52%,#050505_100%)]" />
+            <span
+              className="absolute inset-[5px] rounded-full opacity-35 mix-blend-overlay"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at center, rgba(255,255,255,0.9) 1px, transparent 1px)",
+                backgroundSize: "4px 4px",
+              }}
+            />
+            <span className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_15%,rgba(255,110,0,0.3),transparent_45%)] opacity-70 transition-opacity duration-300 group-hover:opacity-100" />
+            <MessageSquare className="relative z-10 h-5 w-5 text-zinc-100" />
+          </button>
         )}
       </div>
 
       {shouldRenderChatSurface && (
-          <aside
-            ref={chatSurfaceRef}
-            className="flex min-h-0 w-full flex-1 origin-bottom-right flex-col gap-2 md:gap-3 xl:h-[calc(100%-0.5rem)] xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center"
+        <aside
+          ref={chatSurfaceRef}
+          className="flex min-h-0 w-full flex-1 origin-bottom-right flex-col gap-2 md:gap-3 xl:h-[calc(100%-0.5rem)] xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center"
+        >
+          <div
+            key="chat-panel"
+            ref={chatPanelFrameRef}
+            className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-black/5 bg-[#fdfdfd] text-[#050505] shadow-[0_20px_60px_rgba(0,0,0,0.15)] origin-bottom"
           >
-          {isChatOpen ? (
-            <div
-              key="chat-panel"
-              ref={chatPanelFrameRef}
-              className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-black/5 bg-[#fdfdfd] text-[#050505] shadow-[0_20px_60px_rgba(0,0,0,0.15)] origin-bottom"
-            >
-              <ChatPanel onClose={() => setIsChatOpen(false)} />
-            </div>
-          ) : (
-            <button
-              key="chat-minimized"
-              ref={minimizedChatButtonRef}
-              onClick={() => setIsChatOpen(true)}
-              className="group relative flex min-h-[92px] items-center justify-between overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] px-5 py-4 text-left text-white shadow-[0_18px_54px_rgba(0,0,0,0.34)] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_22px_60px_rgba(255,110,0,0.1)] active:scale-[0.98]"
-            >
-              {/* Radial Gradients matching Usage UI */}
-              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_16%_0%,rgba(255,110,0,0.24),transparent_36%),radial-gradient(circle_at_90%_110%,rgba(255,255,255,0.08),transparent_38%)] transition-opacity duration-300 group-hover:opacity-100 opacity-80" />
-              {/* Dot Grid matching Usage UI */}
-              <div
-                className="absolute inset-0 pointer-events-none opacity-[0.1]"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(circle at center, rgba(255,255,255,0.2) 1px, transparent 1px)",
-                  backgroundSize: "22px 22px",
-                }}
-              />
-
-              <div className="relative z-10 flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#ff6e00]/20 bg-[#ff6e00]/10 text-[#ff6e00] shadow-[0_0_15px_rgba(255,110,0,0.15)] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 group-hover:scale-105 group-hover:border-[#ff6e00]/40 group-hover:bg-[#ff6e00]/20 group-hover:shadow-[0_0_22px_rgba(255,110,0,0.3)]">
-                    <MessageSquare size={18} />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold tracking-tight text-white group-hover:text-[#ff6e00] transition-colors duration-300">
-                      {t("tutor_minimized")}
-                    </div>
-                    <div className="text-xs text-white/45">
-                      {t("tutor_minimized_desc")}
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-full border border-[#ff6e00]/30 bg-[#ff6e00]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#ff6e00] transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 group-hover:scale-105 group-hover:border-[#ff6e00]/50 group-hover:bg-[#ff6e00]/20 group-hover:text-white group-hover:shadow-[0_0_15px_rgba(255,110,0,0.4)]">
-                  {t("open")}
-                </div>
-              </div>
-            </button>
-          )}
-          </aside>
-        )}
+            <ChatPanel onClose={() => setIsChatOpen(false)} />
+          </div>
+        </aside>
+      )}
     </div>
   );
 }
