@@ -4029,6 +4029,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             <gsapMotion.button
               onClick={() => setIsSkillsMenuOpen(!isSkillsMenuOpen)}
               className="relative flex items-center justify-center w-full h-full rounded-full group focus:outline-none shrink-0"
+              aria-label="Open tutor tools"
               whileHover="hover"
               whileTap="tap"
               initial="idle"
@@ -4111,6 +4112,18 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   />
                 </gsapMotion.div>
               </gsapMotion.div>
+              <gsapMotion.div
+                className="pointer-events-none absolute inset-0 z-[60] flex items-center justify-center"
+                animate={{ rotate: isSkillsMenuOpen ? 45 : 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              >
+                <Plus
+                  size={19}
+                  className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.44)]"
+                  strokeWidth={isSkillsMenuOpen ? 3 : 2.65}
+                  aria-hidden="true"
+                />
+              </gsapMotion.div>
             </gsapMotion.button>
             <FloatingSkillsMenu
               isOpen={isSkillsMenuOpen}
@@ -4179,6 +4192,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               <gsapMotion.button
                 className="relative flex items-center justify-center w-full h-full rounded-full group focus:outline-none shrink-0"
                 onClick={toggleVoice}
+                aria-label={
+                  voiceState === "idle" ? "Start voice input" : "Voice input"
+                }
                 whileHover="hover"
                 whileTap="tap"
                 animate={voiceState === "idle" ? "idle" : "sending"}
@@ -4269,12 +4285,34 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     )}
                   </gsapMotion.div>
                 </gsapMotion.div>
+                <div className="pointer-events-none absolute inset-0 z-[60] flex items-center justify-center">
+                  {voiceState === "idle" ? (
+                    <Mic
+                      size={19}
+                      className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.42)]"
+                      aria-hidden="true"
+                    />
+                  ) : voiceState === "listening" ? (
+                    <Mic
+                      size={19}
+                      className="text-emerald-300 drop-shadow-[0_0_10px_rgba(52,211,153,0.9)]"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Activity
+                      size={19}
+                      className="text-blue-300 drop-shadow-[0_0_10px_rgba(96,165,250,0.85)]"
+                      aria-hidden="true"
+                    />
+                  )}
+                </div>
               </gsapMotion.button>
             </div>
 
             <div className="relative flex items-center justify-center shrink-0 z-50 rounded-full h-[48px] w-[48px] p-[2px]">
               <gsapMotion.button
                 className="relative flex items-center justify-center w-full h-full rounded-full group focus:outline-none shrink-0"
+                aria-label="Send message"
                 onMouseEnter={() => {
                   setIsHovered(true);
                   if (isActive) audio.playHover();
@@ -4334,6 +4372,18 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     <div className="absolute inset-0 rounded-full shadow-[inset_0_0_2px_1px_rgba(255,255,255,0.3)] pointer-events-none mix-blend-screen" />
                   </div>
                 </div>
+                {sendState === "idle" && (
+                  <div className="pointer-events-none absolute inset-0 z-[60] flex items-center justify-center">
+                    <ArrowUp
+                      className={`h-[19px] w-[19px] ${
+                        isActive && isValid ? "text-white" : "text-zinc-200"
+                      } drop-shadow-[0_0_8px_rgba(255,255,255,0.38)]`}
+                      stroke="currentColor"
+                      strokeWidth={2.75}
+                      aria-hidden="true"
+                    />
+                  </div>
+                )}
 
                 <gsapMotion.div
                   className="absolute z-10 flex items-center justify-center rounded-full group-hover:brightness-110 overflow-hidden"
