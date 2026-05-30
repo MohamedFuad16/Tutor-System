@@ -4042,16 +4042,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
             >
               <div className="absolute inset-[-1.5px] rounded-full bg-[#000000] shadow-[0_4px_16px_rgba(0,0,0,1),0_0_0_1px_rgba(255,255,255,0.05)]" />
-              <div className="absolute inset-[0.5px] rounded-full overflow-hidden">
-                <div className="absolute inset-0">
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#333] to-[#111]" />
-                  {isSkillsMenuOpen && (
-                    <SiriLiquidGlass
-                      isActive={true}
-                      isHovered={true}
-                      isValid={true}
-                    />
-                  )}
+                <div className="absolute inset-[0.5px] rounded-full overflow-hidden">
+                  <div className="absolute inset-0">
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#333] to-[#111]" />
                   <div
                     className="absolute inset-0 mix-blend-overlay opacity-[0.35] pointer-events-none"
                     style={{
@@ -4113,13 +4106,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 </gsapMotion.div>
               </gsapMotion.div>
               <gsapMotion.div
-                className="pointer-events-none absolute inset-0 z-[60] flex items-center justify-center"
+                className="pointer-events-none absolute inset-0 z-[70] flex items-center justify-center"
                 animate={{ rotate: isSkillsMenuOpen ? 45 : 0 }}
                 transition={{ type: "spring", stiffness: 400, damping: 20 }}
               >
+                <span className="absolute h-7 w-7 rounded-full bg-black/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.16),0_2px_8px_rgba(0,0,0,0.55)]" />
                 <Plus
                   size={19}
-                  className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.44)]"
+                  className="relative z-10 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.52)]"
                   strokeWidth={isSkillsMenuOpen ? 3 : 2.65}
                   aria-hidden="true"
                 />
@@ -4285,23 +4279,24 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     )}
                   </gsapMotion.div>
                 </gsapMotion.div>
-                <div className="pointer-events-none absolute inset-0 z-[60] flex items-center justify-center">
+                <div className="pointer-events-none absolute inset-0 z-[70] flex items-center justify-center">
+                  <span className="absolute h-7 w-7 rounded-full bg-black/35 shadow-[inset_0_1px_1px_rgba(255,255,255,0.14),0_2px_8px_rgba(0,0,0,0.55)]" />
                   {voiceState === "idle" ? (
                     <Mic
                       size={19}
-                      className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.42)]"
+                      className="relative z-10 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.52)]"
                       aria-hidden="true"
                     />
                   ) : voiceState === "listening" ? (
                     <Mic
                       size={19}
-                      className="text-emerald-300 drop-shadow-[0_0_10px_rgba(52,211,153,0.9)]"
+                      className="relative z-10 text-emerald-300 drop-shadow-[0_0_10px_rgba(52,211,153,0.9)]"
                       aria-hidden="true"
                     />
                   ) : (
                     <Activity
                       size={19}
-                      className="text-blue-300 drop-shadow-[0_0_10px_rgba(96,165,250,0.85)]"
+                      className="relative z-10 text-blue-300 drop-shadow-[0_0_10px_rgba(96,165,250,0.85)]"
                       aria-hidden="true"
                     />
                   )}
@@ -4326,7 +4321,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 whileTap="tap"
                 animate={sendState}
                 variants={{
-                  idle: { scale: 1, opacity: isActive ? 1 : 0.6 },
+                  idle: { scale: 1, opacity: isActive ? 1 : 0.78 },
                   hover: { scale: 1.02, opacity: 1 },
                   tap: { scale: 0.95 },
                   sending: { scale: 0.95, borderRadius: "50%" },
@@ -4373,11 +4368,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   </div>
                 </div>
                 {sendState === "idle" && (
-                  <div className="pointer-events-none absolute inset-0 z-[60] flex items-center justify-center">
+                  <div className="pointer-events-none absolute inset-0 z-[70] flex items-center justify-center">
+                    <span className="absolute h-7 w-7 rounded-full bg-black/35 shadow-[inset_0_1px_1px_rgba(255,255,255,0.14),0_2px_8px_rgba(0,0,0,0.55)]" />
                     <ArrowUp
                       className={`h-[19px] w-[19px] ${
                         isActive && isValid ? "text-white" : "text-zinc-200"
-                      } drop-shadow-[0_0_8px_rgba(255,255,255,0.38)]`}
+                      } relative z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.52)]`}
                       stroke="currentColor"
                       strokeWidth={2.75}
                       aria-hidden="true"

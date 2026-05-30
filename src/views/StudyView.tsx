@@ -401,7 +401,7 @@ function StudyIntroSplash({
           />
         </div>
 
-        <div className="relative mt-1 h-[250px] w-full sm:mt-2 sm:h-[286px] md:h-[330px] lg:h-[372px] xl:h-[404px]">
+        <div className="relative mt-1 h-[clamp(238px,46dvh,404px)] w-full sm:mt-2">
           {introCards.map((card, index) => {
             const isUpload = index === 2;
             return (
@@ -729,10 +729,14 @@ export function StudyView() {
   }, [isChatOpen, motionEnabled, pdfUrl]);
 
   return (
-    <div className="relative flex h-[100dvh] w-full flex-col gap-3 overflow-hidden bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:flex-row xl:gap-8 xl:px-8 xl:pb-8 xl:pt-24">
+    <div className="relative flex min-h-[100dvh] w-full flex-col gap-3 overflow-y-auto bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:h-[100dvh] xl:flex-row xl:gap-8 xl:overflow-hidden xl:px-8 xl:pb-8 xl:pt-24">
       <div
         className={`relative flex w-full flex-1 shrink flex-col overflow-hidden rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B] shadow-2xl transition-[flex-basis,width,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] xl:h-full xl:min-h-0 ${
-          pdfUrl ? "min-h-[38vh]" : "min-h-[56vh]"
+          pdfUrl
+            ? "min-h-[42dvh]"
+            : isChatOpen
+              ? "min-h-[46dvh]"
+              : "min-h-[calc(100dvh-5rem)]"
         }`}
       >
         {pdfUrl ? (
@@ -806,7 +810,7 @@ export function StudyView() {
       {shouldRenderChatSurface && (
         <aside
           ref={chatSurfaceRef}
-          className="flex min-h-0 w-full flex-1 origin-bottom-right flex-col gap-2 md:gap-3 xl:h-[calc(100%-0.5rem)] xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center"
+          className="flex min-h-[320px] max-h-[54dvh] w-full flex-none origin-bottom-right flex-col gap-2 md:min-h-[360px] md:gap-3 xl:h-[calc(100%-0.5rem)] xl:max-h-none xl:min-h-0 xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center"
         >
           <div
             key="chat-panel"

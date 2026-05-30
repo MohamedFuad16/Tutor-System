@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useStore } from "../store";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -40,6 +40,7 @@ import { PatternCard, themes } from "../components/PatternCard";
 import { SvgBeige } from "../components/PatternSVGs";
 import tutorBook from "../lib/tutorBook.json";
 import { useMotionPreference } from "../hooks/useMotionPreference";
+import { gsap } from "gsap";
 
 type BuiltInBook = {
   id: string;
@@ -104,7 +105,7 @@ type WireframeLink = {
 const wireframeNodes = [
   {
     id: "App Shell",
-    x: 120,
+    x: 150,
     y: 150,
     tone: "dark",
     summary: "view host",
@@ -112,7 +113,7 @@ const wireframeNodes = [
   },
   {
     id: "Navigation",
-    x: 410,
+    x: 470,
     y: 150,
     tone: "dark",
     summary: "activeView",
@@ -120,7 +121,7 @@ const wireframeNodes = [
   },
   {
     id: "Settings",
-    x: 700,
+    x: 865,
     y: 150,
     tone: "light",
     summary: "keys + voice",
@@ -128,136 +129,136 @@ const wireframeNodes = [
   },
   {
     id: "Study View",
-    x: 120,
-    y: 375,
+    x: 150,
+    y: 380,
     tone: "dark",
     summary: "workspace",
     lane: "Study",
   },
   {
     id: "Document Intake",
-    x: 360,
-    y: 375,
+    x: 420,
+    y: 380,
     tone: "paper",
     summary: "upload",
     lane: "Study",
   },
   {
     id: "PDF Viewer",
-    x: 600,
-    y: 375,
+    x: 690,
+    y: 380,
     tone: "light",
     summary: "read + mark",
     lane: "Study",
   },
   {
     id: "Selection Toolbar",
-    x: 840,
-    y: 375,
+    x: 960,
+    y: 380,
     tone: "light",
     summary: "quote tools",
     lane: "Study",
   },
   {
     id: "Chat Panel",
-    x: 1040,
-    y: 375,
+    x: 1200,
+    y: 380,
     tone: "dark",
     summary: "ask tutor",
     lane: "Tutor",
   },
   {
     id: "Thinking Trace",
-    x: 600,
-    y: 600,
+    x: 690,
+    y: 640,
     tone: "blue",
     summary: "stream",
     lane: "Tutor",
   },
   {
     id: "Tutor Tools",
-    x: 840,
-    y: 600,
+    x: 960,
+    y: 640,
     tone: "accent",
     summary: "actions",
     lane: "Tutor",
   },
   {
     id: "Server API",
-    x: 1040,
-    y: 600,
+    x: 1200,
+    y: 640,
     tone: "dark",
     summary: "models",
     lane: "Tutor",
   },
   {
     id: "Voice + TTS",
-    x: 120,
-    y: 600,
+    x: 150,
+    y: 640,
     tone: "blue",
     summary: "speech",
     lane: "Tutor",
   },
   {
     id: "Memory Orchestrator",
-    x: 360,
-    y: 825,
+    x: 420,
+    y: 900,
     tone: "accent",
     summary: "maps learning",
     lane: "Memory",
   },
   {
     id: "Dexie DB",
-    x: 600,
-    y: 825,
+    x: 690,
+    y: 900,
     tone: "paper",
     summary: "browser store",
     lane: "Memory",
   },
   {
     id: "Brain Graph",
-    x: 840,
-    y: 825,
+    x: 960,
+    y: 900,
     tone: "dark",
     summary: "concepts",
     lane: "Memory",
   },
   {
     id: "Learning Books",
-    x: 1040,
-    y: 825,
+    x: 1200,
+    y: 900,
     tone: "paper",
     summary: "chapters",
     lane: "Memory",
   },
   {
     id: "Revision Library",
-    x: 600,
-    y: 1050,
+    x: 690,
+    y: 1140,
     tone: "paper",
     summary: "review",
     lane: "Review",
   },
   {
     id: "Flashcards",
-    x: 840,
-    y: 1050,
+    x: 960,
+    y: 1140,
     tone: "light",
     summary: "recall",
     lane: "Review",
   },
   {
     id: "Analytics",
-    x: 360,
-    y: 1050,
+    x: 420,
+    y: 1140,
     tone: "light",
     summary: "progress",
     lane: "Ops",
   },
   {
     id: "Admin Console",
-    x: 120,
-    y: 1050,
+    x: 150,
+    y: 1140,
     tone: "accent",
     summary: "logs",
     lane: "Ops",
@@ -269,270 +270,274 @@ const wireframeLinks = [
     from: "App Shell",
     to: "Navigation",
     label: "renders tabs",
-    labelX: 265,
+    labelX: 310,
     labelY: 150,
   },
   {
     from: "Navigation",
     to: "Study View",
     label: "opens workspace",
-    labelX: 248,
+    labelX: 310,
     labelY: 260,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 410, y: 260 },
-      { x: 120, y: 260 },
+      { x: 470, y: 260 },
+      { x: 150, y: 260 },
     ],
   },
   {
     from: "Navigation",
     to: "Revision Library",
     label: "opens library",
-    labelX: 700,
-    labelY: 445,
+    labelX: 770,
+    labelY: 610,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 720, y: 260 },
-      { x: 720, y: 965 },
-      { x: 600, y: 965 },
+      { x: 770, y: 260 },
+      { x: 770, y: 1050 },
+      { x: 690, y: 1050 },
     ],
   },
   {
     from: "Navigation",
     to: "Analytics",
     label: "opens progress",
-    labelX: 170,
-    labelY: 955,
+    labelX: 350,
+    labelY: 760,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 240, y: 260 },
-      { x: 240, y: 965 },
-      { x: 360, y: 965 },
+      { x: 350, y: 260 },
+      { x: 350, y: 1050 },
+      { x: 420, y: 1050 },
     ],
   },
   {
     from: "Settings",
     to: "Chat Panel",
     label: "model + voice",
-    labelX: 870,
-    labelY: 250,
+    labelX: 1080,
+    labelY: 260,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 865, y: 260 },
+      { x: 1200, y: 260 },
+    ],
   },
   {
     from: "Study View",
     to: "Document Intake",
     label: "adds file",
-    labelX: 240,
-    labelY: 308,
+    labelX: 285,
+    labelY: 380,
   },
   {
     from: "Document Intake",
     to: "PDF Viewer",
     label: "loads pages",
-    labelX: 480,
-    labelY: 308,
+    labelX: 555,
+    labelY: 380,
   },
   {
     from: "PDF Viewer",
     to: "Selection Toolbar",
     label: "selected text",
-    labelX: 720,
-    labelY: 308,
+    labelX: 825,
+    labelY: 380,
   },
   {
     from: "Selection Toolbar",
     to: "Chat Panel",
     label: "ask tutor",
-    labelX: 940,
-    labelY: 308,
+    labelX: 1080,
+    labelY: 380,
   },
   {
     from: "Chat Panel",
     to: "Thinking Trace",
     label: "streams reasoning",
-    labelX: 800,
-    labelY: 475,
+    labelX: 945,
+    labelY: 515,
+    fromSide: "bottom",
+    toSide: "top",
+    waypoints: [
+      { x: 1200, y: 515 },
+      { x: 690, y: 515 },
+    ],
   },
   {
     from: "Chat Panel",
     to: "Tutor Tools",
     label: "calls tools",
-    labelX: 950,
-    labelY: 515,
+    labelX: 1080,
+    labelY: 548,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 1040, y: 515 },
-      { x: 840, y: 515 },
+      { x: 1200, y: 548 },
+      { x: 960, y: 548 },
     ],
   },
   {
     from: "Tutor Tools",
     to: "Server API",
     label: "model/search",
-    labelX: 940,
-    labelY: 720,
-    fromSide: "bottom",
-    toSide: "bottom",
-    waypoints: [
-      { x: 840, y: 680 },
-      { x: 1040, y: 680 },
-    ],
+    labelX: 1080,
+    labelY: 640,
   },
   {
     from: "Server API",
     to: "Chat Panel",
     label: "returns answer",
-    labelX: 1112,
-    labelY: 500,
+    labelX: 1325,
+    labelY: 520,
     fromSide: "right",
     toSide: "right",
     waypoints: [
-      { x: 1135, y: 600 },
-      { x: 1135, y: 375 },
+      { x: 1325, y: 640 },
+      { x: 1325, y: 380 },
     ],
   },
   {
     from: "Chat Panel",
     to: "Memory Orchestrator",
     label: "saves exchange",
-    labelX: 1030,
-    labelY: 750,
+    labelX: 1020,
+    labelY: 735,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 1135, y: 455 },
-      { x: 1135, y: 700 },
-      { x: 360, y: 700 },
+      { x: 1200, y: 735 },
+      { x: 420, y: 735 },
     ],
   },
   {
     from: "PDF Viewer",
     to: "Memory Orchestrator",
     label: "adds notes",
-    labelX: 460,
-    labelY: 690,
+    labelX: 560,
+    labelY: 760,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 500, y: 455 },
-      { x: 500, y: 690 },
-      { x: 360, y: 690 },
+      { x: 690, y: 760 },
+      { x: 420, y: 760 },
     ],
   },
   {
     from: "Tutor Tools",
     to: "Memory Orchestrator",
     label: "updates graph",
-    labelX: 700,
-    labelY: 735,
+    labelX: 690,
+    labelY: 785,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 840, y: 725 },
-      { x: 360, y: 725 },
+      { x: 960, y: 785 },
+      { x: 420, y: 785 },
     ],
   },
   {
     from: "Voice + TTS",
     to: "Chat Panel",
     label: "speech input",
-    labelX: 350,
-    labelY: 650,
+    labelX: 460,
+    labelY: 720,
     fromSide: "right",
     toSide: "bottom",
     waypoints: [
-      { x: 300, y: 690 },
-      { x: 1135, y: 690 },
-      { x: 1135, y: 455 },
-      { x: 1040, y: 455 },
+      { x: 300, y: 720 },
+      { x: 1325, y: 720 },
+      { x: 1325, y: 465 },
+      { x: 1200, y: 465 },
     ],
   },
   {
     from: "Memory Orchestrator",
     to: "Dexie DB",
     label: "persists",
-    labelX: 480,
-    labelY: 825,
+    labelX: 555,
+    labelY: 900,
   },
   {
     from: "Memory Orchestrator",
     to: "Brain Graph",
     label: "creates nodes",
-    labelX: 560,
-    labelY: 755,
+    labelX: 690,
+    labelY: 805,
     fromSide: "top",
     toSide: "top",
     waypoints: [
-      { x: 360, y: 755 },
-      { x: 840, y: 755 },
+      { x: 420, y: 805 },
+      { x: 960, y: 805 },
     ],
   },
   {
     from: "Memory Orchestrator",
     to: "Learning Books",
     label: "writes chapters",
-    labelX: 720,
-    labelY: 895,
+    labelX: 810,
+    labelY: 1010,
     fromSide: "bottom",
     toSide: "bottom",
     waypoints: [
-      { x: 360, y: 895 },
-      { x: 1040, y: 895 },
+      { x: 420, y: 1010 },
+      { x: 1200, y: 1010 },
     ],
   },
   {
     from: "Learning Books",
     to: "Revision Library",
     label: "appears as book",
-    labelX: 820,
-    labelY: 975,
+    labelX: 960,
+    labelY: 1060,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 1040, y: 950 },
-      { x: 600, y: 950 },
+      { x: 1200, y: 1060 },
+      { x: 690, y: 1060 },
     ],
   },
   {
     from: "Learning Books",
     to: "Flashcards",
     label: "review queue",
-    labelX: 1010,
-    labelY: 935,
+    labelX: 1080,
+    labelY: 1088,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 1040, y: 985 },
-      { x: 840, y: 985 },
+      { x: 1200, y: 1088 },
+      { x: 960, y: 1088 },
     ],
   },
   {
     from: "Dexie DB",
     to: "Analytics",
     label: "aggregates",
-    labelX: 500,
-    labelY: 930,
+    labelX: 555,
+    labelY: 1026,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 600, y: 940 },
-      { x: 360, y: 940 },
+      { x: 690, y: 1026 },
+      { x: 420, y: 1026 },
     ],
   },
   {
     from: "Dexie DB",
     to: "Admin Console",
     label: "trace records",
-    labelX: 300,
-    labelY: 890,
+    labelX: 400,
+    labelY: 1000,
     fromSide: "bottom",
     toSide: "top",
     waypoints: [
-      { x: 600, y: 915 },
-      { x: 120, y: 915 },
+      { x: 690, y: 1000 },
+      { x: 150, y: 1000 },
     ],
   },
 ] satisfies WireframeLink[];
@@ -612,14 +617,14 @@ const WireframeMap = () => {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [mapScale, setMapScale] = useState(1);
   const nodeById = new Map(wireframeNodes.map((node) => [node.id, node]));
-  const canvas = { width: 1160, height: 1160 };
-  const nodeSize = { width: 160, height: 86 };
+  const canvas = { width: 1360, height: 1260 };
+  const nodeSize = { width: 170, height: 92 };
   const lanes = [
     ["Navigation", 82],
-    ["Study", 300],
-    ["Tutor", 525],
-    ["Memory", 750],
-    ["Review + Ops", 975],
+    ["Study", 305],
+    ["Tutor", 565],
+    ["Memory", 825],
+    ["Review + Ops", 1065],
   ] as const;
   const nodeClass = (tone: WireframeNodeTone) => {
     if (tone === "dark") return "border-zinc-700 bg-[#07070a] text-white";
@@ -631,7 +636,7 @@ const WireframeMap = () => {
   useEffect(() => {
     const updateScale = () => {
       const width = viewportRef.current?.clientWidth ?? canvas.width;
-      setMapScale(Math.min(1, Math.max(0.72, (width - 24) / canvas.width)));
+      setMapScale(Math.min(1, Math.max(0.58, (width - 28) / canvas.width)));
     };
     updateScale();
 
@@ -701,7 +706,7 @@ const WireframeMap = () => {
   };
 
   return (
-    <GalleryPanel className="relative left-1/2 w-full -translate-x-1/2 overflow-hidden bg-[#f3f3f4] p-0 lg:w-[min(1280px,calc(100vw-18rem))] xl:w-[min(1380px,calc(100vw-24rem))]">
+    <GalleryPanel className="relative left-1/2 w-full -translate-x-1/2 overflow-hidden bg-[#f3f3f4] p-0 lg:w-[min(1480px,calc(100vw-18rem))] xl:w-[min(1540px,calc(100vw-24rem))]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.88),transparent_56%)]" />
       <div className="relative border-b border-white/80 px-5 py-4 sm:px-6">
         <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
@@ -715,7 +720,7 @@ const WireframeMap = () => {
       </div>
       <div
         ref={viewportRef}
-        className="relative max-h-[min(76vh,780px)] overflow-x-auto overflow-y-auto custom-scroll"
+        className="relative max-h-[min(78vh,880px)] overflow-x-auto overflow-y-auto custom-scroll"
         aria-label="Scrollable wireframe map of the Tutor UI components"
       >
         <div
@@ -787,7 +792,7 @@ const WireframeMap = () => {
               <div
                 key={`${link.from}-${link.to}-label`}
                 data-wireframe-label={link.label}
-                className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-zinc-200/80 bg-white/95 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.02em] text-zinc-600 shadow-[0_8px_20px_rgba(24,24,27,0.08)]"
+                className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-zinc-200/90 bg-white/95 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.04em] text-zinc-600 shadow-[0_10px_24px_rgba(24,24,27,0.1)] backdrop-blur-sm"
                 style={{ left: link.labelX, top: link.labelY }}
               >
                 {link.label}
@@ -798,7 +803,7 @@ const WireframeMap = () => {
               <div
                 key={node.id}
                 data-wireframe-node={node.id}
-                className={`absolute z-30 flex min-h-[86px] w-[160px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[22px] border px-3 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] transition-transform duration-300 hover:scale-[1.03] ${nodeClass(
+                className={`absolute z-30 flex min-h-[92px] w-[170px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[24px] border px-4 text-center shadow-[0_24px_55px_rgba(24,24,27,0.13)] transition-transform duration-300 hover:scale-[1.03] ${nodeClass(
                   node.tone,
                 )}`}
                 style={{ left: node.x, top: node.y }}
@@ -1651,6 +1656,7 @@ const FlashcardDeck = ({
 export function RevisionView() {
   const setActiveView = useStore((state) => state.setActiveView);
   const accessMode = useStore((state) => state.accessMode);
+  const motionEnabled = useMotionPreference();
   const activeLearningBookId = useStore((state) => state.activeLearningBookId);
   const setActiveLearningBookId = useStore(
     (state) => state.setActiveLearningBookId,
@@ -1736,6 +1742,7 @@ export function RevisionView() {
     null,
   );
   const scrollRef = useRef<HTMLDivElement>(null);
+  const learningBookRowRefs = useRef<HTMLDivElement[]>([]);
 
   useEffect(() => {
     const unhideCoreKey = "revision_core_books_visible_v1";
@@ -1753,6 +1760,35 @@ export function RevisionView() {
       }
     }
   }, []);
+
+  useLayoutEffect(() => {
+    if (activeConceptId || visibleLearningBooks.length === 0) return;
+    const rows = learningBookRowRefs.current.filter(Boolean);
+    if (!rows.length) return;
+
+    gsap.killTweensOf(rows);
+    if (!motionEnabled || document.hidden) {
+      gsap.set(rows, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+      return;
+    }
+
+    gsap.fromTo(
+      rows,
+      { autoAlpha: 0, y: 18, filter: "blur(8px)" },
+      {
+        autoAlpha: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: 0.44,
+        stagger: 0.055,
+        ease: "power3.out",
+      },
+    );
+
+    return () => {
+      gsap.killTweensOf(rows);
+    };
+  }, [activeConceptId, motionEnabled, visibleLearningBooks.length]);
 
   const handleReview = async (card: Flashcard, quality: number) => {
     const nextDays = quality >= 4 ? 3 * (quality - 2) : 1;
@@ -2211,77 +2247,107 @@ export function RevisionView() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {visibleLearningBooks.length > 0 && (
+            <section
+              className="mb-8 overflow-hidden rounded-[30px] border border-zinc-200/80 bg-white/60 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_22px_60px_rgba(46,36,22,0.06)] backdrop-blur-sm sm:p-4 md:mb-10"
+              aria-label="Generated learning books"
+            >
+              <div className="mb-3 flex flex-wrap items-end justify-between gap-2 px-2 pt-1">
+                <div>
+                  <div className="text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-zinc-400">
+                    Saved from study
+                  </div>
+                  <h2 className="mt-1 text-lg font-medium tracking-tight text-zinc-950">
+                    Learning books
+                  </h2>
+                </div>
+                <div className="rounded-full border border-zinc-200 bg-[#faf9f6] px-3 py-1 text-xs font-medium text-zinc-500">
+                  {visibleLearningBooks.length} active
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {visibleLearningBooks.map((book, index) => {
+                  const conceptCount =
+                    conceptsByBookId.get(book.id)?.length || 0;
+                  const cardCount = flashcardsForBook(book).length;
+                  const preview =
+                    book.overview ||
+                    book.knowledgeSummary ||
+                    book.summary ||
+                    "DeepSeek trace is building this map.";
+                  return (
+                    <div
+                      key={book.id}
+                      ref={(node) => {
+                        if (node) learningBookRowRefs.current[index] = node;
+                      }}
+                      className="opacity-0"
+                    >
+                      <LongPressWrapper
+                        onLongPress={() =>
+                          setDeleteTarget({
+                            id: book.id,
+                            name: book.title,
+                            kind: "learning",
+                          })
+                        }
+                        onClick={() => {
+                          setCurrentChapterIndex(0);
+                          setActiveConceptId(book.id);
+                        }}
+                      >
+                        {(pressing) => (
+                          <div
+                            className={`group relative flex min-h-[92px] cursor-pointer items-center gap-4 overflow-hidden rounded-[24px] border px-4 py-4 transition-[border-color,background-color,box-shadow,transform] duration-300 sm:px-5 ${
+                              pressing
+                                ? "border-orange-300 bg-orange-50/80 shadow-[0_18px_50px_rgba(255,110,0,0.13)] scale-[0.992]"
+                                : "border-zinc-200/80 bg-[#faf9f6]/80 shadow-[0_12px_34px_rgba(46,36,22,0.04)] hover:border-zinc-300 hover:bg-white hover:shadow-[0_18px_46px_rgba(46,36,22,0.08)]"
+                            }`}
+                          >
+                            <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_12px_28px_rgba(46,36,22,0.08)]">
+                              <BookOpen size={20} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-[0.14em] text-zinc-400">
+                                <span>Learning Book</span>
+                                <span className="h-1 w-1 rounded-full bg-zinc-300" />
+                                <span>{conceptCount} concepts</span>
+                                {cardCount > 0 && (
+                                  <>
+                                    <span className="h-1 w-1 rounded-full bg-zinc-300" />
+                                    <span>{cardCount} cards</span>
+                                  </>
+                                )}
+                              </div>
+                              <div className="mt-1 truncate text-[17px] font-medium tracking-tight text-zinc-950 sm:text-[19px]">
+                                {book.title}
+                              </div>
+                              <p className="mt-1 line-clamp-2 text-sm leading-5 text-zinc-500">
+                                {preview}
+                              </p>
+                            </div>
+                            <div className="hidden shrink-0 rounded-full border border-zinc-200 bg-white p-2 text-zinc-400 transition-colors group-hover:text-zinc-900 sm:block">
+                              <ChevronRight size={17} />
+                            </div>
+                          </div>
+                        )}
+                      </LongPressWrapper>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             {visibleLearningBooks.length === 0 && concepts.length === 0 && (
               <div className="col-span-full h-64 flex items-center justify-center text-zinc-500 border border-white/10 border-dashed rounded-3xl">
                 No books discovered yet. Start chatting to learn new concepts.
               </div>
             )}
-            {visibleLearningBooks.map((book, index) => {
-              const theme = themes[index % themes.length];
-              const conceptCount = conceptsByBookId.get(book.id)?.length || 0;
-              const cardCount = flashcardsForBook(book).length;
-              return (
-                <LongPressWrapper
-                  key={book.id}
-                  onLongPress={() =>
-                    setDeleteTarget({
-                      id: book.id,
-                      name: book.title,
-                      kind: "learning",
-                    })
-                  }
-                  onClick={() => {
-                    setCurrentChapterIndex(0);
-                    setActiveConceptId(book.id);
-                  }}
-                >
-                  {(pressing) => (
-                    <PatternCard
-                      layoutId={`card-${book.id}`}
-                      bgClass={theme.bg}
-                      SvgComponent={theme.SvgComponent}
-                      bloomColor={theme.bloom}
-                      bloomOpacity={theme.bloomOpacity}
-                      isPressing={pressing}
-                      pressDotColor={
-                        theme.text.includes("1f1f1f") ? "#ff6e00" : "#fefefe"
-                      }
-                      pressRingColor={
-                        theme.text.includes("1f1f1f")
-                          ? "rgba(255,110,0,0.58)"
-                          : "rgba(254,254,254,0.58)"
-                      }
-                    >
-                      <div className="absolute flex flex-col bottom-[38px] left-[38px] right-[38px] gap-[7px] z-20 pointer-events-none">
-                        <div
-                          className={`text-[11px] font-mono font-bold uppercase tracking-[0.16em] opacity-65 ${theme.text}`}
-                        >
-                          Learning Book · {conceptCount} concepts
-                          {cardCount > 0 ? ` · ${cardCount} cards` : ""}
-                        </div>
-                        <div
-                          className={`text-[25px] font-medium tracking-tight leading-[1.05] ${theme.text}`}
-                        >
-                          {book.title}
-                        </div>
-                        <div
-                          className={`text-[16px] font-light tracking-tight leading-[1.25] opacity-70 ${theme.text}`}
-                        >
-                          {book.overview ||
-                            book.knowledgeSummary ||
-                            book.summary ||
-                            "DeepSeek trace is building this map."}
-                        </div>
-                      </div>
-                    </PatternCard>
-                  )}
-                </LongPressWrapper>
-              );
-            })}
             {concepts.map((concept, index) => {
-              const theme =
-                themes[(index + visibleLearningBooks.length) % themes.length];
+              const theme = themes[index % themes.length];
               return (
                 <LongPressWrapper
                   key={concept.id}
