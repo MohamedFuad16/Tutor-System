@@ -2014,7 +2014,7 @@
       "label": "designTokens",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L62",
+      "source_location": "L59",
       "id": "views_revisionview_designtokens",
       "community": 5,
       "norm_label": "designtokens"
@@ -2023,7 +2023,7 @@
       "label": "SnapshotPreviewId",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L71",
+      "source_location": "L68",
       "id": "views_revisionview_snapshotpreviewid",
       "community": 5,
       "norm_label": "snapshotpreviewid"
@@ -2032,7 +2032,7 @@
       "label": "WireframeNodeTone",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L83",
+      "source_location": "L80",
       "id": "views_revisionview_wireframenodetone",
       "community": 5,
       "norm_label": "wireframenodetone"
@@ -2041,7 +2041,7 @@
       "label": "WireframeNode",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L85",
+      "source_location": "L82",
       "id": "views_revisionview_wireframenode",
       "community": 5,
       "norm_label": "wireframenode"
@@ -2050,7 +2050,7 @@
       "label": "WireframeLinkSide",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L94",
+      "source_location": "L91",
       "id": "views_revisionview_wireframelinkside",
       "community": 5,
       "norm_label": "wireframelinkside"
@@ -2059,7 +2059,7 @@
       "label": "WireframeLink",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L96",
+      "source_location": "L93",
       "id": "views_revisionview_wireframelink",
       "community": 5,
       "norm_label": "wireframelink"
@@ -2068,7 +2068,7 @@
       "label": "snapshotCards",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L543",
+      "source_location": "L540",
       "id": "views_revisionview_snapshotcards",
       "community": 5,
       "norm_label": "snapshotcards"
@@ -2077,7 +2077,7 @@
       "label": "GalleryPanel()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L600",
+      "source_location": "L597",
       "id": "views_revisionview_gallerypanel",
       "community": 5,
       "norm_label": "gallerypanel()"
@@ -2086,7 +2086,7 @@
       "label": "WireframeMap()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L614",
+      "source_location": "L611",
       "id": "views_revisionview_wireframemap",
       "community": 5,
       "norm_label": "wireframemap()"
@@ -2095,7 +2095,7 @@
       "label": "LiveComponentPreview()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L828",
+      "source_location": "L825",
       "id": "views_revisionview_livecomponentpreview",
       "community": 5,
       "norm_label": "livecomponentpreview()"
@@ -2104,7 +2104,7 @@
       "label": "AppDesignLanguagePage()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1281",
+      "source_location": "L1278",
       "id": "views_revisionview_appdesignlanguagepage",
       "community": 5,
       "norm_label": "appdesignlanguagepage()"
@@ -2113,7 +2113,7 @@
       "label": "builtInBooks",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1390",
+      "source_location": "L1387",
       "id": "views_revisionview_builtinbooks",
       "community": 5,
       "norm_label": "builtinbooks"
@@ -2122,7 +2122,7 @@
       "label": "builtInBookIds",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1416",
+      "source_location": "L1413",
       "id": "views_revisionview_builtinbookids",
       "community": 5,
       "norm_label": "builtinbookids"
@@ -2131,7 +2131,7 @@
       "label": "createBuiltInBookConcept()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1418",
+      "source_location": "L1415",
       "id": "views_revisionview_createbuiltinbookconcept",
       "community": 5,
       "norm_label": "createbuiltinbookconcept()"
@@ -2140,7 +2140,7 @@
       "label": "LongPressWrapper()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1439",
+      "source_location": "L1436",
       "id": "views_revisionview_longpresswrapper",
       "community": 5,
       "norm_label": "longpresswrapper()"
@@ -2149,7 +2149,7 @@
       "label": "FlashcardUI",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1497",
+      "source_location": "L1494",
       "id": "views_revisionview_flashcardui",
       "community": 5,
       "norm_label": "flashcardui"
@@ -2158,7 +2158,7 @@
       "label": "FlashcardDeck()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1609",
+      "source_location": "L1606",
       "id": "views_revisionview_flashcarddeck",
       "community": 5,
       "norm_label": "flashcarddeck()"
@@ -2167,7 +2167,7 @@
       "label": "RevisionView()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L1654",
+      "source_location": "L1651",
       "id": "views_revisionview_revisionview",
       "community": 5,
       "norm_label": "revisionview()"
@@ -2203,7 +2203,7 @@
       "label": "StudyIntroSplashProps",
       "file_type": "code",
       "source_file": "src/views/StudyView.tsx",
-      "source_location": "L90",
+      "source_location": "L106",
       "id": "views_studyview_studyintrosplashprops",
       "community": 36,
       "norm_label": "studyintrosplashprops"
@@ -2212,7 +2212,7 @@
       "label": "CardTarget",
       "file_type": "code",
       "source_file": "src/views/StudyView.tsx",
-      "source_location": "L104",
+      "source_location": "L121",
       "id": "views_studyview_cardtarget",
       "community": 36,
       "norm_label": "cardtarget"
@@ -2221,7 +2221,7 @@
       "label": "StudyIntroSplash()",
       "file_type": "code",
       "source_file": "src/views/StudyView.tsx",
-      "source_location": "L113",
+      "source_location": "L130",
       "id": "views_studyview_studyintrosplash",
       "community": 36,
       "norm_label": "studyintrosplash()"
@@ -2230,7 +2230,7 @@
       "label": "StudyView()",
       "file_type": "code",
       "source_file": "src/views/StudyView.tsx",
-      "source_location": "L479",
+      "source_location": "L499",
       "id": "views_studyview_studyview",
       "community": 37,
       "norm_label": "studyview()"
@@ -14728,5 +14728,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "451bf6deae4c0bd07d8bb1e4a4dd4c41fbbb7be9"
+  "built_at_commit": "0c0285c1b55033ff8f9ed87087bccd74fd0c2c14"
 }
