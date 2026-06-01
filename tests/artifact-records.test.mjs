@@ -259,11 +259,11 @@ test("local source-card verifier support excludes generated flashcards", () => {
     true,
   );
   assert.equal(
-    supportsLocalCitationIntegrityArtifact({ artifactType: "flashcards" }),
-    false,
+    supportsLocalCitationIntegrityArtifact({ artifactType: "notes" }),
+    true,
   );
   assert.equal(
-    supportsLocalCitationIntegrityArtifact({ artifactType: "notes" }),
+    supportsLocalCitationIntegrityArtifact({ artifactType: "flashcards" }),
     false,
   );
   assert.equal(
@@ -337,6 +337,158 @@ test("local citation verifier marks coherent source-card links verified without 
   assert.equal(result.metadata.localOnly, true);
   assert.equal(result.metadata.externalContentFetched, false);
   assert.equal(result.metadata.claimCheck, "artifact_level_source_card");
+});
+
+test("local citation verifier marks coherent generated learning-note provenance verified", () => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-verified",
+      source: "learning_book_update",
+      conversationId: "conversation-verified",
+      bookId: "book-verified",
+      bookTitle: "Graph learning",
+      chapterId: "chapter-verified",
+      chapterTitle: "BKT updates",
+      documentId: "document-verified",
+      userName: "Learner",
+      model: "local-session-fallback",
+      confidence: 0.72,
+      conceptIds: ["concept-bkt"],
+      summary:
+        "The learner connected Bayesian Knowledge Tracing to evidence-gated mastery updates.",
+      knowledgeSummary: "BKT only moves mastery when evidence is accepted.",
+      assistantSummary: "A concise tutor explanation about BKT.",
+      metadata: { generationPath: "memory_orchestrator" },
+    },
+    100,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp: 525,
+  });
+
+  assert.equal(result.state, "verified");
+  assert.equal(result.artifactVerificationState, "verified");
+  assert.equal(result.metadata.localOnly, true);
+  assert.equal(result.metadata.externalContentFetched, false);
+  assert.equal(result.metadata.sourceKind, "local_source_ref");
+  assert.equal(
+    result.metadata.claimCheck,
+    "generated_learning_note_provenance",
+  );
+  assert.deepEqual(result.metadata.checkedFields, [
+    "artifactId",
+    "citationStateIds",
+    "sourceRef",
+    "sourceIds",
+    "bookId",
+    "conversationId",
+    "summary",
+    "metadata.entryId",
+    "metadata.localOnly",
+    "metadata.externalContentFetched",
+  ]);
+});
+
+test("local citation verifier catches conflicting generated note entry refs", () => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-expected",
+      conversationId: "conversation-1",
+      bookId: "book-1",
+      chapterTitle: "BKT updates",
+      summary: "The learner connected BKT to evidence gates.",
+      metadata: { generationPath: "memory_orchestrator" },
+    },
+    100,
+  );
+  const conflictingCitation = createCitationStateRecord(
+    {
+      ...citation,
+      sourceRef: "entry-other",
+    },
+    citation.timestamp,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation: conflictingCitation,
+    timestamp: 550,
+  });
+
+  assert.equal(result.state, "conflicting");
+  assert.match(result.failureReason || "", /learning entry id/);
+  assert.equal(
+    result.metadata.claimCheck,
+    "generated_learning_note_provenance",
+  );
+});
+
+test("local citation verifier keeps generated notes unavailable when local provenance is missing", () => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-external",
+      conversationId: "conversation-1",
+      bookId: "book-1",
+      chapterTitle: "BKT updates",
+      summary: "The learner connected BKT to evidence gates.",
+      metadata: { generationPath: "memory_orchestrator" },
+    },
+    100,
+  );
+  const unsafeArtifact = {
+    ...artifact,
+    metadata: { ...artifact.metadata, externalContentFetched: true },
+  };
+  const unsafeCitation = {
+    ...citation,
+    metadata: { ...citation.metadata, externalContentFetched: true },
+  };
+
+  const result = verifyLocalCitationIntegrity({
+    artifact: unsafeArtifact,
+    citation: unsafeCitation,
+    timestamp: 575,
+  });
+
+  assert.equal(result.state, "unavailable");
+  assert.match(result.failureReason || "", /external content/);
+  assert.equal(
+    result.metadata.claimCheck,
+    "generated_learning_note_provenance",
+  );
+});
+
+test("local citation verifier rejects placeholder generated note entry ids", () => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "",
+      conversationId: "conversation-1",
+      bookId: "book-1",
+      chapterTitle: "BKT updates",
+      summary: "The learner connected BKT to evidence gates.",
+      metadata: { generationPath: "memory_orchestrator" },
+    },
+    100,
+  );
+
+  assert.equal(citation.sourceRef, "learning-entry");
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp: 590,
+  });
+
+  assert.equal(result.state, "unavailable");
+  assert.equal(result.metadata.sourceKind, "local_source_ref");
+  assert.match(result.failureReason || "", /source reference/);
+  assert.equal(
+    result.metadata.claimCheck,
+    "generated_learning_note_provenance",
+  );
 });
 
 test("local citation verifier keeps missing source evidence unavailable", () => {
@@ -469,21 +621,21 @@ test("local citation verifier treats query and hash differences as URL conflicts
 test("local citation verifier reports unsupported artifact kinds explicitly", () => {
   const artifact = createArtifactRecord(
     {
-      id: "artifact-notes",
-      artifactType: "notes",
-      title: "Generated notes",
+      id: "artifact-flashcards",
+      artifactType: "flashcards",
+      title: "Generated flashcards",
       sourceIds: ["source-1"],
-      citationStateIds: ["citation-notes"],
+      citationStateIds: ["citation-flashcards"],
     },
     100,
   );
   const citation = createCitationStateRecord(
     {
-      id: "citation-notes",
+      id: "citation-flashcards",
       state: "checking",
-      claimId: "artifact-notes",
+      claimId: "artifact-flashcards",
       sourceRef: "source-1",
-      artifactId: "artifact-notes",
+      artifactId: "artifact-flashcards",
     },
     100,
   );
@@ -496,7 +648,10 @@ test("local citation verifier reports unsupported artifact kinds explicitly", ()
 
   assert.equal(result.state, "unsupported");
   assert.equal(result.artifactVerificationState, "unavailable");
-  assert.match(result.failureReason || "", /source-card/);
+  assert.match(
+    result.failureReason || "",
+    /source-card and generated learning-note/,
+  );
 });
 
 test("artifact verification state derives conservatively from citation states", () => {

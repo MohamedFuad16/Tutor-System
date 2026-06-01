@@ -2261,6 +2261,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Generated learning-book entries also leave not-checked ArtifactRecord provenance, so saved study notes stay inspectable without being treated as verified source evidence.",
       },
       {
+        title: "Learning-note integrity checks",
+        detail:
+          "Admin can verify generated-note provenance when the local entry, book or conversation, citation link, and no-external-fetch metadata agree, while still leaving sentence-level source-span checks for later.",
+      },
+      {
         title: "Stored audio overviews",
         detail:
           "Built-in chapters can attach a saved overview asset with play, pause, and speed controls, keeping Library listening fast without calling live read-aloud each time.",

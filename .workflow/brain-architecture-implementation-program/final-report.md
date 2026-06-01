@@ -14,6 +14,67 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 21 report
+
+## Scope
+
+Phase 21 adds a local generated learning-note integrity verifier. It improves
+the artifact trust boundary without claiming sentence-level source-span
+verification and without changing AWS/cloud architecture.
+
+## Graphify Context
+
+- Graphify routed this slice through `src/memory/artifact.records.ts`,
+  `src/views/AdminView.tsx`, `tests/artifact-records.test.mjs`,
+  `src/lib/userBrainArchitectureBook.ts`, `src/lib/tutorBook.json`,
+  `src/views/RevisionView.tsx`, and `TUTOR_ARCHITECTURE.md`.
+- The relevant existing boundary was `verifyLocalCitationIntegrity()`, which
+  previously supported source-card artifact rows only.
+
+## Integration Decisions
+
+- Extended `supportsLocalCitationIntegrityArtifact()` to include generated
+  learning-note artifacts.
+- Added generated-note verifier checks for learning entry id, citation/artifact
+  linkage, source ids, local book or conversation anchor, local-only metadata,
+  no external fetch, generated learning-entry note kind, and saved summary
+  preview.
+- Kept generated-note verification scoped to local provenance; source-span claim
+  matching remains future work.
+- Updated Admin so generated-note artifacts and generated-note citation rows can
+  run the local check.
+- Updated the system architecture doc, in-app system book, User Brain
+  Architecture book, and App Design Language local beta pattern list.
+
+## Verification Evidence
+
+- `npm run test`: passed, 73 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- Browser QA on `http://localhost:3001`: Admin Source Artifacts rendered the
+  generated learning-note provenance verifier boundary copy; App Design Language
+  rendered the Learning-note integrity checks pattern.
+- `graphify update . --force`: passed.
+- `npm run graphify:tree`: passed.
+- Graphify query smoke found `verifyLocalCitationIntegrity()`,
+  `supportsLocalCitationIntegrityArtifact()`,
+  `createGeneratedNotesArtifactRecords()`, `verifyArtifactCitationIntegrity()`,
+  and Admin imports.
+- Final-check sidecar Hypatia found one blocking placeholder-entry risk. The
+  verifier now treats `learning-entry` and `generated-learning-note` as
+  placeholders, with a regression test for blank generated-note `entryId`.
+- Hypatia's follow-up read-only check found no remaining blocker after the
+  placeholder fix.
+
+## Remaining Work
+
+- Add sentence-level source-span claim matching for generated learning notes.
+- Add real verifiers for generated flashcards, charts, code snippets, images,
+  websites, and stored audio overviews.
+- Continue broader local beta learner-brain implementation before any AWS/cloud
+  work.
+
 # brain architecture implementation program: phase 20 report
 
 ## Scope

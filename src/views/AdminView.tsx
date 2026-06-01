@@ -2824,7 +2824,8 @@ export function AdminView() {
                             streams, and built-in manifests. Artifacts can be
                             ready while their citations remain checking or not
                             checked; the local verifier checks saved source-card
-                            structure and links without fetching external pages.
+                            structure and generated learning-note provenance
+                            without fetching external pages.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -3157,7 +3158,9 @@ export function AdminView() {
                                           : undefined);
                                       const canRun =
                                         !linkedArtifactType ||
-                                        linkedArtifactType === "source_card";
+                                        supportsLocalCitationIntegrityArtifact({
+                                          artifactType: linkedArtifactType,
+                                        });
 
                                       return canRun ? (
                                         <button
@@ -3307,8 +3310,9 @@ export function AdminView() {
                               A checking citation is not a verified citation.
                               The local verifier can only check saved
                               source-card structure, citation linkage, URL
-                              shape, and domain consistency; it does not fetch
-                              or prove external page content.
+                              shape, domain consistency, and generated
+                              learning-note provenance; it does not fetch or
+                              prove external page content.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               AWS/cloud synchronization remains deferred until

@@ -118,7 +118,9 @@ export type CitationIntegrityResult = {
     checkedFields: string[];
     sourceKind: "url" | "local_source_ref" | "missing";
     normalizedDomain?: string;
-    claimCheck: "artifact_level_source_card";
+    claimCheck:
+      | "artifact_level_source_card"
+      | "generated_learning_note_provenance";
   };
 };
 
@@ -189,6 +191,8 @@ const isPlaceholderSourceRef = (value: unknown) => {
     text === "source" ||
     text === "source-card" ||
     text === "source-claim" ||
+    text === "learning-entry" ||
+    text === "generated-learning-note" ||
     text === "local"
   );
 };
@@ -360,7 +364,9 @@ export const artifactVerificationStateForCitationStates = (
 
 export const supportsLocalCitationIntegrityArtifact = (
   artifact?: Pick<ArtifactRecord, "artifactType"> | null,
-) => artifact?.artifactType === "source_card";
+) =>
+  artifact?.artifactType === "source_card" ||
+  artifact?.artifactType === "notes";
 
 export const verifyLocalCitationIntegrity = (input: {
   artifact?: ArtifactRecord | null;
@@ -370,15 +376,29 @@ export const verifyLocalCitationIntegrity = (input: {
   const checkedAt = Math.max(0, Math.round(input.timestamp || Date.now()));
   const artifact = input.artifact || null;
   const citation = input.citation;
-  const checkedFields = [
-    "artifactId",
-    "citationStateIds",
-    "url",
-    "domain",
-    "sourceRef",
-    "sourceIds",
-    "title",
-  ];
+  const generatedNoteArtifact = artifact?.artifactType === "notes";
+  const checkedFields = generatedNoteArtifact
+    ? [
+        "artifactId",
+        "citationStateIds",
+        "sourceRef",
+        "sourceIds",
+        "bookId",
+        "conversationId",
+        "summary",
+        "metadata.entryId",
+        "metadata.localOnly",
+        "metadata.externalContentFetched",
+      ]
+    : [
+        "artifactId",
+        "citationStateIds",
+        "url",
+        "domain",
+        "sourceRef",
+        "sourceIds",
+        "title",
+      ];
   const sourceUrl = citation.url || artifact?.url;
   const parsedUrl = parseHttpUrl(sourceUrl);
   const explicitLocalSourceRefs = cleanList([
@@ -411,7 +431,9 @@ export const verifyLocalCitationIntegrity = (input: {
     normalizedDomain: parsedUrl
       ? normalizeDomain(parsedUrl.hostname)
       : normalizeDomain(citation.domain || artifact?.domain) || undefined,
-    claimCheck: "artifact_level_source_card",
+    claimCheck: generatedNoteArtifact
+      ? "generated_learning_note_provenance"
+      : "artifact_level_source_card",
   };
   const result = (
     state: CitationIntegrityState,
@@ -441,7 +463,7 @@ export const verifyLocalCitationIntegrity = (input: {
   if (!supportsLocalCitationIntegrityArtifact(artifact)) {
     return result(
       "unsupported",
-      "The local verifier currently supports source-card citation rows only.",
+      "The local verifier currently supports source-card and generated learning-note citation rows only.",
     );
   }
 
@@ -460,6 +482,125 @@ export const verifyLocalCitationIntegrity = (input: {
       "conflicting",
       "Artifact citationStateIds do not include this citation row.",
     );
+  }
+
+  if (artifact.artifactType === "notes") {
+    const artifactMetadata = artifact.metadata || {};
+    const citationMetadata = citation.metadata || {};
+    const artifactEntryId = compact(artifactMetadata.entryId);
+    const citationEntryId = compact(citationMetadata.entryId);
+    const sourceRef = compact(citation.sourceRef);
+    const artifactBookId = compact(artifact.bookId);
+    const metadataBookId = compact(artifactMetadata.bookId);
+    const artifactConversationId = compact(artifact.conversationId);
+    const metadataConversationId = compact(artifactMetadata.conversationId);
+
+    if (
+      artifactMetadata.localOnly !== true ||
+      citationMetadata.localOnly !== true
+    ) {
+      return result(
+        "unavailable",
+        "Generated note provenance is not marked local-only.",
+      );
+    }
+
+    if (
+      artifactMetadata.externalContentFetched !== false ||
+      citationMetadata.externalContentFetched !== false
+    ) {
+      return result(
+        "unavailable",
+        "Generated note provenance does not prove that no external content was fetched.",
+      );
+    }
+
+    if (artifactMetadata.generatedArtifact !== true) {
+      return result(
+        "unavailable",
+        "Generated note artifact metadata is missing the generated-artifact marker.",
+      );
+    }
+
+    if (compact(artifactMetadata.noteKind) !== "learning_entry") {
+      return result(
+        "unavailable",
+        "Generated note artifact metadata is not a learning-entry note.",
+      );
+    }
+
+    if (!artifactEntryId) {
+      return result(
+        "unavailable",
+        "Generated note artifact metadata is missing the learning entry id.",
+      );
+    }
+
+    if (!sourceRef || isPlaceholderSourceRef(sourceRef)) {
+      return result(
+        "unavailable",
+        "Generated note citation is missing a local learning-entry source reference.",
+      );
+    }
+
+    if (
+      sourceRef !== artifactEntryId ||
+      (citationEntryId && citationEntryId !== artifactEntryId)
+    ) {
+      return result(
+        "conflicting",
+        "Generated note citation source does not match the artifact learning entry id.",
+      );
+    }
+
+    if (!artifact.sourceIds.includes(artifactEntryId)) {
+      return result(
+        "conflicting",
+        "Generated note artifact sourceIds do not include the learning entry id.",
+      );
+    }
+
+    if (artifactBookId && metadataBookId && artifactBookId !== metadataBookId) {
+      return result(
+        "conflicting",
+        "Generated note artifact bookId disagrees with metadata.",
+      );
+    }
+
+    if (
+      artifactConversationId &&
+      metadataConversationId &&
+      artifactConversationId !== metadataConversationId
+    ) {
+      return result(
+        "conflicting",
+        "Generated note artifact conversationId disagrees with metadata.",
+      );
+    }
+
+    if (
+      !artifactBookId &&
+      !metadataBookId &&
+      !artifactConversationId &&
+      !metadataConversationId
+    ) {
+      return result(
+        "unavailable",
+        "Generated note has no local book or conversation anchor.",
+      );
+    }
+
+    if (
+      !compact(artifact.summary) ||
+      !compact(artifactMetadata.summaryPreview)
+    ) {
+      return result(
+        "unavailable",
+        "Generated note has no saved summary preview to inspect locally.",
+      );
+    }
+
+    return result("verified");
   }
 
   if (citation.url && artifact.url && !sameUrl(citation.url, artifact.url)) {
@@ -973,7 +1114,10 @@ export const createGeneratedNotesArtifactRecords = (
   const entryId = compact(input.entryId, "learning-entry");
   const conceptIds = cleanList(input.conceptIds, 32);
   const sourceRef = compact(
-    entryId || input.conversationId || input.bookId || "generated-learning-note",
+    entryId ||
+      input.conversationId ||
+      input.bookId ||
+      "generated-learning-note",
   );
   const artifactId = artifactRecordIdFor({
     artifactType: "notes",
@@ -1065,7 +1209,10 @@ export const createGeneratedNotesArtifactRecords = (
   return { artifact, citation };
 };
 
-const timestampForStoredAt = (storedAt: string | undefined, fallback: number) => {
+const timestampForStoredAt = (
+  storedAt: string | undefined,
+  fallback: number,
+) => {
   const parsed = storedAt ? Date.parse(storedAt) : Number.NaN;
   return Number.isFinite(parsed) ? parsed : fallback;
 };
@@ -1091,7 +1238,10 @@ export const createStoredAudioOverviewArtifactRecords = (
   const transcript = compact(input.transcript);
   const summary = compact(input.summary || transcript);
   const title = compact(input.title, "Stored audio overview");
-  const chapterTitle = compact(input.chapterTitle, `Chapter ${chapterIndex + 1}`);
+  const chapterTitle = compact(
+    input.chapterTitle,
+    `Chapter ${chapterIndex + 1}`,
+  );
   const storedAt = compact(input.storedAt);
 
   const sharedMetadata = {
@@ -1187,7 +1337,10 @@ export const recordStoredAudioOverviewArtifacts = async (
       ),
     );
   } catch (error) {
-    console.warn("[ArtifactRecords] audio overview artifact write failed", error);
+    console.warn(
+      "[ArtifactRecords] audio overview artifact write failed",
+      error,
+    );
   }
 
   return records;

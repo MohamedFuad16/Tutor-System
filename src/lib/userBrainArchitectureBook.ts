@@ -27,6 +27,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
 - Admin exposes model runs, tool jobs, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
 - Generated flashcards, generated learning-book notes, and stored audio overviews now leave explicit \`not_checked\` artifact provenance.
+- Admin can locally verify generated learning-note provenance when the note links back to a learning entry, local book or conversation, local-only metadata, and no external fetch.
 - Revision shows this book in a shorter reader path and can play a stored overview asset for this chapter.
 - A local audio-overview generation plan now covers every chapter, with an OpenAI speech generator gated by \`OPENAI_API_KEY\` and a dry-run verifier for missing MP3 assets.
 
@@ -66,7 +67,7 @@ The local beta rule is intentionally conservative: generated notes, flashcards, 
 - Model summaries can add evidence rows, but cannot raise mastery.
 - Flashcard reviews can write BKT evidence only when a real concept id exists.
 - Generated flashcards, generated learning notes, and built-in stored audio overview manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states.
-- Admin's local verifier only mutates \`source_card\` artifacts; other artifact kinds remain explicitly unsupported until a real verifier exists.
+- Admin's local verifier mutates \`source_card\` artifacts and generated learning-note provenance when the local ledger links are coherent; flashcards, audio overviews, charts, code, images, and websites remain explicitly unsupported until real verifiers exist.
 - Correction propagation marks related rows stale, skipped, unsupported, conflicting, or unverified instead of hard-deleting history.`,
   },
   {
@@ -121,7 +122,7 @@ Citation states:
 | \`conflicting\` | Saved source fields or claims disagree. |
 | \`unsupported\` | The local verifier cannot assess this artifact kind yet. |
 
-Current local implementation verifies source-card structure without fetching external pages. It checks saved links, URL shape, domain consistency, source ids, and artifact/citation linkage. Generated flashcards and learning notes stay \`not_checked\` because they need different verifiers.`,
+Current local implementation verifies source-card structure without fetching external pages. It checks saved links, URL shape, domain consistency, source ids, and artifact/citation linkage. Generated learning notes now have a separate local provenance check for entry id, book/conversation anchors, local-only metadata, no external fetch, and saved summary preview. That proves the note is locally traceable, not that every sentence is source-span verified. Generated flashcards and stored audio overviews still stay \`not_checked\` until their own verifiers exist.`,
   },
   {
     title: "Chapter 5: Admin And Runtime Tuning",
@@ -149,7 +150,7 @@ Implemented Admin surfaces:
 | Tool Jobs | Tool lifecycle visibility. |
 | Memory/Retrieval Events | Learner-brain writes and context selection. |
 | Evidence Ledger | Evidence rows and BKT deltas. |
-| Source Artifacts | Source cards plus generated flashcard, note, and stored audio overview provenance. |
+| Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and stored audio overview provenance. |
 | Correction Requests | Non-destructive review and propagation state. |
 | Runtime Tuning | Local knobs for source-vs-web, memory context, tool budget, and refresh cadence. |
 | Beta Diagnostics | Capped local export and readiness gate summary. |
@@ -193,6 +194,7 @@ Implemented now:
 - source artifact and citation-state ledger;
 - local source-card integrity verifier;
 - generated flashcard and generated learning-note provenance;
+- local generated learning-note provenance verifier;
 - capped beta diagnostics export;
 - stored audio overview UI for the opening architecture chapter;
 - chapter-by-chapter stored-audio generation plan, dry-run report, and key-gated OpenAI speech synthesis script.
@@ -200,7 +202,8 @@ Implemented now:
 Still local beta work:
 
 - source-span claim matching;
-- generated-artifact verifiers for notes, charts, code snippets, images, and websites;
+- generated-artifact verifiers for charts, code snippets, images, websites, flashcards, and audio overviews;
+- source-span claim matching for generated learning notes beyond the current provenance-level check;
 - durable job queue with retries and dead-letter review;
 - run and review the stored audio overview generator for the remaining User Brain Architecture chapters once an OpenAI key is available;
 - stronger tests that make mastery writes impossible without validated evidence and audit rows.

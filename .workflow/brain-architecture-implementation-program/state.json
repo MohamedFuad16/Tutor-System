@@ -183,18 +183,23 @@
       "owner": "main agent + final-check sidecar",
       "status": "completed",
       "write_scope": "scripts/generate-user-brain-audio-overviews.mjs, scripts/user-brain-audio-overview-plan.mjs, src/lib/chapterAudioOverviews.ts, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, src/views/RevisionView.tsx, README.md, TUTOR_ARCHITECTURE.md, tests/audio-overview-plan.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "Z",
+      "name": "Learning-note integrity verifier",
+      "owner": "main agent + final-check sidecar",
+      "status": "completed",
+      "write_scope": "src/memory/artifact.records.ts, src/views/AdminView.tsx, tests/artifact-records.test.mjs, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, src/views/RevisionView.tsx, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_20_verified",
+    "status": "phase_21_verified",
     "checks": [
-      "npm run audio:overview:dry-run",
-      "node --test tests/audio-overview-plan.test.mjs",
       "npm run lint",
       "npm run test",
       "npm run build",
       "npm run format:check",
-      "browser QA for Revision stored audio card and App Design audio generation dry-run pattern",
+      "browser QA for Admin generated-note local verifier and App Design control pattern",
       "graphify update . --force",
       "npm run graphify:tree",
       "graphify query smoke"
