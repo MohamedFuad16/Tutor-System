@@ -1,5 +1,10 @@
 import { generateEmbedding, cosineSimilarity } from "./memory.embeddings";
 import {
+  confidenceFromModelSummary,
+  confidenceFromUnderstandingDelta,
+  gateModelSummaryMastery,
+} from "./evidence.mastery";
+import {
   db,
   GENERAL_STUDY_BOOK_ID,
   PersistentConcept,
@@ -464,7 +469,7 @@ export class MemoryOrchestrator {
           {
             name: fallbackTitle,
             summary: fallbackStudyNote,
-            mastery: 0.3,
+            mastery: 0,
             confidence: 0.35,
             parentConcepts: [],
             childConcepts: [],
@@ -506,8 +511,14 @@ export class MemoryOrchestrator {
           120
             ? String(concept.summary || existing?.summary || "").trim()
             : buildStudyNoteFallback(userMessage, assistantMessage),
-        mastery: clamp01(concept.mastery, existing?.mastery ?? 0.35),
-        confidence: clamp01(concept.confidence, existing?.confidence ?? 0.45),
+        mastery: gateModelSummaryMastery(
+          existing?.mastery ?? 0,
+          concept.mastery,
+        ),
+        confidence: confidenceFromModelSummary(
+          existing?.confidence ?? 0.35,
+          concept.confidence,
+        ),
         parentConcepts: mergeUnique(
           [
             ...(existing?.parentConcepts || []),
@@ -616,7 +627,8 @@ export class MemoryOrchestrator {
       createdAt: existingBook?.createdAt || now,
       updatedAt: now,
       lastConversationId: conversationId,
-      activeDocumentId: input.activeDocumentId || existingBook?.activeDocumentId,
+      activeDocumentId:
+        input.activeDocumentId || existingBook?.activeDocumentId,
       documentIds: existingBook?.documentIds || [],
       agentModel: String(update.model || "deepseek/deepseek-v4-flash"),
     };
@@ -662,13 +674,13 @@ export class MemoryOrchestrator {
     const existing = await db.concepts.get(id);
 
     if (existing) {
-      existing.mastery = Math.max(
-        0,
-        Math.min(1, existing.mastery + understandingDelta),
+      existing.mastery = gateModelSummaryMastery(
+        existing.mastery,
+        understandingDelta,
       );
-      existing.confidence = Math.max(
-        0,
-        Math.min(1, existing.confidence + understandingDelta),
+      existing.confidence = confidenceFromUnderstandingDelta(
+        existing.confidence,
+        understandingDelta,
       );
       existing.lastReviewedAt = Date.now();
       existing.revisionCount += 1;
@@ -681,11 +693,11 @@ export class MemoryOrchestrator {
         id,
         name,
         description,
-        mastery: Math.max(0, understandingDelta),
-        confidence: Math.max(0, understandingDelta),
+        mastery: 0,
+        confidence: confidenceFromUnderstandingDelta(0, understandingDelta),
 
         // Phase 5 defaults
-        p_learn: Math.max(0.2, understandingDelta),
+        p_learn: 0.2,
         p_transit: 0.1,
         p_slip: 0.1,
         p_guess: 0.2,
@@ -713,6 +725,7 @@ export class MemoryOrchestrator {
       conceptName: name,
       understandingDelta,
       sourcePage,
+      masteryGate: "model_summary_no_mastery_increase",
     });
   }
 
@@ -726,10 +739,7 @@ export class MemoryOrchestrator {
 
       // Fetch recent interactions (optimized from full table scan)
       const interactions = activeBookId
-        ? (await db.interactions
-            .where("bookId")
-            .equals(activeBookId)
-            .toArray())
+        ? (await db.interactions.where("bookId").equals(activeBookId).toArray())
             .sort((a, b) => b.timestamp - a.timestamp)
             .slice(0, 100)
         : await db.interactions

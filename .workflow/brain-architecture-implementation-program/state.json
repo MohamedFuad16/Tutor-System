@@ -50,10 +50,17 @@
       "owner": "subagent Bernoulli",
       "status": "completed",
       "write_scope": "read-only"
+    },
+    {
+      "id": "G",
+      "name": "Evidence-gated mastery",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/evidence.mastery.ts, src/memory/bkt.engine.ts, src/memory/memory.orchestrator.ts, tests/evidence-mastery.test.mjs"
     }
   ],
   "verification": {
-    "status": "completed_with_known_preexisting_format_warning",
+    "status": "phase_2_completed_with_known_preexisting_format_warning",
     "checks": [
       "npm run lint",
       "npm run test",
@@ -61,7 +68,8 @@
       "browser QA",
       "npm run graphify:update",
       "npm run graphify:tree",
-      "graphify query smoke"
+      "graphify query smoke",
+      "Graphify clean-worktree regeneration"
     ]
   }
 }

@@ -1,4 +1,5 @@
 import { db, PersistentConcept } from "./longterm.memory";
+import { masteryFromEvidenceAttempt } from "./evidence.mastery";
 
 // Default BKT Parameters for new concepts
 const DEFAULT_BKT = {
@@ -46,12 +47,9 @@ export class BKTEngine {
 
     const posterior = this.calculatePosterior(concept, isCorrect);
 
-    // Limits based on type (as per Phase 5 spec)
-    let maxPLearn = 0.95;
-    if (type === "recognition" && posterior > 0.7) maxPLearn = 0.7;
-    if (type === "generation" && posterior > 0.85) maxPLearn = 0.85;
-
-    concept.p_learn = Math.min(posterior, maxPLearn);
+    const cappedPosterior = masteryFromEvidenceAttempt(type, posterior);
+    concept.p_learn = cappedPosterior;
+    concept.mastery = cappedPosterior;
 
     concept.attempt_history.push({
       correct: isCorrect,

@@ -59,3 +59,40 @@ Phase 1 implements local Admin observability foundations for the user-brain arch
 - Citation-state enforcement for external claims.
 - Correction/deletion propagation across derived memories.
 - AWS/cloud architecture is still deferred until beta evidence is available.
+
+# brain architecture implementation program: phase 2 report
+
+## Scope
+
+Phase 2 implements the first local evidence-gating slice for mastery. It keeps model summaries useful for notes and confidence while preventing them from raising learner mastery without verified recall evidence.
+
+## Graphify Context
+
+- Initial Graphify traversal identified `src/memory/memory.orchestrator.ts`, `src/memory/bkt.engine.ts`, `src/memory/longterm.memory.ts`, and `src/components/ChatPanel.tsx` as the directly connected surfaces.
+- Follow-up Graphify query after regeneration found `src/memory/evidence.mastery.ts`, `gateModelSummaryMastery()`, `masteryFromEvidenceAttempt()`, `MemoryOrchestrator`, and `BKTEngine`.
+
+## Integration Decisions
+
+- Added a pure local evidence policy adapter in `src/memory/evidence.mastery.ts`.
+- Model-summary learning-book updates preserve existing mastery instead of accepting model-proposed mastery.
+- Chat-derived `addOrUpdateConcept` writes now keep mastery gated and move confidence separately.
+- New model-summary concepts start at `mastery: 0` and BKT prior `p_learn: 0.2`.
+- BKT attempts now update both `p_learn` and `mastery` through recognition, generation, and transfer caps.
+- Added `tests/evidence-mastery.test.mjs` and included the helper in the test bundle.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: initial sandbox run failed on local socket binding; escalated rerun passed, 10 tests.
+- `npm run build`: passed.
+- `npm run format:check`: still fails only on pre-existing `src/views/RevisionView.tsx`.
+- Browser QA on `http://localhost:3001`: Admin Activity, Study/Chat, and Revision surfaces loaded without visible errors.
+- Graphify regenerated from a clean temporary worktree with this phase's source files copied in, old graph artifacts outside the scan root, and source paths in `graph.json` verified as relative.
+- Graphify query smoke found the new evidence-mastery helper and memory/BKT neighbors.
+
+## Remaining Work
+
+- Add durable local evidence and mastery-delta tables after a Dexie migration plan.
+- Surface evidence events in Admin beyond the current activity ledger.
+- Wire active recall/revision submissions into explicit BKT evidence paths where the UI does not already do so.
+- AWS/cloud synchronization remains out of scope until beta testing.
