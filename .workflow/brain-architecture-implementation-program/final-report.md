@@ -96,3 +96,39 @@ Phase 2 implements the first local evidence-gating slice for mastery. It keeps m
 - Surface evidence events in Admin beyond the current activity ledger.
 - Wire active recall/revision submissions into explicit BKT evidence paths where the UI does not already do so.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 3 report
+
+## Scope
+
+Phase 3 adds a local durable evidence ledger for learner-state changes. It preserves the phase 2 rule that model summaries do not raise mastery, while making those summaries inspectable as evidence records and recording BKT mastery deltas from explicit recall attempts.
+
+## Graphify Context
+
+- Graphify routed the slice through `src/memory/longterm.memory.ts`, `src/memory/evidence.mastery.ts`, `src/memory/bkt.engine.ts`, `src/memory/memory.orchestrator.ts`, and `src/views/AdminView.tsx`.
+- Revision and Chat were inspected only for connected recall/tool surfaces. Revision flashcard review currently updates scheduling, not BKT concept attempts.
+
+## Integration Decisions
+
+- Added Dexie v8 tables for `evidenceEvents`, `masteryDeltas`, and `toolJobs`.
+- Added `src/memory/evidence.ledger.ts` for local evidence event and mastery-delta records.
+- `MemoryOrchestrator` writes durable model-summary evidence for learning-book concept updates and chat graph updates.
+- `BKTEngine` writes durable recall evidence plus mastery deltas after explicit BKT attempts.
+- Admin now includes an `Evidence Ledger` tab for durable evidence counts, recent evidence events, BKT mastery deltas, and the local tool-job table.
+- Durable `ToolJob` writes are deferred; the table is present and surfaced, while runtime tool calls continue to use the phase 1 in-memory system activity ledger.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 12 tests.
+- `npm run build`: passed.
+- `npm run format:check`: still fails only on pre-existing `src/views/RevisionView.tsx`.
+- Browser QA on `http://localhost:3001`: Admin opened, `Evidence` tab rendered, evidence/mastery/tool-job sections appeared, and no visible Dexie/runtime errors were present.
+- Graphify regenerated from clean committed source in a temporary worktree; query smoke found `evidence.ledger.ts`, `EvidenceEvent`, `MasteryDelta`, `ToolJob`, `AdminView`, and `BKTEngine`.
+
+## Remaining Work
+
+- Wire Revision flashcard/review controls to BKT attempts where concept IDs are available.
+- Persist runtime tool execution into `toolJobs` with retry/dead-letter states.
+- Add correction/deletion propagation over evidence and mastery deltas.
+- AWS/cloud synchronization remains out of scope until beta testing.

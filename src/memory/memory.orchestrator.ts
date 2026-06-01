@@ -4,6 +4,7 @@ import {
   confidenceFromUnderstandingDelta,
   gateModelSummaryMastery,
 } from "./evidence.mastery";
+import { recordModelSummaryEvidence } from "./evidence.ledger";
 import {
   db,
   GENERAL_STUDY_BOOK_ID,
@@ -549,6 +550,20 @@ export class MemoryOrchestrator {
         updatedAt: now,
       };
       await db.learningBookConcepts.put(nextConcept);
+      await recordModelSummaryEvidence({
+        conceptId,
+        bookId,
+        conversationId,
+        sourceId: "learning-book-update",
+        source: "learning_book_update",
+        summary: nextConcept.summary,
+        confidence: nextConcept.confidence,
+        metadata: {
+          proposedMastery: concept.mastery,
+          acceptedMastery: nextConcept.mastery,
+          masteryGate: "model_summary_no_mastery_increase",
+        },
+      });
     }
 
     const existingBook =
@@ -688,6 +703,19 @@ export class MemoryOrchestrator {
         existing.sourcePages.push(sourcePage);
       }
       await db.concepts.put(existing);
+      await recordModelSummaryEvidence({
+        conceptId: id,
+        source: "chat_graph_update",
+        sourceId: "addOrUpdateConcept",
+        summary: description,
+        confidence: existing.confidence,
+        metadata: {
+          understandingDelta,
+          sourcePage,
+          acceptedMastery: existing.mastery,
+          masteryGate: "model_summary_no_mastery_increase",
+        },
+      });
     } else {
       const newConcept: PersistentConcept = {
         id,
@@ -718,6 +746,19 @@ export class MemoryOrchestrator {
         db.concepts.put(newConcept);
       });
       await db.concepts.put(newConcept);
+      await recordModelSummaryEvidence({
+        conceptId: id,
+        source: "chat_graph_update",
+        sourceId: "addOrUpdateConcept",
+        summary: description,
+        confidence: newConcept.confidence,
+        metadata: {
+          understandingDelta,
+          sourcePage,
+          acceptedMastery: newConcept.mastery,
+          masteryGate: "model_summary_no_mastery_increase",
+        },
+      });
     }
 
     // Log the graph update to trace backend

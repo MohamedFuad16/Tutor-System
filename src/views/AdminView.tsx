@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "../memory/longterm.memory";
+import {
+  db,
+  type EvidenceEvent,
+  type MasteryDelta,
+  type ToolJob,
+} from "../memory/longterm.memory";
 import {
   Terminal,
   Activity,
@@ -21,7 +26,7 @@ import { useStore } from "../store";
 import { useMotionPreference } from "../hooks/useMotionPreference";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
-type AdminTab = "activity" | "traces" | "console";
+type AdminTab = "activity" | "evidence" | "traces" | "console";
 type ActivityStatus = "idle" | "loading" | "ready" | "error";
 const TRACE_PAGE_SIZE = 100;
 
@@ -155,6 +160,38 @@ export function AdminView() {
         db.learningEntries.orderBy("timestamp").reverse().limit(25).toArray(),
       [],
     ) || [];
+  const evidenceEvents =
+    useLiveQuery(
+      () =>
+        db.evidenceEvents.orderBy("timestamp").reverse().limit(50).toArray(),
+      [],
+    ) || [];
+  const masteryDeltas =
+    useLiveQuery(
+      () => db.masteryDeltas.orderBy("timestamp").reverse().limit(30).toArray(),
+      [],
+    ) || [];
+  const toolJobs =
+    useLiveQuery(
+      () => db.toolJobs.orderBy("timestamp").reverse().limit(20).toArray(),
+      [],
+    ) || [];
+  const evidenceEventCount =
+    useLiveQuery(() => db.evidenceEvents.count(), []) || 0;
+  const verifiedEvidenceCount =
+    useLiveQuery(
+      () => db.evidenceEvents.filter((event) => event.verified).count(),
+      [],
+    ) || 0;
+  const modelSummaryEvidenceCount =
+    useLiveQuery(
+      () =>
+        db.evidenceEvents.where("evidenceType").equals("model_summary").count(),
+      [],
+    ) || 0;
+  const masteryDeltaCount =
+    useLiveQuery(() => db.masteryDeltas.count(), []) || 0;
+  const toolJobCount = useLiveQuery(() => db.toolJobs.count(), []) || 0;
   const [serverLogs, setServerLogs] = useState<
     { type: string; msg: string; time: number }[]
   >([]);
@@ -319,6 +356,9 @@ export function AdminView() {
   }, {});
   const traceCount = totalTraceCount || logs?.length || 0;
   const latestTrace = logs?.[0];
+  const latestEvidence = evidenceEvents[0] as EvidenceEvent | undefined;
+  const latestMasteryDelta = masteryDeltas[0] as MasteryDelta | undefined;
+  const latestToolJob = toolJobs[0] as ToolJob | undefined;
   const mappedConceptCount = learningBookConcepts.length;
   const tracedBookCount = learningBooks.filter(
     (book) => (conceptsByBook[book.id] || []).length > 0,
@@ -393,10 +433,13 @@ export function AdminView() {
     }
   }, [
     activeTab,
+    evidenceEvents.length,
     learningBooks.length,
     logs?.length,
+    masteryDeltas.length,
     motionEnabled,
     recentSystemEvents.length,
+    toolJobs.length,
   ]);
 
   return (
@@ -431,6 +474,13 @@ export function AdminView() {
             >
               <Gauge size={16} />
               <span className="line-clamp-1 leading-snug">System Activity</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("evidence")}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "evidence" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+            >
+              <BrainCircuit size={16} />
+              <span className="line-clamp-1 leading-snug">Evidence Ledger</span>
             </button>
             <button
               onClick={() => setActiveTab("traces")}
@@ -481,16 +531,19 @@ export function AdminView() {
                   exposes behind-the-scenes model activity, tool calls, local
                   memory updates, saved trace explanations, and backend health
                   signals. Use <strong>System Activity</strong> for the live
-                  observability ledger, <strong>DeepSeek Trace</strong> to
-                  inspect persisted tutor updates and tool context, or switch to
-                  the <strong>Server Console</strong> to monitor live backend
-                  traffic, WebSocket streams, and TTS generation logs.
+                  observability ledger, <strong>Evidence Ledger</strong> to
+                  inspect model-summary evidence and mastery deltas,{" "}
+                  <strong>DeepSeek Trace</strong> for persisted tutor updates,
+                  or switch to the <strong>Server Console</strong> to monitor
+                  live backend traffic, WebSocket streams, and TTS generation
+                  logs.
                 </p>
               </div>
 
               <div className="mb-8 grid grid-cols-1 gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm sm:grid-cols-3 lg:hidden">
                 {[
                   { id: "activity", label: "Activity", icon: Gauge },
+                  { id: "evidence", label: "Evidence", icon: BrainCircuit },
                   { id: "traces", label: "Traces", icon: Activity },
                   { id: "console", label: "Console", icon: Terminal },
                 ].map((tab) => {
@@ -518,17 +571,21 @@ export function AdminView() {
                   <span className="text-blue-500 mr-2">#</span>
                   {activeTab === "activity"
                     ? "Observability"
-                    : activeTab === "traces"
-                      ? "Diagnostics"
-                      : "Runtime Environment"}
+                    : activeTab === "evidence"
+                      ? "Learner Evidence"
+                      : activeTab === "traces"
+                        ? "Diagnostics"
+                        : "Runtime Environment"}
                 </span>
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-2 font-serif leading-[1.15]">
                     {activeTab === "activity"
                       ? "System Activity"
-                      : activeTab === "traces"
-                        ? "DeepSeek Trace Ledger"
-                        : "Live Server Console"}
+                      : activeTab === "evidence"
+                        ? "Evidence Ledger"
+                        : activeTab === "traces"
+                          ? "DeepSeek Trace Ledger"
+                          : "Live Server Console"}
                   </h1>
                   {activeTab === "activity" && (
                     <div
@@ -795,6 +852,9 @@ export function AdminView() {
                               ["Voice sessions", voiceUsage.sessions],
                               ["Books", learningBooks.length],
                               ["Mapped concepts", mappedConceptCount],
+                              ["Evidence events", evidenceEventCount],
+                              ["Mastery deltas", masteryDeltaCount],
+                              ["Tool jobs", toolJobCount],
                               ["Active book", activeLearningBookId || "none"],
                               ["Project", activeProject],
                               [
@@ -888,6 +948,264 @@ export function AdminView() {
                           </div>
                         </section>
                       </div>
+                    </section>
+                  </div>
+                ) : activeTab === "evidence" ? (
+                  <div className="flex flex-col gap-8 font-sans">
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-violet-500/70">
+                            <BrainCircuit size={13} /> Local Learner Evidence
+                          </div>
+                          <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
+                            Evidence and mastery audit trail
+                          </h2>
+                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                            Durable local records for model-summary evidence,
+                            explicit recall attempts, and BKT mastery changes.
+                            Model summaries can explain why a memory exists;
+                            only recall evidence should create mastery deltas.
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
+                          <div className="text-2xl font-semibold text-zinc-900">
+                            {verifiedEvidenceCount}
+                          </div>
+                          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+                            Verified events shown
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-4">
+                        {[
+                          ["Evidence Events", evidenceEventCount],
+                          ["Model Summaries", modelSummaryEvidenceCount],
+                          ["Mastery Deltas", masteryDeltaCount],
+                          ["Tool Jobs", toolJobCount],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
+                          >
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              {label}
+                            </div>
+                            <div className="mt-2 text-2xl font-semibold tabular-nums text-zinc-900">
+                              {value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+                      <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                          <div>
+                            <h3 className="text-xl font-serif font-medium text-zinc-900">
+                              Mastery deltas
+                            </h3>
+                            <p className="mt-1 text-sm text-zinc-500 font-serif">
+                              Changes created by explicit BKT recall evidence.
+                            </p>
+                          </div>
+                          <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                            {formatTime(latestMasteryDelta?.timestamp)}
+                          </div>
+                        </div>
+
+                        {masteryDeltas.length === 0 ? (
+                          <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
+                            No mastery deltas yet. Complete a recall attempt
+                            tied to a concept to create the first audited BKT
+                            update.
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {masteryDeltas.map((delta, index) => (
+                              <article
+                                key={delta.id}
+                                className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 12 ? "admin-animated-item" : ""}`}
+                              >
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="min-w-0">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                        {delta.conceptId}
+                                      </h4>
+                                      <span
+                                        className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                                          delta.correct
+                                            ? "border-green-200 bg-green-50 text-green-700"
+                                            : "border-orange-200 bg-orange-50 text-orange-700"
+                                        }`}
+                                      >
+                                        {delta.correct ? "correct" : "review"}
+                                      </span>
+                                    </div>
+                                    <p className="mt-1 text-sm leading-relaxed text-zinc-600 font-serif">
+                                      {delta.reason}
+                                    </p>
+                                    <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                      <span>{delta.evidenceType}</span>
+                                      <span>
+                                        mastery{" "}
+                                        {(delta.previousMastery * 100).toFixed(
+                                          0,
+                                        )}
+                                        % to{" "}
+                                        {(delta.nextMastery * 100).toFixed(0)}%
+                                      </span>
+                                      <span>
+                                        delta {delta.delta >= 0 ? "+" : ""}
+                                        {(delta.delta * 100).toFixed(0)}%
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="shrink-0 text-right text-[10px] font-mono text-zinc-500">
+                                    {formatTime(delta.timestamp)}
+                                  </div>
+                                </div>
+                              </article>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                          <div>
+                            <h3 className="text-xl font-serif font-medium text-zinc-900">
+                              Evidence events
+                            </h3>
+                            <p className="mt-1 text-sm text-zinc-500 font-serif">
+                              Model summaries are retained as evidence, but
+                              marked unverified for mastery.
+                            </p>
+                          </div>
+                          <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                            {formatTime(latestEvidence?.timestamp)}
+                          </div>
+                        </div>
+
+                        {evidenceEvents.length === 0 ? (
+                          <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
+                            No durable evidence records yet. Chat graph updates,
+                            learning-book updates, and recall attempts will
+                            appear here.
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {evidenceEvents.map((event, index) => (
+                              <article
+                                key={event.id}
+                                className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 12 ? "admin-animated-item" : ""}`}
+                              >
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="min-w-0">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                        {event.conceptId ||
+                                          event.bookId ||
+                                          event.source}
+                                      </h4>
+                                      <span
+                                        className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                                          event.verified
+                                            ? "border-green-200 bg-green-50 text-green-700"
+                                            : "border-zinc-300 bg-zinc-100 text-zinc-600"
+                                        }`}
+                                      >
+                                        {event.verified
+                                          ? "verified"
+                                          : "not mastery evidence"}
+                                      </span>
+                                    </div>
+                                    <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-zinc-600 font-serif">
+                                      {event.summary}
+                                    </p>
+                                    <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                      <span>{event.evidenceType}</span>
+                                      <span>{event.source}</span>
+                                      {event.confidence !== undefined && (
+                                        <span>
+                                          confidence{" "}
+                                          {(event.confidence * 100).toFixed(0)}%
+                                        </span>
+                                      )}
+                                      {event.correct !== undefined && (
+                                        <span>
+                                          {event.correct
+                                            ? "correct"
+                                            : "incorrect"}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="shrink-0 text-right text-[10px] font-mono text-zinc-500">
+                                    {formatTime(event.timestamp)}
+                                  </div>
+                                </div>
+                              </article>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </section>
+
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Tool jobs
+                          </h3>
+                          <p className="mt-1 text-sm text-zinc-500 font-serif">
+                            Local durable table for future tool execution jobs,
+                            retries, and dead-letter review.
+                          </p>
+                        </div>
+                        <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                          {formatTime(latestToolJob?.timestamp)}
+                        </div>
+                      </div>
+
+                      {toolJobs.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-500">
+                          Tool job schema is ready. Runtime tool execution still
+                          uses the in-memory system activity ledger until the
+                          next worker-queue slice.
+                        </div>
+                      ) : (
+                        <div className="grid gap-3 md:grid-cols-2">
+                          {toolJobs.map((job) => (
+                            <article
+                              key={job.id}
+                              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                    {job.toolName}
+                                  </h4>
+                                  <p className="mt-1 line-clamp-2 text-sm text-zinc-600 font-serif">
+                                    {job.outputSummary ||
+                                      job.inputSummary ||
+                                      job.error ||
+                                      "No summary recorded."}
+                                  </p>
+                                </div>
+                                <span
+                                  className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(job.status)}`}
+                                >
+                                  {job.status}
+                                </span>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      )}
                     </section>
                   </div>
                 ) : activeTab === "traces" ? (

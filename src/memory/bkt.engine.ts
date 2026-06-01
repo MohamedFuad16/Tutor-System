@@ -1,5 +1,6 @@
 import { db, PersistentConcept } from "./longterm.memory";
 import { masteryFromEvidenceAttempt } from "./evidence.mastery";
+import { recordMasteryDelta } from "./evidence.ledger";
 
 // Default BKT Parameters for new concepts
 const DEFAULT_BKT = {
@@ -45,6 +46,8 @@ export class BKTEngine {
     const concept = await db.concepts.get(conceptId);
     if (!concept) return null;
 
+    const previousMastery = concept.mastery;
+    const previousPLearn = concept.p_learn;
     const posterior = this.calculatePosterior(concept, isCorrect);
 
     const cappedPosterior = masteryFromEvidenceAttempt(type, posterior);
@@ -59,6 +62,22 @@ export class BKTEngine {
     concept.lastReviewedAt = Date.now();
 
     await db.concepts.put(concept);
+    await recordMasteryDelta({
+      conceptId,
+      evidenceType: type,
+      correct: isCorrect,
+      previousMastery,
+      nextMastery: concept.mastery,
+      previousPLearn,
+      nextPLearn: concept.p_learn,
+      source: "bkt_attempt",
+      summary: `${type} recall attempt was ${isCorrect ? "correct" : "incorrect"}`,
+      metadata: {
+        posterior,
+        cappedPosterior,
+        attemptCount: concept.attempt_history.length,
+      },
+    });
     return concept;
   }
 }

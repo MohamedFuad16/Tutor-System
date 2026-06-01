@@ -57,10 +57,17 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/evidence.mastery.ts, src/memory/bkt.engine.ts, src/memory/memory.orchestrator.ts, tests/evidence-mastery.test.mjs"
+    },
+    {
+      "id": "H",
+      "name": "Durable evidence ledger",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/longterm.memory.ts, src/memory/evidence.ledger.ts, src/memory/bkt.engine.ts, src/memory/memory.orchestrator.ts, src/views/AdminView.tsx, tests/evidence-mastery.test.mjs"
     }
   ],
   "verification": {
-    "status": "phase_2_completed_with_known_preexisting_format_warning",
+    "status": "phase_3_completed_with_known_preexisting_format_warning",
     "checks": [
       "npm run lint",
       "npm run test",

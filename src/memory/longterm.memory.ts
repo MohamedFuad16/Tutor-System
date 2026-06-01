@@ -182,6 +182,53 @@ export interface BookChatThread {
   updatedAt: number;
 }
 
+export interface EvidenceEvent {
+  id: string;
+  timestamp: number;
+  source: string;
+  evidenceType: "model_summary" | "recognition" | "generation" | "transfer";
+  verified: boolean;
+  conceptId?: string;
+  bookId?: string;
+  conversationId?: string;
+  sourceId?: string;
+  summary: string;
+  confidence?: number;
+  correct?: boolean;
+  metadata?: Record<string, unknown>;
+}
+
+export interface MasteryDelta {
+  id: string;
+  timestamp: number;
+  conceptId: string;
+  evidenceEventId: string;
+  evidenceType: "recognition" | "generation" | "transfer";
+  verified: boolean;
+  previousMastery: number;
+  nextMastery: number;
+  previousPLearn: number;
+  nextPLearn: number;
+  delta: number;
+  correct: boolean;
+  reason: string;
+}
+
+export interface ToolJob {
+  id: string;
+  timestamp: number;
+  toolName: string;
+  status: "queued" | "running" | "completed" | "failed" | "blocked";
+  requestId?: string;
+  model?: string;
+  source?: string;
+  inputSummary?: string;
+  outputSummary?: string;
+  error?: string;
+  durationMs?: number;
+  metadata?: Record<string, unknown>;
+}
+
 export class BrainDatabase extends Dexie {
   concepts!: Table<PersistentConcept, string>;
   misconceptions!: Table<Misconception, string>;
@@ -194,6 +241,9 @@ export class BrainDatabase extends Dexie {
   learningEntries!: Table<LearningEntry, string>;
   learningDocuments!: Table<LearningDocument, string>;
   bookChatThreads!: Table<BookChatThread, string>;
+  evidenceEvents!: Table<EvidenceEvent, string>;
+  masteryDeltas!: Table<MasteryDelta, string>;
+  toolJobs!: Table<ToolJob, string>;
 
   constructor() {
     super("NeuralNestBrain");
@@ -240,6 +290,25 @@ export class BrainDatabase extends Dexie {
       learningEntries: "id, bookId, conversationId, timestamp, userName",
       learningDocuments: "id, bookId, title, mimeType, updatedAt, createdAt",
       bookChatThreads: "id, bookId, updatedAt",
+    });
+    this.version(8).stores({
+      concepts: "id, name, p_learn, lastReviewedAt",
+      misconceptions: "id, concept_id, resolved",
+      sessions: "id, startTime",
+      interactions: "id, sessionId, bookId, conversationId, timestamp",
+      flashcards: "id, front, nextReviewAt, conceptId, bookId",
+      traceLogs: "id, timestamp, action",
+      learningBooks:
+        "id, sessionId, title, userName, source, activeDocumentId, updatedAt",
+      learningBookConcepts: "id, bookId, name, updatedAt",
+      learningEntries: "id, bookId, conversationId, timestamp, userName",
+      learningDocuments: "id, bookId, title, mimeType, updatedAt, createdAt",
+      bookChatThreads: "id, bookId, updatedAt",
+      evidenceEvents:
+        "id, timestamp, conceptId, bookId, conversationId, evidenceType, verified",
+      masteryDeltas:
+        "id, timestamp, conceptId, evidenceEventId, evidenceType, verified",
+      toolJobs: "id, timestamp, toolName, status, requestId",
     });
   }
 }

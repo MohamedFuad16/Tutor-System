@@ -30,6 +30,9 @@ export const isVerifiedMasteryEvidence = (
   isCorrect = true,
 ) => VERIFIED_MASTERY_EVIDENCE.has(type) && isCorrect;
 
+export const isDirectRecallEvidence = (type: MasteryEvidenceType) =>
+  VERIFIED_MASTERY_EVIDENCE.has(type);
+
 export const gateModelSummaryMastery = (
   currentMastery: unknown,
   _proposedMastery?: unknown,
