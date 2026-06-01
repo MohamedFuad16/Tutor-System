@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   db,
@@ -42,7 +48,11 @@ import {
   buildBetaDiagnosticsExport,
   buildBetaDiagnosticsSnapshot,
 } from "../memory/beta.diagnostics";
-import { recordCorrectionEvent } from "../memory/correction.events";
+import {
+  applyCorrectionPropagation,
+  recordAndApplyCorrectionEvent,
+  updateCorrectionEventReviewStatus,
+} from "../memory/correction.events";
 import {
   BRAIN_RUNTIME_SETTING_LIMITS,
   DEFAULT_BRAIN_RUNTIME_SETTINGS,
@@ -79,6 +89,19 @@ type SystemActivityEvent = {
   phase?: string;
   durationMs?: number;
   metadata?: Record<string, unknown>;
+};
+
+type AdminRequestTimeline = {
+  requestId: string;
+  startedAt: number;
+  latestAt: number;
+  status: string;
+  title: string;
+  model?: string;
+  durationMs?: number;
+  events: SystemActivityEvent[];
+  modelRuns: ModelRun[];
+  toolJobs: ToolJob[];
 };
 
 type SystemActivityPayload = {
@@ -187,6 +210,34 @@ const statusTone = (status: string) => {
   if (status === "dismissed")
     return "border-zinc-300 bg-zinc-100 text-zinc-600";
   return "border-blue-200 bg-blue-50 text-blue-700";
+};
+
+const statusWeight = (status: string) => {
+  if (status === "blocked" || status === "failed") return 6;
+  if (status === "fallback") return 5;
+  if (status === "running" || status === "started" || status === "pending")
+    return 4;
+  if (status === "completed" || status === "applied" || status === "ready")
+    return 3;
+  return 1;
+};
+
+const objectRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const correctionPropagationFor = (event: CorrectionEvent) => {
+  const metadata = objectRecord(event.metadata);
+  return objectRecord(metadata?.propagation);
+};
+
+const correctionImpactedRows = (event: CorrectionEvent) => {
+  const propagation = correctionPropagationFor(event);
+  const impactedRows = propagation?.impactedRows;
+  return typeof impactedRows === "number" && Number.isFinite(impactedRows)
+    ? Math.max(0, Math.round(impactedRows))
+    : 0;
 };
 
 const kindIcon = (kind: string) => {
@@ -566,6 +617,10 @@ export function AdminView() {
   const markWrongCorrectionEvents = correctionEvents.filter(
     (event) => event.action === "mark_wrong",
   ).length;
+  const propagatedCorrectionRows = correctionEvents.reduce(
+    (sum, event) => sum + correctionImpactedRows(event),
+    0,
+  );
   const correctionEventsByTarget = correctionEvents.reduce<
     Record<string, number>
   >((acc, event) => {
@@ -619,6 +674,8 @@ export function AdminView() {
     verifiedCitationStates,
     correctionEvents: correctionEventCount,
     openCorrectionEvents,
+    appliedCorrectionEvents,
+    propagatedCorrectionRows,
     evidenceEvents: evidenceEventCount,
     masteryDeltas: masteryDeltaCount,
     traceEvents: traceCount,
@@ -632,6 +689,100 @@ export function AdminView() {
   const systemEvents = activityPayload?.events || [];
   const systemSummary = activityPayload?.summary;
   const recentSystemEvents = systemEvents.slice(0, 40);
+  const requestTimelines = useMemo<AdminRequestTimeline[]>(() => {
+    const timelines = new Map<string, AdminRequestTimeline>();
+
+    const ensureTimeline = (
+      requestId: string,
+      timestamp: number,
+      title: string,
+      status: string,
+      model?: string,
+      durationMs?: number,
+    ) => {
+      const existing = timelines.get(requestId);
+      if (!existing) {
+        const timeline: AdminRequestTimeline = {
+          requestId,
+          startedAt: timestamp,
+          latestAt: timestamp,
+          status,
+          title,
+          model,
+          durationMs,
+          events: [],
+          modelRuns: [],
+          toolJobs: [],
+        };
+        timelines.set(requestId, timeline);
+        return timeline;
+      }
+
+      existing.startedAt = Math.min(existing.startedAt, timestamp);
+      existing.latestAt = Math.max(existing.latestAt, timestamp);
+      if (statusWeight(status) >= statusWeight(existing.status)) {
+        existing.status = status;
+      }
+      if (!existing.model && model) existing.model = model;
+      if (durationMs !== undefined) {
+        existing.durationMs = Math.max(existing.durationMs || 0, durationMs);
+      }
+      return existing;
+    };
+
+    systemEvents.forEach((event) => {
+      if (!event.requestId) return;
+      const timeline = ensureTimeline(
+        event.requestId,
+        event.timestamp,
+        event.title,
+        event.status,
+        event.model,
+        event.durationMs,
+      );
+      timeline.events.push(event);
+    });
+
+    modelRuns.forEach((run) => {
+      if (!run.requestId) return;
+      const timeline = ensureTimeline(
+        run.requestId,
+        run.timestamp,
+        run.usedModel || run.requestedModel || "Model request",
+        run.status,
+        run.usedModel || run.requestedModel,
+        run.durationMs,
+      );
+      timeline.modelRuns.push(run);
+    });
+
+    toolJobs.forEach((job) => {
+      if (!job.requestId) return;
+      const timeline = ensureTimeline(
+        job.requestId,
+        job.timestamp,
+        job.toolName,
+        job.status,
+        job.model,
+        job.durationMs,
+      );
+      timeline.toolJobs.push(job);
+    });
+
+    return Array.from(timelines.values())
+      .map((timeline) => ({
+        ...timeline,
+        events: [...timeline.events].sort((a, b) => a.timestamp - b.timestamp),
+        modelRuns: [...timeline.modelRuns].sort(
+          (a, b) => a.timestamp - b.timestamp,
+        ),
+        toolJobs: [...timeline.toolJobs].sort(
+          (a, b) => a.timestamp - b.timestamp,
+        ),
+      }))
+      .sort((a, b) => b.latestAt - a.latestAt)
+      .slice(0, 12);
+  }, [modelRuns, systemEvents, toolJobs]);
   const totalChatTokens = chatUsage.inputTokens + chatUsage.outputTokens;
   const totalEstimatedCost = chatUsage.cost + voiceUsage.cost + webUsage.cost;
   const localProviderCount = activityPayload
@@ -701,15 +852,40 @@ export function AdminView() {
     }
 
     setCorrectionError("");
-    const record = await recordCorrectionEvent({
+    const { record, propagation } = await recordAndApplyCorrectionEvent({
       ...input,
       targetId,
       requestedBy: "admin",
       status: "open",
     });
     setCorrectionFeedback(
-      `${record.action.replace(/_/g, " ")} recorded for ${record.targetType.replace(/_/g, " ")}.`,
+      propagation.impactedRows > 0
+        ? `${record.action.replace(/_/g, " ")} applied non-destructively to ${propagation.impactedRows} local row${propagation.impactedRows === 1 ? "" : "s"}.`
+        : `${record.action.replace(/_/g, " ")} recorded for ${record.targetType.replace(/_/g, " ")}; no local target row was found yet.`,
     );
+  };
+
+  const applyExistingCorrection = async (event: CorrectionEvent) => {
+    setCorrectionError("");
+    const propagation = await applyCorrectionPropagation(event);
+    setCorrectionFeedback(
+      propagation.impactedRows > 0
+        ? `Applied correction overlay to ${propagation.impactedRows} local row${propagation.impactedRows === 1 ? "" : "s"}.`
+        : "No local target row was found; the request remains open.",
+    );
+  };
+
+  const setCorrectionReviewStatus = async (
+    event: CorrectionEvent,
+    status: "blocked" | "dismissed",
+  ) => {
+    setCorrectionError("");
+    await updateCorrectionEventReviewStatus(
+      event,
+      status,
+      `Admin marked this correction request ${status}.`,
+    );
+    setCorrectionFeedback(`Correction request marked ${status}.`);
   };
 
   const downloadBetaDiagnostics = () => {
@@ -1228,6 +1404,137 @@ export function AdminView() {
                       </div>
                     </section>
 
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Request timelines
+                          </h3>
+                          <p className="mt-1 text-sm text-zinc-500 font-serif">
+                            Groups local server events, durable model runs, and
+                            durable tool jobs by request id so one tutor turn
+                            can be inspected without hopping between tabs.
+                          </p>
+                        </div>
+                        <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                          {requestTimelines.length} grouped
+                        </div>
+                      </div>
+
+                      {requestTimelines.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-500">
+                          No request ids have been observed yet. A chat request
+                          or blocked model call will create a local timeline.
+                        </div>
+                      ) : (
+                        <div className="grid gap-3 xl:grid-cols-2">
+                          {requestTimelines.map((timeline, index) => (
+                            <article
+                              key={timeline.requestId}
+                              className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 8 ? "admin-animated-item" : ""}`}
+                            >
+                              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                      {timeline.title}
+                                    </h4>
+                                    <span
+                                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(timeline.status)}`}
+                                    >
+                                      {timeline.status}
+                                    </span>
+                                  </div>
+                                  <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                    <span className="max-w-[12rem] truncate">
+                                      {timeline.requestId}
+                                    </span>
+                                    {timeline.model && (
+                                      <span className="max-w-[12rem] truncate">
+                                        model {timeline.model}
+                                      </span>
+                                    )}
+                                    {timeline.durationMs !== undefined && (
+                                      <span>{timeline.durationMs}ms</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono text-zinc-500">
+                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                    {timeline.events.length} events
+                                  </span>
+                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                    {timeline.modelRuns.length} models
+                                  </span>
+                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                    {timeline.toolJobs.length} tools
+                                  </span>
+                                </div>
+                              </div>
+
+                              <details className="group mt-3">
+                                <summary className="flex cursor-pointer select-none items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-800">
+                                  <ChevronRight
+                                    size={14}
+                                    className="transition-transform group-open:rotate-90"
+                                  />
+                                  Ordered request evidence
+                                </summary>
+                                <div className="mt-3 space-y-2">
+                                  {timeline.events.map((event) => (
+                                    <div
+                                      key={event.id}
+                                      className="rounded-xl border border-zinc-200 bg-white px-3 py-2"
+                                    >
+                                      <div className="flex items-center justify-between gap-2 text-[11px] font-semibold text-zinc-700">
+                                        <span className="truncate">
+                                          {event.title}
+                                        </span>
+                                        <span
+                                          className={`rounded-full border px-2 py-0.5 text-[9px] uppercase ${statusTone(event.status)}`}
+                                        >
+                                          {event.status}
+                                        </span>
+                                      </div>
+                                      <div className="mt-1 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                        <span>
+                                          {formatTime(event.timestamp)}
+                                        </span>
+                                        <span>{event.kind}</span>
+                                        {event.phase && (
+                                          <span>phase {event.phase}</span>
+                                        )}
+                                        {event.toolName && (
+                                          <span>tool {event.toolName}</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {timeline.modelRuns.map((run) => (
+                                    <div
+                                      key={run.id}
+                                      className="rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-2 text-[11px] text-blue-800"
+                                    >
+                                      Model {run.status}:{" "}
+                                      {run.usedModel || run.requestedModel}
+                                    </div>
+                                  ))}
+                                  {timeline.toolJobs.map((job) => (
+                                    <div
+                                      key={job.id}
+                                      className="rounded-xl border border-violet-100 bg-violet-50/60 px-3 py-2 text-[11px] text-violet-800"
+                                    >
+                                      Tool {job.status}: {job.toolName}
+                                    </div>
+                                  ))}
+                                </div>
+                              </details>
+                            </article>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+
                     <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
                       <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
                         <div className="mb-4 flex items-center justify-between gap-3">
@@ -1359,6 +1666,7 @@ export function AdminView() {
                               ["Mastery deltas", masteryDeltaCount],
                               ["Tool jobs", toolJobCount],
                               ["Model runs", modelRunCount],
+                              ["Request timelines", requestTimelines.length],
                               ["Memory events", memoryEventCount],
                               ["Source artifacts", artifactRecordCount],
                               ["Citation states", citationStateCount],
@@ -1950,11 +2258,12 @@ export function AdminView() {
                             Correction and deletion request ledger
                           </h2>
                           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
-                            Append-only local requests for marking learner-brain
-                            records wrong, requesting deletion review, or
-                            flagging entries that need a human correction pass.
-                            This gives beta users a visible control path before
-                            destructive propagation is automated.
+                            Local requests for marking learner-brain records
+                            wrong, requesting deletion review, or flagging
+                            entries that need a human correction pass. Applied
+                            requests now add non-destructive correction overlays
+                            to affected local ledgers before any deletion
+                            exists.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -1967,13 +2276,14 @@ export function AdminView() {
                         </div>
                       </div>
 
-                      <div className="grid gap-3 md:grid-cols-5">
+                      <div className="grid gap-3 md:grid-cols-6">
                         {[
                           ["Open", openCorrectionEvents],
                           ["Applied", appliedCorrectionEvents],
                           ["Blocked", blockedCorrectionEvents],
                           ["Marked wrong", markWrongCorrectionEvents],
                           ["Deletion review", deleteRequestCorrectionEvents],
+                          ["Overlay rows", propagatedCorrectionRows],
                         ].map(([label, value]) => (
                           <div
                             key={label}
@@ -2045,6 +2355,17 @@ export function AdminView() {
                                           {event.targetSummary}
                                         </p>
                                       )}
+                                      {correctionImpactedRows(event) > 0 && (
+                                        <div className="mt-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-[11px] font-semibold text-green-700">
+                                          Non-destructive overlay applied to{" "}
+                                          {correctionImpactedRows(event)} local
+                                          row
+                                          {correctionImpactedRows(event) === 1
+                                            ? ""
+                                            : "s"}
+                                          .
+                                        </div>
+                                      )}
                                       <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
                                         <span>{event.targetType}</span>
                                         <span className="max-w-[12rem] truncate">
@@ -2091,6 +2412,48 @@ export function AdminView() {
                                     </pre>
                                   </details>
                                 )}
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  {event.status === "open" && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void applyExistingCorrection(event)
+                                      }
+                                      className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 transition-colors hover:bg-green-100"
+                                    >
+                                      <Flag size={12} />
+                                      Apply overlay
+                                    </button>
+                                  )}
+                                  {event.status === "open" && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void setCorrectionReviewStatus(
+                                          event,
+                                          "dismissed",
+                                        )
+                                      }
+                                      className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-600 transition-colors hover:bg-zinc-100"
+                                    >
+                                      Dismiss
+                                    </button>
+                                  )}
+                                  {event.status === "open" && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void setCorrectionReviewStatus(
+                                          event,
+                                          "blocked",
+                                        )
+                                      }
+                                      className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition-colors hover:bg-red-100"
+                                    >
+                                      Block
+                                    </button>
+                                  )}
+                                </div>
                               </article>
                             ))}
                           </div>
@@ -2193,7 +2556,7 @@ export function AdminView() {
                               className="inline-flex items-center justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-100"
                             >
                               <Flag size={14} />
-                              Record request
+                              Record and apply overlay
                             </button>
                           </form>
                           {(correctionFeedback || correctionError) && (
@@ -2240,9 +2603,10 @@ export function AdminView() {
                           </h3>
                           <div className="mt-4 grid gap-2 text-sm text-zinc-600 font-serif">
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-                              This phase records correction and deletion
-                              requests; it does not destructively delete learner
-                              data.
+                              Applied requests mark affected local ledger rows
+                              with correction metadata and conservative
+                              stale/skipped states. They do not destructively
+                              delete learner data.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               Later propagation must mark derived summaries,
@@ -2857,6 +3221,10 @@ export function AdminView() {
                               ["Memory events", memoryEvents.length],
                               ["Retrieval events", retrievalEvents.length],
                               ["Correction requests", correctionEvents.length],
+                              [
+                                "Correction overlay rows",
+                                propagatedCorrectionRows,
+                              ],
                               ["Source artifacts", artifactRecords.length],
                               ["Citation states", citationStates.length],
                               ["Evidence events", evidenceEvents.length],

@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useLayoutEffect, useId } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useLayoutEffect,
+  useId,
+} from "react";
 import { useStore } from "../store";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -94,11 +100,7 @@ type RevisionMermaidVariant = "default" | "gemini";
 
 const readableMermaidWidth = (svg: SVGSVGElement) => {
   const [, , viewBoxWidth = 0, viewBoxHeight = 0] =
-    svg
-      .getAttribute("viewBox")
-      ?.trim()
-      .split(/\s+/)
-      .map(Number) || [];
+    svg.getAttribute("viewBox")?.trim().split(/\s+/).map(Number) || [];
   if (!Number.isFinite(viewBoxWidth) || viewBoxWidth <= 0) return 720;
 
   const aspectRatio =
@@ -107,7 +109,9 @@ const readableMermaidWidth = (svg: SVGSVGElement) => {
       : 1;
   const readableScale = aspectRatio > 10 ? 0.74 : aspectRatio > 4 ? 0.86 : 1;
 
-  return Math.round(Math.min(Math.max(viewBoxWidth * readableScale, 720), 1280));
+  return Math.round(
+    Math.min(Math.max(viewBoxWidth * readableScale, 720), 1280),
+  );
 };
 
 const RevisionMermaid = ({
@@ -136,10 +140,7 @@ const RevisionMermaid = ({
 
     loadRevisionMermaid()
       .then((mermaid) =>
-        mermaid.render(
-          `revision-mermaid-${chartId}`,
-          chartForViewport,
-        ),
+        mermaid.render(`revision-mermaid-${chartId}`, chartForViewport),
       )
       .then((result) => {
         if (!cancelled && chartRef.current) {
@@ -233,36 +234,78 @@ const InteractionRuntimeDiagram = () => {
           Mobile interaction runtime with tutor and background workers
         </title>
         <desc id={mobileDescId}>
-          A stacked mobile diagram where the learner talks to the tutor in
-          real time while context and verified results move through background
+          A stacked mobile diagram where the learner talks to the tutor in real
+          time while context and verified results move through background
           workers.
         </desc>
         <defs>
-          <filter id={mobileSoftShadowId} x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#111827" floodOpacity="0.08" />
+          <filter
+            id={mobileSoftShadowId}
+            x="-30%"
+            y="-30%"
+            width="160%"
+            height="160%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="6"
+              stdDeviation="8"
+              floodColor="#111827"
+              floodOpacity="0.08"
+            />
           </filter>
-          <filter id={mobileBlueGlowId} x="-80%" y="-80%" width="260%" height="260%">
+          <filter
+            id={mobileBlueGlowId}
+            x="-80%"
+            y="-80%"
+            width="260%"
+            height="260%"
+          >
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-          <filter id={mobileGreenGlowId} x="-80%" y="-80%" width="260%" height="260%">
+          <filter
+            id={mobileGreenGlowId}
+            x="-80%"
+            y="-80%"
+            width="260%"
+            height="260%"
+          >
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-          <marker id={mobileArrowId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M 2 2 L 8 5 L 2 8" fill="none" stroke="#a1a5ab" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <marker
+            id={mobileArrowId}
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="7"
+            markerHeight="7"
+            orient="auto-start-reverse"
+          >
+            <path
+              d="M 2 2 L 8 5 L 2 8"
+              fill="none"
+              stroke="#a1a5ab"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </marker>
           <path id={mobileContextPathId} d="M 180 192 L 180 118" />
           <path id={mobileResponsePathId} d="M 212 118 L 212 192" />
           <path id={mobileUserToTutorId} d="M 148 336 L 148 276" />
           <path id={mobileTutorToUserId} d="M 212 276 L 212 336" />
-          <path id={mobileToolLoopId} d="M 265 70 L 318 70 Q 330 70 330 82 L 330 124 Q 330 136 318 136 L 272 136" />
+          <path
+            id={mobileToolLoopId}
+            d="M 265 70 L 318 70 Q 330 70 330 82 L 330 124 Q 330 136 318 136 L 272 136"
+          />
         </defs>
 
         <path
@@ -272,24 +315,50 @@ const InteractionRuntimeDiagram = () => {
           strokeWidth="1.4"
           strokeDasharray="6 6"
         />
-        <text x="180" y="466" fill="#555" fontSize="14" fontWeight="650" textAnchor="middle">
+        <text
+          x="180"
+          y="466"
+          fill="#555"
+          fontSize="14"
+          fontWeight="650"
+          textAnchor="middle"
+        >
           real-time tutor loop
         </text>
 
-        <g fill="none" stroke="#a1a5ab" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        <g
+          fill="none"
+          stroke="#a1a5ab"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M 180 192 L 180 118" markerEnd={`url(#${mobileArrowId})`} />
           <path d="M 212 118 L 212 192" markerEnd={`url(#${mobileArrowId})`} />
           <path d="M 148 336 L 148 276" markerEnd={`url(#${mobileArrowId})`} />
           <path d="M 212 276 L 212 336" markerEnd={`url(#${mobileArrowId})`} />
-          <path d="M 265 70 L 318 70 Q 330 70 330 82 L 330 124 Q 330 136 318 136 L 272 136" markerEnd={`url(#${mobileArrowId})`} />
+          <path
+            d="M 265 70 L 318 70 Q 330 70 330 82 L 330 124 Q 330 136 318 136 L 272 136"
+            markerEnd={`url(#${mobileArrowId})`}
+          />
         </g>
 
         <g fill="#4a4a4a" fontSize="13" fontWeight="650">
-          <text x="126" y="155">context</text>
-          <text x="224" y="155">response</text>
-          <text x="262" y="38">tool calls</text>
-          <text x="262" y="56">browsing</text>
-          <text x="262" y="74">artifacts</text>
+          <text x="126" y="155">
+            context
+          </text>
+          <text x="224" y="155">
+            response
+          </text>
+          <text x="262" y="38">
+            tool calls
+          </text>
+          <text x="262" y="56">
+            browsing
+          </text>
+          <text x="262" y="74">
+            artifacts
+          </text>
         </g>
 
         {animate ? (
@@ -300,7 +369,12 @@ const InteractionRuntimeDiagram = () => {
               </animateMotion>
             </circle>
             <circle r="5" fill="#aadd77" filter={`url(#${mobileGreenGlowId})`}>
-              <animateMotion dur="1.7s" begin="0.8s" repeatCount="indefinite" rotate="auto">
+              <animateMotion
+                dur="1.7s"
+                begin="0.8s"
+                repeatCount="indefinite"
+                rotate="auto"
+              >
                 <mpath href={`#${mobileResponsePathId}`} />
               </animateMotion>
             </circle>
@@ -310,7 +384,12 @@ const InteractionRuntimeDiagram = () => {
               </animateMotion>
             </circle>
             <circle r="5" fill="#5bc0de" filter={`url(#${mobileBlueGlowId})`}>
-              <animateMotion dur="1.4s" begin="0.7s" repeatCount="indefinite" rotate="auto">
+              <animateMotion
+                dur="1.4s"
+                begin="0.7s"
+                repeatCount="indefinite"
+                rotate="auto"
+              >
                 <mpath href={`#${mobileTutorToUserId}`} />
               </animateMotion>
             </circle>
@@ -323,24 +402,86 @@ const InteractionRuntimeDiagram = () => {
         ) : null}
 
         <g filter={`url(#${mobileSoftShadowId})`}>
-          <rect x="92" y="52" width="172" height="68" rx="12" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
-          <text x="178" y="80" fill="#1f2933" fontSize="15" fontWeight="650" textAnchor="middle">
+          <rect
+            x="92"
+            y="52"
+            width="172"
+            height="68"
+            rx="12"
+            fill="#ffffff"
+            stroke="#d8dadd"
+            strokeWidth="1.4"
+          />
+          <text
+            x="178"
+            y="80"
+            fill="#1f2933"
+            fontSize="15"
+            fontWeight="650"
+            textAnchor="middle"
+          >
             background
           </text>
-          <text x="178" y="101" fill="#1f2933" fontSize="15" fontWeight="650" textAnchor="middle">
+          <text
+            x="178"
+            y="101"
+            fill="#1f2933"
+            fontSize="15"
+            fontWeight="650"
+            textAnchor="middle"
+          >
             workers
           </text>
 
-          <rect x="92" y="214" width="172" height="68" rx="12" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
-          <text x="178" y="242" fill="#1f2933" fontSize="15" fontWeight="650" textAnchor="middle">
+          <rect
+            x="92"
+            y="214"
+            width="172"
+            height="68"
+            rx="12"
+            fill="#ffffff"
+            stroke="#d8dadd"
+            strokeWidth="1.4"
+          />
+          <text
+            x="178"
+            y="242"
+            fill="#1f2933"
+            fontSize="15"
+            fontWeight="650"
+            textAnchor="middle"
+          >
             interaction
           </text>
-          <text x="178" y="263" fill="#1f2933" fontSize="15" fontWeight="650" textAnchor="middle">
+          <text
+            x="178"
+            y="263"
+            fill="#1f2933"
+            fontSize="15"
+            fontWeight="650"
+            textAnchor="middle"
+          >
             tutor
           </text>
 
-          <rect x="92" y="352" width="172" height="60" rx="12" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
-          <text x="178" y="389" fill="#1f2933" fontSize="15" fontWeight="650" textAnchor="middle">
+          <rect
+            x="92"
+            y="352"
+            width="172"
+            height="60"
+            rx="12"
+            fill="#ffffff"
+            stroke="#d8dadd"
+            strokeWidth="1.4"
+          />
+          <text
+            x="178"
+            y="389"
+            fill="#1f2933"
+            fontSize="15"
+            fontWeight="650"
+            textAnchor="middle"
+          >
             learner
           </text>
         </g>
@@ -357,12 +498,24 @@ const InteractionRuntimeDiagram = () => {
         </title>
         <desc id={descId}>
           The learner interacts with a foreground tutor in real time. Shared
-          context goes to a background worker layer for tool calls and retrieval.
-          Verified responses return to the tutor.
+          context goes to a background worker layer for tool calls and
+          retrieval. Verified responses return to the tutor.
         </desc>
         <defs>
-          <filter id={softShadowId} x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#111827" floodOpacity="0.08" />
+          <filter
+            id={softShadowId}
+            x="-30%"
+            y="-30%"
+            width="160%"
+            height="160%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="6"
+              stdDeviation="8"
+              floodColor="#111827"
+              floodOpacity="0.08"
+            />
           </filter>
           <filter id={blueGlowId} x="-80%" y="-80%" width="260%" height="260%">
             <feGaussianBlur stdDeviation="3" result="blur" />
@@ -378,14 +531,44 @@ const InteractionRuntimeDiagram = () => {
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-          <marker id={arrowId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M 2 2 L 8 5 L 2 8" fill="none" stroke="#a1a5ab" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <marker
+            id={arrowId}
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="7"
+            markerHeight="7"
+            orient="auto-start-reverse"
+          >
+            <path
+              d="M 2 2 L 8 5 L 2 8"
+              fill="none"
+              stroke="#a1a5ab"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </marker>
-          <path id={userToTutorId} d="M 170 390 L 170 292 Q 170 280 182 280 L 258 280" />
-          <path id={tutorToUserId} d="M 330 310 L 330 410 Q 330 420 318 420 L 242 420" />
-          <path id={contextPathId} d="M 330 250 L 330 160 Q 330 150 342 150 L 488 150" />
-          <path id={responsePathId} d="M 560 180 L 560 268 Q 560 280 548 280 L 402 280" />
-          <path id={toolLoopId} d="M 560 120 L 560 70 Q 560 60 572 60 L 680 60 Q 690 60 690 72 L 690 138 Q 690 150 678 150 L 632 150" />
+          <path
+            id={userToTutorId}
+            d="M 170 390 L 170 292 Q 170 280 182 280 L 258 280"
+          />
+          <path
+            id={tutorToUserId}
+            d="M 330 310 L 330 410 Q 330 420 318 420 L 242 420"
+          />
+          <path
+            id={contextPathId}
+            d="M 330 250 L 330 160 Q 330 150 342 150 L 488 150"
+          />
+          <path
+            id={responsePathId}
+            d="M 560 180 L 560 268 Q 560 280 548 280 L 402 280"
+          />
+          <path
+            id={toolLoopId}
+            d="M 560 120 L 560 70 Q 560 60 572 60 L 680 60 Q 690 60 690 72 L 690 138 Q 690 150 678 150 L 632 150"
+          />
         </defs>
 
         <path
@@ -395,24 +578,62 @@ const InteractionRuntimeDiagram = () => {
           strokeWidth="1.5"
           strokeDasharray="6 6"
         />
-        <text x="380" y="475" fill="#555" fontSize="16" fontWeight="650" textAnchor="middle">
+        <text
+          x="380"
+          y="475"
+          fill="#555"
+          fontSize="16"
+          fontWeight="650"
+          textAnchor="middle"
+        >
           real-time
         </text>
 
-        <g fill="none" stroke="#a1a5ab" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M 170 390 L 170 292 Q 170 280 182 280 L 258 280" markerEnd={`url(#${arrowId})`} />
-          <path d="M 330 310 L 330 410 Q 330 420 318 420 L 242 420" markerEnd={`url(#${arrowId})`} />
-          <path d="M 330 250 L 330 160 Q 330 150 342 150 L 488 150" markerEnd={`url(#${arrowId})`} />
-          <path d="M 560 180 L 560 268 Q 560 280 548 280 L 402 280" markerEnd={`url(#${arrowId})`} />
-          <path d="M 560 120 L 560 70 Q 560 60 572 60 L 680 60 Q 690 60 690 72 L 690 138 Q 690 150 678 150 L 632 150" markerEnd={`url(#${arrowId})`} />
+        <g
+          fill="none"
+          stroke="#a1a5ab"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path
+            d="M 170 390 L 170 292 Q 170 280 182 280 L 258 280"
+            markerEnd={`url(#${arrowId})`}
+          />
+          <path
+            d="M 330 310 L 330 410 Q 330 420 318 420 L 242 420"
+            markerEnd={`url(#${arrowId})`}
+          />
+          <path
+            d="M 330 250 L 330 160 Q 330 150 342 150 L 488 150"
+            markerEnd={`url(#${arrowId})`}
+          />
+          <path
+            d="M 560 180 L 560 268 Q 560 280 548 280 L 402 280"
+            markerEnd={`url(#${arrowId})`}
+          />
+          <path
+            d="M 560 120 L 560 70 Q 560 60 572 60 L 680 60 Q 690 60 690 72 L 690 138 Q 690 150 678 150 L 632 150"
+            markerEnd={`url(#${arrowId})`}
+          />
         </g>
 
         <g fill="#4a4a4a" fontSize="16" fontWeight="650">
-          <text x="350" y="138">context</text>
-          <text x="460" y="268" textAnchor="middle">response</text>
-          <text x="705" y="85" fontSize="15">tool calls</text>
-          <text x="705" y="105" fontSize="15">browsing</text>
-          <text x="705" y="125" fontSize="15">artifacts</text>
+          <text x="350" y="138">
+            context
+          </text>
+          <text x="460" y="268" textAnchor="middle">
+            response
+          </text>
+          <text x="705" y="85" fontSize="15">
+            tool calls
+          </text>
+          <text x="705" y="105" fontSize="15">
+            browsing
+          </text>
+          <text x="705" y="125" fontSize="15">
+            artifacts
+          </text>
         </g>
 
         {animate ? (
@@ -423,7 +644,12 @@ const InteractionRuntimeDiagram = () => {
               </animateMotion>
             </circle>
             <circle r="5" fill="#5bc0de" filter={`url(#${blueGlowId})`}>
-              <animateMotion dur="1.4s" begin="0.7s" repeatCount="indefinite" rotate="auto">
+              <animateMotion
+                dur="1.4s"
+                begin="0.7s"
+                repeatCount="indefinite"
+                rotate="auto"
+              >
                 <mpath href={`#${tutorToUserId}`} />
               </animateMotion>
             </circle>
@@ -433,7 +659,12 @@ const InteractionRuntimeDiagram = () => {
               </animateMotion>
             </circle>
             <circle r="5" fill="#aadd77" filter={`url(#${greenGlowId})`}>
-              <animateMotion dur="1.7s" begin="0.8s" repeatCount="indefinite" rotate="auto">
+              <animateMotion
+                dur="1.7s"
+                begin="0.8s"
+                repeatCount="indefinite"
+                rotate="auto"
+              >
                 <mpath href={`#${responsePathId}`} />
               </animateMotion>
             </circle>
@@ -446,30 +677,93 @@ const InteractionRuntimeDiagram = () => {
         ) : null}
 
         <g filter={`url(#${softShadowId})`}>
-          <rect x="100" y="390" width="140" height="60" rx="10" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
-          <text x="170" y="426" fill="#1f2933" fontSize="16" fontWeight="650" textAnchor="middle">
+          <rect
+            x="100"
+            y="390"
+            width="140"
+            height="60"
+            rx="10"
+            fill="#ffffff"
+            stroke="#d8dadd"
+            strokeWidth="1.4"
+          />
+          <text
+            x="170"
+            y="426"
+            fill="#1f2933"
+            fontSize="16"
+            fontWeight="650"
+            textAnchor="middle"
+          >
             learner
           </text>
 
-          <rect x="260" y="250" width="140" height="60" rx="10" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
-          <text x="330" y="275" fill="#1f2933" fontSize="16" fontWeight="650" textAnchor="middle">
+          <rect
+            x="260"
+            y="250"
+            width="140"
+            height="60"
+            rx="10"
+            fill="#ffffff"
+            stroke="#d8dadd"
+            strokeWidth="1.4"
+          />
+          <text
+            x="330"
+            y="275"
+            fill="#1f2933"
+            fontSize="16"
+            fontWeight="650"
+            textAnchor="middle"
+          >
             interaction
           </text>
-          <text x="330" y="295" fill="#1f2933" fontSize="16" fontWeight="650" textAnchor="middle">
+          <text
+            x="330"
+            y="295"
+            fill="#1f2933"
+            fontSize="16"
+            fontWeight="650"
+            textAnchor="middle"
+          >
             tutor
           </text>
 
-          <rect x="490" y="120" width="140" height="60" rx="10" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
-          <text x="560" y="145" fill="#1f2933" fontSize="16" fontWeight="650" textAnchor="middle">
+          <rect
+            x="490"
+            y="120"
+            width="140"
+            height="60"
+            rx="10"
+            fill="#ffffff"
+            stroke="#d8dadd"
+            strokeWidth="1.4"
+          />
+          <text
+            x="560"
+            y="145"
+            fill="#1f2933"
+            fontSize="16"
+            fontWeight="650"
+            textAnchor="middle"
+          >
             background
           </text>
-          <text x="560" y="165" fill="#1f2933" fontSize="16" fontWeight="650" textAnchor="middle">
+          <text
+            x="560"
+            y="165"
+            fill="#1f2933"
+            fontSize="16"
+            fontWeight="650"
+            textAnchor="middle"
+          >
             workers
           </text>
         </g>
       </svg>
       <figcaption className="mt-3 text-center font-sans text-sm text-zinc-600">
-        The learner stays in a real-time loop with the tutor while background workers handle tools, browsing, and artifacts.
+        The learner stays in a real-time loop with the tutor while background
+        workers handle tools, browsing, and artifacts.
       </figcaption>
     </figure>
   );
@@ -1288,9 +1582,7 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
               }`}
             >
               {activeRoute === label && (
-                <span
-                  className="absolute inset-0 rounded-full bg-white/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_22px_rgba(0,0,0,0.35)]"
-                />
+                <span className="absolute inset-0 rounded-full bg-white/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_22px_rgba(0,0,0,0.35)]" />
               )}
               <span
                 className={`relative z-10 inline-flex items-center gap-2 transition-transform duration-200 ${
@@ -1556,22 +1848,19 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
             <ChevronDown size={16} className="text-zinc-400" />
           </span>
         </button>
-          {thinkingOpen && (
-            <div className="overflow-hidden border-t border-zinc-100">
-              <div className="space-y-2 px-4 py-3 text-[12px] text-zinc-500">
-                {["Retrieving relevant context", "Linking concepts"].map(
-                  (item) => (
-                    <div
-                      key={item}
-                      className="rounded-2xl bg-zinc-50 px-3 py-2"
-                    >
-                      {item}
-                    </div>
-                  ),
-                )}
-              </div>
+        {thinkingOpen && (
+          <div className="overflow-hidden border-t border-zinc-100">
+            <div className="space-y-2 px-4 py-3 text-[12px] text-zinc-500">
+              {["Retrieving relevant context", "Linking concepts"].map(
+                (item) => (
+                  <div key={item} className="rounded-2xl bg-zinc-50 px-3 py-2">
+                    {item}
+                  </div>
+                ),
+              )}
             </div>
-          )}
+          </div>
+        )}
       </div>
     );
   }
@@ -1649,25 +1938,23 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
               }`}
             >
               {settingsTab === tab && (
-                <span
-                  className="absolute inset-0 rounded-full bg-zinc-950/5 shadow-[0_8px_18px_rgba(24,24,27,0.08)]"
-                />
+                <span className="absolute inset-0 rounded-full bg-zinc-950/5 shadow-[0_8px_18px_rgba(24,24,27,0.08)]" />
               )}
               <span className="relative z-10">{tab}</span>
             </button>
           ))}
         </div>
-          <div
-            key={settingsTab}
-            className="mt-4 rounded-2xl border border-zinc-200 bg-white/80 p-4 text-xs text-zinc-600 shadow-sm"
-          >
-            <div className="flex items-center gap-2 font-semibold text-zinc-950">
-              <Settings size={14} />
-              {settingsTab} controls preview
-            </div>
-            <div className="mt-3 h-2 rounded-full bg-zinc-200" />
-            <div className="mt-2 h-2 w-2/3 rounded-full bg-zinc-200" />
+        <div
+          key={settingsTab}
+          className="mt-4 rounded-2xl border border-zinc-200 bg-white/80 p-4 text-xs text-zinc-600 shadow-sm"
+        >
+          <div className="flex items-center gap-2 font-semibold text-zinc-950">
+            <Settings size={14} />
+            {settingsTab} controls preview
           </div>
+          <div className="mt-3 h-2 rounded-full bg-zinc-200" />
+          <div className="mt-2 h-2 w-2/3 rounded-full bg-zinc-200" />
+        </div>
       </div>
     );
   }
@@ -1780,6 +2067,60 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
     );
   }
 
+  if (chapterIndex === 3) {
+    const controlPatterns = [
+      {
+        title: "PDF chip rail",
+        detail:
+          "Study keeps document switching compact: selected PDFs appear as rounded chips above the reader, each with a small remove action and a dashed add control.",
+      },
+      {
+        title: "Request timelines",
+        detail:
+          "Admin groups server events, model runs, and tool jobs by request id so one tutor turn can be audited as a single story.",
+      },
+      {
+        title: "Correction overlays",
+        detail:
+          "Mark-wrong, deletion-review, and supersede actions stay non-destructive in beta while affected rows gain visible correction state.",
+      },
+      {
+        title: "Diagnostics export",
+        detail:
+          "Exports are capped, local-only, and explicit about deferred cloud readiness, correction overlays, and out-of-scope automation.",
+      },
+    ];
+
+    return (
+      <div className="font-sans text-zinc-900">
+        <div className="rounded-[34px] border border-zinc-200 bg-white/80 p-6 shadow-[0_24px_70px_rgba(46,36,22,0.12)]">
+          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-500/70">
+            Local beta control surfaces
+          </div>
+          <h3 className="mt-3 max-w-2xl text-3xl font-serif font-medium leading-tight">
+            Operational UI should show what changed, why it changed, and how to
+            review it without hiding the learner workspace.
+          </h3>
+          <div className="mt-6 grid gap-3 md:grid-cols-2">
+            {controlPatterns.map((pattern) => (
+              <div
+                key={pattern.title}
+                className="rounded-[24px] border border-zinc-200 bg-zinc-50 p-4"
+              >
+                <div className="text-sm font-semibold text-zinc-950">
+                  {pattern.title}
+                </div>
+                <p className="mt-2 text-sm leading-6 text-zinc-500">
+                  {pattern.detail}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="font-sans text-zinc-900">
       <div className="grid gap-5 md:grid-cols-2">
@@ -1840,6 +2181,7 @@ const builtInBooks: BuiltInBook[] = [
       { title: "Wireframe Connections" },
       { title: "Theme System" },
       { title: "UI Component Snapshots" },
+      { title: "Local Beta Control Patterns" },
     ],
     renderChapter: (chapterIndex) => (
       <AppDesignLanguagePage chapterIndex={chapterIndex} />
@@ -2071,16 +2413,14 @@ const FlashcardDeck = ({
         </div>
       </div>
 
-        {cards.slice(0, 1).map((card) => (
-          <div
-            key={card.id}
-          >
-            <FlashcardUI
-              card={card}
-              onReview={(quality) => onReview(card, quality)}
-            />
-          </div>
-        ))}
+      {cards.slice(0, 1).map((card) => (
+        <div key={card.id}>
+          <FlashcardUI
+            card={card}
+            onReview={(quality) => onReview(card, quality)}
+          />
+        </div>
+      ))}
     </div>
   );
 };
@@ -2308,7 +2648,9 @@ export function RevisionView() {
     if (!canOpenBook) return;
     setCurrentChapterIndex(0);
     setActiveConceptId(pendingBookId);
-    const generatedBook = learningBooks.find((book) => book.id === pendingBookId);
+    const generatedBook = learningBooks.find(
+      (book) => book.id === pendingBookId,
+    );
     if (generatedBook) {
       setActiveLearningBookId(generatedBook.id);
       setActiveProject(generatedBook.title);
@@ -2443,34 +2785,37 @@ export function RevisionView() {
     scrollBookToTop();
   };
 
-  const deleteLearningBookRecords = React.useCallback(async (bookId: string) => {
-    await db.transaction(
-      "rw",
-      [
-        db.learningBooks,
-        db.learningBookConcepts,
-        db.learningEntries,
-        db.learningDocuments,
-        db.bookChatThreads,
-        db.flashcards,
-      ],
-      async () => {
-        const relatedFlashcardIds = (
-          await db.flashcards
-            .filter((card) => card.bookId === bookId)
-            .toArray()
-        ).map((card) => card.id);
-        await db.learningBookConcepts.where("bookId").equals(bookId).delete();
-        await db.learningEntries.where("bookId").equals(bookId).delete();
-        await db.learningDocuments.where("bookId").equals(bookId).delete();
-        await db.bookChatThreads.where("bookId").equals(bookId).delete();
-        if (relatedFlashcardIds.length > 0) {
-          await db.flashcards.bulkDelete(relatedFlashcardIds);
-        }
-        await db.learningBooks.delete(bookId);
-      },
-    );
-  }, []);
+  const deleteLearningBookRecords = React.useCallback(
+    async (bookId: string) => {
+      await db.transaction(
+        "rw",
+        [
+          db.learningBooks,
+          db.learningBookConcepts,
+          db.learningEntries,
+          db.learningDocuments,
+          db.bookChatThreads,
+          db.flashcards,
+        ],
+        async () => {
+          const relatedFlashcardIds = (
+            await db.flashcards
+              .filter((card) => card.bookId === bookId)
+              .toArray()
+          ).map((card) => card.id);
+          await db.learningBookConcepts.where("bookId").equals(bookId).delete();
+          await db.learningEntries.where("bookId").equals(bookId).delete();
+          await db.learningDocuments.where("bookId").equals(bookId).delete();
+          await db.bookChatThreads.where("bookId").equals(bookId).delete();
+          if (relatedFlashcardIds.length > 0) {
+            await db.flashcards.bulkDelete(relatedFlashcardIds);
+          }
+          await db.learningBooks.delete(bookId);
+        },
+      );
+    },
+    [],
+  );
 
   const deleteConcept = async () => {
     if (!deleteTarget) return;
@@ -2599,111 +2944,109 @@ export function RevisionView() {
             </div>
 
             <div className="relative isolate mx-auto w-full max-w-4xl flex-1 p-5 pt-6 sm:p-6 md:p-10 lg:p-16 xl:p-20">
-                <div
-                  key={currentChapterIndex}
-                  className="relative z-10 font-serif pb-12"
-                >
-                  <div className="mb-10 border-b border-zinc-200 pb-8 pt-4 font-sans cursor-default">
-                    <span className="text-[11px] uppercase tracking-[0.2em] font-mono text-zinc-400 mb-6 block font-medium">
-                      <span className="text-zinc-500 mr-2">#</span>
-                      {isBuiltInBook
-                        ? "Documentation"
-                        : activeLearningBook
-                          ? "Learning Book"
-                          : "Concept Overview"}
-                    </span>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-6 font-serif leading-[1.15]">
-                      {activeBuiltInBook
-                        ? activeBuiltInBook.chapters[currentChapterIndex]?.title
-                        : activeLearningBook
-                          ? activeLearningBook.chapters?.[currentChapterIndex]
-                              ?.title || activeTitle
-                          : activeTitle}
-                    </h1>
-                  </div>
-
-                  {activeBuiltInBook?.renderChapter ? (
-                    activeBuiltInBook.renderChapter(currentChapterIndex)
-                  ) : (
-                    <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-a:text-blue-700 prose-a:decoration-blue-300 prose-a:underline-offset-4 prose-a:hover:text-blue-900 prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-zinc-900 prose-li:leading-[1.8] prose-li:text-zinc-800 prose-li:font-light prose-ul:my-5 prose-pre:bg-zinc-100 prose-pre:text-zinc-800 prose-pre:border prose-pre:border-zinc-200 prose-pre:shadow-inner prose-pre:my-8 prose-code:before:content-none prose-code:after:content-none prose-code:bg-transparent prose-code:px-0 prose-code:py-0 prose-code:font-mono prose-code:text-[0.88em] prose-code:font-normal prose-code:text-zinc-700 prose-strong:text-zinc-900 prose-strong:font-medium selection:bg-zinc-200 selection:text-zinc-950">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          a: ({ href, children, ...props }) => {
-                            const isExternal = href?.startsWith("http");
-                            return (
-                              <a
-                                {...props}
-                                href={href}
-                                target={isExternal ? "_blank" : undefined}
-                                rel={
-                                  isExternal
-                                    ? "noopener noreferrer"
-                                    : undefined
-                                }
-                              >
-                                {children}
-                              </a>
-                            );
-                          },
-                          code: ({ className, children, ...props }) => {
-                            const language =
-                              /language-([\w-]+)/.exec(className || "")?.[1] ||
-                              "";
-                            const code = String(children).replace(/\n$/, "");
-                            if (language === "mermaid") {
-                              return (
-                                <RevisionMermaid
-                                  chart={code}
-                                  variant={
-                                    activeBuiltInBook?.id ===
-                                    "user-brain-architecture"
-                                      ? "gemini"
-                                      : "default"
-                                  }
-                                />
-                              );
-                            }
-                            if (language === "interaction-runtime") {
-                              return <InteractionRuntimeDiagram />;
-                            }
-                            return (
-                              <code {...props} className={className}>
-                                {children}
-                              </code>
-                            );
-                          },
-                          img: ({ alt, ...props }) => (
-                            <img
-                              {...props}
-                              alt={alt || ""}
-                              className="not-prose my-8 w-full rounded-lg border border-zinc-200 shadow-[0_18px_48px_rgba(24,24,27,0.14)]"
-                            />
-                          ),
-                          table: ({ children }) => (
-                            <div className="not-prose my-8 overflow-x-auto rounded-lg border border-zinc-200 bg-white/70 shadow-sm">
-                              <table className="w-full border-collapse text-left font-sans text-sm text-zinc-700">
-                                {children}
-                              </table>
-                            </div>
-                          ),
-                          th: ({ children }) => (
-                            <th className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-xs font-semibold uppercase tracking-normal text-zinc-500">
-                              {children}
-                            </th>
-                          ),
-                          td: ({ children }) => (
-                            <td className="border-b border-zinc-100 px-4 py-3 align-top leading-6 text-zinc-700">
-                              {children}
-                            </td>
-                          ),
-                        }}
-                      >
-                        {activeMarkdown}
-                      </ReactMarkdown>
-                    </div>
-                  )}
+              <div
+                key={currentChapterIndex}
+                className="relative z-10 font-serif pb-12"
+              >
+                <div className="mb-10 border-b border-zinc-200 pb-8 pt-4 font-sans cursor-default">
+                  <span className="text-[11px] uppercase tracking-[0.2em] font-mono text-zinc-400 mb-6 block font-medium">
+                    <span className="text-zinc-500 mr-2">#</span>
+                    {isBuiltInBook
+                      ? "Documentation"
+                      : activeLearningBook
+                        ? "Learning Book"
+                        : "Concept Overview"}
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-6 font-serif leading-[1.15]">
+                    {activeBuiltInBook
+                      ? activeBuiltInBook.chapters[currentChapterIndex]?.title
+                      : activeLearningBook
+                        ? activeLearningBook.chapters?.[currentChapterIndex]
+                            ?.title || activeTitle
+                        : activeTitle}
+                  </h1>
                 </div>
+
+                {activeBuiltInBook?.renderChapter ? (
+                  activeBuiltInBook.renderChapter(currentChapterIndex)
+                ) : (
+                  <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-a:text-blue-700 prose-a:decoration-blue-300 prose-a:underline-offset-4 prose-a:hover:text-blue-900 prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-zinc-900 prose-li:leading-[1.8] prose-li:text-zinc-800 prose-li:font-light prose-ul:my-5 prose-pre:bg-zinc-100 prose-pre:text-zinc-800 prose-pre:border prose-pre:border-zinc-200 prose-pre:shadow-inner prose-pre:my-8 prose-code:before:content-none prose-code:after:content-none prose-code:bg-transparent prose-code:px-0 prose-code:py-0 prose-code:font-mono prose-code:text-[0.88em] prose-code:font-normal prose-code:text-zinc-700 prose-strong:text-zinc-900 prose-strong:font-medium selection:bg-zinc-200 selection:text-zinc-950">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        a: ({ href, children, ...props }) => {
+                          const isExternal = href?.startsWith("http");
+                          return (
+                            <a
+                              {...props}
+                              href={href}
+                              target={isExternal ? "_blank" : undefined}
+                              rel={
+                                isExternal ? "noopener noreferrer" : undefined
+                              }
+                            >
+                              {children}
+                            </a>
+                          );
+                        },
+                        code: ({ className, children, ...props }) => {
+                          const language =
+                            /language-([\w-]+)/.exec(className || "")?.[1] ||
+                            "";
+                          const code = String(children).replace(/\n$/, "");
+                          if (language === "mermaid") {
+                            return (
+                              <RevisionMermaid
+                                chart={code}
+                                variant={
+                                  activeBuiltInBook?.id ===
+                                  "user-brain-architecture"
+                                    ? "gemini"
+                                    : "default"
+                                }
+                              />
+                            );
+                          }
+                          if (language === "interaction-runtime") {
+                            return <InteractionRuntimeDiagram />;
+                          }
+                          return (
+                            <code {...props} className={className}>
+                              {children}
+                            </code>
+                          );
+                        },
+                        img: ({ alt, ...props }) => (
+                          <img
+                            {...props}
+                            alt={alt || ""}
+                            className="not-prose my-8 w-full rounded-lg border border-zinc-200 shadow-[0_18px_48px_rgba(24,24,27,0.14)]"
+                          />
+                        ),
+                        table: ({ children }) => (
+                          <div className="not-prose my-8 overflow-x-auto rounded-lg border border-zinc-200 bg-white/70 shadow-sm">
+                            <table className="w-full border-collapse text-left font-sans text-sm text-zinc-700">
+                              {children}
+                            </table>
+                          </div>
+                        ),
+                        th: ({ children }) => (
+                          <th className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-xs font-semibold uppercase tracking-normal text-zinc-500">
+                            {children}
+                          </th>
+                        ),
+                        td: ({ children }) => (
+                          <td className="border-b border-zinc-100 px-4 py-3 align-top leading-6 text-zinc-700">
+                            {children}
+                          </td>
+                        ),
+                      }}
+                    >
+                      {activeMarkdown}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </div>
 
               {(isBuiltInBook || activeLearningBook) &&
                 activeChapterCount > 1 && (
@@ -2943,57 +3286,53 @@ export function RevisionView() {
           </div>
         </div>
       )}
-        {deleteTarget && (
-          <div
-            className="fixed inset-0 z-[120] flex items-center justify-center bg-zinc-950/35 px-4 backdrop-blur-sm"
-          >
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-zinc-950/35 px-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-md overflow-hidden rounded-[28px] border border-zinc-900/10 bg-[#faf9f6] p-6 shadow-[0_30px_90px_rgba(46,36,22,0.28)]">
             <div
-              className="relative w-full max-w-md overflow-hidden rounded-[28px] border border-zinc-900/10 bg-[#faf9f6] p-6 shadow-[0_30px_90px_rgba(46,36,22,0.28)]"
-            >
-              <div
-                className="absolute inset-0 pointer-events-none opacity-[0.12]"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 20% 10%, rgba(255,110,0,0.28), transparent 34%), radial-gradient(circle at 85% 100%, rgba(17,24,39,0.12), transparent 30%)",
-                }}
-              />
-              <div className="relative flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-[#faf9f6] shadow-[0_16px_34px_rgba(24,24,27,0.22)]">
-                  <Trash2 size={20} />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-zinc-500">
-                    Delete book
-                  </div>
-                  <h2 className="mt-2 text-2xl font-serif font-medium leading-tight text-zinc-950">
-                    Remove "{deleteTarget.name}"?
-                  </h2>
-                  <p className="mt-3 text-sm leading-relaxed text-zinc-600">
-                    This removes the book from your revision library on this
-                    device. The action keeps the rest of your notes and chat
-                    history untouched.
-                  </p>
-                </div>
+              className="absolute inset-0 pointer-events-none opacity-[0.12]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 20% 10%, rgba(255,110,0,0.28), transparent 34%), radial-gradient(circle at 85% 100%, rgba(17,24,39,0.12), transparent 30%)",
+              }}
+            />
+            <div className="relative flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-[#faf9f6] shadow-[0_16px_34px_rgba(24,24,27,0.22)]">
+                <Trash2 size={20} />
               </div>
-              <div className="relative mt-6 flex justify-end gap-3 border-t border-zinc-900/10 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setDeleteTarget(null)}
-                  className="rounded-full border border-zinc-900/10 bg-white/60 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-white hover:text-zinc-950"
-                >
-                  Keep book
-                </button>
-                <button
-                  type="button"
-                  onClick={deleteConcept}
-                  className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-[#faf9f6] shadow-[0_14px_34px_rgba(24,24,27,0.22)] transition-colors hover:bg-red-950"
-                >
-                  Delete
-                </button>
+              <div className="min-w-0">
+                <div className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  Delete book
+                </div>
+                <h2 className="mt-2 text-2xl font-serif font-medium leading-tight text-zinc-950">
+                  Remove "{deleteTarget.name}"?
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                  This removes the book from your revision library on this
+                  device. The action keeps the rest of your notes and chat
+                  history untouched.
+                </p>
               </div>
             </div>
+            <div className="relative mt-6 flex justify-end gap-3 border-t border-zinc-900/10 pt-4">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="rounded-full border border-zinc-900/10 bg-white/60 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-white hover:text-zinc-950"
+              >
+                Keep book
+              </button>
+              <button
+                type="button"
+                onClick={deleteConcept}
+                className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-[#faf9f6] shadow-[0_14px_34px_rgba(24,24,27,0.22)] transition-colors hover:bg-red-950"
+              >
+                Delete
+              </button>
+            </div>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }

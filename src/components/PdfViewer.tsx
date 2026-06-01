@@ -451,9 +451,10 @@ export function PdfViewer() {
   );
 
   useEffect(() => {
-    const borders = [actionBorderRef.current, selectionBorderRef.current].filter(
-      Boolean,
-    ) as HTMLDivElement[];
+    const borders = [
+      actionBorderRef.current,
+      selectionBorderRef.current,
+    ].filter(Boolean) as HTMLDivElement[];
     gsap.killTweensOf(borders);
     gsap.set(borders, { rotate: 0 });
     if (!motionEnabled || !borders.length) return;
@@ -629,7 +630,7 @@ export function PdfViewer() {
         </div>
       </div>
 
-      <div className="flex-1 w-full h-full overflow-auto pt-8 pb-32 flex justify-center custom-scroll bg-[#0A0A0B] relative">
+      <div className="flex-1 w-full h-full overflow-auto pt-4 pb-32 flex justify-center custom-scroll bg-[#0A0A0B] relative md:pt-5">
         <div
           className="absolute inset-0 z-0 pointer-events-none"
           style={{
@@ -757,167 +758,165 @@ export function PdfViewer() {
           </Document>
 
           {/* Selection Tooltip */}
-            {selectionTooltip && (
-              <div
-                ref={selectionTooltipRef}
-                className="absolute z-50 selection-tooltip-container"
-                style={{
-                  left: selectionTooltip.x,
-                  top: selectionTooltip.y,
-                }}
-              >
-                <div className="relative flex items-center gap-1 p-1 bg-[#121214]/95 backdrop-blur-xl rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.8)] overflow-hidden">
-                  {/* Liquid Metal Border */}
+          {selectionTooltip && (
+            <div
+              ref={selectionTooltipRef}
+              className="absolute z-50 selection-tooltip-container"
+              style={{
+                left: selectionTooltip.x,
+                top: selectionTooltip.y,
+              }}
+            >
+              <div className="relative flex items-center gap-1 p-1 bg-[#121214]/95 backdrop-blur-xl rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.8)] overflow-hidden">
+                {/* Liquid Metal Border */}
+                <div
+                  className="absolute inset-0 rounded-xl pointer-events-none overflow-hidden"
+                  style={{
+                    padding: "1px",
+                    WebkitMask:
+                      "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                    WebkitMaskComposite: "xor",
+                    maskComposite: "exclude",
+                  }}
+                >
                   <div
-                    className="absolute inset-0 rounded-xl pointer-events-none overflow-hidden"
+                    ref={selectionBorderRef}
+                    className="absolute inset-[-50%] w-[200%] h-[200%]"
                     style={{
-                      padding: "1px",
-                      WebkitMask:
-                        "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                      WebkitMaskComposite: "xor",
-                      maskComposite: "exclude",
+                      background:
+                        "conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.1) 40%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.1) 60%, transparent 100%)",
                     }}
-                  >
-                    <div
-                      ref={selectionBorderRef}
-                      className="absolute inset-[-50%] w-[200%] h-[200%]"
-                      style={{
-                        background:
-                          "conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.1) 40%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.1) 60%, transparent 100%)",
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-                  </div>
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+                </div>
 
-                  <div className="flex gap-1 pr-1.5 border-r border-white/10 relative z-10">
-                    <button
-                      onClick={() =>
-                        addSelectionAnnotation("highlight", "#fde047")
-                      } // yellow
-                      className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-yellow-400 tooltip-trigger"
-                      title={t("highlight")}
-                    >
-                      <Highlighter size={14} />
-                    </button>
-                    <button
-                      onClick={() =>
-                        addSelectionAnnotation("underline", "#3b82f6")
-                      } // blue
-                      className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-blue-500"
-                      title={t("underline")}
-                    >
-                      <Underline size={14} />
-                    </button>
-                    <button
-                      onClick={() =>
-                        addSelectionAnnotation("strikethrough", "#ef4444")
-                      } // red
-                      className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-red-500"
-                      title={t("strikethrough")}
-                    >
-                      <Strikethrough size={14} />
-                    </button>
-                    <button
-                      onClick={() =>
-                        addSelectionAnnotation("sticky", "#fde047")
-                      } // yellow
-                      className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-yellow-400"
-                      title={t("sticky_note")}
-                    >
-                      <StickyNote size={14} />
-                    </button>
+                <div className="flex gap-1 pr-1.5 border-r border-white/10 relative z-10">
+                  <button
+                    onClick={() =>
+                      addSelectionAnnotation("highlight", "#fde047")
+                    } // yellow
+                    className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-yellow-400 tooltip-trigger"
+                    title={t("highlight")}
+                  >
+                    <Highlighter size={14} />
+                  </button>
+                  <button
+                    onClick={() =>
+                      addSelectionAnnotation("underline", "#3b82f6")
+                    } // blue
+                    className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-blue-500"
+                    title={t("underline")}
+                  >
+                    <Underline size={14} />
+                  </button>
+                  <button
+                    onClick={() =>
+                      addSelectionAnnotation("strikethrough", "#ef4444")
+                    } // red
+                    className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-red-500"
+                    title={t("strikethrough")}
+                  >
+                    <Strikethrough size={14} />
+                  </button>
+                  <button
+                    onClick={() => addSelectionAnnotation("sticky", "#fde047")} // yellow
+                    className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-yellow-400"
+                    title={t("sticky_note")}
+                  >
+                    <StickyNote size={14} />
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    if (selectionTooltip) {
+                      setSelectedTextContext(selectionTooltip.text);
+                      setAskTutorQuery("");
+                      setSelectionTooltip(null);
+                      window.getSelection()?.removeAllRanges();
+                    }
+                  }}
+                  className="flex items-center justify-center px-3 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-[color,background-color,border-color,box-shadow,transform,opacity] text-[10px] font-semibold gap-1 ml-1 relative z-10 focus:outline-none focus:ring-2 ring-indigo-500/50 uppercase tracking-wide whitespace-nowrap group border border-indigo-400/30"
+                  style={{ transform: "translateZ(0)", overflow: "hidden" }}
+                >
+                  <span className="absolute inset-0 z-0 rounded-lg bg-[linear-gradient(135deg,rgba(255,255,255,0.24),rgba(255,255,255,0.04)_42%,rgba(129,140,248,0.32))] opacity-70 transition-opacity group-hover:opacity-100 pointer-events-none" />
+                  <span className="absolute inset-x-1 top-0 z-0 h-px rounded-full bg-white/70 pointer-events-none" />
+                  <span className="absolute -left-10 top-0 z-0 h-full w-10 skew-x-[-18deg] bg-white/20 blur-sm transition-transform duration-700 group-hover:translate-x-32 pointer-events-none" />
+                  <MessageSquare
+                    size={12}
+                    className="relative z-10 drop-shadow-md"
+                  />{" "}
+                  <span className="relative z-10 drop-shadow-sm font-bold">
+                    {t("ask_tutor")}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Draft Note Input */}
+          {draftNote && (
+            <div
+              ref={draftNoteRef}
+              className="absolute z-50 selection-tooltip-container w-64"
+              style={{
+                left: draftNote.x,
+                top: draftNote.y,
+              }}
+            >
+              <div className="bg-[#121214] border border-[#2A2A30] rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
+                <div className="bg-[#1A1A1E] px-3 py-2 border-b border-[#2A2A30] flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-yellow-400 uppercase tracking-wide">
+                    <StickyNote size={12} />
+                    {t("sticky_note")}
                   </div>
                   <button
-                    onClick={() => {
-                      if (selectionTooltip) {
-                        setSelectedTextContext(selectionTooltip.text);
-                        setAskTutorQuery("");
-                        setSelectionTooltip(null);
-                        window.getSelection()?.removeAllRanges();
+                    onClick={() => setDraftNote(null)}
+                    className="text-zinc-500 hover:text-white transition-colors"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div className="p-3">
+                  <textarea
+                    autoFocus
+                    value={noteText}
+                    onChange={(e) => setNoteText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        saveStickyNote();
                       }
                     }}
-                    className="flex items-center justify-center px-3 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-[color,background-color,border-color,box-shadow,transform,opacity] text-[10px] font-semibold gap-1 ml-1 relative z-10 focus:outline-none focus:ring-2 ring-indigo-500/50 uppercase tracking-wide whitespace-nowrap group border border-indigo-400/30"
-                    style={{ transform: "translateZ(0)", overflow: "hidden" }}
+                    placeholder={t("add_annotation_note")}
+                    className="w-full bg-transparent border-none outline-none text-sm text-zinc-200 placeholder:text-zinc-650 resize-none min-h-[80px]"
+                  />
+                </div>
+                <div className="px-3 py-2 bg-[#1A1A1E]/50 border-t border-[#2A2A30] flex justify-end gap-2">
+                  <button
+                    onClick={() => setDraftNote(null)}
+                    className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
                   >
-                    <span className="absolute inset-0 z-0 rounded-lg bg-[linear-gradient(135deg,rgba(255,255,255,0.24),rgba(255,255,255,0.04)_42%,rgba(129,140,248,0.32))] opacity-70 transition-opacity group-hover:opacity-100 pointer-events-none" />
-                    <span className="absolute inset-x-1 top-0 z-0 h-px rounded-full bg-white/70 pointer-events-none" />
-                    <span className="absolute -left-10 top-0 z-0 h-full w-10 skew-x-[-18deg] bg-white/20 blur-sm transition-transform duration-700 group-hover:translate-x-32 pointer-events-none" />
-                    <MessageSquare
-                      size={12}
-                      className="relative z-10 drop-shadow-md"
-                    />{" "}
-                    <span className="relative z-10 drop-shadow-sm font-bold">
-                      {t("ask_tutor")}
-                    </span>
+                    {t("cancel")}
+                  </button>
+                  <button
+                    onClick={saveStickyNote}
+                    className="px-3 py-1.5 text-xs font-semibold bg-yellow-400/10 text-yellow-400 hover:bg-yellow-400/20 border border-yellow-400/20 rounded pl-2 pr-3 flex items-center gap-1 transition-colors"
+                  >
+                    {t("save_changes")}
                   </button>
                 </div>
               </div>
-            )}
-
-          {/* Draft Note Input */}
-            {draftNote && (
-              <div
-                ref={draftNoteRef}
-                className="absolute z-50 selection-tooltip-container w-64"
-                style={{
-                  left: draftNote.x,
-                  top: draftNote.y,
-                }}
-              >
-                <div className="bg-[#121214] border border-[#2A2A30] rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
-                  <div className="bg-[#1A1A1E] px-3 py-2 border-b border-[#2A2A30] flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-yellow-400 uppercase tracking-wide">
-                      <StickyNote size={12} />
-                      {t("sticky_note")}
-                    </div>
-                    <button
-                      onClick={() => setDraftNote(null)}
-                      className="text-zinc-500 hover:text-white transition-colors"
-                    >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M18 6L6 18M6 6l12 12"></path>
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="p-3">
-                    <textarea
-                      autoFocus
-                      value={noteText}
-                      onChange={(e) => setNoteText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          saveStickyNote();
-                        }
-                      }}
-                      placeholder={t("add_annotation_note")}
-                      className="w-full bg-transparent border-none outline-none text-sm text-zinc-200 placeholder:text-zinc-650 resize-none min-h-[80px]"
-                    />
-                  </div>
-                  <div className="px-3 py-2 bg-[#1A1A1E]/50 border-t border-[#2A2A30] flex justify-end gap-2">
-                    <button
-                      onClick={() => setDraftNote(null)}
-                      className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
-                    >
-                      {t("cancel")}
-                    </button>
-                    <button
-                      onClick={saveStickyNote}
-                      className="px-3 py-1.5 text-xs font-semibold bg-yellow-400/10 text-yellow-400 hover:bg-yellow-400/20 border border-yellow-400/20 rounded pl-2 pr-3 flex items-center gap-1 transition-colors"
-                    >
-                      {t("save_changes")}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -29,6 +29,8 @@ export type BetaDiagnosticsInput = {
   verifiedCitationStates?: number;
   correctionEvents?: number;
   openCorrectionEvents?: number;
+  appliedCorrectionEvents?: number;
+  propagatedCorrectionRows?: number;
   evidenceEvents?: number;
   masteryDeltas?: number;
   traceEvents?: number;
@@ -86,6 +88,8 @@ const requiredCounts = (
   verifiedCitationStates: numberOrZero(input.verifiedCitationStates),
   correctionEvents: numberOrZero(input.correctionEvents),
   openCorrectionEvents: numberOrZero(input.openCorrectionEvents),
+  appliedCorrectionEvents: numberOrZero(input.appliedCorrectionEvents),
+  propagatedCorrectionRows: numberOrZero(input.propagatedCorrectionRows),
   evidenceEvents: numberOrZero(input.evidenceEvents),
   masteryDeltas: numberOrZero(input.masteryDeltas),
   traceEvents: numberOrZero(input.traceEvents),
@@ -199,12 +203,16 @@ export const buildBetaDiagnosticsSnapshot = (
       summary:
         counts.openCorrectionEvents > 0
           ? `${counts.openCorrectionEvents} open correction requests need human review.`
-          : "No open correction requests are waiting.",
+          : counts.propagatedCorrectionRows > 0
+            ? `${counts.appliedCorrectionEvents} applied correction requests marked ${counts.propagatedCorrectionRows} local rows.`
+            : "No open correction requests are waiting.",
       count: counts.correctionEvents,
       action:
         counts.openCorrectionEvents > 0
           ? "Resolve or supersede open requests before export-based review."
-          : "Keep correction requests non-destructive until propagation lands.",
+          : counts.propagatedCorrectionRows > 0
+            ? "Review correction overlays before destructive deletion is considered."
+            : "Use Admin correction controls to mark wrong or stale learner-brain rows.",
     }),
     item({
       id: "evidence_mastery",
@@ -261,24 +269,55 @@ export const buildBetaDiagnosticsSnapshot = (
     outOfScope: [
       "AWS/cloud synchronization",
       "tenant-scoped server persistence",
-      "automated destructive deletion propagation",
+      "destructive deletion propagation",
       "automatic citation verification",
     ],
   };
 };
 
+const objectRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const correctionOverlayForRow = (row: unknown) => {
+  const record = objectRecord(row);
+  const metadata = objectRecord(record?.metadata);
+  const correction = objectRecord(metadata?.correction);
+  if (!record || !correction) return null;
+  return {
+    id: record.id,
+    correction,
+  };
+};
+
+const buildCorrectionOverlay = (ledgers: Record<string, unknown[]>) =>
+  Object.fromEntries(
+    Object.entries(ledgers)
+      .map(([ledgerName, rows]) => [
+        ledgerName,
+        rows.map(correctionOverlayForRow).filter(Boolean),
+      ])
+      .filter(([, rows]) => (rows as unknown[]).length > 0),
+  );
+
 export const buildBetaDiagnosticsExport = ({
   snapshot,
   ledgers,
   metadata,
-}: BetaDiagnosticsExportInput) => ({
-  schema: "tutor.beta-diagnostics.v1",
-  generatedAt: snapshot.generatedAt,
-  localOnly: true,
-  exportScope: "local-indexeddb-sample",
-  note: "This export is for local beta diagnostics. It is not a cloud sync artifact.",
-  outOfScope: snapshot.outOfScope,
-  metadata: metadata || {},
-  snapshot,
-  ledgers,
-});
+}: BetaDiagnosticsExportInput) => {
+  const correctionOverlay = buildCorrectionOverlay(ledgers);
+
+  return {
+    schema: "tutor.beta-diagnostics.v1",
+    generatedAt: snapshot.generatedAt,
+    localOnly: true,
+    exportScope: "local-indexeddb-sample",
+    note: "This export is for local beta diagnostics. It is not a cloud sync artifact.",
+    outOfScope: snapshot.outOfScope,
+    metadata: metadata || {},
+    snapshot,
+    correctionOverlay,
+    ledgers,
+  };
+};

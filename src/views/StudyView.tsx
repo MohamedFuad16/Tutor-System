@@ -12,12 +12,9 @@ import {
   UploadCloud,
   MessageSquare,
   X,
-  RefreshCw,
   Network,
   FileText,
   Plus,
-  Trash2,
-  Check,
 } from "lucide-react";
 import { PatternCard, themes } from "../components/PatternCard";
 import { gsap } from "gsap";
@@ -430,7 +427,13 @@ function StudyIntroSplash({
       });
       lastCardTargetsRef.current[index] = target;
     });
-  }, [cardStep, finalStack, isCompactViewport, isDocumentHidden, motionEnabled]);
+  }, [
+    cardStep,
+    finalStack,
+    isCompactViewport,
+    isDocumentHidden,
+    motionEnabled,
+  ]);
 
   return (
     <div className="relative flex h-full w-full flex-1 overflow-hidden">
@@ -514,9 +517,7 @@ function StudyIntroSplash({
                     bloomOpacity={card.theme.bloomOpacity}
                     animateDots={cardStep > index}
                   >
-                    <div
-                      className="absolute bottom-[38px] left-[38px] right-[38px] z-20 flex flex-col gap-[7px] pointer-events-none"
-                    >
+                    <div className="absolute bottom-[38px] left-[38px] right-[38px] z-20 flex flex-col gap-[7px] pointer-events-none">
                       <div
                         className={`mb-2 w-fit rounded-full border p-3 shadow-lg transition-colors ${card.iconClass}`}
                       >
@@ -757,28 +758,34 @@ export function StudyView() {
     return clearIntroTimers;
   }, [clearIntroTimers, motionEnabled, pdfUrl]);
 
-  const handleIntroHeadlineStart = useCallback((index: number) => {
-    if (pdfUrl || startedHeadlineRefs.current.has(index)) return;
-    startedHeadlineRefs.current.add(index);
-    setIntroCardStep(Math.max(1, Math.min(3, index + 1)));
-  }, [pdfUrl]);
+  const handleIntroHeadlineStart = useCallback(
+    (index: number) => {
+      if (pdfUrl || startedHeadlineRefs.current.has(index)) return;
+      startedHeadlineRefs.current.add(index);
+      setIntroCardStep(Math.max(1, Math.min(3, index + 1)));
+    },
+    [pdfUrl],
+  );
 
-  const handleIntroHeadlineComplete = useCallback((index: number) => {
-    if (pdfUrl || completedHeadlineRefs.current.has(index)) return;
-    completedHeadlineRefs.current.add(index);
+  const handleIntroHeadlineComplete = useCallback(
+    (index: number) => {
+      if (pdfUrl || completedHeadlineRefs.current.has(index)) return;
+      completedHeadlineRefs.current.add(index);
 
-    if (index === 0) {
-      scheduleIntro(() => setIntroHeadlineIndex(1), 220);
-      return;
-    }
+      if (index === 0) {
+        scheduleIntro(() => setIntroHeadlineIndex(1), 220);
+        return;
+      }
 
-    if (index === 1) {
-      scheduleIntro(() => setIntroHeadlineIndex(2), 240);
-      return;
-    }
+      if (index === 1) {
+        scheduleIntro(() => setIntroHeadlineIndex(2), 240);
+        return;
+      }
 
-    scheduleIntro(() => setIntroCardStep(4), 520);
-  }, [pdfUrl, scheduleIntro]);
+      scheduleIntro(() => setIntroCardStep(4), 520);
+    },
+    [pdfUrl, scheduleIntro],
+  );
 
   const openFilePicker = useCallback(() => {
     const input = fileInputRef.current;
@@ -998,19 +1005,6 @@ export function StudyView() {
     }
   };
 
-  const clearPdf = () => {
-    if (activeDocumentId) {
-      void removeDocument(activeDocumentId);
-      return;
-    }
-    ingestionSequenceRef.current += 1;
-    setIsIngesting(false);
-    setSelectedTextContext("");
-    setPdfUrl(null);
-    setPdfPage(1);
-    setPdfTotalPages(0);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
   const shouldRenderChatSurface = isChatOpen;
 
   useLayoutEffect(() => {
@@ -1057,78 +1051,58 @@ export function StudyView() {
       >
         {pdfUrl ? (
           <>
-            <div className="absolute left-3 right-3 top-3 z-40 flex flex-col gap-2 md:left-4 md:right-4 md:top-4 md:flex-row md:items-start md:justify-between">
-              <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto rounded-2xl border border-white/10 bg-black/55 p-1.5 text-xs text-zinc-200 shadow-[0_12px_34px_rgba(0,0,0,0.45)] backdrop-blur-xl custom-scroll md:max-w-[calc(100%-11rem)]">
+            <div className="relative flex min-h-10 shrink-0 items-center gap-1.5 border-b border-white/10 bg-[#0A0A0B] px-2 py-1 md:px-3">
+              <div className="flex min-w-0 max-w-[calc(100%-2.5rem)] flex-none gap-1.5 overflow-x-auto py-0.5 pr-1 custom-scroll">
                 {orderedDocuments.map((document) => (
-                  <button
+                  <div
                     key={document.id}
-                    type="button"
-                    onClick={() => void selectDocument(document)}
-                    className={`group flex h-10 max-w-[15rem] shrink-0 items-center gap-2 rounded-xl border px-3 text-left transition-colors ${
+                    className={`group flex h-7 max-w-[9.75rem] shrink-0 items-center rounded-full border pr-0.5 transition-colors md:max-w-[11rem] ${
                       document.id === activeDocumentId
-                        ? "border-[#ff6e00]/45 bg-[#ff6e00]/16 text-white"
-                        : "border-white/10 bg-white/[0.06] text-zinc-300 hover:bg-white/[0.1] hover:text-white"
+                        ? "border-white bg-white text-black"
+                        : "border-zinc-200 bg-white text-zinc-700 hover:border-white hover:text-black"
                     }`}
-                    title={document.title}
                   >
-                    {document.id === activeDocumentId ? (
-                      <Check size={13} className="text-[#ffb066]" />
-                    ) : (
-                      <FileText size={13} />
-                    )}
-                    <span className="min-w-0">
-                      <span className="block truncate font-semibold">
-                        {document.title}
+                    <button
+                      type="button"
+                      onClick={() => void selectDocument(document)}
+                      className="flex min-w-0 flex-1 items-center gap-1.5 py-1 pl-1.5 pr-0.5 text-left focus:outline-none"
+                      title={document.title}
+                    >
+                      <span
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                          document.id === activeDocumentId
+                            ? "bg-black text-white"
+                            : "bg-zinc-100 text-zinc-600"
+                        }`}
+                      >
+                        <FileText size={11} strokeWidth={2.2} />
                       </span>
-                      <span className="block truncate text-[10px] uppercase tracking-[0.12em] text-zinc-500">
-                        {document.processingStatus === "processing"
-                          ? "Extracting"
-                          : document.totalPages
-                            ? `${document.totalPages} pages`
-                            : document.classification || "PDF"}
+                      <span className="min-w-0">
+                        <span className="block truncate text-[0.74rem] font-semibold leading-none tracking-normal">
+                          {document.title}
+                        </span>
                       </span>
-                    </span>
-                  </button>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void removeDocument(document.id)}
+                      aria-label={`Remove ${document.title}`}
+                      title={`Remove ${document.title}`}
+                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none"
+                    >
+                      <X size={12} strokeWidth={2.5} />
+                    </button>
+                  </div>
                 ))}
               </div>
-              <div className="ml-auto flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={openFilePicker}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3 py-2 text-xs font-semibold text-zinc-200 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  <Plus size={13} /> Add PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={clearPdf}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 text-zinc-300 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-red-500/15 hover:text-red-100"
-                  aria-label="Remove current PDF"
-                  title="Remove current PDF"
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
-            </div>
-            <div className="absolute bottom-4 left-4 z-40 hidden max-w-[min(36rem,calc(100%-2rem))] rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-[11px] font-medium text-zinc-400 backdrop-blur-xl md:block">
-              {activeBook?.title || activeProject} · {orderedDocuments.length}{" "}
-              {orderedDocuments.length === 1 ? "PDF" : "PDFs"}
-            </div>
-            <div className="absolute top-4 right-4 z-40 hidden items-center gap-2">
               <button
                 type="button"
                 onClick={openFilePicker}
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3 py-2 text-xs font-semibold text-zinc-200 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-white/10 hover:text-white"
+                aria-label="Add PDF"
+                title="Add PDF"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-zinc-300 bg-transparent text-zinc-400 transition-colors hover:border-zinc-400 hover:bg-white hover:text-zinc-700 focus:outline-none"
               >
-                <RefreshCw size={13} /> Add PDF
-              </button>
-              <button
-                type="button"
-                onClick={clearPdf}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 text-zinc-300 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-red-500/15 hover:text-red-100"
-                aria-label="Remove current PDF"
-              >
-                <X size={15} />
+                <Plus size={18} strokeWidth={1.9} />
               </button>
             </div>
             <input
@@ -1138,7 +1112,9 @@ export function StudyView() {
               className="hidden"
               onChange={handleFileChange}
             />
-            <PdfViewer />
+            <div className="min-h-0 flex-1">
+              <PdfViewer />
+            </div>
           </>
         ) : (
           <StudyIntroSplash

@@ -17,6 +17,8 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
       citationStates: 2,
       verifiedCitationStates: 2,
       correctionEvents: 1,
+      appliedCorrectionEvents: 1,
+      propagatedCorrectionRows: 2,
       evidenceEvents: 3,
       masteryDeltas: 1,
       traceEvents: 2,
@@ -37,6 +39,12 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
   assert.deepEqual(snapshot.runtimeSettings, {
     webSearchPolicy: "source_first",
   });
+  assert.equal(snapshot.counts.propagatedCorrectionRows, 2);
+  assert.match(
+    snapshot.items.find((item) => item.id === "correction_control")?.summary ||
+      "",
+    /2 local rows/,
+  );
 });
 
 test("beta diagnostics escalate failed model and retrieval rows", () => {
@@ -80,7 +88,17 @@ test("beta diagnostics export preserves local-only scope and ledger samples", ()
     snapshot,
     metadata: { activeBook: "book:general-study" },
     ledgers: {
-      memoryEvents: [{ id: "memory-1" }],
+      memoryEvents: [
+        {
+          id: "memory-1",
+          metadata: {
+            correction: {
+              eventId: "correction-1",
+              effect: "marked_wrong",
+            },
+          },
+        },
+      ],
       modelRuns: [],
     },
   });
@@ -89,6 +107,17 @@ test("beta diagnostics export preserves local-only scope and ledger samples", ()
   assert.equal(payload.localOnly, true);
   assert.equal(payload.exportScope, "local-indexeddb-sample");
   assert.deepEqual(payload.metadata, { activeBook: "book:general-study" });
-  assert.deepEqual(payload.ledgers.memoryEvents, [{ id: "memory-1" }]);
+  assert.deepEqual(payload.correctionOverlay, {
+    memoryEvents: [
+      {
+        id: "memory-1",
+        correction: {
+          eventId: "correction-1",
+          effect: "marked_wrong",
+        },
+      },
+    ],
+  });
+  assert.equal(payload.ledgers.memoryEvents[0].id, "memory-1");
   assert.ok(payload.outOfScope.includes("AWS/cloud synchronization"));
 });

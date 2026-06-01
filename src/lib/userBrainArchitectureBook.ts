@@ -441,6 +441,8 @@ flowchart LR
 
 Correction rule: editing or deleting a session must propagate to summaries, graph facts, embeddings, mastery deltas, tutor preferences, caches, and exports where practical. A memory is not trustworthy unless the user can see why it exists and how to remove or correct it.
 
+Local beta implementation note: Admin now records correction requests and applies non-destructive propagation overlays to matching local ledgers. Evidence and mastery rows are marked unverified, memory/retrieval rows can be skipped, source artifacts become stale/conflicting, citation states become unsupported/conflicting, and the capped diagnostics export includes a correction overlay. This is not hard deletion and does not yet rebuild every embedding or graph projection.
+
 Every background job should move through a visible lifecycle:
 
 | State | Meaning |
@@ -731,7 +733,7 @@ First beta targets to validate:
 | Hot tool progress event | visible within 1s after accepted tool job. |
 | Durable job retry | retry policy and dead-letter state visible before beta expansion. |
 | Mastery update | zero writes without EvidenceEvent, MasteryDelta, and audit row. |
-| Memory correction | derived memories and projections are invalidated or marked superseded. |
+| Memory correction | derived memories and projections are invalidated, marked superseded, or exported with local correction overlays before destructive deletion. |
 | Recommendation experiment | logged propensity and counterfactual-eval plan before online optimization. |
 
 Security gates:
@@ -782,7 +784,7 @@ This matches the interaction-model pattern from [Thinking Machines](https://thin
 | Background authority | Background jobs can propose, verify, and generate. Only typed contracts can commit durable learner-state changes. |
 | Mastery dimensions | Recall, explanation, procedure, near-transfer, far-transfer, confidence, and calibration start as evidence facets. Promote them to separate authoritative scores only after enough data. |
 | Projection consistency | Postgres is the replayable authority; vectors, graph edges, S3 manifests, summaries, Dexie rows, and caches must derive from event IDs. |
-| Memory deletion | Deleting or correcting a session must propagate to derived memories, embeddings, graph facts, mastery deltas, and tutor preferences where practical. |
+| Memory deletion | Deleting or correcting a session must propagate to derived memories, embeddings, graph facts, mastery deltas, exports, and tutor preferences where practical. Local beta starts with non-destructive overlays before hard deletion. |
 | Adaptive recommendations | Bandits and recommenders need logged propensities, outcome labels, and guardrails before they can steer curriculum. |
 | Security | OWASP LLM risks, NIST AI RMF, tenant isolation, data minimization, log redaction, and permissioned tools are launch gates. |
 | Observability | Every tool job, retrieval step, artifact, evaluation, and mastery update needs trace_id, cost signals, latency, and failure state. |
@@ -825,7 +827,7 @@ The plain-English version: the tutor teaches now, helpers work in the background
 4. Add source-grounding evals for book spans, web citations, vector retrieval, and tool outputs.
 5. Add security tests for prompt injection, excessive agency, cross-tenant vectors, S3 prefixes, queue messages, and logs.
 6. Add delayed retest, misconception lifecycle, transfer evidence, and calibration facets before increasing durable mastery.
-7. Add memory correction/deletion propagation across summaries, embeddings, graph edges, mastery deltas, tutor preferences, and exports.
+7. Extend memory correction/deletion propagation from local overlays into replayable summary, embedding, graph-edge, mastery, tutor-preference, and export rebuild paths.
 8. Log recommendation propensities and alternatives before bandit or recommender experiments affect curriculum.
 9. Keep LoRA/QLoRA/PEFT in a research lane until LearningAI has a clean dataset, stable evals, and a rollback plan.
 

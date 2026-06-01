@@ -505,3 +505,76 @@ Phase 13 adds local beta diagnostics and a capped JSON export path. It turns the
 - Link generated notes, charts, code, flashcards, and other artifacts into the same `ArtifactRecord` table.
 - Propagate correction/deletion state into derived memories, embeddings, graph facts, mastery deltas, tutor preferences, and exports where practical.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 14 report
+
+## Scope
+
+Phase 14 adds a local non-destructive correction propagation layer, Admin request
+timelines, the existing Study/Pdf PDF chip UI fixes, and in-app architecture book
+updates. It keeps AWS/cloud synchronization and hard deletion out of scope.
+
+## Graphify Context
+
+- Graphify routed the correction slice through `CorrectionEvent`,
+  `src/memory/correction.events.ts`, `src/memory/longterm.memory.ts`,
+  `src/memory/beta.diagnostics.ts`, and `src/views/AdminView.tsx`.
+- Graphify routed the book/design updates through `src/lib/tutorBook.json`,
+  `src/lib/userBrainArchitectureBook.ts`, and `RevisionView` built-in books.
+- Sidecar Curie recommended local correction propagation overlays as the next
+  highest-value trust slice after beta diagnostics.
+- Sidecar Confucius recommended Admin request timelines to group system events,
+  model runs, and tool jobs by request id.
+
+## Integration Decisions
+
+- Added propagation helpers that resolve correction targets across local Dexie
+  ledgers and apply conservative metadata overlays instead of hard deletion.
+- Correction requests now mark affected evidence/mastery rows unverified,
+  memory/retrieval rows skipped, artifacts stale/conflicting, and citation
+  states unsupported/conflicting where practical.
+- Admin correction requests can be applied, dismissed, or blocked, and manual or
+  quick actions attempt overlay application immediately.
+- Beta Diagnostics now counts propagated correction rows and includes a
+  `correctionOverlay` export section.
+- Admin System Activity now renders request timelines grouped by `requestId`.
+- The Study PDF chip rail and reduced PDF top padding are included in this
+  pushed phase.
+- Tutor System Architecture, User Brain Architecture, and App Design Language
+  built-in books were updated to describe the current local beta architecture.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 53 tests.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- Browser QA on `http://127.0.0.1:3100`: Admin request timelines rendered,
+  Memory quick action applied a non-destructive correction overlay, Corrections
+  showed overlay counts and applied state, Beta Diagnostics export feedback
+  appeared, Study rendered the compact PDF chip rail, and App Design Language
+  opened the new Local Beta Control Patterns chapter.
+- Mobile browser QA at 390x844: Admin rendered without horizontal overflow and
+  browser warning/error logs were 0.
+- Screenshot file writes to `.workflow/.../results/` were blocked by browser
+  runtime filesystem permissions (`EPERM`), so this phase records emitted
+  browser screenshots plus DOM/log evidence.
+- `graphify update . --force`: regenerated the code architecture graph with 736
+  nodes, 1247 edges, and 59 communities.
+- `npm run graphify:tree`: passed.
+- Graphify artifact smoke found no conflict markers, `/private/tmp` paths, or
+  temp-test markers in checked graph artifacts.
+- Graphify query smoke returned `correction.events.ts`,
+  `buildCorrectionPropagationPatch()`, `applyCorrectionPropagation()`,
+  `buildBetaDiagnosticsExport()`, `AdminRequestTimeline`, and `AdminView()`.
+- Final-check sidecar found one zero-row overlay display issue; Admin now only
+  shows the green overlay-applied card when propagated rows are greater than 0.
+
+## Remaining Work
+
+- Final review agent, commit, and push remain for this phase.
+- Full correction replay over embeddings, graph facts, generated summaries, and
+  tutor preferences remains a future implementation slice.
+- Add an explicit local citation verifier before any source can move from
+  `checking` to `verified`.
+- AWS/cloud synchronization remains out of scope until beta testing.
