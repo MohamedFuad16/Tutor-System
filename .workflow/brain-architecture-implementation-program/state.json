@@ -162,16 +162,23 @@
       "owner": "main agent + read-only sidecars Kierkegaard and Galileo",
       "status": "completed",
       "write_scope": "src/memory/artifact.records.ts, src/memory/memory.orchestrator.ts, src/views/AdminView.tsx, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, TUTOR_ARCHITECTURE.md, tests/artifact-records.test.mjs, graphify-out/*"
+    },
+    {
+      "id": "W",
+      "name": "Book reader and stored audio overview",
+      "owner": "main agent + read-only sidecar Peirce",
+      "status": "completed",
+      "write_scope": "src/views/RevisionView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/chapterAudioOverviews.ts, src/lib/tutorBook.json, TUTOR_ARCHITECTURE.md, package.json, public/audio-overviews/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_17_verified",
+    "status": "phase_18_verified",
     "checks": [
       "npm run lint",
       "npm run test",
       "npm run build",
       "npm run format:check",
-      "browser QA for Admin Source Artifacts and built-in books",
+      "browser QA for User Brain Architecture stored audio overview and built-in books",
       "graphify update . --force",
       "npm run graphify:tree",
       "graphify query smoke"

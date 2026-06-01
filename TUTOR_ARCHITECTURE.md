@@ -106,7 +106,9 @@ citation states so Admin can audit them before broader verification exists.
 
 `RevisionView` renders generated learning books and built-in reference books in
 a paper-style reading surface. It also houses the app design language book with
-wireframes, tokens, and interactive previews.
+wireframes, tokens, and interactive previews. Built-in chapters can include
+stored audio overview assets with local playback controls, so chapter listening
+does not call the live read-aloud route on every play.
 
 ### Admin View
 

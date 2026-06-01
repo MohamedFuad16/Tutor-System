@@ -718,6 +718,71 @@ generated-artifact verifier exists.
   slices.
 - AWS/cloud synchronization remains out of scope until beta testing.
 
+# Phase 18: Book Reader And Stored Audio Overview
+
+Phase 18 starts the updated Library/readability objective. It turns the User
+Brain Architecture book from a sprawling 18-chapter research memo into a shorter
+8-chapter reader path, then adds a stored audio-overview player for built-in
+chapters.
+
+## Graphify Context
+
+- Graphify routed the slice through `RevisionView()`, `builtInBooks`,
+  `userBrainArchitectureBook.ts`, `tutorBook.json`, `TUTOR_ARCHITECTURE.md`,
+  `audio.ts`, and server voice/TTS routes.
+- OpenAI docs confirmed that GPT audio output is available through audio
+  modalities, but this local environment did not expose `OPENAI_API_KEY`.
+
+## Integration Decisions
+
+- Added typed chapter audio overview metadata in
+  `src/lib/chapterAudioOverviews.ts`.
+- Added a stored audio overview card to `RevisionView` with play, pause,
+  progress, transcript, and 1x / 1.25x / 1.5x playback controls.
+- Stored the opening User Brain Architecture overview asset under
+  `public/audio-overviews/user-brain-runtime-overview.mp3`.
+- The Library player uses the stored static asset. It does not call the live
+  `/api/tts` route when the learner presses play.
+- Added the user-brain book source and audio-overview metadata to the repo
+  formatting gate.
+- Tutor System Architecture, Tutor book, and App Design Language now describe
+  shorter book reading and stored audio overviews.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 64 tests.
+- `npm run build`: passed.
+- `npm run format:check`: passed after adding
+  `src/lib/userBrainArchitectureBook.ts` and
+  `src/lib/chapterAudioOverviews.ts` to the format gate.
+- Browser QA on `http://127.0.0.1:3100`: User Brain Architecture rendered as 8
+  unique chapters, the stored MP3 loaded from
+  `/audio-overviews/user-brain-runtime-overview.mp3` with a 38.79 second
+  duration, the overview card showed transcript and speed controls, the 1.5x
+  button set the audio element playback rate to 1.5, and the page had no
+  horizontal overflow or warning/error console logs.
+- Browser automation could load and control the media element but could not
+  start audible playback under the in-app browser's autoplay/automation guard.
+- `graphify update . --force`: regenerated the code architecture graph with 738
+  nodes, 1301 edges, and 59 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query returned `StoredAudioOverview()`,
+  `chapterAudioOverviews.ts`, `userBrainChapterAudioOverviews`, and
+  `RevisionView()`.
+- Final-check sidecar Peirce found no TypeScript/runtime blockers and confirmed
+  the Library path does not call `/api/tts`; it flagged stale workflow evidence,
+  which was updated before commit.
+
+## Remaining Work
+
+- Generate and store chapter-specific audio overview assets for the remaining
+  built-in book chapters.
+- Add Admin provenance rows for stored overview generation metadata.
+- Continue generated-artifact verification for charts, code snippets, images,
+  websites, and richer note source spans.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
 # Phase 17: Learning-note Artifact Provenance
 
 Phase 17 links generated learning-book entries into the local artifact/citation
@@ -744,7 +809,7 @@ real notes/source-span verifier exists.
 - The learning-entry id is the artifact/citation source reference so multiple
   entries in one conversation do not overwrite each other.
 - Metadata records local-only generated provenance, `externalContentFetched:
-  false`, book/chapter/conversation/document context, concept ids, model, and
+false`, book/chapter/conversation/document context, concept ids, model, and
   confidence.
 - Admin and the built-in books now describe generated learning-note provenance
   without implying source verification.

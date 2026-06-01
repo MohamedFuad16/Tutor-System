@@ -33,6 +33,9 @@ import {
   ArrowUp,
   Folder,
   Check,
+  Play,
+  Pause,
+  Volume2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -47,6 +50,10 @@ import { PatternCard, themes } from "../components/PatternCard";
 import { SvgBeige } from "../components/PatternSVGs";
 import tutorBook from "../lib/tutorBook.json";
 import userBrainArchitectureBook from "../lib/userBrainArchitectureBook";
+import {
+  userBrainChapterAudioOverviews,
+  type ChapterAudioOverview,
+} from "../lib/chapterAudioOverviews";
 import { useMotionPreference } from "../hooks/useMotionPreference";
 import { recordFlashcardReviewEvidence } from "../memory/revision.evidence";
 import { gsap } from "gsap";
@@ -56,7 +63,11 @@ type BuiltInBook = {
   name: string;
   description: string;
   hiddenKey: string;
-  chapters: { title: string; content?: string }[];
+  chapters: {
+    title: string;
+    content?: string;
+    audioOverview?: ChapterAudioOverview;
+  }[];
   renderChapter?: (chapterIndex: number) => React.ReactNode;
 };
 
@@ -1991,6 +2002,156 @@ const LiveComponentPreview = ({ id }: { id: SnapshotPreviewId }) => {
   );
 };
 
+const formatAudioTime = (seconds: number) => {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, "0");
+  return `${minutes}:${remainder}`;
+};
+
+const StoredAudioOverview = ({
+  overview,
+}: {
+  overview: ChapterAudioOverview;
+}) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = playbackRate;
+    }
+  }, [playbackRate]);
+
+  useEffect(() => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    setError("");
+    return () => {
+      audioRef.current?.pause();
+    };
+  }, [overview.audioSrc]);
+
+  const togglePlayback = async () => {
+    const audioElement = audioRef.current;
+    if (!audioElement) return;
+    audioElement.playbackRate = playbackRate;
+    if (isPlaying) {
+      audioElement.pause();
+      return;
+    }
+    try {
+      await audioElement.play();
+      setError("");
+    } catch {
+      setError(
+        "Audio overview could not start. Try again after interacting with the page.",
+      );
+    }
+  };
+
+  const progress =
+    duration > 0
+      ? Math.min(100, Math.max(0, (currentTime / duration) * 100))
+      : 0;
+
+  return (
+    <div className="mb-10 rounded-[30px] border border-zinc-200 bg-white/80 p-4 font-sans shadow-[0_20px_54px_rgba(46,36,22,0.08)] sm:p-5">
+      <audio
+        ref={audioRef}
+        src={overview.audioSrc}
+        preload="metadata"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => setIsPlaying(false)}
+        onTimeUpdate={(event) =>
+          setCurrentTime(event.currentTarget.currentTime)
+        }
+        onLoadedMetadata={(event) => {
+          setDuration(event.currentTarget.duration || 0);
+          event.currentTarget.playbackRate = playbackRate;
+        }}
+        onError={() =>
+          setError("Stored audio overview is unavailable in this build.")
+        }
+      />
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-500/70">
+            <Volume2 size={14} />
+            Stored audio overview
+          </div>
+          <h3 className="mt-2 text-xl font-serif font-medium tracking-tight text-zinc-950">
+            {overview.title}
+          </h3>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
+            {overview.summary}
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={togglePlayback}
+            className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-800"
+          >
+            {isPlaying ? <Pause size={15} /> : <Play size={15} />}
+            {isPlaying ? "Pause" : "Play"}
+          </button>
+          {[1, 1.25, 1.5].map((rate) => (
+            <button
+              key={rate}
+              type="button"
+              onClick={() => setPlaybackRate(rate)}
+              className={`rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${
+                playbackRate === rate
+                  ? "border-blue-500 bg-blue-50 text-blue-700"
+                  : "border-zinc-200 bg-white text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              {rate}x
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="mt-5">
+        <div className="h-2 overflow-hidden rounded-full bg-zinc-100">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-orange-400 transition-[width]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-zinc-400">
+          <span>
+            {formatAudioTime(currentTime)} /{" "}
+            {duration ? formatAudioTime(duration) : overview.durationLabel}
+          </span>
+          <span>
+            {overview.generatedBy} · {overview.voice} · {overview.storedAt}
+          </span>
+        </div>
+      </div>
+      {error && (
+        <div className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+      <details className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+        <summary className="cursor-pointer font-medium text-zinc-800">
+          Overview script
+        </summary>
+        <p className="mt-3 leading-6">{overview.transcript}</p>
+      </details>
+    </div>
+  );
+};
+
 const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
   if (chapterIndex === 0) {
     return (
@@ -2100,6 +2261,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Generated learning-book entries also leave not-checked ArtifactRecord provenance, so saved study notes stay inspectable without being treated as verified source evidence.",
       },
       {
+        title: "Stored audio overviews",
+        detail:
+          "Built-in chapters can attach a saved overview asset with play, pause, and speed controls, keeping Library listening fast without calling live read-aloud each time.",
+      },
+      {
         title: "Diagnostics export",
         detail:
           "Exports are capped, local-only, and explicit about deferred cloud readiness, correction overlays, and out-of-scope automation.",
@@ -2184,7 +2350,10 @@ const builtInBooks: BuiltInBook[] = [
     description:
       "A consolidated book for the adaptive learner brain, OpenAI support guidance, interaction-model strategy, beta gates, and citations.",
     hiddenKey: "user_brain_architecture_book_hidden",
-    chapters: userBrainArchitectureBook,
+    chapters: userBrainArchitectureBook.map((chapter, index) => ({
+      ...chapter,
+      audioOverview: userBrainChapterAudioOverviews[index],
+    })),
   },
   {
     id: "app-design-language",
@@ -2757,6 +2926,7 @@ export function RevisionView() {
   const activeChapterCount = activeBuiltInBook
     ? activeBuiltInBook.chapters.length
     : activeLearningBook?.chapters?.length || 0;
+  const activeBuiltInChapter = activeBuiltInBook?.chapters[currentChapterIndex];
   const activeMarkdown = React.useMemo(() => {
     if (activeBuiltInBook) {
       return activeBuiltInBook.chapters[currentChapterIndex]?.content || "";
@@ -2981,6 +3151,12 @@ export function RevisionView() {
                         : activeTitle}
                   </h1>
                 </div>
+
+                {activeBuiltInChapter?.audioOverview && (
+                  <StoredAudioOverview
+                    overview={activeBuiltInChapter.audioOverview}
+                  />
+                )}
 
                 {activeBuiltInBook?.renderChapter ? (
                   activeBuiltInBook.renderChapter(currentChapterIndex)
