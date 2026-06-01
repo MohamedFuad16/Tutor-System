@@ -26,7 +26,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Chat and Study can capture local document context.
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
 - Admin exposes model runs, tool jobs, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
-- Generated flashcards and generated learning-book notes now leave explicit \`not_checked\` artifact provenance.
+- Generated flashcards, generated learning-book notes, and stored audio overviews now leave explicit \`not_checked\` artifact provenance.
 - Revision shows this book in a shorter reader path and can play a stored overview asset for this chapter.
 
 ## What This Is Not
@@ -58,13 +58,13 @@ Core local tables:
 | \`artifactRecords\`, \`citationStates\` | Source cards, generated artifacts, and verification state. |
 | \`correctionEvents\` | Non-destructive mark-wrong, deletion-review, supersede, dismiss, and block intents. |
 
-The local beta rule is intentionally conservative: generated notes, flashcards, charts, code, images, and websites can be useful study artifacts, but they are not verified evidence just because they exist.
+The local beta rule is intentionally conservative: generated notes, flashcards, stored audio overviews, charts, code, images, and websites can be useful study artifacts, but they are not verified evidence just because they exist.
 
 ## Current Enforcement
 
 - Model summaries can add evidence rows, but cannot raise mastery.
 - Flashcard reviews can write BKT evidence only when a real concept id exists.
-- Generated flashcards and generated learning notes write \`ArtifactRecord\` rows with \`not_checked\` citation states.
+- Generated flashcards, generated learning notes, and built-in stored audio overview manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states.
 - Admin's local verifier only mutates \`source_card\` artifacts; other artifact kinds remain explicitly unsupported until a real verifier exists.
 - Correction propagation marks related rows stale, skipped, unsupported, conflicting, or unverified instead of hard-deleting history.`,
   },
@@ -148,7 +148,7 @@ Implemented Admin surfaces:
 | Tool Jobs | Tool lifecycle visibility. |
 | Memory/Retrieval Events | Learner-brain writes and context selection. |
 | Evidence Ledger | Evidence rows and BKT deltas. |
-| Source Artifacts | Source cards plus generated flashcard/note provenance. |
+| Source Artifacts | Source cards plus generated flashcard, note, and stored audio overview provenance. |
 | Correction Requests | Non-destructive review and propagation state. |
 | Runtime Tuning | Local knobs for source-vs-web, memory context, tool budget, and refresh cadence. |
 | Beta Diagnostics | Capped local export and readiness gate summary. |
@@ -172,7 +172,7 @@ Good voice behavior means:
 
 For Library books, the better pattern is stored audio overview, not live read-aloud. A chapter overview should be written as a short energetic explanation, generated once, stored as an asset, and played from the browser with normal controls. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
 
-This phase starts that pattern for the opening User Brain Architecture chapter. Later slices should generate stored chapter-specific assets for the remaining built-in book chapters and record generation metadata in Admin.`,
+This phase starts that pattern for the opening User Brain Architecture chapter. The stored asset is also represented in Admin as a local \`audio_overview\` artifact row with not-checked provenance. Later slices should generate stored chapter-specific assets for the remaining built-in book chapters.`,
   },
   {
     title: "Chapter 7: Local Beta Roadmap",

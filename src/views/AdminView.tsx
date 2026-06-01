@@ -54,6 +54,7 @@ import {
   updateCorrectionEventReviewStatus,
 } from "../memory/correction.events";
 import {
+  recordStoredAudioOverviewArtifacts,
   supportsLocalCitationIntegrityArtifact,
   verifyArtifactCitationIntegrity,
   verifyCitationStateIntegrity,
@@ -64,6 +65,8 @@ import {
   type BrainRuntimeSettings,
   type BrainWebSearchPolicy,
 } from "../lib/brainRuntimeSettings";
+import userBrainArchitectureBook from "../lib/userBrainArchitectureBook";
+import { userBrainChapterAudioOverviews } from "../lib/chapterAudioOverviews";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
 type AdminTab =
@@ -179,6 +182,19 @@ const webSearchPolicyOptions: {
     label: "Auto Freshness",
     description: "Allow freshness-sensitive web retrieval when detected.",
   },
+];
+
+const artifactTypeBuckets: ArtifactRecord["artifactType"][] = [
+  "source_card",
+  "chart",
+  "code",
+  "image",
+  "website",
+  "flashcards",
+  "notes",
+  "audio_overview",
+  "preview",
+  "other",
 ];
 
 const formatTime = (timestamp?: number | null) =>
@@ -338,12 +354,51 @@ export function AdminView() {
         db.artifactRecords.orderBy("timestamp").reverse().limit(50).toArray(),
       [],
     ) || [];
+  const artifactTypeCounts =
+    useLiveQuery(async () => {
+      const entries = await Promise.all(
+        artifactTypeBuckets.map(async (artifactType) => {
+          const count = await db.artifactRecords
+            .where("artifactType")
+            .equals(artifactType)
+            .count();
+          return [artifactType, count] as const;
+        }),
+      );
+      return Object.fromEntries(
+        entries.filter(([, count]) => count > 0),
+      ) as Partial<Record<ArtifactRecord["artifactType"], number>>;
+    }, []) || {};
+  const readyArtifactRecordCount =
+    useLiveQuery(
+      () => db.artifactRecords.where("status").equals("ready").count(),
+      [],
+    ) || 0;
   const citationStates =
     useLiveQuery(
       () =>
         db.citationStates.orderBy("timestamp").reverse().limit(50).toArray(),
       [],
     ) || [];
+  const citationArtifactTypeById =
+    useLiveQuery(async () => {
+      const artifactIds = Array.from(
+        new Set(
+          citationStates
+            .map((state) => state.artifactId)
+            .filter((artifactId): artifactId is string => Boolean(artifactId)),
+        ),
+      );
+      if (artifactIds.length === 0) return {};
+
+      const records = await db.artifactRecords.bulkGet(artifactIds);
+      return records.reduce<
+        Partial<Record<string, ArtifactRecord["artifactType"]>>
+      >((acc, record) => {
+        if (record) acc[record.id] = record.artifactType;
+        return acc;
+      }, {});
+    }, [citationStates.map((state) => state.artifactId || "").join("|")]) || {};
   const evidenceEventCount =
     useLiveQuery(() => db.evidenceEvents.count(), []) || 0;
   const verifiedEvidenceCount =
@@ -426,8 +481,41 @@ export function AdminView() {
   const [citationVerifierBusyId, setCitationVerifierBusyId] = useState("");
   const [diagnosticsExportFeedback, setDiagnosticsExportFeedback] =
     useState("");
+  const storedAudioOverviewInputs = useMemo(
+    () =>
+      Object.entries(userBrainChapterAudioOverviews).map(
+        ([chapterIndexText, overview]) => {
+          const chapterIndex = Number(chapterIndexText);
+          return {
+            overviewId: `user-brain-architecture:chapter-${chapterIndex}:stored-audio-overview`,
+            bookId: "user-brain-architecture",
+            bookTitle: "User Brain Architecture",
+            chapterIndex,
+            chapterTitle:
+              userBrainArchitectureBook[chapterIndex]?.title || overview.title,
+            title: overview.title,
+            summary: overview.summary,
+            transcript: overview.transcript,
+            audioSrc: overview.audioSrc,
+            durationLabel: overview.durationLabel,
+            generatedBy: overview.generatedBy,
+            voice: overview.voice,
+            storedAt: overview.storedAt,
+            metadata: {
+              assetKind: "built_in_book_chapter_audio",
+              displaySurface: "RevisionView",
+            },
+          };
+        },
+      ),
+    [],
+  );
 
   // Auto-scroll console
+  useEffect(() => {
+    void recordStoredAudioOverviewArtifacts(storedAudioOverviewInputs);
+  }, [storedAudioOverviewInputs]);
+
   useEffect(() => {
     if (consoleRef.current) {
       consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
@@ -665,25 +753,16 @@ export function AdminView() {
     acc[event.targetType] = (acc[event.targetType] || 0) + 1;
     return acc;
   }, {});
-  const sourceCardArtifacts = artifactRecords.filter(
-    (record) => record.artifactType === "source_card",
-  ).length;
-  const readyArtifactRecords = artifactRecords.filter(
-    (record) => record.status === "ready",
-  ).length;
+  const sourceCardArtifacts = artifactTypeCounts.source_card || 0;
+  const audioOverviewArtifacts = artifactTypeCounts.audio_overview || 0;
+  const readyArtifactRecords = readyArtifactRecordCount;
   const checkingCitationStates = checkingCitationStateCount;
   const unavailableCitationStates = unavailableCitationStateCount;
   const verifiedCitationStates = verifiedCitationStateCount;
   const conflictingCitationStates = conflictingCitationStateCount;
   const unsupportedCitationStates = unsupportedCitationStateCount;
   const notCheckedCitationStates = notCheckedCitationStateCount;
-  const artifactRecordsByType = artifactRecords.reduce<Record<string, number>>(
-    (acc, record) => {
-      acc[record.artifactType] = (acc[record.artifactType] || 0) + 1;
-      return acc;
-    },
-    {},
-  );
+  const artifactRecordsByType = artifactTypeCounts;
   const artifactRecordsById = new Map(
     artifactRecords.map((record) => [record.id, record]),
   );
@@ -962,9 +1041,12 @@ export function AdminView() {
   const runLocalCitationVerifier = async (state: CitationState) => {
     setCitationVerifierError("");
     setCitationVerifierFeedback("");
-    const linkedArtifact = state.artifactId
+    let linkedArtifact = state.artifactId
       ? artifactRecordsById.get(state.artifactId)
       : undefined;
+    if (!linkedArtifact && state.artifactId) {
+      linkedArtifact = await db.artifactRecords.get(state.artifactId);
+    }
     if (
       linkedArtifact &&
       !supportsLocalCitationIntegrityArtifact(linkedArtifact)
@@ -2737,8 +2819,9 @@ export function AdminView() {
                           </h2>
                           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
                             Durable local records for source cards, generated
-                            study artifacts, and citation states captured from
-                            chat, memory, and tool streams. Artifacts can be
+                            study artifacts, stored audio overviews, and
+                            citation states captured from chat, memory, tool
+                            streams, and built-in manifests. Artifacts can be
                             ready while their citations remain checking or not
                             checked; the local verifier checks saved source-card
                             structure and links without fetching external pages.
@@ -2757,6 +2840,7 @@ export function AdminView() {
                       <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-8">
                         {[
                           ["Source cards", sourceCardArtifacts],
+                          ["Audio overviews", audioOverviewArtifacts],
                           ["Ready artifacts", readyArtifactRecords],
                           ["Checking", checkingCitationStates],
                           ["Unavailable", unavailableCitationStates],
@@ -2815,6 +2899,8 @@ export function AdminView() {
                             No artifacts yet. A chat web-search result,
                             generated flashcard batch, or generated learning
                             note will persist reviewable artifact rows here.
+                            Built-in stored audio overview manifests are seeded
+                            when Admin loads.
                           </div>
                         ) : (
                           <div className="space-y-3">
@@ -3062,11 +3148,16 @@ export function AdminView() {
                                             state.artifactId,
                                           )
                                         : undefined;
+                                      const linkedArtifactType =
+                                        linkedArtifact?.artifactType ||
+                                        (state.artifactId
+                                          ? citationArtifactTypeById[
+                                              state.artifactId
+                                            ]
+                                          : undefined);
                                       const canRun =
-                                        !linkedArtifact ||
-                                        supportsLocalCitationIntegrityArtifact(
-                                          linkedArtifact,
-                                        );
+                                        !linkedArtifactType ||
+                                        linkedArtifactType === "source_card";
 
                                       return canRun ? (
                                         <button

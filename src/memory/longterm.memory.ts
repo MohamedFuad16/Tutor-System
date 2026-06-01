@@ -302,6 +302,7 @@ export interface ArtifactRecord {
     | "website"
     | "flashcards"
     | "notes"
+    | "audio_overview"
     | "preview"
     | "other";
   status: "draft" | "ready" | "failed" | "stale";

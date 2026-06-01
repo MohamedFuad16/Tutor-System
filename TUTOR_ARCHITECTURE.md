@@ -83,7 +83,10 @@ Important tables:
 
 `MemoryOrchestrator` stores conversations, requests structured learning-book
 updates, writes concepts and entries, records generated learning-note artifact
-provenance, announces active books, and records trace explanations.
+provenance, announces active books, and records trace explanations. Built-in
+stored audio overview manifests seed `audio_overview` artifact rows with
+`not_checked` citation states so Admin can inspect generated-asset provenance
+alongside runtime artifacts.
 
 ## 6. Core Views
 
@@ -117,8 +120,8 @@ does not call the live read-aloud route on every play.
 - System Activity, request timelines, model runs, memory/retrieval events, tool
   jobs, evidence/mastery ledgers, correction controls, source artifacts, and
   beta diagnostics.
-- Source-card local citation checks plus not-checked generated flashcard and
-  learning-note artifact provenance.
+- Source-card local citation checks plus not-checked generated flashcard,
+  learning-note, and stored audio-overview artifact provenance.
 - DeepSeek Trace Ledger for persisted learning-book and trace events.
 - Server Console for live backend logs over WebSocket.
 

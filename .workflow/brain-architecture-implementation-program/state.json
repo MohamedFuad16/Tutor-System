@@ -169,16 +169,23 @@
       "owner": "main agent + read-only sidecar Peirce",
       "status": "completed",
       "write_scope": "src/views/RevisionView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/chapterAudioOverviews.ts, src/lib/tutorBook.json, TUTOR_ARCHITECTURE.md, package.json, public/audio-overviews/*, graphify-out/*"
+    },
+    {
+      "id": "X",
+      "name": "Stored audio overview provenance",
+      "owner": "main agent + final-check sidecar",
+      "status": "completed",
+      "write_scope": "src/memory/artifact.records.ts, src/memory/longterm.memory.ts, src/views/AdminView.tsx, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, TUTOR_ARCHITECTURE.md, tests/artifact-records.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_18_verified",
+    "status": "phase_19_verified",
     "checks": [
       "npm run lint",
       "npm run test",
       "npm run build",
       "npm run format:check",
-      "browser QA for User Brain Architecture stored audio overview and built-in books",
+      "browser QA for Admin Source Artifacts audio overview provenance",
       "graphify update . --force",
       "npm run graphify:tree",
       "graphify query smoke"

@@ -8,6 +8,7 @@ const {
   createCitationStateRecord,
   createGeneratedFlashcardsArtifactRecords,
   createGeneratedNotesArtifactRecords,
+  createStoredAudioOverviewArtifactRecords,
   artifactVerificationStateForCitationStates,
   normalizeArtifactStatus,
   normalizeArtifactVerificationState,
@@ -195,6 +196,63 @@ test("generated learning notes become not-checked artifact records with provenan
   assert.equal(citation.verifier, "generated_learning_entry_provenance");
 });
 
+test("stored audio overviews become not-checked artifact records with local provenance", () => {
+  const { artifact, citation } = createStoredAudioOverviewArtifactRecords(
+    {
+      overviewId: "user-brain-architecture:chapter-0:stored-audio-overview",
+      bookId: "user-brain-architecture",
+      bookTitle: "User Brain Architecture",
+      chapterIndex: 0,
+      chapterTitle: "The Whole Shape",
+      title: "Quick tour of the learner brain",
+      summary: "Energetic architecture overview.",
+      transcript:
+        "LearningAI is a foreground tutor with a local learner brain ledger.",
+      audioSrc: "/audio-overviews/user-brain-runtime-overview.mp3",
+      durationLabel: "about 45 sec",
+      generatedBy:
+        "GPT-authored overview script, stored as a local audio asset",
+      voice: "Stored MP3",
+      storedAt: "2026-06-01",
+      metadata: { assetKind: "built_in_book_chapter_audio" },
+    },
+    112233,
+  );
+
+  assert.equal(artifact.timestamp, 112233);
+  assert.equal(artifact.artifactType, "audio_overview");
+  assert.equal(artifact.status, "ready");
+  assert.equal(artifact.verificationState, "not_checked");
+  assert.equal(artifact.source, "stored_audio_overview_manifest");
+  assert.equal(artifact.bookId, "user-brain-architecture");
+  assert.deepEqual(artifact.sourceIds, [
+    "user-brain-architecture:chapter-0:stored-audio-overview",
+    "user-brain-architecture",
+    "The Whole Shape",
+    "/audio-overviews/user-brain-runtime-overview.mp3",
+  ]);
+  assert.deepEqual(artifact.citationStateIds, [citation.id]);
+  assert.equal(artifact.metadata.localOnly, true);
+  assert.equal(artifact.metadata.externalContentFetched, false);
+  assert.equal(artifact.metadata.generatedArtifact, true);
+  assert.equal(artifact.metadata.artifactType, "audio_overview");
+  assert.equal(artifact.metadata.assetKind, "built_in_book_chapter_audio");
+  assert.equal(artifact.metadata.chapterIndex, 0);
+  assert.equal(
+    artifact.metadata.audioSrc,
+    "/audio-overviews/user-brain-runtime-overview.mp3",
+  );
+  assert.equal(citation.timestamp, 112233);
+  assert.equal(citation.state, "not_checked");
+  assert.equal(citation.artifactId, artifact.id);
+  assert.equal(
+    citation.sourceRef,
+    "/audio-overviews/user-brain-runtime-overview.mp3",
+  );
+  assert.equal(citation.verifier, "stored_audio_overview_provenance");
+  assert.equal(citation.metadata.externalContentFetched, false);
+});
+
 test("local source-card verifier support excludes generated flashcards", () => {
   assert.equal(
     supportsLocalCitationIntegrityArtifact({ artifactType: "source_card" }),
@@ -206,6 +264,10 @@ test("local source-card verifier support excludes generated flashcards", () => {
   );
   assert.equal(
     supportsLocalCitationIntegrityArtifact({ artifactType: "notes" }),
+    false,
+  );
+  assert.equal(
+    supportsLocalCitationIntegrityArtifact({ artifactType: "audio_overview" }),
     false,
   );
   assert.equal(supportsLocalCitationIntegrityArtifact(null), false);

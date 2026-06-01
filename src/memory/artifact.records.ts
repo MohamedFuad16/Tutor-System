@@ -82,6 +82,24 @@ export type GeneratedNotesArtifactInput = {
   metadata?: Record<string, unknown>;
 };
 
+export type StoredAudioOverviewArtifactInput = {
+  overviewId?: string;
+  bookId: string;
+  bookTitle: string;
+  chapterIndex: number;
+  chapterTitle: string;
+  title: string;
+  summary?: unknown;
+  transcript?: unknown;
+  audioSrc: string;
+  durationLabel?: string;
+  generatedBy?: string;
+  voice?: string;
+  storedAt?: string;
+  source?: string;
+  metadata?: Record<string, unknown>;
+};
+
 export type CitationIntegrityState = CitationState["state"];
 
 export type CitationIntegrityResult = {
@@ -1047,6 +1065,90 @@ export const createGeneratedNotesArtifactRecords = (
   return { artifact, citation };
 };
 
+const timestampForStoredAt = (storedAt: string | undefined, fallback: number) => {
+  const parsed = storedAt ? Date.parse(storedAt) : Number.NaN;
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+export const createStoredAudioOverviewArtifactRecords = (
+  input: StoredAudioOverviewArtifactInput,
+  timestamp = timestampForStoredAt(input.storedAt, Date.now()),
+) => {
+  const chapterIndex = Math.max(0, Math.round(input.chapterIndex));
+  const overviewId = compact(
+    input.overviewId ||
+      `${input.bookId}:chapter-${chapterIndex}:stored-audio-overview`,
+  );
+  const sourceRef = compact(input.audioSrc || overviewId);
+  const artifactId = artifactRecordIdFor({
+    artifactType: "audio_overview",
+    sourceRef,
+  });
+  const citationId = citationStateIdFor({
+    claimId: artifactId,
+    sourceRef,
+  });
+  const transcript = compact(input.transcript);
+  const summary = compact(input.summary || transcript);
+  const title = compact(input.title, "Stored audio overview");
+  const chapterTitle = compact(input.chapterTitle, `Chapter ${chapterIndex + 1}`);
+  const storedAt = compact(input.storedAt);
+
+  const sharedMetadata = {
+    ...input.metadata,
+    localOnly: true,
+    externalContentFetched: false,
+    generatedArtifact: true,
+    artifactType: "audio_overview",
+    overviewId,
+    bookId: input.bookId,
+    bookTitle: input.bookTitle,
+    chapterIndex,
+    chapterTitle,
+    audioSrc: sourceRef,
+    durationLabel: input.durationLabel,
+    generatedBy: input.generatedBy,
+    voice: input.voice,
+    storedAt,
+    transcriptLength: String(input.transcript || "").trim().length,
+  };
+
+  const citation = createCitationStateRecord(
+    {
+      id: citationId,
+      state: "not_checked",
+      claimId: artifactId,
+      sourceRef,
+      artifactId,
+      title: `Stored audio overview: ${chapterTitle}`,
+      verifier: "stored_audio_overview_provenance",
+      metadata: sharedMetadata,
+    },
+    timestamp,
+  );
+  const artifact = createArtifactRecord(
+    {
+      id: artifactId,
+      artifactType: "audio_overview",
+      status: sourceRef && transcript ? "ready" : "failed",
+      verificationState: "not_checked",
+      source: input.source || "stored_audio_overview_manifest",
+      title: `Stored audio overview: ${title}`,
+      summary: summary || "Stored audio overview without saved transcript.",
+      sourceIds: cleanList([overviewId, input.bookId, chapterTitle, sourceRef]),
+      citationStateIds: [citation.id],
+      bookId: input.bookId,
+      metadata: {
+        ...sharedMetadata,
+        summaryPreview: summary,
+      },
+    },
+    timestamp,
+  );
+
+  return { artifact, citation };
+};
+
 export const recordGeneratedNotesArtifact = async (
   input: GeneratedNotesArtifactInput,
 ) => {
@@ -1064,6 +1166,31 @@ export const recordGeneratedNotesArtifact = async (
   }
 
   return { artifact, citation };
+};
+
+export const recordStoredAudioOverviewArtifacts = async (
+  inputs: StoredAudioOverviewArtifactInput[],
+) => {
+  const records = inputs.map((input) =>
+    createStoredAudioOverviewArtifactRecords(input),
+  );
+
+  if (records.length === 0) return records;
+
+  try {
+    await db.transaction("rw", db.artifactRecords, db.citationStates, () =>
+      Promise.all(
+        records.flatMap(({ artifact, citation }) => [
+          db.artifactRecords.put(artifact),
+          db.citationStates.put(citation),
+        ]),
+      ),
+    );
+  } catch (error) {
+    console.warn("[ArtifactRecords] audio overview artifact write failed", error);
+  }
+
+  return records;
 };
 
 export const recordUnavailableCitationState = async (

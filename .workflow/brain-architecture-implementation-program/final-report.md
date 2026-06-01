@@ -718,6 +718,69 @@ generated-artifact verifier exists.
   slices.
 - AWS/cloud synchronization remains out of scope until beta testing.
 
+# Phase 19: Stored Audio Overview Provenance
+
+Phase 19 connects the stored chapter audio overview feature to the local
+source-artifact ledger. The stored MP3 remains a local asset played by the
+browser; the new rows make its generation/provenance inspectable in Admin
+without treating it as verified learner evidence.
+
+## Graphify Context
+
+- Repo-local Graphify routed this slice through `AdminView()`,
+  `ArtifactRecord`, `artifact.records.ts`, `longterm.memory.ts`,
+  `RevisionView()`, `chapterAudioOverviews.ts`, and the built-in architecture
+  books.
+- The MCP Graphify corpus appeared stale or pointed at another project, so the
+  checked-in `graphify-out/graph.json` CLI path was used for source routing.
+
+## Integration Decisions
+
+- Added an `audio_overview` artifact kind.
+- Added pure stored-audio provenance helpers that create an `ArtifactRecord`
+  plus linked `CitationState` from overview metadata.
+- Admin seeds built-in User Brain Architecture stored audio overview manifests
+  into Dexie on load, making the rows visible under Source Artifacts.
+- Admin artifact type meters now use full Dexie counts instead of the most
+  recent 50 artifact rows, and citation rows fetch linked artifact types before
+  deciding whether a local verifier is available.
+- The local verifier still only supports `source_card` artifacts; audio
+  overview rows remain `not_checked` and explicitly unsupported for local
+  citation verification.
+- Updated the system architecture doc, Tutor System Architecture book, User
+  Brain Architecture book, packet, result, and workflow state.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 65 tests.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- Browser QA on `http://127.0.0.1:3100`: Admin Source Artifacts seeded and
+  rendered one `audio_overview` artifact plus one `not_checked` citation state,
+  showed the audio overview meter, showed "No local verifier yet" for both
+  rows, did not show `Run local check` for the audio overview citation, and had
+  no horizontal overflow in the in-app viewport.
+- `graphify update . --force`: passed after removing generated `server.mjs` and
+  `.tmp-test` artifacts; regenerated 1439 nodes, 2712 edges, and 132
+  communities after rebasing onto the remote Graphify refresh.
+- `npm run graphify:tree`: passed.
+- Graphify query smoke returned `recordStoredAudioOverviewArtifacts()`,
+  `AdminView()`, and `artifact.records.ts`.
+- Graphify artifact smoke found no conflict markers, `/private/tmp`, `tmp-test`,
+  or generated `server.mjs` paths.
+- Final-check sidecar Peirce found no blockers. It flagged two 50-row-window
+  risks in Admin, and both were fixed before final verification.
+
+## Remaining Work
+
+- Generate and store chapter-specific audio overview assets for the remaining
+  built-in book chapters.
+- Add richer verifier contracts for generated notes, charts, code snippets,
+  images, websites, and audio overview assets when a real verification method
+  exists.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
 # Phase 18: Book Reader And Stored Audio Overview
 
 Phase 18 starts the updated Library/readability objective. It turns the User
