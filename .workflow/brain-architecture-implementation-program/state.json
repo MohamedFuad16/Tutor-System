@@ -85,10 +85,17 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/flashcard.concepts.ts, src/components/ChatPanel.tsx, server.ts, tests/flashcard-concepts.test.mjs, package.json"
+    },
+    {
+      "id": "L",
+      "name": "Local runtime tuning",
+      "owner": "main agent + read-only sidecar Boyle",
+      "status": "completed",
+      "write_scope": "src/lib/brainRuntimeSettings.ts, src/store/index.ts, src/views/AdminView.tsx, src/components/ChatPanel.tsx, server.ts, tests/runtime-settings.test.mjs, package.json"
     }
   ],
   "verification": {
-    "status": "phase_6_completed",
+    "status": "phase_7_completed",
     "checks": [
       "npm run lint",
       "npm run test",

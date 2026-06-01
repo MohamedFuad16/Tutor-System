@@ -238,3 +238,39 @@ Phase 6 makes generated flashcards more useful to the evidence-gated learner bra
 - Add richer source-aware concept matching once there is enough beta data to tune false positives.
 - Unify `learningBookConcepts` and BKT concepts more deeply if the local mirror proves useful.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 7 report
+
+## Scope
+
+Phase 7 adds local runtime tuning for the learner-brain architecture. It turns Admin from an observability-only surface into a local beta control plane for source-vs-web behavior, tool loop budget, memory context size, and activity polling. AWS/cloud remains deferred.
+
+## Graphify Context
+
+- Graphify routed the slice through `src/views/AdminView.tsx`, `src/store/index.ts`, `src/components/ChatPanel.tsx`, `server.ts`, `server/web-search.ts`, and the existing evidence/tool observability surfaces.
+- Sidecar Boyle audited the proposed tuning slice read-only and identified tool-loop, manual-search, Admin refresh, and formatting-coverage risks.
+
+## Integration Decisions
+
+- Added `src/lib/brainRuntimeSettings.ts` for shared runtime defaults, bounds, policy types, and normalization.
+- Persisted `brain_runtime_settings` in Zustand/localStorage with partial updates and reset-to-defaults.
+- Added Admin `Runtime Tuning` tab with policy buttons, bounded sliders, current local setting meters, model behavior context, and local-only contract notes.
+- Wired ChatPanel to send normalized runtime settings and the explicit Web Search UI flag in `/api/chat` requests.
+- Server now normalizes runtime settings, records them in system activity metadata, applies `toolIterationLimit`, suppresses automatic freshness search in `manual_only`, and aligns model instructions with the active policy.
+- Activity polling now uses the configured refresh interval and avoids overlapping fetches.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 27 tests.
+- `npm run build`: passed.
+- Browser QA on `http://localhost:3001`: Admin Activity loaded; Runtime Tuning rendered; Manual Only updated the visible policy summary; Reset defaults restored Source First and disabled the reset button; mobile viewport showed the Tuning tab and runtime controls; browser warning/error logs were 0.
+- Browser screenshot was emitted during QA. Saving the screenshot artifact from the browser runtime to `.workflow/.../results/` was blocked by the browser runtime filesystem permissions.
+- Graphify regenerated from a clean temporary worktree with only this phase's source files copied in, preserving unrelated local PDF/StudyView edits.
+- Graphify artifact smoke after rebase: 566 nodes, 943 edges, no temp-path markers in checked graph artifacts, and query smoke returned `brainRuntimeSettings.ts`, `normalizeBrainRuntimeSettings()`, `AdminView()`, `ChatPanel.tsx`, and store/runtime-setting nodes.
+
+## Remaining Work
+
+- Extend `memoryConceptLimit` beyond the active-book concept list if beta behavior shows broader semantic-memory retrieval needs explicit bounding.
+- Add full fake streaming model/tool-call policy tests when the chat loop has a lighter test harness.
+- AWS/cloud synchronization remains out of scope until beta testing.

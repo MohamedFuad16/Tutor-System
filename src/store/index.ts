@@ -2,6 +2,11 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { type Message } from "../types";
 import type { AccessMode, PlanTier } from "../lib/accessPlans";
+import {
+  DEFAULT_BRAIN_RUNTIME_SETTINGS,
+  normalizeBrainRuntimeSettings,
+  type BrainRuntimeSettings,
+} from "../lib/brainRuntimeSettings";
 
 export type ViewState = "study" | "analytics" | "revision" | "admin";
 
@@ -121,6 +126,7 @@ const emptyChatUsage: ChatUsage = {
 };
 
 const DEFAULT_AI_MODEL = "deepseek/deepseek-v4-flash";
+const BRAIN_RUNTIME_SETTINGS_STORAGE_KEY = "brain_runtime_settings";
 
 const normalizeAiModel = (model: string | null) =>
   model === "deepseek/deepseek-chat"
@@ -151,6 +157,22 @@ const emptyVoiceUsage: VoiceUsage = {
   cost: 0,
   estimated: false,
   sessions: 0,
+};
+
+const readBrainRuntimeSettings = (): BrainRuntimeSettings => {
+  try {
+    const raw = localStorage.getItem(BRAIN_RUNTIME_SETTINGS_STORAGE_KEY);
+    return normalizeBrainRuntimeSettings(raw ? JSON.parse(raw) : null);
+  } catch {
+    return DEFAULT_BRAIN_RUNTIME_SETTINGS;
+  }
+};
+
+const persistBrainRuntimeSettings = (settings: BrainRuntimeSettings) => {
+  localStorage.setItem(
+    BRAIN_RUNTIME_SETTINGS_STORAGE_KEY,
+    JSON.stringify(settings),
+  );
 };
 
 const emptyPricing: PricingState = {
@@ -270,6 +292,10 @@ interface AppState {
 
   systemPrompt: string;
   setSystemPrompt: (prompt: string) => void;
+
+  brainRuntimeSettings: BrainRuntimeSettings;
+  setBrainRuntimeSettings: (settings: Partial<BrainRuntimeSettings>) => void;
+  resetBrainRuntimeSettings: () => void;
 
   totalTokens: number;
   estimatedCost: number;
@@ -427,6 +453,21 @@ export const useStore = create<AppState>()(
       setSystemPrompt: (prompt) => {
         localStorage.setItem("system_prompt", prompt);
         set({ systemPrompt: prompt });
+      },
+
+      brainRuntimeSettings: readBrainRuntimeSettings(),
+      setBrainRuntimeSettings: (settings) =>
+        set((state) => {
+          const next = normalizeBrainRuntimeSettings({
+            ...state.brainRuntimeSettings,
+            ...settings,
+          });
+          persistBrainRuntimeSettings(next);
+          return { brainRuntimeSettings: next };
+        }),
+      resetBrainRuntimeSettings: () => {
+        persistBrainRuntimeSettings(DEFAULT_BRAIN_RUNTIME_SETTINGS);
+        set({ brainRuntimeSettings: DEFAULT_BRAIN_RUNTIME_SETTINGS });
       },
 
       totalTokens:

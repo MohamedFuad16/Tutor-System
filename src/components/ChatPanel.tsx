@@ -2451,6 +2451,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const aiModel = useStore((state) => state.aiModel);
   const animationsEnabled = useStore((state) => state.animationsEnabled);
   const systemPrompt = useStore((state) => state.systemPrompt);
+  const brainRuntimeSettings = useStore((state) => state.brainRuntimeSettings);
   const recordChatUsage = useStore((state) => state.recordChatUsage);
   const recordVoiceUsage = useStore((state) => state.recordVoiceUsage);
   const recordWebUsage = useStore((state) => state.recordWebUsage);
@@ -3345,7 +3346,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           const bookConcepts = await db.learningBookConcepts
             .where("bookId")
             .equals(book.id)
-            .limit(12)
+            .limit(brainRuntimeSettings.memoryConceptLimit)
             .toArray()
             .catch(() => []);
           activeBookContext = [
@@ -3419,6 +3420,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           memoryContext: requestMemoryContext,
           aiModel,
           customPrompt: systemPrompt,
+          runtimeSettings: brainRuntimeSettings,
+          webSearchExplicit: isSearchSkillActive,
           activeProject: activeLearningBook?.title || activeProject,
           activeBookId: canonicalActiveBookId,
           activeDocumentId,

@@ -16,6 +16,20 @@ import {
   type NormalizedWebSource,
   type WebSearchMode,
 } from "./server/web-search.js";
+import {
+  BRAIN_RUNTIME_SETTING_LIMITS,
+  DEFAULT_BRAIN_RUNTIME_SETTINGS,
+  WEB_SEARCH_POLICIES,
+  normalizeBrainRuntimeSettings,
+  type BrainRuntimeSettings,
+} from "./src/lib/brainRuntimeSettings.js";
+
+export {
+  BRAIN_RUNTIME_SETTING_LIMITS,
+  DEFAULT_BRAIN_RUNTIME_SETTINGS,
+  WEB_SEARCH_POLICIES,
+  normalizeBrainRuntimeSettings,
+};
 
 const DEEPGRAM_PRICING = {
   voiceAgentPerMinute: 0.075,
@@ -300,6 +314,40 @@ const safeActivityMetadata = (metadata?: Record<string, unknown>) => {
     safe[key] = value;
   });
   return safe;
+};
+
+const compactRuntimeSettings = (settings: BrainRuntimeSettings) => ({
+  webSearchPolicy: settings.webSearchPolicy,
+  toolIterationLimit: settings.toolIterationLimit,
+  memoryConceptLimit: settings.memoryConceptLimit,
+  activityRefreshMs: settings.activityRefreshMs,
+});
+
+const stripWebSearchSystemPrefix = (text: string) =>
+  text
+    .replace(
+      /^\[SYSTEM:\s*The user has explicitly selected the Web Search skill\.[^\]]*\]\s*/i,
+      "",
+    )
+    .trim();
+
+const searchDetectionForExplicitRequest = (
+  text: string,
+): { query: string; mode: WebSearchMode } => {
+  const cleanText = stripWebSearchSystemPrefix(text) || text;
+  const explicitSearch = detectFreshnessSearch(`search the web ${cleanText}`);
+  if (explicitSearch) {
+    return {
+      ...explicitSearch,
+      query: cleanText.trim().slice(0, 240),
+    };
+  }
+  const mode: WebSearchMode = /\b(news|today|headline|headlines)\b/i.test(
+    cleanText,
+  )
+    ? "news"
+    : "search";
+  return { query: cleanText.trim().slice(0, 240), mode };
 };
 
 const slugifyId = (value: string) =>
@@ -645,7 +693,18 @@ export async function createTutorServerApp(
         tuning: {
           defaultChatModel: DEFAULT_CHAT_MODEL,
           learningAgentModel: LEARNING_AGENT_MODEL,
-          maxToolIterations: 5,
+          toolIterationLimitDefault:
+            DEFAULT_BRAIN_RUNTIME_SETTINGS.toolIterationLimit,
+          toolIterationLimitRange: `${BRAIN_RUNTIME_SETTING_LIMITS.toolIterationLimit.min}-${BRAIN_RUNTIME_SETTING_LIMITS.toolIterationLimit.max}`,
+          memoryConceptLimitDefault:
+            DEFAULT_BRAIN_RUNTIME_SETTINGS.memoryConceptLimit,
+          memoryConceptLimitRange: `${BRAIN_RUNTIME_SETTING_LIMITS.memoryConceptLimit.min}-${BRAIN_RUNTIME_SETTING_LIMITS.memoryConceptLimit.max}`,
+          activityRefreshMsDefault:
+            DEFAULT_BRAIN_RUNTIME_SETTINGS.activityRefreshMs,
+          activityRefreshMsRange: `${BRAIN_RUNTIME_SETTING_LIMITS.activityRefreshMs.min}-${BRAIN_RUNTIME_SETTING_LIMITS.activityRefreshMs.max}`,
+          webSearchPolicyDefault:
+            DEFAULT_BRAIN_RUNTIME_SETTINGS.webSearchPolicy,
+          webSearchPolicies: WEB_SEARCH_POLICIES.join(", "),
           websocketDebugPath: "/ws/debug",
         },
       },
@@ -1492,9 +1551,13 @@ CRITICAL RULES:
         memoryContext,
         aiModel,
         customPrompt,
+        runtimeSettings: rawRuntimeSettings,
+        webSearchExplicit,
         serperApiKey: bodySerperKey,
         language,
       } = req.body;
+      const runtimeSettings = normalizeBrainRuntimeSettings(rawRuntimeSettings);
+      const runtimeSettingsSnapshot = compactRuntimeSettings(runtimeSettings);
       const serperRuntimeKey =
         sanitizeApiKey(req.headers["x-serper-api-key"]) ||
         sanitizeApiKey(bodySerperKey) ||
@@ -1512,6 +1575,7 @@ CRITICAL RULES:
           metadata: {
             messageCount: Array.isArray(messages) ? messages.length : 0,
             aiModel: aiModel || DEFAULT_CHAT_MODEL,
+            runtimeSettings: runtimeSettingsSnapshot,
           },
         });
         sendEvent("error", {
@@ -1551,6 +1615,7 @@ CRITICAL RULES:
             typeof memoryContext === "string" ? memoryContext.length : 0,
           hasCurrentPageImage: Boolean(currentPageImage),
           language: language || "en",
+          runtimeSettings: runtimeSettingsSnapshot,
         },
       });
       const sourceMaterialRequest =
@@ -1563,9 +1628,15 @@ CRITICAL RULES:
         /\b(on the screen|visible|shown|source material|uploaded document|reading)\b/i.test(
           latestUserContent,
         );
-      const requestedWebSearch = Boolean(
-        detectFreshnessSearch(latestUserContent),
-      );
+      const explicitWebSearch = Boolean(webSearchExplicit);
+      const automaticFreshnessSearch =
+        runtimeSettings.webSearchPolicy === "manual_only"
+          ? null
+          : detectFreshnessSearch(latestUserContent);
+      const freshnessSearch = explicitWebSearch
+        ? searchDetectionForExplicitRequest(latestUserContent)
+        : automaticFreshnessSearch;
+      const requestedWebSearch = Boolean(freshnessSearch);
       if (memoryContext) {
         recordSystemActivity({
           kind: "retrieval",
@@ -1579,7 +1650,9 @@ CRITICAL RULES:
             memoryContextChars:
               typeof memoryContext === "string" ? memoryContext.length : 0,
             sourceMaterialRequest,
+            explicitWebSearch,
             requestedWebSearch,
+            runtimeSettings: runtimeSettingsSnapshot,
           },
         });
       }
@@ -1705,6 +1778,22 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         systemInstruction = `${customPrompt}\n\n${systemInstruction}`;
       }
 
+      systemInstruction += `\n\nADMIN RUNTIME TUNING:
+- Web search policy: ${runtimeSettings.webSearchPolicy}
+- Tool iteration budget: ${runtimeSettings.toolIterationLimit}
+- Memory concept budget supplied by client: ${runtimeSettings.memoryConceptLimit}`;
+
+      if (
+        runtimeSettings.webSearchPolicy === "manual_only" &&
+        !explicitWebSearch
+      ) {
+        systemInstruction +=
+          "\n- Web search is manual-only for this turn. Do not call web_search unless the user explicitly selected the Web Search skill.";
+      } else if (runtimeSettings.webSearchPolicy === "source_first") {
+        systemInstruction +=
+          "\n- Prefer local source material and memory context before any web retrieval. Source-material questions must stay local unless web search was explicitly selected.";
+      }
+
       if (memoryContext) {
         systemInstruction += `\n\n${memoryContext}`;
       }
@@ -1721,9 +1810,6 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
       // Eager vision prefetch removed. Vision tool look_at_current_page is registered if currentPageImage is present.
 
-      const freshnessSearch = requestedWebSearch
-        ? detectFreshnessSearch(latestUserContent)
-        : null;
       if (freshnessSearch) {
         sendEvent("reasoning_summary", {
           content: "Detecting freshness requirement",
@@ -1872,7 +1958,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       let flashcardsUpdates: any[] = [];
 
       let iterations = 0;
-      const MAX_ITERATIONS = 5;
+      const MAX_ITERATIONS = runtimeSettings.toolIterationLimit;
       let finalContent = "";
 
       // Model fallback chain: try primary, then fallbacks on failure
@@ -2161,6 +2247,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           } else if (functionName === "web_search") {
             try {
               if (!requestedWebSearch) {
+                const blockReason =
+                  runtimeSettings.webSearchPolicy === "manual_only"
+                    ? "Admin runtime tuning is set to manual web search only."
+                    : "The turn looked source-local, so Tutor stayed with selected text, page, memory, and document context.";
                 formattedMessages.push({
                   role: "tool",
                   tool_call_id: toolCall.id,
@@ -2171,21 +2261,26 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                   kind: "tool",
                   status: "blocked",
                   title: "Web search denied",
-                  detail:
-                    "The turn looked source-local, so Tutor stayed with selected text, page, memory, and document context.",
+                  detail: blockReason,
                   requestId,
                   toolName: functionName,
                   phase: "tool_execution",
                   durationMs: Date.now() - toolStartedAt,
+                  metadata: {
+                    runtimeSettings: runtimeSettingsSnapshot,
+                    explicitWebSearch,
+                  },
                 });
                 sendToolJobEvent({
                   status: "blocked",
                   toolName: functionName,
                   inputSummary,
-                  outputSummary:
-                    "Web search denied because the turn was source-local.",
+                  outputSummary: blockReason,
                   durationMs: Date.now() - toolStartedAt,
-                  metadata: { toolCallId: toolCall.id },
+                  metadata: {
+                    toolCallId: toolCall.id,
+                    runtimeSettings: runtimeSettingsSnapshot,
+                  },
                 });
                 continue;
               }
@@ -2452,6 +2547,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           flashcards: flashcardsUpdates.length,
           webSources: webSources.length,
           iterations: iterations + 1,
+          runtimeSettings: runtimeSettingsSnapshot,
         },
       });
       sendEvent("done", {

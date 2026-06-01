@@ -20,13 +20,21 @@ import {
   Gauge,
   AlertTriangle,
   RefreshCw,
+  RotateCcw,
+  SlidersHorizontal,
 } from "lucide-react";
 import { gsap } from "gsap";
 import { useStore } from "../store";
 import { useMotionPreference } from "../hooks/useMotionPreference";
+import {
+  BRAIN_RUNTIME_SETTING_LIMITS,
+  DEFAULT_BRAIN_RUNTIME_SETTINGS,
+  type BrainRuntimeSettings,
+  type BrainWebSearchPolicy,
+} from "../lib/brainRuntimeSettings";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
-type AdminTab = "activity" | "evidence" | "traces" | "console";
+type AdminTab = "activity" | "evidence" | "tuning" | "traces" | "console";
 type ActivityStatus = "idle" | "loading" | "ready" | "error";
 const TRACE_PAGE_SIZE = 100;
 
@@ -95,6 +103,28 @@ const readDebugToken = () => {
   }
 };
 
+const webSearchPolicyOptions: {
+  id: BrainWebSearchPolicy;
+  label: string;
+  description: string;
+}[] = [
+  {
+    id: "source_first",
+    label: "Source First",
+    description: "Use local page, book, and memory context before web search.",
+  },
+  {
+    id: "manual_only",
+    label: "Manual Only",
+    description: "Block automatic web search unless the Search skill is used.",
+  },
+  {
+    id: "auto_freshness",
+    label: "Auto Freshness",
+    description: "Allow freshness-sensitive web retrieval when detected.",
+  },
+];
+
 const formatTime = (timestamp?: number | null) =>
   timestamp
     ? new Date(timestamp).toLocaleTimeString([], {
@@ -131,10 +161,14 @@ export function AdminView() {
     voiceUsage,
     webUsage,
     aiModel,
+    systemPrompt,
     activeLearningBookId,
     activeProject,
     pricing,
     webSearchEvents,
+    brainRuntimeSettings,
+    setBrainRuntimeSettings,
+    resetBrainRuntimeSettings,
   } = useStore();
   const motionEnabled = useMotionPreference();
   const [traceLimit, setTraceLimit] = useState(TRACE_PAGE_SIZE);
@@ -217,7 +251,10 @@ export function AdminView() {
     if (activeTab !== "activity") return;
 
     let cancelled = false;
+    let inFlight = false;
     const loadActivity = async (showLoading: boolean) => {
+      if (inFlight) return;
+      inFlight = true;
       if (showLoading) setActivityStatus("loading");
       setActivityError("");
       try {
@@ -248,17 +285,22 @@ export function AdminView() {
               : "System activity unavailable",
           );
         }
+      } finally {
+        inFlight = false;
       }
     };
 
     void loadActivity(true);
-    const interval = window.setInterval(() => void loadActivity(false), 5000);
+    const interval = window.setInterval(
+      () => void loadActivity(false),
+      brainRuntimeSettings.activityRefreshMs,
+    );
 
     return () => {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [activeTab, activityRefreshKey]);
+  }, [activeTab, activityRefreshKey, brainRuntimeSettings.activityRefreshMs]);
 
   useEffect(() => {
     if (activeTab !== "console") {
@@ -399,6 +441,20 @@ export function AdminView() {
         : activityStatus === "error"
           ? "border-red-200 bg-red-50 text-red-600"
           : "border-zinc-200 bg-zinc-50 text-zinc-500";
+  const updateRuntimeSetting = <K extends keyof BrainRuntimeSettings>(
+    key: K,
+    value: BrainRuntimeSettings[K],
+  ) =>
+    setBrainRuntimeSettings({ [key]: value } as Partial<BrainRuntimeSettings>);
+  const runtimeSettingsAreDefault =
+    brainRuntimeSettings.activityRefreshMs ===
+      DEFAULT_BRAIN_RUNTIME_SETTINGS.activityRefreshMs &&
+    brainRuntimeSettings.memoryConceptLimit ===
+      DEFAULT_BRAIN_RUNTIME_SETTINGS.memoryConceptLimit &&
+    brainRuntimeSettings.toolIterationLimit ===
+      DEFAULT_BRAIN_RUNTIME_SETTINGS.toolIterationLimit &&
+    brainRuntimeSettings.webSearchPolicy ===
+      DEFAULT_BRAIN_RUNTIME_SETTINGS.webSearchPolicy;
 
   useLayoutEffect(() => {
     const content = contentRef.current;
@@ -483,6 +539,13 @@ export function AdminView() {
               <span className="line-clamp-1 leading-snug">Evidence Ledger</span>
             </button>
             <button
+              onClick={() => setActiveTab("tuning")}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "tuning" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+            >
+              <SlidersHorizontal size={16} />
+              <span className="line-clamp-1 leading-snug">Runtime Tuning</span>
+            </button>
+            <button
               onClick={() => setActiveTab("traces")}
               className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "traces" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
             >
@@ -533,6 +596,7 @@ export function AdminView() {
                   signals. Use <strong>System Activity</strong> for the live
                   observability ledger, <strong>Evidence Ledger</strong> to
                   inspect model-summary evidence and mastery deltas,{" "}
+                  <strong>Runtime Tuning</strong> for local behavior controls,{" "}
                   <strong>DeepSeek Trace</strong> for persisted tutor updates,
                   or switch to the <strong>Server Console</strong> to monitor
                   live backend traffic, WebSocket streams, and TTS generation
@@ -540,10 +604,15 @@ export function AdminView() {
                 </p>
               </div>
 
-              <div className="mb-8 grid grid-cols-1 gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm sm:grid-cols-3 lg:hidden">
+              <div className="mb-8 grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm sm:grid-cols-5 lg:hidden">
                 {[
                   { id: "activity", label: "Activity", icon: Gauge },
                   { id: "evidence", label: "Evidence", icon: BrainCircuit },
+                  {
+                    id: "tuning",
+                    label: "Tuning",
+                    icon: SlidersHorizontal,
+                  },
                   { id: "traces", label: "Traces", icon: Activity },
                   { id: "console", label: "Console", icon: Terminal },
                 ].map((tab) => {
@@ -573,9 +642,11 @@ export function AdminView() {
                     ? "Observability"
                     : activeTab === "evidence"
                       ? "Learner Evidence"
-                      : activeTab === "traces"
-                        ? "Diagnostics"
-                        : "Runtime Environment"}
+                      : activeTab === "tuning"
+                        ? "Runtime Controls"
+                        : activeTab === "traces"
+                          ? "Diagnostics"
+                          : "Runtime Environment"}
                 </span>
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-2 font-serif leading-[1.15]">
@@ -583,9 +654,11 @@ export function AdminView() {
                       ? "System Activity"
                       : activeTab === "evidence"
                         ? "Evidence Ledger"
-                        : activeTab === "traces"
-                          ? "DeepSeek Trace Ledger"
-                          : "Live Server Console"}
+                        : activeTab === "tuning"
+                          ? "Runtime Tuning"
+                          : activeTab === "traces"
+                            ? "DeepSeek Trace Ledger"
+                            : "Live Server Console"}
                   </h1>
                   {activeTab === "activity" && (
                     <div
@@ -666,7 +739,11 @@ export function AdminView() {
                           className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-600 transition-colors hover:bg-white hover:text-zinc-900"
                         >
                           <RefreshCw size={13} />
-                          Auto-refresh 5s
+                          Auto-refresh{" "}
+                          {Math.round(
+                            brainRuntimeSettings.activityRefreshMs / 1000,
+                          )}
+                          s
                         </button>
                       </div>
 
@@ -1224,6 +1301,299 @@ export function AdminView() {
                           ))}
                         </div>
                       )}
+                    </section>
+                  </div>
+                ) : activeTab === "tuning" ? (
+                  <div className="flex flex-col gap-8 font-sans">
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                            <SlidersHorizontal size={13} /> Local Runtime
+                            Controls
+                          </div>
+                          <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
+                            Tune the learner-brain runtime
+                          </h2>
+                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                            These controls are stored locally and sent with chat
+                            requests. They tune source-vs-web behavior, model
+                            tool loops, memory context size, and Admin polling
+                            without touching AWS or cloud deployment paths.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={resetBrainRuntimeSettings}
+                          disabled={runtimeSettingsAreDefault}
+                          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-600 transition-colors hover:bg-white hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          <RotateCcw size={13} />
+                          Reset defaults
+                        </button>
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-4">
+                        {[
+                          [
+                            "Web Policy",
+                            brainRuntimeSettings.webSearchPolicy.replace(
+                              /_/g,
+                              " ",
+                            ),
+                          ],
+                          [
+                            "Tool Loops",
+                            brainRuntimeSettings.toolIterationLimit,
+                          ],
+                          [
+                            "Memory Concepts",
+                            brainRuntimeSettings.memoryConceptLimit,
+                          ],
+                          [
+                            "Admin Refresh",
+                            `${Math.round(brainRuntimeSettings.activityRefreshMs / 1000)}s`,
+                          ],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
+                          >
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              {label}
+                            </div>
+                            <div className="mt-2 truncate text-lg font-semibold capitalize tabular-nums text-zinc-900">
+                              {value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+                      <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <h3 className="text-xl font-serif font-medium text-zinc-900">
+                          Web and source policy
+                        </h3>
+                        <p className="mt-1 text-sm leading-relaxed text-zinc-500 font-serif">
+                          Controls when Tutor is allowed to leave the local
+                          reading context for live web retrieval.
+                        </p>
+                        <div className="mt-4 grid gap-3">
+                          {webSearchPolicyOptions.map((option) => (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() =>
+                                updateRuntimeSetting(
+                                  "webSearchPolicy",
+                                  option.id,
+                                )
+                              }
+                              className={`rounded-2xl border p-4 text-left transition-colors ${
+                                brainRuntimeSettings.webSearchPolicy ===
+                                option.id
+                                  ? "border-blue-200 bg-blue-50 text-blue-900 shadow-sm"
+                                  : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-white"
+                              }`}
+                            >
+                              <div className="text-sm font-semibold">
+                                {option.label}
+                              </div>
+                              <div className="mt-1 text-xs leading-relaxed text-zinc-500 font-serif">
+                                {option.description}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <h3 className="text-xl font-serif font-medium text-zinc-900">
+                          Runtime budgets
+                        </h3>
+                        <p className="mt-1 text-sm leading-relaxed text-zinc-500 font-serif">
+                          Bounded local budgets keep tool calls and retrieved
+                          concepts inspectable while preserving the tutor's
+                          default behavior.
+                        </p>
+
+                        <div className="mt-5 space-y-5">
+                          <label className="block rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                Tool iteration limit
+                              </span>
+                              <span className="text-sm font-semibold tabular-nums text-zinc-900">
+                                {brainRuntimeSettings.toolIterationLimit}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min={
+                                BRAIN_RUNTIME_SETTING_LIMITS.toolIterationLimit
+                                  .min
+                              }
+                              max={
+                                BRAIN_RUNTIME_SETTING_LIMITS.toolIterationLimit
+                                  .max
+                              }
+                              step={
+                                BRAIN_RUNTIME_SETTING_LIMITS.toolIterationLimit
+                                  .step
+                              }
+                              value={brainRuntimeSettings.toolIterationLimit}
+                              onChange={(event) =>
+                                updateRuntimeSetting(
+                                  "toolIterationLimit",
+                                  Number(event.currentTarget.value),
+                                )
+                              }
+                              className="mt-3 w-full accent-blue-600"
+                            />
+                            <div className="mt-2 text-xs text-zinc-500 font-serif">
+                              Sent to the server as the maximum model/tool
+                              follow-up loop for a chat request.
+                            </div>
+                          </label>
+
+                          <label className="block rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                Memory concept limit
+                              </span>
+                              <span className="text-sm font-semibold tabular-nums text-zinc-900">
+                                {brainRuntimeSettings.memoryConceptLimit}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min={
+                                BRAIN_RUNTIME_SETTING_LIMITS.memoryConceptLimit
+                                  .min
+                              }
+                              max={
+                                BRAIN_RUNTIME_SETTING_LIMITS.memoryConceptLimit
+                                  .max
+                              }
+                              step={
+                                BRAIN_RUNTIME_SETTING_LIMITS.memoryConceptLimit
+                                  .step
+                              }
+                              value={brainRuntimeSettings.memoryConceptLimit}
+                              onChange={(event) =>
+                                updateRuntimeSetting(
+                                  "memoryConceptLimit",
+                                  Number(event.currentTarget.value),
+                                )
+                              }
+                              className="mt-3 w-full accent-blue-600"
+                            />
+                            <div className="mt-2 text-xs text-zinc-500 font-serif">
+                              Controls how many active-book concepts ChatPanel
+                              includes in local memory context.
+                            </div>
+                          </label>
+
+                          <label className="block rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                Activity refresh
+                              </span>
+                              <span className="text-sm font-semibold tabular-nums text-zinc-900">
+                                {Math.round(
+                                  brainRuntimeSettings.activityRefreshMs / 1000,
+                                )}
+                                s
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min={
+                                BRAIN_RUNTIME_SETTING_LIMITS.activityRefreshMs
+                                  .min
+                              }
+                              max={
+                                BRAIN_RUNTIME_SETTING_LIMITS.activityRefreshMs
+                                  .max
+                              }
+                              step={
+                                BRAIN_RUNTIME_SETTING_LIMITS.activityRefreshMs
+                                  .step
+                              }
+                              value={brainRuntimeSettings.activityRefreshMs}
+                              onChange={(event) =>
+                                updateRuntimeSetting(
+                                  "activityRefreshMs",
+                                  Number(event.currentTarget.value),
+                                )
+                              }
+                              className="mt-3 w-full accent-blue-600"
+                            />
+                            <div className="mt-2 text-xs text-zinc-500 font-serif">
+                              Controls the System Activity polling interval in
+                              this Admin session.
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="grid gap-4 lg:grid-cols-2">
+                      <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <h3 className="text-xl font-serif font-medium text-zinc-900">
+                          Model behavior context
+                        </h3>
+                        <div className="mt-4 space-y-2">
+                          {[
+                            ["Current model", aiModel],
+                            [
+                              "System prompt",
+                              systemPrompt ? "custom prompt active" : "default",
+                            ],
+                            [
+                              "Search policy",
+                              brainRuntimeSettings.webSearchPolicy,
+                            ],
+                            [
+                              "Settings source",
+                              "localStorage brain_runtime_settings",
+                            ],
+                          ].map(([label, value]) => (
+                            <div
+                              key={label}
+                              className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2"
+                            >
+                              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                {label}
+                              </span>
+                              <span className="min-w-0 truncate text-right text-xs font-semibold text-zinc-900">
+                                {value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <h3 className="text-xl font-serif font-medium text-zinc-900">
+                          Local-only contract
+                        </h3>
+                        <div className="mt-4 grid gap-2 text-sm text-zinc-600 font-serif">
+                          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                            Runtime settings are persisted in the browser and
+                            included in `/api/chat` request metadata.
+                          </div>
+                          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                            The server normalizes bounds before applying tool
+                            iteration and web-search policy controls.
+                          </div>
+                          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                            AWS/cloud rollout remains deferred; this is a local
+                            beta tuning surface.
+                          </div>
+                        </div>
+                      </div>
                     </section>
                   </div>
                 ) : activeTab === "traces" ? (
