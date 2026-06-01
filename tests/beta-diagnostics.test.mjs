@@ -76,6 +76,47 @@ test("beta diagnostics escalate failed model and retrieval rows", () => {
   );
 });
 
+test("beta diagnostics keep source grounding on watch for non-verified citation states", () => {
+  for (const counts of [
+    { checkingCitationStates: 1 },
+    { unavailableCitationStates: 1 },
+    { conflictingCitationStates: 1 },
+    { unsupportedCitationStates: 1 },
+    { notCheckedCitationStates: 1 },
+  ]) {
+    const snapshot = buildBetaDiagnosticsSnapshot({
+      memoryEvents: 1,
+      learningBooks: 1,
+      artifactRecords: 1,
+      citationStates: 1,
+      ...counts,
+    });
+
+    assert.equal(
+      snapshot.items.find((item) => item.id === "source_grounding")?.status,
+      "watch",
+    );
+    assert.match(
+      snapshot.items.find((item) => item.id === "source_grounding")?.summary ||
+        "",
+      /artifacts/,
+    );
+  }
+
+  const notCheckedSnapshot = buildBetaDiagnosticsSnapshot({
+    memoryEvents: 1,
+    learningBooks: 1,
+    artifactRecords: 1,
+    citationStates: 1,
+    notCheckedCitationStates: 1,
+  });
+  assert.match(
+    notCheckedSnapshot.items.find((item) => item.id === "source_grounding")
+      ?.summary || "",
+    /1 not checked/,
+  );
+});
+
 test("beta diagnostics export preserves local-only scope and ledger samples", () => {
   const snapshot = buildBetaDiagnosticsSnapshot(
     {

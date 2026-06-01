@@ -441,7 +441,7 @@ flowchart LR
 
 Correction rule: editing or deleting a session must propagate to summaries, graph facts, embeddings, mastery deltas, tutor preferences, caches, and exports where practical. A memory is not trustworthy unless the user can see why it exists and how to remove or correct it.
 
-Local beta implementation note: Admin now records correction requests and applies non-destructive propagation overlays to matching local ledgers. Evidence and mastery rows are marked unverified, memory/retrieval rows can be skipped, source artifacts become stale/conflicting, citation states become unsupported/conflicting, and the capped diagnostics export includes a correction overlay. This is not hard deletion and does not yet rebuild every embedding or graph projection.
+Local beta implementation note: Admin now records correction requests and applies non-destructive propagation overlays to matching local ledgers. Evidence and mastery rows are marked unverified, memory/retrieval rows can be skipped, source artifacts become stale/conflicting, citation states become unsupported/conflicting, and the capped diagnostics export includes a correction overlay. Source-card citation rows can also pass through a local citation-integrity verifier that checks saved artifact links, URL shape, domain consistency, and source ids without fetching external pages. This is not hard deletion, not full factual verification, and does not yet rebuild every embedding or graph projection.
 
 Every background job should move through a visible lifecycle:
 
@@ -478,10 +478,11 @@ Citation states:
 
 | State | Meaning |
 | --- | --- |
-| verified | URL/source span was checked and matches the claim. |
+| verified | URL/source span or saved source-card linkage passed the configured verifier for its scope. |
 | checking | The tutor can mention that verification is in progress, but should not present it as confirmed. |
 | unavailable | The source cannot be reached or does not support the claim. |
 | conflicting | Sources disagree; the tutor should show uncertainty and ask whether to compare. |
+| unsupported | The available local verifier cannot assess this citation kind yet. |
 
 Truth rules:
 
@@ -498,11 +499,11 @@ Implemented now:
 - the built-in User Brain Architecture book;
 - the local interaction context layer;
 - basic BKT-style mastery machinery;
-- source cards and reader citation links.
+- source cards, reader citation links, durable citation-state rows, and a local source-card integrity verifier.
 
 Required before cloud beta:
 
-- typed EvidenceEvent, ToolJob, ArtifactRecord, MasteryDelta, and CitationState contracts;
+- broader generated-artifact citation verification beyond source-card rows;
 - durable job queue with retries and dead-letter review;
 - source-state enforcement in the UI;
 - tenant-scoped write paths across relational rows, vectors, graph IDs, S3 objects, queues, and logs;
@@ -710,8 +711,8 @@ Required gates:
 
 | Gate | Pass condition | Evidence |
 | --- | --- | --- |
-| Source grounding | Answers cite the relevant page, source span, or retrieved record. | Source cards, citation states, retrieval traces. |
-| Current facts | Latest/current questions trigger retrieval/search or explicit uncertainty. | Tool job logs and verified/unavailable/conflicting citation states. |
+| Source grounding | Answers cite the relevant page, source span, or retrieved record. | Source cards, citation states with local verifier metadata, retrieval traces. |
+| Current facts | Latest/current questions trigger retrieval/search or explicit uncertainty. | Tool job logs and verified/unavailable/conflicting/unsupported citation states. |
 | Tool artifacts | Charts, code, images, websites, and source cards are visible, auditable, and attached to the turn. | ArtifactRecord rows with verification state. |
 | Learner-state changes | Every durable change has evidence and can be reversed. | EvidenceEvent, MasteryDelta, audit row, correction path. |
 | Voice behavior | Latency, pause handling, barge-in, pronunciation, and fallback path are measured. | Realtime traces and voice QA runs. |

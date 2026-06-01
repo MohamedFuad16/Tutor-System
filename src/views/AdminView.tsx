@@ -54,6 +54,10 @@ import {
   updateCorrectionEventReviewStatus,
 } from "../memory/correction.events";
 import {
+  verifyArtifactCitationIntegrity,
+  verifyCitationStateIntegrity,
+} from "../memory/artifact.records";
+import {
   BRAIN_RUNTIME_SETTING_LIMITS,
   DEFAULT_BRAIN_RUNTIME_SETTINGS,
   type BrainRuntimeSettings,
@@ -365,6 +369,36 @@ export function AdminView() {
     useLiveQuery(() => db.artifactRecords.count(), []) || 0;
   const citationStateCount =
     useLiveQuery(() => db.citationStates.count(), []) || 0;
+  const checkingCitationStateCount =
+    useLiveQuery(
+      () => db.citationStates.where("state").equals("checking").count(),
+      [],
+    ) || 0;
+  const unavailableCitationStateCount =
+    useLiveQuery(
+      () => db.citationStates.where("state").equals("unavailable").count(),
+      [],
+    ) || 0;
+  const verifiedCitationStateCount =
+    useLiveQuery(
+      () => db.citationStates.where("state").equals("verified").count(),
+      [],
+    ) || 0;
+  const conflictingCitationStateCount =
+    useLiveQuery(
+      () => db.citationStates.where("state").equals("conflicting").count(),
+      [],
+    ) || 0;
+  const unsupportedCitationStateCount =
+    useLiveQuery(
+      () => db.citationStates.where("state").equals("unsupported").count(),
+      [],
+    ) || 0;
+  const notCheckedCitationStateCount =
+    useLiveQuery(
+      () => db.citationStates.where("state").equals("not_checked").count(),
+      [],
+    ) || 0;
   const [serverLogs, setServerLogs] = useState<
     { type: string; msg: string; time: number }[]
   >([]);
@@ -386,6 +420,9 @@ export function AdminView() {
   const [correctionReason, setCorrectionReason] = useState("");
   const [correctionFeedback, setCorrectionFeedback] = useState("");
   const [correctionError, setCorrectionError] = useState("");
+  const [citationVerifierFeedback, setCitationVerifierFeedback] = useState("");
+  const [citationVerifierError, setCitationVerifierError] = useState("");
+  const [citationVerifierBusyId, setCitationVerifierBusyId] = useState("");
   const [diagnosticsExportFeedback, setDiagnosticsExportFeedback] =
     useState("");
 
@@ -633,15 +670,12 @@ export function AdminView() {
   const readyArtifactRecords = artifactRecords.filter(
     (record) => record.status === "ready",
   ).length;
-  const checkingCitationStates = citationStates.filter(
-    (state) => state.state === "checking",
-  ).length;
-  const unavailableCitationStates = citationStates.filter(
-    (state) => state.state === "unavailable",
-  ).length;
-  const verifiedCitationStates = citationStates.filter(
-    (state) => state.state === "verified",
-  ).length;
+  const checkingCitationStates = checkingCitationStateCount;
+  const unavailableCitationStates = unavailableCitationStateCount;
+  const verifiedCitationStates = verifiedCitationStateCount;
+  const conflictingCitationStates = conflictingCitationStateCount;
+  const unsupportedCitationStates = unsupportedCitationStateCount;
+  const notCheckedCitationStates = notCheckedCitationStateCount;
   const artifactRecordsByType = artifactRecords.reduce<Record<string, number>>(
     (acc, record) => {
       acc[record.artifactType] = (acc[record.artifactType] || 0) + 1;
@@ -672,6 +706,9 @@ export function AdminView() {
     checkingCitationStates,
     unavailableCitationStates,
     verifiedCitationStates,
+    conflictingCitationStates,
+    unsupportedCitationStates,
+    notCheckedCitationStates,
     correctionEvents: correctionEventCount,
     openCorrectionEvents,
     appliedCorrectionEvents,
@@ -886,6 +923,49 @@ export function AdminView() {
       `Admin marked this correction request ${status}.`,
     );
     setCorrectionFeedback(`Correction request marked ${status}.`);
+  };
+
+  const runLocalArtifactVerifier = async (record: ArtifactRecord) => {
+    setCitationVerifierError("");
+    setCitationVerifierFeedback("");
+    setCitationVerifierBusyId(record.id);
+
+    try {
+      const result = await verifyArtifactCitationIntegrity(record.id);
+      const states = result.results.map((entry) => entry.state);
+      const verified = states.filter((state) => state === "verified").length;
+      const risky = states.filter((state) => state !== "verified");
+      setCitationVerifierFeedback(
+        result.results.length > 0
+          ? `Local check completed for ${record.title}: ${verified} verified, ${risky.length} need review. No external pages were fetched.`
+          : `Local check completed for ${record.title}: no linked citation states were found.`,
+      );
+    } catch (error) {
+      setCitationVerifierError(
+        error instanceof Error ? error.message : "Local citation check failed.",
+      );
+    } finally {
+      setCitationVerifierBusyId("");
+    }
+  };
+
+  const runLocalCitationVerifier = async (state: CitationState) => {
+    setCitationVerifierError("");
+    setCitationVerifierFeedback("");
+    setCitationVerifierBusyId(state.id);
+
+    try {
+      const result = await verifyCitationStateIntegrity(state.id);
+      setCitationVerifierFeedback(
+        `Local check marked citation ${result.citation.state.replace(/_/g, " ")}. No external pages were fetched.`,
+      );
+    } catch (error) {
+      setCitationVerifierError(
+        error instanceof Error ? error.message : "Local citation check failed.",
+      );
+    } finally {
+      setCitationVerifierBusyId("");
+    }
   };
 
   const downloadBetaDiagnostics = () => {
@@ -2637,9 +2717,9 @@ export function AdminView() {
                             Durable local records for source cards and citation
                             states captured from chat web-search streams. Source
                             cards can be ready while their citations remain
-                            checking; this tab intentionally avoids claiming
-                            verification until a later verifier writes that
-                            state.
+                            checking; the local verifier checks saved
+                            source-card structure and links without fetching
+                            external pages.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -2652,13 +2732,16 @@ export function AdminView() {
                         </div>
                       </div>
 
-                      <div className="grid gap-3 md:grid-cols-5">
+                      <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-8">
                         {[
                           ["Source cards", sourceCardArtifacts],
                           ["Ready artifacts", readyArtifactRecords],
                           ["Checking", checkingCitationStates],
                           ["Unavailable", unavailableCitationStates],
                           ["Verified", verifiedCitationStates],
+                          ["Conflicting", conflictingCitationStates],
+                          ["Unsupported", unsupportedCitationStates],
+                          ["Not checked", notCheckedCitationStates],
                         ].map(([label, value]) => (
                           <div
                             key={label}
@@ -2673,6 +2756,18 @@ export function AdminView() {
                           </div>
                         ))}
                       </div>
+
+                      {(citationVerifierFeedback || citationVerifierError) && (
+                        <div
+                          className={`mt-4 rounded-2xl border px-4 py-3 text-sm font-serif ${
+                            citationVerifierError
+                              ? "border-red-200 bg-red-50 text-red-700"
+                              : "border-green-200 bg-green-50 text-green-700"
+                          }`}
+                        >
+                          {citationVerifierError || citationVerifierFeedback}
+                        </div>
+                      )}
                     </section>
 
                     <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
@@ -2776,6 +2871,26 @@ export function AdminView() {
                                 </div>
 
                                 <div className="mt-3 flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void runLocalArtifactVerifier(record)
+                                    }
+                                    disabled={
+                                      citationVerifierBusyId === record.id
+                                    }
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 transition-colors hover:bg-green-100 disabled:cursor-wait disabled:opacity-60"
+                                  >
+                                    <RefreshCw
+                                      size={12}
+                                      className={
+                                        citationVerifierBusyId === record.id
+                                          ? "animate-spin"
+                                          : ""
+                                      }
+                                    />
+                                    Run local check
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={() =>
@@ -2912,6 +3027,26 @@ export function AdminView() {
                                     <button
                                       type="button"
                                       onClick={() =>
+                                        void runLocalCitationVerifier(state)
+                                      }
+                                      disabled={
+                                        citationVerifierBusyId === state.id
+                                      }
+                                      className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 transition-colors hover:bg-green-100 disabled:cursor-wait disabled:opacity-60"
+                                    >
+                                      <RefreshCw
+                                        size={12}
+                                        className={
+                                          citationVerifierBusyId === state.id
+                                            ? "animate-spin"
+                                            : ""
+                                        }
+                                      />
+                                      Run local check
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
                                         void recordCorrectionRequest({
                                           action: "review",
                                           targetType: "citation_state",
@@ -3027,8 +3162,10 @@ export function AdminView() {
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               A checking citation is not a verified citation.
-                              Verification must be written by a future verifier
-                              before Tutor can claim it.
+                              The local verifier can only check saved
+                              source-card structure, citation linkage, URL
+                              shape, and domain consistency; it does not fetch
+                              or prove external page content.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               AWS/cloud synchronization remains deferred until

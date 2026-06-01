@@ -27,6 +27,9 @@ export type BetaDiagnosticsInput = {
   checkingCitationStates?: number;
   unavailableCitationStates?: number;
   verifiedCitationStates?: number;
+  conflictingCitationStates?: number;
+  unsupportedCitationStates?: number;
+  notCheckedCitationStates?: number;
   correctionEvents?: number;
   openCorrectionEvents?: number;
   appliedCorrectionEvents?: number;
@@ -86,6 +89,9 @@ const requiredCounts = (
   checkingCitationStates: numberOrZero(input.checkingCitationStates),
   unavailableCitationStates: numberOrZero(input.unavailableCitationStates),
   verifiedCitationStates: numberOrZero(input.verifiedCitationStates),
+  conflictingCitationStates: numberOrZero(input.conflictingCitationStates),
+  unsupportedCitationStates: numberOrZero(input.unsupportedCitationStates),
+  notCheckedCitationStates: numberOrZero(input.notCheckedCitationStates),
   correctionEvents: numberOrZero(input.correctionEvents),
   openCorrectionEvents: numberOrZero(input.openCorrectionEvents),
   appliedCorrectionEvents: numberOrZero(input.appliedCorrectionEvents),
@@ -120,6 +126,9 @@ export const buildBetaDiagnosticsSnapshot = (
   const sourceGroundingStatus: BetaDiagnosticStatus =
     counts.unavailableCitationStates > 0 ||
     counts.checkingCitationStates > 0 ||
+    counts.conflictingCitationStates > 0 ||
+    counts.unsupportedCitationStates > 0 ||
+    counts.notCheckedCitationStates > 0 ||
     (counts.artifactRecords > 0 && counts.verifiedCitationStates === 0)
       ? "watch"
       : counts.artifactRecords > 0
@@ -188,13 +197,13 @@ export const buildBetaDiagnosticsSnapshot = (
       status: sourceGroundingStatus,
       summary:
         counts.artifactRecords > 0
-          ? `${counts.artifactRecords} artifacts, ${counts.checkingCitationStates} checking citations, ${counts.unavailableCitationStates} unavailable citations.`
+          ? `${counts.artifactRecords} artifacts, ${counts.verifiedCitationStates} verified, ${counts.checkingCitationStates} checking, ${counts.unavailableCitationStates} unavailable, ${counts.conflictingCitationStates} conflicting, ${counts.unsupportedCitationStates} unsupported, ${counts.notCheckedCitationStates} not checked citations.`
           : "No source artifacts have been captured yet.",
       count: counts.artifactRecords,
       action:
         counts.verifiedCitationStates > 0
-          ? "Keep citation-state transitions reviewable."
-          : "Do not claim citations are verified until a verifier writes that state.",
+          ? "Keep local citation-state transitions reviewable and do not treat them as external content proof."
+          : "Run a local verifier before claiming a citation-state row is verified.",
     }),
     item({
       id: "correction_control",

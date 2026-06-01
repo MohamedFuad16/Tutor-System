@@ -2085,6 +2085,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Mark-wrong, deletion-review, and supersede actions stay non-destructive in beta while affected rows gain visible correction state.",
       },
       {
+        title: "Local citation checks",
+        detail:
+          "Source Artifacts keeps artifact readiness separate from citation verification and can run a local source-card integrity check without fetching external pages.",
+      },
+      {
         title: "Diagnostics export",
         detail:
           "Exports are capped, local-only, and explicit about deferred cloud readiness, correction overlays, and out-of-scope automation.",

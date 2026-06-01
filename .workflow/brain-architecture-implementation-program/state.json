@@ -141,16 +141,23 @@
       "owner": "main agent + read-only sidecars Curie and Confucius",
       "status": "completed",
       "write_scope": "src/memory/correction.events.ts, src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, src/views/StudyView.tsx, src/components/PdfViewer.tsx, src/views/RevisionView.tsx, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, tests/correction-events.test.mjs, tests/beta-diagnostics.test.mjs, graphify-out/*"
+    },
+    {
+      "id": "T",
+      "name": "Local citation integrity verifier",
+      "owner": "main agent + read-only sidecar Lagrange",
+      "status": "completed",
+      "write_scope": "src/memory/artifact.records.ts, src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, tests/artifact-records.test.mjs, tests/beta-diagnostics.test.mjs, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_14_verified",
+    "status": "phase_15_verified_pending_push",
     "checks": [
       "npm run lint",
       "npm run test",
       "npm run build",
       "npm run format:check",
-      "browser QA for Admin correction overlays, request timelines, beta diagnostics, Study PDF chip rail, and built-in books",
+      "browser QA for Admin Source Artifacts, Beta Diagnostics, and built-in books",
       "graphify update . --force",
       "npm run graphify:tree",
       "graphify query smoke"

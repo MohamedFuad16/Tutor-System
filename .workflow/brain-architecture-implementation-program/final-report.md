@@ -578,3 +578,78 @@ updates. It keeps AWS/cloud synchronization and hard deletion out of scope.
 - Add an explicit local citation verifier before any source can move from
   `checking` to `verified`.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 15 report
+
+## Scope
+
+Phase 15 adds the first explicit local citation-state transition layer. It lets
+Admin run a source-card integrity check that can move citation rows from
+`checking` to `verified`, `unavailable`, `conflicting`, or `unsupported` while
+staying clear that this is local source-card integrity, not external factual
+proof.
+
+## Graphify Context
+
+- Graphify routed the slice through `src/memory/artifact.records.ts`,
+  `CitationState`, `ArtifactRecord`, `src/memory/beta.diagnostics.ts`, and
+  `AdminView()`.
+- The architecture books routed through `src/lib/tutorBook.json`,
+  `src/lib/userBrainArchitectureBook.ts`, and the built-in App Design book in
+  `RevisionView`.
+- Sidecar Lagrange recommended keeping this as a local citation-state transition
+  layer rather than a truth oracle.
+
+## Integration Decisions
+
+- Added `verifyLocalCitationIntegrity()` and Dexie wrappers for artifact-level
+  and citation-level local checks.
+- The verifier checks artifact/citation linkage, URL shape, domain consistency,
+  explicit source refs/source ids/search ids, and saved source-card structure.
+- It records `localOnly: true` and `externalContentFetched: false` in verifier
+  metadata.
+- Placeholder source refs, citation ids, claim ids, and artifact ids do not count
+  as source evidence.
+- URL query strings and hashes participate in the local URL comparison, so
+  query-identified sources cannot be silently treated as the same row.
+- Artifact `ready` remains distinct from citation `verified`.
+- Beta Diagnostics now counts and summarizes `conflicting`, `unsupported`, and
+  `not_checked` citation states.
+- Admin Source Artifacts now shows a `Run local check` control, verifier feedback,
+  and a `Not checked` meter.
+- Tutor System Architecture, User Brain Architecture, and App Design Language
+  books were updated to describe the local verifier boundary.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 61 tests.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- Browser QA on `http://127.0.0.1:3100`: Source Artifacts rendered with the
+  local-verifier boundary, `Not checked` meter, no horizontal overflow, and zero
+  browser warning/error logs. Beta Diagnostics rendered source-grounding watch
+  copy. User Brain and App Design books rendered the updated local verifier
+  content.
+- Clean Graphify regeneration after removing the generated `server.mjs`: rebuilt
+  the code architecture graph with 725 nodes, 1263 edges, and 53 communities.
+- `npm run graphify:tree`: passed.
+- Graphify artifact smoke found no conflict markers, `/private/tmp`,
+  `tmp-test`, or phase-stash markers in checked graph artifacts.
+- Graphify query smoke returned `verifyLocalCitationIntegrity()`,
+  `isPlaceholderSourceRef()`, `verifyArtifactCitationIntegrity()`,
+  `verifyCitationStateIntegrity()`, `buildBetaDiagnosticsSnapshot()`, and
+  `AdminView()`.
+- Final-check sidecar Descartes found one placeholder-source over-claim and two
+  clarity issues. The phase now includes regression tests for placeholder refs
+  and query/hash URL conflicts, plus visible `not_checked` diagnostics.
+- Final recheck sidecar Hume found no must-fix remaining.
+
+## Remaining Work
+
+- Push remains for this phase.
+- Generated notes, charts, code, flashcards, and other artifacts still need to be
+  fully linked into the same `ArtifactRecord` verification path.
+- External content verification and source-span claim matching remain future
+  slices.
+- AWS/cloud synchronization remains out of scope until beta testing.

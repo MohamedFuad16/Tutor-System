@@ -45,6 +45,28 @@ export type UnavailableCitationInput = {
   metadata?: Record<string, unknown>;
 };
 
+export type CitationIntegrityState = CitationState["state"];
+
+export type CitationIntegrityResult = {
+  state: CitationIntegrityState;
+  artifactVerificationState: ArtifactRecord["verificationState"];
+  verifier: "local_citation_integrity";
+  checkedAt: number;
+  failureReason?: string;
+  metadata: {
+    localOnly: true;
+    externalContentFetched: false;
+    verifierVersion: 1;
+    citationId: string;
+    artifactId?: string;
+    artifactType?: ArtifactRecord["artifactType"];
+    checkedFields: string[];
+    sourceKind: "url" | "local_source_ref" | "missing";
+    normalizedDomain?: string;
+    claimCheck: "artifact_level_source_card";
+  };
+};
+
 const compact = (value: unknown, fallback = "") => {
   const text =
     typeof value === "string"
@@ -72,6 +94,66 @@ const stableHash = (value: string) => {
   }
   return Math.abs(hash).toString(36);
 };
+
+const normalizeDomain = (value: unknown) => {
+  const text = compact(value).toLowerCase();
+  return text
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .split("/")[0];
+};
+
+const parseHttpUrl = (value: unknown) => {
+  const text = compact(value);
+  if (!text) return null;
+
+  try {
+    const parsed = new URL(text);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const sameUrl = (a: unknown, b: unknown) => {
+  const urlA = parseHttpUrl(a);
+  const urlB = parseHttpUrl(b);
+  if (!urlA || !urlB) return false;
+  const normalizedA = `${urlA.origin}${urlA.pathname.replace(/\/+$/, "")}${urlA.search}${urlA.hash}`;
+  const normalizedB = `${urlB.origin}${urlB.pathname.replace(/\/+$/, "")}${urlB.search}${urlB.hash}`;
+  return normalizedA === normalizedB;
+};
+
+const isPlaceholderSourceRef = (value: unknown) => {
+  const text = compact(value).toLowerCase();
+  return (
+    !text ||
+    text === "source" ||
+    text === "source-card" ||
+    text === "source-claim" ||
+    text === "local"
+  );
+};
+
+const domainMatches = (urlValue: unknown, domainValue: unknown) => {
+  const parsed = parseHttpUrl(urlValue);
+  const domain = normalizeDomain(domainValue);
+  if (!parsed || !domain) return true;
+  const host = normalizeDomain(parsed.hostname);
+  return host === domain || host.endsWith(`.${domain}`);
+};
+
+const mergeMetadata = (
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+  value: Record<string, unknown>,
+) => ({
+  ...(metadata || {}),
+  [key]: value,
+});
 
 export const normalizeArtifactStatus = (
   status: ArtifactStatusInput | undefined,
@@ -206,6 +288,163 @@ export const createCitationStateRecord = (
   };
 };
 
+export const artifactVerificationStateForCitationStates = (
+  states: CitationState["state"][],
+): ArtifactRecord["verificationState"] => {
+  if (states.includes("conflicting")) return "conflicting";
+  if (states.includes("unavailable") || states.includes("unsupported")) {
+    return "unavailable";
+  }
+  if (states.includes("checking")) return "checking";
+  if (states.includes("not_checked")) return "not_checked";
+  if (states.length > 0 && states.every((state) => state === "verified")) {
+    return "verified";
+  }
+  return "not_checked";
+};
+
+export const verifyLocalCitationIntegrity = (input: {
+  artifact?: ArtifactRecord | null;
+  citation: CitationState;
+  timestamp?: number;
+}): CitationIntegrityResult => {
+  const checkedAt = Math.max(0, Math.round(input.timestamp || Date.now()));
+  const artifact = input.artifact || null;
+  const citation = input.citation;
+  const checkedFields = [
+    "artifactId",
+    "citationStateIds",
+    "url",
+    "domain",
+    "sourceRef",
+    "sourceIds",
+    "title",
+  ];
+  const sourceUrl = citation.url || artifact?.url;
+  const parsedUrl = parseHttpUrl(sourceUrl);
+  const explicitLocalSourceRefs = cleanList([
+    citation.sourceRef,
+    ...(artifact?.sourceIds || []),
+    artifact?.searchId,
+    citation.metadata?.searchId,
+  ]).filter(
+    (value) =>
+      !isPlaceholderSourceRef(value) &&
+      value !== citation.id &&
+      value !== citation.claimId &&
+      value !== artifact?.id,
+  );
+  const hasLocalSourceRef = explicitLocalSourceRefs.length > 0;
+  const sourceKind = parsedUrl
+    ? "url"
+    : hasLocalSourceRef
+      ? "local_source_ref"
+      : "missing";
+  const baseMetadata: CitationIntegrityResult["metadata"] = {
+    localOnly: true,
+    externalContentFetched: false,
+    verifierVersion: 1,
+    citationId: citation.id,
+    artifactId: artifact?.id || citation.artifactId,
+    artifactType: artifact?.artifactType,
+    checkedFields,
+    sourceKind,
+    normalizedDomain: parsedUrl
+      ? normalizeDomain(parsedUrl.hostname)
+      : normalizeDomain(citation.domain || artifact?.domain) || undefined,
+    claimCheck: "artifact_level_source_card",
+  };
+  const result = (
+    state: CitationIntegrityState,
+    failureReason?: string,
+  ): CitationIntegrityResult => ({
+    state,
+    artifactVerificationState: artifactVerificationStateForCitationStates([
+      state,
+    ]),
+    verifier: "local_citation_integrity",
+    checkedAt,
+    failureReason,
+    metadata: baseMetadata,
+  });
+
+  if (!artifact) {
+    return result(
+      "unavailable",
+      "No local artifact record exists for this citation.",
+    );
+  }
+
+  if (artifact.status === "failed") {
+    return result("unavailable", "The linked artifact is marked failed.");
+  }
+
+  if (artifact.artifactType !== "source_card") {
+    return result(
+      "unsupported",
+      "The local verifier currently supports source-card citation rows only.",
+    );
+  }
+
+  if (citation.artifactId && citation.artifactId !== artifact.id) {
+    return result(
+      "conflicting",
+      "Citation artifactId does not match the artifact.",
+    );
+  }
+
+  if (
+    artifact.citationStateIds.length > 0 &&
+    !artifact.citationStateIds.includes(citation.id)
+  ) {
+    return result(
+      "conflicting",
+      "Artifact citationStateIds do not include this citation row.",
+    );
+  }
+
+  if (citation.url && artifact.url && !sameUrl(citation.url, artifact.url)) {
+    return result("conflicting", "Citation URL and artifact URL disagree.");
+  }
+
+  if (!domainMatches(citation.url || artifact.url, citation.domain)) {
+    return result(
+      "conflicting",
+      "Citation domain does not match the URL host.",
+    );
+  }
+
+  if (!domainMatches(artifact.url || citation.url, artifact.domain)) {
+    return result(
+      "conflicting",
+      "Artifact domain does not match the URL host.",
+    );
+  }
+
+  if (sourceKind === "missing") {
+    return result(
+      "unavailable",
+      "No URL, source reference, source id, or search id is available locally.",
+    );
+  }
+
+  if (sourceUrl && !parsedUrl) {
+    return result(
+      "unavailable",
+      "The saved source URL is not a valid HTTP(S) URL.",
+    );
+  }
+
+  if (!parsedUrl && !hasLocalSourceRef) {
+    return result(
+      "unavailable",
+      "The citation has no source reference to check.",
+    );
+  }
+
+  return result("verified");
+};
+
 export const recordArtifactRecord = async (
   input: Parameters<typeof createArtifactRecord>[0],
 ) => {
@@ -218,6 +457,202 @@ export const recordArtifactRecord = async (
   }
 
   return record;
+};
+
+const loadLinkedCitationStates = async (
+  artifact: ArtifactRecord,
+  updated?: CitationState,
+) => {
+  const linkedIds = cleanList([...artifact.citationStateIds, updated?.id]);
+  const byId = new Map<string, CitationState>();
+  const linked = await Promise.all(
+    linkedIds.map((id) => db.citationStates.get(id)),
+  );
+  linked.filter(Boolean).forEach((state) => {
+    byId.set((state as CitationState).id, state as CitationState);
+  });
+
+  if (updated) byId.set(updated.id, updated);
+
+  const byArtifactId = await db.citationStates
+    .where("artifactId")
+    .equals(artifact.id)
+    .toArray();
+  byArtifactId.forEach((state) => byId.set(state.id, state));
+
+  return Array.from(byId.values());
+};
+
+const applyCitationIntegrityResult = (
+  citation: CitationState,
+  result: CitationIntegrityResult,
+): CitationState =>
+  createCitationStateRecord(
+    {
+      ...citation,
+      state: result.state,
+      verifier: result.verifier,
+      checkedAt: result.checkedAt,
+      failureReason:
+        result.state === "verified" ? undefined : result.failureReason,
+      metadata: mergeMetadata(
+        citation.metadata,
+        "localCitationIntegrity",
+        result.metadata,
+      ),
+    },
+    citation.timestamp,
+  );
+
+const applyArtifactCitationState = (
+  artifact: ArtifactRecord,
+  states: CitationState[],
+  timestamp: number,
+) =>
+  createArtifactRecord(
+    {
+      ...artifact,
+      timestamp: artifact.timestamp,
+      verificationState: artifactVerificationStateForCitationStates(
+        states.map((state) => state.state),
+      ),
+      citationStateIds: cleanList([
+        ...artifact.citationStateIds,
+        ...states.map((state) => state.id),
+      ]),
+      metadata: mergeMetadata(artifact.metadata, "localCitationIntegrity", {
+        localOnly: true,
+        externalContentFetched: false,
+        verifier: "local_citation_integrity",
+        checkedAt: timestamp,
+        citationStates: states.map((state) => ({
+          id: state.id,
+          state: state.state,
+        })),
+      }),
+    },
+    artifact.timestamp,
+  );
+
+export const verifyCitationStateIntegrity = async (
+  citationId: string,
+  timestamp = Date.now(),
+) => {
+  const citation = await db.citationStates.get(citationId);
+  if (!citation) {
+    throw new Error(`Citation state not found: ${citationId}`);
+  }
+
+  const artifact = citation.artifactId
+    ? await db.artifactRecords.get(citation.artifactId)
+    : null;
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp,
+  });
+  const updatedCitation = applyCitationIntegrityResult(citation, result);
+  const linkedCitationStates = artifact
+    ? await loadLinkedCitationStates(artifact, updatedCitation)
+    : [updatedCitation];
+  const updatedArtifact = artifact
+    ? applyArtifactCitationState(
+        artifact,
+        linkedCitationStates,
+        result.checkedAt,
+      )
+    : null;
+
+  try {
+    if (updatedArtifact) {
+      await db.transaction("rw", db.artifactRecords, db.citationStates, () =>
+        Promise.all([
+          db.citationStates.put(updatedCitation),
+          db.artifactRecords.put(updatedArtifact),
+        ]),
+      );
+    } else {
+      await db.citationStates.put(updatedCitation);
+    }
+  } catch (error) {
+    console.warn("[CitationStates] local integrity check failed", error);
+  }
+
+  return {
+    citation: updatedCitation,
+    artifact: updatedArtifact,
+    result,
+  };
+};
+
+export const verifyArtifactCitationIntegrity = async (
+  artifactId: string,
+  timestamp = Date.now(),
+) => {
+  const artifact = await db.artifactRecords.get(artifactId);
+  if (!artifact) {
+    throw new Error(`Artifact record not found: ${artifactId}`);
+  }
+
+  const citationStates = await loadLinkedCitationStates(artifact);
+  if (citationStates.length === 0) {
+    const updatedArtifact = createArtifactRecord(
+      {
+        ...artifact,
+        timestamp: artifact.timestamp,
+        verificationState: "not_checked",
+        metadata: mergeMetadata(artifact.metadata, "localCitationIntegrity", {
+          localOnly: true,
+          externalContentFetched: false,
+          verifier: "local_citation_integrity",
+          checkedAt: Math.max(0, Math.round(timestamp)),
+          reason: "No citation states are linked to this artifact.",
+        }),
+      },
+      artifact.timestamp,
+    );
+    await db.artifactRecords.put(updatedArtifact);
+    return {
+      artifact: updatedArtifact,
+      citations: [],
+      results: [],
+    };
+  }
+
+  const results = citationStates.map((citation) => {
+    const result = verifyLocalCitationIntegrity({
+      artifact,
+      citation,
+      timestamp,
+    });
+    return {
+      citation: applyCitationIntegrityResult(citation, result),
+      result,
+    };
+  });
+  const updatedCitations = results.map((entry) => entry.citation);
+  const updatedArtifact = applyArtifactCitationState(
+    artifact,
+    updatedCitations,
+    Math.max(0, Math.round(timestamp)),
+  );
+
+  try {
+    await db.transaction("rw", db.artifactRecords, db.citationStates, () =>
+      Promise.all([
+        db.artifactRecords.put(updatedArtifact),
+        ...updatedCitations.map((citation) => db.citationStates.put(citation)),
+      ]),
+    );
+  } catch (error) {
+    console.warn("[ArtifactRecords] local integrity check failed", error);
+  }
+
+  return {
+    artifact: updatedArtifact,
+    citations: updatedCitations,
+    results: results.map((entry) => entry.result),
+  };
 };
 
 export const recordCitationState = async (
