@@ -113,16 +113,23 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/longterm.memory.ts, src/memory/retrieval.events.ts, src/memory/memory.orchestrator.ts, src/views/AdminView.tsx, tests/retrieval-events.test.mjs, package.json, graphify-out/*"
+    },
+    {
+      "id": "P",
+      "name": "Correction request ledger",
+      "owner": "main agent + read-only sidecars Kuhn and Anscombe",
+      "status": "completed",
+      "write_scope": "src/memory/longterm.memory.ts, src/memory/correction.events.ts, src/views/AdminView.tsx, tests/correction-events.test.mjs, package.json, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_10_completed",
+    "status": "phase_11_completed",
     "checks": [
       "npm run lint",
       "npm run test",
       "npm run build",
       "npm run format:check (known RevisionView.tsx formatting warning)",
-      "browser QA for Admin Retrieval on desktop and mobile",
+      "browser QA for Admin Correction Requests on desktop and mobile",
       "graphify update . --force",
       "npm run graphify:tree",
       "graphify query smoke",

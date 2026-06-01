@@ -386,3 +386,46 @@ Phase 10 adds durable local retrieval events for semantic memory context selecti
 - Add richer retrieval ranking diagnostics after beta usage clarifies which scores are worth tuning.
 - Decide whether retrieval failures need local retry/dead-letter states.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 11 report
+
+## Scope
+
+Phase 11 adds the first local memory-control path: durable correction and deletion-review requests. It makes "this memory is wrong" and "review this for deletion" visible and auditable before any destructive propagation is automated.
+
+## Graphify Context
+
+- Local Graphify routed the slice through `src/lib/userBrainArchitectureBook.ts`, `src/memory/longterm.memory.ts`, `src/memory/memory.events.ts`, and `src/views/AdminView.tsx`.
+- Path checks confirmed Admin reaches `MemoryEvent` and `db` directly through `AdminView.tsx`.
+- The MCP graph looked stale for this checkout, so the local `graphify-out/graph.json` CLI was used for source routing.
+
+## Sidecar Results
+
+- Kuhn recommended durable artifact/citation state as a high-value next slice.
+- Anscombe recommended a non-destructive Beta Diagnostics/export tab as a safe Admin data-management slice.
+- This phase chose correction requests because the architecture book explicitly calls memory correction/deletion a launch gate. Artifact/citation state and beta diagnostics remain follow-up candidates.
+
+## Integration Decisions
+
+- Added Dexie schema version 12 with append-only `correctionEvents`.
+- Added `src/memory/correction.events.ts` for local correction event normalization, stable IDs, compact fields, related event IDs, and non-blocking persistence.
+- Added Admin `Correction Requests` navigation, meters, recent request cards, manual request form, target mix, and local-only boundary copy.
+- Added quick actions to Memory Events rows for `Mark wrong` and `Request deletion`.
+- Kept this phase non-destructive: it records correction/deletion intent but does not yet invalidate derived summaries, embeddings, graph facts, or mastery deltas.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 43 tests.
+- `npm run build`: passed.
+- Browser QA on `http://127.0.0.1:3100`: a Memory Events quick action wrote a correction request, the Corrections tab displayed it, and the manual request form wrote a second request.
+- Desktop browser QA at 1280x900: Correction Requests rendered with document width matching viewport width and browser warning/error logs were 0.
+- Mobile browser QA at 390x844: Correction Requests rendered with document width matching viewport width and browser warning/error logs were 0.
+- `npm run format:check`: expected to keep failing only on pre-existing `src/views/RevisionView.tsx`.
+
+## Remaining Work
+
+- Propagate correction/deletion state into derived memories, embeddings, graph facts, mastery deltas, tutor preferences, and exports where practical.
+- Add source artifact/citation state ledgers.
+- Add non-destructive beta diagnostics/export.
+- AWS/cloud synchronization remains out of scope until beta testing.

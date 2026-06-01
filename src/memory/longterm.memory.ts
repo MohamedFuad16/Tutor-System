@@ -261,6 +261,34 @@ export interface RetrievalEvent {
   metadata?: Record<string, unknown>;
 }
 
+export interface CorrectionEvent {
+  id: string;
+  timestamp: number;
+  status: "open" | "applied" | "blocked" | "dismissed";
+  action: "mark_wrong" | "delete_request" | "supersede" | "review";
+  targetType:
+    | "memory_event"
+    | "retrieval_event"
+    | "evidence_event"
+    | "mastery_delta"
+    | "model_run"
+    | "tool_job"
+    | "concept"
+    | "interaction"
+    | "learning_book"
+    | "other";
+  targetId: string;
+  targetSummary?: string;
+  reason: string;
+  source: string;
+  requestedBy: "admin" | "system";
+  bookId?: string;
+  conversationId?: string;
+  conceptId?: string;
+  relatedEventIds?: string[];
+  metadata?: Record<string, unknown>;
+}
+
 export interface ToolJob {
   id: string;
   timestamp: number;
@@ -318,6 +346,7 @@ export class BrainDatabase extends Dexie {
   masteryDeltas!: Table<MasteryDelta, string>;
   memoryEvents!: Table<MemoryEvent, string>;
   retrievalEvents!: Table<RetrievalEvent, string>;
+  correctionEvents!: Table<CorrectionEvent, string>;
   toolJobs!: Table<ToolJob, string>;
   modelRuns!: Table<ModelRun, string>;
 
@@ -449,6 +478,32 @@ export class BrainDatabase extends Dexie {
         "id, timestamp, eventType, status, source, sessionId, bookId, conversationId, conceptId",
       retrievalEvents:
         "id, timestamp, status, source, activeBookId, pageNumber",
+      toolJobs: "id, timestamp, toolName, status, requestId",
+      modelRuns: "id, timestamp, status, requestId, requestedModel, usedModel",
+    });
+    this.version(12).stores({
+      concepts: "id, name, p_learn, lastReviewedAt",
+      misconceptions: "id, concept_id, resolved",
+      sessions: "id, startTime",
+      interactions: "id, sessionId, bookId, conversationId, timestamp",
+      flashcards: "id, front, nextReviewAt, conceptId, bookId",
+      traceLogs: "id, timestamp, action",
+      learningBooks:
+        "id, sessionId, title, userName, source, activeDocumentId, updatedAt",
+      learningBookConcepts: "id, bookId, name, updatedAt",
+      learningEntries: "id, bookId, conversationId, timestamp, userName",
+      learningDocuments: "id, bookId, title, mimeType, updatedAt, createdAt",
+      bookChatThreads: "id, bookId, updatedAt",
+      evidenceEvents:
+        "id, timestamp, conceptId, bookId, conversationId, evidenceType, verified",
+      masteryDeltas:
+        "id, timestamp, conceptId, evidenceEventId, evidenceType, verified",
+      memoryEvents:
+        "id, timestamp, eventType, status, source, sessionId, bookId, conversationId, conceptId",
+      retrievalEvents:
+        "id, timestamp, status, source, activeBookId, pageNumber",
+      correctionEvents:
+        "id, timestamp, status, action, targetType, targetId, bookId, conceptId",
       toolJobs: "id, timestamp, toolName, status, requestId",
       modelRuns: "id, timestamp, status, requestId, requestedModel, usedModel",
     });

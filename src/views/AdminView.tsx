@@ -2,6 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   db,
+  type CorrectionEvent,
   type EvidenceEvent,
   type MasteryDelta,
   type MemoryEvent,
@@ -27,10 +28,13 @@ import {
   Search,
   SlidersHorizontal,
   Cpu,
+  Flag,
+  Trash2,
 } from "lucide-react";
 import { gsap } from "gsap";
 import { useStore } from "../store";
 import { useMotionPreference } from "../hooks/useMotionPreference";
+import { recordCorrectionEvent } from "../memory/correction.events";
 import {
   BRAIN_RUNTIME_SETTING_LIMITS,
   DEFAULT_BRAIN_RUNTIME_SETTINGS,
@@ -43,6 +47,7 @@ type AdminTab =
   | "activity"
   | "models"
   | "memory"
+  | "corrections"
   | "retrieval"
   | "evidence"
   | "tuning"
@@ -149,12 +154,14 @@ const formatTime = (timestamp?: number | null) =>
     : "waiting";
 
 const statusTone = (status: string) => {
-  if (status === "completed")
+  if (status === "completed" || status === "applied")
     return "border-green-200 bg-green-50 text-green-700";
-  if (status === "failed") return "border-red-200 bg-red-50 text-red-700";
+  if (status === "failed" || status === "blocked")
+    return "border-red-200 bg-red-50 text-red-700";
   if (status === "fallback")
     return "border-orange-200 bg-orange-50 text-orange-700";
-  if (status === "blocked") return "border-zinc-300 bg-zinc-100 text-zinc-600";
+  if (status === "dismissed")
+    return "border-zinc-300 bg-zinc-100 text-zinc-600";
   return "border-blue-200 bg-blue-50 text-blue-700";
 };
 
@@ -239,6 +246,12 @@ export function AdminView() {
         db.retrievalEvents.orderBy("timestamp").reverse().limit(50).toArray(),
       [],
     ) || [];
+  const correctionEvents =
+    useLiveQuery(
+      () =>
+        db.correctionEvents.orderBy("timestamp").reverse().limit(50).toArray(),
+      [],
+    ) || [];
   const evidenceEventCount =
     useLiveQuery(() => db.evidenceEvents.count(), []) || 0;
   const verifiedEvidenceCount =
@@ -259,6 +272,8 @@ export function AdminView() {
   const memoryEventCount = useLiveQuery(() => db.memoryEvents.count(), []) || 0;
   const retrievalEventCount =
     useLiveQuery(() => db.retrievalEvents.count(), []) || 0;
+  const correctionEventCount =
+    useLiveQuery(() => db.correctionEvents.count(), []) || 0;
   const [serverLogs, setServerLogs] = useState<
     { type: string; msg: string; time: number }[]
   >([]);
@@ -272,6 +287,14 @@ export function AdminView() {
   const consoleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<AdminTab>("activity");
+  const [correctionAction, setCorrectionAction] =
+    useState<CorrectionEvent["action"]>("mark_wrong");
+  const [correctionTargetType, setCorrectionTargetType] =
+    useState<CorrectionEvent["targetType"]>("memory_event");
+  const [correctionTargetId, setCorrectionTargetId] = useState("");
+  const [correctionReason, setCorrectionReason] = useState("");
+  const [correctionFeedback, setCorrectionFeedback] = useState("");
+  const [correctionError, setCorrectionError] = useState("");
 
   // Auto-scroll console
   useEffect(() => {
@@ -437,6 +460,9 @@ export function AdminView() {
   const latestModelRun = modelRuns[0] as ModelRun | undefined;
   const latestMemoryEvent = memoryEvents[0] as MemoryEvent | undefined;
   const latestRetrievalEvent = retrievalEvents[0] as RetrievalEvent | undefined;
+  const latestCorrectionEvent = correctionEvents[0] as
+    | CorrectionEvent
+    | undefined;
   const completedModelRuns = modelRuns.filter(
     (run) => run.status === "completed",
   ).length;
@@ -481,6 +507,27 @@ export function AdminView() {
     (sum, event) => sum + event.selectedConceptIds.length,
     0,
   );
+  const openCorrectionEvents = correctionEvents.filter(
+    (event) => event.status === "open",
+  ).length;
+  const appliedCorrectionEvents = correctionEvents.filter(
+    (event) => event.status === "applied",
+  ).length;
+  const blockedCorrectionEvents = correctionEvents.filter(
+    (event) => event.status === "blocked",
+  ).length;
+  const deleteRequestCorrectionEvents = correctionEvents.filter(
+    (event) => event.action === "delete_request",
+  ).length;
+  const markWrongCorrectionEvents = correctionEvents.filter(
+    (event) => event.action === "mark_wrong",
+  ).length;
+  const correctionEventsByTarget = correctionEvents.reduce<
+    Record<string, number>
+  >((acc, event) => {
+    acc[event.targetType] = (acc[event.targetType] || 0) + 1;
+    return acc;
+  }, {});
   const mappedConceptCount = learningBookConcepts.length;
   const tracedBookCount = learningBooks.filter(
     (book) => (conceptsByBook[book.id] || []).length > 0,
@@ -536,6 +583,54 @@ export function AdminView() {
     brainRuntimeSettings.webSearchPolicy ===
       DEFAULT_BRAIN_RUNTIME_SETTINGS.webSearchPolicy;
 
+  const recordCorrectionRequest = async (input: {
+    action: CorrectionEvent["action"];
+    targetType: CorrectionEvent["targetType"];
+    targetId: string;
+    reason: string;
+    targetSummary?: string;
+    source: string;
+    bookId?: string;
+    conversationId?: string;
+    conceptId?: string;
+    relatedEventIds?: string[];
+    metadata?: Record<string, unknown>;
+  }) => {
+    const targetId = input.targetId.trim();
+    if (!targetId) {
+      setCorrectionFeedback("");
+      setCorrectionError("Choose a target before recording a correction.");
+      return;
+    }
+
+    setCorrectionError("");
+    const record = await recordCorrectionEvent({
+      ...input,
+      targetId,
+      requestedBy: "admin",
+      status: "open",
+    });
+    setCorrectionFeedback(
+      `${record.action.replace(/_/g, " ")} recorded for ${record.targetType.replace(/_/g, " ")}.`,
+    );
+  };
+
+  const submitManualCorrection = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void recordCorrectionRequest({
+      action: correctionAction,
+      targetType: correctionTargetType,
+      targetId: correctionTargetId,
+      reason: correctionReason || "Admin requested correction review.",
+      source: "admin_manual_correction",
+    }).then(() => {
+      if (correctionTargetId.trim()) {
+        setCorrectionTargetId("");
+        setCorrectionReason("");
+      }
+    });
+  };
+
   useLayoutEffect(() => {
     const content = contentRef.current;
     if (!content) return;
@@ -579,6 +674,7 @@ export function AdminView() {
     };
   }, [
     activeTab,
+    correctionEvents.length,
     evidenceEvents.length,
     learningBooks.length,
     logs?.length,
@@ -637,6 +733,15 @@ export function AdminView() {
             >
               <Network size={16} />
               <span className="line-clamp-1 leading-snug">Memory Events</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("corrections")}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "corrections" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+            >
+              <Flag size={16} />
+              <span className="line-clamp-1 leading-snug">
+                Correction Requests
+              </span>
             </button>
             <button
               onClick={() => setActiveTab("retrieval")}
@@ -713,9 +818,11 @@ export function AdminView() {
                   observability ledger, <strong>Model Runs</strong> to inspect
                   provider behavior, fallbacks, tokens, and failures,{" "}
                   <strong>Memory Events</strong> to inspect learner memory
-                  writes, <strong>Retrieval Events</strong> to inspect semantic
-                  memory context selection, <strong>Evidence Ledger</strong> to
-                  inspect model-summary evidence and mastery deltas,{" "}
+                  writes, <strong>Correction Requests</strong> to audit local
+                  mark-wrong and deletion-review intents,{" "}
+                  <strong>Retrieval Events</strong> to inspect semantic memory
+                  context selection, <strong>Evidence Ledger</strong> to inspect
+                  model-summary evidence and mastery deltas,{" "}
                   <strong>Runtime Tuning</strong> for local behavior controls,{" "}
                   <strong>DeepSeek Trace</strong> for persisted tutor updates,
                   or switch to the <strong>Server Console</strong> to monitor
@@ -729,6 +836,7 @@ export function AdminView() {
                   { id: "activity", label: "Activity", icon: Gauge },
                   { id: "models", label: "Models", icon: Cpu },
                   { id: "memory", label: "Memory", icon: Network },
+                  { id: "corrections", label: "Correct", icon: Flag },
                   { id: "retrieval", label: "Retrieval", icon: Search },
                   { id: "evidence", label: "Evidence", icon: BrainCircuit },
                   {
@@ -767,15 +875,17 @@ export function AdminView() {
                       ? "Model Behavior"
                       : activeTab === "memory"
                         ? "Memory Audit"
-                        : activeTab === "retrieval"
-                          ? "Retrieval Audit"
-                          : activeTab === "evidence"
-                            ? "Learner Evidence"
-                            : activeTab === "tuning"
-                              ? "Runtime Controls"
-                              : activeTab === "traces"
-                                ? "Diagnostics"
-                                : "Runtime Environment"}
+                        : activeTab === "corrections"
+                          ? "Memory Control"
+                          : activeTab === "retrieval"
+                            ? "Retrieval Audit"
+                            : activeTab === "evidence"
+                              ? "Learner Evidence"
+                              : activeTab === "tuning"
+                                ? "Runtime Controls"
+                                : activeTab === "traces"
+                                  ? "Diagnostics"
+                                  : "Runtime Environment"}
                 </span>
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-2 font-serif leading-[1.15]">
@@ -785,15 +895,17 @@ export function AdminView() {
                         ? "Model Runs"
                         : activeTab === "memory"
                           ? "Memory Events"
-                          : activeTab === "retrieval"
-                            ? "Retrieval Events"
-                            : activeTab === "evidence"
-                              ? "Evidence Ledger"
-                              : activeTab === "tuning"
-                                ? "Runtime Tuning"
-                                : activeTab === "traces"
-                                  ? "DeepSeek Trace Ledger"
-                                  : "Live Server Console"}
+                          : activeTab === "corrections"
+                            ? "Correction Requests"
+                            : activeTab === "retrieval"
+                              ? "Retrieval Events"
+                              : activeTab === "evidence"
+                                ? "Evidence Ledger"
+                                : activeTab === "tuning"
+                                  ? "Runtime Tuning"
+                                  : activeTab === "traces"
+                                    ? "DeepSeek Trace Ledger"
+                                    : "Live Server Console"}
                   </h1>
                   {activeTab === "activity" && (
                     <div
@@ -1478,6 +1590,60 @@ export function AdminView() {
                                     )}
                                   </div>
                                 </div>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void recordCorrectionRequest({
+                                        action: "mark_wrong",
+                                        targetType: "memory_event",
+                                        targetId: event.id,
+                                        targetSummary: event.summary,
+                                        reason:
+                                          "Admin marked this memory event as wrong for review.",
+                                        source: "admin_memory_events",
+                                        bookId: event.bookId,
+                                        conversationId: event.conversationId,
+                                        conceptId: event.conceptId,
+                                        relatedEventIds: [event.id],
+                                        metadata: {
+                                          eventType: event.eventType,
+                                          eventStatus: event.status,
+                                        },
+                                      })
+                                    }
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[11px] font-semibold text-orange-700 transition-colors hover:bg-orange-100"
+                                  >
+                                    <Flag size={12} />
+                                    Mark wrong
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void recordCorrectionRequest({
+                                        action: "delete_request",
+                                        targetType: "memory_event",
+                                        targetId: event.id,
+                                        targetSummary: event.summary,
+                                        reason:
+                                          "Admin requested deletion review for this memory event.",
+                                        source: "admin_memory_events",
+                                        bookId: event.bookId,
+                                        conversationId: event.conversationId,
+                                        conceptId: event.conceptId,
+                                        relatedEventIds: [event.id],
+                                        metadata: {
+                                          eventType: event.eventType,
+                                          eventStatus: event.status,
+                                        },
+                                      })
+                                    }
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition-colors hover:bg-red-100"
+                                  >
+                                    <Trash2 size={12} />
+                                    Request deletion
+                                  </button>
+                                </div>
                                 {(event.sourceIds?.length ||
                                   event.metadata) && (
                                   <details className="group mt-3">
@@ -1587,6 +1753,320 @@ export function AdminView() {
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               AWS/cloud synchronization is still deferred until
+                              beta testing.
+                            </div>
+                          </div>
+                        </section>
+                      </div>
+                    </section>
+                  </div>
+                ) : activeTab === "corrections" ? (
+                  <div className="flex flex-col gap-8 font-sans">
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                            <Flag size={13} /> Local Memory Control
+                          </div>
+                          <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
+                            Correction and deletion request ledger
+                          </h2>
+                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                            Append-only local requests for marking learner-brain
+                            records wrong, requesting deletion review, or
+                            flagging entries that need a human correction pass.
+                            This gives beta users a visible control path before
+                            destructive propagation is automated.
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
+                          <div className="text-2xl font-semibold text-zinc-900">
+                            {correctionEventCount}
+                          </div>
+                          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+                            Requests
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-5">
+                        {[
+                          ["Open", openCorrectionEvents],
+                          ["Applied", appliedCorrectionEvents],
+                          ["Blocked", blockedCorrectionEvents],
+                          ["Marked wrong", markWrongCorrectionEvents],
+                          ["Deletion review", deleteRequestCorrectionEvents],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
+                          >
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              {label}
+                            </div>
+                            <div className="mt-2 truncate text-lg font-semibold tabular-nums text-zinc-900">
+                              {value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className="grid gap-4 xl:grid-cols-[1fr_0.8fr]">
+                      <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                          <div>
+                            <h3 className="text-xl font-serif font-medium text-zinc-900">
+                              Recent correction requests
+                            </h3>
+                            <p className="mt-1 text-sm text-zinc-500 font-serif">
+                              Newest first. Memory rows can create these
+                              requests directly; manual entries can target any
+                              local learner-brain record.
+                            </p>
+                          </div>
+                          <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                            {formatTime(latestCorrectionEvent?.timestamp)}
+                          </div>
+                        </div>
+
+                        {correctionEvents.length === 0 ? (
+                          <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
+                            No correction requests yet. Use Memory Events to
+                            mark a local memory write wrong or request deletion
+                            review.
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {correctionEvents.map((event, index) => (
+                              <article
+                                key={event.id}
+                                className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 16 ? "admin-animated-item" : ""}`}
+                              >
+                                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                  <div className="flex min-w-0 gap-3">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-blue-600">
+                                      <Flag size={17} />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                          {event.action.replace(/_/g, " ")}
+                                        </h4>
+                                        <span
+                                          className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(event.status)}`}
+                                        >
+                                          {event.status}
+                                        </span>
+                                      </div>
+                                      <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-zinc-600 font-serif">
+                                        {event.reason}
+                                      </p>
+                                      {event.targetSummary && (
+                                        <p className="mt-2 line-clamp-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs leading-relaxed text-zinc-500 font-serif">
+                                          {event.targetSummary}
+                                        </p>
+                                      )}
+                                      <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                        <span>{event.targetType}</span>
+                                        <span className="max-w-[12rem] truncate">
+                                          target {event.targetId}
+                                        </span>
+                                        {event.bookId && (
+                                          <span className="max-w-[10rem] truncate">
+                                            book {event.bookId}
+                                          </span>
+                                        )}
+                                        {event.conceptId && (
+                                          <span className="max-w-[10rem] truncate">
+                                            concept {event.conceptId}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="shrink-0 text-right text-[10px] font-mono text-zinc-500">
+                                    <div>{formatTime(event.timestamp)}</div>
+                                    <div className="mt-1">{event.source}</div>
+                                  </div>
+                                </div>
+                                {(event.relatedEventIds?.length ||
+                                  event.metadata) && (
+                                  <details className="group mt-3">
+                                    <summary className="flex cursor-pointer select-none items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-800">
+                                      <ChevronRight
+                                        size={14}
+                                        className="transition-transform group-open:rotate-90"
+                                      />
+                                      Related ids and metadata
+                                    </summary>
+                                    <pre className="mt-3 overflow-x-auto rounded-xl border border-zinc-200 bg-white p-3 text-[11px] text-zinc-600 shadow-inner">
+                                      {JSON.stringify(
+                                        {
+                                          relatedEventIds:
+                                            event.relatedEventIds,
+                                          metadata: event.metadata,
+                                        },
+                                        null,
+                                        2,
+                                      )}
+                                    </pre>
+                                  </details>
+                                )}
+                              </article>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-4">
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Manual request
+                          </h3>
+                          <form
+                            className="mt-4 grid gap-3"
+                            onSubmit={submitManualCorrection}
+                          >
+                            <label className="grid gap-1.5 text-xs font-semibold text-zinc-600">
+                              Action
+                              <select
+                                value={correctionAction}
+                                onChange={(event) =>
+                                  setCorrectionAction(
+                                    event.target
+                                      .value as CorrectionEvent["action"],
+                                  )
+                                }
+                                className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors focus:border-blue-300 focus:bg-white"
+                              >
+                                <option value="mark_wrong">Mark wrong</option>
+                                <option value="delete_request">
+                                  Request deletion review
+                                </option>
+                                <option value="supersede">Supersede</option>
+                                <option value="review">Review</option>
+                              </select>
+                            </label>
+                            <label className="grid gap-1.5 text-xs font-semibold text-zinc-600">
+                              Target type
+                              <select
+                                value={correctionTargetType}
+                                onChange={(event) =>
+                                  setCorrectionTargetType(
+                                    event.target
+                                      .value as CorrectionEvent["targetType"],
+                                  )
+                                }
+                                className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors focus:border-blue-300 focus:bg-white"
+                              >
+                                <option value="memory_event">
+                                  Memory event
+                                </option>
+                                <option value="retrieval_event">
+                                  Retrieval event
+                                </option>
+                                <option value="evidence_event">
+                                  Evidence event
+                                </option>
+                                <option value="mastery_delta">
+                                  Mastery delta
+                                </option>
+                                <option value="model_run">Model run</option>
+                                <option value="tool_job">Tool job</option>
+                                <option value="concept">Concept</option>
+                                <option value="interaction">Interaction</option>
+                                <option value="learning_book">
+                                  Learning book
+                                </option>
+                                <option value="other">Other</option>
+                              </select>
+                            </label>
+                            <label className="grid gap-1.5 text-xs font-semibold text-zinc-600">
+                              Target id
+                              <input
+                                value={correctionTargetId}
+                                onChange={(event) =>
+                                  setCorrectionTargetId(event.target.value)
+                                }
+                                placeholder="Paste a local event, concept, or book id"
+                                className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:border-blue-300 focus:bg-white"
+                              />
+                            </label>
+                            <label className="grid gap-1.5 text-xs font-semibold text-zinc-600">
+                              Reason
+                              <textarea
+                                value={correctionReason}
+                                onChange={(event) =>
+                                  setCorrectionReason(event.target.value)
+                                }
+                                placeholder="What is wrong, stale, sensitive, or ready for deletion review?"
+                                className="min-h-24 resize-y rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:border-blue-300 focus:bg-white"
+                              />
+                            </label>
+                            <button
+                              type="submit"
+                              className="inline-flex items-center justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                            >
+                              <Flag size={14} />
+                              Record request
+                            </button>
+                          </form>
+                          {(correctionFeedback || correctionError) && (
+                            <p
+                              className={`mt-3 rounded-2xl border px-3 py-2 text-xs font-semibold ${
+                                correctionError
+                                  ? "border-red-200 bg-red-50 text-red-700"
+                                  : "border-green-200 bg-green-50 text-green-700"
+                              }`}
+                            >
+                              {correctionError || correctionFeedback}
+                            </p>
+                          )}
+                        </section>
+
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Target mix
+                          </h3>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {Object.keys(correctionEventsByTarget).length ===
+                            0 ? (
+                              <span className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
+                                Waiting for correction requests.
+                              </span>
+                            ) : (
+                              Object.entries(correctionEventsByTarget).map(
+                                ([targetType, count]) => (
+                                  <span
+                                    key={targetType}
+                                    className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-semibold text-zinc-700"
+                                  >
+                                    {targetType.replace(/_/g, " ")}: {count}
+                                  </span>
+                                ),
+                              )
+                            )}
+                          </div>
+                        </section>
+
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Boundary
+                          </h3>
+                          <div className="mt-4 grid gap-2 text-sm text-zinc-600 font-serif">
+                            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                              This phase records correction and deletion
+                              requests; it does not destructively delete learner
+                              data.
+                            </div>
+                            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                              Later propagation must mark derived summaries,
+                              embeddings, graph facts, and mastery deltas as
+                              superseded where practical.
+                            </div>
+                            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                              AWS/cloud synchronization remains deferred until
                               beta testing.
                             </div>
                           </div>
