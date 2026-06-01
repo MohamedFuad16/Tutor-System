@@ -1431,6 +1431,53 @@ CRITICAL RULES:
     const sendEvent = (type: string, data: any) => {
       res.write(`data: ${JSON.stringify({ type, requestId, ...data })}\n\n`);
     };
+    const compactToolText = (value: unknown, fallback: string) => {
+      const text =
+        typeof value === "string"
+          ? value
+          : value === undefined || value === null
+            ? ""
+            : JSON.stringify(value);
+      return (text || fallback).replace(/\s+/g, " ").trim().slice(0, 320);
+    };
+    const summarizeToolArguments = (toolName: string, rawArguments: string) => {
+      try {
+        const args = JSON.parse(rawArguments || "{}");
+        if (toolName === "web_search") {
+          return compactToolText(args.query, "web_search requested");
+        }
+        if (toolName === "look_at_current_page") {
+          return compactToolText(args.query, "current page inspection");
+        }
+        if (toolName === "update_graph") {
+          return compactToolText(args.name, "learning graph update");
+        }
+        if (toolName === "generate_flashcards") {
+          const cardCount = Array.isArray(args.cards) ? args.cards.length : 0;
+          return `${cardCount} flashcard${cardCount === 1 ? "" : "s"} requested`;
+        }
+      } catch {
+        return "Tool arguments could not be parsed.";
+      }
+      return compactToolText(rawArguments, `${toolName || "tool"} requested`);
+    };
+    const sendToolJobEvent = (data: {
+      status: "running" | "completed" | "failed" | "blocked";
+      toolName: string;
+      inputSummary?: string;
+      outputSummary?: string;
+      error?: string;
+      model?: string;
+      durationMs?: number;
+      metadata?: Record<string, unknown>;
+    }) => {
+      sendEvent("tool_job", {
+        timestamp: Date.now(),
+        source: "chat_stream",
+        ...data,
+        metadata: safeActivityMetadata(data.metadata || {}),
+      });
+    };
 
     try {
       const apiKey = resolveOpenRouterApiKey(req.headers);
@@ -2006,6 +2053,19 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           const toolStartedAt = Date.now();
           const functionName = toolCall.function.name;
           const functionArguments = toolCall.function.arguments;
+          const inputSummary = summarizeToolArguments(
+            functionName,
+            functionArguments,
+          );
+          sendToolJobEvent({
+            status: "running",
+            toolName: functionName,
+            inputSummary,
+            metadata: {
+              toolCallId: toolCall.id,
+              iteration: iterations + 1,
+            },
+          });
 
           if (functionName === "look_at_current_page" && currentPageImage) {
             try {
@@ -2050,6 +2110,16 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 phase: "tool_execution",
                 durationMs: Date.now() - toolStartedAt,
               });
+              sendToolJobEvent({
+                status: "completed",
+                toolName: functionName,
+                inputSummary,
+                outputSummary:
+                  "The tutor inspected the current PDF page image.",
+                model: "openai/gpt-4o-mini",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: { toolCallId: toolCall.id },
+              });
             } catch (err: any) {
               console.error("Vision Error:", err);
               formattedMessages.push({
@@ -2067,6 +2137,15 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 toolName: functionName,
                 phase: "tool_execution",
                 durationMs: Date.now() - toolStartedAt,
+              });
+              sendToolJobEvent({
+                status: "failed",
+                toolName: functionName,
+                inputSummary,
+                error: err.message || "Could not analyze the page image.",
+                model: "openai/gpt-4o-mini",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: { toolCallId: toolCall.id },
               });
             }
           } else if (functionName === "web_search") {
@@ -2088,6 +2167,15 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                   toolName: functionName,
                   phase: "tool_execution",
                   durationMs: Date.now() - toolStartedAt,
+                });
+                sendToolJobEvent({
+                  status: "blocked",
+                  toolName: functionName,
+                  inputSummary,
+                  outputSummary:
+                    "Web search denied because the turn was source-local.",
+                  durationMs: Date.now() - toolStartedAt,
+                  metadata: { toolCallId: toolCall.id },
                 });
                 continue;
               }
@@ -2121,6 +2209,17 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 durationMs: Date.now() - toolStartedAt,
                 metadata: { query, sourceCount: sources.length },
               });
+              sendToolJobEvent({
+                status: "completed",
+                toolName: functionName,
+                inputSummary,
+                outputSummary: `${sources.length} source${sources.length === 1 ? "" : "s"} supplied to the model.`,
+                durationMs: Date.now() - toolStartedAt,
+                metadata: {
+                  toolCallId: toolCall.id,
+                  sourceCount: sources.length,
+                },
+              });
             } catch (e) {
               formattedMessages.push({
                 role: "tool",
@@ -2139,6 +2238,17 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 toolName: functionName,
                 phase: "tool_execution",
                 durationMs: Date.now() - toolStartedAt,
+              });
+              sendToolJobEvent({
+                status: "failed",
+                toolName: functionName,
+                inputSummary,
+                error:
+                  e instanceof Error
+                    ? e.message
+                    : "Search temporarily unavailable.",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: { toolCallId: toolCall.id },
               });
             }
           } else if (functionName === "update_graph") {
@@ -2167,6 +2277,18 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                   hasDescription: Boolean(args.description),
                 },
               });
+              sendToolJobEvent({
+                status: "completed",
+                toolName: functionName,
+                inputSummary,
+                outputSummary: args.name || "Learning graph update staged.",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: {
+                  toolCallId: toolCall.id,
+                  understandingDelta: args.understandingDelta,
+                  hasDescription: Boolean(args.description),
+                },
+              });
             } catch (e) {
               formattedMessages.push({
                 role: "tool",
@@ -2183,6 +2305,15 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 toolName: functionName,
                 phase: "tool_execution",
                 durationMs: Date.now() - toolStartedAt,
+              });
+              sendToolJobEvent({
+                status: "failed",
+                toolName: functionName,
+                inputSummary,
+                error:
+                  e instanceof Error ? e.message : "Error parsing arguments.",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: { toolCallId: toolCall.id },
               });
             }
           } else if (functionName === "generate_flashcards") {
@@ -2207,6 +2338,17 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 phase: "tool_execution",
                 durationMs: Date.now() - toolStartedAt,
               });
+              sendToolJobEvent({
+                status: "completed",
+                toolName: functionName,
+                inputSummary,
+                outputSummary: `${Array.isArray(args?.cards) ? args.cards.length : 0} card${Array.isArray(args?.cards) && args.cards.length === 1 ? "" : "s"} prepared.`,
+                durationMs: Date.now() - toolStartedAt,
+                metadata: {
+                  toolCallId: toolCall.id,
+                  cardCount: Array.isArray(args?.cards) ? args.cards.length : 0,
+                },
+              });
             } catch (e) {
               formattedMessages.push({
                 role: "tool",
@@ -2224,6 +2366,15 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 phase: "tool_execution",
                 durationMs: Date.now() - toolStartedAt,
               });
+              sendToolJobEvent({
+                status: "failed",
+                toolName: functionName,
+                inputSummary,
+                error:
+                  e instanceof Error ? e.message : "Error parsing arguments.",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: { toolCallId: toolCall.id },
+              });
             }
           } else {
             formattedMessages.push({
@@ -2240,6 +2391,14 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               toolName: functionName,
               phase: "tool_execution",
               durationMs: Date.now() - toolStartedAt,
+            });
+            sendToolJobEvent({
+              status: "blocked",
+              toolName: functionName,
+              inputSummary,
+              error: "Unsupported tool.",
+              durationMs: Date.now() - toolStartedAt,
+              metadata: { toolCallId: toolCall.id },
             });
           }
         }

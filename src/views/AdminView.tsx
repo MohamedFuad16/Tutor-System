@@ -1162,8 +1162,9 @@ export function AdminView() {
                             Tool jobs
                           </h3>
                           <p className="mt-1 text-sm text-zinc-500 font-serif">
-                            Local durable table for future tool execution jobs,
-                            retries, and dead-letter review.
+                            Durable local rows from chat-stream tool execution,
+                            plus the schema for future retries and dead-letter
+                            review.
                           </p>
                         </div>
                         <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
@@ -1173,9 +1174,10 @@ export function AdminView() {
 
                       {toolJobs.length === 0 ? (
                         <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-500">
-                          Tool job schema is ready. Runtime tool execution still
-                          uses the in-memory system activity ledger until the
-                          next worker-queue slice.
+                          No durable tool jobs yet. Ask the tutor to use web
+                          search, inspect a page, update the graph, or generate
+                          flashcards and the chat stream will persist tool
+                          execution rows here.
                         </div>
                       ) : (
                         <div className="grid gap-3 md:grid-cols-2">
@@ -1195,6 +1197,22 @@ export function AdminView() {
                                       job.error ||
                                       "No summary recorded."}
                                   </p>
+                                  <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                    {job.requestId && (
+                                      <span className="max-w-[9rem] truncate">
+                                        {job.requestId}
+                                      </span>
+                                    )}
+                                    {job.durationMs !== undefined && (
+                                      <span>{job.durationMs}ms</span>
+                                    )}
+                                    {job.source && <span>{job.source}</span>}
+                                    {job.model && (
+                                      <span className="max-w-[9rem] truncate">
+                                        {job.model}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                                 <span
                                   className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(job.status)}`}

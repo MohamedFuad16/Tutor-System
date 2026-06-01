@@ -55,7 +55,11 @@ import { SiriLiquidGlass } from "./SiriLiquidGlass";
 import { useStore, type NormalizedWebSource } from "../store";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
 import { db, GENERAL_STUDY_BOOK_ID } from "../memory/longterm.memory";
-import type { BookChatThread, LearningDocument } from "../memory/longterm.memory";
+import { recordToolJobEvent } from "../memory/tool.jobs";
+import type {
+  BookChatThread,
+  LearningDocument,
+} from "../memory/longterm.memory";
 import type { Message } from "../types";
 import { FloatingSkillsMenu } from "./FloatingSkillsMenu";
 import { useTranslation } from "../lib/translations";
@@ -3692,6 +3696,21 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   },
                   sources: mergeSources(message.sources || [], mergedSources),
                 };
+              });
+            } else if (data.type === "tool_job") {
+              void recordToolJobEvent({
+                id: data.id,
+                timestamp: data.timestamp,
+                toolName: data.toolName,
+                status: data.status,
+                requestId: data.requestId,
+                model: data.model,
+                source: data.source || "chat_stream",
+                inputSummary: data.inputSummary,
+                outputSummary: data.outputSummary,
+                error: data.error,
+                durationMs: data.durationMs,
+                metadata: data.metadata,
               });
             } else if (data.type === "done") {
               setSendState("success");

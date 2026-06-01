@@ -132,3 +132,39 @@ Phase 3 adds a local durable evidence ledger for learner-state changes. It prese
 - Persist runtime tool execution into `toolJobs` with retry/dead-letter states.
 - Add correction/deletion propagation over evidence and mastery deltas.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 4 report
+
+## Scope
+
+Phase 4 makes tool-call observability durable in the local beta store. The server still owns the live in-memory activity ledger, but chat streams now emit structured `tool_job` events and ChatPanel persists them into Dexie so Admin can inspect tool execution history after the stream finishes.
+
+## Graphify Context
+
+- Graphify routed this slice through `server.ts`, `src/components/ChatPanel.tsx`, `src/memory/longterm.memory.ts`, `src/views/AdminView.tsx`, and `src/memory/evidence.ledger.ts`.
+- The directly relevant server paths were `/api/chat` tool-call execution branches for `look_at_current_page`, `web_search`, `update_graph`, `generate_flashcards`, and unsupported tools.
+
+## Integration Decisions
+
+- Added compact `tool_job` SSE events for tool execution running/completed/failed/blocked states.
+- Added `src/memory/tool.jobs.ts` to normalize statuses, create stable local IDs, compact summaries, and upsert tool jobs into Dexie.
+- ChatPanel now records `tool_job` stream events into `db.toolJobs`.
+- Admin Evidence Ledger now presents Tool Jobs as active durable records instead of a future placeholder.
+- Raw tool arguments are not stored; the server sends compact summaries and redacted metadata.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 15 tests.
+- `npm run build`: passed.
+- `npm run format:check`: still fails only on pre-existing `src/views/RevisionView.tsx`.
+- Browser QA on `http://localhost:3001`: Admin Evidence tab rendered the durable Tool Jobs section and empty state; browser console had 0 warnings/errors; smoke screenshot saved at `results/admin-tool-jobs-smoke.png`.
+- Graphify regenerated from a stable temporary worktree with only this phase's source files copied in, preserving unrelated local PDF/StudyView edits.
+- Graphify artifact smoke: 516 nodes, 847 edges, no temp-path markers in checked graph artifacts, and `graphify query "recordToolJobEvent createToolJobRecord tool.jobs ToolJobEventInput" --budget 1600 --graph graphify-out/graph.json` returned `tool.jobs.ts`, `recordToolJobEvent()`, `createToolJobRecord()`, `normalizeToolJobStatus()`, and `ToolJobEventInput`.
+
+## Remaining Work
+
+- Add durable retry queues and dead-letter review states.
+- Persist server-side worker execution when a real local/remote queue exists.
+- Wire Revision flashcard/review controls to BKT attempts where concept IDs are available.
+- AWS/cloud synchronization remains out of scope until beta testing.

@@ -1,652 +1,314 @@
 {
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.eslintrc.json": {
-    "mtime": 1780293097.4959998,
-    "ast_hash": "aca5da813918e717700d7ededcdaf0b9",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.vscode/launch.json": {
-    "mtime": 1780293097.4961936,
-    "ast_hash": "103ff7f277af9d288c9213b0b75ddf86",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.vscode/settings.json": {
-    "mtime": 1780293097.4963758,
-    "ast_hash": "a4e3f0c31e6cf93f76953ab6dfdd082b",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/state.json": {
-    "mtime": 1780293097.4969997,
-    "ast_hash": "6191eab0d160057bc8317f983f4320bb",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/qa-cdp-state.json": {
-    "mtime": 1780293097.5019999,
-    "ast_hash": "f52ad88248c8c22757cb924eec5e0248",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/state.json": {
-    "mtime": 1780293097.5029998,
-    "ast_hash": "02b5a5ce51f27f3a55ae68f42e7fa8a7",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/api/[...path].ts": {
-    "mtime": 1780293097.5029998,
-    "ast_hash": "f0743ede715b4d0d5a326a6096bc0e71",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/api/index.ts": {
-    "mtime": 1780293097.5035596,
-    "ast_hash": "f0743ede715b4d0d5a326a6096bc0e71",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/metadata.json": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "d5f26d4bb528fd2cb1e0d6caf0b6fb29",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/package.json": {
-    "mtime": 1780293097.5119998,
-    "ast_hash": "74147414bc48003b16519de48a3172c3",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/scripts/classify_and_extract.py": {
-    "mtime": 1780293097.521,
-    "ast_hash": "c59688e8951ee4357258f3283e489d06",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/server.ts": {
-    "mtime": 1780293097.521,
-    "ast_hash": "2eacbca47c2b32468fbaddd6b264dc57",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/server/vercel-handler.ts": {
-    "mtime": 1780293097.521,
-    "ast_hash": "9053716e3e221405ad45cd65db40a4db",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/server/web-search.ts": {
-    "mtime": 1780293097.5216682,
-    "ast_hash": "dcd3d9832b9609f479a580d055037577",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/App.tsx": {
-    "mtime": 1780293097.5216682,
-    "ast_hash": "332677ff964f4fe836bfb7a315fdd312",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/AnimatedScrollText.tsx": {
-    "mtime": 1780293097.5218215,
-    "ast_hash": "6a7ce796b410ea9c840e70ff7ca6fe5a",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/ChatPanel.tsx": {
-    "mtime": 1780293097.5219998,
-    "ast_hash": "0fdb62f81a4b54dd424d8883fd4ba335",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/FloatingSkillsMenu.tsx": {
-    "mtime": 1780293097.5219998,
-    "ast_hash": "6a77f828dae40c1f6c7059b2ef3dccce",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/Navigation.tsx": {
-    "mtime": 1780293097.5219998,
-    "ast_hash": "d7c9854ff08ee61dca008e5b39c54482",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/PatternCard.tsx": {
-    "mtime": 1780293097.5219998,
-    "ast_hash": "709cdc967df4107f466faaa959084231",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/PatternSVGs.tsx": {
-    "mtime": 1780293097.5219998,
-    "ast_hash": "090d0dae21f3e57d657e97f447e55a13",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/PdfViewer.tsx": {
-    "mtime": 1780293097.5219998,
-    "ast_hash": "cba7cac80f8bb315465e410e274872e8",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/SettingsModal.tsx": {
-    "mtime": 1780293097.5229998,
-    "ast_hash": "c8448396e2c92f98303ee9f09c801e28",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/ShikiHighlighter.tsx": {
-    "mtime": 1780293097.5229998,
-    "ast_hash": "bc26e1ed9fd5a57895920ef2d7bd41e7",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/SiriLiquidGlass.tsx": {
-    "mtime": 1780293097.5229998,
-    "ast_hash": "6c9b4ed26375cff12ec05e7b1f033cb9",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/components/StatusBadge.tsx": {
-    "mtime": 1780293097.5229998,
-    "ast_hash": "a08aca5e4cfeab7bca60dfbe8f3fce0d",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/hooks/useMotionPreference.ts": {
-    "mtime": 1780293097.5229998,
-    "ast_hash": "0e3dbcfa795be649a4218c8758701849",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/lib/accessPlans.ts": {
-    "mtime": 1780293097.5229998,
-    "ast_hash": "2432d9319629449e3ad69e6cb4acd562",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/lib/audio.ts": {
-    "mtime": 1780293097.5236251,
-    "ast_hash": "9f97a5d47433905280d31c2dbeb35846",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/lib/interactionModel.ts": {
-    "mtime": 1780293097.5236251,
-    "ast_hash": "253cba363bfbd9e5c49ccebf9113f60e",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/lib/translations.ts": {
-    "mtime": 1780293097.5236251,
-    "ast_hash": "ecb181ff82756860ebd6a34bcaf3b638",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/lib/tutorBook.json": {
-    "mtime": 1780293097.5236251,
-    "ast_hash": "5cdd5e9ef64b84435390141d4683444f",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/lib/userBrainArchitectureBook.ts": {
-    "mtime": 1780293097.524,
-    "ast_hash": "47b36aa1c5c761f514f72d8f67a57873",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/main.tsx": {
-    "mtime": 1780293097.524,
-    "ast_hash": "deed79ca9909acda7df8edc95cc37185",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/bkt.engine.ts": {
-    "mtime": 1780293097.524,
-    "ast_hash": "d8b54121663f40bc89aa5dde022fa33d",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/cognitive.load.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "483a8ea56a1428f5a34c35c23b465e47",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/evidence.ledger.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "e5efe73511919b0b97aa6145a00a15fc",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/evidence.mastery.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "9dac66e1076349e5ffee872ac4ac79eb",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/illusion.detector.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "5b2b765fc3a4ce60442dd628394b8e40",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/learner.model.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "f5c12bb487dd0cf67760c7b669447864",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/longterm.memory.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "7e662559c0986ad07136e290fe73e1b4",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/memory.embeddings.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "d7c42eca73477128e35c98c46f835470",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/memory.orchestrator.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "26e757965196f2f528d1b21b5211437a",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/metacognition.tracker.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "219ae539bf0097b945bbab9473bf4b82",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/misconception.graph.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "eb28122fae7dfdd78f0713a14bd90a03",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/prerequisite.dag.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "8e23add494effc34670ec33d68234822",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/productive.failure.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "0f77529b6365cb91cf75b6d2533c0abc",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/revision.memory.ts": {
-    "mtime": 1780293097.5243337,
-    "ast_hash": "4d91733e443a9cf62197f969fa63d006",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/scaffolding.engine.ts": {
-    "mtime": 1780293097.5249999,
-    "ast_hash": "134c37bdb928c11979b87859db7def0c",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/memory/zpd.calculator.ts": {
-    "mtime": 1780293097.5249999,
-    "ast_hash": "5f4eb99ec209b0041b469fb55937289f",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/store/index.ts": {
-    "mtime": 1780293097.5249999,
-    "ast_hash": "f8b3a76a173aaea52ef47f3e76626bc4",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/types.ts": {
-    "mtime": 1780293097.5249999,
-    "ast_hash": "2d26d62a5b29aa270631d2b9b03c5870",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/views/AdminView.tsx": {
-    "mtime": 1780293097.5249999,
-    "ast_hash": "883aeadb055d4fca1eb9744c0e74f781",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/views/AnalyticsView.tsx": {
-    "mtime": 1780293097.5256844,
-    "ast_hash": "e50d88f62d7d8cfd330de4cd2ff382ee",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/views/RevisionView.tsx": {
-    "mtime": 1780293097.5259998,
-    "ast_hash": "a29e154259efbed35a430918eb878f45",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/views/StudyView.tsx": {
-    "mtime": 1780293097.5259998,
-    "ast_hash": "d3d4405f8a2b09d416049b0b29b957e8",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/src/vite-env.d.ts": {
-    "mtime": 1780293097.5259998,
-    "ast_hash": "0352474ba2918efe13895edbc3780d94",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/tests/document-ingest.test.mjs": {
-    "mtime": 1780293097.5259998,
-    "ast_hash": "b24dd32b0eb5b60c255a76ce2366646b",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/tests/evidence-mastery.test.mjs": {
-    "mtime": 1780293097.526585,
-    "ast_hash": "fc87e6b76b05dbd41d6759abb1a4b78a",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/tests/system-activity.test.mjs": {
-    "mtime": 1780293097.526585,
-    "ast_hash": "6ac7dbf972ca79ce4f3c439833e4a641",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/tests/web-search.test.mjs": {
-    "mtime": 1780293097.526585,
-    "ast_hash": "0fdcfd4d04ca0afbe6b2a5eb6f3a1587",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/tsconfig.json": {
-    "mtime": 1780293097.526585,
-    "ast_hash": "9d7a844877d1634af42c454f6554fed8",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/vite.config.ts": {
-    "mtime": 1780293097.526585,
-    "ast_hash": "cbe4dd018d422f1967ab47ee905f39b0",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.github/workflows/graphify-refresh.yml": {
-    "mtime": 1780293097.4961936,
-    "ast_hash": "9a2c77fe6082f24a20c5648b594651e8",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/final-report.md": {
-    "mtime": 1780293097.4964392,
-    "ast_hash": "a58f5e528cd88c8b68eadd2d5de40941",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/orchestration.md": {
-    "mtime": 1780293097.49656,
-    "ast_hash": "6b27725418d6b5f10ba43e04211355e5",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/packets/A-architecture-decomposition.md": {
-    "mtime": 1780293097.49656,
-    "ast_hash": "e9fbadec558923d567ab9eadca49411f",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/packets/B-runtime-telemetry-tool-calls.md": {
-    "mtime": 1780293097.4966683,
-    "ast_hash": "7e2c06c0c06b6e03dd43eec4d8b8949b",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/packets/C-admin-observability-ui.md": {
-    "mtime": 1780293097.4966683,
-    "ast_hash": "41b00c66432947e5cca8e6b9959c6337",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/packets/D-memory-brain-runtime.md": {
-    "mtime": 1780293097.4966683,
-    "ast_hash": "c14a624e80168007caa1bade0714ad6e",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/packets/E-graphify-freshness.md": {
-    "mtime": 1780293097.4966683,
-    "ast_hash": "0d969367ba53ede8893504e44583e075",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/packets/F-qa-docs-git.md": {
-    "mtime": 1780293097.4966683,
-    "ast_hash": "ccaf291c95fcafc07f5ceb54feafd316",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/plan.md": {
-    "mtime": 1780293097.4966683,
-    "ast_hash": "09dab5cadabc22f672ef257f9a230fc1",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/results/A-architecture-decomposition.md": {
-    "mtime": 1780293097.4966683,
-    "ast_hash": "017240075f84a0d07ab1038ac21c0f46",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/results/B-runtime-telemetry-tool-calls.md": {
-    "mtime": 1780293097.4969528,
-    "ast_hash": "698299d4c268c48f3665fa6c1e37111a",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/results/C-admin-observability-ui.md": {
-    "mtime": 1780293097.4969997,
-    "ast_hash": "a6034c21121f259336bf510d8b9fa7d1",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/results/D-memory-brain-runtime.md": {
-    "mtime": 1780293097.4969997,
-    "ast_hash": "242a5b27e7fde80008cd220d32305ea9",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/results/E-graphify-freshness.md": {
-    "mtime": 1780293097.4969997,
-    "ast_hash": "8ff212eae68843339c7671c6c08c65be",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/results/F-qa-docs-git.md": {
-    "mtime": 1780293097.4969997,
-    "ast_hash": "3ed4ade57f1fed38d476f21ed6ea3288",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/results/G-evidence-gated-mastery.md": {
-    "mtime": 1780293097.4969997,
-    "ast_hash": "0bc311ee6db78430e350820e52e5b70d",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/brain-architecture-implementation-program/results/H-durable-evidence-ledger.md": {
-    "mtime": 1780293097.4969997,
-    "ast_hash": "ac5e9b26ee2ab5d6ff34d0e260708346",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/final-report.md": {
-    "mtime": 1780293097.4969997,
-    "ast_hash": "18df39f4ef26f718e7230591da8a11fa",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/orchestration.md": {
-    "mtime": 1780293097.4973538,
-    "ast_hash": "00afd065cb76699b42278886aae173b4",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/packets/A-data-model.md": {
-    "mtime": 1780293097.4973538,
-    "ast_hash": "5f5346e7b941b8c7513712fbe67ad045",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/packets/B-chat-runtime.md": {
-    "mtime": 1780293097.4974597,
-    "ast_hash": "fe1b02fa58edd95d4806559d0130b95d",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/packets/C-study-pdf.md": {
-    "mtime": 1780293097.4974597,
-    "ast_hash": "20eb8f45314aa33a0545e26bf8d45f90",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/packets/D-revision-library.md": {
-    "mtime": 1780293097.4974597,
-    "ast_hash": "b84715aedc1194d78fdda8b1f30a88d1",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/packets/E-qa-docs.md": {
-    "mtime": 1780293097.4974597,
-    "ast_hash": "ac42e112edadbf38dec6317970b800de",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/plan.md": {
-    "mtime": 1780293097.4974597,
-    "ast_hash": "457f4e9d02d4bcb1be0916360370e09c",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/A-data-model.md": {
-    "mtime": 1780293097.4974597,
-    "ast_hash": "1bbc5be614d5430bfeb3f8df1ac562e9",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/B-chat-runtime.md": {
-    "mtime": 1780293097.4977143,
-    "ast_hash": "ef78e84e5763c271ae8efb04abde0ab2",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/C-study-pdf.md": {
-    "mtime": 1780293097.4977143,
-    "ast_hash": "dfbd99736814296a8b21cfdc210c0e56",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/D-revision-library.md": {
-    "mtime": 1780293097.4977143,
-    "ast_hash": "39a42c859cacbd1cbaaccb82e053d090",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/E-qa-docs.md": {
-    "mtime": 1780293097.4977143,
-    "ast_hash": "0c0a58ba863bd7af72f95f134c2a32bd",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/AGENTS.md": {
-    "mtime": 1780293097.5029998,
-    "ast_hash": "dc718bd49e535e0c512f413dd63f28fe",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/README.md": {
-    "mtime": 1780293097.5029998,
-    "ast_hash": "8a24a15d699e28c70453575aa1d801f8",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/RESPONSIVENESS.md": {
-    "mtime": 1780293097.5029998,
-    "ast_hash": "54363edfad7598d0988436ebfa633022",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/TUTOR_ARCHITECTURE.md": {
-    "mtime": 1780293097.5029998,
-    "ast_hash": "c42f8c67f3b4ed2df90edecaa816dd54",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/index.html": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "b8094fa980a9bf4d7b8e812c9e1947af",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/requirements.txt": {
-    "mtime": 1780293097.5199997,
-    "ast_hash": "bb37f2cb6388a248ff064b049483371d",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/calculus-notes.pdf": {
-    "mtime": 1780293097.4977143,
-    "ast_hash": "794a22ee7a8479a20adbc3a4a2048f84",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/python-basics.pdf": {
-    "mtime": 1780293097.4977143,
-    "ast_hash": "57e1f5b3482fe6230cfe485072c49de8",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/public/fluent-python.pdf": {
-    "mtime": 1780293097.5199997,
-    "ast_hash": "7818ee366a28f31a1036b52d27e3f2b0",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/test_native.pdf": {
-    "mtime": 1780293097.5259998,
-    "ast_hash": "862505cecd14b65b906c147417f1cad9",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/qa-cdp-clean2-after-python-pdf.png": {
-    "mtime": 1780293097.4979997,
-    "ast_hash": "09d3dca123016fb3c966ed3cb7c522d9",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/qa-cdp-clean2-after-remove-python-pdf.png": {
-    "mtime": 1780293097.4979997,
-    "ast_hash": "6cd5daf5b72d40fe7c7ac6fe5e1abf38",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/qa-cdp-clean2-after-two-pdfs.png": {
-    "mtime": 1780293097.4989998,
-    "ast_hash": "2b997c1887acf782535c977186cb0754",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/qa-cdp-clean2-before-upload.png": {
-    "mtime": 1780293097.4999998,
-    "ast_hash": "afd53a1878f2762718a70408ee1e71ba",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/qa-cdp-clean2-general-thread-after-switch.png": {
-    "mtime": 1780293097.4999998,
-    "ast_hash": "ca8e77966afb929baeae7f780140a18e",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/qa-cdp-clean2-mobile-study.png": {
-    "mtime": 1780293097.5009997,
-    "ast_hash": "7a95b0e485f591b650339a9c789db781",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/qa-cdp-clean2-python-thread-restored.png": {
-    "mtime": 1780293097.5009997,
-    "ast_hash": "c6ec7e8eef4e14283b4eb3eb9a42a66d",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/qa-cdp-clean2-switch-python-pdf.png": {
-    "mtime": 1780293097.5019999,
-    "ast_hash": "a36a23f7e69e8b7521be0acfb051c309",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/revision-desktop-1366.png": {
-    "mtime": 1780293097.5019999,
-    "ast_hash": "6c3a4b657eaa84b992638e4f893e27e5",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/study-desktop-1366.png": {
-    "mtime": 1780293097.5019999,
-    "ast_hash": "10e8b4deda0cdbfefc4497eb772d69dd",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/.workflow/study-view-fixes/results/study-desktop.png": {
-    "mtime": 1780293097.5029998,
-    "ast_hash": "848ac8bb0d638d40ff1ea4ba7132638e",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-12.svg": {
-    "mtime": 1780293097.5099998,
-    "ast_hash": "a4cc9bbdf4d41759623cd2a0e257cb85",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-16.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "8f239453b7553728546cf40c878c597b",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-20.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "cb01dc0d98365463df0f0eef23d809aa",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-21.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "ba2ad3a90f3528979fb5d37685ebbcab",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-22.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "7fca003d893c771e4f8b72c3a64e49f1",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-26.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "9766c7a1a528eb0d3c988620dbfbc16c",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-27.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "26608124205039246fdd21bf3e673a90",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-31.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "7abfbdd516dfaf60a0a3a9ed9a80614a",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-32.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "8f5d7b44cc1ae8d93a050cbd32c60b6e",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-36.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "da68958c03dda7aaf880316f07b07d9e",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-5.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "aed1acb544cfd1be925a91c6e7266f6b",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-6.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "3838347cf5bd2e4d7eb526bd2467b039",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-7.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "22998c66ab6ba8fcacc146b79e452158",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/images/vector-8.svg": {
-    "mtime": 1780293097.5105562,
-    "ast_hash": "22d9a1c95e2bc52ea2d1d8bfc2e5d661",
-    "semantic_hash": ""
-  },
-  "/home/runner/work/Tutor-System-Architecture-/Tutor-System-Architecture-/public/banner.png": {
-    "mtime": 1780293097.5129998,
-    "ast_hash": "f1d628e37e7baa288bb61463161ced4b",
-    "semantic_hash": ""
+  "/Users/mfuad16/Documents/LearningAI/vite.config.ts": {
+    "mtime": 1780042874.3058963,
+    "hash": "cbe4dd018d422f1967ab47ee905f39b0"
+  },
+  "/Users/mfuad16/Documents/LearningAI/server.ts": {
+    "mtime": 1780294097.708959,
+    "hash": "f40bd4d1ae222d30ec866ff1d3fb2486"
+  },
+  "/Users/mfuad16/Documents/LearningAI/tests/document-ingest.test.mjs": {
+    "mtime": 1780146650.2664282,
+    "hash": "b24dd32b0eb5b60c255a76ce2366646b"
+  },
+  "/Users/mfuad16/Documents/LearningAI/tests/system-activity.test.mjs": {
+    "mtime": 1780288654.0486703,
+    "hash": "6ac7dbf972ca79ce4f3c439833e4a641"
+  },
+  "/Users/mfuad16/Documents/LearningAI/tests/web-search.test.mjs": {
+    "mtime": 1780285414.7914789,
+    "hash": "0fdcfd4d04ca0afbe6b2a5eb6f3a1587"
+  },
+  "/Users/mfuad16/Documents/LearningAI/tests/evidence-mastery.test.mjs": {
+    "mtime": 1780292715.8544905,
+    "hash": "fc87e6b76b05dbd41d6759abb1a4b78a"
+  },
+  "/Users/mfuad16/Documents/LearningAI/tests/tool-jobs.test.mjs": {
+    "mtime": 1780294097.711162,
+    "hash": "ef737debf8b312a4d1fdd078958ce0b5"
+  },
+  "/Users/mfuad16/Documents/LearningAI/server/web-search.ts": {
+    "mtime": 1780146650.2537935,
+    "hash": "dcd3d9832b9609f479a580d055037577"
+  },
+  "/Users/mfuad16/Documents/LearningAI/server/vercel-handler.ts": {
+    "mtime": 1780047914.135928,
+    "hash": "9053716e3e221405ad45cd65db40a4db"
+  },
+  "/Users/mfuad16/Documents/LearningAI/scripts/classify_and_extract.py": {
+    "mtime": 1779968375.8852265,
+    "hash": "c59688e8951ee4357258f3283e489d06"
+  },
+  "/Users/mfuad16/Documents/LearningAI/api/[...path].ts": {
+    "mtime": 1780047914.135602,
+    "hash": "f0743ede715b4d0d5a326a6096bc0e71"
+  },
+  "/Users/mfuad16/Documents/LearningAI/api/index.ts": {
+    "mtime": 1780047914.1356835,
+    "hash": "f0743ede715b4d0d5a326a6096bc0e71"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/App.tsx": {
+    "mtime": 1780146650.2932863,
+    "hash": "332677ff964f4fe836bfb7a315fdd312"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/main.tsx": {
+    "mtime": 1780045423.6628816,
+    "hash": "deed79ca9909acda7df8edc95cc37185"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/types.ts": {
+    "mtime": 1779886535.6326082,
+    "hash": "2d26d62a5b29aa270631d2b9b03c5870"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/vite-env.d.ts": {
+    "mtime": 1779763438.6681867,
+    "hash": "0352474ba2918efe13895edbc3780d94"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/misconception.graph.ts": {
+    "mtime": 1779900926.7429566,
+    "hash": "eb28122fae7dfdd78f0713a14bd90a03"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/evidence.ledger.ts": {
+    "mtime": 1780292715.8538806,
+    "hash": "e5efe73511919b0b97aa6145a00a15fc"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/cognitive.load.ts": {
+    "mtime": 1779886845.4881194,
+    "hash": "483a8ea56a1428f5a34c35c23b465e47"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/metacognition.tracker.ts": {
+    "mtime": 1779705996.9623165,
+    "hash": "219ae539bf0097b945bbab9473bf4b82"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/memory.embeddings.ts": {
+    "mtime": 1779870409.6159399,
+    "hash": "d7c42eca73477128e35c98c46f835470"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/productive.failure.ts": {
+    "mtime": 1779901334.0792549,
+    "hash": "0f77529b6365cb91cf75b6d2533c0abc"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/memory.orchestrator.ts": {
+    "mtime": 1780292715.8542058,
+    "hash": "26e757965196f2f528d1b21b5211437a"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/longterm.memory.ts": {
+    "mtime": 1780292715.8540988,
+    "hash": "7e662559c0986ad07136e290fe73e1b4"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/learner.model.ts": {
+    "mtime": 1779900021.8298132,
+    "hash": "f5c12bb487dd0cf67760c7b669447864"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/prerequisite.dag.ts": {
+    "mtime": 1779901127.8627172,
+    "hash": "8e23add494effc34670ec33d68234822"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/illusion.detector.ts": {
+    "mtime": 1779899708.511923,
+    "hash": "5b2b765fc3a4ce60442dd628394b8e40"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/evidence.mastery.ts": {
+    "mtime": 1780292715.8539753,
+    "hash": "9dac66e1076349e5ffee872ac4ac79eb"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/tool.jobs.ts": {
+    "mtime": 1780294097.7104537,
+    "hash": "82fcf447bbf7c6b25f3d62fba83dbb1c"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/scaffolding.engine.ts": {
+    "mtime": 1779901696.402814,
+    "hash": "134c37bdb928c11979b87859db7def0c"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/bkt.engine.ts": {
+    "mtime": 1780292715.8538072,
+    "hash": "d8b54121663f40bc89aa5dde022fa33d"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/zpd.calculator.ts": {
+    "mtime": 1779901895.5070767,
+    "hash": "5f4eb99ec209b0041b469fb55937289f"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/memory/revision.memory.ts": {
+    "mtime": 1779901516.0112672,
+    "hash": "4d91733e443a9cf62197f969fa63d006"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/ShikiHighlighter.tsx": {
+    "mtime": 1779870558.741444,
+    "hash": "bc26e1ed9fd5a57895920ef2d7bd41e7"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/PatternSVGs.tsx": {
+    "mtime": 1779882099.61308,
+    "hash": "090d0dae21f3e57d657e97f447e55a13"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/FloatingSkillsMenu.tsx": {
+    "mtime": 1780146650.2942216,
+    "hash": "6a77f828dae40c1f6c7059b2ef3dccce"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/StatusBadge.tsx": {
+    "mtime": 1779884883.200687,
+    "hash": "a08aca5e4cfeab7bca60dfbe8f3fce0d"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/SiriLiquidGlass.tsx": {
+    "mtime": 1780146650.2952743,
+    "hash": "6c9b4ed26375cff12ec05e7b1f033cb9"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/PdfViewer.tsx": {
+    "mtime": 1780294097.6655936,
+    "hash": "cba7cac80f8bb315465e410e274872e8"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/ChatPanel.tsx": {
+    "mtime": 1780294097.710164,
+    "hash": "ecfffa8d5da2ea3019ab31b437264546"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/AnimatedScrollText.tsx": {
+    "mtime": 1779879420.319919,
+    "hash": "6a7ce796b410ea9c840e70ff7ca6fe5a"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/Navigation.tsx": {
+    "mtime": 1780146650.2943602,
+    "hash": "d7c9854ff08ee61dca008e5b39c54482"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/PatternCard.tsx": {
+    "mtime": 1780146650.2944934,
+    "hash": "709cdc967df4107f466faaa959084231"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/components/SettingsModal.tsx": {
+    "mtime": 1780151859.7121034,
+    "hash": "c8448396e2c92f98303ee9f09c801e28"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/hooks/useMotionPreference.ts": {
+    "mtime": 1780146650.3001502,
+    "hash": "0e3dbcfa795be649a4218c8758701849"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/lib/audio.ts": {
+    "mtime": 1779885816.1580026,
+    "hash": "9f97a5d47433905280d31c2dbeb35846"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/lib/interactionModel.ts": {
+    "mtime": 1780285414.7904036,
+    "hash": "253cba363bfbd9e5c49ccebf9113f60e"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/lib/translations.ts": {
+    "mtime": 1780044339.591238,
+    "hash": "ecb181ff82756860ebd6a34bcaf3b638"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/lib/userBrainArchitectureBook.ts": {
+    "mtime": 1780285414.7905693,
+    "hash": "47b36aa1c5c761f514f72d8f67a57873"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/lib/accessPlans.ts": {
+    "mtime": 1780146650.3003914,
+    "hash": "2432d9319629449e3ad69e6cb4acd562"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/views/StudyView.tsx": {
+    "mtime": 1780294097.6658025,
+    "hash": "d3d4405f8a2b09d416049b0b29b957e8"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/views/RevisionView.tsx": {
+    "mtime": 1780285414.7912357,
+    "hash": "a29e154259efbed35a430918eb878f45"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/views/AnalyticsView.tsx": {
+    "mtime": 1780285414.7910829,
+    "hash": "e50d88f62d7d8cfd330de4cd2ff382ee"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/views/AdminView.tsx": {
+    "mtime": 1780294097.7108316,
+    "hash": "33391ca3941bc5bce84a5fcbd370ff39"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/store/index.ts": {
+    "mtime": 1780285414.790975,
+    "hash": "f8b3a76a173aaea52ef47f3e76626bc4"
+  },
+  "/Users/mfuad16/Documents/LearningAI/RESPONSIVENESS.md": {
+    "mtime": 1779805908.087153,
+    "hash": "54363edfad7598d0988436ebfa633022"
+  },
+  "/Users/mfuad16/Documents/LearningAI/index.html": {
+    "mtime": 1780285414.7896655,
+    "hash": "b8094fa980a9bf4d7b8e812c9e1947af"
+  },
+  "/Users/mfuad16/Documents/LearningAI/requirements.txt": {
+    "mtime": 1779964527.5793173,
+    "hash": "bb37f2cb6388a248ff064b049483371d"
+  },
+  "/Users/mfuad16/Documents/LearningAI/README.md": {
+    "mtime": 1780285414.7895253,
+    "hash": "8a24a15d699e28c70453575aa1d801f8"
+  },
+  "/Users/mfuad16/Documents/LearningAI/AGENTS.md": {
+    "mtime": 1780046015.3134022,
+    "hash": "dc718bd49e535e0c512f413dd63f28fe"
+  },
+  "/Users/mfuad16/Documents/LearningAI/TUTOR_ARCHITECTURE.md": {
+    "mtime": 1780046070.6572084,
+    "hash": "c42f8c67f3b4ed2df90edecaa816dd54"
+  },
+  "/Users/mfuad16/Documents/LearningAI/test_native.pdf": {
+    "mtime": 1779965165.4411347,
+    "hash": "862505cecd14b65b906c147417f1cad9"
+  },
+  "/Users/mfuad16/Documents/LearningAI/public/fluent-python.pdf": {
+    "mtime": 1779705996.9559505,
+    "hash": "7818ee366a28f31a1036b52d27e3f2b0"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-27.svg": {
+    "mtime": 1779951781.0782938,
+    "hash": "26608124205039246fdd21bf3e673a90"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-32.svg": {
+    "mtime": 1779951781.0784247,
+    "hash": "8f5d7b44cc1ae8d93a050cbd32c60b6e"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-26.svg": {
+    "mtime": 1779951781.078225,
+    "hash": "9766c7a1a528eb0d3c988620dbfbc16c"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-31.svg": {
+    "mtime": 1779951781.0783603,
+    "hash": "7abfbdd516dfaf60a0a3a9ed9a80614a"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-21.svg": {
+    "mtime": 1779951781.0780725,
+    "hash": "ba2ad3a90f3528979fb5d37685ebbcab"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-20.svg": {
+    "mtime": 1779951781.0780053,
+    "hash": "cb01dc0d98365463df0f0eef23d809aa"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-22.svg": {
+    "mtime": 1779951781.0781446,
+    "hash": "7fca003d893c771e4f8b72c3a64e49f1"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-36.svg": {
+    "mtime": 1779951781.078493,
+    "hash": "da68958c03dda7aaf880316f07b07d9e"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-5.svg": {
+    "mtime": 1779951781.0787401,
+    "hash": "aed1acb544cfd1be925a91c6e7266f6b"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-7.svg": {
+    "mtime": 1779951781.0788763,
+    "hash": "22998c66ab6ba8fcacc146b79e452158"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-6.svg": {
+    "mtime": 1779951781.0788083,
+    "hash": "3838347cf5bd2e4d7eb526bd2467b039"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-8.svg": {
+    "mtime": 1779951781.0789394,
+    "hash": "22d9a1c95e2bc52ea2d1d8bfc2e5d661"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-12.svg": {
+    "mtime": 1779951781.0778215,
+    "hash": "a4cc9bbdf4d41759623cd2a0e257cb85"
+  },
+  "/Users/mfuad16/Documents/LearningAI/images/vector-16.svg": {
+    "mtime": 1779951781.0779293,
+    "hash": "8f239453b7553728546cf40c878c597b"
+  },
+  "/Users/mfuad16/Documents/LearningAI/public/banner.png": {
+    "mtime": 1779885456.9198773,
+    "hash": "f1d628e37e7baa288bb61463161ced4b"
   }
 }
