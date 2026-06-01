@@ -2,6 +2,12 @@ import { db, PersistentConcept } from "./longterm.memory";
 import { masteryFromEvidenceAttempt } from "./evidence.mastery";
 import { recordMasteryDelta } from "./evidence.ledger";
 
+type BKTAttemptOptions = {
+  source?: string;
+  summary?: string;
+  metadata?: Record<string, unknown>;
+};
+
 // Default BKT Parameters for new concepts
 const DEFAULT_BKT = {
   p_learn_init: 0.2, // P(L0)
@@ -42,6 +48,7 @@ export class BKTEngine {
     conceptId: string,
     isCorrect: boolean,
     type: "recognition" | "generation" | "transfer",
+    options: BKTAttemptOptions = {},
   ) {
     const concept = await db.concepts.get(conceptId);
     if (!concept) return null;
@@ -70,9 +77,12 @@ export class BKTEngine {
       nextMastery: concept.mastery,
       previousPLearn,
       nextPLearn: concept.p_learn,
-      source: "bkt_attempt",
-      summary: `${type} recall attempt was ${isCorrect ? "correct" : "incorrect"}`,
+      source: options.source || "bkt_attempt",
+      summary:
+        options.summary ||
+        `${type} recall attempt was ${isCorrect ? "correct" : "incorrect"}`,
       metadata: {
+        ...options.metadata,
         posterior,
         cappedPosterior,
         attemptCount: concept.attempt_history.length,

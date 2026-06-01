@@ -42,6 +42,7 @@ import { SvgBeige } from "../components/PatternSVGs";
 import tutorBook from "../lib/tutorBook.json";
 import userBrainArchitectureBook from "../lib/userBrainArchitectureBook";
 import { useMotionPreference } from "../hooks/useMotionPreference";
+import { recordFlashcardReviewEvidence } from "../memory/revision.evidence";
 import { gsap } from "gsap";
 
 type BuiltInBook = {
@@ -2244,6 +2245,11 @@ export function RevisionView() {
     await db.flashcards.update(card.id, {
       nextReviewAt: Date.now() + nextDays * 24 * 60 * 60 * 1000,
     });
+    try {
+      await recordFlashcardReviewEvidence(card, quality);
+    } catch (error) {
+      console.warn("[RevisionView] Flashcard evidence write failed:", error);
+    }
   };
 
   const sampleNotes = React.useMemo<Record<string, string>>(

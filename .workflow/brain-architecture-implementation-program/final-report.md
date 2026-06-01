@@ -168,3 +168,38 @@ Phase 4 makes tool-call observability durable in the local beta store. The serve
 - Persist server-side worker execution when a real local/remote queue exists.
 - Wire Revision flashcard/review controls to BKT attempts where concept IDs are available.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 5 report
+
+## Scope
+
+Phase 5 wires Revision flashcard self-grading into verified local learner evidence where a flashcard has a real persisted concept ID. It keeps current scheduling behavior intact and deliberately skips placeholder `general` cards so model-generated flashcards do not fabricate mastery changes.
+
+## Graphify Context
+
+- Graphify routed this slice through `src/views/RevisionView.tsx`, `src/memory/bkt.engine.ts`, `src/memory/evidence.ledger.ts`, `src/memory/longterm.memory.ts`, `src/components/ChatPanel.tsx`, and `src/memory/memory.orchestrator.ts`.
+- Read-only sidecar Peirce confirmed `FlashcardUI` sends quality scores, `handleReview` only scheduled cards before this phase, BKT requires `db.concepts`, and most current generated cards default to `general`.
+
+## Integration Decisions
+
+- Added `src/memory/revision.evidence.ts` to gate flashcard evidence before BKT.
+- Flashcard reviews are treated as generation evidence because the learner recalls before self-grading.
+- `quality >= 4` is correct; `0` and `2` are incorrect.
+- `general` or missing concept IDs skip mastery evidence but still allow normal flashcard scheduling.
+- `BKTEngine.updateConceptAttempt` now accepts optional evidence source, summary, and metadata so Admin evidence can distinguish `revision_flashcard` from generic BKT attempts.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 19 tests.
+- `npm run build`: passed.
+- `npm run format:check`: still fails only on pre-existing `src/views/RevisionView.tsx`.
+- Browser QA on `http://localhost:3001/revision`: Revision loaded the active General Study learning book; Admin Evidence tab still rendered; browser console had 0 warnings/errors; smoke screenshot saved at `results/revision-flashcard-evidence-smoke.png`.
+- Graphify regenerated from a stable temporary worktree with only this phase's source files copied in, preserving unrelated local PDF/StudyView edits.
+- Graphify artifact smoke: 530 nodes, 871 edges, no temp-path markers in checked graph artifacts, and `graphify query "revision.evidence recordFlashcardReviewEvidence flashcardReviewOutcome bktEngine updateConceptAttempt" --budget 1800 --graph graphify-out/graph.json` returned `revision.evidence.ts`, `recordFlashcardReviewEvidence()`, `flashcardReviewOutcome()`, `RevisionView.tsx`, and `bkt.engine.ts`.
+
+## Remaining Work
+
+- Improve flashcard generation so cards attach real concept IDs where possible.
+- Bridge `learningBookConcepts` to BKT-capable persisted concepts or define a separate mastery path.
+- AWS/cloud synchronization remains out of scope until beta testing.

@@ -71,10 +71,17 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "server.ts, src/components/ChatPanel.tsx, src/memory/tool.jobs.ts, src/views/AdminView.tsx, tests/tool-jobs.test.mjs"
+    },
+    {
+      "id": "J",
+      "name": "Revision flashcard evidence",
+      "owner": "main agent + read-only sidecar Peirce",
+      "status": "completed",
+      "write_scope": "src/views/RevisionView.tsx, src/memory/revision.evidence.ts, src/memory/bkt.engine.ts, tests/revision-evidence.test.mjs, package.json"
     }
   ],
   "verification": {
-    "status": "phase_4_completed",
+    "status": "phase_5_completed",
     "checks": [
       "npm run lint",
       "npm run test",
