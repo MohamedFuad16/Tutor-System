@@ -14,6 +14,70 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 20 report
+
+## Scope
+
+Phase 20 makes stored User Brain Architecture audio overviews generation-ready
+without exposing missing audio assets in the reader. AWS/cloud work remains out
+of scope.
+
+## Graphify Context
+
+- Graphify routed this slice through `src/lib/chapterAudioOverviews.ts`,
+  `src/views/RevisionView.tsx`, `src/views/AdminView.tsx`,
+  `src/lib/userBrainArchitectureBook.ts`, `src/lib/tutorBook.json`, and
+  `package.json`.
+- Official OpenAI speech API docs were checked for the
+  `openai.audio.speech.create` shape and the `gpt-4o-mini-tts` model before
+  adding the local generator.
+
+## Integration Decisions
+
+- Added `scripts/user-brain-audio-overview-plan.mjs` with chapter scripts,
+  target filenames, stable overview IDs, public audio URLs, and dry-run report
+  helpers for all eight User Brain Architecture chapters.
+- Added `scripts/generate-user-brain-audio-overviews.mjs`, a key-gated OpenAI
+  speech generator. `--dry-run` performs only local file checks; synthesis
+  exits before network work unless `OPENAI_API_KEY` exists.
+- Added `npm run audio:overview:dry-run` and
+  `npm run audio:overview:generate`.
+- Kept `src/lib/chapterAudioOverviews.ts` limited to checked-in assets, so the
+  reader cannot render controls for the seven pending MP3s.
+- Updated `README.md`, `TUTOR_ARCHITECTURE.md`, the in-app Tutor architecture
+  book, the User Brain Architecture book, and the App Design Language local beta
+  patterns.
+- Added `tests/audio-overview-plan.test.mjs` for chapter coverage, dry-run
+  status, checked-in opening audio, and keyless dry-run behavior.
+
+## Verification Evidence
+
+- `npm run audio:overview:dry-run`: passed, 1 present and 7 missing planned MP3
+  assets.
+- `node --test tests/audio-overview-plan.test.mjs`: passed, 4 tests.
+- `npm run lint`: passed.
+- `npm run test`: passed, 69 tests.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- Browser QA on `http://localhost:3001`: Revision rendered the User Brain
+  Architecture stored audio card with play and speed controls; App Design
+  Language rendered the Audio generation dry-run control pattern.
+- Graphify regenerated with `graphify update . --force` and
+  `npm run graphify:tree`; query smoke found the generator, plan, dry-run, and
+  speech-input symbols.
+- Final-check sidecar Noether found no blocking issues. Its P3 drift concern was
+  addressed by making the focused test compare audio-plan chapter titles against
+  `src/lib/userBrainArchitectureBook.ts`.
+
+## Remaining Work
+
+- Generate and review the seven pending MP3 files once an OpenAI key is
+  available.
+- Add generated MP3 entries to `src/lib/chapterAudioOverviews.ts` only after the
+  assets are checked in and reviewed.
+- Continue broader local beta learner-brain implementation before any AWS/cloud
+  work.
+
 # brain architecture implementation program: phase 1 report
 
 ## Scope

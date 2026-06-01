@@ -199,6 +199,8 @@ Graph rebuild policy:
   enabled as a shared fallback.
 - Deepgram key for voice and TTS.
 - Serper key for live web search.
+- OpenAI key only when generating stored User Brain Architecture MP3 overviews
+  locally. Playback uses checked-in assets and does not need this key.
 
 ### 2. Install
 
@@ -217,6 +219,7 @@ OPENROUTER_API_KEY=your_openrouter_key_here
 ALLOW_SERVER_OPENROUTER_FALLBACK=false
 DEEPGRAM_API_KEY=your_deepgram_key_here
 SERPER_API_KEY=your_serper_key_here
+OPENAI_API_KEY=optional_for_audio_overview_generation
 ```
 
 Leave `ALLOW_SERVER_OPENROUTER_FALLBACK=false` when users should provide their
@@ -228,6 +231,20 @@ intentionally pays for unauthenticated chat fallback.
 ```bash
 npm run dev
 ```
+
+### 5. Generate Stored Chapter Audio
+
+The User Brain Architecture book uses checked-in MP3 assets for chapter
+playback. The first overview is stored now; the remaining chapter scripts and
+target filenames are tracked locally.
+
+```bash
+npm run audio:overview:dry-run
+OPENAI_API_KEY=your_openai_key npm run audio:overview:generate
+```
+
+The generator uses the OpenAI speech model `gpt-4o-mini-tts`. It exits before
+network synthesis if `OPENAI_API_KEY` is missing.
 
 Open `http://localhost:3000`.
 

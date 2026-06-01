@@ -41,19 +41,20 @@ use a `#faf9f6` paper style to keep review and diagnostics readable.
 
 ## 3. Model Inventory
 
-| Use                       | Provider                   | Model                                                         |
-| ------------------------- | -------------------------- | ------------------------------------------------------------- |
-| Default tutor chat        | OpenRouter                 | `deepseek/deepseek-v4-flash`                                  |
-| Settings chat options     | OpenRouter                 | Claude, Gemini, and DeepSeek options exposed in Settings      |
-| Chat fallback chain       | OpenRouter                 | Gemini, Claude Haiku, GPT-4o-mini, and Llama fallback options |
-| PDF title extraction      | OpenRouter                 | `qwen/qwen2.5-vl-72b-instruct`                                |
-| Trace explanation         | OpenRouter                 | `deepseek/deepseek-v4-flash`                                  |
-| Learning book updates     | OpenRouter                 | `deepseek/deepseek-v4-flash`                                  |
-| Page vision tool          | OpenRouter                 | `openai/gpt-4o-mini`                                          |
-| Voice Agent listen        | Deepgram                   | `flux-general-en` or multilingual hints                       |
-| Voice Agent think         | Deepgram/OpenAI-compatible | `gpt-4o-mini`                                                 |
-| Voice Agent speak         | Deepgram/OpenAI-compatible | `gpt-4o-mini-tts` / Aura fallback                             |
-| Browser memory embeddings | Local deterministic        | 384-dimensional hashed text vectors                           |
+| Use                       | Provider                   | Model                                                          |
+| ------------------------- | -------------------------- | -------------------------------------------------------------- |
+| Default tutor chat        | OpenRouter                 | `deepseek/deepseek-v4-flash`                                   |
+| Settings chat options     | OpenRouter                 | Claude, Gemini, and DeepSeek options exposed in Settings       |
+| Chat fallback chain       | OpenRouter                 | Gemini, Claude Haiku, GPT-4o-mini, and Llama fallback options  |
+| PDF title extraction      | OpenRouter                 | `qwen/qwen2.5-vl-72b-instruct`                                 |
+| Trace explanation         | OpenRouter                 | `deepseek/deepseek-v4-flash`                                   |
+| Learning book updates     | OpenRouter                 | `deepseek/deepseek-v4-flash`                                   |
+| Page vision tool          | OpenRouter                 | `openai/gpt-4o-mini`                                           |
+| Voice Agent listen        | Deepgram                   | `flux-general-en` or multilingual hints                        |
+| Voice Agent think         | Deepgram/OpenAI-compatible | `gpt-4o-mini`                                                  |
+| Voice Agent speak         | Deepgram/OpenAI-compatible | `gpt-4o-mini-tts` / Aura fallback                              |
+| Stored chapter audio      | OpenAI speech, key-gated   | `gpt-4o-mini-tts` generation script plus checked-in MP3 assets |
+| Browser memory embeddings | Local deterministic        | 384-dimensional hashed text vectors                            |
 
 ## 4. Zustand Store
 
@@ -86,7 +87,9 @@ updates, writes concepts and entries, records generated learning-note artifact
 provenance, announces active books, and records trace explanations. Built-in
 stored audio overview manifests seed `audio_overview` artifact rows with
 `not_checked` citation states so Admin can inspect generated-asset provenance
-alongside runtime artifacts.
+alongside runtime artifacts. The generation plan for remaining User Brain
+Architecture chapter MP3s lives in `scripts/user-brain-audio-overview-plan.mjs`;
+the app manifest only exposes assets that are actually checked in.
 
 ## 6. Core Views
 
@@ -109,9 +112,12 @@ citation states so Admin can audit them before broader verification exists.
 
 `RevisionView` renders generated learning books and built-in reference books in
 a paper-style reading surface. It also houses the app design language book with
-wireframes, tokens, and interactive previews. Built-in chapters can include
-stored audio overview assets with local playback controls, so chapter listening
-does not call the live read-aloud route on every play.
+wireframes, tokens, interactive previews, and local beta control patterns.
+Built-in chapters can include stored audio overview assets with local playback
+controls, so chapter listening does not call the live read-aloud route on every
+play. `npm run audio:overview:dry-run` reports missing built-in MP3s without
+network access; `npm run audio:overview:generate` synthesizes them only when an
+`OPENAI_API_KEY` is present.
 
 ### Admin View
 

@@ -28,6 +28,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Admin exposes model runs, tool jobs, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
 - Generated flashcards, generated learning-book notes, and stored audio overviews now leave explicit \`not_checked\` artifact provenance.
 - Revision shows this book in a shorter reader path and can play a stored overview asset for this chapter.
+- A local audio-overview generation plan now covers every chapter, with an OpenAI speech generator gated by \`OPENAI_API_KEY\` and a dry-run verifier for missing MP3 assets.
 
 ## What This Is Not
 
@@ -172,7 +173,7 @@ Good voice behavior means:
 
 For Library books, the better pattern is stored audio overview, not live read-aloud. A chapter overview should be written as a short energetic explanation, generated once, stored as an asset, and played from the browser with normal controls. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
 
-This phase starts that pattern for the opening User Brain Architecture chapter. The stored asset is also represented in Admin as a local \`audio_overview\` artifact row with not-checked provenance. Later slices should generate stored chapter-specific assets for the remaining built-in book chapters.`,
+This phase starts that pattern for the opening User Brain Architecture chapter and makes the rest of the book generation-ready. \`scripts/user-brain-audio-overview-plan.mjs\` holds the chapter scripts and target filenames. \`npm run audio:overview:dry-run\` reports which local MP3 assets are present, while \`npm run audio:overview:generate\` uses the OpenAI speech API only when \`OPENAI_API_KEY\` is available. The app only exposes audio entries whose MP3 files are actually checked in, so missing generated assets do not create broken player controls.`,
   },
   {
     title: "Chapter 7: Local Beta Roadmap",
@@ -193,14 +194,15 @@ Implemented now:
 - local source-card integrity verifier;
 - generated flashcard and generated learning-note provenance;
 - capped beta diagnostics export;
-- stored audio overview UI for the opening architecture chapter.
+- stored audio overview UI for the opening architecture chapter;
+- chapter-by-chapter stored-audio generation plan, dry-run report, and key-gated OpenAI speech synthesis script.
 
 Still local beta work:
 
 - source-span claim matching;
 - generated-artifact verifiers for notes, charts, code snippets, images, and websites;
 - durable job queue with retries and dead-letter review;
-- broader stored audio overview generation for every built-in chapter;
+- run and review the stored audio overview generator for the remaining User Brain Architecture chapters once an OpenAI key is available;
 - stronger tests that make mastery writes impossible without validated evidence and audit rows.
 
 Deferred until after beta:

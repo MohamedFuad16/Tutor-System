@@ -2266,6 +2266,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Built-in chapters can attach a saved overview asset with play, pause, and speed controls, keeping Library listening fast without calling live read-aloud each time.",
       },
       {
+        title: "Audio generation dry-run",
+        detail:
+          "The generation plan lists every User Brain Architecture chapter, reports missing MP3s locally, and only synthesizes with OpenAI speech after an explicit key is available.",
+      },
+      {
         title: "Diagnostics export",
         detail:
           "Exports are capped, local-only, and explicit about deferred cloud readiness, correction overlays, and out-of-scope automation.",

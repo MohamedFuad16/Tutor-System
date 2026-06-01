@@ -9,6 +9,8 @@ export type ChapterAudioOverview = {
   storedAt: string;
 };
 
+// Only include audio assets that are actually checked into public/audio-overviews.
+// The full generation plan for pending chapters lives in scripts/user-brain-audio-overview-plan.mjs.
 export const userBrainChapterAudioOverviews: Record<
   number,
   ChapterAudioOverview
