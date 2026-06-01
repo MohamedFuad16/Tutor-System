@@ -7,6 +7,7 @@ const {
   createArtifactRecord,
   createCitationStateRecord,
   createGeneratedFlashcardsArtifactRecords,
+  createGeneratedNotesArtifactRecords,
   artifactVerificationStateForCitationStates,
   normalizeArtifactStatus,
   normalizeArtifactVerificationState,
@@ -131,6 +132,67 @@ test("generated flashcards become not-checked artifact records with provenance",
   assert.equal(citation.artifactId, artifact.id);
   assert.equal(citation.sourceRef, "assistant-message-1");
   assert.equal(citation.verifier, "generated_flashcard_provenance");
+});
+
+test("generated learning notes become not-checked artifact records with provenance", () => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-1",
+      source: "learning_book_update",
+      conversationId: "conversation-1",
+      bookId: "book-1",
+      bookTitle: "Graph learning",
+      chapterId: "chapter-1",
+      chapterTitle: "BKT updates",
+      documentId: "document-1",
+      userName: "Learner",
+      model: "local-session-fallback",
+      confidence: 0.42,
+      conceptIds: ["concept-bkt", "concept-bkt", "concept-evidence"],
+      summary:
+        "The learner connected Bayesian Knowledge Tracing to evidence-gated mastery updates.",
+      knowledgeSummary: "BKT only moves mastery when evidence is accepted.",
+      assistantSummary: "A concise tutor explanation about BKT.",
+      metadata: { generationPath: "memory_orchestrator" },
+    },
+    13579,
+  );
+
+  assert.equal(artifact.timestamp, 13579);
+  assert.equal(artifact.artifactType, "notes");
+  assert.equal(artifact.status, "ready");
+  assert.equal(artifact.verificationState, "not_checked");
+  assert.equal(artifact.source, "learning_book_update");
+  assert.equal(artifact.conversationId, "conversation-1");
+  assert.equal(artifact.bookId, "book-1");
+  assert.equal(artifact.conceptId, undefined);
+  assert.deepEqual(artifact.sourceIds, [
+    "entry-1",
+    "conversation-1",
+    "book-1",
+    "chapter-1",
+    "document-1",
+    "concept-bkt",
+    "concept-evidence",
+  ]);
+  assert.deepEqual(artifact.citationStateIds, [citation.id]);
+  assert.equal(artifact.metadata.localOnly, true);
+  assert.equal(artifact.metadata.externalContentFetched, false);
+  assert.equal(artifact.metadata.generatedArtifact, true);
+  assert.equal(artifact.metadata.noteKind, "learning_entry");
+  assert.equal(artifact.metadata.entryId, "entry-1");
+  assert.deepEqual(artifact.metadata.conceptIds, [
+    "concept-bkt",
+    "concept-evidence",
+  ]);
+  assert.equal(artifact.metadata.confidence, 0.42);
+  assert.equal(artifact.metadata.generationPath, "memory_orchestrator");
+  assert.equal(citation.timestamp, 13579);
+  assert.equal(citation.state, "not_checked");
+  assert.equal(citation.artifactId, artifact.id);
+  assert.equal(citation.sourceRef, "entry-1");
+  assert.equal(citation.metadata.externalContentFetched, false);
+  assert.equal(citation.verifier, "generated_learning_entry_provenance");
 });
 
 test("local source-card verifier support excludes generated flashcards", () => {

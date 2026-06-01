@@ -2738,10 +2738,10 @@ export function AdminView() {
                           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
                             Durable local records for source cards, generated
                             study artifacts, and citation states captured from
-                            chat streams. Artifacts can be ready while their
-                            citations remain checking or not checked; the local
-                            verifier checks saved source-card structure and
-                            links without fetching external pages.
+                            chat, memory, and tool streams. Artifacts can be
+                            ready while their citations remain checking or not
+                            checked; the local verifier checks saved source-card
+                            structure and links without fetching external pages.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -2812,9 +2812,9 @@ export function AdminView() {
 
                         {artifactRecords.length === 0 ? (
                           <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
-                            No artifacts yet. A chat web-search result or
-                            generated flashcard batch will persist reviewable
-                            artifact rows here.
+                            No artifacts yet. A chat web-search result,
+                            generated flashcard batch, or generated learning
+                            note will persist reviewable artifact rows here.
                           </div>
                         ) : (
                           <div className="space-y-3">

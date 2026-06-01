@@ -441,7 +441,7 @@ flowchart LR
 
 Correction rule: editing or deleting a session must propagate to summaries, graph facts, embeddings, mastery deltas, tutor preferences, caches, and exports where practical. A memory is not trustworthy unless the user can see why it exists and how to remove or correct it.
 
-Local beta implementation note: Admin now records correction requests and applies non-destructive propagation overlays to matching local ledgers. Evidence and mastery rows are marked unverified, memory/retrieval rows can be skipped, source artifacts become stale/conflicting, citation states become unsupported/conflicting, and the capped diagnostics export includes a correction overlay. Source-card citation rows can also pass through a local citation-integrity verifier that checks saved artifact links, URL shape, domain consistency, and source ids without fetching external pages. Generated flashcard batches now write \`ArtifactRecord\` rows with \`not_checked\` provenance citation states, so Admin can see study-card artifacts without pretending they have external proof. This is not hard deletion, not full factual verification, and does not yet rebuild every embedding or graph projection.
+Local beta implementation note: Admin now records correction requests and applies non-destructive propagation overlays to matching local ledgers. Evidence and mastery rows are marked unverified, memory/retrieval rows can be skipped, source artifacts become stale/conflicting, citation states become unsupported/conflicting, and the capped diagnostics export includes a correction overlay. Source-card citation rows can also pass through a local citation-integrity verifier that checks saved artifact links, URL shape, domain consistency, and source ids without fetching external pages. Generated flashcard batches and generated learning-book notes now write \`ArtifactRecord\` rows with \`not_checked\` provenance citation states, so Admin can see study-card and study-note artifacts without pretending they have external proof. This is not hard deletion, not full factual verification, and does not yet rebuild every embedding or graph projection.
 
 Every background job should move through a visible lifecycle:
 
@@ -501,11 +501,11 @@ Implemented now:
 - the local interaction context layer;
 - basic BKT-style mastery machinery;
 - source cards, reader citation links, durable citation-state rows, and a local source-card integrity verifier;
-- generated flashcard artifact records with local provenance and explicit \`not_checked\` citation state.
+- generated flashcard and learning-note artifact records with local provenance and explicit \`not_checked\` citation state.
 
 Required before cloud beta:
 
-- broader generated-artifact citation verification beyond source-card and flashcard-provenance rows;
+- broader generated-artifact citation verification beyond source-card, flashcard-provenance, and learning-note-provenance rows;
 - durable job queue with retries and dead-letter review;
 - source-state enforcement in the UI;
 - tenant-scoped write paths across relational rows, vectors, graph IDs, S3 objects, queues, and logs;
@@ -715,7 +715,7 @@ Required gates:
 | --- | --- | --- |
 | Source grounding | Answers cite the relevant page, source span, or retrieved record. | Source cards, citation states with local verifier metadata, retrieval traces. |
 | Current facts | Latest/current questions trigger retrieval/search or explicit uncertainty. | Tool job logs and verified/unavailable/conflicting/unsupported citation states. |
-| Tool artifacts | Charts, code, images, websites, flashcards, and source cards are visible, auditable, and attached to the turn. | ArtifactRecord rows with verification state. |
+| Tool artifacts | Charts, code, images, websites, flashcards, notes, and source cards are visible, auditable, and attached to the turn. | ArtifactRecord rows with verification state. |
 | Learner-state changes | Every durable change has evidence and can be reversed. | EvidenceEvent, MasteryDelta, audit row, correction path. |
 | Voice behavior | Latency, pause handling, barge-in, pronunciation, and fallback path are measured. | Realtime traces and voice QA runs. |
 | Tenant isolation | Cross-user leakage tests pass across rows, vectors, graph IDs, S3 objects, queues, and logs. | Security tests and red-team fixtures. |

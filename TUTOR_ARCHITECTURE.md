@@ -82,8 +82,8 @@ Important tables:
 - `artifactRecords`, `citationStates`
 
 `MemoryOrchestrator` stores conversations, requests structured learning-book
-updates, writes concepts and entries, announces active books, and records trace
-explanations.
+updates, writes concepts and entries, records generated learning-note artifact
+provenance, announces active books, and records trace explanations.
 
 ## 6. Core Views
 
@@ -115,8 +115,8 @@ wireframes, tokens, and interactive previews.
 - System Activity, request timelines, model runs, memory/retrieval events, tool
   jobs, evidence/mastery ledgers, correction controls, source artifacts, and
   beta diagnostics.
-- Source-card local citation checks plus not-checked generated flashcard
-  artifact provenance.
+- Source-card local citation checks plus not-checked generated flashcard and
+  learning-note artifact provenance.
 - DeepSeek Trace Ledger for persisted learning-book and trace events.
 - Server Console for live backend logs over WebSocket.
 

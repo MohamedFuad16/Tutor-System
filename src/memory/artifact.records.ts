@@ -63,6 +63,25 @@ export type GeneratedFlashcardsArtifactInput = {
   metadata?: Record<string, unknown>;
 };
 
+export type GeneratedNotesArtifactInput = {
+  entryId: string;
+  bookId?: string;
+  bookTitle?: string;
+  chapterId?: string;
+  chapterTitle?: string;
+  conversationId?: string;
+  documentId?: string;
+  userName?: string;
+  model?: string;
+  confidence?: unknown;
+  conceptIds?: unknown[];
+  source?: string;
+  summary?: unknown;
+  knowledgeSummary?: unknown;
+  assistantSummary?: unknown;
+  metadata?: Record<string, unknown>;
+};
+
 export type CitationIntegrityState = CitationState["state"];
 
 export type CitationIntegrityResult = {
@@ -924,6 +943,124 @@ export const recordGeneratedFlashcardsArtifact = async (
     );
   } catch (error) {
     console.warn("[ArtifactRecords] flashcard artifact write failed", error);
+  }
+
+  return { artifact, citation };
+};
+
+export const createGeneratedNotesArtifactRecords = (
+  input: GeneratedNotesArtifactInput,
+  timestamp = Date.now(),
+) => {
+  const entryId = compact(input.entryId, "learning-entry");
+  const conceptIds = cleanList(input.conceptIds, 32);
+  const sourceRef = compact(
+    entryId || input.conversationId || input.bookId || "generated-learning-note",
+  );
+  const artifactId = artifactRecordIdFor({
+    artifactType: "notes",
+    sourceRef,
+  });
+  const citationId = citationStateIdFor({
+    claimId: artifactId,
+    sourceRef,
+  });
+  const noteTitle = compact(
+    input.chapterTitle || input.bookTitle || "Generated learning note",
+  );
+  const noteSummary = compact(
+    input.summary || input.assistantSummary || input.knowledgeSummary,
+  );
+  const confidence = Number(input.confidence);
+  const normalizedConfidence = Number.isFinite(confidence)
+    ? Math.max(0, Math.min(1, confidence))
+    : undefined;
+
+  const sharedMetadata = {
+    ...input.metadata,
+    localOnly: true,
+    externalContentFetched: false,
+    generatedArtifact: true,
+    artifactType: "notes",
+    noteKind: "learning_entry",
+    entryId,
+    bookId: input.bookId,
+    bookTitle: input.bookTitle,
+    chapterId: input.chapterId,
+    chapterTitle: input.chapterTitle,
+    conversationId: input.conversationId,
+    documentId: input.documentId,
+    userName: input.userName,
+    model: input.model,
+    confidence: normalizedConfidence,
+    conceptIds,
+    summaryLength: String(input.summary || "").trim().length,
+    knowledgeSummaryLength: String(input.knowledgeSummary || "").trim().length,
+    assistantSummaryLength: String(input.assistantSummary || "").trim().length,
+  };
+
+  const citation = createCitationStateRecord(
+    {
+      id: citationId,
+      state: "not_checked",
+      claimId: artifactId,
+      sourceRef,
+      artifactId,
+      title: `Generated learning note: ${noteTitle}`,
+      verifier: "generated_learning_entry_provenance",
+      metadata: sharedMetadata,
+    },
+    timestamp,
+  );
+  const artifact = createArtifactRecord(
+    {
+      id: artifactId,
+      artifactType: "notes",
+      status: noteSummary ? "ready" : "failed",
+      verificationState: "not_checked",
+      source: input.source || "learning_book_update",
+      title: `Generated learning note: ${noteTitle}`,
+      summary: noteSummary || "Generated learning note without saved summary.",
+      sourceIds: cleanList(
+        [
+          entryId,
+          input.conversationId,
+          input.bookId,
+          input.chapterId,
+          input.documentId,
+          ...conceptIds,
+        ],
+        64,
+      ),
+      citationStateIds: [citation.id],
+      conversationId: input.conversationId,
+      bookId: input.bookId,
+      conceptId: conceptIds.length === 1 ? conceptIds[0] : undefined,
+      metadata: {
+        ...sharedMetadata,
+        summaryPreview: noteSummary,
+      },
+    },
+    timestamp,
+  );
+
+  return { artifact, citation };
+};
+
+export const recordGeneratedNotesArtifact = async (
+  input: GeneratedNotesArtifactInput,
+) => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(input);
+
+  try {
+    await db.transaction("rw", db.artifactRecords, db.citationStates, () =>
+      Promise.all([
+        db.artifactRecords.put(artifact),
+        db.citationStates.put(citation),
+      ]),
+    );
+  } catch (error) {
+    console.warn("[ArtifactRecords] note artifact write failed", error);
   }
 
   return { artifact, citation };

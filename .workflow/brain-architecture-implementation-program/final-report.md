@@ -710,10 +710,75 @@ generated-artifact verifier exists.
 
 ## Remaining Work
 
-- Link generated notes, charts, code snippets, images, websites, and other
-  artifacts into the same reviewable provenance path.
-- Add real generated-artifact verification beyond source-card and flashcard
-  provenance rows.
+- Link generated charts, code snippets, images, websites, and other artifacts
+  into the same reviewable provenance path.
+- Add real generated-artifact verification beyond source-card, flashcard, and
+  learning-note provenance rows.
+- Source-span claim matching and external content verification remain future
+  slices.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 17: Learning-note Artifact Provenance
+
+Phase 17 links generated learning-book entries into the local artifact/citation
+trust ledger. It keeps the same conservative boundary as generated flashcards:
+generated notes are visible and reviewable, but remain `not_checked` until a
+real notes/source-span verifier exists.
+
+## Graphify Context
+
+- Graphify routed the slice through `MemoryOrchestrator`,
+  `src/memory/memory.orchestrator.ts`, `src/memory/artifact.records.ts`,
+  `ArtifactRecord`, `CitationState`, `AdminView()`, and the in-app architecture
+  books.
+- Read-only sidecar Kierkegaard confirmed the safest insertion point was the
+  `db.learningEntries.add()` block inside
+  `MemoryOrchestrator.updateLearningBookFromConversation()`.
+
+## Integration Decisions
+
+- Added generated learning-note artifact construction and persistence helpers.
+- `MemoryOrchestrator.updateLearningBookFromConversation()` now creates a
+  stable learning-entry id, persists the entry, and writes a sibling `notes`
+  `ArtifactRecord` plus `not_checked` citation-state row.
+- The learning-entry id is the artifact/citation source reference so multiple
+  entries in one conversation do not overwrite each other.
+- Metadata records local-only generated provenance, `externalContentFetched:
+  false`, book/chapter/conversation/document context, concept ids, model, and
+  confidence.
+- Admin and the built-in books now describe generated learning-note provenance
+  without implying source verification.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 64 tests.
+- `npm run build`: passed.
+- `npm run format:check`: passed after formatting `AdminView.tsx`.
+- Browser QA on `http://127.0.0.1:3100`: Admin Source Artifacts rendered the
+  `chat, memory, and tool streams` copy, generated learning-note empty-state
+  copy, `Not checked` meter, no horizontal overflow, and zero warning/error
+  logs at mobile and desktop widths. Tutor System Architecture, User Brain
+  Architecture, and App Design Language rendered the updated note-provenance
+  copy.
+- `graphify update . --force`: regenerated the code architecture graph with 733
+  nodes, 1293 edges, and 50 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query returned `createGeneratedNotesArtifactRecords()`,
+  `recordGeneratedNotesArtifact()`,
+  `.updateLearningBookFromConversation()`, `MemoryOrchestrator`, and
+  `AdminView()`.
+- Graphify artifact smoke found no conflict markers, `/private/tmp`,
+  `tmp-test`, or generated `server.mjs` paths.
+- Final-check sidecar Galileo found no code blockers. It flagged stale workflow
+  closeout fields, which were updated before commit.
+
+## Remaining Work
+
+- Link generated charts, code snippets, images, websites, and other artifacts
+  into the same reviewable provenance path.
+- Add real generated-artifact verification beyond source-card, flashcard, and
+  learning-note provenance rows.
 - Source-span claim matching and external content verification remain future
   slices.
 - AWS/cloud synchronization remains out of scope until beta testing.

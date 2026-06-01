@@ -16,6 +16,7 @@ import {
   LearningBookConcept,
   LearningDocument,
 } from "./longterm.memory";
+import { recordGeneratedNotesArtifact } from "./artifact.records";
 
 function generateId() {
   return (
@@ -709,8 +710,9 @@ export class MemoryOrchestrator {
     await db.learningBooks.put(book);
     announceActiveLearningBook(book);
 
-    await db.learningEntries.add({
-      id: generateId(),
+    const learningEntryId = generateId();
+    const learningEntry = {
+      id: learningEntryId,
       bookId,
       conversationId,
       documentId: input.activeDocumentId || undefined,
@@ -725,6 +727,30 @@ export class MemoryOrchestrator {
         : [],
       model: book.agentModel || "deepseek/deepseek-v4-flash",
       confidence: clamp01(update.confidence, 0.55),
+    };
+    await db.learningEntries.add(learningEntry);
+    await recordGeneratedNotesArtifact({
+      entryId: learningEntryId,
+      source: "learning_book_update",
+      conversationId,
+      bookId,
+      bookTitle: book.title,
+      chapterId: nextChapter.id,
+      chapterTitle: nextChapter.title,
+      documentId: input.activeDocumentId || undefined,
+      userName,
+      model: learningEntry.model,
+      confidence: learningEntry.confidence,
+      conceptIds,
+      summary: learningEntry.conversationSummary,
+      knowledgeSummary: book.knowledgeSummary,
+      assistantSummary: learningEntry.assistantSummary,
+      metadata: {
+        activeProject: input.activeProject || "General Study",
+        fallback: book.agentModel === "local-session-fallback",
+        generatedBy: "MemoryOrchestrator.updateLearningBookFromConversation",
+        sourceTable: "learningEntries",
+      },
     });
     await recordMemoryEvent({
       eventType: "learning_book_updated",

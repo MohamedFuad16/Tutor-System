@@ -2095,6 +2095,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Generated flashcard batches now leave not-checked ArtifactRecord provenance, so Admin can tune study-card generation without treating it as external source proof.",
       },
       {
+        title: "Learning-note artifact rows",
+        detail:
+          "Generated learning-book entries also leave not-checked ArtifactRecord provenance, so saved study notes stay inspectable without being treated as verified source evidence.",
+      },
+      {
         title: "Diagnostics export",
         detail:
           "Exports are capped, local-only, and explicit about deferred cloud readiness, correction overlays, and out-of-scope automation.",
