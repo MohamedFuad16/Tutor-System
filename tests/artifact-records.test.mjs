@@ -267,7 +267,7 @@ test("local source-card verifier support excludes generated flashcards", () => {
   );
   assert.equal(
     supportsLocalCitationIntegrityArtifact({ artifactType: "audio_overview" }),
-    false,
+    true,
   );
   assert.equal(supportsLocalCitationIntegrityArtifact(null), false);
 });
@@ -389,6 +389,134 @@ test("local citation verifier marks coherent generated learning-note provenance 
     "metadata.localOnly",
     "metadata.externalContentFetched",
   ]);
+});
+
+test("local citation verifier marks coherent stored audio guide provenance verified", () => {
+  const { artifact, citation } = createStoredAudioOverviewArtifactRecords(
+    {
+      overviewId: "user-brain-architecture:chapter-0:stored-audio-overview",
+      bookId: "user-brain-architecture",
+      bookTitle: "User Brain Architecture",
+      chapterIndex: 0,
+      chapterTitle: "The Whole Shape",
+      title: "Quick tour of the learner brain",
+      summary: "Energetic architecture overview.",
+      transcript:
+        "LearningAI is a foreground tutor with a local learner brain ledger.",
+      audioSrc: "/audio-overviews/user-brain-runtime-overview.mp3",
+      durationLabel: "0:32",
+      generatedBy: "GPT-authored chapter guide",
+      voice: "Deepgram Aura Odysseus",
+      storedAt: "2026-06-02",
+      metadata: { assetKind: "built_in_book_chapter_audio" },
+    },
+    100,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp: 625,
+  });
+
+  assert.equal(result.state, "verified");
+  assert.equal(result.artifactVerificationState, "verified");
+  assert.equal(result.metadata.localOnly, true);
+  assert.equal(result.metadata.externalContentFetched, false);
+  assert.equal(result.metadata.sourceKind, "local_source_ref");
+  assert.equal(result.metadata.claimCheck, "stored_audio_overview_integrity");
+  assert.deepEqual(result.metadata.checkedFields, [
+    "artifactId",
+    "citationStateIds",
+    "sourceRef",
+    "sourceIds",
+    "bookId",
+    "summary",
+    "metadata.overviewId",
+    "metadata.audioSrc",
+    "metadata.bookId",
+    "metadata.chapterIndex",
+    "metadata.chapterTitle",
+    "metadata.durationLabel",
+    "metadata.generatedBy",
+    "metadata.voice",
+    "metadata.storedAt",
+    "metadata.transcriptLength",
+    "metadata.localOnly",
+    "metadata.externalContentFetched",
+  ]);
+});
+
+test("local citation verifier catches conflicting stored audio guide source refs", () => {
+  const { artifact, citation } = createStoredAudioOverviewArtifactRecords(
+    {
+      overviewId: "user-brain-architecture:chapter-0:stored-audio-overview",
+      bookId: "user-brain-architecture",
+      bookTitle: "User Brain Architecture",
+      chapterIndex: 0,
+      chapterTitle: "The Whole Shape",
+      title: "Quick tour of the learner brain",
+      summary: "Energetic architecture overview.",
+      transcript:
+        "LearningAI is a foreground tutor with a local learner brain ledger.",
+      audioSrc: "/audio-overviews/user-brain-runtime-overview.mp3",
+      durationLabel: "0:32",
+      generatedBy: "GPT-authored chapter guide",
+      voice: "Deepgram Aura Odysseus",
+      storedAt: "2026-06-02",
+      metadata: { assetKind: "built_in_book_chapter_audio" },
+    },
+    100,
+  );
+  const conflictingCitation = createCitationStateRecord(
+    {
+      ...citation,
+      sourceRef: "/audio-overviews/other-guide.mp3",
+    },
+    citation.timestamp,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation: conflictingCitation,
+    timestamp: 650,
+  });
+
+  assert.equal(result.state, "conflicting");
+  assert.equal(result.metadata.claimCheck, "stored_audio_overview_integrity");
+  assert.match(result.failureReason || "", /source reference/);
+});
+
+test("local citation verifier keeps incomplete stored audio guides unavailable", () => {
+  const { artifact, citation } = createStoredAudioOverviewArtifactRecords(
+    {
+      overviewId: "user-brain-architecture:chapter-0:stored-audio-overview",
+      bookId: "user-brain-architecture",
+      bookTitle: "User Brain Architecture",
+      chapterIndex: 0,
+      chapterTitle: "The Whole Shape",
+      title: "Quick tour of the learner brain",
+      summary: "Energetic architecture overview.",
+      transcript: "",
+      audioSrc: "/audio-overviews/user-brain-runtime-overview.mp3",
+      durationLabel: "0:32",
+      generatedBy: "GPT-authored chapter guide",
+      voice: "Deepgram Aura Odysseus",
+      storedAt: "2026-06-02",
+      metadata: { assetKind: "built_in_book_chapter_audio" },
+    },
+    100,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp: 675,
+  });
+
+  assert.equal(result.state, "unavailable");
+  assert.equal(result.metadata.claimCheck, "stored_audio_overview_integrity");
+  assert.match(result.failureReason || "", /failed/);
 });
 
 test("local citation verifier catches conflicting generated note entry refs", () => {
@@ -649,7 +777,7 @@ test("local citation verifier reports unsupported artifact kinds explicitly", ()
   assert.equal(result.artifactVerificationState, "unavailable");
   assert.match(
     result.failureReason || "",
-    /source-card and generated learning-note/,
+    /source-card, generated learning-note, and stored audio-guide/,
   );
 });
 

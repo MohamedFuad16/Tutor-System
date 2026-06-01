@@ -120,7 +120,8 @@ export type CitationIntegrityResult = {
     normalizedDomain?: string;
     claimCheck:
       | "artifact_level_source_card"
-      | "generated_learning_note_provenance";
+      | "generated_learning_note_provenance"
+      | "stored_audio_overview_integrity";
   };
 };
 
@@ -366,7 +367,13 @@ export const supportsLocalCitationIntegrityArtifact = (
   artifact?: Pick<ArtifactRecord, "artifactType"> | null,
 ) =>
   artifact?.artifactType === "source_card" ||
-  artifact?.artifactType === "notes";
+  artifact?.artifactType === "notes" ||
+  artifact?.artifactType === "audio_overview";
+
+const isLocalAudioOverviewSource = (value: unknown) => {
+  const text = compact(value);
+  return text.startsWith("/audio-overviews/") && text.endsWith(".mp3");
+};
 
 export const verifyLocalCitationIntegrity = (input: {
   artifact?: ArtifactRecord | null;
@@ -377,28 +384,50 @@ export const verifyLocalCitationIntegrity = (input: {
   const artifact = input.artifact || null;
   const citation = input.citation;
   const generatedNoteArtifact = artifact?.artifactType === "notes";
-  const checkedFields = generatedNoteArtifact
+  const audioOverviewArtifact = artifact?.artifactType === "audio_overview";
+  const checkedFields = audioOverviewArtifact
     ? [
         "artifactId",
         "citationStateIds",
         "sourceRef",
         "sourceIds",
         "bookId",
-        "conversationId",
         "summary",
-        "metadata.entryId",
+        "metadata.overviewId",
+        "metadata.audioSrc",
+        "metadata.bookId",
+        "metadata.chapterIndex",
+        "metadata.chapterTitle",
+        "metadata.durationLabel",
+        "metadata.generatedBy",
+        "metadata.voice",
+        "metadata.storedAt",
+        "metadata.transcriptLength",
         "metadata.localOnly",
         "metadata.externalContentFetched",
       ]
-    : [
-        "artifactId",
-        "citationStateIds",
-        "url",
-        "domain",
-        "sourceRef",
-        "sourceIds",
-        "title",
-      ];
+    : generatedNoteArtifact
+      ? [
+          "artifactId",
+          "citationStateIds",
+          "sourceRef",
+          "sourceIds",
+          "bookId",
+          "conversationId",
+          "summary",
+          "metadata.entryId",
+          "metadata.localOnly",
+          "metadata.externalContentFetched",
+        ]
+      : [
+          "artifactId",
+          "citationStateIds",
+          "url",
+          "domain",
+          "sourceRef",
+          "sourceIds",
+          "title",
+        ];
   const sourceUrl = citation.url || artifact?.url;
   const parsedUrl = parseHttpUrl(sourceUrl);
   const explicitLocalSourceRefs = cleanList([
@@ -431,9 +460,11 @@ export const verifyLocalCitationIntegrity = (input: {
     normalizedDomain: parsedUrl
       ? normalizeDomain(parsedUrl.hostname)
       : normalizeDomain(citation.domain || artifact?.domain) || undefined,
-    claimCheck: generatedNoteArtifact
-      ? "generated_learning_note_provenance"
-      : "artifact_level_source_card",
+    claimCheck: audioOverviewArtifact
+      ? "stored_audio_overview_integrity"
+      : generatedNoteArtifact
+        ? "generated_learning_note_provenance"
+        : "artifact_level_source_card",
   };
   const result = (
     state: CitationIntegrityState,
@@ -463,7 +494,7 @@ export const verifyLocalCitationIntegrity = (input: {
   if (!supportsLocalCitationIntegrityArtifact(artifact)) {
     return result(
       "unsupported",
-      "The local verifier currently supports source-card and generated learning-note citation rows only.",
+      "The local verifier currently supports source-card, generated learning-note, and stored audio-guide citation rows only.",
     );
   }
 
@@ -597,6 +628,162 @@ export const verifyLocalCitationIntegrity = (input: {
       return result(
         "unavailable",
         "Generated note has no saved summary preview to inspect locally.",
+      );
+    }
+
+    return result("verified");
+  }
+
+  if (artifact.artifactType === "audio_overview") {
+    const artifactMetadata = artifact.metadata || {};
+    const citationMetadata = citation.metadata || {};
+    const sourceRef = compact(citation.sourceRef);
+    const artifactAudioSrc = compact(artifactMetadata.audioSrc);
+    const citationAudioSrc = compact(citationMetadata.audioSrc);
+    const overviewId = compact(artifactMetadata.overviewId);
+    const artifactBookId = compact(artifact.bookId);
+    const metadataBookId = compact(artifactMetadata.bookId);
+    const citationBookId = compact(citationMetadata.bookId);
+    const chapterTitle = compact(artifactMetadata.chapterTitle);
+    const durationLabel = compact(artifactMetadata.durationLabel);
+    const generatedBy = compact(artifactMetadata.generatedBy);
+    const voice = compact(artifactMetadata.voice);
+    const storedAt = compact(artifactMetadata.storedAt);
+    const chapterIndex = Number(artifactMetadata.chapterIndex);
+    const transcriptLength = Number(artifactMetadata.transcriptLength);
+
+    if (
+      artifactMetadata.localOnly !== true ||
+      citationMetadata.localOnly !== true
+    ) {
+      return result(
+        "unavailable",
+        "Stored audio guide provenance is not marked local-only.",
+      );
+    }
+
+    if (
+      artifactMetadata.externalContentFetched !== false ||
+      citationMetadata.externalContentFetched !== false
+    ) {
+      return result(
+        "unavailable",
+        "Stored audio guide provenance does not prove that no external content was fetched.",
+      );
+    }
+
+    if (artifactMetadata.generatedArtifact !== true) {
+      return result(
+        "unavailable",
+        "Stored audio guide metadata is missing the generated-artifact marker.",
+      );
+    }
+
+    if (compact(artifactMetadata.artifactType) !== "audio_overview") {
+      return result(
+        "unavailable",
+        "Stored audio guide metadata is not marked as an audio overview.",
+      );
+    }
+
+    if (!sourceRef || isPlaceholderSourceRef(sourceRef)) {
+      return result(
+        "unavailable",
+        "Stored audio guide citation is missing a local MP3 source reference.",
+      );
+    }
+
+    if (!isLocalAudioOverviewSource(sourceRef)) {
+      return result(
+        "unavailable",
+        "Stored audio guide source is not a local audio-overviews MP3 path.",
+      );
+    }
+
+    if (
+      sourceRef !== artifactAudioSrc ||
+      (citationAudioSrc && citationAudioSrc !== sourceRef)
+    ) {
+      return result(
+        "conflicting",
+        "Stored audio guide source reference disagrees with saved metadata.",
+      );
+    }
+
+    if (!artifact.sourceIds.includes(sourceRef)) {
+      return result(
+        "conflicting",
+        "Stored audio guide artifact sourceIds do not include the local MP3 path.",
+      );
+    }
+
+    if (!overviewId || isPlaceholderSourceRef(overviewId)) {
+      return result(
+        "unavailable",
+        "Stored audio guide metadata is missing the overview id.",
+      );
+    }
+
+    if (!artifact.sourceIds.includes(overviewId)) {
+      return result(
+        "conflicting",
+        "Stored audio guide artifact sourceIds do not include the overview id.",
+      );
+    }
+
+    if (!artifactBookId || !metadataBookId || artifactBookId !== metadataBookId) {
+      return result(
+        "conflicting",
+        "Stored audio guide artifact bookId disagrees with metadata.",
+      );
+    }
+
+    if (citationBookId && citationBookId !== artifactBookId) {
+      return result(
+        "conflicting",
+        "Stored audio guide citation bookId disagrees with the artifact.",
+      );
+    }
+
+    if (!Number.isFinite(chapterIndex) || chapterIndex < 0) {
+      return result(
+        "unavailable",
+        "Stored audio guide metadata has no valid chapter index.",
+      );
+    }
+
+    if (!chapterTitle || !artifact.sourceIds.includes(chapterTitle)) {
+      return result(
+        "unavailable",
+        "Stored audio guide metadata is missing a chapter title anchor.",
+      );
+    }
+
+    if (!compact(artifact.summary) || !compact(artifactMetadata.summaryPreview)) {
+      return result(
+        "unavailable",
+        "Stored audio guide has no saved summary preview to inspect locally.",
+      );
+    }
+
+    if (!Number.isFinite(transcriptLength) || transcriptLength <= 0) {
+      return result(
+        "unavailable",
+        "Stored audio guide has no saved transcript length to inspect locally.",
+      );
+    }
+
+    if (!durationLabel || !generatedBy || !voice || !storedAt) {
+      return result(
+        "unavailable",
+        "Stored audio guide is missing duration, generator, voice, or stored date metadata.",
+      );
+    }
+
+    if (!Number.isFinite(Date.parse(storedAt))) {
+      return result(
+        "unavailable",
+        "Stored audio guide storedAt metadata is not a valid date.",
       );
     }
 

@@ -1383,7 +1383,7 @@ CRITICAL RULES:
       const requestedVoice =
         typeof req.query.voice === "string"
           ? req.query.voice
-          : "gpt-4o-mini-tts";
+          : "aura-asteria-en";
       const ttsModel =
         requestedVoice === "gpt-4o-mini-tts"
           ? requestedVoice
@@ -2743,10 +2743,12 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       let messageBuffer: Array<{ data: any; isBinary: boolean }> = [];
       let isVoiceSessionStarted = false;
       let usageInterval: ReturnType<typeof setInterval> | null = null;
+      let keepAliveInterval: ReturnType<typeof setInterval> | null = null;
       const voiceStartedAt = Date.now();
       let lastUsageAt = voiceStartedAt;
       let clientInputBytes = 0;
       let deepgramOutputBytes = 0;
+      const voiceAgentSpeakModel = "aura-asteria-en";
 
       const sendVoiceUsage = (sessions = 0) => {
         if (ws.readyState !== ws.OPEN) return;
@@ -2764,8 +2766,8 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 language === "ja" || language === "ko"
                   ? "flux-general-multi"
                   : "flux-general-en",
-              speakModel: "gpt-4o-mini-tts",
-              ttsModel: "gpt-4o-mini-tts",
+              speakModel: voiceAgentSpeakModel,
+              ttsModel: voiceAgentSpeakModel,
               connectionSeconds,
               inputAudioSeconds:
                 clientInputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
@@ -2838,6 +2840,8 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               type: "deepgram",
               model: listenModel,
               version: "v2",
+              eot_threshold: 0.8,
+              eot_timeout_ms: 8000,
             };
             if (language === "ja" || language === "ko") {
               listenProvider.language_hints = ["en", "ja", "ko"];
@@ -2886,8 +2890,8 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 },
                 speak: {
                   provider: {
-                    type: "open_ai",
-                    model: "gpt-4o-mini-tts",
+                    type: "deepgram",
+                    model: voiceAgentSpeakModel,
                   },
                 },
                 greeting: greeting,
@@ -2898,6 +2902,13 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               JSON.stringify(config, null, 2),
             );
             dgWs?.send(JSON.stringify(config));
+
+            if (keepAliveInterval) clearInterval(keepAliveInterval);
+            keepAliveInterval = setInterval(() => {
+              if (dgWs && dgWs.readyState === WSWebSocket.OPEN) {
+                dgWs.send(JSON.stringify({ type: "KeepAlive" }));
+              }
+            }, 7000);
           });
 
           dgWs.on("unexpected-response", (req, res) => {
@@ -2942,7 +2953,12 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                     isDeepgramReady = true;
                     messageBuffer.forEach((msg) => {
                       if (dgWs?.readyState === WSWebSocket.OPEN) {
-                        dgWs.send(msg.data);
+                        dgWs.send(
+                          msg.isBinary ? msg.data : msg.data.toString(),
+                          {
+                            binary: msg.isBinary,
+                          },
+                        );
                       }
                     });
                     messageBuffer = [];
@@ -2954,6 +2970,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           });
 
           dgWs.on("close", () => {
+            if (keepAliveInterval) {
+              clearInterval(keepAliveInterval);
+              keepAliveInterval = null;
+            }
             if (ws.readyState === ws.OPEN) {
               sendVoiceUsage(1);
               ws.close();
@@ -2962,6 +2982,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
           dgWs.on("error", (error) => {
             console.error("Deepgram WS Error:", error);
+            if (keepAliveInterval) {
+              clearInterval(keepAliveInterval);
+              keepAliveInterval = null;
+            }
             if (ws.readyState === ws.OPEN) {
               ws.close();
             }
@@ -2984,7 +3008,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         }
         // Proxy messages to Deepgram once ready
         if (isDeepgramReady && dgWs && dgWs.readyState === dgWs.OPEN) {
-          dgWs.send(data);
+          dgWs.send(isBinary ? data : data.toString(), { binary: isBinary });
         } else {
           messageBuffer.push({ data, isBinary });
         }
@@ -3011,6 +3035,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
       ws.on("close", () => {
         if (usageInterval) clearInterval(usageInterval);
+        if (keepAliveInterval) {
+          clearInterval(keepAliveInterval);
+          keepAliveInterval = null;
+        }
         if (dgWs && dgWs.readyState === dgWs.OPEN) {
           dgWs.close();
         }

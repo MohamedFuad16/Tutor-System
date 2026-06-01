@@ -24,6 +24,16 @@ export type Message = {
   };
   phase?: ChatPhase;
   reasoningSteps?: { id: string; content: string }[];
+  voiceSession?: {
+    title?: string;
+    turns: {
+      id: string;
+      role: "user" | "assistant";
+      content: string;
+    }[];
+    startedAt: number;
+    durationSeconds: number;
+  };
   webSearch?: {
     active: boolean;
     query?: string;

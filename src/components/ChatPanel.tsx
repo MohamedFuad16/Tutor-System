@@ -323,6 +323,299 @@ const Mermaid = ({ chart }: { chart: string }) => {
   );
 };
 
+type VoiceCaption = {
+  role: "user" | "assistant";
+  text: string;
+} | null;
+type VoiceSessionTurn = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+const buildBlobPath = (pts: Array<[number, number]>) => {
+  const n = pts.length;
+  let d = `M ${pts[0][0].toFixed(2)} ${pts[0][1].toFixed(2)} `;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n];
+    const p1 = pts[i];
+    const p2 = pts[(i + 1) % n];
+    const p3 = pts[(i + 2) % n];
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d += `C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${p2[0].toFixed(2)} ${p2[1].toFixed(2)} `;
+  }
+  return `${d}Z`;
+};
+
+const chunkCaption = (text: string): string[] => {
+  const words = (text || "").trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  const chunks: string[] = [];
+  let current: string[] = [];
+  words.forEach((word) => {
+    current.push(word);
+    const endsSentence = /[.!?,;:]$/.test(word);
+    if (current.length >= 13 || (endsSentence && current.length >= 6)) {
+      chunks.push(current.join(" "));
+      current = [];
+    }
+  });
+  if (current.length) chunks.push(current.join(" "));
+  return chunks;
+};
+
+const END_INTENT_PATTERNS: RegExp[] = [
+  /\b(i'?m|i am|we'?re|we are)\s+(done|finished|good|all set|all done)\b/,
+  /\bthat'?s?\s+(all|it|enough)\b/,
+  /\bno\s+(more|further)\s+questions\b/,
+  /\b(good\s?bye|bye\s?bye|bye|see\s+(you|ya)|talk\s+later|catch\s+you\s+later)\b/,
+  /\b(end|close|stop|finish|exit|quit)\s+(the\s+)?(call|conversation|chat|session|audio|voice)\b/,
+  /\b(end|stop|close|finish)\s+(it|this|that)\b/,
+  /\b(let'?s|let\s+us)\s+(stop|end|finish|wrap\s+(it\s+)?up)\b/,
+  /\bwrap\s+(it|this)\s+up\b/,
+  /\bi\s+(have\s+to|need\s+to|gotta|got\s+to)\s+go\b/,
+  /\b(thanks|thank\s+you)[,!.\s]*(that'?s\s+(all|it)|bye|good\s?bye)\b/,
+];
+const STOP_COMMAND =
+  /^(ok(ay)?|alright|yeah|yep|cool)?[,\s]*(please\s+)?(stop( it| now| talking)?|quiet|silence|enough|that'?s\s+enough)[\s,]*(now|please)?[.!]*$/;
+
+const detectEndIntent = (raw: string): boolean => {
+  const text = (raw || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9'\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return false;
+  return (
+    STOP_COMMAND.test(text) || END_INTENT_PATTERNS.some((re) => re.test(text))
+  );
+};
+
+const deriveFallbackTitle = (turns: VoiceSessionTurn[]): string => {
+  const first =
+    turns.find((turn) => turn.role === "user")?.content ||
+    turns[0]?.content ||
+    "";
+  const words = first.trim().split(/\s+/).filter(Boolean).slice(0, 6);
+  if (!words.length) return "Voice conversation";
+  const title = words.join(" ").replace(/[.,!?;:]+$/, "");
+  const capitalized = title.charAt(0).toUpperCase() + title.slice(1);
+  return capitalized.length > 48
+    ? `${capitalized.slice(0, 48)}...`
+    : capitalized;
+};
+
+const RollingSubtitle = ({ caption }: { caption: VoiceCaption }) => {
+  const [display, setDisplay] = useState("");
+
+  useEffect(() => {
+    if (!caption?.text.trim()) {
+      setDisplay("");
+      return;
+    }
+    const chunks = chunkCaption(caption.text);
+    if (!chunks.length) {
+      setDisplay("");
+      return;
+    }
+    let index = 0;
+    setDisplay(chunks[0]);
+    if (chunks.length === 1) return;
+
+    let timer: ReturnType<typeof setTimeout>;
+    const durationFor = (chunk: string) =>
+      Math.max(1400, chunk.split(/\s+/).length * 360);
+    const advance = () => {
+      index += 1;
+      if (index < chunks.length) {
+        setDisplay(chunks[index]);
+        timer = setTimeout(advance, durationFor(chunks[index]));
+      }
+    };
+    timer = setTimeout(advance, durationFor(chunks[0]));
+    return () => clearTimeout(timer);
+  }, [caption?.role, caption?.text]);
+
+  if (!display) return null;
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-[15%] flex justify-center px-8">
+      <p
+        className={`max-w-xl text-balance text-center text-base font-medium leading-snug transition-opacity ${
+          caption?.role === "assistant" ? "text-white" : "text-white/65"
+        }`}
+        style={{ textShadow: "0 2px 20px rgba(0,0,0,0.9)" }}
+      >
+        {display}
+      </p>
+    </div>
+  );
+};
+
+const MorphBlob = ({ speaking }: { speaking: boolean }) => {
+  const pathRef = useRef<SVGPathElement>(null);
+  const glowRef = useRef<SVGPathElement>(null);
+  const sheenRef = useRef<SVGPathElement>(null);
+  const auraRef = useRef<SVGCircleElement>(null);
+  const micRef = useRef(0);
+  const ttsRef = useRef(0);
+  const levelRef = useRef(0);
+
+  useEffect(() => {
+    const onMic = (event: Event) => {
+      micRef.current = Math.min(
+        1,
+        Number((event as CustomEvent<number>).detail || 0),
+      );
+    };
+    const onTts = (event: Event) => {
+      ttsRef.current = Math.min(
+        1,
+        Number((event as CustomEvent<number>).detail || 0),
+      );
+    };
+    window.addEventListener("mic-volume", onMic);
+    window.addEventListener("tts-volume", onTts);
+
+    const points = 12;
+    const center = 160;
+    const baseRadius = 92;
+    const seeds = Array.from(
+      { length: points },
+      (_, index) => index * 1.7 + Math.sin(index) * 2,
+    );
+    let frame = 0;
+    const animate = (timestamp: number) => {
+      const target = Math.max(micRef.current, ttsRef.current);
+      levelRef.current += (target - levelRef.current) * 0.18;
+      const level = levelRef.current;
+      const time = timestamp / 1000;
+      const amp = 0.07 + level * 0.28;
+      const expand = 1 + level * 0.2;
+      const pts: Array<[number, number]> = [];
+      for (let index = 0; index < points; index += 1) {
+        const angle = (index / points) * Math.PI * 2;
+        const noise =
+          Math.sin(time * 1.1 + seeds[index]) * 0.5 +
+          Math.sin(time * 1.9 + seeds[index] * 1.7) * 0.3 +
+          Math.sin(time * 0.6 + angle * 3) * 0.2;
+        const radius = baseRadius * expand * (1 + noise * amp);
+        pts.push([
+          center + Math.cos(angle) * radius,
+          center + Math.sin(angle) * radius,
+        ]);
+      }
+      const path = buildBlobPath(pts);
+      pathRef.current?.setAttribute("d", path);
+      glowRef.current?.setAttribute("d", path);
+      sheenRef.current?.setAttribute("d", path);
+      if (auraRef.current) {
+        auraRef.current.setAttribute("r", `${118 * (1 + level * 0.28)}`);
+        auraRef.current.setAttribute(
+          "opacity",
+          `${Math.min(0.95, 0.52 + level * 0.42)}`,
+        );
+      }
+      frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => {
+      window.removeEventListener("mic-volume", onMic);
+      window.removeEventListener("tts-volume", onTts);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return (
+    <svg
+      viewBox="0 0 320 320"
+      className="h-72 w-72 overflow-visible sm:h-[380px] sm:w-[380px]"
+      style={{
+        filter:
+          "saturate(1.2) brightness(1.06) drop-shadow(0 0 48px rgba(124,92,255,0.55)) drop-shadow(0 0 90px rgba(91,108,240,0.4))",
+      }}
+      aria-hidden="true"
+    >
+      <defs>
+        <radialGradient id="voice-blob-aura">
+          <stop offset="0%" stopColor="#b18cff" stopOpacity="0.95" />
+          <stop offset="45%" stopColor="#6a6cff" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#6a6cff" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="voice-blob-fill" cx="55%" cy="42%" r="72%">
+          <stop offset="0%" stopColor="#c45cf2" />
+          <stop offset="42%" stopColor="#7c5cff" />
+          <stop offset="100%" stopColor="#3f5bf0" />
+        </radialGradient>
+        <linearGradient id="voice-blob-sheen" x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0%" stopColor="#bcd4ff" stopOpacity="0.85" />
+          <stop offset="45%" stopColor="#ffffff" stopOpacity="0" />
+        </linearGradient>
+        <filter
+          id="voice-aura-blur"
+          x="-80%"
+          y="-80%"
+          width="260%"
+          height="260%"
+        >
+          <feGaussianBlur stdDeviation="20" />
+        </filter>
+      </defs>
+      <circle
+        ref={auraRef}
+        cx={160}
+        cy={160}
+        r={118}
+        fill="url(#voice-blob-aura)"
+        filter="url(#voice-aura-blur)"
+      />
+      <path
+        ref={glowRef}
+        fill="url(#voice-blob-fill)"
+        opacity={speaking ? 0.84 : 0.66}
+        style={{ filter: "blur(26px)" }}
+      />
+      <path ref={pathRef} fill="url(#voice-blob-fill)" />
+      <path
+        ref={sheenRef}
+        fill="url(#voice-blob-sheen)"
+        opacity={0.35}
+        style={{ mixBlendMode: "screen" }}
+      />
+    </svg>
+  );
+};
+
+const VoiceUniverse = ({
+  state,
+  caption,
+}: {
+  state: "listening" | "speaking";
+  caption: VoiceCaption;
+}) => {
+  const label = state === "speaking" ? "Aria is speaking" : "Listening";
+  return (
+    <gsapMotion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="pointer-events-none absolute inset-0 z-30 overflow-hidden bg-[#030303]"
+      aria-live="polite"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(124,92,255,0.24),transparent_34%),radial-gradient(circle_at_18%_70%,rgba(59,130,246,0.14),transparent_30%),radial-gradient(circle_at_82%_72%,rgba(255,110,0,0.12),transparent_26%)]" />
+      <div className="absolute inset-0 opacity-35 [background-image:radial-gradient(circle_at_center,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:26px_26px]" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center pb-24">
+        <div className="mb-5 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
+          {label}
+        </div>
+        <MorphBlob speaking={state === "speaking"} />
+      </div>
+      <RollingSubtitle caption={caption} />
+    </gsapMotion.div>
+  );
+};
+
 const languageLabels: Record<string, string> = {
   js: "JavaScript",
   javascript: "JavaScript",
@@ -2237,6 +2530,7 @@ const MessageItem = React.memo(
   }) => {
     const [isGeneratingFlashcards, setIsGeneratingFlashcards] =
       React.useState(false);
+    const [isVoiceSessionOpen, setIsVoiceSessionOpen] = React.useState(false);
 
     const handleGenerateFlashcards = async () => {
       setIsGeneratingFlashcards(true);
@@ -2310,6 +2604,91 @@ const MessageItem = React.memo(
         setIsGeneratingFlashcards(false);
       }
     };
+
+    if (msg.voiceSession) {
+      const session = msg.voiceSession as NonNullable<Message["voiceSession"]>;
+      const turns = session.turns || [];
+      const seconds = Math.max(0, Math.round(session.durationSeconds || 0));
+      const elapsed = `${Math.floor(seconds / 60)}:${(seconds % 60)
+        .toString()
+        .padStart(2, "0")}`;
+      return (
+        <gsapMotion.div
+          data-message-id={msg.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.34, type: "spring", bounce: 0.15 }}
+          className="flex w-full flex-col items-start"
+        >
+          <div className="w-full overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
+            <button
+              type="button"
+              onClick={() => setIsVoiceSessionOpen((open) => !open)}
+              className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-zinc-50 focus:outline-none"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-500">
+                <Mic size={14} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] font-semibold text-zinc-800">
+                  {session.title || "Voice conversation"}
+                </span>
+                <span className="block text-[11px] text-zinc-500">
+                  Voice · {turns.length} message
+                  {turns.length === 1 ? "" : "s"} · {elapsed}
+                </span>
+              </span>
+              <ChevronDown
+                size={16}
+                className={`shrink-0 text-zinc-400 transition-transform duration-300 ${
+                  isVoiceSessionOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            <AnimatePresence initial={false}>
+              {isVoiceSessionOpen && (
+                <gsapMotion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="overflow-hidden border-t border-black/5"
+                >
+                  <div className="space-y-3 px-4 py-3.5">
+                    {turns.length === 0 && (
+                      <div className="text-[12px] text-zinc-400">
+                        No transcript captured.
+                      </div>
+                    )}
+                    {turns.map((turn) => (
+                      <div
+                        key={turn.id}
+                        className={`flex flex-col ${
+                          turn.role === "user" ? "items-end" : "items-start"
+                        }`}
+                      >
+                        <span className="mb-1 text-[9px] font-bold uppercase tracking-wider text-zinc-400">
+                          {turn.role === "user" ? "You" : "Aria"}
+                        </span>
+                        <div
+                          className={`max-w-[88%] rounded-2xl px-3 py-2 text-[13px] font-medium leading-relaxed ${
+                            turn.role === "user"
+                              ? "rounded-br-sm bg-[#1C1C1E] text-white"
+                              : "rounded-bl-sm bg-zinc-100 text-zinc-800"
+                          }`}
+                        >
+                          {turn.content}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </gsapMotion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </gsapMotion.div>
+      );
+    }
 
     return (
       <gsapMotion.div
@@ -2581,12 +2960,22 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const [voiceState, setVoiceState] = useState<
     "idle" | "listening" | "speaking"
   >("idle");
+  const [voiceCaption, setVoiceCaption] = useState<VoiceCaption>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const nextPlayTimeRef = useRef<number>(0);
   const activeAudioNodesRef = useRef<AudioBufferSourceNode[]>([]);
+  const outputGainRef = useRef<GainNode | null>(null);
+  const outputAnalyserRef = useRef<AnalyserNode | null>(null);
+  const outputRafRef = useRef<number | null>(null);
+  const bargeInFramesRef = useRef(0);
+  const noiseFloorRef = useRef(0.06);
+  const endingRef = useRef(false);
+  const endTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const voiceSessionIdRef = useRef<string | null>(null);
+  const voiceTurnsRef = useRef<VoiceSessionTurn[]>([]);
 
   const forceScrollToBottom = useCallback(
     (behavior: ScrollBehavior = "smooth") => {
@@ -2874,14 +3263,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
-    if (!textarea || voiceState !== "idle") return;
+    if (!textarea) return;
     const maxHeight = 150;
     textarea.style.height = "0px";
     const nextHeight = Math.min(maxHeight, Math.max(52, textarea.scrollHeight));
     textarea.style.height = `${nextHeight}px`;
     textarea.style.overflowY =
       textarea.scrollHeight > maxHeight ? "auto" : "hidden";
-  }, [input, isSearchSkillActive, voiceState]);
+  }, [input, isSearchSkillActive]);
 
   const thinkingSteps = [
     "Reading context...",
@@ -2914,7 +3303,86 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     }
   }, [input, sendState, voiceState]);
 
+  const generateVoiceTitle = async (sessionId: string, transcript: string) => {
+    try {
+      const response = await fetch("/api/title", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        },
+        body: JSON.stringify({ text: transcript }),
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const title = (data?.title || "").trim();
+      if (!title) return;
+      setMessages((prev) => {
+        const index = prev.findIndex((message) => message.id === sessionId);
+        if (index === -1 || !prev[index].voiceSession) return prev;
+        const copy = [...prev];
+        copy[index] = {
+          ...copy[index],
+          voiceSession: { ...copy[index].voiceSession, title },
+        };
+        return copy;
+      });
+    } catch (error) {
+      console.warn("[ChatPanel] Voice title generation failed:", error);
+    }
+  };
+
+  const appendVoiceTurn = (role: "user" | "assistant", content: string) => {
+    const cleanContent = content.trim();
+    const sessionId = voiceSessionIdRef.current;
+    if (!sessionId || !cleanContent) return;
+    const last = voiceTurnsRef.current[voiceTurnsRef.current.length - 1];
+    if (last && last.role === role && last.content === cleanContent) return;
+    voiceTurnsRef.current = [
+      ...voiceTurnsRef.current,
+      { role, content: cleanContent },
+    ];
+    setMessages((prev) => {
+      const index = prev.findIndex((message) => message.id === sessionId);
+      if (index === -1) return prev;
+      const session = prev[index].voiceSession || {
+        turns: [],
+        startedAt: Date.now(),
+        durationSeconds: 0,
+      };
+      const copy = [...prev];
+      copy[index] = {
+        ...copy[index],
+        voiceSession: {
+          ...session,
+          turns: [
+            ...session.turns,
+            {
+              id: Date.now().toString() + Math.random(),
+              role,
+              content: cleanContent,
+            },
+          ],
+          durationSeconds: Math.max(
+            session.durationSeconds,
+            Math.round((Date.now() - session.startedAt) / 1000),
+          ),
+        },
+      };
+      return copy;
+    });
+  };
+
   const stopVoice = () => {
+    if (endTimerRef.current) {
+      clearTimeout(endTimerRef.current);
+      endTimerRef.current = null;
+    }
+    endingRef.current = false;
+    if (outputRafRef.current !== null) {
+      cancelAnimationFrame(outputRafRef.current);
+      outputRafRef.current = null;
+    }
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
@@ -2931,8 +3399,74 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
+    outputGainRef.current = null;
+    outputAnalyserRef.current = null;
     activeAudioNodesRef.current = [];
+    window.dispatchEvent(new CustomEvent("mic-volume", { detail: 0 }));
+    window.dispatchEvent(new CustomEvent("tts-volume", { detail: 0 }));
+    setVoiceCaption(null);
+
+    const sessionId = voiceSessionIdRef.current;
+    if (sessionId) {
+      const turns = voiceTurnsRef.current;
+      setMessages((prev) => {
+        const index = prev.findIndex((message) => message.id === sessionId);
+        if (index === -1) return prev;
+        const session = prev[index].voiceSession;
+        if (!session || session.turns.length === 0) {
+          return prev.filter((message) => message.id !== sessionId);
+        }
+        const durationSeconds = Math.max(
+          session.durationSeconds,
+          Math.round((Date.now() - session.startedAt) / 1000),
+        );
+        const copy = [...prev];
+        copy[index] = {
+          ...copy[index],
+          voiceSession: {
+            ...session,
+            durationSeconds,
+            title: session.title || deriveFallbackTitle(turns),
+          },
+        };
+        return copy;
+      });
+
+      if (turns.length > 0) {
+        const transcript = turns
+          .map(
+            (turn) =>
+              `${turn.role === "user" ? "Student" : "Tutor"}: ${turn.content}`,
+          )
+          .join("\n");
+        void generateVoiceTitle(sessionId, transcript);
+      }
+      voiceSessionIdRef.current = null;
+    }
+    voiceTurnsRef.current = [];
     setVoiceState("idle");
+  };
+
+  const sendVoiceText = (text: string) => {
+    const trimmed = text.trim();
+    const ws = wsRef.current;
+    if (!trimmed || !ws || ws.readyState !== WebSocket.OPEN) return;
+    appendVoiceTurn("user", trimmed);
+    lastVoiceUserMessageRef.current = trimmed;
+    setVoiceCaption({ role: "user", text: trimmed });
+    if (!endingRef.current && detectEndIntent(trimmed)) {
+      endingRef.current = true;
+      activeAudioNodesRef.current.forEach((node) => {
+        try {
+          node.stop();
+        } catch {}
+      });
+      activeAudioNodesRef.current = [];
+      setVoiceCaption(null);
+      endTimerRef.current = setTimeout(() => stopVoice(), 250);
+      return;
+    }
+    ws.send(JSON.stringify({ type: "InjectUserMessage", content: trimmed }));
   };
 
   const startVoice = async () => {
@@ -2950,8 +3484,32 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     }
 
     try {
+      endingRef.current = false;
+      voiceTurnsRef.current = [];
+      const sessionId = `voice-${Date.now()}`;
+      voiceSessionIdRef.current = sessionId;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: sessionId,
+          role: "assistant",
+          content: "",
+          isVoice: true,
+          voiceSession: {
+            turns: [],
+            startedAt: Date.now(),
+            durationSeconds: 0,
+          },
+        },
+      ]);
       setVoiceState("listening");
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
       mediaStreamRef.current = stream;
 
       const audioContext = new (
@@ -2962,6 +3520,34 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       const source = audioContext.createMediaStreamSource(stream);
       const processor = audioContext.createScriptProcessor(4096, 1, 1);
       processorRef.current = processor;
+
+      const outputGain = audioContext.createGain();
+      const outputAnalyser = audioContext.createAnalyser();
+      outputAnalyser.fftSize = 256;
+      outputAnalyser.smoothingTimeConstant = 0.6;
+      outputGain.connect(outputAnalyser);
+      outputAnalyser.connect(audioContext.destination);
+      outputGainRef.current = outputGain;
+      outputAnalyserRef.current = outputAnalyser;
+
+      const outputBuffer = new Uint8Array(outputAnalyser.fftSize);
+      const sampleOutput = () => {
+        const analyser = outputAnalyserRef.current;
+        if (analyser) {
+          analyser.getByteTimeDomainData(outputBuffer);
+          let sum = 0;
+          for (let i = 0; i < outputBuffer.length; i++) {
+            const value = (outputBuffer[i] - 128) / 128;
+            sum += value * value;
+          }
+          const rms = Math.sqrt(sum / outputBuffer.length);
+          window.dispatchEvent(
+            new CustomEvent("tts-volume", { detail: Math.min(1, rms * 3.5) }),
+          );
+        }
+        outputRafRef.current = requestAnimationFrame(sampleOutput);
+      };
+      outputRafRef.current = requestAnimationFrame(sampleOutput);
 
       const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${wsProtocol}//${window.location.host}/api/voice-agent?language=${encodeURIComponent(language)}`;
@@ -2979,11 +3565,39 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         const volume = Math.min(1, rms * 8); // Scale
         window.dispatchEvent(new CustomEvent("mic-volume", { detail: volume }));
 
-        if (
-          ws.readyState === WebSocket.OPEN &&
-          hasSentVoiceAuth &&
-          voiceStateRef.current === "listening"
-        ) {
+        if (volume < 0.28) {
+          noiseFloorRef.current = noiseFloorRef.current * 0.95 + volume * 0.05;
+        }
+
+        const bargeThreshold = Math.max(
+          0.46,
+          noiseFloorRef.current * 2.5 + 0.24,
+        );
+        if (activeAudioNodesRef.current.length > 0) {
+          if (volume > bargeThreshold) {
+            bargeInFramesRef.current += 1;
+            if (bargeInFramesRef.current >= 6) {
+              activeAudioNodesRef.current.forEach((node) => {
+                try {
+                  node.stop();
+                } catch {}
+              });
+              activeAudioNodesRef.current = [];
+              if (audioContextRef.current) {
+                nextPlayTimeRef.current = audioContextRef.current.currentTime;
+              }
+              setVoiceCaption(null);
+              setVoiceState("listening");
+              bargeInFramesRef.current = 0;
+            }
+          } else {
+            bargeInFramesRef.current = 0;
+          }
+        } else {
+          bargeInFramesRef.current = 0;
+        }
+
+        if (ws.readyState === WebSocket.OPEN && hasSentVoiceAuth) {
           const pcm16 = new Int16Array(inputData.length);
           for (let i = 0; i < inputData.length; i++) {
             pcm16[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7fff;
@@ -3019,27 +3633,29 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             } else if (msg.type === "SettingsApplied") {
               console.log("Deepgram SettingsApplied");
             } else if (msg.type === "ConversationText") {
+              if (msg.content) {
+                setVoiceCaption({
+                  role: msg.role === "user" ? "user" : "assistant",
+                  text: msg.content,
+                });
+              }
               if (msg.role === "user") {
                 lastVoiceUserMessageRef.current = msg.content || "";
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    id: Date.now().toString() + Math.random(),
-                    role: "user",
-                    content: msg.content,
-                    isVoice: true,
-                  },
-                ]);
+                appendVoiceTurn("user", msg.content || "");
+                if (!endingRef.current && detectEndIntent(msg.content || "")) {
+                  endingRef.current = true;
+                  activeAudioNodesRef.current.forEach((node) => {
+                    try {
+                      node.stop();
+                    } catch {}
+                  });
+                  activeAudioNodesRef.current = [];
+                  setVoiceCaption(null);
+                  endTimerRef.current = setTimeout(() => stopVoice(), 250);
+                  return;
+                }
               } else if (msg.role === "assistant") {
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    id: Date.now().toString() + Math.random(),
-                    role: "assistant",
-                    content: msg.content,
-                    isVoice: true,
-                  },
-                ]);
+                appendVoiceTurn("assistant", msg.content || "");
                 if (lastVoiceUserMessageRef.current && msg.content) {
                   const userMessage = lastVoiceUserMessageRef.current;
                   lastVoiceUserMessageRef.current = "";
@@ -3088,6 +3704,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               if (audioContextRef.current) {
                 nextPlayTimeRef.current = audioContextRef.current.currentTime;
               }
+              setVoiceCaption(null);
               setVoiceState("listening");
             } else if (msg.type === "AgentStartedSpeaking") {
               setVoiceState("speaking");
@@ -3119,7 +3736,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
             const source = audioContextRef.current.createBufferSource();
             source.buffer = audioBuffer;
-            source.connect(audioContextRef.current.destination);
+            source.connect(
+              outputGainRef.current || audioContextRef.current.destination,
+            );
 
             activeAudioNodesRef.current.push(source);
             source.onended = () => {
@@ -3171,11 +3790,6 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     }
   };
 
-  const voiceStateRef = useRef(voiceState);
-  useEffect(() => {
-    voiceStateRef.current = voiceState;
-  }, [voiceState]);
-
   useEffect(() => {
     return () => {
       stopVoice();
@@ -3222,7 +3836,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           ? cleanText.substring(0, 1500) + "..."
           : cleanText;
       const res = await fetch(
-        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || "gpt-4o-mini-tts")}`,
+        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || "aura-asteria-en")}`,
         deepgramApiKey
           ? {
               headers: {
@@ -3243,7 +3857,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         res.headers.get("X-Usage-Input-Chars") || safeText.length,
       );
       const usageModel =
-        res.headers.get("X-Usage-Model") || ttsVoice || "gpt-4o-mini-tts";
+        res.headers.get("X-Usage-Model") || ttsVoice || "aura-asteria-en";
       recordVoiceUsage({
         provider: res.headers.get("X-Usage-Provider") || "deepgram",
         ttsModel: usageModel,
@@ -3457,7 +4071,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           ...(serperApiKey ? { "X-Serper-API-Key": serperApiKey } : {}),
         },
         body: JSON.stringify({
-          messages: newMessages,
+          messages: newMessages.flatMap((message) =>
+            message.voiceSession
+              ? message.voiceSession.turns.map((turn) => ({
+                  role: turn.role,
+                  content: turn.content,
+                }))
+              : [message],
+          ),
           currentPageImage,
           memoryContext: requestMemoryContext,
           aiModel,
@@ -4121,6 +4742,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     if (!input.trim()) return;
     const currentInput = input;
     handleInputChange("");
+    if (
+      voiceState !== "idle" &&
+      wsRef.current &&
+      wsRef.current.readyState === WebSocket.OPEN
+    ) {
+      sendVoiceText(currentInput);
+      return;
+    }
     sendMessage(currentInput);
   };
 
@@ -4668,46 +5297,33 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 </button>
               </div>
             )}
-            <AnimatePresence mode="popLayout">
-              {voiceState === "idle" ? (
-                <gsapMotion.textarea
-                  key="text-input"
-                  ref={textareaRef}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
-                  transition={{ duration: 0.2 }}
-                  value={input}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                  placeholder={
-                    isSearchSkillActive
-                      ? "Search the web..."
-                      : "Ask about the document..."
-                  }
-                  className={`custom-scroll z-10 w-full resize-none border-none bg-transparent px-4 text-[15px] leading-[1.42] text-zinc-100 outline-none transition-[height] duration-200 ease-out caret-white placeholder:text-zinc-500 ${isSearchSkillActive ? "pt-8 pb-3" : "py-[18px]"}`}
-                  rows={1}
-                />
-              ) : (
-                <gsapMotion.div
-                  key="voice-pill"
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.85 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
-                >
-                  <GeminiVoicePill state={voiceState} />
-                </gsapMotion.div>
-              )}
-            </AnimatePresence>
+            <gsapMotion.textarea
+              key="text-input"
+              ref={textareaRef}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+              transition={{ duration: 0.2 }}
+              value={input}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder={
+                voiceState !== "idle"
+                  ? "Type to talk to Aria..."
+                  : isSearchSkillActive
+                    ? "Search the web..."
+                    : "Ask about the document..."
+              }
+              className={`custom-scroll z-10 w-full resize-none border-none bg-transparent px-4 text-[15px] leading-[1.42] text-zinc-100 outline-none transition-[height] duration-200 ease-out caret-white placeholder:text-zinc-500 ${isSearchSkillActive ? "pt-8 pb-3" : "py-[18px]"}`}
+              rows={1}
+            />
           </div>
           <div className="relative flex items-center gap-2 shrink-0 z-50 mr-2 mb-2">
             <div className="relative flex items-center justify-center shrink-0 rounded-full h-[48px] w-[48px] p-[2px]">
@@ -5051,6 +5667,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           </div>
         </div>
       </div>
+      <AnimatePresence>
+        {voiceState !== "idle" && (
+          <VoiceUniverse state={voiceState} caption={voiceCaption} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

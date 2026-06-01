@@ -89,18 +89,19 @@ commit, or ordinary local edit.
 
 ## Rebuild Policy
 
-Graphify rebuilds are push-time only.
+Graphify rebuilds are explicit local or agent-requested maintenance only.
 
-- GitHub Actions runs `.github/workflows/graphify-refresh.yml` on `push`.
-- The workflow runs `graphify update .`, regenerates `GRAPH_TREE.html`, and
-  commits changed `graphify-out` artifacts back with `[skip graphify]`.
-- Pull requests run normal quality gates but do not rewrite graph artifacts.
+- There is no GitHub Actions workflow that refreshes Graphify on push or pull
+  request.
+- Agents may regenerate `graphify-out` only when the user explicitly requests a
+  graph refresh or the current task includes Graphify artifact maintenance.
+- Agents should run local quality gates before pushing or opening pull requests.
 - Local agents should not install Graphify git hooks that rebuild on commit or
   checkout.
 - Local agents should not run Graphify watch mode for this repo.
 
-This keeps architecture context current after code reaches GitHub without
-rebuilding it after every chat turn or local file change.
+This keeps architecture context controlled without rebuilding it after every
+chat turn, local file change, commit, checkout, or GitHub push.
 
 ## Change Workflow
 

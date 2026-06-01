@@ -915,6 +915,77 @@ generated-artifact verifier exists.
   slices.
 - AWS/cloud synchronization remains out of scope until beta testing.
 
+# Phase 23: Stored Audio-guide Integrity Verifier
+
+Phase 23 adds a conservative local verifier for stored chapter audio guides.
+Audio overview rows can now move from `not_checked` to `verified` when the
+checked-in manifest, local MP3 path, book/chapter anchors, transcript metadata,
+voice, duration, stored date, and no-external-fetch metadata agree. This is
+manifest integrity only; it does not claim transcript/source-span truth.
+
+## Verification Evidence
+
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 77 tests.
+- `npm run build`: passed.
+- Browser QA on Admin Source Artifacts showed audio guide rows with
+  `Run local check`, moved a sample row to `verified`, and retained no
+  horizontal overflow at mobile and desktop widths.
+- `graphify update . --force`: passed.
+- `npm run graphify:tree`: passed.
+- A planned final-check sidecar was blocked by account usage limits; the main
+  thread completed the verification sweep.
+
+## Remaining Work
+
+- Audio-content transcript matching remains future work.
+- Generated charts, code snippets, images, and websites still need later
+  artifact verifiers.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 24: Voice Chat PR Selection And Graphify Policy Cleanup
+
+Phase 24 inspects MegaaDev's open PR #4 (`audio-orc`) and ports only the voice
+chat pieces that fit this local beta branch. The unrelated PR features
+(`image-search`, generated Mermaid endpoints, visual voice tool-calling, and
+multi-PDF changes) were intentionally not copied.
+
+## Integration Decisions
+
+- Live Voice Agent speech now uses Deepgram Aura (`aura-asteria-en`) in the
+  Deepgram agent settings.
+- The voice WebSocket proxy now sends KeepAlive and preserves text/binary frame
+  types.
+- Chat voice turns are grouped into a collapsible `Voice conversation` card with
+  duration instead of loose individual voice messages.
+- Study voice mode now has a dark audio-reactive stage, rolling captions,
+  typed-voice placeholder, and local barge-in handling.
+- `.github/workflows/graphify-refresh.yml` was deleted. Graphify refresh is now
+  explicit local maintenance only, and the docs/package scripts were updated to
+  match.
+
+## Verification Evidence
+
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 77 tests.
+- `npm run build`: passed.
+- Browser QA on `http://localhost:3100` covered Admin source artifacts, Revision
+  audio guide loading, and Study voice-active UI. Headless Chrome loaded the
+  MP3 and duration but did not advance playback time; the HTTP asset check
+  returned `200 OK`, `Content-Type: audio/mpeg`, and a nonzero content length.
+- `graphify update . --force`: regenerated 840 nodes, 1421 edges, and 58
+  communities after rebasing over the remote Graphify auto-refresh commit.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `VoiceUniverse()` and `MorphBlob()`.
+
+## Remaining Work
+
+- Real live voice still needs end-to-end validation with actual OpenRouter and
+  Deepgram keys, microphone, and speakers outside headless Chrome.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
 # Phase 19: Stored Audio Overview Provenance
 
 Phase 19 connects the stored chapter audio overview feature to the local

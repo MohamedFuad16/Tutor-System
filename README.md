@@ -180,12 +180,12 @@ npm run graphify:tree
 
 Graph rebuild policy:
 
-- Graphify artifacts are refreshed by `.github/workflows/graphify-refresh.yml`
-  only when code is pushed to GitHub.
-- The workflow runs `graphify update .`, regenerates `GRAPH_TREE.html`, and
-  commits changed `graphify-out` artifacts back with `[skip graphify]`.
-- Pull requests run `npm run lint` and `npm run build` without rewriting graph
-  artifacts.
+- Graphify artifacts are refreshed only by explicit local or agent-requested
+  maintenance; there is no GitHub Actions graph refresh on push or pull request.
+- When Graphify maintenance is requested, run `graphify update .` and
+  `npm run graphify:tree`, then commit the changed `graphify-out` artifacts.
+- Run `npm run lint` and `npm run build` locally before pushing or opening pull
+  requests.
 - Local agents should use Graphify queries before broad code reads, but should
   not run watch-mode or commit/checkout hooks in this repo.
 
@@ -258,7 +258,7 @@ Open `http://localhost:3000`.
 
 1. Use Graphify graph traversal before broad repository reads.
 2. Run `npm run lint` and `npm run build` before opening a pull request.
-3. Let GitHub Actions refresh `graphify-out` after code is pushed.
+3. Refresh `graphify-out` only when Graphify maintenance is explicitly in scope.
 
 ## License
 

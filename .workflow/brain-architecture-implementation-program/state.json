@@ -197,25 +197,31 @@
       "owner": "main agent + final-check sidecar",
       "status": "completed",
       "write_scope": "src/lib/chapterAudioOverviews.ts, src/lib/chapterAudioOverviews.json, scripts/user-brain-audio-overview-plan.mjs, scripts/generate-user-brain-audio-overviews.mjs, public/audio-overviews/*, src/views/RevisionView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, README.md, TUTOR_ARCHITECTURE.md, tests/audio-overview-plan.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "BB",
+      "name": "Stored audio-guide integrity verifier",
+      "owner": "main agent + read-only sidecar",
+      "status": "completed",
+      "write_scope": "src/memory/artifact.records.ts, tests/artifact-records.test.mjs, src/views/AdminView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "CC",
+      "name": "Voice chat PR selection and Graphify policy cleanup",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "server.ts, src/components/ChatPanel.tsx, src/store/index.ts, src/types.ts, AGENTS.md, README.md, TUTOR_ARCHITECTURE.md, package.json, .github/workflows/graphify-refresh.yml, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_22_verified",
+    "status": "phase_24_complete",
     "checks": [
-      "npm run audio:overview:dry-run",
-      "node --test tests/audio-overview-plan.test.mjs",
-      "npm run lint",
-      "npm run test",
-      "npm run build",
-      "npm run format:check",
-      "ffprobe stored MP3 duration check",
-      "Deepgram token source search clean",
-      "Browser QA: Revision first/last chapters across all three built-in books",
-      "Browser QA: Admin Sources 25 audio-guide artifacts and 25 citation states",
-      "graphify update . --force",
-      "npm run graphify:tree",
-      "Graphify smoke query for Deepgram generator and audio-guide wiring",
-      "Read-only final-check sidecar attempted; stopped by subagent usage limit before findings"
+      "npm run format:check passed after Graphify workflow path removal",
+      "npm run lint passed",
+      "npm run test passed, 77 tests",
+      "npm run build passed",
+      "Browser QA covered Admin source artifacts, Revision audio guide loading, and the voice active UI",
+      "Graphify update/tree passed and smoke query found new voice UI symbols"
     ]
   }
 }

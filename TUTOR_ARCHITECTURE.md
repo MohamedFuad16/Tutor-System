@@ -88,10 +88,13 @@ provenance, announces active books, and records trace explanations. Admin can
 now run a local generated-note integrity check that verifies learning-entry,
 book/conversation, local-only, and no-external-fetch provenance without claiming
 the generated note is factually source-span verified. Built-in chapter audio
-guide manifests seed `audio_overview` artifact rows with `not_checked` citation
-states so Admin can inspect generated-asset provenance alongside runtime
-artifacts. Every built-in Library book now has checked-in audio guides, backed
-by `src/lib/chapterAudioOverviews.json` and the Deepgram regeneration script in
+guide manifests seed `audio_overview` artifact rows that Admin can locally check
+for manifest integrity: local MP3 path, overview id, book/chapter anchors,
+transcript length, summary, voice, duration, stored date, and no-external-fetch
+provenance. That check is local traceability only; it does not claim
+audio-content transcription accuracy. Every built-in Library book now has
+checked-in audio guides, backed by `src/lib/chapterAudioOverviews.json` and the
+Deepgram regeneration script in
 `scripts/generate-user-brain-audio-overviews.mjs`.
 
 ## 6. Core Views
@@ -161,11 +164,12 @@ Graph rebuild policy:
 
 - The repository does not rebuild architecture artifacts after every message,
   save, change, commit, or checkout.
-- `.github/workflows/graphify-refresh.yml` refreshes Graphify only on GitHub
-  `push`.
-- The workflow runs `graphify update .`, emits `GRAPH_TREE.html`, and commits
-  changed `graphify-out` artifacts with `[skip graphify]`.
-- Pull requests run lint/build quality gates without rewriting graph artifacts.
+- Graphify artifacts are refreshed only by explicit local or agent-requested
+  maintenance; there is no GitHub Actions graph refresh on push or pull request.
+- When maintenance is in scope, run `graphify update .`, emit
+  `GRAPH_TREE.html`, and commit the changed `graphify-out` artifacts.
+- Agents should run local lint/build quality gates before pushing or opening
+  pull requests.
 
 Agents should use Graphify traversal before broad reads, then verify important
 findings against live source.

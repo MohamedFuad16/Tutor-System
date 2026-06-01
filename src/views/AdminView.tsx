@@ -2817,8 +2817,9 @@ export function AdminView() {
                             built-in manifests. Artifacts can be ready while
                             their citations remain checking or not checked; the
                             local verifier checks saved source-card structure
-                            and generated learning-note provenance without
-                            fetching external pages.
+                            generated learning-note provenance, and stored
+                            audio-guide manifest integrity without fetching
+                            external pages.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -3304,8 +3305,10 @@ export function AdminView() {
                               The local verifier can only check saved
                               source-card structure, citation linkage, URL
                               shape, domain consistency, and generated
-                              learning-note provenance; it does not fetch or
-                              prove external page content.
+                              learning-note provenance, plus stored audio-guide
+                              manifest integrity; it does not fetch or prove
+                              external page content or audio transcription
+                              accuracy.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               AWS/cloud synchronization remains deferred until
