@@ -429,3 +429,42 @@ Phase 11 adds the first local memory-control path: durable correction and deleti
 - Add source artifact/citation state ledgers.
 - Add non-destructive beta diagnostics/export.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 12 report
+
+## Scope
+
+Phase 12 adds durable local source artifact and citation-state tracking. It turns streamed web-search source cards and source failures into inspectable local records without claiming that captured sources are verified.
+
+## Graphify Context
+
+- Graphify routed the slice through `src/lib/userBrainArchitectureBook.ts`, `src/components/ChatPanel.tsx`, `src/views/AdminView.tsx`, `src/memory/longterm.memory.ts`, and prior tool/model/retrieval ledgers.
+- The architecture book calls out `ArtifactRecord`, `CitationState`, `artifact.ready`, and `citation.verified` as required runtime contracts. This phase implements the local record layer while keeping actual verification as a future explicit state transition.
+
+## Integration Decisions
+
+- Added Dexie schema version 13 with `artifactRecords` and `citationStates`.
+- Added `src/memory/artifact.records.ts` for stable source-card artifact IDs, linked citation-state IDs, conservative state normalization, compact metadata, and non-blocking IndexedDB writes.
+- Wired ChatPanel web-search streams to persist source cards as ready artifacts with `checking` citation states and to persist unavailable citation states when a search returns no sources or errors.
+- Added compact `citation checking` chips to source cards.
+- Added Admin `Source Artifacts` / `Artifacts & Citations` with meters, recent source artifacts, citation states, state mix, artifact mix, boundary copy, and review actions into the correction-request ledger.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 48 tests.
+- `npm run build`: passed.
+- `npm run format:check`: expected failure only on pre-existing `src/views/RevisionView.tsx` formatting.
+- Browser QA on `http://127.0.0.1:3100`: Admin `Artifacts & Citations` rendered on desktop and mobile, boundary copy was visible, document width matched viewport width, and browser warning/error logs were 0.
+- Browser screenshot saving to `.workflow/.../results/admin-source-artifacts-smoke.png` was blocked by browser runtime filesystem permissions (`EPERM`), so this phase records DOM/log QA evidence.
+- `graphify update . --force`: regenerated the code architecture graph with 688 nodes, 1158 edges, and 47 communities after temporarily stashing only unrelated `PdfViewer`/`StudyView` dirty edits.
+- `npm run graphify:tree`: passed.
+- Graphify artifact smoke found no conflict markers, `/private/tmp` paths, or phase stash markers in checked graph artifacts.
+- Graphify query smoke returned `artifact.records.ts`, `ArtifactRecord`, `CitationState`, `recordWebSourceArtifact()`, `recordUnavailableCitationState()`, `AdminView()`, and `ChatPanel()`.
+
+## Remaining Work
+
+- Add an explicit local citation verifier before any source can move from `checking` to `verified`.
+- Link generated notes, charts, code, flashcards, and other artifacts into the same `ArtifactRecord` table.
+- Add non-destructive beta diagnostics/export.
+- AWS/cloud synchronization remains out of scope until beta testing.

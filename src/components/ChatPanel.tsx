@@ -55,6 +55,10 @@ import { SiriLiquidGlass } from "./SiriLiquidGlass";
 import { useStore, type NormalizedWebSource } from "../store";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
 import { db, GENERAL_STUDY_BOOK_ID } from "../memory/longterm.memory";
+import {
+  recordUnavailableCitationState,
+  recordWebSourceArtifact,
+} from "../memory/artifact.records";
 import { recordModelRunEvent } from "../memory/model.runs";
 import { recordToolJobEvent } from "../memory/tool.jobs";
 import { createFlashcardForStorage } from "../memory/flashcard.concepts";
@@ -100,9 +104,13 @@ type MotionLikeProps = {
   whileTap?: MotionTarget;
 };
 
-const AnimatePresence = ({ children }: { children: React.ReactNode; initial?: boolean; mode?: string }) => (
-  <>{children}</>
-);
+const AnimatePresence = ({
+  children,
+}: {
+  children: React.ReactNode;
+  initial?: boolean;
+  mode?: string;
+}) => <>{children}</>;
 
 const toMotionTarget = (target: MotionTarget, variants?: Variants) => {
   if (!target) return undefined;
@@ -1487,6 +1495,11 @@ const SourceCards = ({
                 >
                   {index + 1}
                 </span>
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[9px] ${dark ? "bg-blue-400/10 text-blue-200" : "bg-blue-50 text-blue-600"}`}
+                >
+                  citation checking
+                </span>
               </div>
               <div
                 className={`mt-1 line-clamp-2 text-[12px] font-semibold leading-snug ${dark ? "text-zinc-200 group-hover:text-white" : "text-zinc-800 group-hover:text-zinc-950"}`}
@@ -2618,7 +2631,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const activeBookDocuments = useLiveQuery(
     () =>
       canonicalActiveBookId
-        ? db.learningDocuments.where("bookId").equals(canonicalActiveBookId).toArray()
+        ? db.learningDocuments
+            .where("bookId")
+            .equals(canonicalActiveBookId)
+            .toArray()
         : Promise.resolve([]),
     [canonicalActiveBookId],
   );
@@ -2678,7 +2694,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     const handleBeforeUnload = () => {
       archiveChatSnapshot(
         useStore.getState().messages,
-        useStore.getState().activeLearningBookId || canonicalActiveBookId || null,
+        useStore.getState().activeLearningBookId ||
+          canonicalActiveBookId ||
+          null,
         activeLearningBookTitle,
       );
     };
@@ -2781,7 +2799,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       );
     }, 250);
     return () => window.clearTimeout(timeout);
-  }, [activeLearningBookTitle, canonicalActiveBookId, isThreadLoading, messages]);
+  }, [
+    activeLearningBookTitle,
+    canonicalActiveBookId,
+    isThreadLoading,
+    messages,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -3518,6 +3541,57 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         _name: string,
         _metadata: Record<string, unknown>,
       ) => {};
+      const webSearchQueriesById = new Map<string, string>();
+      const sourceLedgerContext = {
+        messageId: assistantMsgId,
+        conversationId: canonicalActiveBookId
+          ? chatThreadIdForBook(canonicalActiveBookId)
+          : undefined,
+        bookId: canonicalActiveBookId || undefined,
+      };
+      const recordSourceArtifact = (
+        source: NormalizedWebSource,
+        options: {
+          event: string;
+          searchId?: string;
+          sourceCount?: number;
+          error?: unknown;
+        },
+      ) => {
+        const searchId =
+          typeof options.searchId === "string" ? options.searchId : undefined;
+        void recordWebSourceArtifact({
+          webSource: source,
+          searchId,
+          query: searchId ? webSearchQueriesById.get(searchId) : undefined,
+          eventSource: options.event,
+          ...sourceLedgerContext,
+          metadata: {
+            event: options.event,
+            sourceCount: options.sourceCount,
+            error: options.error,
+          },
+        });
+      };
+      const recordUnavailableCitation = (options: {
+        event: string;
+        searchId?: string;
+        sourceCount?: number;
+        reason?: unknown;
+      }) => {
+        const searchId =
+          typeof options.searchId === "string" ? options.searchId : undefined;
+        void recordUnavailableCitationState({
+          searchId,
+          query: searchId ? webSearchQueriesById.get(searchId) : undefined,
+          reason: options.reason || "No web sources returned.",
+          source: options.event,
+          metadata: {
+            event: options.event,
+            sourceCount: options.sourceCount,
+          },
+        });
+      };
 
       while (true) {
         const { done, value } = await reader.read();
@@ -3572,6 +3646,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 usage: messageUsage,
               });
             } else if (data.type === "web_search_started") {
+              if (data.searchId && data.query) {
+                webSearchQueriesById.set(
+                  String(data.searchId),
+                  String(data.query),
+                );
+              }
               recordWebSearchEvent({
                 type: "started",
                 searchId: data.searchId,
@@ -3632,6 +3712,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 source,
               });
               cacheWebSources([source]);
+              recordSourceArtifact(source, {
+                event: "chat_web_result",
+                searchId: data.searchId,
+              });
               recordWebTelemetry(source.domain || "web_result", {
                 event: "result",
                 searchId: data.searchId,
@@ -3671,6 +3755,22 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 estimated: true,
               });
               if (sources.length) cacheWebSources(sources);
+              sources.forEach((source) =>
+                recordSourceArtifact(source, {
+                  event: "chat_web_sources_complete",
+                  searchId: data.searchId,
+                  sourceCount: sources.length,
+                  error: data.error,
+                }),
+              );
+              if (!sources.length || data.error) {
+                recordUnavailableCitation({
+                  event: "chat_web_sources_complete",
+                  searchId: data.searchId,
+                  sourceCount: sources.length,
+                  reason: data.error || "No web sources returned.",
+                });
+              }
               recordWebTelemetry(data.searchId || "web_search", {
                 event: data.error ? "error" : "complete",
                 searchId: data.searchId,
@@ -3748,6 +3848,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               const finalSources = (data.sources ||
                 []) as NormalizedWebSource[];
               if (finalSources.length) cacheWebSources(finalSources);
+              finalSources.forEach((source) =>
+                recordSourceArtifact(source, {
+                  event: "chat_done_sources",
+                  searchId: data.searchId,
+                  sourceCount: finalSources.length,
+                }),
+              );
               if (data.usage) {
                 messageUsage = {
                   provider: data.usage.provider || "openrouter",
@@ -4417,9 +4524,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
             >
               <div className="absolute inset-[-1.5px] rounded-full bg-[#000000] shadow-[0_4px_16px_rgba(0,0,0,1),0_0_0_1px_rgba(255,255,255,0.05)]" />
-                <div className="absolute inset-[0.5px] rounded-full overflow-hidden">
-                  <div className="absolute inset-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#333] to-[#111]" />
+              <div className="absolute inset-[0.5px] rounded-full overflow-hidden">
+                <div className="absolute inset-0">
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#333] to-[#111]" />
                   <div
                     className="absolute inset-0 mix-blend-overlay opacity-[0.35] pointer-events-none"
                     style={{

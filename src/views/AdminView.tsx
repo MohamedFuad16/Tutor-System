@@ -2,6 +2,8 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   db,
+  type ArtifactRecord,
+  type CitationState,
   type CorrectionEvent,
   type EvidenceEvent,
   type MasteryDelta,
@@ -48,6 +50,7 @@ type AdminTab =
   | "models"
   | "memory"
   | "corrections"
+  | "artifacts"
   | "retrieval"
   | "evidence"
   | "tuning"
@@ -154,11 +157,21 @@ const formatTime = (timestamp?: number | null) =>
     : "waiting";
 
 const statusTone = (status: string) => {
-  if (status === "completed" || status === "applied")
+  if (
+    status === "completed" ||
+    status === "applied" ||
+    status === "ready" ||
+    status === "verified"
+  )
     return "border-green-200 bg-green-50 text-green-700";
-  if (status === "failed" || status === "blocked")
+  if (status === "failed" || status === "blocked" || status === "conflicting")
     return "border-red-200 bg-red-50 text-red-700";
-  if (status === "fallback")
+  if (
+    status === "fallback" ||
+    status === "unavailable" ||
+    status === "unsupported" ||
+    status === "stale"
+  )
     return "border-orange-200 bg-orange-50 text-orange-700";
   if (status === "dismissed")
     return "border-zinc-300 bg-zinc-100 text-zinc-600";
@@ -252,6 +265,18 @@ export function AdminView() {
         db.correctionEvents.orderBy("timestamp").reverse().limit(50).toArray(),
       [],
     ) || [];
+  const artifactRecords =
+    useLiveQuery(
+      () =>
+        db.artifactRecords.orderBy("timestamp").reverse().limit(50).toArray(),
+      [],
+    ) || [];
+  const citationStates =
+    useLiveQuery(
+      () =>
+        db.citationStates.orderBy("timestamp").reverse().limit(50).toArray(),
+      [],
+    ) || [];
   const evidenceEventCount =
     useLiveQuery(() => db.evidenceEvents.count(), []) || 0;
   const verifiedEvidenceCount =
@@ -274,6 +299,10 @@ export function AdminView() {
     useLiveQuery(() => db.retrievalEvents.count(), []) || 0;
   const correctionEventCount =
     useLiveQuery(() => db.correctionEvents.count(), []) || 0;
+  const artifactRecordCount =
+    useLiveQuery(() => db.artifactRecords.count(), []) || 0;
+  const citationStateCount =
+    useLiveQuery(() => db.citationStates.count(), []) || 0;
   const [serverLogs, setServerLogs] = useState<
     { type: string; msg: string; time: number }[]
   >([]);
@@ -463,6 +492,8 @@ export function AdminView() {
   const latestCorrectionEvent = correctionEvents[0] as
     | CorrectionEvent
     | undefined;
+  const latestArtifactRecord = artifactRecords[0] as ArtifactRecord | undefined;
+  const latestCitationState = citationStates[0] as CitationState | undefined;
   const completedModelRuns = modelRuns.filter(
     (run) => run.status === "completed",
   ).length;
@@ -528,6 +559,35 @@ export function AdminView() {
     acc[event.targetType] = (acc[event.targetType] || 0) + 1;
     return acc;
   }, {});
+  const sourceCardArtifacts = artifactRecords.filter(
+    (record) => record.artifactType === "source_card",
+  ).length;
+  const readyArtifactRecords = artifactRecords.filter(
+    (record) => record.status === "ready",
+  ).length;
+  const checkingCitationStates = citationStates.filter(
+    (state) => state.state === "checking",
+  ).length;
+  const unavailableCitationStates = citationStates.filter(
+    (state) => state.state === "unavailable",
+  ).length;
+  const verifiedCitationStates = citationStates.filter(
+    (state) => state.state === "verified",
+  ).length;
+  const artifactRecordsByType = artifactRecords.reduce<Record<string, number>>(
+    (acc, record) => {
+      acc[record.artifactType] = (acc[record.artifactType] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
+  const citationStatesByState = citationStates.reduce<Record<string, number>>(
+    (acc, state) => {
+      acc[state.state] = (acc[state.state] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
   const mappedConceptCount = learningBookConcepts.length;
   const tracedBookCount = learningBooks.filter(
     (book) => (conceptsByBook[book.id] || []).length > 0,
@@ -674,6 +734,8 @@ export function AdminView() {
     };
   }, [
     activeTab,
+    artifactRecords.length,
+    citationStates.length,
     correctionEvents.length,
     evidenceEvents.length,
     learningBooks.length,
@@ -741,6 +803,15 @@ export function AdminView() {
               <Flag size={16} />
               <span className="line-clamp-1 leading-snug">
                 Correction Requests
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab("artifacts")}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "artifacts" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+            >
+              <BookOpen size={16} />
+              <span className="line-clamp-1 leading-snug">
+                Source Artifacts
               </span>
             </button>
             <button
@@ -820,6 +891,8 @@ export function AdminView() {
                   <strong>Memory Events</strong> to inspect learner memory
                   writes, <strong>Correction Requests</strong> to audit local
                   mark-wrong and deletion-review intents,{" "}
+                  <strong>Source Artifacts</strong> to inspect captured web
+                  source cards and citation states,{" "}
                   <strong>Retrieval Events</strong> to inspect semantic memory
                   context selection, <strong>Evidence Ledger</strong> to inspect
                   model-summary evidence and mastery deltas,{" "}
@@ -837,6 +910,7 @@ export function AdminView() {
                   { id: "models", label: "Models", icon: Cpu },
                   { id: "memory", label: "Memory", icon: Network },
                   { id: "corrections", label: "Correct", icon: Flag },
+                  { id: "artifacts", label: "Sources", icon: BookOpen },
                   { id: "retrieval", label: "Retrieval", icon: Search },
                   { id: "evidence", label: "Evidence", icon: BrainCircuit },
                   {
@@ -877,15 +951,17 @@ export function AdminView() {
                         ? "Memory Audit"
                         : activeTab === "corrections"
                           ? "Memory Control"
-                          : activeTab === "retrieval"
-                            ? "Retrieval Audit"
-                            : activeTab === "evidence"
-                              ? "Learner Evidence"
-                              : activeTab === "tuning"
-                                ? "Runtime Controls"
-                                : activeTab === "traces"
-                                  ? "Diagnostics"
-                                  : "Runtime Environment"}
+                          : activeTab === "artifacts"
+                            ? "Source Grounding"
+                            : activeTab === "retrieval"
+                              ? "Retrieval Audit"
+                              : activeTab === "evidence"
+                                ? "Learner Evidence"
+                                : activeTab === "tuning"
+                                  ? "Runtime Controls"
+                                  : activeTab === "traces"
+                                    ? "Diagnostics"
+                                    : "Runtime Environment"}
                 </span>
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-2 font-serif leading-[1.15]">
@@ -897,15 +973,17 @@ export function AdminView() {
                           ? "Memory Events"
                           : activeTab === "corrections"
                             ? "Correction Requests"
-                            : activeTab === "retrieval"
-                              ? "Retrieval Events"
-                              : activeTab === "evidence"
-                                ? "Evidence Ledger"
-                                : activeTab === "tuning"
-                                  ? "Runtime Tuning"
-                                  : activeTab === "traces"
-                                    ? "DeepSeek Trace Ledger"
-                                    : "Live Server Console"}
+                            : activeTab === "artifacts"
+                              ? "Artifacts & Citations"
+                              : activeTab === "retrieval"
+                                ? "Retrieval Events"
+                                : activeTab === "evidence"
+                                  ? "Evidence Ledger"
+                                  : activeTab === "tuning"
+                                    ? "Runtime Tuning"
+                                    : activeTab === "traces"
+                                      ? "DeepSeek Trace Ledger"
+                                      : "Live Server Console"}
                   </h1>
                   {activeTab === "activity" && (
                     <div
@@ -1031,11 +1109,13 @@ export function AdminView() {
                           <div className="mt-2 text-2xl font-semibold tabular-nums text-zinc-900">
                             {learningEntries.length +
                               memoryEventCount +
+                              artifactRecordCount +
+                              citationStateCount +
                               retrievalEventCount +
                               traceCount}
                           </div>
                           <div className="mt-1 text-[10px] font-mono text-zinc-500">
-                            entries + memory + retrieval + traces
+                            entries + memory + sources + traces
                           </div>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
@@ -1184,6 +1264,8 @@ export function AdminView() {
                               ["Tool jobs", toolJobCount],
                               ["Model runs", modelRunCount],
                               ["Memory events", memoryEventCount],
+                              ["Source artifacts", artifactRecordCount],
+                              ["Citation states", citationStateCount],
                               ["Retrieval events", retrievalEventCount],
                               ["Active book", activeLearningBookId || "none"],
                               ["Project", activeProject],
@@ -1974,6 +2056,12 @@ export function AdminView() {
                                 </option>
                                 <option value="model_run">Model run</option>
                                 <option value="tool_job">Tool job</option>
+                                <option value="artifact_record">
+                                  Artifact record
+                                </option>
+                                <option value="citation_state">
+                                  Citation state
+                                </option>
                                 <option value="concept">Concept</option>
                                 <option value="interaction">Interaction</option>
                                 <option value="learning_book">
@@ -2064,6 +2152,423 @@ export function AdminView() {
                               Later propagation must mark derived summaries,
                               embeddings, graph facts, and mastery deltas as
                               superseded where practical.
+                            </div>
+                            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                              AWS/cloud synchronization remains deferred until
+                              beta testing.
+                            </div>
+                          </div>
+                        </section>
+                      </div>
+                    </section>
+                  </div>
+                ) : activeTab === "artifacts" ? (
+                  <div className="flex flex-col gap-8 font-sans">
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                            <BookOpen size={13} /> Local Source Grounding
+                          </div>
+                          <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
+                            Artifact and citation state ledger
+                          </h2>
+                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                            Durable local records for source cards and citation
+                            states captured from chat web-search streams. Source
+                            cards can be ready while their citations remain
+                            checking; this tab intentionally avoids claiming
+                            verification until a later verifier writes that
+                            state.
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
+                          <div className="text-2xl font-semibold text-zinc-900">
+                            {artifactRecordCount}
+                          </div>
+                          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+                            Artifacts
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-5">
+                        {[
+                          ["Source cards", sourceCardArtifacts],
+                          ["Ready artifacts", readyArtifactRecords],
+                          ["Checking", checkingCitationStates],
+                          ["Unavailable", unavailableCitationStates],
+                          ["Verified", verifiedCitationStates],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
+                          >
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              {label}
+                            </div>
+                            <div className="mt-2 truncate text-lg font-semibold tabular-nums text-zinc-900">
+                              {value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+                      <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                          <div>
+                            <h3 className="text-xl font-serif font-medium text-zinc-900">
+                              Recent source artifacts
+                            </h3>
+                            <p className="mt-1 text-sm text-zinc-500 font-serif">
+                              Newest first. These rows are captured locally from
+                              chat source streams and can be reviewed before
+                              they influence generated artifacts.
+                            </p>
+                          </div>
+                          <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                            {formatTime(latestArtifactRecord?.timestamp)}
+                          </div>
+                        </div>
+
+                        {artifactRecords.length === 0 ? (
+                          <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
+                            No source artifacts yet. A chat web-search result or
+                            final source list will persist source-card artifacts
+                            here.
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {artifactRecords.map((record, index) => (
+                              <article
+                                key={record.id}
+                                className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 16 ? "admin-animated-item" : ""}`}
+                              >
+                                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                  <div className="flex min-w-0 gap-3">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-blue-600">
+                                      <BookOpen size={17} />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                          {record.title}
+                                        </h4>
+                                        <span
+                                          className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(record.status)}`}
+                                        >
+                                          {record.status}
+                                        </span>
+                                        <span
+                                          className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(record.verificationState)}`}
+                                        >
+                                          {record.verificationState.replace(
+                                            /_/g,
+                                            " ",
+                                          )}
+                                        </span>
+                                      </div>
+                                      {record.summary && (
+                                        <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-zinc-600 font-serif">
+                                          {record.summary}
+                                        </p>
+                                      )}
+                                      <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                        <span>{record.artifactType}</span>
+                                        <span>{record.source}</span>
+                                        {record.domain && (
+                                          <span>{record.domain}</span>
+                                        )}
+                                        {record.searchId && (
+                                          <span className="max-w-[10rem] truncate">
+                                            search {record.searchId}
+                                          </span>
+                                        )}
+                                        {record.bookId && (
+                                          <span className="max-w-[10rem] truncate">
+                                            book {record.bookId}
+                                          </span>
+                                        )}
+                                        {record.citationStateIds.length > 0 && (
+                                          <span>
+                                            {record.citationStateIds.length}{" "}
+                                            citation states
+                                          </span>
+                                        )}
+                                      </div>
+                                      {record.url && (
+                                        <a
+                                          href={record.url}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="mt-2 block max-w-full truncate text-xs font-semibold text-blue-600 no-underline hover:text-blue-800"
+                                        >
+                                          {record.url}
+                                        </a>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="shrink-0 text-right text-[10px] font-mono text-zinc-500">
+                                    {formatTime(record.timestamp)}
+                                  </div>
+                                </div>
+
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void recordCorrectionRequest({
+                                        action: "review",
+                                        targetType: "artifact_record",
+                                        targetId: record.id,
+                                        targetSummary:
+                                          record.summary || record.title,
+                                        reason:
+                                          "Admin requested source artifact review.",
+                                        source: "admin_source_artifacts",
+                                        bookId: record.bookId,
+                                        conversationId: record.conversationId,
+                                        conceptId: record.conceptId,
+                                        relatedEventIds: [record.id],
+                                        metadata: {
+                                          artifactType: record.artifactType,
+                                          status: record.status,
+                                          verificationState:
+                                            record.verificationState,
+                                          url: record.url,
+                                        },
+                                      })
+                                    }
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                                  >
+                                    <Flag size={12} />
+                                    Request review
+                                  </button>
+                                </div>
+
+                                {(record.sourceIds.length ||
+                                  record.citationStateIds.length ||
+                                  record.metadata) && (
+                                  <details className="group mt-3">
+                                    <summary className="flex cursor-pointer select-none items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-800">
+                                      <ChevronRight
+                                        size={14}
+                                        className="transition-transform group-open:rotate-90"
+                                      />
+                                      Source ids, citation ids, and metadata
+                                    </summary>
+                                    <pre className="mt-3 overflow-x-auto rounded-xl border border-zinc-200 bg-white p-3 text-[11px] text-zinc-600 shadow-inner">
+                                      {JSON.stringify(
+                                        {
+                                          sourceIds: record.sourceIds,
+                                          citationStateIds:
+                                            record.citationStateIds,
+                                          metadata: record.metadata,
+                                        },
+                                        null,
+                                        2,
+                                      )}
+                                    </pre>
+                                  </details>
+                                )}
+                              </article>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-4">
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <div className="mb-4 flex items-center justify-between gap-3">
+                            <div>
+                              <h3 className="text-xl font-serif font-medium text-zinc-900">
+                                Citation states
+                              </h3>
+                              <p className="mt-1 text-sm text-zinc-500 font-serif">
+                                State machine rows for source-card claims and
+                                search failures.
+                              </p>
+                            </div>
+                            <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                              {formatTime(latestCitationState?.timestamp)}
+                            </div>
+                          </div>
+
+                          {citationStates.length === 0 ? (
+                            <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-500">
+                              No citation states yet. Source capture writes
+                              checking states; source failures write unavailable
+                              states.
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {citationStates.map((state, index) => (
+                                <article
+                                  key={state.id}
+                                  className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 16 ? "admin-animated-item" : ""}`}
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                          {state.title || state.sourceRef}
+                                        </h4>
+                                        <span
+                                          className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(state.state)}`}
+                                        >
+                                          {state.state.replace(/_/g, " ")}
+                                        </span>
+                                      </div>
+                                      {state.failureReason && (
+                                        <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-orange-700 font-serif">
+                                          {state.failureReason}
+                                        </p>
+                                      )}
+                                      <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                        <span>{state.verifier}</span>
+                                        {state.domain && (
+                                          <span>{state.domain}</span>
+                                        )}
+                                        {state.artifactId && (
+                                          <span className="max-w-[10rem] truncate">
+                                            artifact {state.artifactId}
+                                          </span>
+                                        )}
+                                        {state.checkedAt !== undefined && (
+                                          <span>
+                                            checked{" "}
+                                            {formatTime(state.checkedAt)}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="shrink-0 text-right text-[10px] font-mono text-zinc-500">
+                                      {formatTime(state.timestamp)}
+                                    </div>
+                                  </div>
+                                  <div className="mt-3 flex flex-wrap gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void recordCorrectionRequest({
+                                          action: "review",
+                                          targetType: "citation_state",
+                                          targetId: state.id,
+                                          targetSummary:
+                                            state.failureReason ||
+                                            state.title ||
+                                            state.sourceRef,
+                                          reason:
+                                            "Admin requested citation-state review.",
+                                          source: "admin_citation_states",
+                                          relatedEventIds: [state.id],
+                                          metadata: {
+                                            state: state.state,
+                                            sourceRef: state.sourceRef,
+                                            url: state.url,
+                                            artifactId: state.artifactId,
+                                          },
+                                        })
+                                      }
+                                      className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                                    >
+                                      <Flag size={12} />
+                                      Request review
+                                    </button>
+                                  </div>
+                                  {(state.metadata || state.url) && (
+                                    <details className="group mt-3">
+                                      <summary className="flex cursor-pointer select-none items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-800">
+                                        <ChevronRight
+                                          size={14}
+                                          className="transition-transform group-open:rotate-90"
+                                        />
+                                        Source ref and metadata
+                                      </summary>
+                                      <pre className="mt-3 overflow-x-auto rounded-xl border border-zinc-200 bg-white p-3 text-[11px] text-zinc-600 shadow-inner">
+                                        {JSON.stringify(
+                                          {
+                                            claimId: state.claimId,
+                                            sourceRef: state.sourceRef,
+                                            url: state.url,
+                                            metadata: state.metadata,
+                                          },
+                                          null,
+                                          2,
+                                        )}
+                                      </pre>
+                                    </details>
+                                  )}
+                                </article>
+                              ))}
+                            </div>
+                          )}
+                        </section>
+
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            State mix
+                          </h3>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {Object.keys(citationStatesByState).length === 0 ? (
+                              <span className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
+                                Waiting for citation states.
+                              </span>
+                            ) : (
+                              Object.entries(citationStatesByState).map(
+                                ([state, count]) => (
+                                  <span
+                                    key={state}
+                                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${statusTone(state)}`}
+                                  >
+                                    {state.replace(/_/g, " ")}: {count}
+                                  </span>
+                                ),
+                              )
+                            )}
+                          </div>
+                        </section>
+
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Artifact mix
+                          </h3>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {Object.keys(artifactRecordsByType).length === 0 ? (
+                              <span className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
+                                Waiting for source artifacts.
+                              </span>
+                            ) : (
+                              Object.entries(artifactRecordsByType).map(
+                                ([type, count]) => (
+                                  <span
+                                    key={type}
+                                    className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-semibold text-zinc-700"
+                                  >
+                                    {type.replace(/_/g, " ")}: {count}
+                                  </span>
+                                ),
+                              )
+                            )}
+                          </div>
+                        </section>
+
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Boundary
+                          </h3>
+                          <div className="mt-4 grid gap-2 text-sm text-zinc-600 font-serif">
+                            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                              Source artifacts describe captured source cards,
+                              generated artifacts, and citation state, not
+                              learner concept mastery.
+                            </div>
+                            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                              A checking citation is not a verified citation.
+                              Verification must be written by a future verifier
+                              before Tutor can claim it.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               AWS/cloud synchronization remains deferred until

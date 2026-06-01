@@ -273,6 +273,8 @@ export interface CorrectionEvent {
     | "mastery_delta"
     | "model_run"
     | "tool_job"
+    | "artifact_record"
+    | "citation_state"
     | "concept"
     | "interaction"
     | "learning_book"
@@ -286,6 +288,64 @@ export interface CorrectionEvent {
   conversationId?: string;
   conceptId?: string;
   relatedEventIds?: string[];
+  metadata?: Record<string, unknown>;
+}
+
+export interface ArtifactRecord {
+  id: string;
+  timestamp: number;
+  artifactType:
+    | "source_card"
+    | "chart"
+    | "code"
+    | "image"
+    | "website"
+    | "flashcards"
+    | "notes"
+    | "preview"
+    | "other";
+  status: "draft" | "ready" | "failed" | "stale";
+  verificationState:
+    | "checking"
+    | "verified"
+    | "unavailable"
+    | "conflicting"
+    | "not_checked";
+  source: string;
+  title: string;
+  summary?: string;
+  url?: string;
+  domain?: string;
+  sourceIds: string[];
+  citationStateIds: string[];
+  searchId?: string;
+  toolJobId?: string;
+  messageId?: string;
+  conversationId?: string;
+  bookId?: string;
+  conceptId?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CitationState {
+  id: string;
+  timestamp: number;
+  state:
+    | "checking"
+    | "verified"
+    | "unavailable"
+    | "conflicting"
+    | "unsupported"
+    | "not_checked";
+  claimId: string;
+  sourceRef: string;
+  artifactId?: string;
+  url?: string;
+  domain?: string;
+  title?: string;
+  verifier: string;
+  checkedAt?: number;
+  failureReason?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -347,6 +407,8 @@ export class BrainDatabase extends Dexie {
   memoryEvents!: Table<MemoryEvent, string>;
   retrievalEvents!: Table<RetrievalEvent, string>;
   correctionEvents!: Table<CorrectionEvent, string>;
+  artifactRecords!: Table<ArtifactRecord, string>;
+  citationStates!: Table<CitationState, string>;
   toolJobs!: Table<ToolJob, string>;
   modelRuns!: Table<ModelRun, string>;
 
@@ -504,6 +566,36 @@ export class BrainDatabase extends Dexie {
         "id, timestamp, status, source, activeBookId, pageNumber",
       correctionEvents:
         "id, timestamp, status, action, targetType, targetId, bookId, conceptId",
+      toolJobs: "id, timestamp, toolName, status, requestId",
+      modelRuns: "id, timestamp, status, requestId, requestedModel, usedModel",
+    });
+    this.version(13).stores({
+      concepts: "id, name, p_learn, lastReviewedAt",
+      misconceptions: "id, concept_id, resolved",
+      sessions: "id, startTime",
+      interactions: "id, sessionId, bookId, conversationId, timestamp",
+      flashcards: "id, front, nextReviewAt, conceptId, bookId",
+      traceLogs: "id, timestamp, action",
+      learningBooks:
+        "id, sessionId, title, userName, source, activeDocumentId, updatedAt",
+      learningBookConcepts: "id, bookId, name, updatedAt",
+      learningEntries: "id, bookId, conversationId, timestamp, userName",
+      learningDocuments: "id, bookId, title, mimeType, updatedAt, createdAt",
+      bookChatThreads: "id, bookId, updatedAt",
+      evidenceEvents:
+        "id, timestamp, conceptId, bookId, conversationId, evidenceType, verified",
+      masteryDeltas:
+        "id, timestamp, conceptId, evidenceEventId, evidenceType, verified",
+      memoryEvents:
+        "id, timestamp, eventType, status, source, sessionId, bookId, conversationId, conceptId",
+      retrievalEvents:
+        "id, timestamp, status, source, activeBookId, pageNumber",
+      correctionEvents:
+        "id, timestamp, status, action, targetType, targetId, bookId, conceptId",
+      artifactRecords:
+        "id, timestamp, artifactType, status, verificationState, source, searchId, toolJobId, bookId, conceptId",
+      citationStates:
+        "id, timestamp, state, claimId, sourceRef, artifactId, domain",
       toolJobs: "id, timestamp, toolName, status, requestId",
       modelRuns: "id, timestamp, status, requestId, requestedModel, usedModel",
     });
