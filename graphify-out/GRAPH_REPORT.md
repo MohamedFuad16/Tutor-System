@@ -1,16 +1,16 @@
-# Graph Report - LearningAI  (2026-06-02)
+# Graph Report - Tutor-System-Architecture-  (2026-06-01)
 
 ## Corpus Check
-- 82 files · ~140,261 words
+- 152 files · ~203,351 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1665 nodes · 2988 edges · 139 communities (105 shown, 34 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 14 edges (avg confidence: 0.8)
+- 1771 nodes · 3103 edges · 160 communities (118 shown, 42 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 8 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a8e94b2e`
+- Built from commit: `acc79bb7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -49,14 +49,17 @@
 - [[_COMMUNITY_Community 31|Community 31]]
 - [[_COMMUNITY_Community 32|Community 32]]
 - [[_COMMUNITY_Community 33|Community 33]]
+- [[_COMMUNITY_Community 34|Community 34]]
 - [[_COMMUNITY_Community 35|Community 35]]
 - [[_COMMUNITY_Community 36|Community 36]]
 - [[_COMMUNITY_Community 37|Community 37]]
+- [[_COMMUNITY_Community 38|Community 38]]
 - [[_COMMUNITY_Community 39|Community 39]]
 - [[_COMMUNITY_Community 40|Community 40]]
 - [[_COMMUNITY_Community 41|Community 41]]
 - [[_COMMUNITY_Community 42|Community 42]]
 - [[_COMMUNITY_Community 43|Community 43]]
+- [[_COMMUNITY_Community 44|Community 44]]
 - [[_COMMUNITY_Community 45|Community 45]]
 - [[_COMMUNITY_Community 46|Community 46]]
 - [[_COMMUNITY_Community 47|Community 47]]
@@ -97,6 +100,7 @@
 - [[_COMMUNITY_Community 83|Community 83]]
 - [[_COMMUNITY_Community 84|Community 84]]
 - [[_COMMUNITY_Community 85|Community 85]]
+- [[_COMMUNITY_Community 86|Community 86]]
 - [[_COMMUNITY_Community 87|Community 87]]
 - [[_COMMUNITY_Community 88|Community 88]]
 - [[_COMMUNITY_Community 89|Community 89]]
@@ -110,6 +114,7 @@
 - [[_COMMUNITY_Community 97|Community 97]]
 - [[_COMMUNITY_Community 98|Community 98]]
 - [[_COMMUNITY_Community 99|Community 99]]
+- [[_COMMUNITY_Community 100|Community 100]]
 - [[_COMMUNITY_Community 101|Community 101]]
 - [[_COMMUNITY_Community 102|Community 102]]
 - [[_COMMUNITY_Community 103|Community 103]]
@@ -143,64 +148,82 @@
 - [[_COMMUNITY_Community 131|Community 131]]
 - [[_COMMUNITY_Community 142|Community 142]]
 - [[_COMMUNITY_Community 143|Community 143]]
+- [[_COMMUNITY_Community 144|Community 144]]
+- [[_COMMUNITY_Community 145|Community 145]]
+- [[_COMMUNITY_Community 146|Community 146]]
+- [[_COMMUNITY_Community 147|Community 147]]
+- [[_COMMUNITY_Community 148|Community 148]]
+- [[_COMMUNITY_Community 149|Community 149]]
+- [[_COMMUNITY_Community 150|Community 150]]
+- [[_COMMUNITY_Community 151|Community 151]]
+- [[_COMMUNITY_Community 152|Community 152]]
+- [[_COMMUNITY_Community 153|Community 153]]
+- [[_COMMUNITY_Community 154|Community 154]]
+- [[_COMMUNITY_Community 155|Community 155]]
+- [[_COMMUNITY_Community 156|Community 156]]
+- [[_COMMUNITY_Community 157|Community 157]]
+- [[_COMMUNITY_Community 158|Community 158]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `db` - 44 edges
 2. `useMotionPreference()` - 35 edges
 3. `useStore` - 35 edges
-4. `dependencies` - 29 edges
-5. `useTranslation()` - 22 edges
-6. `PersistentConcept` - 21 edges
-7. `compact()` - 16 edges
-8. `MemoryOrchestrator` - 16 edges
-9. `scripts` - 16 edges
-10. `createArtifactRecord()` - 15 edges
+4. `useTranslation()` - 22 edges
+5. `PersistentConcept` - 21 edges
+6. `brain architecture implementation program: phase 11 report` - 19 edges
+7. `brain architecture implementation program: phase 1 report` - 17 edges
+8. `Phase 18: Book Reader And Stored Audio Overview` - 17 edges
+9. `Phase 17: Learning-note Artifact Provenance` - 17 edges
+10. `scripts` - 16 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `verifyLocalCitationIntegrity()` --calls--> `result`  [INFERRED]
   src/memory/artifact.records.ts → tests/artifact-records.test.mjs
+- `startApp()` --calls--> `createTutorServerApp()`  [INFERRED]
+  tests/runtime-settings.test.mjs → server.ts
 - `vercelHandler()` --calls--> `App()`  [INFERRED]
   server/vercel-handler.ts → src/App.tsx
-- `searchSerper()` --calls--> `stableId()`  [INFERRED]
-  server.mjs → server/web-search.ts
-- `searchSerper()` --calls--> `abortError()`  [INFERRED]
-  server.mjs → server/web-search.ts
-- `searchSerper()` --calls--> `normalizeRows()`  [INFERRED]
-  server.mjs → server/web-search.ts
+- `startApp()` --calls--> `createTutorServerApp()`  [INFERRED]
+  tests/runtime-settings.test.mjs → server.ts
+- `searchDetectionForExplicitRequest()` --calls--> `detectFreshnessSearch()`  [EXTRACTED]
+  server.ts → server/web-search.ts
 
-## Communities (139 total, 34 thin omitted)
+## Import Cycles
+- 1-file cycle: `src/lib/chapterAudioOverviews.ts -> src/lib/chapterAudioOverviews.ts`
+
+## Communities (160 total, 42 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.08
-Nodes (48): recordGeneratedNotesArtifact(), BKTAttemptOptions, BKTEngine, DEFAULT_BKT, compactSummary(), createLedgerId(), createMasteryDeltaRecords(), createModelSummaryEvidenceRecord() (+40 more)
+Cohesion: 0.06
+Nodes (69): recordGeneratedNotesArtifact(), compactSummary(), createLedgerId(), createMasteryDeltaRecords(), createModelSummaryEvidenceRecord(), MasteryDeltaInput, ModelSummaryEvidenceInput, recordMasteryDelta() (+61 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.05
-Nodes (87): AnimatedMarkdown, AnimatedNumberText(), AnimatePresence(), archiveChatSnapshot(), buildDocumentContext(), ChatArchive, chatThreadIdForBook(), chatTitleFromMessages() (+79 more)
+Cohesion: 0.08
+Nodes (49): AnimatedMarkdown, AnimatedNumberText(), AnimatePresence(), buildDocumentContext(), ChatArchive, codeFileName(), codeLanguageLabel(), createMotionElement() (+41 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.15
-Nodes (45): applyArtifactCitationState(), applyCitationIntegrityResult(), artifactRecordIdFor(), ArtifactStatusInput, ArtifactVerificationInput, artifactVerificationStateForCitationStates(), CitationIntegrityResult, CitationIntegrityState (+37 more)
+Cohesion: 0.16
+Nodes (44): applyArtifactCitationState(), applyCitationIntegrityResult(), artifactRecordIdFor(), ArtifactStatusInput, ArtifactVerificationInput, artifactVerificationStateForCitationStates(), CitationIntegrityResult, CitationIntegrityState (+36 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.09
-Nodes (43): normalizeBrainRuntimeSettings(), BRAIN_RUNTIME_SETTING_LIMITS, BrainWebSearchPolicy, clampInteger(), DEFAULT_BRAIN_RUNTIME_SETTINGS, normalizeBrainRuntimeSettings(), normalizeWebSearchPolicy(), WEB_SEARCH_POLICIES (+35 more)
+Cohesion: 0.06
+Nodes (73): builtInBookAudioOverviewEntries, userBrainArchitectureBook, recordStoredAudioOverviewArtifacts(), BetaDiagnosticItem, BetaDiagnosticOverallStatus, BetaDiagnosticsExportInput, BetaDiagnosticsInput, BetaDiagnosticsSnapshot (+65 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.08
-Nodes (48): PatternCard(), pressDots, themes, SvgBeige(), SvgDark(), SvgOrange(), audioOverviewEntries, builtInBookAudioOverviews (+40 more)
+Cohesion: 0.25
+Nodes (11): BKTAttemptOptions, BKTEngine, DEFAULT_BKT, Flashcard, compact(), flashcardEvidenceConceptId(), FlashcardReviewEvidenceResult, flashcardReviewOutcome() (+3 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.08
-Nodes (29): debugAdminToken, debugTokenFromRequest(), DEEPGRAM_PRICING, deepgramKeyFromRequest(), fetchOpenRouterPricing(), firstHeader(), getOpenRouterServerFallbackKey(), hostNameFromHeader() (+21 more)
+Cohesion: 0.07
+Nodes (30): debugAdminToken, debugTokenFromRequest(), DEEPGRAM_PRICING, deepgramKeyFromRequest(), fetchOpenRouterPricing(), firstHeader(), getOpenRouterServerFallbackKey(), hostNameFromHeader() (+22 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.06
-Nodes (73): ChatPanel(), FloatingSkillsMenu(), SKILLS, Navigation(), PdfViewer(), formatCount(), formatCurrency(), planCardMeta (+65 more)
+Cohesion: 0.05
+Nodes (76): ChatPanel(), FloatingSkillsMenu(), SKILLS, Navigation(), PatternCard(), pressDots, themes, SvgBeige() (+68 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.17
-Nodes (17): chooseFlashcardConcept(), compact(), containsConceptPhrase(), createFlashcardForStorage(), ensurePersistentConceptForLearningBookConcept(), FlashcardConceptResolution, FlashcardStorageContext, GeneratedFlashcardInput (+9 more)
+Cohesion: 0.22
+Nodes (6): PersistentConcept, ProductiveFailureEngine, StruggleState, computeNextRevision(), getUrgentRevisions(), ScaffoldingEngine
 
 ### Community 8 - "Community 8"
 Cohesion: 0.09
@@ -223,16 +246,16 @@ Cohesion: 0.12
 Nodes (15): Architecture Boundaries, Change Workflow, code:text (graphify-out/), code:bash (graphify query "your question" --budget 2000 --graph graphif), code:bash (npm run lint), Core Product Boundaries, Design Philosophy, Graph Location (+7 more)
 
 ### Community 13 - "Community 13"
-Cohesion: 0.12
-Nodes (9): CognitiveLoadMonitor, CognitiveLoadState, IllusionDetector, LearnerModel, db, Misconception, MisconceptionGraph, PrerequisiteDAG (+1 more)
+Cohesion: 0.16
+Nodes (7): CognitiveLoadMonitor, CognitiveLoadState, IllusionDetector, LearnerModel, db, PrerequisiteDAG, ZPDCalculator
 
 ### Community 14 - "Community 14"
-Cohesion: 0.05
-Nodes (39): assistantMessage, codeBlockMatch, createTutorServerApp(), domain, end, explicitSearch, headerToken, hostname (+31 more)
+Cohesion: 0.18
+Nodes (11): createTutorServerApp(), startServer(), createTutorServerApp(), config, getTutorApp(), normalizeVercelCatchAllUrl(), vercelHandler(), form (+3 more)
 
 ### Community 15 - "Community 15"
-Cohesion: 0.25
-Nodes (16): searchSerper(), abortError(), cache, canonicalUrl(), detectFreshnessSearch(), domainFromUrl(), faviconForDomain(), formatSourcesForPrompt() (+8 more)
+Cohesion: 0.27
+Nodes (14): abortError(), cache, canonicalUrl(), domainFromUrl(), faviconForDomain(), formatSourcesForPrompt(), NormalizedWebSource, normalizeRows() (+6 more)
 
 ### Community 16 - "Community 16"
 Cohesion: 0.11
@@ -243,11 +266,11 @@ Cohesion: 0.12
 Nodes (15): 1. Product Purpose, 2. Runtime Stack, 3. Model Inventory, 4. Zustand Store, 5. Dexie Database, 6. Core Views, 7. Graphify Architecture Layer, 8. Maintenance Boundaries (+7 more)
 
 ### Community 18 - "Community 18"
-Cohesion: 0.09
+Cohesion: 0.11
 Nodes (34): args, bookArg, buffer, chapterArg, client, dryRun, execFileAsync, existingFiles (+26 more)
 
 ### Community 19 - "Community 19"
-Cohesion: 0.1
+Cohesion: 0.11
 Nodes (19): bookChapterTitles, bookSource, chapterIndexes, checkedInFiles, existingFiles, expectedBooks, expectedTotal, missingRows (+11 more)
 
 ### Community 20 - "Community 20"
@@ -259,20 +282,20 @@ Cohesion: 0.13
 Nodes (14): compilerOptions, allowImportingTsExtensions, allowJs, experimentalDecorators, isolatedModules, jsx, lib, module (+6 more)
 
 ### Community 22 - "Community 22"
-Cohesion: 0.16
-Nodes (33): addRows(), addTarget(), applyCorrectionPropagation(), buildCorrectionPropagationMetadata(), buildCorrectionPropagationPatch(), cleanList(), collectCorrectionPropagationTargets(), compact() (+25 more)
+Cohesion: 0.10
+Nodes (44): formatCount(), formatCurrency(), planCardMeta, UsageGraphBar(), UsageInsightsPanel(), UserUsagePanel(), AccessMode, estimateServiceMinutes() (+36 more)
 
 ### Community 23 - "Community 23"
 Cohesion: 0.12
 Nodes (16): scripts, audio:overview:dry-run, audio:overview:generate, build, clean, dev, format, format:check (+8 more)
 
 ### Community 24 - "Community 24"
-Cohesion: 0.2
+Cohesion: 0.20
 Nodes (9): 1. Mobile-First Design, 2. Component Layout, 3. Typography Scaling, 4. Testing & Validation, Best Practices, Breakpoints Overview, Responsive Design Guidelines, Tailwind Breakpoint Mapping (+1 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.16
-Nodes (16): ArtifactRecord, BookChatThread, BrainDatabase, CitationState, ConversationInteraction, CorrectionEvent, LearningChapter, LearningEntry (+8 more)
+Cohesion: 0.25
+Nodes (10): BookChatThread, BrainDatabase, LearningChapter, LearningEntry, SessionMemoryRecord, TraceLog, ChatPhase, Message (+2 more)
 
 ### Community 26 - "Community 26"
 Cohesion: 0.35
@@ -287,8 +310,8 @@ Cohesion: 0.15
 Nodes (12): artifact, { artifact, citation }, artifactA, artifactB, citation, citationA, citationB, conflictingCitation (+4 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.42
-Nodes (10): MemoryEvent, clamp01(), cleanSourceIds(), compact(), createMemoryEventRecord(), memoryEventIdFor(), MemoryEventInput, MemoryEventStatusInput (+2 more)
+Cohesion: 0.13
+Nodes (15): brain architecture implementation program: phase 16 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+7 more)
 
 ### Community 30 - "Community 30"
 Cohesion: 0.44
@@ -306,6 +329,10 @@ Nodes (5): Acceptance, Constraints, Packet Y: Stored Audio Overview Generator, S
 Cohesion: 0.33
 Nodes (5): Deferred, Integrated Work, Packet Y Result: Stored Audio Overview Generator, Status, Verification
 
+### Community 34 - "Community 34"
+Cohesion: 0.13
+Nodes (15): Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Integration Decisions, Phase 18: Book Reader And Stored Audio Overview (+7 more)
+
 ### Community 35 - "Community 35"
 Cohesion: 0.15
 Nodes (12): Architecture Boundaries, Change Workflow, Core Product Boundaries, Design Philosophy, Graph Location, Graphify-First Development, Local Commands, Objective (+4 more)
@@ -317,6 +344,10 @@ Nodes (12): approval, granted, notes, required, created_at, packets, slug, statu
 ### Community 37 - "Community 37"
 Cohesion: 0.25
 Nodes (7): citationPatch, event, evidencePatch, id, masteryPatch, metadata, record
+
+### Community 38 - "Community 38"
+Cohesion: 0.15
+Nodes (13): Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Phase 19: Stored Audio Overview Provenance, Remaining Work (+5 more)
 
 ### Community 39 - "Community 39"
 Cohesion: 0.17
@@ -338,24 +369,28 @@ Nodes (4): calls, card, engine, updateConceptAttempt()
 Cohesion: 0.18
 Nodes (10): Branching Rules, Branching Rules, Completion Audit, Execution Rules, Integration Checklist, Orchestration: study view fixes, Packet Prompts, Packet Prompts (+2 more)
 
+### Community 44 - "Community 44"
+Cohesion: 0.33
+Nodes (9): ExpiredIcon(), FailedIcon(), PendingIcon(), ProgressIcon(), ReviewIcon(), Status, StatusBadge(), SubmittedIcon() (+1 more)
+
 ### Community 45 - "Community 45"
-Cohesion: 0.5
+Cohesion: 0.50
 Nodes (3): notCheckedSnapshot, payload, snapshot
 
 ### Community 46 - "Community 46"
-Cohesion: 0.4
+Cohesion: 0.40
 Nodes (3): concept, persistent, resolution
 
 ### Community 47 - "Community 47"
-Cohesion: 0.5
+Cohesion: 0.50
 Nodes (3): controller, prompt, seenKeys
 
 ### Community 50 - "Community 50"
-Cohesion: 0.2
+Cohesion: 0.20
 Nodes (9): env, browser, es2021, extends, parser, plugins, version, settings (+1 more)
 
 ### Community 59 - "Community 59"
-Cohesion: 0.2
+Cohesion: 0.20
 Nodes (9): 1. Mobile-First Design, 2. Component Layout, 3. Typography Scaling, 4. Testing & Validation, Best Practices, Breakpoints Overview, Responsive Design Guidelines, Tailwind Breakpoint Mapping (+1 more)
 
 ### Community 60 - "Community 60"
@@ -411,12 +446,12 @@ Cohesion: 0.25
 Nodes (7): Graphify Routing, Implementation, Packet P: Correction Request Ledger, Remaining Work, Scope, Sidecar Notes, Verification
 
 ### Community 73 - "Community 73"
-Cohesion: 0.15
-Nodes (13): brain architecture implementation program: phase 11 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+5 more)
+Cohesion: 0.11
+Nodes (19): brain architecture implementation program: phase 11 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+11 more)
 
 ### Community 74 - "Community 74"
-Cohesion: 0.17
-Nodes (14): brain architecture implementation program: phase 1 report, brain architecture implementation program: phase 20 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work (+6 more)
+Cohesion: 0.10
+Nodes (26): brain architecture implementation program: phase 1 report, brain architecture implementation program: phase 20 report, brain architecture implementation program: phase 22 report, Graphify Context, Graphify Context, Graphify Context, Graphify Context, Integration Decisions (+18 more)
 
 ### Community 75 - "Community 75"
 Cohesion: 0.29
@@ -439,60 +474,64 @@ Cohesion: 0.29
 Nodes (6): Graphify Routing, Implementation, Packet O: Durable Retrieval Events, Remaining Work, Scope, Verification
 
 ### Community 80 - "Community 80"
-Cohesion: 0.05
-Nodes (42): brain architecture implementation program: phase 16 report, Graphify Context, Graphify Context, Graphify Context, Graphify Context, Graphify Context, Graphify Context, Graphify Context (+34 more)
+Cohesion: 0.12
+Nodes (16): Graphify Context, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Integration Decisions (+8 more)
 
 ### Community 81 - "Community 81"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 10 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 10 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 82 - "Community 82"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 12 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 12 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 83 - "Community 83"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 13 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.06
+Nodes (31): brain architecture implementation program: phase 13 report, brain architecture implementation program: phase 15 report, Graphify Context, Graphify Context, Graphify Context, Graphify Context, Graphify Context, Graphify Context (+23 more)
 
 ### Community 84 - "Community 84"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 14 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 14 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 85 - "Community 85"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 15 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.42
+Nodes (8): buildTutorInteractionContext(), countWords(), createTutorInteractionSnapshot(), elapsedFrom(), responsePolicyForMode(), SnapshotInput, TutorInteractionMode, TutorInteractionSnapshot
+
+### Community 86 - "Community 86"
+Cohesion: 0.22
+Nodes (9): archiveChatSnapshot(), chatThreadIdForBook(), chatTitleFromMessages(), defaultChatMessages(), meaningfulChatMessages(), normalizeChatMessages(), persistBookChatThread(), readChatArchives() (+1 more)
 
 ### Community 87 - "Community 87"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 2 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 2 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 88 - "Community 88"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 3 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 3 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 89 - "Community 89"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 4 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 4 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 90 - "Community 90"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 5 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 5 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 91 - "Community 91"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 6 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 6 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 92 - "Community 92"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 7 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 7 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 93 - "Community 93"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 8 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 8 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 94 - "Community 94"
-Cohesion: 0.18
-Nodes (11): brain architecture implementation program: phase 9 report, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Remaining Work, Remaining Work, Scope (+3 more)
+Cohesion: 0.12
+Nodes (16): brain architecture implementation program: phase 9 report, Graphify Context, Graphify Context, Graphify Context, Integration Decisions, Integration Decisions, Integration Decisions, Remaining Work (+8 more)
 
 ### Community 95 - "Community 95"
 Cohesion: 0.33
@@ -515,56 +554,88 @@ Cohesion: 0.33
 Nodes (5): Integration Notes, Out of Scope, Packet R Result: Beta diagnostics and local export, Summary, Verification
 
 ### Community 101 - "Community 101"
-Cohesion: 0.4
+Cohesion: 0.40
 Nodes (4): description, majorCapabilities, name, requestFramePermissions
 
 ### Community 102 - "Community 102"
-Cohesion: 0.4
+Cohesion: 0.40
 Nodes (4): Accepted, Packet S Result: Correction propagation and traceability, Rejected, Verification So Far
 
 ### Community 103 - "Community 103"
-Cohesion: 0.4
+Cohesion: 0.40
 Nodes (4): Accepted, Packet T Result: Local citation integrity verifier, Rejected, Verification
 
 ### Community 104 - "Community 104"
-Cohesion: 0.4
+Cohesion: 0.40
 Nodes (4): Accepted, Packet U Result: Flashcard artifact provenance, Rejected, Verification
 
 ### Community 105 - "Community 105"
-Cohesion: 0.4
+Cohesion: 0.40
 Nodes (4): Accepted, Packet V Result: Learning-note artifact provenance, Rejected, Verification
 
 ### Community 106 - "Community 106"
-Cohesion: 0.4
+Cohesion: 0.40
 Nodes (4): Accepted, Packet W Result: Book reader and stored audio overview, Rejected, Verification
 
 ### Community 142 - "Community 142"
-Cohesion: 0.4
+Cohesion: 0.40
 Nodes (4): Boundaries, Objective, Packet X: Stored Audio Overview Provenance, Scope
 
 ### Community 143 - "Community 143"
-Cohesion: 0.4
+Cohesion: 0.40
 Nodes (4): Implemented, Pending Verification, Result X: Stored Audio Overview Provenance, Status
 
+### Community 145 - "Community 145"
+Cohesion: 0.29
+Nodes (6): brain architecture implementation program: phase 21 report, Graphify Context, Integration Decisions, Remaining Work, Scope, Verification Evidence
+
+### Community 146 - "Community 146"
+Cohesion: 0.38
+Nodes (7): compactModel(), formatCount(), formatCurrency(), formatSeconds(), MessageUsageFooter(), UsageAnalyticsStrip(), useAnimatedNumber()
+
+### Community 147 - "Community 147"
+Cohesion: 0.33
+Nodes (5): Acceptance, Constraints, Packet Z: Learning-note Integrity Verifier, Scope, Write Scope
+
+### Community 148 - "Community 148"
+Cohesion: 0.33
+Nodes (5): Integrated Work, Packet Z Result: Learning-note Integrity Verifier, Remaining Work, Status, Verification
+
+### Community 149 - "Community 149"
+Cohesion: 0.60
+Nodes (3): createTutorHighlighter(), ShikiHighlighter(), TutorHighlighter
+
+### Community 150 - "Community 150"
+Cohesion: 0.40
+Nodes (4): Packet AA: all-chapter audio guides, Scope, Verification Plan, Write Scope
+
+### Community 151 - "Community 151"
+Cohesion: 0.40
+Nodes (4): Boundaries, Packet AA Result: all-chapter audio guides, Result, Verification Evidence
+
+### Community 152 - "Community 152"
+Cohesion: 0.50
+Nodes (3): blockedEvent, readActivity(), startApp()
+
 ## Knowledge Gaps
-- **712 isolated node(s):** `parsed`, `rows`, `seen`, `results`, `title` (+707 more)
+- **797 isolated node(s):** `parser`, `plugins`, `extends`, `version`, `browser` (+792 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **42 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `db` connect `Community 13` to `Community 0`, `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 6`, `Community 7`, `Community 22`, `Community 25`, `Community 26`, `Community 29`, `Community 30`, `Community 31`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
-- **Why does `BrainRuntimeSettings` connect `Community 6` to `Community 9`, `Community 3`, `Community 5`?**
+- **Why does `db` connect `Community 13` to `Community 0`, `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 6`, `Community 7`, `Community 144`, `Community 25`, `Community 26`, `Community 30`, `Community 31`?**
+  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **Why does `BrainRuntimeSettings` connect `Community 22` to `Community 9`, `Community 3`, `Community 5`?**
   _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `DEFAULT_BRAIN_RUNTIME_SETTINGS` connect `Community 3` to `Community 9`, `Community 5`, `Community 6`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **What connects `parsed`, `rows`, `seen` to the rest of the system?**
-  _712 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `DEFAULT_BRAIN_RUNTIME_SETTINGS` connect `Community 22` to `Community 9`, `Community 3`, `Community 5`?**
+  _High betweenness centrality (0.015) - this node is a cross-community bridge._
+- **What connects `parser`, `plugins`, `extends` to the rest of the system?**
+  _797 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.060398078242964996 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08078431372549019 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.09 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06481481481481481 - nodes in this community are weakly interconnected._
