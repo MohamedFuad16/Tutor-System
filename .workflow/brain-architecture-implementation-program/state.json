@@ -127,16 +127,23 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/longterm.memory.ts, src/memory/artifact.records.ts, src/components/ChatPanel.tsx, src/views/AdminView.tsx, tests/artifact-records.test.mjs, package.json, graphify-out/*"
+    },
+    {
+      "id": "R",
+      "name": "Beta diagnostics and local export",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, package.json, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_12_completed",
+    "status": "phase_13_completed",
     "checks": [
       "npm run lint",
       "npm run test",
       "npm run build",
       "npm run format:check (known RevisionView.tsx formatting warning expected)",
-      "browser QA for Admin Artifacts & Citations on desktop and mobile",
+      "browser QA for Admin Beta Diagnostics on desktop and mobile",
       "graphify update . --force",
       "npm run graphify:tree",
       "graphify query smoke",

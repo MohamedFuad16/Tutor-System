@@ -468,3 +468,40 @@ Phase 12 adds durable local source artifact and citation-state tracking. It turn
 - Link generated notes, charts, code, flashcards, and other artifacts into the same `ArtifactRecord` table.
 - Add non-destructive beta diagnostics/export.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 13 report
+
+## Scope
+
+Phase 13 adds local beta diagnostics and a capped JSON export path. It turns the Admin observability ledgers into reviewable readiness gates for local beta work without introducing AWS/cloud synchronization.
+
+## Graphify Context
+
+- Graphify routed the slice through `AdminView()`, `src/views/AdminView.tsx`, `src/memory/longterm.memory.ts`, `src/memory/artifact.records.ts`, correction events, model runs, retrieval events, and runtime settings.
+- The architecture book calls out beta gates, artifact verification state, correction/export propagation, and cloud boundaries. This phase implements a local diagnostic snapshot and explicitly keeps cloud sync deferred.
+
+## Integration Decisions
+
+- Added `src/memory/beta.diagnostics.ts` for pure readiness snapshot and export payload building.
+- Added Admin `Beta Diagnostics` with overall status, gate cards, export contents, runtime context, and out-of-scope boundaries.
+- Added a local browser JSON export that packages currently loaded Admin ledger samples with `localOnly` metadata.
+- Kept the export non-destructive and local-only. It is not a backup, cloud migration, or production-readiness certificate.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 51 tests.
+- `npm run build`: passed.
+- `npm run format:check`: expected failure only on pre-existing `src/views/RevisionView.tsx` formatting.
+- Browser QA on `http://127.0.0.1:3100`: Admin `Beta Diagnostics` rendered on desktop and mobile, export feedback appeared after clicking `Export diagnostics JSON`, document width matched viewport width, and browser warning/error logs were 0.
+- `graphify update . --force`: regenerated the code architecture graph with 703 nodes, 1179 edges, and 55 communities after temporarily stashing only unrelated `PdfViewer`/`StudyView` dirty edits.
+- `npm run graphify:tree`: passed.
+- Graphify artifact smoke found no conflict markers, `/private/tmp` paths, or phase stash markers in checked graph artifacts.
+- Graphify query smoke returned `beta.diagnostics.ts`, `buildBetaDiagnosticsSnapshot()`, `buildBetaDiagnosticsExport()`, and `AdminView()`.
+
+## Remaining Work
+
+- Add an explicit local citation verifier before any source can move from `checking` to `verified`.
+- Link generated notes, charts, code, flashcards, and other artifacts into the same `ArtifactRecord` table.
+- Propagate correction/deletion state into derived memories, embeddings, graph facts, mastery deltas, tutor preferences, and exports where practical.
+- AWS/cloud synchronization remains out of scope until beta testing.

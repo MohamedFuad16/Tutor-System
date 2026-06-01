@@ -25,9 +25,11 @@ import {
   Wrench,
   Gauge,
   AlertTriangle,
+  Download,
   RefreshCw,
   RotateCcw,
   Search,
+  ShieldCheck,
   SlidersHorizontal,
   Cpu,
   Flag,
@@ -36,6 +38,10 @@ import {
 import { gsap } from "gsap";
 import { useStore } from "../store";
 import { useMotionPreference } from "../hooks/useMotionPreference";
+import {
+  buildBetaDiagnosticsExport,
+  buildBetaDiagnosticsSnapshot,
+} from "../memory/beta.diagnostics";
 import { recordCorrectionEvent } from "../memory/correction.events";
 import {
   BRAIN_RUNTIME_SETTING_LIMITS,
@@ -51,6 +57,7 @@ type AdminTab =
   | "memory"
   | "corrections"
   | "artifacts"
+  | "diagnostics"
   | "retrieval"
   | "evidence"
   | "tuning"
@@ -168,11 +175,15 @@ const statusTone = (status: string) => {
     return "border-red-200 bg-red-50 text-red-700";
   if (
     status === "fallback" ||
+    status === "watch" ||
+    status === "needs_review" ||
     status === "unavailable" ||
     status === "unsupported" ||
     status === "stale"
   )
     return "border-orange-200 bg-orange-50 text-orange-700";
+  if (status === "deferred")
+    return "border-violet-200 bg-violet-50 text-violet-700";
   if (status === "dismissed")
     return "border-zinc-300 bg-zinc-100 text-zinc-600";
   return "border-blue-200 bg-blue-50 text-blue-700";
@@ -324,6 +335,8 @@ export function AdminView() {
   const [correctionReason, setCorrectionReason] = useState("");
   const [correctionFeedback, setCorrectionFeedback] = useState("");
   const [correctionError, setCorrectionError] = useState("");
+  const [diagnosticsExportFeedback, setDiagnosticsExportFeedback] =
+    useState("");
 
   // Auto-scroll console
   useEffect(() => {
@@ -588,6 +601,30 @@ export function AdminView() {
     },
     {},
   );
+  const betaDiagnosticsSnapshot = buildBetaDiagnosticsSnapshot({
+    generatedAt: activityPayload?.generatedAt,
+    learningBooks: learningBooks.length,
+    mappedConcepts: learningBookConcepts.length,
+    memoryEvents: memoryEventCount,
+    retrievalEvents: retrievalEventCount,
+    failedRetrievalEvents,
+    modelRuns: modelRunCount,
+    blockedOrFailedModelRuns,
+    fallbackModelRuns,
+    toolJobs: toolJobCount,
+    artifactRecords: artifactRecordCount,
+    citationStates: citationStateCount,
+    checkingCitationStates,
+    unavailableCitationStates,
+    verifiedCitationStates,
+    correctionEvents: correctionEventCount,
+    openCorrectionEvents,
+    evidenceEvents: evidenceEventCount,
+    masteryDeltas: masteryDeltaCount,
+    traceEvents: traceCount,
+    webSearches: webUsage.requests,
+    runtimeSettings: brainRuntimeSettings,
+  });
   const mappedConceptCount = learningBookConcepts.length;
   const tracedBookCount = learningBooks.filter(
     (book) => (conceptsByBook[book.id] || []).length > 0,
@@ -675,6 +712,49 @@ export function AdminView() {
     );
   };
 
+  const downloadBetaDiagnostics = () => {
+    const payload = buildBetaDiagnosticsExport({
+      snapshot: betaDiagnosticsSnapshot,
+      metadata: {
+        activeLearningBookId,
+        activeProject,
+        aiModel,
+        exportedFrom: "AdminView",
+      },
+      ledgers: {
+        learningBooks,
+        learningBookConcepts,
+        learningEntries,
+        memoryEvents,
+        retrievalEvents,
+        correctionEvents,
+        artifactRecords,
+        citationStates,
+        evidenceEvents,
+        masteryDeltas,
+        modelRuns,
+        toolJobs,
+        traceLogs: logs || [],
+        systemEvents: recentSystemEvents,
+      },
+    });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    link.href = url;
+    link.download = `tutor-beta-diagnostics-${stamp}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setDiagnosticsExportFeedback(
+      `Prepared local diagnostics export with ${betaDiagnosticsSnapshot.summary.totalRows} rows.`,
+    );
+  };
+
   const submitManualCorrection = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void recordCorrectionRequest({
@@ -735,6 +815,7 @@ export function AdminView() {
   }, [
     activeTab,
     artifactRecords.length,
+    betaDiagnosticsSnapshot.summary.totalRows,
     citationStates.length,
     correctionEvents.length,
     evidenceEvents.length,
@@ -812,6 +893,15 @@ export function AdminView() {
               <BookOpen size={16} />
               <span className="line-clamp-1 leading-snug">
                 Source Artifacts
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab("diagnostics")}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "diagnostics" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+            >
+              <ShieldCheck size={16} />
+              <span className="line-clamp-1 leading-snug">
+                Beta Diagnostics
               </span>
             </button>
             <button
@@ -893,14 +983,15 @@ export function AdminView() {
                   mark-wrong and deletion-review intents,{" "}
                   <strong>Source Artifacts</strong> to inspect captured web
                   source cards and citation states,{" "}
-                  <strong>Retrieval Events</strong> to inspect semantic memory
-                  context selection, <strong>Evidence Ledger</strong> to inspect
-                  model-summary evidence and mastery deltas,{" "}
-                  <strong>Runtime Tuning</strong> for local behavior controls,{" "}
-                  <strong>DeepSeek Trace</strong> for persisted tutor updates,
-                  or switch to the <strong>Server Console</strong> to monitor
-                  live backend traffic, WebSocket streams, and TTS generation
-                  logs.
+                  <strong>Beta Diagnostics</strong> to export a local readiness
+                  snapshot, <strong>Retrieval Events</strong> to inspect
+                  semantic memory context selection,{" "}
+                  <strong>Evidence Ledger</strong> to inspect model-summary
+                  evidence and mastery deltas, <strong>Runtime Tuning</strong>{" "}
+                  for local behavior controls, <strong>DeepSeek Trace</strong>{" "}
+                  for persisted tutor updates, or switch to the{" "}
+                  <strong>Server Console</strong> to monitor live backend
+                  traffic, WebSocket streams, and TTS generation logs.
                 </p>
               </div>
 
@@ -911,6 +1002,7 @@ export function AdminView() {
                   { id: "memory", label: "Memory", icon: Network },
                   { id: "corrections", label: "Correct", icon: Flag },
                   { id: "artifacts", label: "Sources", icon: BookOpen },
+                  { id: "diagnostics", label: "Beta", icon: ShieldCheck },
                   { id: "retrieval", label: "Retrieval", icon: Search },
                   { id: "evidence", label: "Evidence", icon: BrainCircuit },
                   {
@@ -953,15 +1045,17 @@ export function AdminView() {
                           ? "Memory Control"
                           : activeTab === "artifacts"
                             ? "Source Grounding"
-                            : activeTab === "retrieval"
-                              ? "Retrieval Audit"
-                              : activeTab === "evidence"
-                                ? "Learner Evidence"
-                                : activeTab === "tuning"
-                                  ? "Runtime Controls"
-                                  : activeTab === "traces"
-                                    ? "Diagnostics"
-                                    : "Runtime Environment"}
+                            : activeTab === "diagnostics"
+                              ? "Beta Readiness"
+                              : activeTab === "retrieval"
+                                ? "Retrieval Audit"
+                                : activeTab === "evidence"
+                                  ? "Learner Evidence"
+                                  : activeTab === "tuning"
+                                    ? "Runtime Controls"
+                                    : activeTab === "traces"
+                                      ? "Diagnostics"
+                                      : "Runtime Environment"}
                 </span>
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-2 font-serif leading-[1.15]">
@@ -975,15 +1069,17 @@ export function AdminView() {
                             ? "Correction Requests"
                             : activeTab === "artifacts"
                               ? "Artifacts & Citations"
-                              : activeTab === "retrieval"
-                                ? "Retrieval Events"
-                                : activeTab === "evidence"
-                                  ? "Evidence Ledger"
-                                  : activeTab === "tuning"
-                                    ? "Runtime Tuning"
-                                    : activeTab === "traces"
-                                      ? "DeepSeek Trace Ledger"
-                                      : "Live Server Console"}
+                              : activeTab === "diagnostics"
+                                ? "Beta Diagnostics"
+                                : activeTab === "retrieval"
+                                  ? "Retrieval Events"
+                                  : activeTab === "evidence"
+                                    ? "Evidence Ledger"
+                                    : activeTab === "tuning"
+                                      ? "Runtime Tuning"
+                                      : activeTab === "traces"
+                                        ? "DeepSeek Trace Ledger"
+                                        : "Live Server Console"}
                   </h1>
                   {activeTab === "activity" && (
                     <div
@@ -2574,6 +2670,267 @@ export function AdminView() {
                               AWS/cloud synchronization remains deferred until
                               beta testing.
                             </div>
+                          </div>
+                        </section>
+                      </div>
+                    </section>
+                  </div>
+                ) : activeTab === "diagnostics" ? (
+                  <div className="flex flex-col gap-8 font-sans">
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                            <ShieldCheck size={13} /> Local Beta Readiness
+                          </div>
+                          <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
+                            Diagnostic snapshot and export
+                          </h2>
+                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                            A non-destructive local readiness snapshot across
+                            model runs, tool jobs, memory writes, retrieval,
+                            correction requests, source artifacts, citation
+                            states, and mastery evidence. It packages what
+                            exists in the browser now; it does not sync to AWS
+                            or claim cloud-beta readiness.
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-start gap-2 sm:items-end">
+                          <span
+                            className={`rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${statusTone(betaDiagnosticsSnapshot.overallStatus)}`}
+                          >
+                            {betaDiagnosticsSnapshot.overallStatus.replace(
+                              /_/g,
+                              " ",
+                            )}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={downloadBetaDiagnostics}
+                            className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                          >
+                            <Download size={13} />
+                            Export diagnostics JSON
+                          </button>
+                        </div>
+                      </div>
+
+                      {diagnosticsExportFeedback && (
+                        <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
+                          {diagnosticsExportFeedback}
+                        </div>
+                      )}
+
+                      <div className="grid gap-3 md:grid-cols-5">
+                        {[
+                          [
+                            "Local rows",
+                            betaDiagnosticsSnapshot.summary.totalRows,
+                          ],
+                          [
+                            "Ready gates",
+                            betaDiagnosticsSnapshot.summary.ready,
+                          ],
+                          [
+                            "Watch gates",
+                            betaDiagnosticsSnapshot.summary.watch,
+                          ],
+                          [
+                            "Blocked gates",
+                            betaDiagnosticsSnapshot.summary.blocked,
+                          ],
+                          [
+                            "Deferred gates",
+                            betaDiagnosticsSnapshot.summary.deferred,
+                          ],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
+                          >
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              {label}
+                            </div>
+                            <div className="mt-2 truncate text-lg font-semibold tabular-nums text-zinc-900">
+                              {value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+                      <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                          <div>
+                            <h3 className="text-xl font-serif font-medium text-zinc-900">
+                              Readiness gates
+                            </h3>
+                            <p className="mt-1 text-sm text-zinc-500 font-serif">
+                              These are local beta review gates, not launch
+                              certification. `Watch` means inspect before a
+                              broader beta; `blocked` means fix the underlying
+                              ledger failures first.
+                            </p>
+                          </div>
+                          <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                            {new Date(
+                              betaDiagnosticsSnapshot.generatedAt,
+                            ).toLocaleTimeString([], {
+                              hour12: false,
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          {betaDiagnosticsSnapshot.items.map((item, index) => (
+                            <article
+                              key={item.id}
+                              className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 16 ? "admin-animated-item" : ""}`}
+                            >
+                              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                <div className="flex min-w-0 gap-3">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-blue-600">
+                                    {item.status === "blocked" ? (
+                                      <AlertTriangle size={17} />
+                                    ) : item.status === "deferred" ? (
+                                      <Clock size={17} />
+                                    ) : (
+                                      <ShieldCheck size={17} />
+                                    )}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                        {item.title}
+                                      </h4>
+                                      <span
+                                        className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(item.status)}`}
+                                      >
+                                        {item.status.replace(/_/g, " ")}
+                                      </span>
+                                    </div>
+                                    <p className="mt-1 text-sm leading-relaxed text-zinc-600 font-serif">
+                                      {item.summary}
+                                    </p>
+                                    {item.action && (
+                                      <p className="mt-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs leading-relaxed text-zinc-500 font-serif">
+                                        {item.action}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                {item.count !== undefined && (
+                                  <div className="shrink-0 text-right">
+                                    <div className="text-lg font-semibold tabular-nums text-zinc-900">
+                                      {item.count}
+                                    </div>
+                                    <div className="text-[10px] font-mono uppercase tracking-[0.12em] text-zinc-500">
+                                      rows
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-4">
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Export contents
+                          </h3>
+                          <p className="mt-1 text-sm leading-relaxed text-zinc-500 font-serif">
+                            The JSON export is capped to the local rows already
+                            loaded in Admin. It is meant for beta review and
+                            debugging, not for backup or cloud migration.
+                          </p>
+                          <div className="mt-4 space-y-2">
+                            {[
+                              ["Learning books", learningBooks.length],
+                              ["Mapped concepts", learningBookConcepts.length],
+                              ["Learning entries", learningEntries.length],
+                              ["Memory events", memoryEvents.length],
+                              ["Retrieval events", retrievalEvents.length],
+                              ["Correction requests", correctionEvents.length],
+                              ["Source artifacts", artifactRecords.length],
+                              ["Citation states", citationStates.length],
+                              ["Evidence events", evidenceEvents.length],
+                              ["Mastery deltas", masteryDeltas.length],
+                              ["Model runs", modelRuns.length],
+                              ["Tool jobs", toolJobs.length],
+                              ["Trace logs", logs?.length || 0],
+                              ["System events", recentSystemEvents.length],
+                            ].map(([label, value]) => (
+                              <div
+                                key={label}
+                                className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2"
+                              >
+                                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                  {label}
+                                </span>
+                                <span className="min-w-0 truncate text-right text-xs font-semibold text-zinc-900">
+                                  {value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Runtime context
+                          </h3>
+                          <div className="mt-4 space-y-2">
+                            {[
+                              ["Active book", activeLearningBookId || "none"],
+                              ["Project", activeProject],
+                              ["Current model", aiModel],
+                              [
+                                "Web policy",
+                                brainRuntimeSettings.webSearchPolicy,
+                              ],
+                              [
+                                "Tool loops",
+                                brainRuntimeSettings.toolIterationLimit,
+                              ],
+                              [
+                                "Memory concepts",
+                                brainRuntimeSettings.memoryConceptLimit,
+                              ],
+                            ].map(([label, value]) => (
+                              <div
+                                key={label}
+                                className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2"
+                              >
+                                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                  {label}
+                                </span>
+                                <span className="min-w-0 truncate text-right text-xs font-semibold text-zinc-900">
+                                  {value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Out of scope
+                          </h3>
+                          <div className="mt-4 grid gap-2 text-sm text-zinc-600 font-serif">
+                            {betaDiagnosticsSnapshot.outOfScope.map((item) => (
+                              <div
+                                key={item}
+                                className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
+                              >
+                                {item}
+                              </div>
+                            ))}
                           </div>
                         </section>
                       </div>

@@ -1,0 +1,94 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+const { buildBetaDiagnosticsExport, buildBetaDiagnosticsSnapshot } =
+  await import("../.tmp-test/beta.diagnostics.mjs");
+
+test("beta diagnostics mark clean local ledgers as export-ready while cloud stays deferred", () => {
+  const snapshot = buildBetaDiagnosticsSnapshot(
+    {
+      learningBooks: 2,
+      mappedConcepts: 8,
+      memoryEvents: 5,
+      retrievalEvents: 3,
+      modelRuns: 4,
+      toolJobs: 1,
+      artifactRecords: 2,
+      citationStates: 2,
+      verifiedCitationStates: 2,
+      correctionEvents: 1,
+      evidenceEvents: 3,
+      masteryDeltas: 1,
+      traceEvents: 2,
+      runtimeSettings: { webSearchPolicy: "source_first" },
+    },
+    new Date("2026-06-01T00:00:00.000Z"),
+  );
+
+  assert.equal(snapshot.generatedAt, "2026-06-01T00:00:00.000Z");
+  assert.equal(snapshot.localOnly, true);
+  assert.equal(snapshot.overallStatus, "ready");
+  assert.equal(snapshot.summary.blocked, 0);
+  assert.equal(snapshot.summary.deferred, 1);
+  assert.equal(
+    snapshot.items.find((item) => item.id === "cloud_sync")?.status,
+    "deferred",
+  );
+  assert.deepEqual(snapshot.runtimeSettings, {
+    webSearchPolicy: "source_first",
+  });
+});
+
+test("beta diagnostics escalate failed model and retrieval rows", () => {
+  const snapshot = buildBetaDiagnosticsSnapshot({
+    memoryEvents: 1,
+    learningBooks: 1,
+    modelRuns: 2,
+    blockedOrFailedModelRuns: 1,
+    retrievalEvents: 2,
+    failedRetrievalEvents: 1,
+    artifactRecords: 1,
+    citationStates: 1,
+    checkingCitationStates: 1,
+  });
+
+  assert.equal(snapshot.overallStatus, "blocked");
+  assert.equal(snapshot.summary.blocked, 2);
+  assert.equal(
+    snapshot.items.find((item) => item.id === "model_behavior")?.status,
+    "blocked",
+  );
+  assert.equal(
+    snapshot.items.find((item) => item.id === "semantic_retrieval")?.status,
+    "blocked",
+  );
+  assert.equal(
+    snapshot.items.find((item) => item.id === "source_grounding")?.status,
+    "watch",
+  );
+});
+
+test("beta diagnostics export preserves local-only scope and ledger samples", () => {
+  const snapshot = buildBetaDiagnosticsSnapshot(
+    {
+      memoryEvents: 1,
+      learningBooks: 1,
+    },
+    new Date("2026-06-01T00:00:00.000Z"),
+  );
+  const payload = buildBetaDiagnosticsExport({
+    snapshot,
+    metadata: { activeBook: "book:general-study" },
+    ledgers: {
+      memoryEvents: [{ id: "memory-1" }],
+      modelRuns: [],
+    },
+  });
+
+  assert.equal(payload.schema, "tutor.beta-diagnostics.v1");
+  assert.equal(payload.localOnly, true);
+  assert.equal(payload.exportScope, "local-indexeddb-sample");
+  assert.deepEqual(payload.metadata, { activeBook: "book:general-study" });
+  assert.deepEqual(payload.ledgers.memoryEvents, [{ id: "memory-1" }]);
+  assert.ok(payload.outOfScope.includes("AWS/cloud synchronization"));
+});
