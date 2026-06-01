@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T14:58:58.302Z",
+    "generatedAt": "2026-05-29T11:11:31.349Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "9abf5b4139cc5ec1007a632efa4dbb2dea4bdfba",
+      "commit": "2ed6b035bd30f5c512e4502b73df81eaac8dc180",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "31a027861891e45d04aae40330ee5fa728578068f4eccce8acdce5883fa2cfb6"
+    "sourceHash": "b4a0d6d8f3bdc134373bcf831767836ab0a7c714888553c4a0378f5899953022"
   },
   "files": {
     "generate-brain.ts": {
@@ -162,7 +162,7 @@
     },
     "server.ts": {
       "file": "server.ts",
-      "hash": "b917cd667edf32cea4cab391352e9aac7dc03dd6e366bf0fb1ef92891e4925ba",
+      "hash": "facd7f015b5630488fd461f21b2ab1525f15cd5bc302933cc932e73ec6329a4c",
       "imports": [
         {
           "specifier": "dotenv",
@@ -540,7 +540,7 @@
     },
     "src/types.ts": {
       "file": "src/types.ts",
-      "hash": "a34c71a9355c146f4008c52c87283f88a5ae16d8310831b9fbdb5c34540f1613",
+      "hash": "a3e3c82c46e43e372cc3645351c39f98c2d3f91997b407f7bf3b5ad309536c15",
       "imports": [],
       "exports": [
         "ChatPhase",
@@ -808,53 +808,6 @@
         "ROOT",
         "DOCS_DIR",
         "SOURCES"
-      ],
-      "classes": [],
-      "components": [],
-      "hooks": [],
-      "storeSelectors": [],
-      "storeWrites": [],
-      "apiCalls": [],
-      "websocketCalls": [],
-      "databaseReads": [],
-      "databaseWrites": [],
-      "renders": [],
-      "routes": []
-    },
-    "brain/debug/ui-regression-probe.ts": {
-      "file": "brain/debug/ui-regression-probe.ts",
-      "hash": "2a753da0d2a4869f8528e538ac49478967f78b32ed8baacd43b6eb5025cdac2c",
-      "imports": [
-        {
-          "specifier": "child_process",
-          "external": "child_process"
-        },
-        {
-          "specifier": "fs",
-          "external": "fs"
-        },
-        {
-          "specifier": "path",
-          "external": "path"
-        },
-        {
-          "specifier": "playwright",
-          "external": "playwright"
-        }
-      ],
-      "exports": [],
-      "functions": [
-        "writeJson",
-        "waitForServer",
-        "ensureServer",
-        "measureFrames",
-        "stopServer",
-        "main"
-      ],
-      "variables": [
-        "ROOT",
-        "SERVER_URL",
-        "OUTPUT_PATH"
       ],
       "classes": [],
       "components": [],
@@ -1622,7 +1575,7 @@
     },
     "src/components/ChatPanel.tsx": {
       "file": "src/components/ChatPanel.tsx",
-      "hash": "719d0c6983a9ce4a22904e88c801dbe7d85935fa7565fb4d9502ae572d7ad659",
+      "hash": "72f340a32aa91f54d6287db2e75e6ea821b361d48d14681c7c622b2bbaaaadac",
       "imports": [
         {
           "specifier": "react",
@@ -1717,6 +1670,24 @@
         "AnimatedNumberText",
         "UsageAnalyticsStrip",
         "GeminiVoicePill",
+        "buildBlobPath",
+        "END_INTENT_PATTERNS",
+        "STOP_COMMAND",
+        "deriveFallbackTitle",
+        "detectEndIntent",
+        "MorphBlob",
+        "chunkCaption",
+        "RollingSubtitle",
+        "nodeKey",
+        "matchesNodeId",
+        "DIAGRAM_STOPWORDS",
+        "tokenizeWords",
+        "clampScale",
+        "VoiceDiagram",
+        "DiagramLoadingRing",
+        "VoiceUniverse",
+        "VoiceImageStage",
+        "VoiceImageSequence",
         "SearchProgressIndicator",
         "SourceCards",
         "SearchActivityPanel",
@@ -1742,20 +1713,27 @@
         "AnimatedMarkdown",
         "AnimatedNumberText",
         "ChatPanel",
+        "DiagramLoadingRing",
         "FinalSourcesPanel",
         "GeminiVoicePill",
         "InteractiveCodeBlock",
         "Mermaid",
         "MessageItem",
         "MessageUsageFooter",
+        "MorphBlob",
         "PremiumCodeShell",
+        "RollingSubtitle",
         "RunnableJS",
         "RunnablePython",
         "SearchActivityPanel",
         "SearchProgressIndicator",
         "SourceCards",
         "ThinkingPanel",
-        "UsageAnalyticsStrip"
+        "UsageAnalyticsStrip",
+        "VoiceDiagram",
+        "VoiceImageSequence",
+        "VoiceImageStage",
+        "VoiceUniverse"
       ],
       "hooks": [
         "useAnimatedNumber"
@@ -1898,7 +1876,10 @@
       "apiCalls": [
         "/api/chat",
         "/api/generate-flashcards",
+        "/api/generate-mermaid",
+        "/api/image-search",
         "/api/pricing",
+        "/api/title",
         "/api/tts"
       ],
       "websocketCalls": [
@@ -1926,13 +1907,14 @@
         "Check",
         "ChevronDown",
         "Copy",
+        "DiagramLoadingRing",
         "ExternalLink",
         "FileCode2",
         "FinalSourcesPanel",
         "FloatingSkillsMenu",
         "Folder",
-        "GeminiVoicePill",
         "Globe2",
+        "ImageIcon",
         "LatestIcon",
         "LoaderCircle",
         "Mermaid",
@@ -1940,12 +1922,14 @@
         "MessageUsageFooter",
         "Mic",
         "Minus",
+        "MorphBlob",
         "Network",
         "Play",
         "Plus",
         "PremiumCodeShell",
         "ProgressIcon",
         "ReactMarkdown",
+        "RollingSubtitle",
         "RotateCcw",
         "RunnableJS",
         "RunnablePython",
@@ -1959,7 +1943,12 @@
         "Square",
         "Terminal",
         "ThinkingPanel",
+        "VoiceDiagram",
+        "VoiceImageSequence",
+        "VoiceImageStage",
+        "VoiceUniverse",
         "Volume2",
+        "Workflow",
         "X",
         "Zap"
       ],
@@ -2135,6 +2124,85 @@
       "renders": [],
       "routes": []
     },
+    "src/components/PdfSwitcher.tsx": {
+      "file": "src/components/PdfSwitcher.tsx",
+      "hash": "9fb8284411d0295601d861179ff5d5fb1dcc7405c8e148a598d369b4b97b8732",
+      "imports": [
+        {
+          "specifier": "react",
+          "external": "react"
+        },
+        {
+          "specifier": "react-pdf",
+          "external": "react-pdf"
+        },
+        {
+          "specifier": "motion/react",
+          "external": "motion"
+        },
+        {
+          "specifier": "lucide-react",
+          "external": "lucide-react"
+        },
+        {
+          "specifier": "../store",
+          "resolved": "src/store/index.ts"
+        }
+      ],
+      "exports": [
+        "PdfSwitcher"
+      ],
+      "functions": [
+        "PdfSwitcher"
+      ],
+      "variables": [
+        "GRAIN_DATA_URI",
+        "PdfThumbnail"
+      ],
+      "classes": [],
+      "components": [
+        "PdfSwitcher",
+        "PdfThumbnail"
+      ],
+      "hooks": [],
+      "storeSelectors": [
+        {
+          "field": "pdfs",
+          "selector": "(state) => state.pdfs"
+        },
+        {
+          "field": "activePdfId",
+          "selector": "(state) => state.activePdfId"
+        },
+        {
+          "field": "setActivePdf",
+          "selector": "(state) => state.setActivePdf"
+        },
+        {
+          "field": "removePdf",
+          "selector": "(state) => state.removePdf"
+        }
+      ],
+      "storeWrites": [
+        "setActivePdf"
+      ],
+      "apiCalls": [],
+      "websocketCalls": [],
+      "databaseReads": [],
+      "databaseWrites": [],
+      "renders": [
+        "AnimatePresence",
+        "ArrowLeft",
+        "Check",
+        "Document",
+        "FileText",
+        "Page",
+        "PdfThumbnail",
+        "Plus",
+        "X"
+      ],
+      "routes": []
+    },
     "src/components/PdfToolbar.tsx": {
       "file": "src/components/PdfToolbar.tsx",
       "hash": "ab31b8309b53316edc652c91c72801f960184998cd2a458e23a74cadcfb64e18",
@@ -2180,7 +2248,7 @@
     },
     "src/components/PdfViewer.tsx": {
       "file": "src/components/PdfViewer.tsx",
-      "hash": "21eb4f99e2ce677a219f40855875bafd3c27a2fbcc298bde87bca31c5eeeca0e",
+      "hash": "0aa5446f40fe570325e3d5a1a1e716c7ef408104c82f64dbc38575eeda0611ea",
       "imports": [
         {
           "specifier": "react",
@@ -3338,7 +3406,7 @@
     },
     "src/store/index.ts": {
       "file": "src/store/index.ts",
-      "hash": "8b143d2726791d01ed5570618f95a2a3f5ba575a0c79ea6f8423a2fb3ec95845",
+      "hash": "cbdc2316279275342df4724ad360b04b0f2ab95628343ff7fd1db17a48a5c1f2",
       "imports": [
         {
           "specifier": "zustand",
@@ -3358,6 +3426,7 @@
         "ChatUsage",
         "Concept",
         "NormalizedWebSource",
+        "PdfDocument",
         "PricingState",
         "ViewState",
         "VoiceUsage",
@@ -3788,7 +3857,7 @@
     },
     "src/views/StudyView.tsx": {
       "file": "src/views/StudyView.tsx",
-      "hash": "0706f36219571233a230710af605c04d9ccf51ee5c46f15f2802a224022b05ab",
+      "hash": "cba067ca968bedf913f65bf07c448a0ab5a074146022c873450543d965dd9fd4",
       "imports": [
         {
           "specifier": "react",
@@ -3801,6 +3870,10 @@
         {
           "specifier": "../components/ChatPanel",
           "resolved": "src/components/ChatPanel.tsx"
+        },
+        {
+          "specifier": "../components/PdfSwitcher",
+          "resolved": "src/components/PdfSwitcher.tsx"
         },
         {
           "specifier": "../store",
@@ -3844,32 +3917,28 @@
           "selector": "(state) => state.pdfUrl"
         },
         {
-          "field": "setPdfUrl",
-          "selector": "(state) => state.setPdfUrl"
+          "field": "pdfs",
+          "selector": "(state) => state.pdfs"
         },
         {
-          "field": "setPdfPage",
-          "selector": "(state) => state.setPdfPage"
+          "field": "activePdfId",
+          "selector": "(state) => state.activePdfId"
         },
         {
-          "field": "setPdfTotalPages",
-          "selector": "(state) => state.setPdfTotalPages"
+          "field": "addPdf",
+          "selector": "(state) => state.addPdf"
         },
         {
-          "field": "setSelectedTextContext",
-          "selector": "(state) => state.setSelectedTextContext"
+          "field": "removePdf",
+          "selector": "(state) => state.removePdf"
         },
         {
-          "field": "setActiveView",
-          "selector": "(state) => state.setActiveView"
+          "field": "isVoiceActive",
+          "selector": "(state) => state.isVoiceActive"
         }
       ],
       "storeWrites": [
-        "setMessages",
-        "setPdfPage",
-        "setPdfTotalPages",
-        "setPdfUrl",
-        "setSelectedTextContext"
+        "setMessages"
       ],
       "apiCalls": [],
       "websocketCalls": [],
@@ -3879,10 +3948,14 @@
         "AnimatePresence",
         "AnimatedScrollText",
         "ChatPanel",
+        "ChevronRight",
         "CurvedArrow",
+        "Layers",
         "MessageSquare",
         "PatternCard",
+        "PdfSwitcher",
         "PdfViewer",
+        "Plus",
         "RefreshCw",
         "UploadCloud",
         "X"

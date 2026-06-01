@@ -159,6 +159,85 @@ export async function searchSerper(options: SearchOptions): Promise<NormalizedWe
   throw lastError instanceof Error ? lastError : new Error("SERPER search failed.");
 }
 
+export type ImageResult = {
+  imageUrl: string;
+  thumbnailUrl?: string;
+  title: string;
+  source: string;
+  link: string;
+  width?: number;
+  height?: number;
+};
+
+const imageCache = new Map<
+  string,
+  { expiresAt: number; results: ImageResult[] }
+>();
+
+export async function searchSerperImages(
+  query: string,
+  count = 6,
+  apiKey?: string,
+  signal?: AbortSignal,
+): Promise<ImageResult[]> {
+  const q = query.trim();
+  const num = Math.min(Math.max(count, 1), 12);
+  const key = apiKey || process.env.SERPER_API_KEY;
+  if (!key) throw new Error("SERPER_API_KEY is not configured.");
+  if (!q) return [];
+
+  const cacheKey = `img:${q.toLowerCase()}:${num}`;
+  const cached = imageCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.results;
+
+  let lastError: unknown = null;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    const abortListener = () => controller.abort();
+    signal?.addEventListener("abort", abortListener, { once: true });
+    try {
+      const response = await fetch("https://google.serper.dev/images", {
+        method: "POST",
+        headers: { "X-API-KEY": key, "Content-Type": "application/json" },
+        body: JSON.stringify({ q, num }),
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        throw new Error(`SERPER images failed with ${response.status}`);
+      }
+      const payload = await response.json();
+      const rows = Array.isArray(payload?.images) ? payload.images : [];
+      const results: ImageResult[] = rows
+        .map((row: any) => ({
+          imageUrl: String(row.imageUrl || ""),
+          thumbnailUrl: row.thumbnailUrl ? String(row.thumbnailUrl) : undefined,
+          title: String(row.title || "").trim(),
+          source: String(row.source || row.domain || "").trim(),
+          link: String(row.link || row.imageUrl || ""),
+          width: Number(row.imageWidth) || undefined,
+          height: Number(row.imageHeight) || undefined,
+        }))
+        .filter((r: ImageResult) => /^https?:\/\//.test(r.imageUrl))
+        .slice(0, num);
+      imageCache.set(cacheKey, {
+        expiresAt: Date.now() + CACHE_TTL_MS,
+        results,
+      });
+      return results;
+    } catch (error) {
+      lastError = error;
+      if (attempt < MAX_ATTEMPTS) await wait(250 * attempt);
+    } finally {
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", abortListener);
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("SERPER image search failed.");
+}
+
 export function formatSourcesForPrompt(sources: NormalizedWebSource[]) {
   if (sources.length === 0) return "No web sources were returned.";
   return sources.map((source, index) => {

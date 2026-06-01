@@ -10,6 +10,7 @@ import {
   detectFreshnessSearch,
   formatSourcesForPrompt,
   searchSerper,
+  searchSerperImages,
   type NormalizedWebSource,
   type WebSearchMode,
 } from "./server/web-search";
@@ -549,6 +550,88 @@ async function startServer() {
   });
 
   // API Route to Generate Title
+  // Image search for the voice agent's show_image function — returns a handful
+  // of candidate images so the client can pick the first that loads.
+  app.get("/api/image-search", async (req, res) => {
+    try {
+      const q = String(req.query.q || "").trim();
+      if (!q) {
+        return res.status(400).json({ error: "Query 'q' is required." });
+      }
+      const serperKey =
+        sanitizeApiKey(req.headers["x-serper-api-key"]) ||
+        sanitizeApiKey(process.env.SERPER_API_KEY);
+      if (!serperKey) {
+        return res
+          .status(400)
+          .json({ error: "Image search is not configured." });
+      }
+      const images = await searchSerperImages(q, 8, serperKey);
+      res.json({ images });
+    } catch (error: any) {
+      console.error("Image search error:", error?.message || error);
+      res.status(502).json({ error: "Image search failed." });
+    }
+  });
+
+  // Converts a plain-language diagram description into valid Mermaid code. The
+  // voice agent never handles Mermaid itself (so it can never read code aloud) —
+  // it only sends a natural-language `spec` here, and this endpoint produces the
+  // actual diagram syntax.
+  app.post("/api/generate-mermaid", async (req, res) => {
+    try {
+      const apiKey = process.env.OPENROUTER_API_KEY;
+      if (!apiKey) {
+        return res
+          .status(401)
+          .json({ error: "OpenRouter API key is required." });
+      }
+      const spec = String(req.body?.spec || "").trim();
+      if (!spec) {
+        return res.status(400).json({ error: "spec is required." });
+      }
+
+      const openai = new OpenAI({
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey,
+      });
+
+      const completion = await openai.chat.completions.create({
+        model: "openai/gpt-4o-mini",
+        temperature: 0.2,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You convert a description of a concept into a single clean Mermaid diagram. " +
+              "Rules: Output ONLY raw Mermaid code — no markdown fences, no prose, no explanation. " +
+              "Prefer 'flowchart TD' (use 'flowchart LR' for short linear pipelines, or 'sequenceDiagram' for interactions over time). " +
+              "Use clear, human-readable node labels (e.g. Chat Server, Load Balancer, Message Queue) since these labels are what the learner sees and hears about. " +
+              "Keep it focused: 4-10 nodes, concise labels, no styling/classDef, no comments. Ensure the syntax is valid Mermaid that renders without errors.",
+          },
+          {
+            role: "user",
+            content: `Create a diagram for: ${spec.slice(0, 1500)}`,
+          },
+        ],
+      });
+
+      let mermaid = completion.choices?.[0]?.message?.content || "";
+      // Strip any accidental code fences or leading language hints.
+      mermaid = mermaid
+        .replace(/```(?:mermaid)?/gi, "")
+        .replace(/```/g, "")
+        .trim();
+      if (!mermaid) {
+        return res.status(502).json({ error: "Empty diagram." });
+      }
+      res.json({ mermaid });
+    } catch (error: any) {
+      console.error("generate-mermaid error:", error?.message || error);
+      res.status(502).json({ error: "Diagram generation failed." });
+    }
+  });
+
   app.post("/api/title", async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
@@ -567,27 +650,42 @@ async function startServer() {
         apiKey: apiKey,
       });
 
-      const { image } = req.body;
+      const { image, text } = req.body;
 
-      if (!image) {
-        return res.status(400).json({ error: "Image is required." });
+      if (!image && !text) {
+        return res.status(400).json({ error: "Image or text is required." });
       }
 
-      const response = await openai.chat.completions.create({
-        model: "qwen/qwen2.5-vl-72b-instruct",
-        messages: [
-          {
-            role: "user",
-            content: [
+      const response = text
+        ? await openai.chat.completions.create({
+            model: "openai/gpt-4o-mini",
+            messages: [
               {
-                type: "text",
-                text: "Look at this page from a document. Generate a very short (2-4 words) specific topic or title for what this document is about. Output ONLY the title.",
+                role: "system",
+                content:
+                  "You generate a very short (2-5 words) specific title summarizing the topic of a conversation. Output ONLY the title, with no quotes or punctuation.",
               },
-              { type: "image_url", image_url: { url: image } },
+              {
+                role: "user",
+                content: String(text).slice(0, 4000),
+              },
             ],
-          },
-        ],
-      });
+          })
+        : await openai.chat.completions.create({
+            model: "qwen/qwen2.5-vl-72b-instruct",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: "Look at this page from a document. Generate a very short (2-4 words) specific topic or title for what this document is about. Output ONLY the title.",
+                  },
+                  { type: "image_url", image_url: { url: image } },
+                ],
+              },
+            ],
+          });
 
       const title = response.choices[0]?.message?.content?.trim();
       res.json({ title: title || "General Study" });
@@ -1586,6 +1684,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
     }
     let dgWs: WSWebSocket | null = null;
     let isDeepgramReady = false;
+    let keepAliveInterval: ReturnType<typeof setInterval> | null = null;
     let messageBuffer: Array<{ data: any; isBinary: boolean }> = [];
     const voiceStartedAt = Date.now();
     let lastUsageAt = voiceStartedAt;
@@ -1652,6 +1751,11 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 type: "deepgram",
                 model: "flux-general-en",
                 version: "v2",
+                // Require higher confidence before ending the user's turn so the
+                // agent waits a beat longer instead of cutting off mid-thought.
+                eot_threshold: 0.8,
+                // Allow longer natural pauses before forcing end-of-turn.
+                eot_timeout_ms: 8000,
               },
             },
             think: {
@@ -1660,7 +1764,113 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 model: "gpt-4o-mini",
               },
               prompt:
-                "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks — you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate.",
+                "You are an expert Computer Science and Programming tutor named Aria. You are currently helping a student who is studying technical material. Explain concepts like a senior engineer mentoring a junior developer. Use real-world analogies. Keep responses to 3-5 sentences. Never use bullet points, markdown, or code blocks — you are speaking out loud. Spell symbols verbally. End each reply with a follow-up question or offer to elaborate. " +
+                "Be a visual-first teacher who actually DRAWS things, not just talks about them. The render_diagram and show_image functions are the ONLY way anything appears on the learner's screen. If you describe a diagram, its boxes, or its steps without calling render_diagram, the learner sees a blank screen — that is a failure. So whenever a concept lands better visually — any process, flow, architecture, hierarchy, sequence of steps, relationship, comparison, or anything spatial/structural — you MUST call render_diagram; and whenever a real photo, picture, or illustration would help, you MUST call show_image. Do this proactively, on your own initiative, without being asked. " +
+                "HARD RULES, follow exactly: (1) The moment you decide to teach something visually, calling the function is MANDATORY and must be the FIRST thing you do that turn, before you explain any part of it. (2) NEVER narrate, walk through, or reference the steps/parts of a diagram unless you have actually called render_diagram in this very same turn — talking through a diagram you didn't draw is forbidden. (3) You may say ONE short, warm lead-in sentence so you're not silent while it loads (e.g. 'Let me show you this so it's crystal clear — one sec.'), but the function call must still happen in that same turn. " +
+                "For render_diagram you NEVER write diagram code of any kind. You only fill in 'spec' with a plain-English description of what the diagram should show, and 'steps' with the sentences you will speak about each part. The system turns your description into the picture for you. After the visual appears, narrate the walkthrough by speaking each step's caption in order, mentioning each part by its plain name so the screen highlights whatever you're describing. Use show_image for real-world imagery and render_diagram for structural/relational visuals. Only skip visuals for simple one-line factual answers where a picture genuinely adds nothing. " +
+                "When your answer involves SEVERAL images shown in sequence — a story, a timeline, a step-by-step process, or anything where pictures should appear one after another — do NOT fire multiple show_image calls (that dumps every image on screen at once). Instead call show_images ONCE with the ordered list of {query, caption} items, then narrate the captions out loud in that exact order: the screen reveals each image precisely as you speak its caption, so it advances step by step in sync with your story. " +
+                "CRITICAL — you are speaking out loud to a person. NEVER read code, syntax, or markup aloud. Never say words like 'Mermaid', 'flowchart', 'graph TD', 'node', 'arrow', 'syntax', or 'code', and never speak symbols like '-->', brackets, or ids. Never describe the mechanics of building or generating the visual. Out loud you only ever give the natural, human explanation of the concept itself — talk about the ideas the boxes represent, never the drawing or anything technical behind it. " +
+                "When you have finished teaching with a visual and the conversation moves on to something it no longer helps with, call clear_diagram to remove whatever diagram or image is showing so the conversation returns to normal.",
+              functions: [
+                {
+                  name: "render_diagram",
+                  description:
+                    "Draw a diagram on the learner's screen to teach a concept visually. You do NOT write any diagram code — you only describe, in plain English, what the diagram should show; the system turns your description into the picture. Call this whenever a visual would help, then narrate the parts in order.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      title: {
+                        type: "string",
+                        description: "Short title for the diagram (3-6 words).",
+                      },
+                      spec: {
+                        type: "string",
+                        description:
+                          "A plain-English description of the diagram to draw: the components/steps/entities and how they connect or flow. Example: 'WhatsApp high-level architecture: mobile and web clients connect to a load balancer, which routes to chat servers; chat servers push to a message queue and read/write a database, and use a notification service for offline users.' Do NOT write Mermaid or any code here — just describe it.",
+                      },
+                      steps: {
+                        type: "array",
+                        description:
+                          "Ordered walkthrough captions. Each is a sentence you will speak aloud about one part of the diagram, in the order you will say them. The screen highlights whatever you are describing as you speak.",
+                        items: {
+                          type: "object",
+                          properties: {
+                            caption: {
+                              type: "string",
+                              description:
+                                "A sentence you will speak aloud about this part. Mention the component by its plain name (e.g. 'the load balancer') so the screen can highlight it.",
+                            },
+                          },
+                          required: ["caption"],
+                        },
+                      },
+                    },
+                    required: ["spec"],
+                  },
+                },
+                {
+                  name: "show_image",
+                  description:
+                    "Fetch a real image from the internet and show it on the learner's screen to aid understanding (a real-world object, place, person, device, scientific/anatomical image, screenshot, etc.). Call this when an actual photo or illustration helps more than a drawn diagram, then describe what is shown.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      query: {
+                        type: "string",
+                        description:
+                          "Focused image search query, e.g. 'Alan Turing portrait' or 'human heart anatomy labeled diagram'.",
+                      },
+                      caption: {
+                        type: "string",
+                        description:
+                          "Short caption describing what the image shows (3-10 words).",
+                      },
+                    },
+                    required: ["query"],
+                  },
+                },
+                {
+                  name: "show_images",
+                  description:
+                    "Show an ORDERED SEQUENCE of real internet images that the learner should see one at a time, in step with your narration — perfect for stories, timelines, processes, or any multi-part explanation. Call this ONCE with all the steps in order; the screen reveals each image exactly when you speak its caption, so you must then narrate the captions out loud in the same order. Do NOT call show_image multiple times for a sequence — use this instead so the images don't all appear at once.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      items: {
+                        type: "array",
+                        description:
+                          "The ordered images. The learner sees item 1 first, then each next item as you speak its caption.",
+                        items: {
+                          type: "object",
+                          properties: {
+                            query: {
+                              type: "string",
+                              description:
+                                "Focused image search query for this step.",
+                            },
+                            caption: {
+                              type: "string",
+                              description:
+                                "The sentence you will speak aloud while this image is shown. The screen advances to this image when your speech matches it, so keep it distinctive.",
+                            },
+                          },
+                          required: ["query", "caption"],
+                        },
+                      },
+                    },
+                    required: ["items"],
+                  },
+                },
+                {
+                  name: "clear_diagram",
+                  description:
+                    "Remove the diagram or image currently shown on the learner's screen and return to the normal conversation view. Call this once you have finished explaining a visual and are moving on to a topic where it is no longer relevant.",
+                  parameters: {
+                    type: "object",
+                    properties: {},
+                  },
+                },
+              ],
             },
             speak: {
               provider: {
@@ -1668,8 +1878,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 model: "aura-asteria-en",
               },
             },
-            greeting:
-              "Hello! I am Aria, your CS tutor. What are you studying today?",
+            // No greeting — the learner speaks first.
           },
         };
         console.log(
@@ -1677,6 +1886,17 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           JSON.stringify(config, null, 2),
         );
         dgWs?.send(JSON.stringify(config));
+
+        // Deepgram closes idle sockets. While the agent is speaking the client
+        // stops streaming mic audio, so without a heartbeat the connection
+        // drops mid-conversation ("suddenly turns off"). Send KeepAlive every
+        // 7s to hold the session open regardless of audio flow.
+        if (keepAliveInterval) clearInterval(keepAliveInterval);
+        keepAliveInterval = setInterval(() => {
+          if (dgWs && dgWs.readyState === WSWebSocket.OPEN) {
+            dgWs.send(JSON.stringify({ type: "KeepAlive" }));
+          }
+        }, 7000);
       });
 
       dgWs.on("unexpected-response", (req, res) => {
@@ -1721,7 +1941,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 isDeepgramReady = true;
                 messageBuffer.forEach((msg) => {
                   if (dgWs?.readyState === WSWebSocket.OPEN) {
-                    dgWs.send(msg.data);
+                    dgWs.send(
+                      msg.isBinary ? msg.data : msg.data.toString(),
+                      { binary: msg.isBinary },
+                    );
                   }
                 });
                 messageBuffer = [];
@@ -1733,6 +1956,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       });
 
       dgWs.on("close", () => {
+        if (keepAliveInterval) {
+          clearInterval(keepAliveInterval);
+          keepAliveInterval = null;
+        }
         if (ws.readyState === ws.OPEN) {
           sendVoiceUsage(1);
           ws.close();
@@ -1741,6 +1968,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
       dgWs.on("error", (error) => {
         console.error("Deepgram WS Error:", error);
+        if (keepAliveInterval) {
+          clearInterval(keepAliveInterval);
+          keepAliveInterval = null;
+        }
         if (ws.readyState === ws.OPEN) {
           ws.close();
         }
@@ -1754,9 +1985,11 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       if (isBinary) {
         clientInputBytes += rawByteLength(data);
       }
-      // Proxy messages to Deepgram once ready
+      // Proxy messages to Deepgram once ready. Preserve the frame type:
+      // binary audio stays binary, text control messages (e.g.
+      // InjectUserMessage) must be sent as text so Deepgram parses them.
       if (isDeepgramReady && dgWs && dgWs.readyState === dgWs.OPEN) {
-        dgWs.send(data);
+        dgWs.send(isBinary ? data : data.toString(), { binary: isBinary });
       } else {
         messageBuffer.push({ data, isBinary });
       }
@@ -1764,6 +1997,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
     ws.on("close", () => {
       clearInterval(usageInterval);
+      if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
+        keepAliveInterval = null;
+      }
       if (dgWs && dgWs.readyState === dgWs.OPEN) {
         dgWs.close();
       }

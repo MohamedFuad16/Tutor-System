@@ -71,19 +71,16 @@ export function PdfViewer() {
     return () => obs.disconnect();
   }, []);
 
-  const [titleGenerated, setTitleGenerated] = useState(false);
-
-  useEffect(() => {
-    setTitleGenerated(false);
-  }, [pdfUrl]);
+  const titledUrlsRef = useRef<Set<string>>(new Set());
 
   const handlePageRenderSuccess = () => {
-    if (pdfTotalPages > 0 && !titleGenerated) {
+    if (!pdfUrl) return;
+    if (pdfTotalPages > 0 && !titledUrlsRef.current.has(pdfUrl)) {
       const activeCanvas = document.querySelector(
         ".react-pdf__Page__canvas",
       ) as HTMLCanvasElement;
       if (activeCanvas && useStore.getState().apiKey) {
-        setTitleGenerated(true);
+        titledUrlsRef.current.add(pdfUrl);
         activeCanvas.toBlob(
           (blob) => {
             if (!blob) return;
@@ -137,7 +134,8 @@ export function PdfViewer() {
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setPdfTotalPages(numPages);
-    setPdfPage(1);
+    const restored = useStore.getState().pdfPage;
+    setPdfPage(Math.min(Math.max(1, restored), numPages));
   }
 
   const handleDoubleClick = () => {

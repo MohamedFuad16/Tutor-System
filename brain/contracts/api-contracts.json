@@ -36,6 +36,16 @@
       "responseFormat": "application/json",
       "generatedFromSource": true
     },
+    "GET /api/image-search": {
+      "method": "GET",
+      "path": "/api/image-search",
+      "serverFile": "server.ts",
+      "clients": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "responseFormat": "application/json",
+      "generatedFromSource": true
+    },
     "GET /api/pricing": {
       "method": "GET",
       "path": "/api/pricing",
@@ -97,6 +107,16 @@
       "responseFormat": "application/json",
       "generatedFromSource": true
     },
+    "POST /api/generate-mermaid": {
+      "method": "POST",
+      "path": "/api/generate-mermaid",
+      "serverFile": "server.ts",
+      "clients": [
+        "src/components/ChatPanel.tsx"
+      ],
+      "responseFormat": "application/json",
+      "generatedFromSource": true
+    },
     "POST /api/generate-persona": {
       "method": "POST",
       "path": "/api/generate-persona",
@@ -123,6 +143,7 @@
       "path": "/api/title",
       "serverFile": "server.ts",
       "clients": [
+        "src/components/ChatPanel.tsx",
         "src/components/PdfViewer.tsx"
       ],
       "responseFormat": "application/json",
@@ -173,7 +194,19 @@
     },
     {
       "file": "src/components/ChatPanel.tsx",
+      "endpoint": "/api/generate-mermaid"
+    },
+    {
+      "file": "src/components/ChatPanel.tsx",
+      "endpoint": "/api/image-search"
+    },
+    {
+      "file": "src/components/ChatPanel.tsx",
       "endpoint": "/api/pricing"
+    },
+    {
+      "file": "src/components/ChatPanel.tsx",
+      "endpoint": "/api/title"
     },
     {
       "file": "src/components/ChatPanel.tsx",

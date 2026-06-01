@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T14:58:58.302Z",
+    "generatedAt": "2026-05-29T11:11:31.349Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "9abf5b4139cc5ec1007a632efa4dbb2dea4bdfba",
+      "commit": "2ed6b035bd30f5c512e4502b73df81eaac8dc180",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "31a027861891e45d04aae40330ee5fa728578068f4eccce8acdce5883fa2cfb6"
+    "sourceHash": "b4a0d6d8f3bdc134373bcf831767836ab0a7c714888553c4a0378f5899953022"
   },
   "files": {
     "generate-brain.ts": {
@@ -236,18 +236,6 @@
       "affectedTests": []
     },
     "brain/debug/docs-sync.ts": {
-      "riskScore": 0,
-      "blastRadius": [],
-      "semanticFactors": {
-        "directImportDependents": [],
-        "renderedBy": [],
-        "clientCallers": [],
-        "storeReaders": [],
-        "databaseUsers": []
-      },
-      "affectedTests": []
-    },
-    "brain/debug/ui-regression-probe.ts": {
       "riskScore": 0,
       "blastRadius": [],
       "semanticFactors": {
@@ -641,6 +629,24 @@
           "src/views/RevisionView.tsx"
         ],
         "renderedBy": [],
+        "clientCallers": [],
+        "storeReaders": [],
+        "databaseUsers": []
+      },
+      "affectedTests": []
+    },
+    "src/components/PdfSwitcher.tsx": {
+      "riskScore": 8,
+      "blastRadius": [
+        "src/views/StudyView.tsx"
+      ],
+      "semanticFactors": {
+        "directImportDependents": [
+          "src/views/StudyView.tsx"
+        ],
+        "renderedBy": [
+          "file:src/views/StudyView.tsx"
+        ],
         "clientCallers": [],
         "storeReaders": [],
         "databaseUsers": []
@@ -1069,6 +1075,7 @@
         "src/brain-runtime/installBrainRuntime.ts",
         "src/components/ChatPanel.tsx",
         "src/components/Navigation.tsx",
+        "src/components/PdfSwitcher.tsx",
         "src/components/PdfViewer.tsx",
         "src/components/SettingsModal.tsx",
         "src/views/AdminView.tsx",
@@ -1083,6 +1090,7 @@
           "src/brain-runtime/installBrainRuntime.ts",
           "src/components/ChatPanel.tsx",
           "src/components/Navigation.tsx",
+          "src/components/PdfSwitcher.tsx",
           "src/components/PdfViewer.tsx",
           "src/components/SettingsModal.tsx",
           "src/views/AdminView.tsx",
@@ -1096,6 +1104,7 @@
         "storeReaders": [
           "src/App.tsx",
           "src/components/ChatPanel.tsx",
+          "src/components/PdfSwitcher.tsx",
           "src/components/PdfViewer.tsx",
           "src/components/SettingsModal.tsx",
           "src/views/BrainView.tsx",
@@ -1239,6 +1248,13 @@
     }
   },
   "couplingScores": {
+    "src/brain-runtime/runtimeTelemetry.ts <-> src/components/ChatPanel.tsx": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
     "brain/runtime/context-orchestrator.ts <-> brain/runtime/task-executor.ts": {
       "score": 2,
       "edgeTypes": {
@@ -1267,6 +1283,13 @@
         "imports": 1
       }
     },
+    "src/components/PdfSwitcher.tsx <-> src/views/StudyView.tsx": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
     "src/memory/learner.model.ts <-> src/memory/zpd.calculator.ts": {
       "score": 2,
       "edgeTypes": {
@@ -1274,18 +1297,18 @@
         "dependsOn": 1
       }
     },
-    "src/components/ChatPanel.tsx <-> src/views/StudyView.tsx": {
+    "src/components/ChatPanel.tsx <-> src/components/FloatingSkillsMenu.tsx": {
       "score": 2,
       "edgeTypes": {
         "dependsOn": 1,
         "imports": 1
       }
     },
-    "src/components/ChatPanel.tsx <-> src/memory/memory.orchestrator.ts": {
+    "src/components/ChatPanel.tsx <-> src/views/StudyView.tsx": {
       "score": 2,
       "edgeTypes": {
-        "imports": 1,
-        "dependsOn": 1
+        "dependsOn": 1,
+        "imports": 1
       }
     },
     "src/memory/longterm.memory.ts <-> src/memory/misconception.graph.ts": {
@@ -1331,6 +1354,13 @@
       }
     },
     "src/memory/bkt.engine.ts <-> src/memory/learner.model.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
+    "src/components/ChatPanel.tsx <-> src/memory/longterm.memory.ts": {
       "score": 2,
       "edgeTypes": {
         "imports": 1,
@@ -1407,13 +1437,6 @@
         "imports": 1
       }
     },
-    "src/components/ChatPanel.tsx <-> src/components/SiriLiquidGlass.tsx": {
-      "score": 2,
-      "edgeTypes": {
-        "imports": 1,
-        "dependsOn": 1
-      }
-    },
     "src/brain-runtime/installBrainRuntime.ts <-> src/brain-runtime/instrumentZustand.ts": {
       "score": 2,
       "edgeTypes": {
@@ -1435,6 +1458,13 @@
         "imports": 1
       }
     },
+    "src/components/ChatPanel.tsx <-> src/memory/memory.orchestrator.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "dependsOn": 1,
+        "imports": 1
+      }
+    },
     "src/brain-runtime/installBrainRuntime.ts <-> src/main.tsx": {
       "score": 2,
       "edgeTypes": {
@@ -1449,25 +1479,11 @@
         "imports": 1
       }
     },
-    "src/brain-runtime/runtimeTelemetry.ts <-> src/components/ChatPanel.tsx": {
-      "score": 2,
-      "edgeTypes": {
-        "imports": 1,
-        "dependsOn": 1
-      }
-    },
     "src/store/index.ts <-> src/views/AnalyticsView.tsx": {
       "score": 2,
       "edgeTypes": {
         "imports": 1,
         "dependsOn": 1
-      }
-    },
-    "src/components/PatternCard.tsx <-> src/views/StudyView.tsx": {
-      "score": 2,
-      "edgeTypes": {
-        "dependsOn": 1,
-        "imports": 1
       }
     },
     "src/brain-runtime/instrumentZustand.ts <-> src/brain-runtime/runtimeTelemetry.ts": {
@@ -1498,6 +1514,13 @@
         "dependsOn": 1
       }
     },
+    "src/components/AnimatedScrollText.tsx <-> src/views/StudyView.tsx": {
+      "score": 2,
+      "edgeTypes": {
+        "dependsOn": 1,
+        "imports": 1
+      }
+    },
     "src/memory/longterm.memory.ts <-> src/views/BrainView.tsx": {
       "score": 2,
       "edgeTypes": {
@@ -1520,6 +1543,13 @@
       }
     },
     "src/index.css <-> src/main.tsx": {
+      "score": 2,
+      "edgeTypes": {
+        "dependsOn": 1,
+        "imports": 1
+      }
+    },
+    "src/components/PdfSwitcher.tsx <-> src/store/index.ts": {
       "score": 2,
       "edgeTypes": {
         "dependsOn": 1,
@@ -1561,6 +1591,13 @@
         "imports": 1
       }
     },
+    "src/components/ChatPanel.tsx <-> src/lib/audio.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
     "src/components/SettingsModal.tsx <-> src/store/index.ts": {
       "score": 2,
       "edgeTypes": {
@@ -1568,11 +1605,11 @@
         "imports": 1
       }
     },
-    "src/components/ChatPanel.tsx <-> src/components/FloatingSkillsMenu.tsx": {
+    "src/store/index.ts <-> src/views/StudyView.tsx": {
       "score": 2,
       "edgeTypes": {
-        "dependsOn": 1,
-        "imports": 1
+        "imports": 1,
+        "dependsOn": 1
       }
     },
     "src/lib/tutorBook.json <-> src/views/RevisionView.tsx": {
@@ -1617,6 +1654,13 @@
         "imports": 1
       }
     },
+    "src/components/PatternCard.tsx <-> src/views/StudyView.tsx": {
+      "score": 2,
+      "edgeTypes": {
+        "imports": 1,
+        "dependsOn": 1
+      }
+    },
     "src/memory/longterm.memory.ts <-> src/views/RevisionView.tsx": {
       "score": 2,
       "edgeTypes": {
@@ -1629,20 +1673,6 @@
       "edgeTypes": {
         "dependsOn": 1,
         "imports": 1
-      }
-    },
-    "src/components/ChatPanel.tsx <-> src/memory/longterm.memory.ts": {
-      "score": 2,
-      "edgeTypes": {
-        "imports": 1,
-        "dependsOn": 1
-      }
-    },
-    "src/components/ChatPanel.tsx <-> src/lib/audio.ts": {
-      "score": 2,
-      "edgeTypes": {
-        "imports": 1,
-        "dependsOn": 1
       }
     },
     "src/memory/longterm.memory.ts <-> src/memory/memory.orchestrator.ts": {
@@ -1660,6 +1690,13 @@
       }
     },
     "src/components/Navigation.tsx <-> src/store/index.ts": {
+      "score": 2,
+      "edgeTypes": {
+        "dependsOn": 1,
+        "imports": 1
+      }
+    },
+    "src/components/ChatPanel.tsx <-> src/store/index.ts": {
       "score": 2,
       "edgeTypes": {
         "dependsOn": 1,
@@ -1687,7 +1724,7 @@
         "imports": 1
       }
     },
-    "src/components/AnimatedScrollText.tsx <-> src/views/StudyView.tsx": {
+    "src/components/ChatPanel.tsx <-> src/components/SiriLiquidGlass.tsx": {
       "score": 2,
       "edgeTypes": {
         "imports": 1,
@@ -1729,13 +1766,6 @@
         "imports": 1
       }
     },
-    "src/store/index.ts <-> src/views/StudyView.tsx": {
-      "score": 2,
-      "edgeTypes": {
-        "imports": 1,
-        "dependsOn": 1
-      }
-    },
     "src/App.tsx <-> src/main.tsx": {
       "score": 2,
       "edgeTypes": {
@@ -1765,13 +1795,6 @@
       }
     },
     "src/brain-runtime/installBrainRuntime.ts <-> src/brain-runtime/instrumentFetch.ts": {
-      "score": 2,
-      "edgeTypes": {
-        "imports": 1,
-        "dependsOn": 1
-      }
-    },
-    "src/components/ChatPanel.tsx <-> src/store/index.ts": {
       "score": 2,
       "edgeTypes": {
         "imports": 1,

@@ -12,6 +12,15 @@
       }
     },
     {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:VoiceUniverse",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
       "source": "file:src/components/StatusBadge.tsx",
       "target": "component:SuccessIcon",
       "type": "renders",
@@ -50,12 +59,48 @@
       }
     },
     {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:VoiceDiagram",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:DiagramLoadingRing",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
+      "source": "file:src/views/StudyView.tsx",
+      "target": "component:PdfSwitcher",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/views/StudyView.tsx"
+      }
+    },
+    {
       "source": "file:src/components/StatusBadge.tsx",
       "target": "component:ReviewIcon",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {
         "file": "src/components/StatusBadge.tsx"
+      }
+    },
+    {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:MorphBlob",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
       }
     },
     {
@@ -222,6 +267,15 @@
       }
     },
     {
+      "source": "file:src/components/PdfSwitcher.tsx",
+      "target": "component:PdfThumbnail",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/PdfSwitcher.tsx"
+      }
+    },
+    {
       "source": "route:study",
       "target": "component:BrainRenderProfiler",
       "type": "renders",
@@ -342,6 +396,15 @@
       }
     },
     {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:RollingSubtitle",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
       "source": "file:src/App.tsx",
       "target": "component:AdminView",
       "type": "renders",
@@ -423,6 +486,15 @@
       }
     },
     {
+      "source": "file:src/components/ChatPanel.tsx",
+      "target": "component:VoiceImageSequence",
+      "type": "renders",
+      "confidence": 0.8,
+      "evidence": {
+        "file": "src/components/ChatPanel.tsx"
+      }
+    },
+    {
       "source": "file:src/components/StatusBadge.tsx",
       "target": "component:ExpiredIcon",
       "type": "renders",
@@ -452,7 +524,7 @@
     },
     {
       "source": "file:src/components/ChatPanel.tsx",
-      "target": "component:GeminiVoicePill",
+      "target": "component:VoiceImageStage",
       "type": "renders",
       "confidence": 0.8,
       "evidence": {

@@ -6,6 +6,7 @@
     "src/App.tsx",
     "src/components/ChatPanel.tsx",
     "src/components/Navigation.tsx",
+    "src/components/PdfSwitcher.tsx",
     "src/components/PdfViewer.tsx",
     "src/components/SettingsModal.tsx",
     "src/views/AdminView.tsx",
@@ -20,155 +21,156 @@
     "Selectors should remain scoped to fields used by the component"
   ],
   "graphRefs": [
-    "03a40200069a9e9bdcb6",
+    "03f7180d7c940014ede4",
     "084183fe6983486763ab",
-    "086cf6b626df7a8a2476",
-    "0a173aa6213dff8ff2bf",
     "0b46862c8cc166fe4859",
     "0d6823b603d52c2f2b5c",
+    "0e3d6f4f941b2e2549cd",
     "11c80bbf9e3bf58f9ebc",
+    "14485fa6bb1286c9ffa0",
+    "1610c76a9d552bc77dd8",
+    "164ced47314d18914368",
+    "17b2cf0d2c331e867187",
+    "1f79c07dc74510387353",
+    "212101c3aa3b5ea0b714",
     "261d46ecd80212354830",
     "270cdc5f6c39480fecbf",
-    "2c9591d8d6437c0975ea",
-    "2dfbe639eafd41ff39ab",
-    "30553a2c37e6c6e56d39",
+    "271aeec3a19b0f2d1cfb",
+    "2f76ed8ed8f8b16f0b7c",
+    "308f543e4df769f8ef1e",
     "346bf0190295fbbfe671",
-    "3b7b6d57ef9a9a584e33",
+    "3c213d3348ba8349a4d6",
+    "3c4be638ec7f51edac8b",
+    "406e0e25063c533fe7a9",
+    "436d5cdbe4e783a98ce3",
     "452b589152d304feb02c",
     "4534eab23d60b74ef4c0",
-    "477be271d696f16c3b7a",
+    "4775e8e294dc426472dc",
     "48cc65b69c07fc339576",
     "4a0259121936610cfd46",
-    "4a316d40ab10da84624d",
-    "4c88223e95e861571728",
     "4cce8d758b04ea0b311a",
-    "4d44ad0175fdd013736a",
     "4d72a05745bc61743604",
-    "4d8aee1ca261f7d5aac9",
+    "4fd258ce9695a83106f9",
     "50761841f6072a5887f2",
-    "52ecf26dfac2735c970e",
-    "538db3aa55d04e0590ec",
     "5566f218836f1489f510",
-    "581282fe9ae84121914e",
-    "594f886e316a1db99d81",
     "5b0f8214d650965e5b57",
-    "5b3535f538527a2998ce",
-    "60a65915a02e97cdc9c6",
+    "60336cf766b1d52f0183",
     "66557aa263090d97bd31",
+    "698f956d71368986890a",
     "6a47c989a7fe9a97f328",
-    "6dba534e589e8daa18ef",
+    "6a6e0d971d4cb66b622a",
     "6dc9d8ef7f511c090639",
     "6e230842f40ca6428e7e",
-    "7423e2d8197fbf519233",
     "75bb3f4d6e31d71b50d8",
-    "76e6a0766fb69faaee7b",
-    "79c3ef14aa69cc8c69a0",
-    "80daa329f01c100cd987",
+    "786b67465b281c5a901b",
+    "7ee8aa76f729aaedec09",
     "86bb2894daafed8751bc",
     "8771314064213f79dfa1",
     "880b223ea8c759f9e1ce",
-    "88c7933d6197d59759e1",
-    "8b51fda5021e9c54d1d8",
+    "8e667e8577858bb83a5b",
     "90e0d7c83804e1990552",
     "912d17a0d61fad332464",
-    "91f32ccf007d49bfa048",
-    "92d7cecc3017e224abed",
+    "933cddc7c1bcbc7b09e0",
     "95b8597f1eb9440101a4",
     "96a10451c2ac30eb3dd1",
+    "96eaa6306e8274ff5d18",
     "987a1de9f549bea78f3f",
-    "9a3a6a6f11348cd6540a",
+    "9bc028112eda1bbf1ec8",
     "9d2e42401390bce53bd9",
-    "ade80086f505dbfd76ee",
+    "a10e929e3a431c23ae62",
+    "ae332ff856ed730aeb53",
     "b1bae4fbc4554e108cfe",
     "b20e69a36f267f15b7c8",
     "b3e29ea20f362ba8c8de",
     "b5d2e0fe95bb6559565b",
     "b6a4d2b69b89530b3c63",
-    "b87f1e64b0a921cdb59d",
+    "b7b5f3fed85cc43934be",
+    "b85e5ad247de2e58f656",
     "b88867b3872c4f7f6231",
-    "bbd581a47ae8da6c6566",
+    "bcd5db3f569c2862302d",
     "c1489572c24e39e09e3f",
     "c77e95844435d4b4bd1e",
-    "c8924cae5a1c226b87b3",
     "c8b1e47a82d0de254f68",
-    "cf76f3bff09b3e7f4e67",
+    "c9f364ed4978b9a2d3ff",
+    "cbc87471cf74c33ec85f",
     "d1a941a0e9c52d743a71",
     "d708d9fcee1360216c51",
-    "d7dfe7b67e67a0ca003a",
-    "d85c37e31efa951a4637",
-    "e31ac902c45d2326e426",
+    "db668ab7a127fe6dac45",
     "e4a71fbba993daa21cc6",
-    "ea9190ffe42458b55230",
-    "f3bef044b4265857e22c",
+    "e75df77ceb55b2001134",
+    "e9584765799b8179f545",
     "f4219350b50d7b144b50",
+    "f46acf35621cbe51cb3d",
     "f55e02275ded00851009",
-    "f7f7e087fdccfd3d9f40",
-    "fb942300f84aca023d4e",
-    "fc158b81c4ea9bd41aac"
+    "f6e730a0149d6934401b",
+    "f8dd000817b54bd8ec31",
+    "fbe82d90af1e2efdfcfb",
+    "fc64444667f11610a723",
+    "fdff884355015b04d01b"
   ],
   "confidence": 0.86,
-  "generatedAt": "2026-05-27T14:58:58.369Z",
+  "generatedAt": "2026-05-29T11:11:31.440Z",
   "dependencyReferences": [
-    "03a40200069a9e9bdcb6",
+    "03f7180d7c940014ede4",
     "084183fe6983486763ab",
-    "086cf6b626df7a8a2476",
-    "0a173aa6213dff8ff2bf",
     "0b46862c8cc166fe4859",
     "0d6823b603d52c2f2b5c",
+    "0e3d6f4f941b2e2549cd",
     "11c80bbf9e3bf58f9ebc",
+    "14485fa6bb1286c9ffa0",
+    "1610c76a9d552bc77dd8",
+    "164ced47314d18914368",
+    "17b2cf0d2c331e867187",
+    "1f79c07dc74510387353",
+    "212101c3aa3b5ea0b714",
     "261d46ecd80212354830",
     "270cdc5f6c39480fecbf",
-    "2c9591d8d6437c0975ea",
-    "2dfbe639eafd41ff39ab",
-    "30553a2c37e6c6e56d39",
+    "271aeec3a19b0f2d1cfb",
+    "2f76ed8ed8f8b16f0b7c",
+    "308f543e4df769f8ef1e",
     "346bf0190295fbbfe671",
-    "3b7b6d57ef9a9a584e33",
+    "3c213d3348ba8349a4d6",
+    "3c4be638ec7f51edac8b",
+    "406e0e25063c533fe7a9",
+    "436d5cdbe4e783a98ce3",
     "452b589152d304feb02c",
     "4534eab23d60b74ef4c0",
-    "477be271d696f16c3b7a",
+    "4775e8e294dc426472dc",
     "48cc65b69c07fc339576",
     "4a0259121936610cfd46",
-    "4a316d40ab10da84624d",
-    "4c88223e95e861571728",
     "4cce8d758b04ea0b311a",
-    "4d44ad0175fdd013736a",
     "4d72a05745bc61743604",
-    "4d8aee1ca261f7d5aac9",
+    "4fd258ce9695a83106f9",
     "50761841f6072a5887f2",
-    "52ecf26dfac2735c970e",
-    "538db3aa55d04e0590ec",
     "5566f218836f1489f510",
-    "581282fe9ae84121914e",
-    "594f886e316a1db99d81",
     "5b0f8214d650965e5b57",
-    "5b3535f538527a2998ce",
-    "60a65915a02e97cdc9c6",
+    "60336cf766b1d52f0183",
     "66557aa263090d97bd31",
+    "698f956d71368986890a",
     "6a47c989a7fe9a97f328",
-    "6dba534e589e8daa18ef",
+    "6a6e0d971d4cb66b622a",
     "6dc9d8ef7f511c090639",
     "6e230842f40ca6428e7e",
-    "7423e2d8197fbf519233",
     "75bb3f4d6e31d71b50d8",
-    "76e6a0766fb69faaee7b",
-    "79c3ef14aa69cc8c69a0",
-    "80daa329f01c100cd987",
+    "786b67465b281c5a901b",
+    "7ee8aa76f729aaedec09",
     "86bb2894daafed8751bc",
     "8771314064213f79dfa1",
     "880b223ea8c759f9e1ce",
-    "88c7933d6197d59759e1",
-    "8b51fda5021e9c54d1d8",
+    "8e667e8577858bb83a5b",
     "90e0d7c83804e1990552",
     "912d17a0d61fad332464",
-    "91f32ccf007d49bfa048",
-    "92d7cecc3017e224abed",
+    "933cddc7c1bcbc7b09e0",
     "95b8597f1eb9440101a4",
     "96a10451c2ac30eb3dd1",
+    "96eaa6306e8274ff5d18",
     "987a1de9f549bea78f3f",
-    "9a3a6a6f11348cd6540a",
+    "9bc028112eda1bbf1ec8",
     "9d2e42401390bce53bd9",
-    "ade80086f505dbfd76ee",
-    "b1bae4fbc4554e108cfe"
+    "a10e929e3a431c23ae62",
+    "ae332ff856ed730aeb53",
+    "b1bae4fbc4554e108cfe",
+    "b20e69a36f267f15b7c8"
   ],
   "contractRefs": [],
   "routeRefs": [],
@@ -177,6 +179,14 @@
       "field": "activeLearningBookId",
       "readers": [
         "src/components/ChatPanel.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "activePdfId",
+      "readers": [
+        "src/components/PdfSwitcher.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": []
     },
@@ -198,6 +208,13 @@
       "field": "addAnnotation",
       "readers": [
         "src/components/PdfViewer.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "addPdf",
+      "readers": [
+        "src/views/StudyView.tsx"
       ],
       "writers": []
     },
@@ -254,15 +271,16 @@
     {
       "field": "isVoiceActive",
       "readers": [
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": []
     },
     {
       "field": "learnerName",
       "readers": [
-        "src/views/BrainView.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/views/BrainView.tsx"
       ],
       "writers": []
     },
@@ -297,8 +315,16 @@
     {
       "field": "pdfUrl",
       "readers": [
+        "src/components/PdfViewer.tsx",
+        "src/views/StudyView.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "pdfs",
+      "readers": [
         "src/views/StudyView.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfSwitcher.tsx"
       ],
       "writers": []
     },
@@ -338,10 +364,18 @@
       "writers": []
     },
     {
+      "field": "removePdf",
+      "readers": [
+        "src/components/PdfSwitcher.tsx",
+        "src/views/StudyView.tsx"
+      ],
+      "writers": []
+    },
+    {
       "field": "resetUsageAnalytics",
       "readers": [
-        "src/components/ChatPanel.tsx",
-        "src/components/SettingsModal.tsx"
+        "src/components/SettingsModal.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": []
     },
@@ -369,6 +403,15 @@
       ]
     },
     {
+      "field": "setActivePdf",
+      "readers": [
+        "src/components/PdfSwitcher.tsx"
+      ],
+      "writers": [
+        "src/components/PdfSwitcher.tsx"
+      ]
+    },
+    {
       "field": "setActiveProject",
       "readers": [
         "src/components/ChatPanel.tsx"
@@ -382,7 +425,6 @@
       "field": "setActiveView",
       "readers": [
         "src/components/ChatPanel.tsx",
-        "src/views/StudyView.tsx",
         "src/views/RevisionView.tsx",
         "src/App.tsx"
       ],
@@ -417,8 +459,8 @@
     {
       "field": "setAskTutorQuery",
       "readers": [
-        "src/components/ChatPanel.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfViewer.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": [
         "src/components/ChatPanel.tsx",
@@ -461,11 +503,9 @@
     {
       "field": "setPdfPage",
       "readers": [
-        "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx"
+        "src/components/PdfViewer.tsx"
       ],
       "writers": [
-        "src/views/StudyView.tsx",
         "src/components/PdfViewer.tsx"
       ]
     },
@@ -479,21 +519,10 @@
     {
       "field": "setPdfTotalPages",
       "readers": [
-        "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx"
-      ],
-      "writers": [
-        "src/views/StudyView.tsx",
         "src/components/PdfViewer.tsx"
-      ]
-    },
-    {
-      "field": "setPdfUrl",
-      "readers": [
-        "src/views/StudyView.tsx"
       ],
       "writers": [
-        "src/views/StudyView.tsx"
+        "src/components/PdfViewer.tsx"
       ]
     },
     {
@@ -508,13 +537,11 @@
     {
       "field": "setSelectedTextContext",
       "readers": [
-        "src/views/StudyView.tsx",
         "src/components/ChatPanel.tsx",
         "src/components/PdfViewer.tsx"
       ],
       "writers": [
         "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx",
         "src/components/ChatPanel.tsx"
       ]
     },
@@ -556,8 +583,8 @@
     {
       "field": "voiceUsage",
       "readers": [
-        "src/components/ChatPanel.tsx",
-        "src/components/SettingsModal.tsx"
+        "src/components/SettingsModal.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": []
     },

@@ -10,6 +10,14 @@
       "writers": []
     },
     {
+      "field": "activePdfId",
+      "readers": [
+        "src/components/PdfSwitcher.tsx",
+        "src/views/StudyView.tsx"
+      ],
+      "writers": []
+    },
+    {
       "field": "activeProject",
       "readers": [
         "src/components/ChatPanel.tsx"
@@ -27,6 +35,13 @@
       "field": "addAnnotation",
       "readers": [
         "src/components/PdfViewer.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "addPdf",
+      "readers": [
+        "src/views/StudyView.tsx"
       ],
       "writers": []
     },
@@ -83,15 +98,16 @@
     {
       "field": "isVoiceActive",
       "readers": [
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/views/StudyView.tsx"
       ],
       "writers": []
     },
     {
       "field": "learnerName",
       "readers": [
-        "src/views/BrainView.tsx",
-        "src/components/ChatPanel.tsx"
+        "src/components/ChatPanel.tsx",
+        "src/views/BrainView.tsx"
       ],
       "writers": []
     },
@@ -126,8 +142,16 @@
     {
       "field": "pdfUrl",
       "readers": [
+        "src/components/PdfViewer.tsx",
+        "src/views/StudyView.tsx"
+      ],
+      "writers": []
+    },
+    {
+      "field": "pdfs",
+      "readers": [
         "src/views/StudyView.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfSwitcher.tsx"
       ],
       "writers": []
     },
@@ -167,10 +191,18 @@
       "writers": []
     },
     {
+      "field": "removePdf",
+      "readers": [
+        "src/components/PdfSwitcher.tsx",
+        "src/views/StudyView.tsx"
+      ],
+      "writers": []
+    },
+    {
       "field": "resetUsageAnalytics",
       "readers": [
-        "src/components/ChatPanel.tsx",
-        "src/components/SettingsModal.tsx"
+        "src/components/SettingsModal.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": []
     },
@@ -198,6 +230,15 @@
       ]
     },
     {
+      "field": "setActivePdf",
+      "readers": [
+        "src/components/PdfSwitcher.tsx"
+      ],
+      "writers": [
+        "src/components/PdfSwitcher.tsx"
+      ]
+    },
+    {
       "field": "setActiveProject",
       "readers": [
         "src/components/ChatPanel.tsx"
@@ -211,7 +252,6 @@
       "field": "setActiveView",
       "readers": [
         "src/components/ChatPanel.tsx",
-        "src/views/StudyView.tsx",
         "src/views/RevisionView.tsx",
         "src/App.tsx"
       ],
@@ -246,8 +286,8 @@
     {
       "field": "setAskTutorQuery",
       "readers": [
-        "src/components/ChatPanel.tsx",
-        "src/components/PdfViewer.tsx"
+        "src/components/PdfViewer.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": [
         "src/components/ChatPanel.tsx",
@@ -290,11 +330,9 @@
     {
       "field": "setPdfPage",
       "readers": [
-        "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx"
+        "src/components/PdfViewer.tsx"
       ],
       "writers": [
-        "src/views/StudyView.tsx",
         "src/components/PdfViewer.tsx"
       ]
     },
@@ -308,21 +346,10 @@
     {
       "field": "setPdfTotalPages",
       "readers": [
-        "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx"
-      ],
-      "writers": [
-        "src/views/StudyView.tsx",
         "src/components/PdfViewer.tsx"
-      ]
-    },
-    {
-      "field": "setPdfUrl",
-      "readers": [
-        "src/views/StudyView.tsx"
       ],
       "writers": [
-        "src/views/StudyView.tsx"
+        "src/components/PdfViewer.tsx"
       ]
     },
     {
@@ -337,13 +364,11 @@
     {
       "field": "setSelectedTextContext",
       "readers": [
-        "src/views/StudyView.tsx",
         "src/components/ChatPanel.tsx",
         "src/components/PdfViewer.tsx"
       ],
       "writers": [
         "src/components/PdfViewer.tsx",
-        "src/views/StudyView.tsx",
         "src/components/ChatPanel.tsx"
       ]
     },
@@ -385,8 +410,8 @@
     {
       "field": "voiceUsage",
       "readers": [
-        "src/components/ChatPanel.tsx",
-        "src/components/SettingsModal.tsx"
+        "src/components/SettingsModal.tsx",
+        "src/components/ChatPanel.tsx"
       ],
       "writers": []
     },
@@ -566,6 +591,26 @@
       "selector": "(state) => state.setIsVoiceActive"
     },
     {
+      "file": "src/components/PdfSwitcher.tsx",
+      "field": "pdfs",
+      "selector": "(state) => state.pdfs"
+    },
+    {
+      "file": "src/components/PdfSwitcher.tsx",
+      "field": "activePdfId",
+      "selector": "(state) => state.activePdfId"
+    },
+    {
+      "file": "src/components/PdfSwitcher.tsx",
+      "field": "setActivePdf",
+      "selector": "(state) => state.setActivePdf"
+    },
+    {
+      "file": "src/components/PdfSwitcher.tsx",
+      "field": "removePdf",
+      "selector": "(state) => state.removePdf"
+    },
+    {
       "file": "src/components/PdfViewer.tsx",
       "field": "pdfUrl",
       "selector": "(state) => state.pdfUrl"
@@ -657,28 +702,28 @@
     },
     {
       "file": "src/views/StudyView.tsx",
-      "field": "setPdfUrl",
-      "selector": "(state) => state.setPdfUrl"
+      "field": "pdfs",
+      "selector": "(state) => state.pdfs"
     },
     {
       "file": "src/views/StudyView.tsx",
-      "field": "setPdfPage",
-      "selector": "(state) => state.setPdfPage"
+      "field": "activePdfId",
+      "selector": "(state) => state.activePdfId"
     },
     {
       "file": "src/views/StudyView.tsx",
-      "field": "setPdfTotalPages",
-      "selector": "(state) => state.setPdfTotalPages"
+      "field": "addPdf",
+      "selector": "(state) => state.addPdf"
     },
     {
       "file": "src/views/StudyView.tsx",
-      "field": "setSelectedTextContext",
-      "selector": "(state) => state.setSelectedTextContext"
+      "field": "removePdf",
+      "selector": "(state) => state.removePdf"
     },
     {
       "file": "src/views/StudyView.tsx",
-      "field": "setActiveView",
-      "selector": "(state) => state.setActiveView"
+      "field": "isVoiceActive",
+      "selector": "(state) => state.isVoiceActive"
     }
   ]
 }

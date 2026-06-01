@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T14:58:58.302Z",
+    "generatedAt": "2026-05-29T11:11:31.349Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "9abf5b4139cc5ec1007a632efa4dbb2dea4bdfba",
+      "commit": "2ed6b035bd30f5c512e4502b73df81eaac8dc180",
       "branch": "main",
       "dirty": true
     },
@@ -32,7 +32,7 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "31a027861891e45d04aae40330ee5fa728578068f4eccce8acdce5883fa2cfb6"
+    "sourceHash": "b4a0d6d8f3bdc134373bcf831767836ab0a7c714888553c4a0378f5899953022"
   },
   "dependencies": {
     "generate-brain.ts": [
@@ -273,24 +273,6 @@
       {
         "specifier": "path",
         "external": "path"
-      }
-    ],
-    "brain/debug/ui-regression-probe.ts": [
-      {
-        "specifier": "child_process",
-        "external": "child_process"
-      },
-      {
-        "specifier": "fs",
-        "external": "fs"
-      },
-      {
-        "specifier": "path",
-        "external": "path"
-      },
-      {
-        "specifier": "playwright",
-        "external": "playwright"
       }
     ],
     "brain/embeddings/embedding-engine.ts": [
@@ -626,6 +608,28 @@
       {
         "specifier": "react",
         "external": "react"
+      }
+    ],
+    "src/components/PdfSwitcher.tsx": [
+      {
+        "specifier": "react",
+        "external": "react"
+      },
+      {
+        "specifier": "react-pdf",
+        "external": "react-pdf"
+      },
+      {
+        "specifier": "motion/react",
+        "external": "motion"
+      },
+      {
+        "specifier": "lucide-react",
+        "external": "lucide-react"
+      },
+      {
+        "specifier": "../store",
+        "resolved": "src/store/index.ts"
       }
     ],
     "src/components/PdfToolbar.tsx": [
@@ -1000,6 +1004,10 @@
       {
         "specifier": "../components/ChatPanel",
         "resolved": "src/components/ChatPanel.tsx"
+      },
+      {
+        "specifier": "../components/PdfSwitcher",
+        "resolved": "src/components/PdfSwitcher.tsx"
       },
       {
         "specifier": "../store",

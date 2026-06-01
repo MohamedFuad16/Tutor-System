@@ -13,6 +13,15 @@ export interface Concept {
   project: string;
 }
 
+export interface PdfDocument {
+  id: string;
+  name: string;
+  url: string;
+  page: number;
+  totalPages: number;
+  addedAt: number;
+}
+
 export interface Annotation {
   id: string;
   pageNumber: number;
@@ -215,6 +224,12 @@ interface AppState {
   activeView: ViewState;
   setActiveView: (view: ViewState) => void;
 
+  pdfs: PdfDocument[];
+  activePdfId: string | null;
+  addPdf: (file: File) => string;
+  removePdf: (id: string) => void;
+  setActivePdf: (id: string) => void;
+
   pdfUrl: string | null;
   setPdfUrl: (url: string | null) => void;
   pdfScale: number;
@@ -302,14 +317,93 @@ export const useStore = create<AppState>()(
         localStorage.setItem("learner_name", cleanName);
         set({ learnerName: cleanName });
       },
+      pdfs: [],
+      activePdfId: null,
+      addPdf: (file) => {
+        const id =
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `pdf-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const url = URL.createObjectURL(file);
+        const doc: PdfDocument = {
+          id,
+          name: file.name.replace(/\.pdf$/i, "") || "Document",
+          url,
+          page: 1,
+          totalPages: 0,
+          addedAt: Date.now(),
+        };
+        set((state) => ({
+          pdfs: [...state.pdfs, doc],
+          activePdfId: id,
+          pdfUrl: url,
+          pdfPage: 1,
+          pdfTotalPages: 0,
+          selectedTextContext: "",
+        }));
+        return id;
+      },
+      removePdf: (id) =>
+        set((state) => {
+          const doc = state.pdfs.find((p) => p.id === id);
+          if (doc) {
+            try {
+              URL.revokeObjectURL(doc.url);
+            } catch {
+              /* noop */
+            }
+          }
+          const pdfs = state.pdfs.filter((p) => p.id !== id);
+          if (state.activePdfId !== id) {
+            return { pdfs };
+          }
+          const next = pdfs[pdfs.length - 1] ?? null;
+          return {
+            pdfs,
+            activePdfId: next?.id ?? null,
+            pdfUrl: next?.url ?? null,
+            pdfPage: next?.page ?? 1,
+            pdfTotalPages: next?.totalPages ?? 0,
+            selectedTextContext: "",
+          };
+        }),
+      setActivePdf: (id) =>
+        set((state) => {
+          const doc = state.pdfs.find((p) => p.id === id);
+          if (!doc || state.activePdfId === id) return {};
+          return {
+            activePdfId: id,
+            pdfUrl: doc.url,
+            pdfPage: doc.page,
+            pdfTotalPages: doc.totalPages,
+            selectedTextContext: "",
+          };
+        }),
+
       pdfUrl: null,
       setPdfUrl: (url) => set({ pdfUrl: url }),
       pdfScale: 1,
       setPdfScale: (scale) => set({ pdfScale: scale }),
       pdfPage: 1,
-      setPdfPage: (page) => set({ pdfPage: page }),
+      setPdfPage: (page) =>
+        set((state) => ({
+          pdfPage: page,
+          pdfs: state.activePdfId
+            ? state.pdfs.map((p) =>
+                p.id === state.activePdfId ? { ...p, page } : p,
+              )
+            : state.pdfs,
+        })),
       pdfTotalPages: 0,
-      setPdfTotalPages: (total) => set({ pdfTotalPages: total }),
+      setPdfTotalPages: (total) =>
+        set((state) => ({
+          pdfTotalPages: total,
+          pdfs: state.activePdfId
+            ? state.pdfs.map((p) =>
+                p.id === state.activePdfId ? { ...p, totalPages: total } : p,
+              )
+            : state.pdfs,
+        })),
 
       annotations: [],
       addAnnotation: (ann) =>

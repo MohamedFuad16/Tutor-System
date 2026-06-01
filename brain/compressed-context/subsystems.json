@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-27T14:58:58.302Z",
+    "generatedAt": "2026-05-29T11:11:31.349Z",
     "generator": "generate-brain.ts",
     "generatorVersion": 2,
     "sourceScope": [
@@ -23,7 +23,7 @@
       "temporary files"
     ],
     "commit": {
-      "commit": "9abf5b4139cc5ec1007a632efa4dbb2dea4bdfba",
+      "commit": "2ed6b035bd30f5c512e4502b73df81eaac8dc180",
       "branch": "main",
       "dirty": true
     },
@@ -32,11 +32,11 @@
       "version": "0.0.0",
       "react": "^19.0.1"
     },
-    "sourceHash": "31a027861891e45d04aae40330ee5fa728578068f4eccce8acdce5883fa2cfb6"
+    "sourceHash": "b4a0d6d8f3bdc134373bcf831767836ab0a7c714888553c4a0378f5899953022"
   },
   "subsystems": {
     "frontend": {
-      "generatedAt": "2026-05-27T14:58:58.369Z",
+      "generatedAt": "2026-05-29T11:11:31.440Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/AnimatedScrollText.tsx",
@@ -45,6 +45,7 @@
         "src/components/Navigation.tsx",
         "src/components/PatternCard.tsx",
         "src/components/PatternSVGs.tsx",
+        "src/components/PdfSwitcher.tsx",
         "src/components/PdfToolbar.tsx",
         "src/components/PdfViewer.tsx",
         "src/components/PracticeMode.tsx",
@@ -98,6 +99,11 @@
         "src/components/PatternSVGs.tsx",
         "react",
         "react",
+        "react-pdf",
+        "motion",
+        "lucide-react",
+        "src/store/index.ts",
+        "react",
         "lucide-react",
         "react",
         "react-pdf",
@@ -154,6 +160,7 @@
         "react",
         "src/components/PdfViewer.tsx",
         "src/components/ChatPanel.tsx",
+        "src/components/PdfSwitcher.tsx",
         "src/store/index.ts",
         "lucide-react",
         "src/components/PatternCard.tsx",
@@ -204,7 +211,7 @@
       ]
     },
     "backend": {
-      "generatedAt": "2026-05-27T14:58:58.370Z",
+      "generatedAt": "2026-05-29T11:11:31.440Z",
       "sourceFiles": [
         "server.ts"
       ],
@@ -230,11 +237,12 @@
       ]
     },
     "state": {
-      "generatedAt": "2026-05-27T14:58:58.370Z",
+      "generatedAt": "2026-05-29T11:11:31.440Z",
       "sourceFiles": [
         "src/App.tsx",
         "src/components/ChatPanel.tsx",
         "src/components/Navigation.tsx",
+        "src/components/PdfSwitcher.tsx",
         "src/components/PdfViewer.tsx",
         "src/components/SettingsModal.tsx",
         "src/store/index.ts",
@@ -274,6 +282,11 @@
         "src/store/index.ts",
         "lucide-react",
         "motion",
+        "react",
+        "react-pdf",
+        "motion",
+        "lucide-react",
+        "src/store/index.ts",
         "react",
         "react-pdf",
         "react-pdf",
@@ -323,6 +336,7 @@
         "react",
         "src/components/PdfViewer.tsx",
         "src/components/ChatPanel.tsx",
+        "src/components/PdfSwitcher.tsx",
         "src/store/index.ts",
         "lucide-react",
         "src/components/PatternCard.tsx",
@@ -351,15 +365,15 @@
           "risk": 8
         },
         {
+          "file": "src/components/PdfSwitcher.tsx",
+          "risk": 8
+        },
+        {
           "file": "src/components/PdfViewer.tsx",
           "risk": 8
         },
         {
           "file": "src/components/SettingsModal.tsx",
-          "risk": 8
-        },
-        {
-          "file": "src/views/AdminView.tsx",
           "risk": 8
         }
       ],
@@ -373,7 +387,7 @@
       ]
     },
     "memory": {
-      "generatedAt": "2026-05-27T14:58:58.370Z",
+      "generatedAt": "2026-05-29T11:11:31.440Z",
       "sourceFiles": [
         "src/memory/bkt.engine.ts",
         "src/memory/cognitive.load.ts",
@@ -453,7 +467,7 @@
       ]
     },
     "brainTooling": {
-      "generatedAt": "2026-05-27T14:58:58.370Z",
+      "generatedAt": "2026-05-29T11:11:31.440Z",
       "sourceFiles": [
         "generate-brain.ts",
         "brain/drift-check.ts",
@@ -463,7 +477,6 @@
         "brain/autonomy/watch.ts",
         "brain/debug/debug-runner.ts",
         "brain/debug/docs-sync.ts",
-        "brain/debug/ui-regression-probe.ts",
         "brain/embeddings/embedding-engine.ts",
         "brain/impact/analyze-impact.ts",
         "brain/knowledge/query-engine.ts",
@@ -505,10 +518,6 @@
         "path",
         "fs",
         "path",
-        "child_process",
-        "fs",
-        "path",
-        "playwright",
         "crypto",
         "fs",
         "path",

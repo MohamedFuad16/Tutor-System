@@ -1,8 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { PdfViewer } from "../components/PdfViewer";
 import { ChatPanel } from "../components/ChatPanel";
+import { PdfSwitcher } from "../components/PdfSwitcher";
 import { useStore } from "../store";
-import { UploadCloud, MessageSquare, X, RefreshCw } from "lucide-react";
+import {
+  UploadCloud,
+  MessageSquare,
+  X,
+  Plus,
+  Layers,
+  RefreshCw,
+  ChevronRight,
+} from "lucide-react";
 import { PatternCard, themes } from "../components/PatternCard";
 import { AnimatedScrollText } from "../components/AnimatedScrollText";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
@@ -65,19 +74,80 @@ const CurvedArrow = ({ color }: { color: string }) => (
 
 export function StudyView() {
   const pdfUrl = useStore((state) => state.pdfUrl);
-  const setPdfUrl = useStore((state) => state.setPdfUrl);
-  const setPdfPage = useStore((state) => state.setPdfPage);
-  const setPdfTotalPages = useStore((state) => state.setPdfTotalPages);
-  const setSelectedTextContext = useStore(
-    (state) => state.setSelectedTextContext,
-  );
-  const setActiveView = useStore((state) => state.setActiveView);
+  const pdfs = useStore((state) => state.pdfs);
+  const activePdfId = useStore((state) => state.activePdfId);
+  const addPdf = useStore((state) => state.addPdf);
+  const removePdf = useStore((state) => state.removePdf);
+  const isVoiceActive = useStore((state) => state.isVoiceActive);
   const [isDragging, setIsDragging] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [card1DotsReady, setCard1DotsReady] = useState(false);
   const [card2DotsReady, setCard2DotsReady] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // ---- Resizable PDF / chat split ----
+  const PANEL_MIN_PDF = 300; // px below which we keep the floor
+  const PANEL_MIN_CHAT = 360; // px reserved for the chat/audio panel
+  const PANEL_COLLAPSE_AT = 190; // drag below this -> fully collapse the PDF
+  const layoutRef = useRef<HTMLDivElement>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [pdfPct, setPdfPct] = useState(58);
+  const [isPdfCollapsed, setIsPdfCollapsed] = useState(false);
+  const lastPdfPctRef = useRef(58);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  const getContentMetrics = () => {
+    const el = layoutRef.current;
+    if (!el) return null;
+    const styles = getComputedStyle(el);
+    const padL = parseFloat(styles.paddingLeft) || 0;
+    const padR = parseFloat(styles.paddingRight) || 0;
+    const gap = parseFloat(styles.columnGap || styles.gap) || 0;
+    const rect = el.getBoundingClientRect();
+    return { left: rect.left + padL, width: rect.width - padL - padR, gap };
+  };
+
+  useEffect(() => {
+    if (!isResizing) return;
+    const onMove = (e: PointerEvent) => {
+      const m = getContentMetrics();
+      if (!m) return;
+      const desired = e.clientX - m.left;
+      if (desired < PANEL_COLLAPSE_AT) {
+        lastPdfPctRef.current = pdfPct;
+        setIsPdfCollapsed(true);
+        setIsResizing(false);
+        return;
+      }
+      const maxPdf = m.width - PANEL_MIN_CHAT - m.gap;
+      const clamped = Math.max(PANEL_MIN_PDF, Math.min(desired, maxPdf));
+      setPdfPct((clamped / m.width) * 100);
+    };
+    const onUp = () => setIsResizing(false);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, [isResizing, pdfPct]);
+
+  const restorePdfPanel = () => {
+    setPdfPct(Math.min(Math.max(lastPdfPctRef.current, 50), 65));
+    setIsPdfCollapsed(false);
+  };
+
+  const pdfPanelCollapsed = isDesktop && isPdfCollapsed;
 
   const { scrollYProgress } = useScroll({
     container: scrollContainerRef,
@@ -113,51 +183,90 @@ export function StudyView() {
     });
   };
 
+  const ingestFiles = (fileList: FileList | null) => {
+    if (!fileList) return;
+    Array.from(fileList)
+      .filter((file) => file.type === "application/pdf")
+      .forEach((file) => addPdf(file));
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type === "application/pdf") {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
-    }
+    ingestFiles(e.target.files);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type === "application/pdf") {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
-    }
+    ingestFiles(e.dataTransfer.files);
   };
 
-  const clearPdf = () => {
-    if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-    setPdfUrl(null);
-    setPdfPage(1);
-    setPdfTotalPages(0);
-    setSelectedTextContext("");
+  const clearActivePdf = () => {
+    if (activePdfId) removePdf(activePdfId);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-[100dvh] w-full bg-[#030303] overflow-hidden pt-16 md:pt-24 pb-4 md:pb-8 px-3 md:px-6 lg:px-8 gap-3 md:gap-6 lg:gap-8">
-      <div className="w-full flex-1 md:h-full min-h-[30vh] border border-[#1a1a1a] rounded-2xl flex flex-col shrink relative bg-[#0A0A0B] overflow-hidden shadow-2xl">
+    <div
+      ref={layoutRef}
+      className={`flex flex-col md:flex-row h-[100dvh] w-full bg-[#030303] overflow-hidden pt-16 md:pt-24 pb-4 md:pb-8 px-3 md:px-6 lg:px-8 gap-3 md:gap-6 lg:gap-8 ${
+        isResizing ? "cursor-col-resize select-none" : ""
+      }`}
+    >
+      {pdfPanelCollapsed && (
+        <motion.button
+          type="button"
+          onClick={restorePdfPanel}
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.96 }}
+          aria-label="Open document panel"
+          className="group relative my-auto hidden h-28 w-2 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] backdrop-blur-xl transition-colors hover:bg-white/[0.12] md:flex"
+        >
+          <span className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,110,0,0.25),transparent_70%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <ChevronRight
+            size={14}
+            className="relative text-white/55 transition-colors group-hover:text-[#ff6e00]"
+          />
+        </motion.button>
+      )}
+      <div
+        style={
+          isDesktop && !pdfPanelCollapsed
+            ? { flexGrow: 0, flexShrink: 0, flexBasis: `${pdfPct}%` }
+            : undefined
+        }
+        className={`w-full md:h-full min-h-[30vh] border border-[#1a1a1a] rounded-2xl flex flex-col relative bg-[#0A0A0B] overflow-hidden shadow-2xl ${
+          pdfPanelCollapsed ? "hidden" : "flex-1 md:flex-none"
+        }`}
+      >
         {pdfUrl ? (
           <>
             <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
+              {pdfs.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => setIsLibraryOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3 py-2 text-xs font-semibold text-zinc-200 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <Layers size={13} /> Documents
+                  <span className="ml-0.5 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white/70">
+                    {pdfs.length}
+                  </span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3 py-2 text-xs font-semibold text-zinc-200 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <Plus size={13} /> Add PDF
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3 py-2 text-xs font-semibold text-zinc-200 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-white/10 hover:text-white"
-              >
-                <RefreshCw size={13} /> Replace
-              </button>
-              <button
-                type="button"
-                onClick={clearPdf}
+                onClick={clearActivePdf}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 text-zinc-300 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-red-500/15 hover:text-red-100"
                 aria-label="Remove current PDF"
               >
@@ -167,11 +276,17 @@ export function StudyView() {
             <input
               type="file"
               accept="application/pdf"
+              multiple
               ref={fileInputRef}
               className="hidden"
               onChange={handleFileChange}
             />
             <PdfViewer />
+            <PdfSwitcher
+              open={isLibraryOpen}
+              onClose={() => setIsLibraryOpen(false)}
+              onAddClick={() => fileInputRef.current?.click()}
+            />
           </>
         ) : (
           <div
@@ -342,6 +457,7 @@ export function StudyView() {
                 <input
                   type="file"
                   accept="application/pdf"
+                  multiple
                   ref={fileInputRef}
                   className="hidden"
                   onChange={handleFileChange}
@@ -381,10 +497,36 @@ export function StudyView() {
         )}
       </div>
 
+      {isDesktop && !pdfPanelCollapsed && (
+        <div
+          onPointerDown={(e) => {
+            e.preventDefault();
+            setIsResizing(true);
+          }}
+          onDoubleClick={() => setPdfPct(58)}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize document and chat panels"
+          className="group relative -mx-2 hidden w-4 shrink-0 cursor-col-resize items-center justify-center md:flex"
+        >
+          <span
+            className={`h-20 w-1 rounded-full transition-all duration-200 ${
+              isResizing
+                ? "bg-[#ff6e00] shadow-[0_0_14px_rgba(255,110,0,0.6)]"
+                : "bg-white/15 group-hover:h-24 group-hover:bg-white/35"
+            }`}
+          />
+        </div>
+      )}
+
       <motion.aside
-        layout
-        transition={{ type: "spring", stiffness: 360, damping: 30 }}
-        className="flex w-full min-h-0 origin-bottom-right flex-col gap-2 md:gap-3 md:w-[44%] md:max-w-[560px] md:self-center lg:w-[40%] xl:w-[36%] flex-1 md:flex-none md:h-[calc(100%-0.5rem)]"
+        layout={!isResizing}
+        transition={
+          isResizing
+            ? { duration: 0 }
+            : { type: "spring", stiffness: 360, damping: 30 }
+        }
+        className="flex w-full min-h-0 min-w-0 origin-bottom-right flex-col gap-2 md:gap-3 md:max-w-none md:self-center flex-1 md:h-[calc(100%-0.5rem)]"
       >
         <AnimatePresence mode="wait">
           {isChatOpen ? (
@@ -405,7 +547,11 @@ export function StudyView() {
                 damping: 30,
                 mass: 0.9,
               }}
-              className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-black/5 bg-[#fdfdfd] text-[#050505] shadow-[0_20px_60px_rgba(0,0,0,0.15)] origin-bottom"
+              className={`min-h-0 flex-1 overflow-hidden rounded-3xl text-[#050505] shadow-[0_20px_60px_rgba(0,0,0,0.15)] origin-bottom transition-colors duration-500 ${
+                isVoiceActive
+                  ? "border border-transparent bg-black"
+                  : "border border-black/5 bg-[#fdfdfd]"
+              }`}
             >
               <ChatPanel onClose={() => setIsChatOpen(false)} />
             </motion.div>
