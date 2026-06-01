@@ -45,6 +45,24 @@ export type UnavailableCitationInput = {
   metadata?: Record<string, unknown>;
 };
 
+export type GeneratedFlashcardsArtifactInput = {
+  batchId?: string;
+  cards: Array<{
+    id?: string;
+    front?: unknown;
+    back?: unknown;
+    conceptId?: unknown;
+  }>;
+  source?: string;
+  sourceMessageId?: string;
+  messageId?: string;
+  conversationId?: string;
+  bookId?: string;
+  bookTitle?: string;
+  toolJobId?: string;
+  metadata?: Record<string, unknown>;
+};
+
 export type CitationIntegrityState = CitationState["state"];
 
 export type CitationIntegrityResult = {
@@ -303,6 +321,10 @@ export const artifactVerificationStateForCitationStates = (
   return "not_checked";
 };
 
+export const supportsLocalCitationIntegrityArtifact = (
+  artifact?: Pick<ArtifactRecord, "artifactType"> | null,
+) => artifact?.artifactType === "source_card";
+
 export const verifyLocalCitationIntegrity = (input: {
   artifact?: ArtifactRecord | null;
   citation: CitationState;
@@ -379,7 +401,7 @@ export const verifyLocalCitationIntegrity = (input: {
     return result("unavailable", "The linked artifact is marked failed.");
   }
 
-  if (artifact.artifactType !== "source_card") {
+  if (!supportsLocalCitationIntegrityArtifact(artifact)) {
     return result(
       "unsupported",
       "The local verifier currently supports source-card citation rows only.",
@@ -551,6 +573,14 @@ export const verifyCitationStateIntegrity = async (
     citation,
     timestamp,
   });
+  if (artifact && !supportsLocalCitationIntegrityArtifact(artifact)) {
+    return {
+      citation,
+      artifact,
+      result,
+    };
+  }
+
   const updatedCitation = applyCitationIntegrityResult(citation, result);
   const linkedCitationStates = artifact
     ? await loadLinkedCitationStates(artifact, updatedCitation)
@@ -595,6 +625,20 @@ export const verifyArtifactCitationIntegrity = async (
   }
 
   const citationStates = await loadLinkedCitationStates(artifact);
+  if (!supportsLocalCitationIntegrityArtifact(artifact)) {
+    return {
+      artifact,
+      citations: citationStates,
+      results: citationStates.map((citation) =>
+        verifyLocalCitationIntegrity({
+          artifact,
+          citation,
+          timestamp,
+        }),
+      ),
+    };
+  }
+
   if (citationStates.length === 0) {
     const updatedArtifact = createArtifactRecord(
       {
@@ -744,6 +788,142 @@ export const recordWebSourceArtifact = async (
     );
   } catch (error) {
     console.warn("[ArtifactRecords] source artifact write failed", error);
+  }
+
+  return { artifact, citation };
+};
+
+export const createGeneratedFlashcardsArtifactRecords = (
+  input: GeneratedFlashcardsArtifactInput,
+  timestamp = Date.now(),
+) => {
+  const validCards = input.cards.filter(
+    (card) => compact(card.front) || compact(card.back),
+  );
+  const cardIds = cleanList(
+    validCards.map((card) => card.id),
+    64,
+  );
+  const conceptIds = cleanList(
+    validCards
+      .map((card) => card.conceptId)
+      .filter((value) => compact(value).toLowerCase() !== "general"),
+    32,
+  );
+  const sourceRef = compact(
+    input.sourceMessageId ||
+      input.messageId ||
+      input.batchId ||
+      cardIds.join(":") ||
+      input.bookId ||
+      "generated-flashcards",
+  );
+  const batchId = compact(input.batchId || sourceRef);
+  const artifactId = artifactRecordIdFor({
+    artifactType: "flashcards",
+    sourceRef: batchId,
+  });
+  const citationId = citationStateIdFor({
+    claimId: artifactId,
+    sourceRef,
+  });
+  const cardCount = validCards.length;
+  const title =
+    cardCount === 1
+      ? "Generated flashcard"
+      : `${cardCount} generated flashcards`;
+  const samplePrompts = validCards
+    .map((card) => compact(card.front))
+    .filter(Boolean)
+    .slice(0, 3);
+
+  const citation = createCitationStateRecord(
+    {
+      id: citationId,
+      state: "not_checked",
+      claimId: artifactId,
+      sourceRef,
+      artifactId,
+      title,
+      verifier: "generated_flashcard_provenance",
+      metadata: {
+        localOnly: true,
+        generatedArtifact: true,
+        artifactType: "flashcards",
+        batchId,
+        sourceMessageId: input.sourceMessageId,
+        cardCount,
+        cardIds,
+        conceptIds,
+        ...input.metadata,
+      },
+    },
+    timestamp,
+  );
+  const artifact = createArtifactRecord(
+    {
+      id: artifactId,
+      artifactType: "flashcards",
+      status: cardCount > 0 ? "ready" : "failed",
+      verificationState: "not_checked",
+      source: input.source || "chat_flashcard_generation",
+      title,
+      summary: samplePrompts.length
+        ? `Saved ${cardCount} generated flashcard${cardCount === 1 ? "" : "s"}: ${samplePrompts.join("; ")}`
+        : `Saved ${cardCount} generated flashcard${cardCount === 1 ? "" : "s"}.`,
+      sourceIds: cleanList(
+        [
+          sourceRef,
+          input.sourceMessageId,
+          input.messageId,
+          input.bookId,
+          ...cardIds,
+        ],
+        64,
+      ),
+      citationStateIds: [citation.id],
+      toolJobId: input.toolJobId,
+      messageId: input.messageId || input.sourceMessageId,
+      conversationId: input.conversationId,
+      bookId: input.bookId,
+      conceptId: conceptIds.length === 1 ? conceptIds[0] : undefined,
+      metadata: {
+        localOnly: true,
+        generatedArtifact: true,
+        batchId,
+        sourceMessageId: input.sourceMessageId,
+        bookTitle: input.bookTitle,
+        cardCount,
+        cardIds,
+        conceptIds,
+        unresolvedCards: validCards.filter(
+          (card) => compact(card.conceptId).toLowerCase() === "general",
+        ).length,
+        samplePrompts,
+        ...input.metadata,
+      },
+    },
+    timestamp,
+  );
+
+  return { artifact, citation };
+};
+
+export const recordGeneratedFlashcardsArtifact = async (
+  input: GeneratedFlashcardsArtifactInput,
+) => {
+  const { artifact, citation } =
+    createGeneratedFlashcardsArtifactRecords(input);
+
+  try {
+    await db.transaction("rw", db.artifactRecords, db.citationStates, () =>
+      Promise.all([
+        db.artifactRecords.put(artifact),
+        db.citationStates.put(citation),
+      ]),
+    );
+  } catch (error) {
+    console.warn("[ArtifactRecords] flashcard artifact write failed", error);
   }
 
   return { artifact, citation };

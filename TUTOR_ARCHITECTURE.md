@@ -67,8 +67,9 @@ archived separately and can be restored from the Chat Panel library context.
 
 ## 5. Dexie Database
 
-Tutor persists concept maps, learning history, flashcards, and diagnostic trace
-logs in a local Dexie instance named `NeuralNestBrain` in
+Tutor persists concept maps, learning history, flashcards, observability rows,
+artifact provenance, correction controls, and diagnostic trace logs in a local
+Dexie instance named `NeuralNestBrain` in
 `src/memory/longterm.memory.ts`.
 
 Important tables:
@@ -76,6 +77,9 @@ Important tables:
 - `concepts`, `misconceptions`, `sessions`, `interactions`
 - `flashcards`, `traceLogs`
 - `learningBooks`, `learningBookConcepts`, `learningEntries`
+- `evidenceEvents`, `masteryDeltas`, `memoryEvents`, `retrievalEvents`
+- `modelRuns`, `toolJobs`, `correctionEvents`
+- `artifactRecords`, `citationStates`
 
 `MemoryOrchestrator` stores conversations, requests structured learning-book
 updates, writes concepts and entries, announces active books, and records trace
@@ -94,7 +98,9 @@ documents through the right extraction branch.
 
 `ChatPanel` streams tutor output via SSE, renders Markdown and Mermaid, supports
 source-material-first answering, handles web-search events, and manages TTS and
-voice flows.
+voice flows. Web-search sources write source-card artifacts. Generated
+flashcards write local `ArtifactRecord` provenance rows with `not_checked`
+citation states so Admin can audit them before broader verification exists.
 
 ### Revision View
 
@@ -106,6 +112,11 @@ wireframes, tokens, and interactive previews.
 
 `AdminView` provides:
 
+- System Activity, request timelines, model runs, memory/retrieval events, tool
+  jobs, evidence/mastery ledgers, correction controls, source artifacts, and
+  beta diagnostics.
+- Source-card local citation checks plus not-checked generated flashcard
+  artifact provenance.
 - DeepSeek Trace Ledger for persisted learning-book and trace events.
 - Server Console for live backend logs over WebSocket.
 

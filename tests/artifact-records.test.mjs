@@ -6,10 +6,12 @@ const {
   citationStateIdFor,
   createArtifactRecord,
   createCitationStateRecord,
+  createGeneratedFlashcardsArtifactRecords,
   artifactVerificationStateForCitationStates,
   normalizeArtifactStatus,
   normalizeArtifactVerificationState,
   normalizeCitationState,
+  supportsLocalCitationIntegrityArtifact,
   verifyLocalCitationIntegrity,
 } = await import("../.tmp-test/artifact.records.mjs");
 
@@ -79,6 +81,72 @@ test("artifact records compact fields and preserve audit metadata", () => {
   assert.deepEqual(record.sourceIds, ["src-1", "src-2"]);
   assert.deepEqual(record.citationStateIds, ["citation-1"]);
   assert.deepEqual(record.metadata, { mode: "search" });
+});
+
+test("generated flashcards become not-checked artifact records with provenance", () => {
+  const { artifact, citation } = createGeneratedFlashcardsArtifactRecords(
+    {
+      batchId: "batch-1",
+      source: "chat_tool_flashcard_generation",
+      sourceMessageId: "assistant-message-1",
+      messageId: "assistant-message-1",
+      conversationId: "thread:book-1",
+      bookId: "book-1",
+      bookTitle: "Graph learning",
+      cards: [
+        {
+          id: "card-1",
+          front: "What does BKT update?",
+          back: "A concept mastery estimate.",
+          conceptId: "concept-bkt",
+        },
+        {
+          id: "card-2",
+          front: "What should stay general?",
+          back: "Ambiguous generated cards.",
+          conceptId: "general",
+        },
+      ],
+      metadata: { generationPath: "chat_stream_done" },
+    },
+    24680,
+  );
+
+  assert.equal(artifact.timestamp, 24680);
+  assert.equal(artifact.artifactType, "flashcards");
+  assert.equal(artifact.status, "ready");
+  assert.equal(artifact.verificationState, "not_checked");
+  assert.equal(artifact.source, "chat_tool_flashcard_generation");
+  assert.equal(artifact.messageId, "assistant-message-1");
+  assert.equal(artifact.conversationId, "thread:book-1");
+  assert.equal(artifact.bookId, "book-1");
+  assert.equal(artifact.conceptId, "concept-bkt");
+  assert.deepEqual(artifact.citationStateIds, [citation.id]);
+  assert.deepEqual(artifact.metadata.cardIds, ["card-1", "card-2"]);
+  assert.deepEqual(artifact.metadata.conceptIds, ["concept-bkt"]);
+  assert.equal(artifact.metadata.unresolvedCards, 1);
+  assert.equal(artifact.metadata.localOnly, true);
+  assert.equal(citation.timestamp, 24680);
+  assert.equal(citation.state, "not_checked");
+  assert.equal(citation.artifactId, artifact.id);
+  assert.equal(citation.sourceRef, "assistant-message-1");
+  assert.equal(citation.verifier, "generated_flashcard_provenance");
+});
+
+test("local source-card verifier support excludes generated flashcards", () => {
+  assert.equal(
+    supportsLocalCitationIntegrityArtifact({ artifactType: "source_card" }),
+    true,
+  );
+  assert.equal(
+    supportsLocalCitationIntegrityArtifact({ artifactType: "flashcards" }),
+    false,
+  );
+  assert.equal(
+    supportsLocalCitationIntegrityArtifact({ artifactType: "notes" }),
+    false,
+  );
+  assert.equal(supportsLocalCitationIntegrityArtifact(null), false);
 });
 
 test("citation records keep unavailable reasons and source metadata", () => {

@@ -148,16 +148,23 @@
       "owner": "main agent + read-only sidecar Lagrange",
       "status": "completed",
       "write_scope": "src/memory/artifact.records.ts, src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, tests/artifact-records.test.mjs, tests/beta-diagnostics.test.mjs, graphify-out/*"
+    },
+    {
+      "id": "U",
+      "name": "Flashcard artifact provenance",
+      "owner": "main agent + read-only final-check sidecar",
+      "status": "completed",
+      "write_scope": "src/memory/artifact.records.ts, src/components/ChatPanel.tsx, src/views/AdminView.tsx, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, TUTOR_ARCHITECTURE.md, tests/artifact-records.test.mjs, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_15_verified_pending_push",
+    "status": "phase_16_verified",
     "checks": [
       "npm run lint",
       "npm run test",
       "npm run build",
       "npm run format:check",
-      "browser QA for Admin Source Artifacts, Beta Diagnostics, and built-in books",
+      "browser QA for Admin Source Artifacts and built-in books",
       "graphify update . --force",
       "npm run graphify:tree",
       "graphify query smoke"

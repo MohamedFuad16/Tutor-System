@@ -54,6 +54,7 @@ import {
   updateCorrectionEventReviewStatus,
 } from "../memory/correction.events";
 import {
+  supportsLocalCitationIntegrityArtifact,
   verifyArtifactCitationIntegrity,
   verifyCitationStateIntegrity,
 } from "../memory/artifact.records";
@@ -683,6 +684,9 @@ export function AdminView() {
     },
     {},
   );
+  const artifactRecordsById = new Map(
+    artifactRecords.map((record) => [record.id, record]),
+  );
   const citationStatesByState = citationStates.reduce<Record<string, number>>(
     (acc, state) => {
       acc[state.state] = (acc[state.state] || 0) + 1;
@@ -928,6 +932,12 @@ export function AdminView() {
   const runLocalArtifactVerifier = async (record: ArtifactRecord) => {
     setCitationVerifierError("");
     setCitationVerifierFeedback("");
+    if (!supportsLocalCitationIntegrityArtifact(record)) {
+      setCitationVerifierFeedback(
+        `${record.title} is a ${record.artifactType.replace(/_/g, " ")} artifact. No local verifier exists for that artifact type yet, so its provenance stays not checked.`,
+      );
+      return;
+    }
     setCitationVerifierBusyId(record.id);
 
     try {
@@ -952,6 +962,18 @@ export function AdminView() {
   const runLocalCitationVerifier = async (state: CitationState) => {
     setCitationVerifierError("");
     setCitationVerifierFeedback("");
+    const linkedArtifact = state.artifactId
+      ? artifactRecordsById.get(state.artifactId)
+      : undefined;
+    if (
+      linkedArtifact &&
+      !supportsLocalCitationIntegrityArtifact(linkedArtifact)
+    ) {
+      setCitationVerifierFeedback(
+        `${state.title || state.sourceRef} belongs to a ${linkedArtifact.artifactType.replace(/_/g, " ")} artifact. No local verifier exists for that citation kind yet, so it stays not checked.`,
+      );
+      return;
+    }
     setCitationVerifierBusyId(state.id);
 
     try {
@@ -2714,12 +2736,12 @@ export function AdminView() {
                             Artifact and citation state ledger
                           </h2>
                           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
-                            Durable local records for source cards and citation
-                            states captured from chat web-search streams. Source
-                            cards can be ready while their citations remain
-                            checking; the local verifier checks saved
-                            source-card structure and links without fetching
-                            external pages.
+                            Durable local records for source cards, generated
+                            study artifacts, and citation states captured from
+                            chat streams. Artifacts can be ready while their
+                            citations remain checking or not checked; the local
+                            verifier checks saved source-card structure and
+                            links without fetching external pages.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -2775,12 +2797,12 @@ export function AdminView() {
                         <div className="mb-4 flex items-center justify-between gap-3">
                           <div>
                             <h3 className="text-xl font-serif font-medium text-zinc-900">
-                              Recent source artifacts
+                              Recent artifacts
                             </h3>
                             <p className="mt-1 text-sm text-zinc-500 font-serif">
-                              Newest first. These rows are captured locally from
-                              chat source streams and can be reviewed before
-                              they influence generated artifacts.
+                              Newest first. These rows include source cards and
+                              generated study artifacts captured locally for
+                              review before they influence learner-brain trust.
                             </p>
                           </div>
                           <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
@@ -2790,9 +2812,9 @@ export function AdminView() {
 
                         {artifactRecords.length === 0 ? (
                           <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
-                            No source artifacts yet. A chat web-search result or
-                            final source list will persist source-card artifacts
-                            here.
+                            No artifacts yet. A chat web-search result or
+                            generated flashcard batch will persist reviewable
+                            artifact rows here.
                           </div>
                         ) : (
                           <div className="space-y-3">
@@ -2871,26 +2893,34 @@ export function AdminView() {
                                 </div>
 
                                 <div className="mt-3 flex flex-wrap gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      void runLocalArtifactVerifier(record)
-                                    }
-                                    disabled={
-                                      citationVerifierBusyId === record.id
-                                    }
-                                    className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 transition-colors hover:bg-green-100 disabled:cursor-wait disabled:opacity-60"
-                                  >
-                                    <RefreshCw
-                                      size={12}
-                                      className={
-                                        citationVerifierBusyId === record.id
-                                          ? "animate-spin"
-                                          : ""
+                                  {supportsLocalCitationIntegrityArtifact(
+                                    record,
+                                  ) ? (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void runLocalArtifactVerifier(record)
                                       }
-                                    />
-                                    Run local check
-                                  </button>
+                                      disabled={
+                                        citationVerifierBusyId === record.id
+                                      }
+                                      className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 transition-colors hover:bg-green-100 disabled:cursor-wait disabled:opacity-60"
+                                    >
+                                      <RefreshCw
+                                        size={12}
+                                        className={
+                                          citationVerifierBusyId === record.id
+                                            ? "animate-spin"
+                                            : ""
+                                        }
+                                      />
+                                      Run local check
+                                    </button>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-500">
+                                      No local verifier yet
+                                    </span>
+                                  )}
                                   <button
                                     type="button"
                                     onClick={() =>
@@ -2962,8 +2992,9 @@ export function AdminView() {
                                 Citation states
                               </h3>
                               <p className="mt-1 text-sm text-zinc-500 font-serif">
-                                State machine rows for source-card claims and
-                                search failures.
+                                State machine rows for source-card claims,
+                                generated-artifact provenance, and search
+                                failures.
                               </p>
                             </div>
                             <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
@@ -2974,8 +3005,9 @@ export function AdminView() {
                           {citationStates.length === 0 ? (
                             <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-500">
                               No citation states yet. Source capture writes
-                              checking states; source failures write unavailable
-                              states.
+                              checking states, generated artifacts write not
+                              checked states, and source failures write
+                              unavailable states.
                             </div>
                           ) : (
                             <div className="space-y-3">
@@ -3024,26 +3056,46 @@ export function AdminView() {
                                     </div>
                                   </div>
                                   <div className="mt-3 flex flex-wrap gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        void runLocalCitationVerifier(state)
-                                      }
-                                      disabled={
-                                        citationVerifierBusyId === state.id
-                                      }
-                                      className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 transition-colors hover:bg-green-100 disabled:cursor-wait disabled:opacity-60"
-                                    >
-                                      <RefreshCw
-                                        size={12}
-                                        className={
-                                          citationVerifierBusyId === state.id
-                                            ? "animate-spin"
-                                            : ""
-                                        }
-                                      />
-                                      Run local check
-                                    </button>
+                                    {(() => {
+                                      const linkedArtifact = state.artifactId
+                                        ? artifactRecordsById.get(
+                                            state.artifactId,
+                                          )
+                                        : undefined;
+                                      const canRun =
+                                        !linkedArtifact ||
+                                        supportsLocalCitationIntegrityArtifact(
+                                          linkedArtifact,
+                                        );
+
+                                      return canRun ? (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            void runLocalCitationVerifier(state)
+                                          }
+                                          disabled={
+                                            citationVerifierBusyId === state.id
+                                          }
+                                          className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 transition-colors hover:bg-green-100 disabled:cursor-wait disabled:opacity-60"
+                                        >
+                                          <RefreshCw
+                                            size={12}
+                                            className={
+                                              citationVerifierBusyId ===
+                                              state.id
+                                                ? "animate-spin"
+                                                : ""
+                                            }
+                                          />
+                                          Run local check
+                                        </button>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-500">
+                                          No local verifier yet
+                                        </span>
+                                      );
+                                    })()}
                                     <button
                                       type="button"
                                       onClick={() =>
@@ -3133,7 +3185,7 @@ export function AdminView() {
                           <div className="mt-4 flex flex-wrap gap-2">
                             {Object.keys(artifactRecordsByType).length === 0 ? (
                               <span className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
-                                Waiting for source artifacts.
+                                Waiting for artifact records.
                               </span>
                             ) : (
                               Object.entries(artifactRecordsByType).map(

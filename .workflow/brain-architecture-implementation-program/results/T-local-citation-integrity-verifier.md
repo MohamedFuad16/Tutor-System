@@ -1,6 +1,6 @@
 # Packet T Result: Local citation integrity verifier
 
-Status: completed locally, pending push.
+Status: completed and pushed.
 
 ## Accepted
 

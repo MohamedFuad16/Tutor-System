@@ -647,9 +647,73 @@ proof.
 
 ## Remaining Work
 
-- Push remains for this phase.
+- Phase 15 was committed and pushed before phase 16 began.
 - Generated notes, charts, code, flashcards, and other artifacts still need to be
   fully linked into the same `ArtifactRecord` verification path.
 - External content verification and source-span claim matching remain future
+  slices.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 16 report
+
+## Scope
+
+Phase 16 links generated flashcard batches into the local artifact/citation trust
+ledger. It keeps the source-card verifier boundary intact: generated flashcard
+provenance is visible and reviewable, but stays `not_checked` until a broader
+generated-artifact verifier exists.
+
+## Graphify Context
+
+- Graphify routed the slice through `src/memory/artifact.records.ts`,
+  `src/components/ChatPanel.tsx`, `AdminView()`, `CitationState`,
+  `ArtifactRecord`, and the in-app architecture books.
+- Final Graphify regeneration produced 730 nodes, 1280 edges, and 43
+  communities. Query smoke returned `supportsLocalCitationIntegrityArtifact()`,
+  `createGeneratedFlashcardsArtifactRecords()`,
+  `recordGeneratedFlashcardsArtifact()`, `ChatPanel()`, and `AdminView()`.
+
+## Integration Decisions
+
+- Added generated-flashcard artifact record construction and persistence helpers.
+- Manual message flashcard generation and streamed chat-tool flashcard batches
+  now write local `flashcards` `ArtifactRecord` rows.
+- Each generated flashcard batch also writes a `not_checked` citation-state row
+  with local provenance metadata: batch id, source message id, card ids, concept
+  ids, unresolved-card count, and book context where available.
+- Admin now avoids running the source-card local verifier against generated
+  flashcard artifacts and shows `No local verifier yet` instead.
+- The Dexie verifier wrappers also avoid persisting unsupported verifier
+  transitions for non-source-card artifacts, preserving `not_checked`
+  provenance until a real verifier exists.
+- Tutor System Architecture, User Brain Architecture, and App Design Language
+  were updated to describe flashcard artifact provenance and the `not_checked`
+  boundary.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 63 tests.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- Browser QA on `http://127.0.0.1:3100`: Admin Source Artifacts rendered
+  generated-artifact provenance copy, `Not checked`, no horizontal overflow, and
+  zero warning/error logs. User Brain, Tutor System Architecture, and App Design
+  Language rendered the updated book copy.
+- `graphify update . --force`: passed after removing generated dev/test files.
+- `npm run graphify:tree`: passed.
+- Graphify artifact smoke found no conflict markers, `/private/tmp`,
+  `tmp-test`, or generated `server.mjs` paths.
+- Final-check sidecar Plato found a P1 where Admin could mutate flashcard
+  provenance out of `not_checked`; this was fixed with a verifier support guard
+  and regression coverage.
+
+## Remaining Work
+
+- Link generated notes, charts, code snippets, images, websites, and other
+  artifacts into the same reviewable provenance path.
+- Add real generated-artifact verification beyond source-card and flashcard
+  provenance rows.
+- Source-span claim matching and external content verification remain future
   slices.
 - AWS/cloud synchronization remains out of scope until beta testing.

@@ -56,6 +56,7 @@ import { useStore, type NormalizedWebSource } from "../store";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
 import { db, GENERAL_STUDY_BOOK_ID } from "../memory/longterm.memory";
 import {
+  recordGeneratedFlashcardsArtifact,
   recordUnavailableCitationState,
   recordWebSourceArtifact,
 } from "../memory/artifact.records";
@@ -2264,16 +2265,33 @@ const MessageItem = React.memo(
           (card: any) => card?.front && card?.back,
         );
         if (validCards.length > 0) {
-          await Promise.all(
+          const storedFlashcards = await Promise.all(
             validCards.map(async (card: any) => {
               const { flashcard } = await createFlashcardForStorage(card, {
                 id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
                 bookId: activeBookId || undefined,
                 bookTitle: activeBookTitle || undefined,
               });
-              return db.flashcards.add(flashcard);
+              await db.flashcards.add(flashcard);
+              return flashcard;
             }),
           );
+          void recordGeneratedFlashcardsArtifact({
+            batchId: `${msg.id}:manual-flashcards`,
+            cards: storedFlashcards,
+            source: "manual_message_flashcard_generation",
+            sourceMessageId: msg.id,
+            messageId: msg.id,
+            conversationId: activeBookId
+              ? chatThreadIdForBook(activeBookId)
+              : undefined,
+            bookId: activeBookId || undefined,
+            bookTitle: activeBookTitle || undefined,
+            metadata: {
+              generationPath: "message_action",
+              sourceRole: msg.role,
+            },
+          });
 
           setMessages((prev) => {
             const newM = [...prev];
@@ -3996,16 +4014,44 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               }
 
               if (data.flashcardsUpdates && data.flashcardsUpdates.length > 0) {
-                data.flashcardsUpdates.forEach((card: any) => {
-                  void createFlashcardForStorage(card, {
-                    id: Math.random().toString(36).substring(2, 15),
-                    bookId: canonicalActiveBookId || undefined,
-                    bookTitle:
-                      activeLearningBook?.title || activeProject || undefined,
-                  })
-                    .then(({ flashcard }) => db.flashcards.add(flashcard))
-                    .catch(console.error);
-                });
+                const flashcardBatchId = `${assistantMsgId}:stream-flashcards`;
+                void Promise.all(
+                  data.flashcardsUpdates.map(async (card: any) => {
+                    const { flashcard } = await createFlashcardForStorage(
+                      card,
+                      {
+                        id: Math.random().toString(36).substring(2, 15),
+                        bookId: canonicalActiveBookId || undefined,
+                        bookTitle:
+                          activeLearningBook?.title ||
+                          activeProject ||
+                          undefined,
+                      },
+                    );
+                    await db.flashcards.add(flashcard);
+                    return flashcard;
+                  }),
+                )
+                  .then((storedFlashcards) =>
+                    recordGeneratedFlashcardsArtifact({
+                      batchId: flashcardBatchId,
+                      cards: storedFlashcards,
+                      source: "chat_tool_flashcard_generation",
+                      sourceMessageId: assistantMsgId,
+                      messageId: assistantMsgId,
+                      conversationId: canonicalActiveBookId
+                        ? chatThreadIdForBook(canonicalActiveBookId)
+                        : undefined,
+                      bookId: canonicalActiveBookId || undefined,
+                      bookTitle:
+                        activeLearningBook?.title || activeProject || undefined,
+                      metadata: {
+                        generationPath: "chat_stream_done",
+                        sourceUserMessage: userMsgContent.slice(0, 240),
+                      },
+                    }),
+                  )
+                  .catch(console.error);
               }
             } else if (data.type === "status") {
               setMessages((prev) => {

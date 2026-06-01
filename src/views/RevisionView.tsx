@@ -2090,6 +2090,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Source Artifacts keeps artifact readiness separate from citation verification and can run a local source-card integrity check without fetching external pages.",
       },
       {
+        title: "Flashcard artifact rows",
+        detail:
+          "Generated flashcard batches now leave not-checked ArtifactRecord provenance, so Admin can tune study-card generation without treating it as external source proof.",
+      },
+      {
         title: "Diagnostics export",
         detail:
           "Exports are capped, local-only, and explicit about deferred cloud readiness, correction overlays, and out-of-scope automation.",
