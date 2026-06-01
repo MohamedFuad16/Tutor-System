@@ -1213,6 +1213,11 @@ CRITICAL RULES:
                       properties: {
                         front: { type: "string" },
                         back: { type: "string" },
+                        conceptId: {
+                          type: "string",
+                          description:
+                            "Optional existing concept id if the source text names one clearly; otherwise omit.",
+                        },
                       },
                       required: ["front", "back"],
                     },
@@ -1793,6 +1798,11 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                         type: "string",
                         description:
                           "Back side of the flashcard (the answer or explanation)",
+                      },
+                      conceptId: {
+                        type: "string",
+                        description:
+                          "Optional existing concept id when the card clearly maps to a known concept; otherwise omit.",
                       },
                     },
                     required: ["front", "back"],

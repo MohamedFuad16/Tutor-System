@@ -56,6 +56,7 @@ import { useStore, type NormalizedWebSource } from "../store";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
 import { db, GENERAL_STUDY_BOOK_ID } from "../memory/longterm.memory";
 import { recordToolJobEvent } from "../memory/tool.jobs";
+import { createFlashcardForStorage } from "../memory/flashcard.concepts";
 import type {
   BookChatThread,
   LearningDocument,
@@ -2250,17 +2251,14 @@ const MessageItem = React.memo(
         );
         if (validCards.length > 0) {
           await Promise.all(
-            validCards.map((card: any) =>
-              db.flashcards.add({
+            validCards.map(async (card: any) => {
+              const { flashcard } = await createFlashcardForStorage(card, {
                 id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-                conceptId: card.conceptId || "general",
                 bookId: activeBookId || undefined,
                 bookTitle: activeBookTitle || undefined,
-                front: String(card.front),
-                back: String(card.back),
-                nextReviewAt: Date.now(),
-              }),
-            ),
+              });
+              return db.flashcards.add(flashcard);
+            }),
           );
 
           setMessages((prev) => {
@@ -3862,17 +3860,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
               if (data.flashcardsUpdates && data.flashcardsUpdates.length > 0) {
                 data.flashcardsUpdates.forEach((card: any) => {
-                  db.flashcards
-                    .add({
-                      id: Math.random().toString(36).substring(2, 15),
-                      conceptId: card.conceptId || "general",
-                      bookId: canonicalActiveBookId || undefined,
-                      bookTitle:
-                        activeLearningBook?.title || activeProject || undefined,
-                      front: card.front,
-                      back: card.back,
-                      nextReviewAt: Date.now(),
-                    })
+                  void createFlashcardForStorage(card, {
+                    id: Math.random().toString(36).substring(2, 15),
+                    bookId: canonicalActiveBookId || undefined,
+                    bookTitle:
+                      activeLearningBook?.title || activeProject || undefined,
+                  })
+                    .then(({ flashcard }) => db.flashcards.add(flashcard))
                     .catch(console.error);
                 });
               }

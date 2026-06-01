@@ -203,3 +203,38 @@ Phase 5 wires Revision flashcard self-grading into verified local learner eviden
 - Improve flashcard generation so cards attach real concept IDs where possible.
 - Bridge `learningBookConcepts` to BKT-capable persisted concepts or define a separate mastery path.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 6 report
+
+## Scope
+
+Phase 6 makes generated flashcards more useful to the evidence-gated learner brain by attaching them to real concepts when there is a strong local signal. It keeps the safety invariant from phase 5: ambiguous flashcards remain `general` and cannot change mastery.
+
+## Graphify Context
+
+- Graphify routed this slice through `src/components/ChatPanel.tsx`, `src/memory/longterm.memory.ts`, `src/memory/memory.orchestrator.ts`, `src/memory/revision.evidence.ts`, and `server.ts`.
+- The relevant write paths were manual assistant-message flashcard generation and streamed `flashcardsUpdates` from the chat tool loop.
+
+## Integration Decisions
+
+- Added `src/memory/flashcard.concepts.ts` for generated-card concept resolution.
+- Explicit non-placeholder concept IDs are preserved.
+- Cards without explicit IDs only link to active learning-book concepts when the concept name appears in the card text.
+- Matched learning-book concepts are mirrored into `db.concepts` with BKT defaults so Revision flashcard reviews can create verified mastery deltas.
+- Server flashcard schemas accept optional `conceptId`; clients still validate and conservatively resolve before storage.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 24 tests.
+- `npm run build`: passed.
+- `npm run format:check`: still fails only on pre-existing `src/views/RevisionView.tsx`.
+- Browser QA on `http://localhost:3001`: app loaded, Study/Revision/Admin navigation controls were reachable, Admin Evidence controls were present, and browser console had 0 warnings/errors. Screenshot capture timed out in the in-app browser, so this phase records DOM/log smoke evidence only.
+- Graphify regenerated from a stable temporary worktree with only this phase's source files copied in, preserving unrelated local PDF/StudyView edits.
+- Graphify artifact smoke: 547 nodes, 905 edges, no temp-path markers in checked graph artifacts, and `graphify query "flashcard.concepts createFlashcardForStorage chooseFlashcardConcept persistentConceptFromLearningBookConcept ChatPanel" --budget 1800 --graph graphify-out/graph.json` returned `flashcard.concepts.ts`, `createFlashcardForStorage()`, `chooseFlashcardConcept()`, `persistentConceptFromLearningBookConcept()`, and `ChatPanel.tsx`.
+
+## Remaining Work
+
+- Add richer source-aware concept matching once there is enough beta data to tune false positives.
+- Unify `learningBookConcepts` and BKT concepts more deeply if the local mirror proves useful.
+- AWS/cloud synchronization remains out of scope until beta testing.

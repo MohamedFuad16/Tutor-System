@@ -78,10 +78,17 @@
       "owner": "main agent + read-only sidecar Peirce",
       "status": "completed",
       "write_scope": "src/views/RevisionView.tsx, src/memory/revision.evidence.ts, src/memory/bkt.engine.ts, tests/revision-evidence.test.mjs, package.json"
+    },
+    {
+      "id": "K",
+      "name": "Flashcard concept linking",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/flashcard.concepts.ts, src/components/ChatPanel.tsx, server.ts, tests/flashcard-concepts.test.mjs, package.json"
     }
   ],
   "verification": {
-    "status": "phase_5_completed",
+    "status": "phase_6_completed",
     "checks": [
       "npm run lint",
       "npm run test",
