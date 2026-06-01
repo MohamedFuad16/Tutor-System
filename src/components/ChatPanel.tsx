@@ -55,6 +55,7 @@ import { SiriLiquidGlass } from "./SiriLiquidGlass";
 import { useStore, type NormalizedWebSource } from "../store";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
 import { db, GENERAL_STUDY_BOOK_ID } from "../memory/longterm.memory";
+import { recordModelRunEvent } from "../memory/model.runs";
 import { recordToolJobEvent } from "../memory/tool.jobs";
 import { createFlashcardForStorage } from "../memory/flashcard.concepts";
 import type {
@@ -3711,6 +3712,32 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 outputSummary: data.outputSummary,
                 error: data.error,
                 durationMs: data.durationMs,
+                metadata: data.metadata,
+              });
+            } else if (data.type === "model_run") {
+              void recordModelRunEvent({
+                id: data.id,
+                timestamp: data.timestamp,
+                status: data.status,
+                provider: data.provider,
+                source: data.source || "chat_stream",
+                requestId: data.requestId,
+                requestedModel: data.requestedModel,
+                usedModel: data.usedModel,
+                inputTokens: data.inputTokens,
+                outputTokens: data.outputTokens,
+                cost: data.cost,
+                estimated: data.estimated,
+                durationMs: data.durationMs,
+                memoryContextChars: data.memoryContextChars,
+                sourceMaterialRequest: data.sourceMaterialRequest,
+                requestedWebSearch: data.requestedWebSearch,
+                webSources: data.webSources,
+                graphUpdates: data.graphUpdates,
+                flashcards: data.flashcards,
+                iterations: data.iterations,
+                error: data.error,
+                runtimeSettings: data.runtimeSettings,
                 metadata: data.metadata,
               });
             } else if (data.type === "done") {

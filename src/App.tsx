@@ -48,20 +48,31 @@ function GsapRouteFrame({
         ? { autoAlpha: 0, x: 20, y: 0, scale: 1 }
         : variant === "scale"
           ? { autoAlpha: 0, x: 0, y: 0, scale: 0.96 }
-          : { autoAlpha: 0, x: 0, y: variant === "admin" ? 20 : 10, scale: 0.985 };
+          : {
+              autoAlpha: 0,
+              x: 0,
+              y: variant === "admin" ? 20 : 10,
+              scale: 0.985,
+            };
 
-    gsap.fromTo(
-      frame,
-      from,
-      {
-        autoAlpha: 1,
-        x: 0,
-        y: 0,
-        scale: 1,
-        duration: 0.3,
-        ease: "power3.out",
-      },
-    );
+    const tween = gsap.fromTo(frame, from, {
+      autoAlpha: 1,
+      x: 0,
+      y: 0,
+      scale: 1,
+      duration: 0.3,
+      ease: "power3.out",
+    });
+    const visibilityFallback = window.setTimeout(() => {
+      if (Number(gsap.getProperty(frame, "opacity")) === 0) {
+        gsap.set(frame, { autoAlpha: 1, x: 0, y: 0, scale: 1 });
+      }
+    }, 450);
+
+    return () => {
+      window.clearTimeout(visibilityFallback);
+      tween.kill();
+    };
   }, [routeKey, variant]);
 
   return (
@@ -121,48 +132,32 @@ export default function App() {
       )}
 
       <main className="h-full w-full relative overflow-hidden">
-          {activeView === "study" && (
-            <GsapRouteFrame
-              key="study"
-              routeKey="study"
-              variant="rise"
-            >
-              <StudyView />
-            </GsapRouteFrame>
-          )}
-          {activeView === "analytics" && (
-            <GsapRouteFrame
-              key="analytics"
-              routeKey="analytics"
-              variant="scale"
-            >
-              <Suspense fallback={<RouteFallback />}>
-                <AnalyticsView />
-              </Suspense>
-            </GsapRouteFrame>
-          )}
-          {activeView === "revision" && (
-            <GsapRouteFrame
-              key="revision"
-              routeKey="revision"
-              variant="slide"
-            >
-              <Suspense fallback={<RouteFallback />}>
-                <RevisionView />
-              </Suspense>
-            </GsapRouteFrame>
-          )}
-          {activeView === "admin" && (
-            <GsapRouteFrame
-              key="admin"
-              routeKey="admin"
-              variant="admin"
-            >
-              <Suspense fallback={<RouteFallback />}>
-                <AdminView />
-              </Suspense>
-            </GsapRouteFrame>
-          )}
+        {activeView === "study" && (
+          <GsapRouteFrame key="study" routeKey="study" variant="rise">
+            <StudyView />
+          </GsapRouteFrame>
+        )}
+        {activeView === "analytics" && (
+          <GsapRouteFrame key="analytics" routeKey="analytics" variant="scale">
+            <Suspense fallback={<RouteFallback />}>
+              <AnalyticsView />
+            </Suspense>
+          </GsapRouteFrame>
+        )}
+        {activeView === "revision" && (
+          <GsapRouteFrame key="revision" routeKey="revision" variant="slide">
+            <Suspense fallback={<RouteFallback />}>
+              <RevisionView />
+            </Suspense>
+          </GsapRouteFrame>
+        )}
+        {activeView === "admin" && (
+          <GsapRouteFrame key="admin" routeKey="admin" variant="admin">
+            <Suspense fallback={<RouteFallback />}>
+              <AdminView />
+            </Suspense>
+          </GsapRouteFrame>
+        )}
       </main>
     </div>
   );

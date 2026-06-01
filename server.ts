@@ -1487,6 +1487,9 @@ CRITICAL RULES:
   app.post("/api/chat", async (req, res) => {
     const activityStartedAt = Date.now();
     const requestId = activityId();
+    let requestedModelForRun = DEFAULT_CHAT_MODEL;
+    let usedModelForRun = DEFAULT_CHAT_MODEL;
+    let runtimeSettingsForRun: Record<string, string | number> | undefined;
     // Enable SSE
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -1542,6 +1545,35 @@ CRITICAL RULES:
         metadata: safeActivityMetadata(data.metadata || {}),
       });
     };
+    const sendModelRunEvent = (data: {
+      status: "started" | "completed" | "failed" | "blocked" | "fallback";
+      requestedModel?: string;
+      usedModel?: string;
+      inputTokens?: number;
+      outputTokens?: number;
+      cost?: number;
+      estimated?: boolean;
+      durationMs?: number;
+      memoryContextChars?: number;
+      sourceMaterialRequest?: boolean;
+      requestedWebSearch?: boolean;
+      webSources?: number;
+      graphUpdates?: number;
+      flashcards?: number;
+      iterations?: number;
+      error?: string;
+      runtimeSettings?: Record<string, string | number>;
+      metadata?: Record<string, unknown>;
+    }) => {
+      sendEvent("model_run", {
+        id: `model-run:chat_stream:${requestId}`,
+        timestamp: Date.now(),
+        provider: "openrouter",
+        source: "chat_stream",
+        ...data,
+        metadata: safeActivityMetadata(data.metadata || {}),
+      });
+    };
 
     try {
       const apiKey = resolveOpenRouterApiKey(req.headers);
@@ -1558,10 +1590,17 @@ CRITICAL RULES:
       } = req.body;
       const runtimeSettings = normalizeBrainRuntimeSettings(rawRuntimeSettings);
       const runtimeSettingsSnapshot = compactRuntimeSettings(runtimeSettings);
+      runtimeSettingsForRun = runtimeSettingsSnapshot;
       const serperRuntimeKey =
         sanitizeApiKey(req.headers["x-serper-api-key"]) ||
         sanitizeApiKey(bodySerperKey) ||
         sanitizeApiKey(process.env.SERPER_API_KEY);
+      const requestedModel =
+        aiModel === "deepseek/deepseek-chat"
+          ? DEFAULT_CHAT_MODEL
+          : aiModel || DEFAULT_CHAT_MODEL;
+      requestedModelForRun = requestedModel;
+      usedModelForRun = requestedModel;
 
       if (!apiKey) {
         recordSystemActivity({
@@ -1578,6 +1617,17 @@ CRITICAL RULES:
             runtimeSettings: runtimeSettingsSnapshot,
           },
         });
+        sendModelRunEvent({
+          status: "blocked",
+          requestedModel,
+          usedModel: requestedModel,
+          durationMs: Date.now() - activityStartedAt,
+          error: openRouterRequiredMessage,
+          runtimeSettings: runtimeSettingsSnapshot,
+          metadata: {
+            messageCount: Array.isArray(messages) ? messages.length : 0,
+          },
+        });
         sendEvent("error", {
           error: openRouterRequiredMessage,
         });
@@ -1589,10 +1639,6 @@ CRITICAL RULES:
         apiKey: apiKey,
       });
 
-      const requestedModel =
-        aiModel === "deepseek/deepseek-chat"
-          ? DEFAULT_CHAT_MODEL
-          : aiModel || DEFAULT_CHAT_MODEL;
       let usedModelForUsage = requestedModel;
       let inputTokens = 0;
       let outputTokens = 0;
@@ -1637,6 +1683,21 @@ CRITICAL RULES:
         ? searchDetectionForExplicitRequest(latestUserContent)
         : automaticFreshnessSearch;
       const requestedWebSearch = Boolean(freshnessSearch);
+      sendModelRunEvent({
+        status: "started",
+        requestedModel,
+        usedModel: requestedModel,
+        memoryContextChars:
+          typeof memoryContext === "string" ? memoryContext.length : 0,
+        sourceMaterialRequest,
+        requestedWebSearch,
+        runtimeSettings: runtimeSettingsSnapshot,
+        metadata: {
+          messageCount: Array.isArray(messages) ? messages.length : 0,
+          hasCurrentPageImage: Boolean(currentPageImage),
+          language: language || "en",
+        },
+      });
       if (memoryContext) {
         recordSystemActivity({
           kind: "retrieval",
@@ -2004,6 +2065,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             } as any);
             usedModel = model;
             usedModelForUsage = model;
+            usedModelForRun = model;
             if (iterations === 0 && model !== primaryModel) {
               recordSystemActivity({
                 kind: "model",
@@ -2020,6 +2082,17 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               );
               sendEvent("info", {
                 message: `Model ${primaryModel} unavailable — using ${model}`,
+              });
+              sendModelRunEvent({
+                status: "fallback",
+                requestedModel: primaryModel,
+                usedModel: model,
+                durationMs: Date.now() - activityStartedAt,
+                runtimeSettings: runtimeSettingsSnapshot,
+                metadata: {
+                  iteration: iterations + 1,
+                  fallbackChain: modelsToTry,
+                },
               });
             }
             break; // Success — use this stream
@@ -2527,6 +2600,25 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       );
 
       sendEvent("status", { phase: "streaming" });
+      sendModelRunEvent({
+        status: "completed",
+        requestedModel,
+        usedModel: usedModelForUsage,
+        inputTokens,
+        outputTokens,
+        cost,
+        estimated: usageEstimated || cost === 0,
+        durationMs: Date.now() - activityStartedAt,
+        memoryContextChars:
+          typeof memoryContext === "string" ? memoryContext.length : 0,
+        sourceMaterialRequest,
+        requestedWebSearch,
+        webSources: webSources.length,
+        graphUpdates: graphUpdates.length,
+        flashcards: flashcardsUpdates.length,
+        iterations: iterations + 1,
+        runtimeSettings: runtimeSettingsSnapshot,
+      });
       recordSystemActivity({
         kind: "model",
         status: "completed",
@@ -2570,6 +2662,14 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       });
       res.end();
     } catch (error: any) {
+      sendModelRunEvent({
+        status: "failed",
+        requestedModel: requestedModelForRun,
+        usedModel: usedModelForRun,
+        durationMs: Date.now() - activityStartedAt,
+        error: error.message || "Failed to generate response",
+        runtimeSettings: runtimeSettingsForRun,
+      });
       recordSystemActivity({
         kind: "error",
         status: "failed",

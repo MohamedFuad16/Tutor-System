@@ -92,10 +92,17 @@
       "owner": "main agent + read-only sidecar Boyle",
       "status": "completed",
       "write_scope": "src/lib/brainRuntimeSettings.ts, src/store/index.ts, src/views/AdminView.tsx, src/components/ChatPanel.tsx, server.ts, tests/runtime-settings.test.mjs, package.json"
+    },
+    {
+      "id": "M",
+      "name": "Durable model runs",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/longterm.memory.ts, src/memory/model.runs.ts, server.ts, src/components/ChatPanel.tsx, src/views/AdminView.tsx, src/App.tsx, tests/model-runs.test.mjs, tests/system-activity.test.mjs, tests/runtime-settings.test.mjs, package.json"
     }
   ],
   "verification": {
-    "status": "phase_7_completed",
+    "status": "phase_8_completed",
     "checks": [
       "npm run lint",
       "npm run test",

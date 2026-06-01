@@ -274,3 +274,42 @@ Phase 7 adds local runtime tuning for the learner-brain architecture. It turns A
 - Extend `memoryConceptLimit` beyond the active-book concept list if beta behavior shows broader semantic-memory retrieval needs explicit bounding.
 - Add full fake streaming model/tool-call policy tests when the chat loop has a lighter test harness.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 8 report
+
+## Scope
+
+Phase 8 makes chat model behavior durable and inspectable. It adds a local model-run ledger for blocked requests, starts, fallbacks, completions, failures, usage, runtime settings, and request metadata, then exposes that ledger in Admin.
+
+## Graphify Context
+
+- Graphify routed the main slice through `server.ts`, `src/components/ChatPanel.tsx`, `src/memory/longterm.memory.ts`, `src/memory/tool.jobs.ts`, `src/views/AdminView.tsx`, and `src/store/index.ts`.
+- A follow-up graph query routed the mobile QA visibility issue through `src/App.tsx`, `GsapRouteFrame()`, and `AdminView()`.
+
+## Integration Decisions
+
+- Added Dexie schema version 9 with `modelRuns` as an append-only local observability table.
+- Added `src/memory/model.runs.ts`, mirroring the durable tool-job helper style for status normalization, stable IDs, compact errors, and numeric clamping.
+- Added `model_run` SSE events for `/api/chat` blocked, started, fallback, completed, and failed states.
+- Persisted `model_run` events in `ChatPanel` so Admin can query them locally through IndexedDB.
+- Added an Admin `Model Runs` tab for durable run counts, blocked/failed/fallback meters, recent run cards, runtime settings, and metadata details.
+- Added route/Admin animation visibility fallbacks after browser QA found that mobile reloads could leave mounted Admin content hidden at `autoAlpha: 0`.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 31 tests.
+- `npm run build`: passed.
+- `npm run format:check`: still fails only on pre-existing `src/views/RevisionView.tsx`.
+- Browser QA on `http://127.0.0.1:3100`: Admin Activity loaded, Model Runs empty state rendered, a real blocked chat request through `ChatPanel` persisted one durable blocked model run, and the Model Runs tab displayed request id, provider, model, error, timing, and runtime metadata affordance.
+- Mobile browser QA at 390x844: Admin and Model Runs rendered without horizontal overflow after the route/Admin animation guard.
+- Browser screenshot capture timed out through the in-app browser CDP path, so this phase records DOM/viewport evidence rather than screenshot artifacts.
+- `graphify update . --force`: regenerated the code architecture graph with 609 nodes, 998 links, and 38 communities after temporarily stashing only unrelated `PdfViewer`/`StudyView` dirty edits, then regenerated again after rebasing over the remote Graphify refresh.
+- `npm run graphify:tree`: passed and regenerated `graphify-out/GRAPH_TREE.html`.
+- Graphify artifact smoke: no `/private/tmp` or phase temp path markers, and query smoke returned `model.runs.ts`, `createModelRunRecord()`, `recordModelRunEvent()`, `ModelRun`, `AdminView()`, and `ChatPanel()`.
+
+## Remaining Work
+
+- Add completed/fallback model-run integration tests with a fake streaming model harness.
+- Decide whether server-side model-run persistence is needed once there is a local worker or queue.
+- AWS/cloud synchronization remains out of scope until beta testing.

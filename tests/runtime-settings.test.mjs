@@ -90,7 +90,10 @@ test("blocked chat activity records normalized runtime settings", async (t) => {
   });
 
   assert.equal(response.status, 200);
-  await response.text();
+  const streamText = await response.text();
+  assert.match(streamText, /"type":"model_run"/);
+  assert.match(streamText, /"runtimeSettings"/);
+  assert.match(streamText, /"toolIterationLimit":8/);
 
   const body = await readActivity(baseUrl);
   const blockedEvent = body.events.find(

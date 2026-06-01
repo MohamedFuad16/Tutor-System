@@ -4,6 +4,7 @@ import {
   db,
   type EvidenceEvent,
   type MasteryDelta,
+  type ModelRun,
   type ToolJob,
 } from "../memory/longterm.memory";
 import {
@@ -22,6 +23,7 @@ import {
   RefreshCw,
   RotateCcw,
   SlidersHorizontal,
+  Cpu,
 } from "lucide-react";
 import { gsap } from "gsap";
 import { useStore } from "../store";
@@ -34,7 +36,13 @@ import {
 } from "../lib/brainRuntimeSettings";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
-type AdminTab = "activity" | "evidence" | "tuning" | "traces" | "console";
+type AdminTab =
+  | "activity"
+  | "models"
+  | "evidence"
+  | "tuning"
+  | "traces"
+  | "console";
 type ActivityStatus = "idle" | "loading" | "ready" | "error";
 const TRACE_PAGE_SIZE = 100;
 
@@ -210,6 +218,11 @@ export function AdminView() {
       () => db.toolJobs.orderBy("timestamp").reverse().limit(20).toArray(),
       [],
     ) || [];
+  const modelRuns =
+    useLiveQuery(
+      () => db.modelRuns.orderBy("timestamp").reverse().limit(30).toArray(),
+      [],
+    ) || [];
   const evidenceEventCount =
     useLiveQuery(() => db.evidenceEvents.count(), []) || 0;
   const verifiedEvidenceCount =
@@ -226,6 +239,7 @@ export function AdminView() {
   const masteryDeltaCount =
     useLiveQuery(() => db.masteryDeltas.count(), []) || 0;
   const toolJobCount = useLiveQuery(() => db.toolJobs.count(), []) || 0;
+  const modelRunCount = useLiveQuery(() => db.modelRuns.count(), []) || 0;
   const [serverLogs, setServerLogs] = useState<
     { type: string; msg: string; time: number }[]
   >([]);
@@ -401,6 +415,16 @@ export function AdminView() {
   const latestEvidence = evidenceEvents[0] as EvidenceEvent | undefined;
   const latestMasteryDelta = masteryDeltas[0] as MasteryDelta | undefined;
   const latestToolJob = toolJobs[0] as ToolJob | undefined;
+  const latestModelRun = modelRuns[0] as ModelRun | undefined;
+  const completedModelRuns = modelRuns.filter(
+    (run) => run.status === "completed",
+  ).length;
+  const blockedOrFailedModelRuns = modelRuns.filter(
+    (run) => run.status === "blocked" || run.status === "failed",
+  ).length;
+  const fallbackModelRuns = modelRuns.filter(
+    (run) => run.status === "fallback",
+  ).length;
   const mappedConceptCount = learningBookConcepts.length;
   const tracedBookCount = learningBooks.filter(
     (book) => (conceptsByBook[book.id] || []).length > 0,
@@ -460,7 +484,7 @@ export function AdminView() {
     const content = contentRef.current;
     if (!content) return;
     gsap.killTweensOf(content);
-    gsap.fromTo(
+    const contentTween = gsap.fromTo(
       content,
       { autoAlpha: 0, x: 20 },
       {
@@ -470,6 +494,11 @@ export function AdminView() {
         ease: "power3.out",
       },
     );
+    const visibilityFallback = window.setTimeout(() => {
+      if (Number(gsap.getProperty(content, "opacity")) === 0) {
+        gsap.set(content, { autoAlpha: 1, x: 0 });
+      }
+    }, 450);
 
     const animatedItems = Array.from(
       content.querySelectorAll<HTMLElement>(".admin-animated-item"),
@@ -487,12 +516,18 @@ export function AdminView() {
         },
       );
     }
+
+    return () => {
+      window.clearTimeout(visibilityFallback);
+      contentTween.kill();
+    };
   }, [
     activeTab,
     evidenceEvents.length,
     learningBooks.length,
     logs?.length,
     masteryDeltas.length,
+    modelRuns.length,
     motionEnabled,
     recentSystemEvents.length,
     toolJobs.length,
@@ -530,6 +565,13 @@ export function AdminView() {
             >
               <Gauge size={16} />
               <span className="line-clamp-1 leading-snug">System Activity</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("models")}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "models" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+            >
+              <Cpu size={16} />
+              <span className="line-clamp-1 leading-snug">Model Runs</span>
             </button>
             <button
               onClick={() => setActiveTab("evidence")}
@@ -594,19 +636,21 @@ export function AdminView() {
                   exposes behind-the-scenes model activity, tool calls, local
                   memory updates, saved trace explanations, and backend health
                   signals. Use <strong>System Activity</strong> for the live
-                  observability ledger, <strong>Evidence Ledger</strong> to
-                  inspect model-summary evidence and mastery deltas,{" "}
-                  <strong>Runtime Tuning</strong> for local behavior controls,{" "}
-                  <strong>DeepSeek Trace</strong> for persisted tutor updates,
-                  or switch to the <strong>Server Console</strong> to monitor
-                  live backend traffic, WebSocket streams, and TTS generation
-                  logs.
+                  observability ledger, <strong>Model Runs</strong> to inspect
+                  provider behavior, fallbacks, tokens, and failures,{" "}
+                  <strong>Evidence Ledger</strong> to inspect model-summary
+                  evidence and mastery deltas, <strong>Runtime Tuning</strong>{" "}
+                  for local behavior controls, <strong>DeepSeek Trace</strong>{" "}
+                  for persisted tutor updates, or switch to the{" "}
+                  <strong>Server Console</strong> to monitor live backend
+                  traffic, WebSocket streams, and TTS generation logs.
                 </p>
               </div>
 
-              <div className="mb-8 grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm sm:grid-cols-5 lg:hidden">
+              <div className="mb-8 grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm sm:grid-cols-3 lg:hidden">
                 {[
                   { id: "activity", label: "Activity", icon: Gauge },
+                  { id: "models", label: "Models", icon: Cpu },
                   { id: "evidence", label: "Evidence", icon: BrainCircuit },
                   {
                     id: "tuning",
@@ -640,25 +684,29 @@ export function AdminView() {
                   <span className="text-blue-500 mr-2">#</span>
                   {activeTab === "activity"
                     ? "Observability"
-                    : activeTab === "evidence"
-                      ? "Learner Evidence"
-                      : activeTab === "tuning"
-                        ? "Runtime Controls"
-                        : activeTab === "traces"
-                          ? "Diagnostics"
-                          : "Runtime Environment"}
+                    : activeTab === "models"
+                      ? "Model Behavior"
+                      : activeTab === "evidence"
+                        ? "Learner Evidence"
+                        : activeTab === "tuning"
+                          ? "Runtime Controls"
+                          : activeTab === "traces"
+                            ? "Diagnostics"
+                            : "Runtime Environment"}
                 </span>
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-2 font-serif leading-[1.15]">
                     {activeTab === "activity"
                       ? "System Activity"
-                      : activeTab === "evidence"
-                        ? "Evidence Ledger"
-                        : activeTab === "tuning"
-                          ? "Runtime Tuning"
-                          : activeTab === "traces"
-                            ? "DeepSeek Trace Ledger"
-                            : "Live Server Console"}
+                      : activeTab === "models"
+                        ? "Model Runs"
+                        : activeTab === "evidence"
+                          ? "Evidence Ledger"
+                          : activeTab === "tuning"
+                            ? "Runtime Tuning"
+                            : activeTab === "traces"
+                              ? "DeepSeek Trace Ledger"
+                              : "Live Server Console"}
                   </h1>
                   {activeTab === "activity" && (
                     <div
@@ -932,6 +980,7 @@ export function AdminView() {
                               ["Evidence events", evidenceEventCount],
                               ["Mastery deltas", masteryDeltaCount],
                               ["Tool jobs", toolJobCount],
+                              ["Model runs", modelRunCount],
                               ["Active book", activeLearningBookId || "none"],
                               ["Project", activeProject],
                               [
@@ -1025,6 +1074,177 @@ export function AdminView() {
                           </div>
                         </section>
                       </div>
+                    </section>
+                  </div>
+                ) : activeTab === "models" ? (
+                  <div className="flex flex-col gap-8 font-sans">
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                            <Cpu size={13} /> Durable Model Behavior
+                          </div>
+                          <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
+                            Chat model run ledger
+                          </h2>
+                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                            Local records for chat model starts, fallbacks,
+                            completions, blocked requests, and failures. These
+                            rows make provider behavior auditable without
+                            touching cloud deployment or the learner concept
+                            graph.
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
+                          <div className="text-2xl font-semibold text-zinc-900">
+                            {modelRunCount}
+                          </div>
+                          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+                            Durable runs
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-4">
+                        {[
+                          ["Recent completed", completedModelRuns],
+                          ["Blocked or failed", blockedOrFailedModelRuns],
+                          ["Fallbacks", fallbackModelRuns],
+                          [
+                            "Latest",
+                            latestModelRun?.usedModel ||
+                              latestModelRun?.requestedModel ||
+                              "none",
+                          ],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
+                          >
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              {label}
+                            </div>
+                            <div className="mt-2 truncate text-lg font-semibold tabular-nums text-zinc-900">
+                              {value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Recent runs
+                          </h3>
+                          <p className="mt-1 text-sm text-zinc-500 font-serif">
+                            Newest first. Runtime settings are captured per
+                            request so tuning decisions can be compared against
+                            model behavior.
+                          </p>
+                        </div>
+                        <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                          {formatTime(latestModelRun?.timestamp)}
+                        </div>
+                      </div>
+
+                      {modelRuns.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
+                          No durable model runs yet. Send a chat request and the
+                          stream will persist local model-run rows here,
+                          including blocked API-key checks.
+                        </div>
+                      ) : (
+                        <div className="grid gap-3 xl:grid-cols-2">
+                          {modelRuns.map((run, index) => (
+                            <article
+                              key={run.id}
+                              className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 16 ? "admin-animated-item" : ""}`}
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                      {run.usedModel ||
+                                        run.requestedModel ||
+                                        "unknown model"}
+                                    </h4>
+                                    <span
+                                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(run.status)}`}
+                                    >
+                                      {run.status}
+                                    </span>
+                                  </div>
+                                  {run.requestedModel &&
+                                    run.usedModel &&
+                                    run.requestedModel !== run.usedModel && (
+                                      <p className="mt-1 text-sm leading-relaxed text-orange-700 font-serif">
+                                        Requested {run.requestedModel}; used{" "}
+                                        {run.usedModel}.
+                                      </p>
+                                    )}
+                                  <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-zinc-600 font-serif">
+                                    {run.error ||
+                                      `${run.outputTokens || 0} output tokens, ${run.inputTokens || 0} input tokens${run.cost !== undefined ? `, $${run.cost.toFixed(6)}` : ""}.`}
+                                  </p>
+                                  <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                    {run.requestId && (
+                                      <span className="max-w-[9rem] truncate">
+                                        {run.requestId}
+                                      </span>
+                                    )}
+                                    <span>{run.provider}</span>
+                                    {run.durationMs !== undefined && (
+                                      <span>{run.durationMs}ms</span>
+                                    )}
+                                    {run.iterations !== undefined && (
+                                      <span>{run.iterations} loops</span>
+                                    )}
+                                    {run.webSources !== undefined && (
+                                      <span>{run.webSources} sources</span>
+                                    )}
+                                    {run.estimated && <span>estimated</span>}
+                                  </div>
+                                </div>
+                                <div className="shrink-0 text-right text-[10px] font-mono text-zinc-500">
+                                  {formatTime(run.timestamp)}
+                                </div>
+                              </div>
+
+                              {(run.runtimeSettings || run.metadata) && (
+                                <details className="group mt-3">
+                                  <summary className="flex cursor-pointer select-none items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-800">
+                                    <ChevronRight
+                                      size={14}
+                                      className="transition-transform group-open:rotate-90"
+                                    />
+                                    Runtime and metadata
+                                  </summary>
+                                  <pre className="mt-3 overflow-x-auto rounded-xl border border-zinc-200 bg-white p-3 text-[11px] text-zinc-600 shadow-inner">
+                                    {JSON.stringify(
+                                      {
+                                        runtimeSettings: run.runtimeSettings,
+                                        memoryContextChars:
+                                          run.memoryContextChars,
+                                        sourceMaterialRequest:
+                                          run.sourceMaterialRequest,
+                                        requestedWebSearch:
+                                          run.requestedWebSearch,
+                                        graphUpdates: run.graphUpdates,
+                                        flashcards: run.flashcards,
+                                        metadata: run.metadata,
+                                      },
+                                      null,
+                                      2,
+                                    )}
+                                  </pre>
+                                </details>
+                              )}
+                            </article>
+                          ))}
+                        </div>
+                      )}
                     </section>
                   </div>
                 ) : activeTab === "evidence" ? (

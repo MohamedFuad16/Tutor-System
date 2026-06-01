@@ -52,6 +52,9 @@ test("blocked chat requests are recorded without live model calls", async (t) =>
   assert.equal(response.status, 200);
   const streamText = await response.text();
   assert.match(streamText, /OpenRouter API key is required/);
+  assert.match(streamText, /"type":"model_run"/);
+  assert.match(streamText, /"status":"blocked"/);
+  assert.match(streamText, /"requestedModel":"deepseek\/deepseek-v4-flash"/);
 
   const body = await readActivity(baseUrl);
   assert.ok(
