@@ -197,10 +197,8 @@ Graph rebuild policy:
 - OpenRouter key for chat intelligence. Each user can bring their own key in
   Settings; a deployment-wide OpenRouter key is optional and must be explicitly
   enabled as a shared fallback.
-- Deepgram key for voice and TTS.
+- Deepgram key for voice, TTS, and stored built-in chapter audio generation.
 - Serper key for live web search.
-- OpenAI key only when generating stored User Brain Architecture MP3 overviews
-  locally. Playback uses checked-in assets and does not need this key.
 
 ### 2. Install
 
@@ -219,7 +217,6 @@ OPENROUTER_API_KEY=your_openrouter_key_here
 ALLOW_SERVER_OPENROUTER_FALLBACK=false
 DEEPGRAM_API_KEY=your_deepgram_key_here
 SERPER_API_KEY=your_serper_key_here
-OPENAI_API_KEY=optional_for_audio_overview_generation
 ```
 
 Leave `ALLOW_SERVER_OPENROUTER_FALLBACK=false` when users should provide their
@@ -234,17 +231,17 @@ npm run dev
 
 ### 5. Generate Stored Chapter Audio
 
-The User Brain Architecture book uses checked-in MP3 assets for chapter
-playback. The first overview is stored now; the remaining chapter scripts and
-target filenames are tracked locally.
+Built-in Library books use checked-in MP3 assets for every chapter guide, so
+playback is local and does not call the live read-aloud route.
 
 ```bash
 npm run audio:overview:dry-run
-OPENAI_API_KEY=your_openai_key npm run audio:overview:generate
+DEEPGRAM_API_KEY=your_deepgram_key npm run audio:overview:generate -- --provider deepgram --overwrite
 ```
 
-The generator uses the OpenAI speech model `gpt-4o-mini-tts`. It exits before
-network synthesis if `OPENAI_API_KEY` is missing.
+The default generator uses Deepgram `aura-2-odysseus-en` at speed `1` and exits
+before network synthesis if `DEEPGRAM_API_KEY` is missing. The generated MP3s
+are saved under `public/audio-overviews/` and played directly by the browser.
 
 Open `http://localhost:3000`.
 

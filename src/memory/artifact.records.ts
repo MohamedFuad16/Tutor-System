@@ -1237,7 +1237,7 @@ export const createStoredAudioOverviewArtifactRecords = (
   });
   const transcript = compact(input.transcript);
   const summary = compact(input.summary || transcript);
-  const title = compact(input.title, "Stored audio overview");
+  const title = compact(input.title, "Chapter audio guide");
   const chapterTitle = compact(
     input.chapterTitle,
     `Chapter ${chapterIndex + 1}`,
@@ -1270,7 +1270,7 @@ export const createStoredAudioOverviewArtifactRecords = (
       claimId: artifactId,
       sourceRef,
       artifactId,
-      title: `Stored audio overview: ${chapterTitle}`,
+      title: `Chapter audio guide: ${chapterTitle}`,
       verifier: "stored_audio_overview_provenance",
       metadata: sharedMetadata,
     },
@@ -1283,8 +1283,8 @@ export const createStoredAudioOverviewArtifactRecords = (
       status: sourceRef && transcript ? "ready" : "failed",
       verificationState: "not_checked",
       source: input.source || "stored_audio_overview_manifest",
-      title: `Stored audio overview: ${title}`,
-      summary: summary || "Stored audio overview without saved transcript.",
+      title: `Chapter audio guide: ${title}`,
+      summary: summary || "Chapter audio guide without saved transcript.",
       sourceIds: cleanList([overviewId, input.bookId, chapterTitle, sourceRef]),
       citationStateIds: [citation.id],
       bookId: input.bookId,

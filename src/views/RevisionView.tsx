@@ -51,6 +51,7 @@ import { SvgBeige } from "../components/PatternSVGs";
 import tutorBook from "../lib/tutorBook.json";
 import userBrainArchitectureBook from "../lib/userBrainArchitectureBook";
 import {
+  builtInBookAudioOverviews,
   userBrainChapterAudioOverviews,
   type ChapterAudioOverview,
 } from "../lib/chapterAudioOverviews";
@@ -2078,19 +2079,14 @@ const StoredAudioOverview = ({
           setDuration(event.currentTarget.duration || 0);
           event.currentTarget.playbackRate = playbackRate;
         }}
-        onError={() =>
-          setError("Stored audio overview is unavailable in this build.")
-        }
+        onError={() => setError("Audio guide is unavailable in this build.")}
       />
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-500/70">
             <Volume2 size={14} />
-            Stored audio overview
+            Chapter audio guide
           </div>
-          <h3 className="mt-2 text-xl font-serif font-medium tracking-tight text-zinc-950">
-            {overview.title}
-          </h3>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
             {overview.summary}
           </p>
@@ -2132,9 +2128,7 @@ const StoredAudioOverview = ({
             {formatAudioTime(currentTime)} /{" "}
             {duration ? formatAudioTime(duration) : overview.durationLabel}
           </span>
-          <span>
-            {overview.generatedBy} · {overview.voice} · {overview.storedAt}
-          </span>
+          <span>Local playback</span>
         </div>
       </div>
       {error && (
@@ -2144,7 +2138,7 @@ const StoredAudioOverview = ({
       )}
       <details className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
         <summary className="cursor-pointer font-medium text-zinc-800">
-          Overview script
+          Transcript
         </summary>
         <p className="mt-3 leading-6">{overview.transcript}</p>
       </details>
@@ -2266,14 +2260,14 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Admin can verify generated-note provenance when the local entry, book or conversation, citation link, and no-external-fetch metadata agree, while still leaving sentence-level source-span checks for later.",
       },
       {
-        title: "Stored audio overviews",
+        title: "Chapter audio guides",
         detail:
-          "Built-in chapters can attach a saved overview asset with play, pause, and speed controls, keeping Library listening fast without calling live read-aloud each time.",
+          "Every built-in Library chapter now attaches a Deepgram-generated guide asset with play, pause, and speed controls, keeping Library listening fast without calling live read-aloud each time.",
       },
       {
         title: "Audio generation dry-run",
         detail:
-          "The generation plan lists every User Brain Architecture chapter, reports missing MP3s locally, and only synthesizes with OpenAI speech after an explicit key is available.",
+          "The generation plan lists every built-in book chapter, verifies checked-in MP3s locally, and regenerates assets through Deepgram Aura when a key is available.",
       },
       {
         title: "Diagnostics export",
@@ -2352,7 +2346,10 @@ const builtInBooks: BuiltInBook[] = [
     description:
       "Complete guide to the underlying pedagogical models and technical architecture of the AI Tutor.",
     hiddenKey: "tutor_book_hidden",
-    chapters: tutorBook,
+    chapters: tutorBook.map((chapter, index) => ({
+      ...chapter,
+      audioOverview: builtInBookAudioOverviews["tutor-book"]?.[index],
+    })),
   },
   {
     id: "user-brain-architecture",
@@ -2376,7 +2373,10 @@ const builtInBooks: BuiltInBook[] = [
       { title: "Theme System" },
       { title: "UI Component Snapshots" },
       { title: "Local Beta Control Patterns" },
-    ],
+    ].map((chapter, index) => ({
+      ...chapter,
+      audioOverview: builtInBookAudioOverviews["app-design-language"]?.[index],
+    })),
     renderChapter: (chapterIndex) => (
       <AppDesignLanguagePage chapterIndex={chapterIndex} />
     ),

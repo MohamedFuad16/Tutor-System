@@ -14,6 +14,78 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 22 report
+
+## Scope
+
+Phase 22 implements the updated all-chapter, all-built-in-book audio-guide
+requirement with Deepgram-generated stored MP3s. It keeps playback local, avoids
+live read-aloud at playback time, removes visible generated-by/stored-title
+metadata from the reader, and keeps AWS/cloud work out of scope.
+
+## Graphify Context
+
+- Graphify routed this slice through `src/views/RevisionView.tsx`,
+  `src/lib/chapterAudioOverviews.ts`,
+  `scripts/user-brain-audio-overview-plan.mjs`,
+  `scripts/generate-user-brain-audio-overviews.mjs`,
+  `src/lib/userBrainArchitectureBook.ts`, `src/lib/tutorBook.json`,
+  `README.md`, `TUTOR_ARCHITECTURE.md`, and the audio-plan test.
+
+## Integration Decisions
+
+- Moved chapter audio guide data into
+  `src/lib/chapterAudioOverviews.json`, shared by the app and generation plan.
+- Exposed stored audio guides for all 25 chapters across Tutor System
+  Architecture, User Brain Architecture, and App Design Language.
+- Updated the reader card to show a plain Chapter audio guide control with
+  play/pause, progress, and speed controls, without displaying the old
+  generated-by metadata string, stored MP3 label, stored date, or overview
+  title.
+- Switched the generator default to the requested Deepgram path:
+  `aura-2-odysseus-en` at speed `1`, with the key supplied only through
+  `DEEPGRAM_API_KEY`.
+- Regenerated and checked in all 25 MP3 files from chapter-specific guide
+  scripts that explain the chapter rather than reading the book text.
+- Updated system architecture docs, the in-app Tutor architecture book, the User
+  Brain Architecture book, README usage, and the App Design Language local beta
+  pattern.
+
+## Verification Evidence
+
+- `npm run audio:overview:dry-run`: passed, 25 present and 0 missing MP3
+  assets.
+- `ffprobe` duration check: all 25 MP3s are valid and range from about 28 to 41
+  seconds with Deepgram speed `1`.
+- Source search found no committed Deepgram token.
+- `node --test tests/audio-overview-plan.test.mjs`: passed, 5 tests covering
+  all built-in book chapters, Deepgram defaults, stored output files, and book
+  filters.
+- `npm run lint`: passed.
+- `npm run test`: passed, 74 tests.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- Browser QA on `http://localhost:3001`: Tutor System Architecture, User Brain
+  Architecture, and App Design Language rendered chapter audio guides for first
+  and last chapters with expected local MP3 paths, real durations, and no old
+  stored-overview metadata string. Admin Sources rendered 25 audio-guide
+  artifacts and 25 citation states across all three built-in books.
+- `graphify update . --force`: passed.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found the Deepgram generator, shared audio plan,
+  `synthesizeWithDeepgram()`, manifest exports, `RevisionView()`, and
+  `AdminView()`.
+- Read-only final-check sidecar was attempted, but the subagent runner returned
+  a usage-limit stop before producing findings. No code was changed by the
+  sidecar.
+
+## Remaining Work
+
+- Add a real verifier for stored audio guide transcript/audio integrity; current
+  audio-guide artifact provenance remains `not_checked`.
+- Continue broader local beta learner-brain implementation before any AWS/cloud
+  work.
+
 # brain architecture implementation program: phase 21 report
 
 ## Scope

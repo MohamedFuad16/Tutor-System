@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -7,97 +7,166 @@ import { test } from "node:test";
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 const {
-  USER_BRAIN_AUDIO_OVERVIEW_SPEECH_MODEL,
-  USER_BRAIN_AUDIO_OVERVIEW_VOICE,
+  AUDIO_OVERVIEW_DEEPGRAM_MODEL,
+  AUDIO_OVERVIEW_DEEPGRAM_SPEED,
   audioOverviewIdFor,
   audioOverviewPublicSrcFor,
   buildAudioOverviewDryRunReport,
   buildAudioOverviewSpeechInput,
+  builtInBookAudioOverviewPlan,
   userBrainAudioOverviewPlan,
 } = await import("../scripts/user-brain-audio-overview-plan.mjs");
 
-test("audio overview plan covers every user-brain architecture chapter", () => {
+const userBrainBookSource = readFileSync(
+  `${repoRoot}/src/lib/userBrainArchitectureBook.ts`,
+  "utf8",
+);
+const userBrainChapterTitles = [
+  ...userBrainBookSource.matchAll(/title: "([^"]+)"/g),
+].map((match) => match[1]);
+
+const tutorBook = JSON.parse(
+  readFileSync(`${repoRoot}/src/lib/tutorBook.json`, "utf8"),
+);
+
+const expectedBooks = [
+  {
+    bookId: "tutor-book",
+    bookTitle: "Tutor System Architecture",
+    titles: tutorBook.map((chapter) => chapter.title),
+  },
+  {
+    bookId: "user-brain-architecture",
+    bookTitle: "User Brain Architecture",
+    titles: userBrainChapterTitles,
+  },
+  {
+    bookId: "app-design-language",
+    bookTitle: "App Design Language",
+    titles: [
+      "Wireframe Connections",
+      "Theme System",
+      "UI Component Snapshots",
+      "Local Beta Control Patterns",
+    ],
+  },
+];
+
+test("audio overview plan covers every built-in book chapter", () => {
+  assert.equal(AUDIO_OVERVIEW_DEEPGRAM_MODEL, "aura-2-odysseus-en");
+  assert.equal(AUDIO_OVERVIEW_DEEPGRAM_SPEED, 1);
   assert.equal(userBrainAudioOverviewPlan.length, 8);
-  assert.equal(USER_BRAIN_AUDIO_OVERVIEW_SPEECH_MODEL, "gpt-4o-mini-tts");
-  assert.equal(USER_BRAIN_AUDIO_OVERVIEW_VOICE, "alloy");
 
-  const bookSource = readFileSync(
-    `${repoRoot}/src/lib/userBrainArchitectureBook.ts`,
-    "utf8",
+  const expectedTotal = expectedBooks.reduce(
+    (sum, book) => sum + book.titles.length,
+    0,
   );
-  const bookChapterTitles = [...bookSource.matchAll(/title: "([^"]+)"/g)].map(
-    (match) => match[1],
-  );
+  assert.equal(builtInBookAudioOverviewPlan.length, expectedTotal);
 
-  assert.deepEqual(
-    userBrainAudioOverviewPlan.map((entry) => entry.chapterTitle),
-    bookChapterTitles,
-  );
-
-  const chapterIndexes = new Set();
   const outputFiles = new Set();
   const overviewIds = new Set();
 
-  for (const entry of userBrainAudioOverviewPlan) {
-    assert.equal(entry.chapterIndex, chapterIndexes.size);
-    assert.match(entry.chapterTitle, /^Chapter \d+:/);
-    assert.match(entry.outputFile, /^user-brain-.+\.mp3$/);
-    assert.equal(entry.transcript.includes("```"), false);
-    assert.ok(buildAudioOverviewSpeechInput(entry).length > 220);
-    assert.match(
-      audioOverviewPublicSrcFor(entry),
-      /^\/audio-overviews\/.+\.mp3$/,
+  for (const book of expectedBooks) {
+    const rows = builtInBookAudioOverviewPlan.filter(
+      (entry) => entry.bookId === book.bookId,
+    );
+    assert.equal(rows.length, book.titles.length);
+    assert.deepEqual(
+      rows.map((entry) => entry.chapterTitle),
+      book.titles,
     );
 
-    chapterIndexes.add(entry.chapterIndex);
-    outputFiles.add(entry.outputFile);
-    overviewIds.add(audioOverviewIdFor(entry));
+    rows.forEach((entry, index) => {
+      assert.equal(entry.bookTitle, book.bookTitle);
+      assert.equal(entry.chapterIndex, index);
+      assert.match(entry.outputFile, /^[a-z0-9-]+\.mp3$/);
+      assert.equal(entry.assetStatus, "stored");
+      assert.equal(entry.transcript.includes("```"), false);
+      assert.ok(buildAudioOverviewSpeechInput(entry).length > 220);
+      assert.match(
+        audioOverviewPublicSrcFor(entry),
+        /^\/audio-overviews\/.+\.mp3$/,
+      );
+      outputFiles.add(entry.outputFile);
+      overviewIds.add(audioOverviewIdFor(entry));
+    });
   }
 
-  assert.equal(chapterIndexes.size, 8);
-  assert.equal(outputFiles.size, 8);
-  assert.equal(overviewIds.size, 8);
+  assert.equal(outputFiles.size, expectedTotal);
+  assert.equal(overviewIds.size, expectedTotal);
 });
 
 test("audio overview dry run report distinguishes stored and missing assets", () => {
   const existingFiles = new Set(["user-brain-runtime-overview.mp3"]);
   const report = buildAudioOverviewDryRunReport({ existingFiles });
 
-  assert.equal(report.total, 8);
+  assert.equal(report.total, builtInBookAudioOverviewPlan.length);
   assert.equal(report.present, 1);
-  assert.equal(report.missing, 7);
+  assert.equal(report.missing, builtInBookAudioOverviewPlan.length - 1);
 
-  const firstRow = report.rows[0];
-  assert.equal(firstRow.fileStatus, "present");
-  assert.equal(firstRow.assetStatus, "stored");
+  const presentRows = report.rows.filter((row) => row.fileStatus === "present");
+  assert.equal(presentRows.length, 1);
+  assert.equal(presentRows[0].assetStatus, "stored");
 
-  const pendingRows = report.rows.slice(1);
-  assert.ok(pendingRows.every((row) => row.fileStatus === "missing"));
-  assert.ok(pendingRows.every((row) => row.assetStatus === "planned"));
+  const missingRows = report.rows.filter((row) => row.fileStatus === "missing");
+  assert.ok(missingRows.every((row) => row.assetStatus === "stored"));
 });
 
-test("stored opening audio asset is checked into the local public directory", () => {
-  assert.equal(
-    existsSync(
-      `${repoRoot}/public/audio-overviews/user-brain-runtime-overview.mp3`,
-    ),
-    true,
-  );
+test("stored audio assets are checked into the local public directory", () => {
+  const audioDir = `${repoRoot}/public/audio-overviews`;
+  const checkedInFiles = new Set(readdirSync(audioDir));
+
+  for (const entry of builtInBookAudioOverviewPlan) {
+    assert.equal(
+      existsSync(`${audioDir}/${entry.outputFile}`),
+      true,
+      `${entry.outputFile} should exist`,
+    );
+    assert.equal(checkedInFiles.has(entry.outputFile), true);
+  }
 });
 
-test("audio overview generator dry-run does not require an OpenAI key", () => {
+test("audio overview generator dry-run does not require a Deepgram key", () => {
   const result = spawnSync(
     process.execPath,
     ["scripts/generate-user-brain-audio-overviews.mjs", "--dry-run"],
     {
       cwd: repoRoot,
       encoding: "utf8",
-      env: { ...process.env, OPENAI_API_KEY: "" },
+      env: { ...process.env, DEEPGRAM_API_KEY: "" },
     },
   );
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /User Brain Architecture audio overview plan/);
-  assert.match(result.stdout, /gpt-4o-mini-tts/);
-  assert.match(result.stdout, /1 present, 7 missing, 8 planned/);
+  assert.match(result.stdout, /Built-in book audio guide plan/);
+  assert.match(result.stdout, /Provider: deepgram/);
+  assert.match(result.stdout, /aura-2-odysseus-en/);
+  assert.match(
+    result.stdout,
+    new RegExp(
+      `${builtInBookAudioOverviewPlan.length} present, 0 missing, ${builtInBookAudioOverviewPlan.length} planned`,
+    ),
+  );
+});
+
+test("audio overview generator dry-run can filter by book", () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      "scripts/generate-user-brain-audio-overviews.mjs",
+      "--dry-run",
+      "--book",
+      "app-design-language",
+    ],
+    {
+      cwd: repoRoot,
+      encoding: "utf8",
+      env: { ...process.env, DEEPGRAM_API_KEY: "" },
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Provider: deepgram/);
+  assert.match(result.stdout, /app-design-language chapter 1/);
+  assert.match(result.stdout, /4 planned/);
 });

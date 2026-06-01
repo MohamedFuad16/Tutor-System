@@ -210,10 +210,9 @@ test("stored audio overviews become not-checked artifact records with local prov
         "LearningAI is a foreground tutor with a local learner brain ledger.",
       audioSrc: "/audio-overviews/user-brain-runtime-overview.mp3",
       durationLabel: "about 45 sec",
-      generatedBy:
-        "GPT-authored overview script, stored as a local audio asset",
-      voice: "Stored MP3",
-      storedAt: "2026-06-01",
+      generatedBy: "GPT-authored chapter guide",
+      voice: "Deepgram Aura Odysseus",
+      storedAt: "2026-06-02",
       metadata: { assetKind: "built_in_book_chapter_audio" },
     },
     112233,

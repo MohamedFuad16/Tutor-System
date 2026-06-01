@@ -26,10 +26,10 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Chat and Study can capture local document context.
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
 - Admin exposes model runs, tool jobs, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
-- Generated flashcards, generated learning-book notes, and stored audio overviews now leave explicit \`not_checked\` artifact provenance.
+- Generated flashcards, generated learning-book notes, and stored chapter audio guides now leave explicit \`not_checked\` artifact provenance.
 - Admin can locally verify generated learning-note provenance when the note links back to a learning entry, local book or conversation, local-only metadata, and no external fetch.
-- Revision shows this book in a shorter reader path and can play a stored overview asset for this chapter.
-- A local audio-overview generation plan now covers every chapter, with an OpenAI speech generator gated by \`OPENAI_API_KEY\` and a dry-run verifier for missing MP3 assets.
+- Revision shows this book in a shorter reader path and can play a saved Deepgram chapter audio guide for every chapter.
+- A local audio-guide manifest now covers every built-in Library book, with checked-in MP3 assets and Deepgram \`aura-2-odysseus-en\` regeneration at speed \`1\` when \`DEEPGRAM_API_KEY\` is available.
 
 ## What This Is Not
 
@@ -60,14 +60,14 @@ Core local tables:
 | \`artifactRecords\`, \`citationStates\` | Source cards, generated artifacts, and verification state. |
 | \`correctionEvents\` | Non-destructive mark-wrong, deletion-review, supersede, dismiss, and block intents. |
 
-The local beta rule is intentionally conservative: generated notes, flashcards, stored audio overviews, charts, code, images, and websites can be useful study artifacts, but they are not verified evidence just because they exist.
+The local beta rule is intentionally conservative: generated notes, flashcards, stored chapter audio guides, charts, code, images, and websites can be useful study artifacts, but they are not verified evidence just because they exist.
 
 ## Current Enforcement
 
 - Model summaries can add evidence rows, but cannot raise mastery.
 - Flashcard reviews can write BKT evidence only when a real concept id exists.
-- Generated flashcards, generated learning notes, and built-in stored audio overview manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states.
-- Admin's local verifier mutates \`source_card\` artifacts and generated learning-note provenance when the local ledger links are coherent; flashcards, audio overviews, charts, code, images, and websites remain explicitly unsupported until real verifiers exist.
+- Generated flashcards, generated learning notes, and built-in chapter audio guide manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states.
+- Admin's local verifier mutates \`source_card\` artifacts and generated learning-note provenance when the local ledger links are coherent; flashcards, audio guides, charts, code, images, and websites remain explicitly unsupported until real verifiers exist.
 - Correction propagation marks related rows stale, skipped, unsupported, conflicting, or unverified instead of hard-deleting history.`,
   },
   {
@@ -122,7 +122,7 @@ Citation states:
 | \`conflicting\` | Saved source fields or claims disagree. |
 | \`unsupported\` | The local verifier cannot assess this artifact kind yet. |
 
-Current local implementation verifies source-card structure without fetching external pages. It checks saved links, URL shape, domain consistency, source ids, and artifact/citation linkage. Generated learning notes now have a separate local provenance check for entry id, book/conversation anchors, local-only metadata, no external fetch, and saved summary preview. That proves the note is locally traceable, not that every sentence is source-span verified. Generated flashcards and stored audio overviews still stay \`not_checked\` until their own verifiers exist.`,
+Current local implementation verifies source-card structure without fetching external pages. It checks saved links, URL shape, domain consistency, source ids, and artifact/citation linkage. Generated learning notes now have a separate local provenance check for entry id, book/conversation anchors, local-only metadata, no external fetch, and saved summary preview. That proves the note is locally traceable, not that every sentence is source-span verified. Generated flashcards and chapter audio guides still stay \`not_checked\` until their own verifiers exist.`,
   },
   {
     title: "Chapter 5: Admin And Runtime Tuning",
@@ -150,7 +150,7 @@ Implemented Admin surfaces:
 | Tool Jobs | Tool lifecycle visibility. |
 | Memory/Retrieval Events | Learner-brain writes and context selection. |
 | Evidence Ledger | Evidence rows and BKT deltas. |
-| Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and stored audio overview provenance. |
+| Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and chapter audio guide provenance. |
 | Correction Requests | Non-destructive review and propagation state. |
 | Runtime Tuning | Local knobs for source-vs-web, memory context, tool budget, and refresh cadence. |
 | Beta Diagnostics | Capped local export and readiness gate summary. |
@@ -172,9 +172,9 @@ Good voice behavior means:
 - record voice costs and failures;
 - avoid pretending live speech is evidence.
 
-For Library books, the better pattern is stored audio overview, not live read-aloud. A chapter overview should be written as a short energetic explanation, generated once, stored as an asset, and played from the browser with normal controls. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
+For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a short energetic explanation, generated once, stored as an asset, and played from the browser with normal controls. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
 
-This phase starts that pattern for the opening User Brain Architecture chapter and makes the rest of the book generation-ready. \`scripts/user-brain-audio-overview-plan.mjs\` holds the chapter scripts and target filenames. \`npm run audio:overview:dry-run\` reports which local MP3 assets are present, while \`npm run audio:overview:generate\` uses the OpenAI speech API only when \`OPENAI_API_KEY\` is available. The app only exposes audio entries whose MP3 files are actually checked in, so missing generated assets do not create broken player controls.`,
+This phase extends that pattern to every built-in Library chapter: Tutor System Architecture, User Brain Architecture, and App Design Language. \`src/lib/chapterAudioOverviews.json\` holds the chapter scripts, target filenames, provider metadata, and local MP3 manifest. \`npm run audio:overview:dry-run\` verifies which assets are checked in, while \`npm run audio:overview:generate -- --provider deepgram --overwrite\` regenerates them with Deepgram when \`DEEPGRAM_API_KEY\` is available. The reader uses the stored assets directly, so playback is instant and does not depend on a live model call.`,
   },
   {
     title: "Chapter 7: Local Beta Roadmap",
@@ -196,16 +196,15 @@ Implemented now:
 - generated flashcard and generated learning-note provenance;
 - local generated learning-note provenance verifier;
 - capped beta diagnostics export;
-- stored audio overview UI for the opening architecture chapter;
-- chapter-by-chapter stored-audio generation plan, dry-run report, and key-gated OpenAI speech synthesis script.
+- stored audio guide UI for every built-in Library chapter;
+- chapter-by-chapter stored-audio manifest, checked-in MP3 assets, dry-run report, and Deepgram \`aura-2-odysseus-en\` regeneration path.
 
 Still local beta work:
 
 - source-span claim matching;
-- generated-artifact verifiers for charts, code snippets, images, websites, flashcards, and audio overviews;
+- generated-artifact verifiers for charts, code snippets, images, websites, flashcards, and audio guides;
 - source-span claim matching for generated learning notes beyond the current provenance-level check;
 - durable job queue with retries and dead-letter review;
-- run and review the stored audio overview generator for the remaining User Brain Architecture chapters once an OpenAI key is available;
 - stronger tests that make mastery writes impossible without validated evidence and audit rows.
 
 Deferred until after beta:
@@ -230,7 +229,7 @@ Deferred until after beta:
 | Citation state | The verification state attached to an artifact or claim. |
 | Correction overlay | A non-destructive status update that marks related rows stale, skipped, unsupported, conflicting, or unverified. |
 | Interaction runtime | The app-native coordination layer between foreground tutor, local brain, retrieval, tools, and background workers. |
-| Stored audio overview | A pre-generated chapter explanation asset played locally instead of live read-aloud. |
+| Chapter audio guide | A pre-generated chapter explanation asset played locally instead of live read-aloud. |
 
 ## Trusted References
 

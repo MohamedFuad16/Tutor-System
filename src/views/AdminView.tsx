@@ -65,8 +65,7 @@ import {
   type BrainRuntimeSettings,
   type BrainWebSearchPolicy,
 } from "../lib/brainRuntimeSettings";
-import userBrainArchitectureBook from "../lib/userBrainArchitectureBook";
-import { userBrainChapterAudioOverviews } from "../lib/chapterAudioOverviews";
+import { builtInBookAudioOverviewEntries } from "../lib/chapterAudioOverviews";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
 type AdminTab =
@@ -483,31 +482,25 @@ export function AdminView() {
     useState("");
   const storedAudioOverviewInputs = useMemo(
     () =>
-      Object.entries(userBrainChapterAudioOverviews).map(
-        ([chapterIndexText, overview]) => {
-          const chapterIndex = Number(chapterIndexText);
-          return {
-            overviewId: `user-brain-architecture:chapter-${chapterIndex}:stored-audio-overview`,
-            bookId: "user-brain-architecture",
-            bookTitle: "User Brain Architecture",
-            chapterIndex,
-            chapterTitle:
-              userBrainArchitectureBook[chapterIndex]?.title || overview.title,
-            title: overview.title,
-            summary: overview.summary,
-            transcript: overview.transcript,
-            audioSrc: overview.audioSrc,
-            durationLabel: overview.durationLabel,
-            generatedBy: overview.generatedBy,
-            voice: overview.voice,
-            storedAt: overview.storedAt,
-            metadata: {
-              assetKind: "built_in_book_chapter_audio",
-              displaySurface: "RevisionView",
-            },
-          };
+      builtInBookAudioOverviewEntries.map((overview) => ({
+        overviewId: `${overview.bookId}:chapter-${overview.chapterIndex}:stored-audio-overview`,
+        bookId: overview.bookId,
+        bookTitle: overview.bookTitle,
+        chapterIndex: overview.chapterIndex,
+        chapterTitle: overview.chapterTitle,
+        title: overview.title,
+        summary: overview.summary,
+        transcript: overview.transcript,
+        audioSrc: overview.audioSrc,
+        durationLabel: overview.durationLabel,
+        generatedBy: overview.generatedBy,
+        voice: overview.voice,
+        storedAt: overview.storedAt,
+        metadata: {
+          assetKind: "built_in_book_chapter_audio",
+          displaySurface: "RevisionView",
         },
-      ),
+      })),
     [],
   );
 
@@ -2819,13 +2812,13 @@ export function AdminView() {
                           </h2>
                           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
                             Durable local records for source cards, generated
-                            study artifacts, stored audio overviews, and
-                            citation states captured from chat, memory, tool
-                            streams, and built-in manifests. Artifacts can be
-                            ready while their citations remain checking or not
-                            checked; the local verifier checks saved source-card
-                            structure and generated learning-note provenance
-                            without fetching external pages.
+                            study artifacts, chapter audio guides, and citation
+                            states captured from chat, memory, tool streams, and
+                            built-in manifests. Artifacts can be ready while
+                            their citations remain checking or not checked; the
+                            local verifier checks saved source-card structure
+                            and generated learning-note provenance without
+                            fetching external pages.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -2841,7 +2834,7 @@ export function AdminView() {
                       <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-8">
                         {[
                           ["Source cards", sourceCardArtifacts],
-                          ["Audio overviews", audioOverviewArtifacts],
+                          ["Audio guides", audioOverviewArtifacts],
                           ["Ready artifacts", readyArtifactRecords],
                           ["Checking", checkingCitationStates],
                           ["Unavailable", unavailableCitationStates],
@@ -2900,7 +2893,7 @@ export function AdminView() {
                             No artifacts yet. A chat web-search result,
                             generated flashcard batch, or generated learning
                             note will persist reviewable artifact rows here.
-                            Built-in stored audio overview manifests are seeded
+                            Built-in chapter audio guide manifests are seeded
                             when Admin loads.
                           </div>
                         ) : (
