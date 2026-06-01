@@ -246,6 +246,62 @@ const openRouterCost = (
   );
 };
 
+type SystemActivityKind =
+  | "system"
+  | "model"
+  | "tool"
+  | "retrieval"
+  | "memory"
+  | "web"
+  | "error";
+
+type SystemActivityStatus =
+  | "started"
+  | "progress"
+  | "completed"
+  | "failed"
+  | "fallback"
+  | "blocked";
+
+type SystemActivityEvent = {
+  id: string;
+  timestamp: number;
+  kind: SystemActivityKind;
+  status: SystemActivityStatus;
+  title: string;
+  detail?: string;
+  requestId?: string;
+  model?: string;
+  toolName?: string;
+  phase?: string;
+  durationMs?: number;
+  metadata?: Record<string, unknown>;
+};
+
+type SystemActivityInput = Omit<SystemActivityEvent, "id" | "timestamp">;
+
+const SYSTEM_ACTIVITY_LIMIT = 250;
+
+const activityId = () =>
+  `activity_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+const safeActivityMetadata = (metadata?: Record<string, unknown>) => {
+  if (!metadata) return undefined;
+  const safe: Record<string, unknown> = {};
+  Object.entries(metadata).forEach(([key, value]) => {
+    if (/key|token|authorization|secret|password/i.test(key)) {
+      safe[key] = "[redacted]";
+      return;
+    }
+    if (typeof value === "string") {
+      safe[key] = value.length > 420 ? `${value.slice(0, 417)}...` : value;
+      return;
+    }
+    safe[key] = value;
+  });
+  return safe;
+};
+
 const slugifyId = (value: string) =>
   value
     .toLowerCase()
@@ -454,6 +510,89 @@ export async function createTutorServerApp(
     originalWarn.apply(console, args);
   };
 
+  const systemActivityEvents: SystemActivityEvent[] = [];
+  const recordSystemActivity = (input: SystemActivityInput) => {
+    const event: SystemActivityEvent = {
+      id: activityId(),
+      timestamp: Date.now(),
+      ...input,
+      metadata: safeActivityMetadata(input.metadata),
+    };
+    systemActivityEvents.unshift(event);
+    if (systemActivityEvents.length > SYSTEM_ACTIVITY_LIMIT) {
+      systemActivityEvents.length = SYSTEM_ACTIVITY_LIMIT;
+    }
+    return event;
+  };
+  const summarizeSystemActivity = () => {
+    const byKind: Record<string, number> = {};
+    const byStatus: Record<string, number> = {};
+    let latestError: SystemActivityEvent | null = null;
+
+    systemActivityEvents.forEach((event) => {
+      byKind[event.kind] = (byKind[event.kind] || 0) + 1;
+      byStatus[event.status] = (byStatus[event.status] || 0) + 1;
+      if (
+        !latestError &&
+        (event.kind === "error" || event.status === "failed")
+      ) {
+        latestError = event;
+      }
+    });
+
+    return {
+      total: systemActivityEvents.length,
+      byKind,
+      byStatus,
+      latestError,
+      latestEventAt: systemActivityEvents[0]?.timestamp || null,
+      retentionLimit: SYSTEM_ACTIVITY_LIMIT,
+    };
+  };
+  const debugRequestLike = (req: express.Request): RequestLike => ({
+    headers: req.headers,
+    socket: { remoteAddress: req.socket.remoteAddress },
+    url: req.originalUrl || req.url,
+  });
+  const applyDebugCors = (req: express.Request, res: express.Response) => {
+    const origin = firstHeader(req.headers.origin);
+    if (!origin) return;
+
+    let allowed = false;
+    if (origin === "null") {
+      allowed = process.env.NODE_ENV !== "production";
+    } else {
+      try {
+        allowed = isLoopbackHost(new URL(origin).host);
+      } catch {
+        allowed = false;
+      }
+    }
+
+    if (!allowed) return;
+
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Debug-Token, X-Admin-Token",
+    );
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  };
+
+  recordSystemActivity({
+    kind: "system",
+    status: "completed",
+    title: "Local system activity ledger initialized",
+    detail:
+      "Admin can inspect recent local model, tool, retrieval, memory, and error events.",
+    metadata: {
+      runtime: process.env.VERCEL ? "vercel" : "node",
+      localOnly: true,
+      retentionLimit: SYSTEM_ACTIVITY_LIMIT,
+    },
+  });
+
   app.get("/api/health", (_req, res) => {
     res.json({
       ok: true,
@@ -465,6 +604,52 @@ export async function createTutorServerApp(
         serper: Boolean(sanitizeApiKey(process.env.SERPER_API_KEY)),
         deepgram: Boolean(sanitizeApiKey(process.env.DEEPGRAM_API_KEY)),
       },
+    });
+  });
+
+  app.options("/api/debug/system-activity", (req, res) => {
+    applyDebugCors(req, res);
+    res.status(204).end();
+  });
+
+  app.get("/api/debug/system-activity", (req, res) => {
+    applyDebugCors(req, res);
+    if (!isAuthorizedDebugRequest(debugRequestLike(req))) {
+      return res.status(403).json({
+        error:
+          "Debug activity requires a trusted local request or debug token.",
+      });
+    }
+
+    res.json({
+      ok: true,
+      service: "tutor-system-activity",
+      generatedAt: new Date().toISOString(),
+      localOnly: true,
+      retention: {
+        limit: SYSTEM_ACTIVITY_LIMIT,
+        strategy: "newest-first in-memory ring buffer",
+      },
+      summary: summarizeSystemActivity(),
+      meters: {
+        providers: {
+          openRouter: Boolean(getOpenRouterServerFallbackKey()),
+          openRouterByok: true,
+          serper: Boolean(sanitizeApiKey(process.env.SERPER_API_KEY)),
+          deepgram: Boolean(sanitizeApiKey(process.env.DEEPGRAM_API_KEY)),
+        },
+        graph: {
+          codeArchitecture: "Graphify",
+          learnerBrain: "local Dexie learning book and concept records",
+        },
+        tuning: {
+          defaultChatModel: DEFAULT_CHAT_MODEL,
+          learningAgentModel: LEARNING_AGENT_MODEL,
+          maxToolIterations: 5,
+          websocketDebugPath: "/ws/debug",
+        },
+      },
+      events: systemActivityEvents,
     });
   });
 
@@ -683,10 +868,23 @@ export async function createTutorServerApp(
 
   // API Route to Trace Action (DeepSeek via OpenRouter)
   app.post("/api/trace", async (req, res) => {
+    const activityStartedAt = Date.now();
+    const requestId = activityId();
     try {
       const apiKey = resolveOpenRouterApiKey(req.headers);
-      if (!apiKey)
+      if (!apiKey) {
+        recordSystemActivity({
+          kind: "memory",
+          status: "blocked",
+          title: "Trace explanation blocked",
+          detail:
+            "OpenRouter API key is required before a model can explain the trace.",
+          requestId,
+          model: LEARNING_AGENT_MODEL,
+          durationMs: Date.now() - activityStartedAt,
+        });
         return res.status(401).json({ error: openRouterRequiredMessage });
+      }
 
       const openai = new OpenAI({
         baseURL: "https://openrouter.ai/api/v1",
@@ -694,6 +892,21 @@ export async function createTutorServerApp(
       });
 
       const { action, payload } = req.body;
+      recordSystemActivity({
+        kind: "memory",
+        status: "started",
+        title: "Trace explanation requested",
+        detail: String(action || "unknown action"),
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        metadata: {
+          action,
+          payloadKeys:
+            payload && typeof payload === "object"
+              ? Object.keys(payload).slice(0, 12)
+              : [],
+        },
+      });
 
       const response = await openai.chat.completions.create({
         model: LEARNING_AGENT_MODEL,
@@ -710,8 +923,27 @@ export async function createTutorServerApp(
         ],
       });
 
+      recordSystemActivity({
+        kind: "memory",
+        status: "completed",
+        title: "Trace explanation generated",
+        detail: String(action || "unknown action"),
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        durationMs: Date.now() - activityStartedAt,
+      });
+
       res.json({ explanation: response.choices[0]?.message?.content?.trim() });
     } catch (error: any) {
+      recordSystemActivity({
+        kind: "error",
+        status: "failed",
+        title: "Trace explanation failed",
+        detail: error.message || "Failed to generate trace",
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        durationMs: Date.now() - activityStartedAt,
+      });
       console.error("Trace API Error:", error);
       res
         .status(500)
@@ -720,10 +952,27 @@ export async function createTutorServerApp(
   });
 
   app.post("/api/learning-book-update", async (req, res) => {
+    const activityStartedAt = Date.now();
+    const requestId = activityId();
     const apiKey = resolveOpenRouterApiKey(req.headers);
     const body = req.body || {};
 
     if (!apiKey) {
+      recordSystemActivity({
+        kind: "memory",
+        status: "blocked",
+        title: "Learning-book update blocked",
+        detail:
+          "OpenRouter API key is required before the local learning book can be model-refined.",
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        metadata: {
+          activeBookId: body.activeBookId || "",
+          activeDocumentId: body.activeDocumentId || "",
+          fallbackAvailable: true,
+        },
+        durationMs: Date.now() - activityStartedAt,
+      });
       return res.status(401).json({
         error: openRouterRequiredMessage,
       });
@@ -735,8 +984,36 @@ export async function createTutorServerApp(
       12000,
     );
     if (!userMessage && !assistantMessage) {
+      recordSystemActivity({
+        kind: "memory",
+        status: "blocked",
+        title: "Learning-book update skipped",
+        detail: "Conversation text was empty.",
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        durationMs: Date.now() - activityStartedAt,
+      });
       return res.status(400).json({ error: "Conversation text is required." });
     }
+
+    recordSystemActivity({
+      kind: "memory",
+      status: "started",
+      title: "Learning-book update started",
+      detail:
+        "The local learner book agent is summarizing the completed tutor turn.",
+      requestId,
+      model: LEARNING_AGENT_MODEL,
+      metadata: {
+        activeBookId: body.activeBookId || "",
+        activeDocumentId: body.activeDocumentId || "",
+        documentCount: Array.isArray(body.documentContexts)
+          ? body.documentContexts.length
+          : 0,
+        userMessageChars: userMessage.length,
+        assistantMessageChars: assistantMessage.length,
+      },
+    });
 
     try {
       const openai = new OpenAI({
@@ -808,6 +1085,24 @@ CRITICAL RULES:
 
       const content = response.choices[0]?.message?.content || "";
       const parsed = extractJsonObject(content);
+      recordSystemActivity({
+        kind: "memory",
+        status: "completed",
+        title: "Learning-book update completed",
+        detail: String(
+          parsed.bookTitle || body.activeProject || "General Study",
+        ),
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        metadata: {
+          conceptCount: Array.isArray(parsed.concepts)
+            ? parsed.concepts.length
+            : 0,
+          riskCount: Array.isArray(parsed.risks) ? parsed.risks.length : 0,
+          confidence: parsed.confidence,
+        },
+        durationMs: Date.now() - activityStartedAt,
+      });
       res.json({
         ...parsed,
         userName: parsed.userName || body.userName || "Learner",
@@ -815,6 +1110,18 @@ CRITICAL RULES:
         model: LEARNING_AGENT_MODEL,
       });
     } catch (error) {
+      recordSystemActivity({
+        kind: "memory",
+        status: "fallback",
+        title: "Learning-book update used local fallback",
+        detail:
+          error instanceof Error
+            ? error.message
+            : "Model refinement failed; safe fallback JSON was returned.",
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        durationMs: Date.now() - activityStartedAt,
+      });
       console.warn(
         "[LEARNING_BOOK] DeepSeek update failed, using safe fallback:",
         error instanceof Error ? error.message : error,
@@ -824,19 +1131,53 @@ CRITICAL RULES:
   });
 
   app.post("/api/generate-flashcards", async (req, res) => {
+    const activityStartedAt = Date.now();
+    const requestId = activityId();
     const apiKey = resolveOpenRouterApiKey(req.headers);
     const body = req.body || {};
 
     if (!apiKey) {
+      recordSystemActivity({
+        kind: "tool",
+        status: "blocked",
+        title: "Flashcard generation blocked",
+        detail:
+          "OpenRouter API key is required before flashcards can be model-generated.",
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        toolName: "generate_flashcards",
+        durationMs: Date.now() - activityStartedAt,
+      });
       return res.status(401).json({ error: openRouterRequiredMessage });
     }
 
     const content = String(body.content || "").slice(0, 8000);
     if (!content) {
+      recordSystemActivity({
+        kind: "tool",
+        status: "blocked",
+        title: "Flashcard generation skipped",
+        detail: "No content was provided.",
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        toolName: "generate_flashcards",
+        durationMs: Date.now() - activityStartedAt,
+      });
       return res.status(400).json({ error: "Content is required." });
     }
 
     try {
+      recordSystemActivity({
+        kind: "tool",
+        status: "started",
+        title: "Flashcard generation started",
+        detail:
+          "The study-card tool is extracting recall cards from tutor content.",
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        toolName: "generate_flashcards",
+        metadata: { contentChars: content.length },
+      });
       const openai = new OpenAI({
         baseURL: "https://openrouter.ai/api/v1",
         apiKey,
@@ -920,8 +1261,31 @@ CRITICAL RULES:
         );
       }
 
+      recordSystemActivity({
+        kind: "tool",
+        status: "completed",
+        title: "Flashcard generation completed",
+        detail: `${cards.length} card${cards.length === 1 ? "" : "s"} prepared.`,
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        toolName: "generate_flashcards",
+        durationMs: Date.now() - activityStartedAt,
+      });
       res.json({ cards });
     } catch (error) {
+      recordSystemActivity({
+        kind: "tool",
+        status: "fallback",
+        title: "Flashcard generation used fallback",
+        detail:
+          error instanceof Error
+            ? error.message
+            : "Model card generation failed; local sentence fallback was returned.",
+        requestId,
+        model: LEARNING_AGENT_MODEL,
+        toolName: "generate_flashcards",
+        durationMs: Date.now() - activityStartedAt,
+      });
       console.warn("[FLASHCARDS] Generation failed:", error);
       const sentences = content
         .replace(/\s+/g, " ")
@@ -1057,13 +1421,15 @@ CRITICAL RULES:
   });
 
   app.post("/api/chat", async (req, res) => {
+    const activityStartedAt = Date.now();
+    const requestId = activityId();
     // Enable SSE
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 
     const sendEvent = (type: string, data: any) => {
-      res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type, requestId, ...data })}\n\n`);
     };
 
     try {
@@ -1083,6 +1449,19 @@ CRITICAL RULES:
         sanitizeApiKey(process.env.SERPER_API_KEY);
 
       if (!apiKey) {
+        recordSystemActivity({
+          kind: "model",
+          status: "blocked",
+          title: "Chat request blocked",
+          detail:
+            "OpenRouter API key is required before the tutor can call a model.",
+          requestId,
+          durationMs: Date.now() - activityStartedAt,
+          metadata: {
+            messageCount: Array.isArray(messages) ? messages.length : 0,
+            aiModel: aiModel || DEFAULT_CHAT_MODEL,
+          },
+        });
         sendEvent("error", {
           error: openRouterRequiredMessage,
         });
@@ -1106,6 +1485,22 @@ CRITICAL RULES:
       const latestUserContent =
         [...(messages || [])].reverse().find((m: any) => m?.role === "user")
           ?.content || "";
+      recordSystemActivity({
+        kind: "model",
+        status: "started",
+        title: "Chat request started",
+        detail: "Tutor is preparing local context and model streaming.",
+        requestId,
+        model: requestedModel,
+        phase: "request",
+        metadata: {
+          messageCount: Array.isArray(messages) ? messages.length : 0,
+          memoryContextChars:
+            typeof memoryContext === "string" ? memoryContext.length : 0,
+          hasCurrentPageImage: Boolean(currentPageImage),
+          language: language || "en",
+        },
+      });
       const sourceMaterialRequest =
         /\b(current|this|the)\s+(page|screen|document|pdf|chapter|section|slide|image|diagram|chart|figure)\b/i.test(
           latestUserContent,
@@ -1119,6 +1514,23 @@ CRITICAL RULES:
       const requestedWebSearch = Boolean(
         detectFreshnessSearch(latestUserContent),
       );
+      if (memoryContext) {
+        recordSystemActivity({
+          kind: "retrieval",
+          status: "completed",
+          title: "Local memory context attached",
+          detail:
+            "Tutor request includes local book, selected text, document, or interaction context.",
+          requestId,
+          phase: "context",
+          metadata: {
+            memoryContextChars:
+              typeof memoryContext === "string" ? memoryContext.length : 0,
+            sourceMaterialRequest,
+            requestedWebSearch,
+          },
+        });
+      }
       const mergeWebSources = (sources: NormalizedWebSource[]) => {
         const byUrl = new Map(webSources.map((source) => [source.url, source]));
         sources.forEach((source) => byUrl.set(source.url, source));
@@ -1130,7 +1542,18 @@ CRITICAL RULES:
         mode: WebSearchMode = "search",
         maxResults = 6,
       ) => {
+        const searchStartedAt = Date.now();
         const searchId = `web_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        recordSystemActivity({
+          kind: "web",
+          status: "started",
+          title: "Web search started",
+          detail: query,
+          requestId,
+          toolName: "web_search",
+          phase: "web_search",
+          metadata: { searchId, mode, maxResults },
+        });
         sendEvent("status", { phase: "web_search" });
         sendEvent("web_search_started", { searchId, query, mode });
         sendEvent("web_search_progress", {
@@ -1154,6 +1577,22 @@ CRITICAL RULES:
             sendEvent("web_result", { searchId, source }),
           );
           mergeWebSources(sources);
+          recordSystemActivity({
+            kind: "web",
+            status: "completed",
+            title: "Web search completed",
+            detail: `${sources.length} source${sources.length === 1 ? "" : "s"} returned.`,
+            requestId,
+            toolName: "web_search",
+            phase: "web_search",
+            durationMs: Date.now() - searchStartedAt,
+            metadata: {
+              searchId,
+              mode,
+              sourceCount: sources.length,
+              domains: sources.map((source) => source.domain).slice(0, 8),
+            },
+          });
           sendEvent("web_sources_complete", { searchId, sources });
           sendEvent("reasoning_summary", {
             content: sources.length
@@ -1174,6 +1613,20 @@ CRITICAL RULES:
             searchId,
             sources: [],
             error: "Search temporarily unavailable",
+          });
+          recordSystemActivity({
+            kind: "web",
+            status: "failed",
+            title: "Web search unavailable",
+            detail:
+              error instanceof Error
+                ? error.message
+                : "Search temporarily unavailable",
+            requestId,
+            toolName: "web_search",
+            phase: "web_search",
+            durationMs: Date.now() - searchStartedAt,
+            metadata: { searchId, mode },
           });
           sendEvent("reasoning_summary", {
             content:
@@ -1385,6 +1838,20 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
         for (const model of modelsToTry) {
           try {
+            recordSystemActivity({
+              kind: "model",
+              status: "progress",
+              title: "Opening model stream",
+              detail: model,
+              requestId,
+              model,
+              phase: iterations === 0 ? "thinking" : "tool_followup",
+              metadata: {
+                attempt: modelsToTry.indexOf(model) + 1,
+                iteration: iterations + 1,
+                toolCount: tools.length,
+              },
+            });
             stream = await openai.chat.completions.create({
               model: model,
               messages: formattedMessages as any,
@@ -1395,6 +1862,16 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             usedModel = model;
             usedModelForUsage = model;
             if (iterations === 0 && model !== primaryModel) {
+              recordSystemActivity({
+                kind: "model",
+                status: "fallback",
+                title: "Chat model fallback selected",
+                detail: `${primaryModel} unavailable; streaming with ${model}.`,
+                requestId,
+                model,
+                phase: "model_fallback",
+                metadata: { requestedModel: primaryModel, usedModel: model },
+              });
               console.log(
                 `[CHAT] Primary model "${primaryModel}" unavailable, fell back to "${model}"`,
               );
@@ -1411,6 +1888,23 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             console.warn(
               `[CHAT] Model "${model}" failed (${status}): ${modelErr.message}`,
             );
+            recordSystemActivity({
+              kind: "model",
+              status:
+                isRetryable && model !== modelsToTry[modelsToTry.length - 1]
+                  ? "fallback"
+                  : "failed",
+              title: "Model stream attempt failed",
+              detail: modelErr.message || String(status || "unknown failure"),
+              requestId,
+              model,
+              phase: "model_attempt",
+              metadata: {
+                status,
+                retryable: isRetryable,
+                attempt: modelsToTry.indexOf(model) + 1,
+              },
+            });
             if (!isRetryable || model === modelsToTry[modelsToTry.length - 1]) {
               // Not retryable OR last model — rethrow
               throw modelErr;
@@ -1478,6 +1972,24 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         // We have tool calls
         sendEvent("status", { phase: "tool_execution" });
         const validToolCalls = currentToolCalls.filter(Boolean);
+        recordSystemActivity({
+          kind: "tool",
+          status: "started",
+          title: "Tool execution requested",
+          detail: validToolCalls
+            .map((tool) => tool.function.name)
+            .filter(Boolean)
+            .join(", "),
+          requestId,
+          phase: "tool_execution",
+          metadata: {
+            toolCount: validToolCalls.length,
+            iteration: iterations + 1,
+            toolNames: validToolCalls
+              .map((tool) => tool.function.name)
+              .filter(Boolean),
+          },
+        });
         validToolCalls.forEach((t) => {
           sendEvent("reasoning_summary", {
             content: `Using tool: ${t.function.name}`,
@@ -1491,6 +2003,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         });
 
         for (const toolCall of validToolCalls) {
+          const toolStartedAt = Date.now();
           const functionName = toolCall.function.name;
           const functionArguments = toolCall.function.arguments;
 
@@ -1526,12 +2039,34 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 tool_call_id: toolCall.id,
                 content: visionText,
               });
+              recordSystemActivity({
+                kind: "tool",
+                status: "completed",
+                title: "Current page vision completed",
+                detail: "The tutor inspected the current PDF page image.",
+                requestId,
+                model: "openai/gpt-4o-mini",
+                toolName: functionName,
+                phase: "tool_execution",
+                durationMs: Date.now() - toolStartedAt,
+              });
             } catch (err: any) {
               console.error("Vision Error:", err);
               formattedMessages.push({
                 role: "tool",
                 tool_call_id: toolCall.id,
                 content: "Error: Could not analyze the page image.",
+              });
+              recordSystemActivity({
+                kind: "tool",
+                status: "failed",
+                title: "Current page vision failed",
+                detail: err.message || "Could not analyze the page image.",
+                requestId,
+                model: "openai/gpt-4o-mini",
+                toolName: functionName,
+                phase: "tool_execution",
+                durationMs: Date.now() - toolStartedAt,
               });
             }
           } else if (functionName === "web_search") {
@@ -1542,6 +2077,17 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                   tool_call_id: toolCall.id,
                   content:
                     "Web search denied for this turn. Answer from the provided source material, selected text, memory context, and page image if available.",
+                });
+                recordSystemActivity({
+                  kind: "tool",
+                  status: "blocked",
+                  title: "Web search denied",
+                  detail:
+                    "The turn looked source-local, so Tutor stayed with selected text, page, memory, and document context.",
+                  requestId,
+                  toolName: functionName,
+                  phase: "tool_execution",
+                  durationMs: Date.now() - toolStartedAt,
                 });
                 continue;
               }
@@ -1564,11 +2110,35 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 tool_call_id: toolCall.id,
                 content: formatSourcesForPrompt(sources),
               });
+              recordSystemActivity({
+                kind: "tool",
+                status: "completed",
+                title: "Web search tool completed",
+                detail: `${sources.length} source${sources.length === 1 ? "" : "s"} supplied to the model.`,
+                requestId,
+                toolName: functionName,
+                phase: "tool_execution",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: { query, sourceCount: sources.length },
+              });
             } catch (e) {
               formattedMessages.push({
                 role: "tool",
                 tool_call_id: toolCall.id,
                 content: "Search temporarily unavailable.",
+              });
+              recordSystemActivity({
+                kind: "tool",
+                status: "failed",
+                title: "Web search tool failed",
+                detail:
+                  e instanceof Error
+                    ? e.message
+                    : "Search temporarily unavailable.",
+                requestId,
+                toolName: functionName,
+                phase: "tool_execution",
+                durationMs: Date.now() - toolStartedAt,
               });
             }
           } else if (functionName === "update_graph") {
@@ -1583,11 +2153,36 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 tool_call_id: toolCall.id,
                 content: "Graph updated successfully.",
               });
+              recordSystemActivity({
+                kind: "memory",
+                status: "completed",
+                title: "Learning graph tool staged update",
+                detail: args.name || "update_graph",
+                requestId,
+                toolName: functionName,
+                phase: "tool_execution",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: {
+                  understandingDelta: args.understandingDelta,
+                  hasDescription: Boolean(args.description),
+                },
+              });
             } catch (e) {
               formattedMessages.push({
                 role: "tool",
                 tool_call_id: toolCall.id,
                 content: "Error parsing arguments.",
+              });
+              recordSystemActivity({
+                kind: "memory",
+                status: "failed",
+                title: "Learning graph tool parse failed",
+                detail:
+                  e instanceof Error ? e.message : "Error parsing arguments.",
+                requestId,
+                toolName: functionName,
+                phase: "tool_execution",
+                durationMs: Date.now() - toolStartedAt,
               });
             }
           } else if (functionName === "generate_flashcards") {
@@ -1602,11 +2197,32 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 tool_call_id: toolCall.id,
                 content: "Flashcards created successfully.",
               });
+              recordSystemActivity({
+                kind: "tool",
+                status: "completed",
+                title: "Flashcards tool staged cards",
+                detail: `${Array.isArray(args?.cards) ? args.cards.length : 0} card${Array.isArray(args?.cards) && args.cards.length === 1 ? "" : "s"} prepared.`,
+                requestId,
+                toolName: functionName,
+                phase: "tool_execution",
+                durationMs: Date.now() - toolStartedAt,
+              });
             } catch (e) {
               formattedMessages.push({
                 role: "tool",
                 tool_call_id: toolCall.id,
                 content: "Error parsing arguments.",
+              });
+              recordSystemActivity({
+                kind: "tool",
+                status: "failed",
+                title: "Flashcards tool parse failed",
+                detail:
+                  e instanceof Error ? e.message : "Error parsing arguments.",
+                requestId,
+                toolName: functionName,
+                phase: "tool_execution",
+                durationMs: Date.now() - toolStartedAt,
               });
             }
           } else {
@@ -1614,6 +2230,16 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               role: "tool",
               tool_call_id: toolCall.id,
               content: "Unsupported tool.",
+            });
+            recordSystemActivity({
+              kind: "tool",
+              status: "blocked",
+              title: "Unsupported tool blocked",
+              detail: functionName || "unknown tool",
+              requestId,
+              toolName: functionName,
+              phase: "tool_execution",
+              durationMs: Date.now() - toolStartedAt,
             });
           }
         }
@@ -1637,6 +2263,28 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       );
 
       sendEvent("status", { phase: "streaming" });
+      recordSystemActivity({
+        kind: "model",
+        status: "completed",
+        title: "Chat request completed",
+        detail: `${outputTokens} output token${outputTokens === 1 ? "" : "s"} from ${usedModelForUsage}.`,
+        requestId,
+        model: usedModelForUsage,
+        phase: "complete",
+        durationMs: Date.now() - activityStartedAt,
+        metadata: {
+          requestedModel,
+          usedModel: usedModelForUsage,
+          inputTokens,
+          outputTokens,
+          cost,
+          estimated: usageEstimated || cost === 0,
+          graphUpdates: graphUpdates.length,
+          flashcards: flashcardsUpdates.length,
+          webSources: webSources.length,
+          iterations: iterations + 1,
+        },
+      });
       sendEvent("done", {
         content: finalContent,
         graphUpdates,
@@ -1657,9 +2305,18 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       });
       res.end();
     } catch (error: any) {
+      recordSystemActivity({
+        kind: "error",
+        status: "failed",
+        title: "Chat request failed",
+        detail: error.message || "Failed to generate response",
+        requestId,
+        phase: "error",
+        durationMs: Date.now() - activityStartedAt,
+      });
       console.error("Chat API Error:", error);
       res.write(
-        `data: ${JSON.stringify({ type: "error", error: error.message || "Failed to generate response" })}\n\n`,
+        `data: ${JSON.stringify({ type: "error", requestId, error: error.message || "Failed to generate response" })}\n\n`,
       );
       res.end();
     }

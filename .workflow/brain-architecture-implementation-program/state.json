@@ -1,0 +1,67 @@
+{
+  "title": "brain architecture implementation program",
+  "slug": "brain-architecture-implementation-program",
+  "created_at": "2026-06-01T04:08:42+00:00",
+  "status": "in_progress",
+  "approval": {
+    "required": false,
+    "granted": true,
+    "notes": "User authorized local implementation slices, subagents, Graphify regeneration, verification, commit, and push. AWS/cloud parts are deferred."
+  },
+  "packets": [
+    {
+      "id": "A",
+      "name": "Architecture decomposition",
+      "owner": "subagent Rawls",
+      "status": "completed",
+      "write_scope": "read-only"
+    },
+    {
+      "id": "B",
+      "name": "Runtime telemetry/tool-call contracts",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "server/runtime telemetry sources"
+    },
+    {
+      "id": "C",
+      "name": "Admin observability UI",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "Admin UI and directly required client types/state"
+    },
+    {
+      "id": "D",
+      "name": "Memory/brain runtime",
+      "owner": "subagent Curie",
+      "status": "completed",
+      "write_scope": "read-only"
+    },
+    {
+      "id": "E",
+      "name": "Graphify freshness",
+      "owner": "subagent Fermat",
+      "status": "completed",
+      "write_scope": "read-only"
+    },
+    {
+      "id": "F",
+      "name": "QA/docs/git",
+      "owner": "subagent Bernoulli",
+      "status": "completed",
+      "write_scope": "read-only"
+    }
+  ],
+  "verification": {
+    "status": "completed_with_known_preexisting_format_warning",
+    "checks": [
+      "npm run lint",
+      "npm run test",
+      "npm run build",
+      "browser QA",
+      "npm run graphify:update",
+      "npm run graphify:tree",
+      "graphify query smoke"
+    ]
+  }
+}
