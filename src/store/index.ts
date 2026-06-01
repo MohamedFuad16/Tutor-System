@@ -16,6 +16,8 @@ export interface Concept {
 
 export interface Annotation {
   id: string;
+  bookId?: string;
+  documentId?: string;
   pageNumber: number;
   rects: {
     x: number;
@@ -237,9 +239,13 @@ interface AppState {
   setPdfPage: (page: number) => void;
   pdfTotalPages: number;
   setPdfTotalPages: (total: number) => void;
+  activeDocumentId: string | null;
+  setActiveDocumentId: (documentId: string | null) => void;
 
   annotations: Annotation[];
   addAnnotation: (ann: Annotation) => void;
+  setAnnotations: (annotations: Annotation[]) => void;
+  removeAnnotationsForDocument: (documentId: string) => void;
 
   concepts: Concept[];
   setConcepts: (concepts: Concept[]) => void;
@@ -352,10 +358,26 @@ export const useStore = create<AppState>()(
       setPdfPage: (page) => set({ pdfPage: page }),
       pdfTotalPages: 0,
       setPdfTotalPages: (total) => set({ pdfTotalPages: total }),
+      activeDocumentId: localStorage.getItem("active_document_id") || null,
+      setActiveDocumentId: (documentId) => {
+        if (documentId) {
+          localStorage.setItem("active_document_id", documentId);
+        } else {
+          localStorage.removeItem("active_document_id");
+        }
+        set({ activeDocumentId: documentId });
+      },
 
       annotations: [],
       addAnnotation: (ann) =>
         set((state) => ({ annotations: [...state.annotations, ann] })),
+      setAnnotations: (annotations) => set({ annotations }),
+      removeAnnotationsForDocument: (documentId) =>
+        set((state) => ({
+          annotations: state.annotations.filter(
+            (annotation) => annotation.documentId !== documentId,
+          ),
+        })),
 
       concepts: [],
       setConcepts: (concepts) => set({ concepts }),
@@ -612,6 +634,7 @@ What would you like to learn today?`,
       partialize: (state) => ({
         activeProject: state.activeProject,
         activeLearningBookId: state.activeLearningBookId,
+        activeDocumentId: state.activeDocumentId,
         activeView: state.activeView,
         language: state.language,
       }),

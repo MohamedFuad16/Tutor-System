@@ -1,4 +1,7 @@
 import Dexie, { type Table } from "dexie";
+import type { Message } from "../types";
+
+export const GENERAL_STUDY_BOOK_ID = "book:general-study";
 
 export interface PersistentConcept {
   id: string; // Typically lowercase string like 'monkey patching'
@@ -60,6 +63,9 @@ export interface SessionMemoryRecord {
 export interface ConversationInteraction {
   id: string;
   sessionId: string;
+  bookId?: string;
+  conversationId?: string;
+  documentId?: string;
   timestamp: number;
   userMessage: string;
   assistantMessage: string;
@@ -102,6 +108,8 @@ export interface LearningBook {
   createdAt: number;
   updatedAt: number;
   lastConversationId?: string;
+  activeDocumentId?: string;
+  documentIds?: string[];
   agentModel?: string;
 }
 
@@ -133,6 +141,7 @@ export interface LearningEntry {
   id: string;
   bookId: string;
   conversationId: string;
+  documentId?: string;
   timestamp: number;
   userName: string;
   userMessage: string;
@@ -142,6 +151,35 @@ export interface LearningEntry {
   risks: string[];
   model: string;
   confidence: number;
+}
+
+export interface LearningDocument {
+  id: string;
+  bookId: string;
+  title: string;
+  mimeType: string;
+  size: number;
+  blob?: Blob;
+  extractedText?: string;
+  classification?: string;
+  extractionMode?: string;
+  processingStatus: "ready" | "processing" | "failed";
+  error?: string;
+  createdAt: number;
+  updatedAt: number;
+  lastViewedPage?: number;
+  totalPages?: number;
+  scale?: number;
+}
+
+export interface BookChatThread {
+  id: string;
+  bookId: string;
+  bookTitle: string;
+  title: string;
+  messages: Message[];
+  createdAt: number;
+  updatedAt: number;
 }
 
 export class BrainDatabase extends Dexie {
@@ -154,6 +192,8 @@ export class BrainDatabase extends Dexie {
   learningBooks!: Table<LearningBook, string>;
   learningBookConcepts!: Table<LearningBookConcept, string>;
   learningEntries!: Table<LearningEntry, string>;
+  learningDocuments!: Table<LearningDocument, string>;
+  bookChatThreads!: Table<BookChatThread, string>;
 
   constructor() {
     super("NeuralNestBrain");
@@ -186,6 +226,20 @@ export class BrainDatabase extends Dexie {
       learningBooks: "id, sessionId, title, userName, source, updatedAt",
       learningBookConcepts: "id, bookId, name, updatedAt",
       learningEntries: "id, bookId, conversationId, timestamp, userName",
+    });
+    this.version(7).stores({
+      concepts: "id, name, p_learn, lastReviewedAt",
+      misconceptions: "id, concept_id, resolved",
+      sessions: "id, startTime",
+      interactions: "id, sessionId, bookId, conversationId, timestamp",
+      flashcards: "id, front, nextReviewAt, conceptId, bookId",
+      traceLogs: "id, timestamp, action",
+      learningBooks:
+        "id, sessionId, title, userName, source, activeDocumentId, updatedAt",
+      learningBookConcepts: "id, bookId, name, updatedAt",
+      learningEntries: "id, bookId, conversationId, timestamp, userName",
+      learningDocuments: "id, bookId, title, mimeType, updatedAt, createdAt",
+      bookChatThreads: "id, bookId, updatedAt",
     });
   }
 }

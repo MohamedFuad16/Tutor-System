@@ -1,0 +1,41 @@
+{
+  "title": "study view fixes",
+  "slug": "study-view-fixes",
+  "created_at": "2026-06-01T02:41:38+00:00",
+  "status": "verified",
+  "approval": {
+    "required": false,
+    "granted": true,
+    "notes": "User explicitly requested implementation, verification, commit, and push. Stop only for destructive/non-standard git or auth decisions."
+  },
+  "packets": [
+    { "id": "A", "name": "data-model", "status": "integrated", "owner": "subagent-readonly" },
+    { "id": "B", "name": "chat-runtime", "status": "integrated", "owner": "subagent-readonly" },
+    { "id": "C", "name": "study-pdf", "status": "integrated", "owner": "subagent-readonly" },
+    { "id": "D", "name": "revision-library", "status": "integrated", "owner": "subagent-readonly" },
+    { "id": "E", "name": "qa-docs", "status": "integrated", "owner": "subagent-readonly-then-main" }
+  ],
+  "verification": {
+    "status": "passed",
+    "checks": [
+      "graphify query/path: passed",
+      "npm run lint: passed",
+      "npm run test: passed",
+      "npm run build: passed",
+      "browser QA desktop/mobile: passed, zero console errors, zero horizontal overflow",
+      "README review: passed",
+      "git commit: pending",
+      "git push: pending"
+    ],
+    "screenshots": [
+      ".workflow/study-view-fixes/results/qa-cdp-clean2-before-upload.png",
+      ".workflow/study-view-fixes/results/qa-cdp-clean2-after-python-pdf.png",
+      ".workflow/study-view-fixes/results/qa-cdp-clean2-after-two-pdfs.png",
+      ".workflow/study-view-fixes/results/qa-cdp-clean2-switch-python-pdf.png",
+      ".workflow/study-view-fixes/results/qa-cdp-clean2-after-remove-python-pdf.png",
+      ".workflow/study-view-fixes/results/qa-cdp-clean2-python-thread-restored.png",
+      ".workflow/study-view-fixes/results/qa-cdp-clean2-general-thread-after-switch.png",
+      ".workflow/study-view-fixes/results/qa-cdp-clean2-mobile-study.png"
+    ]
+  }
+}

@@ -8,12 +8,29 @@ import React, {
 import { PdfViewer } from "../components/PdfViewer";
 import { ChatPanel } from "../components/ChatPanel";
 import { useStore } from "../store";
-import { UploadCloud, MessageSquare, X, RefreshCw, Network } from "lucide-react";
+import {
+  UploadCloud,
+  MessageSquare,
+  X,
+  RefreshCw,
+  Network,
+  FileText,
+  Plus,
+  Trash2,
+  Check,
+} from "lucide-react";
 import { PatternCard, themes } from "../components/PatternCard";
 import { gsap } from "gsap";
 import { useTranslation } from "../lib/translations";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
 import { useMotionPreference } from "../hooks/useMotionPreference";
+import { useLiveQuery } from "dexie-react-hooks";
+import {
+  db,
+  GENERAL_STUDY_BOOK_ID,
+  type LearningBook,
+  type LearningDocument,
+} from "../memory/longterm.memory";
 
 const splitCardTitle = (title: string) => {
   const words = title.split(" ");
@@ -25,6 +42,25 @@ const splitCardTitle = (title: string) => {
       {words.slice(1).join(" ")}
     </>
   );
+};
+
+const documentObjectUrlCache = new Map<string, string>();
+
+const getCachedDocumentObjectUrl = (document: LearningDocument) => {
+  const cachedUrl = documentObjectUrlCache.get(document.id);
+  if (cachedUrl) return cachedUrl;
+  const sourceBlob = document.blob instanceof Blob ? document.blob : null;
+  if (!sourceBlob) return null;
+  const url = URL.createObjectURL(sourceBlob);
+  documentObjectUrlCache.set(document.id, url);
+  return url;
+};
+
+const revokeCachedDocumentObjectUrl = (documentId: string) => {
+  const cachedUrl = documentObjectUrlCache.get(documentId);
+  if (!cachedUrl) return;
+  URL.revokeObjectURL(cachedUrl);
+  documentObjectUrlCache.delete(documentId);
 };
 
 const AnimatedHeadlineWords = ({
@@ -54,15 +90,24 @@ const AnimatedHeadlineWords = ({
     if (!words.length) return;
     gsap.killTweensOf(words);
     if (!motionEnabled) {
-      gsap.set(words, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+      gsap.set(words, {
+        autoAlpha: 1,
+        y: 0,
+        filter: "blur(0px)",
+        willChange: "auto",
+      });
       onFirstWordRef.current?.(headlineIndex);
       onCompleteRef.current?.(headlineIndex);
       return;
     }
     const timeline = gsap.timeline({
-      onComplete: () => onCompleteRef.current?.(headlineIndex),
+      onComplete: () => {
+        gsap.set(words, { willChange: "auto" });
+        onCompleteRef.current?.(headlineIndex);
+      },
     });
     timeline.call(() => onFirstWordRef.current?.(headlineIndex), [], 0.08);
+    gsap.set(words, { willChange: "transform, opacity, filter" });
     timeline.fromTo(
       words,
       { autoAlpha: 0, y: 16, filter: "blur(16px)" },
@@ -77,6 +122,7 @@ const AnimatedHeadlineWords = ({
       0,
     );
     return () => {
+      gsap.set(words, { willChange: "auto" });
       timeline.kill();
     };
   }, [headlineIndex, motionEnabled, text]);
@@ -86,7 +132,7 @@ const AnimatedHeadlineWords = ({
   return (
     <h2
       data-testid="intro-heading"
-      className="flex max-w-[30rem] flex-wrap justify-center gap-x-[0.28em] gap-y-1.5 overflow-visible text-center font-serif text-[clamp(1.18rem,2.15vw,2rem)] leading-[1.18] tracking-normal text-white/92 sm:max-w-[42rem]"
+      className="flex w-full max-w-[min(30rem,100%)] flex-wrap justify-center gap-x-[0.28em] gap-y-1.5 overflow-visible px-2 text-center font-serif text-[clamp(1.18rem,2.15vw,2rem)] leading-[1.18] tracking-normal text-white/92 sm:max-w-[42rem]"
     >
       {text.split(" ").map((word, index) => (
         <span
@@ -94,7 +140,7 @@ const AnimatedHeadlineWords = ({
           ref={(node) => {
             if (node) wordRefs.current[index] = node;
           }}
-          className="inline-block will-change-transform"
+          className="inline-block max-w-full break-words [overflow-wrap:anywhere]"
         >
           {word}
         </span>
@@ -111,6 +157,7 @@ type StudyIntroSplashProps = {
   isIngesting: boolean;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   setIsDragging: (dragging: boolean) => void;
+  openFilePicker: () => void;
   handleDrop: (event: React.DragEvent) => void;
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onHeadlineStart: (index: number) => void;
@@ -135,6 +182,7 @@ function StudyIntroSplash({
   isIngesting,
   fileInputRef,
   setIsDragging,
+  openFilePicker,
   handleDrop,
   handleFileChange,
   onHeadlineStart,
@@ -145,6 +193,11 @@ function StudyIntroSplash({
   const finalStack = cardStep >= 4;
   const cardRefs = useRef<HTMLDivElement[]>([]);
   const lastCardTargetsRef = useRef<Array<CardTarget | null>>([]);
+  const [isCompactViewport, setIsCompactViewport] = useState(() =>
+    typeof window === "undefined"
+      ? false
+      : window.matchMedia("(max-width: 640px)").matches,
+  );
   const [isDocumentHidden, setIsDocumentHidden] = useState(() =>
     typeof document === "undefined" ? false : document.hidden,
   );
@@ -194,10 +247,10 @@ function StudyIntroSplash({
       if (index === 0) {
         return {
           opacity: 1,
-          xPercent: -72,
-          y: 18,
-          scale: 0.9,
-          rotate: -4.5,
+          xPercent: isCompactViewport ? -62 : -72,
+          y: isCompactViewport ? 12 : 18,
+          scale: isCompactViewport ? 0.88 : 0.9,
+          rotate: isCompactViewport ? -3.8 : -4.5,
           filter: "blur(0px)",
         };
       }
@@ -213,10 +266,10 @@ function StudyIntroSplash({
       }
       return {
         opacity: 1,
-        xPercent: -28,
+        xPercent: isCompactViewport ? -38 : -28,
         y: 0,
         scale: 1,
-        rotate: 1.8,
+        rotate: isCompactViewport ? 1.2 : 1.8,
         filter: "blur(0px)",
       };
     }
@@ -257,10 +310,10 @@ function StudyIntroSplash({
       if (index === 0) {
         return {
           opacity: 0.9,
-          xPercent: -82,
+          xPercent: isCompactViewport ? -68 : -82,
           y: 10,
           scale: 0.84,
-          rotate: -7,
+          rotate: isCompactViewport ? -5.5 : -7,
           filter: "blur(0px)",
         };
       }
@@ -276,10 +329,10 @@ function StudyIntroSplash({
       }
       return {
         opacity: 0,
-        xPercent: -10,
+        xPercent: isCompactViewport ? -22 : -10,
         y: 34,
         scale: 0.82,
-        rotate: 12,
+        rotate: isCompactViewport ? 8 : 12,
         filter: "blur(14px)",
       };
     }
@@ -288,29 +341,29 @@ function StudyIntroSplash({
       if (index === 0) {
         return {
           opacity: 0.86,
-          xPercent: -98,
+          xPercent: isCompactViewport ? -76 : -98,
           y: 10,
           scale: 0.78,
-          rotate: -8,
+          rotate: isCompactViewport ? -6 : -8,
           filter: "blur(0px)",
         };
       }
       if (index === 1) {
         return {
           opacity: 0.94,
-          xPercent: -63,
+          xPercent: isCompactViewport ? -58 : -63,
           y: 2,
           scale: 0.89,
-          rotate: -3,
+          rotate: isCompactViewport ? -2.4 : -3,
           filter: "blur(0px)",
         };
       }
       return {
         opacity: 1,
-        xPercent: -35,
+        xPercent: isCompactViewport ? -40 : -35,
         y: 6,
         scale: 0.95,
-        rotate: 5.5,
+        rotate: isCompactViewport ? 4.2 : 5.5,
         filter: "blur(0px)",
       };
     }
@@ -333,6 +386,15 @@ function StudyIntroSplash({
     rotate: target.rotate,
     filter: target.filter,
   });
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia("(max-width: 640px)");
+    const updateViewport = () => setIsCompactViewport(mediaQuery.matches);
+    updateViewport();
+    mediaQuery.addEventListener("change", updateViewport);
+    return () => mediaQuery.removeEventListener("change", updateViewport);
+  }, []);
 
   useEffect(() => {
     const updateVisibility = () => setIsDocumentHidden(document.hidden);
@@ -368,7 +430,7 @@ function StudyIntroSplash({
       });
       lastCardTargetsRef.current[index] = target;
     });
-  }, [cardStep, finalStack, isDocumentHidden, motionEnabled]);
+  }, [cardStep, finalStack, isCompactViewport, isDocumentHidden, motionEnabled]);
 
   return (
     <div className="relative flex h-full w-full flex-1 overflow-hidden">
@@ -384,14 +446,17 @@ function StudyIntroSplash({
 
       <input
         type="file"
-        accept="application/pdf,image/*"
+        accept="application/pdf"
         ref={fileInputRef}
         className="hidden"
         onChange={handleFileChange}
       />
 
       <div className="relative z-10 mx-auto flex h-full w-full max-w-5xl flex-col items-center justify-start px-4 pb-5 pt-4 sm:px-6 sm:pt-5 md:px-10 md:pt-5">
-        <div key={introCards[activeIndex].key} className="flex justify-center">
+        <div
+          key={introCards[activeIndex].key}
+          className="flex w-full justify-center"
+        >
           <AnimatedHeadlineWords
             text={introCards[activeIndex].headline}
             headlineIndex={activeIndex}
@@ -429,11 +494,7 @@ function StudyIntroSplash({
               >
                 <div className="origin-top scale-[0.56] sm:scale-[0.64] md:scale-[0.73] lg:scale-[0.82] xl:scale-[0.89]">
                   <PatternCard
-                    onClick={
-                      isUpload
-                        ? () => fileInputRef.current?.click()
-                        : undefined
-                    }
+                    onClick={isUpload ? openFilePicker : undefined}
                     onDragOver={
                       isUpload
                         ? (event) => {
@@ -501,8 +562,20 @@ export function StudyView() {
   const motionEnabled = useMotionPreference();
   const pdfUrl = useStore((state) => state.pdfUrl);
   const setPdfUrl = useStore((state) => state.setPdfUrl);
+  const setPdfScale = useStore((state) => state.setPdfScale);
   const setPdfPage = useStore((state) => state.setPdfPage);
   const setPdfTotalPages = useStore((state) => state.setPdfTotalPages);
+  const activeLearningBookId = useStore((state) => state.activeLearningBookId);
+  const setActiveLearningBookId = useStore(
+    (state) => state.setActiveLearningBookId,
+  );
+  const activeProject = useStore((state) => state.activeProject);
+  const setActiveProject = useStore((state) => state.setActiveProject);
+  const activeDocumentId = useStore((state) => state.activeDocumentId);
+  const setActiveDocumentId = useStore((state) => state.setActiveDocumentId);
+  const removeAnnotationsForDocument = useStore(
+    (state) => state.removeAnnotationsForDocument,
+  );
   const setSelectedTextContext = useStore(
     (state) => state.setSelectedTextContext,
   );
@@ -515,23 +588,145 @@ export function StudyView() {
   const startedHeadlineRefs = useRef<Set<number>>(new Set());
   const completedHeadlineRefs = useRef<Set<number>>(new Set());
   const introTimersRef = useRef<number[]>([]);
+  const ingestionSequenceRef = useRef(0);
   const chatSurfaceRef = useRef<HTMLElement | null>(null);
   const chatPanelFrameRef = useRef<HTMLDivElement | null>(null);
   const minimizedChatButtonRef = useRef<HTMLButtonElement | null>(null);
+  const documentObjectUrlRef = useRef<string | null>(null);
+  const documentObjectUrlIdRef = useRef<string | null>(null);
+
+  const activeBook = useLiveQuery(
+    () =>
+      activeLearningBookId
+        ? db.learningBooks.get(activeLearningBookId)
+        : db.learningBooks.get(GENERAL_STUDY_BOOK_ID),
+    [activeLearningBookId],
+  );
+  const activeBookId = activeBook?.id || activeLearningBookId;
+  const bookDocuments = useLiveQuery(
+    () =>
+      activeBookId
+        ? db.learningDocuments.where("bookId").equals(activeBookId).toArray()
+        : Promise.resolve([]),
+    [activeBookId],
+  );
+  const areBookDocumentsLoaded = bookDocuments !== undefined;
+  const orderedDocuments = React.useMemo(
+    () => [...(bookDocuments || [])].sort((a, b) => b.updatedAt - a.updatedAt),
+    [bookDocuments],
+  );
+  const activeDocument =
+    orderedDocuments.find((document) => document.id === activeDocumentId) ||
+    null;
 
   useEffect(() => {
-    // Clear the chat automatically as requested
-    if (localStorage.getItem("chat_cleared_by_bot") !== "true") {
-      useStore.getState().setMessages([
-        {
-          id: "1",
-          role: "assistant",
-          content: `**Hello. I'm your AI Tutor.**\n\nI'm ready to help you explore concepts, discuss code, and break down complex subjects. Here are a few things we can do:\n- **Analyze Documents:** Upload a PDF and ask me questions about specific pages.\n- **Discuss Code:** Paste code snippets and we can debug or refactor them.\n- **Learn Concepts:** Ask me general programming and computer science questions.\n\nWhat would you like to learn today?`,
-        },
-      ]);
-      localStorage.setItem("chat_cleared_by_bot", "true");
+    if (activeLearningBookId) return;
+    let cancelled = false;
+    void brainOrchestrator
+      .ensureSessionLearningBook("Learner", "General Study")
+      .then((book) => {
+        if (cancelled) return;
+        setActiveLearningBookId(book.id);
+        setActiveProject(book.title);
+      })
+      .catch((error) =>
+        console.warn("[StudyView] General Study bootstrap failed:", error),
+      );
+    return () => {
+      cancelled = true;
+    };
+  }, [activeLearningBookId, setActiveLearningBookId, setActiveProject]);
+
+  useEffect(() => {
+    if (!areBookDocumentsLoaded) return;
+    if (!activeBookId || orderedDocuments.length === 0) {
+      if (activeDocumentId) setActiveDocumentId(null);
+      return;
     }
-  }, []);
+    if (
+      activeDocumentId &&
+      orderedDocuments.some((document) => document.id === activeDocumentId)
+    ) {
+      return;
+    }
+    const preferred =
+      orderedDocuments.find(
+        (document) => document.id === activeBook?.activeDocumentId,
+      ) || orderedDocuments[0];
+    setActiveDocumentId(preferred.id);
+  }, [
+    activeBook?.activeDocumentId,
+    activeBookId,
+    activeDocumentId,
+    areBookDocumentsLoaded,
+    orderedDocuments,
+    setActiveDocumentId,
+  ]);
+
+  useEffect(() => {
+    if (!areBookDocumentsLoaded) return;
+
+    if (
+      activeDocument?.id &&
+      documentObjectUrlIdRef.current === activeDocument.id &&
+      documentObjectUrlRef.current
+    ) {
+      if (useStore.getState().pdfUrl !== documentObjectUrlRef.current) {
+        setPdfUrl(documentObjectUrlRef.current);
+      }
+      return;
+    }
+
+    if (!activeDocument) {
+      setPdfUrl(null);
+      setPdfPage(1);
+      setPdfTotalPages(0);
+      documentObjectUrlRef.current = null;
+      documentObjectUrlIdRef.current = null;
+      return;
+    }
+
+    let url = "";
+    try {
+      url = getCachedDocumentObjectUrl(activeDocument) || "";
+    } catch (error) {
+      console.warn("[StudyView] Could not open stored PDF blob:", error);
+      setPdfUrl(null);
+      setPdfPage(1);
+      setPdfTotalPages(0);
+      documentObjectUrlRef.current = null;
+      documentObjectUrlIdRef.current = null;
+      return;
+    }
+    if (!url) {
+      setPdfUrl(null);
+      setPdfPage(1);
+      setPdfTotalPages(0);
+      documentObjectUrlRef.current = null;
+      documentObjectUrlIdRef.current = null;
+      return;
+    }
+    documentObjectUrlRef.current = url;
+    documentObjectUrlIdRef.current = activeDocument.id;
+    if (useStore.getState().pdfUrl !== url) {
+      setPdfUrl(url);
+    }
+    setPdfScale(activeDocument.scale || 1);
+    setPdfPage(activeDocument.lastViewedPage || 1);
+    setPdfTotalPages(activeDocument.totalPages || 0);
+    setIsChatOpen(true);
+  }, [
+    activeDocument?.id,
+    activeDocument?.blob,
+    activeDocument?.lastViewedPage,
+    activeDocument?.scale,
+    activeDocument?.totalPages,
+    areBookDocumentsLoaded,
+    setPdfPage,
+    setPdfScale,
+    setPdfTotalPages,
+    setPdfUrl,
+  ]);
 
   const clearIntroTimers = useCallback(() => {
     introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -585,6 +780,13 @@ export function StudyView() {
     scheduleIntro(() => setIntroCardStep(4), 520);
   }, [pdfUrl, scheduleIntro]);
 
+  const openFilePicker = useCallback(() => {
+    const input = fileInputRef.current;
+    if (!input) return;
+    input.value = "";
+    input.click();
+  }, []);
+
   const revealChatNode = (
     node: HTMLElement,
     from: { y: number; scale: number; filter: string },
@@ -614,7 +816,49 @@ export function StudyView() {
     );
   };
 
-  const ingestDocument = async (file: File) => {
+  const ensureActiveBook = async (): Promise<LearningBook> => {
+    if (activeBook) return activeBook;
+    if (activeLearningBookId) {
+      const existing = await db.learningBooks
+        .get(activeLearningBookId)
+        .catch(() => undefined);
+      if (existing) return existing;
+    }
+    const book = await brainOrchestrator.ensureSessionLearningBook(
+      "Learner",
+      activeProject || "General Study",
+    );
+    setActiveLearningBookId(book.id);
+    setActiveProject(book.title);
+    return book;
+  };
+
+  const updateBookDocumentLinks = async (
+    bookId: string,
+    documentId: string | null,
+  ) => {
+    const book = await db.learningBooks.get(bookId).catch(() => undefined);
+    const documents = await db.learningDocuments
+      .where("bookId")
+      .equals(bookId)
+      .toArray()
+      .catch(() => []);
+    const documentIds = documents.map((document) => document.id);
+    await db.learningBooks.update(bookId, {
+      documentIds,
+      activeDocumentId: documentId || undefined,
+      updatedAt: Date.now(),
+      source: book?.source === "chat" ? "mixed" : book?.source || "mixed",
+    });
+  };
+
+  const ingestDocument = async (
+    file: File,
+    documentRecord: LearningDocument,
+    book: LearningBook,
+  ) => {
+    const sequence = ingestionSequenceRef.current + 1;
+    ingestionSequenceRef.current = sequence;
     setIsIngesting(true);
     try {
       const formData = new FormData();
@@ -629,70 +873,142 @@ export function StudyView() {
 
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
+      if (sequence !== ingestionSequenceRef.current) return;
       console.info("Document classification:", data.classification);
 
+      const extractedText = String(data.content || "").trim();
+      const nextDocument: Partial<LearningDocument> = {
+        extractedText,
+        classification: data.classification,
+        extractionMode: data.extractionMode,
+        totalPages: data.totalPages,
+        processingStatus: "ready",
+        updatedAt: Date.now(),
+      };
+      await db.learningDocuments.update(documentRecord.id, nextDocument);
+
       if (data.content && data.content.trim()) {
-        const title = useStore.getState().activeProject || "Uploaded Document";
-        await brainOrchestrator.updateSessionBookTitle(title);
-        // Dispatch to memory orchestrator
-        fetch("/api/learning-book-update", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(apiKey && { Authorization: `Bearer ${apiKey}` }),
-          },
-          body: JSON.stringify({
-            activeProject: title,
-            userMessage: `I uploaded a document classified as ${data.classification} using ${data.extractionMode || "document extraction"}.`,
-            assistantMessage: `I have ingested the document. Here is the extracted text context:\n\n${data.content.slice(0, 10000)}`,
-          }),
-        }).catch(console.error);
+        const updatedBook =
+          await brainOrchestrator.updateLearningBookFromConversation({
+            userName: "Learner",
+            activeProject: book.title,
+            activeBookId: book.id,
+            activeDocumentId: documentRecord.id,
+            conversationId: `document:${documentRecord.id}`,
+            documentContexts: [
+              {
+                id: documentRecord.id,
+                title: documentRecord.title,
+                classification: data.classification,
+                extractionMode: data.extractionMode,
+                extractedText,
+              },
+            ],
+            userMessage: `I uploaded ${documentRecord.title}, a document classified as ${data.classification} using ${data.extractionMode || "document extraction"}.`,
+            assistantMessage: `I have ingested the document. Here is the extracted text context:\n\n${extractedText.slice(0, 10000)}`,
+            apiKey,
+          });
+        if (updatedBook) {
+          setActiveLearningBookId(updatedBook.id);
+          setActiveProject(updatedBook.title);
+        }
       }
     } catch (e) {
-      console.error("Ingestion failed:", e);
+      if (sequence === ingestionSequenceRef.current) {
+        console.error("Ingestion failed:", e);
+        await db.learningDocuments.update(documentRecord.id, {
+          processingStatus: "failed",
+          error: e instanceof Error ? e.message : String(e),
+          updatedAt: Date.now(),
+        });
+      }
     } finally {
-      setIsIngesting(false);
+      if (sequence === ingestionSequenceRef.current) {
+        setIsIngesting(false);
+      }
     }
+  };
+
+  const attachDocument = async (file: File) => {
+    if (file.type !== "application/pdf") return;
+    const book = await ensureActiveBook();
+    const now = Date.now();
+    const documentId = `doc:${crypto.randomUUID()}`;
+    const documentRecord: LearningDocument = {
+      id: documentId,
+      bookId: book.id,
+      title: file.name.replace(/\.pdf$/i, "").trim() || "Untitled PDF",
+      mimeType: file.type || "application/pdf",
+      size: file.size,
+      blob: file.slice(0, file.size, file.type || "application/pdf"),
+      processingStatus: "processing",
+      createdAt: now,
+      updatedAt: now,
+      lastViewedPage: 1,
+    };
+    await db.learningDocuments.put(documentRecord);
+    await updateBookDocumentLinks(book.id, documentId);
+    setActiveLearningBookId(book.id);
+    setActiveProject(book.title);
+    setActiveDocumentId(documentId);
+    setSelectedTextContext("");
+    setIsChatOpen(true);
+    void ingestDocument(file, documentRecord, book);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (
-      file &&
-      (file.type === "application/pdf" || file.type.startsWith("image/"))
-    ) {
-      if (file.type === "application/pdf") {
-        if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-        const url = URL.createObjectURL(file);
-        setPdfUrl(url);
-      }
-      ingestDocument(file);
-    }
+    if (file?.type === "application/pdf") void attachDocument(file);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
-    if (
-      file &&
-      (file.type === "application/pdf" || file.type.startsWith("image/"))
-    ) {
-      if (file.type === "application/pdf") {
-        if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-        const url = URL.createObjectURL(file);
-        setPdfUrl(url);
-      }
-      ingestDocument(file);
+    if (file?.type === "application/pdf") void attachDocument(file);
+  };
+
+  const selectDocument = async (document: LearningDocument) => {
+    setActiveLearningBookId(document.bookId);
+    if (activeBook) setActiveProject(activeBook.title);
+    setActiveDocumentId(document.id);
+    setSelectedTextContext("");
+    await updateBookDocumentLinks(document.bookId, document.id);
+  };
+
+  const removeDocument = async (documentId: string) => {
+    const document = orderedDocuments.find((item) => item.id === documentId);
+    if (!document) return;
+    ingestionSequenceRef.current += 1;
+    setIsIngesting(false);
+    setSelectedTextContext("");
+    await db.learningDocuments.delete(documentId);
+    removeAnnotationsForDocument(documentId);
+    const remainingDocuments = orderedDocuments.filter(
+      (item) => item.id !== documentId,
+    );
+    const nextDocument = remainingDocuments[0] || null;
+    revokeCachedDocumentObjectUrl(documentId);
+    await updateBookDocumentLinks(document.bookId, nextDocument?.id || null);
+    setActiveDocumentId(nextDocument?.id || null);
+    if (!nextDocument) {
+      setPdfUrl(null);
+      setPdfPage(1);
+      setPdfTotalPages(0);
     }
   };
 
   const clearPdf = () => {
-    if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    if (activeDocumentId) {
+      void removeDocument(activeDocumentId);
+      return;
+    }
+    ingestionSequenceRef.current += 1;
+    setIsIngesting(false);
+    setSelectedTextContext("");
     setPdfUrl(null);
     setPdfPage(1);
     setPdfTotalPages(0);
-    setSelectedTextContext("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
   const shouldRenderChatSurface = isChatOpen;
@@ -741,13 +1057,70 @@ export function StudyView() {
       >
         {pdfUrl ? (
           <>
-            <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
+            <div className="absolute left-3 right-3 top-3 z-40 flex flex-col gap-2 md:left-4 md:right-4 md:top-4 md:flex-row md:items-start md:justify-between">
+              <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto rounded-2xl border border-white/10 bg-black/55 p-1.5 text-xs text-zinc-200 shadow-[0_12px_34px_rgba(0,0,0,0.45)] backdrop-blur-xl custom-scroll md:max-w-[calc(100%-11rem)]">
+                {orderedDocuments.map((document) => (
+                  <button
+                    key={document.id}
+                    type="button"
+                    onClick={() => void selectDocument(document)}
+                    className={`group flex h-10 max-w-[15rem] shrink-0 items-center gap-2 rounded-xl border px-3 text-left transition-colors ${
+                      document.id === activeDocumentId
+                        ? "border-[#ff6e00]/45 bg-[#ff6e00]/16 text-white"
+                        : "border-white/10 bg-white/[0.06] text-zinc-300 hover:bg-white/[0.1] hover:text-white"
+                    }`}
+                    title={document.title}
+                  >
+                    {document.id === activeDocumentId ? (
+                      <Check size={13} className="text-[#ffb066]" />
+                    ) : (
+                      <FileText size={13} />
+                    )}
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold">
+                        {document.title}
+                      </span>
+                      <span className="block truncate text-[10px] uppercase tracking-[0.12em] text-zinc-500">
+                        {document.processingStatus === "processing"
+                          ? "Extracting"
+                          : document.totalPages
+                            ? `${document.totalPages} pages`
+                            : document.classification || "PDF"}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={openFilePicker}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3 py-2 text-xs font-semibold text-zinc-200 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <Plus size={13} /> Add PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={clearPdf}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 text-zinc-300 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-red-500/15 hover:text-red-100"
+                  aria-label="Remove current PDF"
+                  title="Remove current PDF"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+            <div className="absolute bottom-4 left-4 z-40 hidden max-w-[min(36rem,calc(100%-2rem))] rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-[11px] font-medium text-zinc-400 backdrop-blur-xl md:block">
+              {activeBook?.title || activeProject} · {orderedDocuments.length}{" "}
+              {orderedDocuments.length === 1 ? "PDF" : "PDFs"}
+            </div>
+            <div className="absolute top-4 right-4 z-40 hidden items-center gap-2">
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={openFilePicker}
                 className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3 py-2 text-xs font-semibold text-zinc-200 backdrop-blur-xl shadow-[0_12px_34px_rgba(0,0,0,0.45)] transition-colors hover:bg-white/10 hover:text-white"
               >
-                <RefreshCw size={13} /> {t("replace")}
+                <RefreshCw size={13} /> Add PDF
               </button>
               <button
                 type="button"
@@ -760,7 +1133,7 @@ export function StudyView() {
             </div>
             <input
               type="file"
-              accept="application/pdf,image/*"
+              accept="application/pdf"
               ref={fileInputRef}
               className="hidden"
               onChange={handleFileChange}
@@ -776,6 +1149,7 @@ export function StudyView() {
             isIngesting={isIngesting}
             fileInputRef={fileInputRef}
             setIsDragging={setIsDragging}
+            openFilePicker={openFilePicker}
             handleDrop={handleDrop}
             handleFileChange={handleFileChange}
             onHeadlineStart={handleIntroHeadlineStart}

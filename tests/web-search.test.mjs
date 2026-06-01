@@ -5,7 +5,7 @@ import {
   detectFreshnessSearch,
   formatSourcesForPrompt,
   searchSerper,
-} from "../server/web-search.ts";
+} from "../.tmp-test/web-search.mjs";
 
 const originalFetch = globalThis.fetch;
 const originalSerperKey = process.env.SERPER_API_KEY;

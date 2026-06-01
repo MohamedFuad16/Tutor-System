@@ -53,6 +53,11 @@ chat, voice tutoring, web search, revision notebooks, analytics, admin
 diagnostics, built-in architecture/design-language books, and a Graphify-backed
 repository architecture graph for maintainers.
 
+The Study, Chat, and Revision surfaces share one book-scoped context model. Each
+learning book owns exactly one durable chat thread, one active PDF selection, and
+any number of stored PDF documents. Switching books switches the visible chat,
+document rail, injected memory context, and revision notebook together.
+
 ## Core Surfaces
 
 Tutor transitions between a dark Cosmic Obsidian study workspace and a clean
@@ -62,11 +67,11 @@ paper reading style for revision.
   <tr>
     <td width="50%" valign="top">
       <h3>Study Workspace</h3>
-      <p>Interactive PDF study surface using <code>react-pdf</code>. Supports text selection, highlights, annotations, and page context extraction.</p>
+      <p>Interactive multi-PDF study surface using <code>react-pdf</code>. Each learning book can store multiple PDFs, switch between them, preserve viewed pages, and feed extracted document context into chat.</p>
     </td>
     <td width="50%" valign="top">
       <h3>Streaming Chat Panel</h3>
-      <p>SSE tutor responses with custom Markdown, Mermaid diagrams, code rendering, TTS audio, source-material-first search, and smooth reasoning trace UI.</p>
+      <p>SSE tutor responses with custom Markdown, Mermaid diagrams, code rendering, TTS audio, source-material-first search, and one persistent conversation thread per learning book.</p>
     </td>
   </tr>
   <tr>
@@ -116,7 +121,8 @@ graph TD
     H[Graphify Architecture Graph]
 
     A -->|Text annotations and page selection| B
-    B <-->|Learning state and visual components| D
+    A -->|Stored PDFs and extracted text| D
+    B <-->|Book-scoped chat, documents, and learner memory| D
     B -->|Streaming SSE prompts and voice streams| C
     C <-->|Federated query dispatch| E
     C <-->|Low-latency audio synthesis| F
@@ -124,6 +130,40 @@ graph TD
     H -.->|Agent architecture navigation| A
     H -.->|Dependency and impact context| C
 ```
+
+## Book-Scoped Study Workflow
+
+Tutor treats a learning book as the durable unit of context:
+
+- `General Study` has its own persistent chat thread.
+- Every generated or saved learning book has exactly one persistent chat thread.
+- Switching books in Chat or opening a generated book in Revision updates the
+  shared active book ID.
+- The chat transcript, active PDF, selected document context, flashcards, and
+  learning entries stay scoped to that book.
+- Refresh restores the last active book, then reloads that book's chat thread
+  and active PDF from local Dexie/IndexedDB state.
+
+This avoids cross-book leakage. A Python book loads the Python conversation and
+document context; General Study loads only the General Study conversation and
+context.
+
+## Multi-PDF Books
+
+Study books can now hold more than one PDF:
+
+1. Select or create the book context in Chat or Revision.
+2. Add PDFs from Study. Each PDF is saved as a `learningDocuments` record linked
+   to the active book.
+3. The document rail lets you switch between PDFs without replacing the book.
+4. Removing a PDF deletes that document record and its document-scoped
+   annotations without deleting the learning book notes.
+5. The active book's ready document extracts are injected alongside memory and
+   book summaries when Chat builds a tutor request.
+
+PDF blobs, extracted text, active document ID, page position, and zoom are stored
+locally in the browser. Large scanned documents may still be bounded by browser
+storage quota and the server-side document extraction limits.
 
 ## Graphify Architecture Layer
 

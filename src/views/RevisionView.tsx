@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect, useId } from "react";
 import { useStore } from "../store";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -32,6 +32,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
   db,
+  GENERAL_STUDY_BOOK_ID,
   PersistentConcept,
   Flashcard,
   LearningBook,
@@ -39,6 +40,7 @@ import {
 import { PatternCard, themes } from "../components/PatternCard";
 import { SvgBeige } from "../components/PatternSVGs";
 import tutorBook from "../lib/tutorBook.json";
+import userBrainArchitectureBook from "../lib/userBrainArchitectureBook";
 import { useMotionPreference } from "../hooks/useMotionPreference";
 import { gsap } from "gsap";
 
@@ -49,6 +51,427 @@ type BuiltInBook = {
   hiddenKey: string;
   chapters: { title: string; content?: string }[];
   renderChapter?: (chapterIndex: number) => React.ReactNode;
+};
+
+type MermaidApi = typeof import("mermaid").default;
+
+let revisionMermaidPromise: Promise<MermaidApi> | null = null;
+
+const mermaidGeminiThemeVariables = {
+  background: "#f6f7f9",
+  primaryColor: "#ffffff",
+  primaryTextColor: "#1f2933",
+  primaryBorderColor: "#d8dadd",
+  lineColor: "#a1a5ab",
+  secondaryColor: "#ffffff",
+  tertiaryColor: "#f6f7f9",
+  fontFamily: "Inter, system-ui, sans-serif",
+};
+
+const mermaidGeminiInitDirective = `%%{init: ${JSON.stringify({
+  theme: "base",
+  themeVariables: mermaidGeminiThemeVariables,
+})}}%%`;
+
+const loadRevisionMermaid = () => {
+  if (!revisionMermaidPromise) {
+    revisionMermaidPromise = import("mermaid").then((module) => {
+      const mermaid = module.default;
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: "default",
+        securityLevel: "strict",
+        fontFamily: "Inter, sans-serif",
+      });
+      return mermaid;
+    });
+  }
+  return revisionMermaidPromise;
+};
+
+type RevisionMermaidVariant = "default" | "gemini";
+
+const readableMermaidWidth = (svg: SVGSVGElement) => {
+  const [, , viewBoxWidth = 0, viewBoxHeight = 0] =
+    svg
+      .getAttribute("viewBox")
+      ?.trim()
+      .split(/\s+/)
+      .map(Number) || [];
+  if (!Number.isFinite(viewBoxWidth) || viewBoxWidth <= 0) return 720;
+
+  const aspectRatio =
+    Number.isFinite(viewBoxHeight) && viewBoxHeight > 0
+      ? viewBoxWidth / viewBoxHeight
+      : 1;
+  const readableScale = aspectRatio > 10 ? 0.74 : aspectRatio > 4 ? 0.86 : 1;
+
+  return Math.round(Math.min(Math.max(viewBoxWidth * readableScale, 720), 1280));
+};
+
+const RevisionMermaid = ({
+  chart,
+  variant = "default",
+}: {
+  chart: string;
+  variant?: RevisionMermaidVariant;
+}) => {
+  const chartRef = useRef<HTMLDivElement>(null);
+  const isGemini = variant === "gemini";
+  const chartId = useId().replace(/:/g, "");
+  const renderedChart = isGemini
+    ? `${mermaidGeminiInitDirective}\n${chart}`
+    : chart;
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!chartRef.current) return;
+    chartRef.current.textContent = "";
+    const chartForViewport = window.matchMedia?.("(max-width: 640px)").matches
+      ? renderedChart
+          .replace(/\bflowchart\s+LR\b/g, "flowchart TB")
+          .replace(/\bgraph\s+LR\b/g, "graph TB")
+      : renderedChart;
+
+    loadRevisionMermaid()
+      .then((mermaid) =>
+        mermaid.render(
+          `revision-mermaid-${chartId}`,
+          chartForViewport,
+        ),
+      )
+      .then((result) => {
+        if (!cancelled && chartRef.current) {
+          chartRef.current.innerHTML = result.svg;
+          const svg = chartRef.current.querySelector<SVGSVGElement>("svg");
+          if (svg) {
+            const readableWidth = readableMermaidWidth(svg);
+            svg.style.width = "100%";
+            svg.style.minWidth = "0";
+            svg.style.maxWidth = `${readableWidth}px`;
+            svg.style.height = "auto";
+            svg.style.display = "block";
+            svg.style.margin = "0 auto";
+            svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
+          }
+        }
+      })
+      .catch((error) => {
+        console.warn("Revision Mermaid error", error);
+        if (!cancelled && chartRef.current) {
+          chartRef.current.textContent =
+            error instanceof Error ? error.message : String(error);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [chartId, renderedChart]);
+
+  return (
+    <div
+      className={`not-prose my-6 overflow-x-auto overflow-y-hidden sm:my-8 ${
+        isGemini
+          ? "rounded-xl border border-zinc-200 bg-[#f6f7f9] p-2 shadow-[0_18px_46px_rgba(15,23,42,0.08)] sm:rounded-2xl sm:p-3"
+          : "rounded-xl border border-zinc-200 bg-white/70 p-2 shadow-sm sm:p-3"
+      }`}
+    >
+      <div
+        ref={chartRef}
+        role="img"
+        aria-label={
+          isGemini ? "User Brain Architecture chart" : "Revision diagram"
+        }
+        className={`min-w-full rounded-xl p-2 sm:p-4 [&_.edgeLabel]:rounded-md [&_.label]:font-sans [&_svg]:h-auto ${
+          isGemini
+            ? "bg-[#f6f7f9] [&_.edgeLabel]:bg-[#f6f7f9]"
+            : "bg-white [&_.edgeLabel]:bg-white"
+        }`}
+      />
+    </div>
+  );
+};
+
+const InteractionRuntimeDiagram = () => {
+  const animate = useMotionPreference();
+  const runtimeId = useId().replace(/:/g, "");
+  const svgId = (name: string) => `${runtimeId}-${name}`;
+  const titleId = svgId("title");
+  const descId = svgId("desc");
+  const softShadowId = svgId("soft-shadow");
+  const blueGlowId = svgId("blue-glow");
+  const greenGlowId = svgId("green-glow");
+  const arrowId = svgId("arrow");
+  const userToTutorId = svgId("user-to-tutor");
+  const tutorToUserId = svgId("tutor-to-user");
+  const contextPathId = svgId("context-path");
+  const responsePathId = svgId("response-path");
+  const toolLoopId = svgId("tool-loop");
+  const mobileTitleId = svgId("mobile-title");
+  const mobileDescId = svgId("mobile-desc");
+  const mobileSoftShadowId = svgId("mobile-soft-shadow");
+  const mobileBlueGlowId = svgId("mobile-blue-glow");
+  const mobileGreenGlowId = svgId("mobile-green-glow");
+  const mobileArrowId = svgId("mobile-arrow");
+  const mobileUserToTutorId = svgId("mobile-user-to-tutor");
+  const mobileTutorToUserId = svgId("mobile-tutor-to-user");
+  const mobileContextPathId = svgId("mobile-context-path");
+  const mobileResponsePathId = svgId("mobile-response-path");
+  const mobileToolLoopId = svgId("mobile-tool-loop");
+
+  return (
+    <figure className="not-prose my-6 overflow-hidden rounded-xl border border-zinc-200 bg-[#f6f7f9] p-2 shadow-[0_18px_46px_rgba(15,23,42,0.08)] sm:my-8 sm:rounded-2xl sm:p-4">
+      <svg
+        viewBox="0 0 360 500"
+        role="img"
+        aria-labelledby={`${mobileTitleId} ${mobileDescId}`}
+        className="mx-auto block h-auto w-full max-w-[360px] font-sans sm:hidden"
+      >
+        <title id={mobileTitleId}>
+          Mobile interaction runtime with tutor and background workers
+        </title>
+        <desc id={mobileDescId}>
+          A stacked mobile diagram where the learner talks to the tutor in
+          real time while context and verified results move through background
+          workers.
+        </desc>
+        <defs>
+          <filter id={mobileSoftShadowId} x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#111827" floodOpacity="0.08" />
+          </filter>
+          <filter id={mobileBlueGlowId} x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id={mobileGreenGlowId} x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <marker id={mobileArrowId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 2 2 L 8 5 L 2 8" fill="none" stroke="#a1a5ab" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </marker>
+          <path id={mobileContextPathId} d="M 180 192 L 180 118" />
+          <path id={mobileResponsePathId} d="M 212 118 L 212 192" />
+          <path id={mobileUserToTutorId} d="M 148 336 L 148 276" />
+          <path id={mobileTutorToUserId} d="M 212 276 L 212 336" />
+          <path id={mobileToolLoopId} d="M 265 70 L 318 70 Q 330 70 330 82 L 330 124 Q 330 136 318 136 L 272 136" />
+        </defs>
+
+        <path
+          d="M 38 198 L 322 198 A 16 16 0 0 1 338 214 L 338 432 A 16 16 0 0 1 322 448 L 38 448 A 16 16 0 0 1 22 432 L 22 214 A 16 16 0 0 1 38 198"
+          fill="none"
+          stroke="#9aa0a6"
+          strokeWidth="1.4"
+          strokeDasharray="6 6"
+        />
+        <text x="180" y="466" fill="#555" fontSize="14" fontWeight="650" textAnchor="middle">
+          real-time tutor loop
+        </text>
+
+        <g fill="none" stroke="#a1a5ab" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M 180 192 L 180 118" markerEnd={`url(#${mobileArrowId})`} />
+          <path d="M 212 118 L 212 192" markerEnd={`url(#${mobileArrowId})`} />
+          <path d="M 148 336 L 148 276" markerEnd={`url(#${mobileArrowId})`} />
+          <path d="M 212 276 L 212 336" markerEnd={`url(#${mobileArrowId})`} />
+          <path d="M 265 70 L 318 70 Q 330 70 330 82 L 330 124 Q 330 136 318 136 L 272 136" markerEnd={`url(#${mobileArrowId})`} />
+        </g>
+
+        <g fill="#4a4a4a" fontSize="13" fontWeight="650">
+          <text x="126" y="155">context</text>
+          <text x="224" y="155">response</text>
+          <text x="262" y="38">tool calls</text>
+          <text x="262" y="56">browsing</text>
+          <text x="262" y="74">artifacts</text>
+        </g>
+
+        {animate ? (
+          <>
+            <circle r="5" fill="#aadd77" filter={`url(#${mobileGreenGlowId})`}>
+              <animateMotion dur="1.7s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${mobileContextPathId}`} />
+              </animateMotion>
+            </circle>
+            <circle r="5" fill="#aadd77" filter={`url(#${mobileGreenGlowId})`}>
+              <animateMotion dur="1.7s" begin="0.8s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${mobileResponsePathId}`} />
+              </animateMotion>
+            </circle>
+            <circle r="5" fill="#5bc0de" filter={`url(#${mobileBlueGlowId})`}>
+              <animateMotion dur="1.4s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${mobileUserToTutorId}`} />
+              </animateMotion>
+            </circle>
+            <circle r="5" fill="#5bc0de" filter={`url(#${mobileBlueGlowId})`}>
+              <animateMotion dur="1.4s" begin="0.7s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${mobileTutorToUserId}`} />
+              </animateMotion>
+            </circle>
+            <circle r="5" fill="#aadd77" filter={`url(#${mobileGreenGlowId})`}>
+              <animateMotion dur="2.4s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${mobileToolLoopId}`} />
+              </animateMotion>
+            </circle>
+          </>
+        ) : null}
+
+        <g filter={`url(#${mobileSoftShadowId})`}>
+          <rect x="92" y="52" width="172" height="68" rx="12" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
+          <text x="178" y="80" fill="#1f2933" fontSize="15" fontWeight="650" textAnchor="middle">
+            background
+          </text>
+          <text x="178" y="101" fill="#1f2933" fontSize="15" fontWeight="650" textAnchor="middle">
+            workers
+          </text>
+
+          <rect x="92" y="214" width="172" height="68" rx="12" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
+          <text x="178" y="242" fill="#1f2933" fontSize="15" fontWeight="650" textAnchor="middle">
+            interaction
+          </text>
+          <text x="178" y="263" fill="#1f2933" fontSize="15" fontWeight="650" textAnchor="middle">
+            tutor
+          </text>
+
+          <rect x="92" y="352" width="172" height="60" rx="12" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
+          <text x="178" y="389" fill="#1f2933" fontSize="15" fontWeight="650" textAnchor="middle">
+            learner
+          </text>
+        </g>
+      </svg>
+
+      <svg
+        viewBox="0 0 800 550"
+        role="img"
+        aria-labelledby={`${titleId} ${descId}`}
+        className="mx-auto hidden h-auto w-full max-w-[800px] font-sans sm:block"
+      >
+        <title id={titleId}>
+          Interaction runtime with foreground tutor and background worker layer
+        </title>
+        <desc id={descId}>
+          The learner interacts with a foreground tutor in real time. Shared
+          context goes to a background worker layer for tool calls and retrieval.
+          Verified responses return to the tutor.
+        </desc>
+        <defs>
+          <filter id={softShadowId} x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#111827" floodOpacity="0.08" />
+          </filter>
+          <filter id={blueGlowId} x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id={greenGlowId} x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <marker id={arrowId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 2 2 L 8 5 L 2 8" fill="none" stroke="#a1a5ab" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </marker>
+          <path id={userToTutorId} d="M 170 390 L 170 292 Q 170 280 182 280 L 258 280" />
+          <path id={tutorToUserId} d="M 330 310 L 330 410 Q 330 420 318 420 L 242 420" />
+          <path id={contextPathId} d="M 330 250 L 330 160 Q 330 150 342 150 L 488 150" />
+          <path id={responsePathId} d="M 560 180 L 560 268 Q 560 280 548 280 L 402 280" />
+          <path id={toolLoopId} d="M 560 120 L 560 70 Q 560 60 572 60 L 680 60 Q 690 60 690 72 L 690 138 Q 690 150 678 150 L 632 150" />
+        </defs>
+
+        <path
+          d="M 96 210 L 444 210 A 18 18 0 0 1 462 228 L 462 452 A 18 18 0 0 1 444 470 L 420 470 M 340 470 L 96 470 A 18 18 0 0 1 78 452 L 78 228 A 18 18 0 0 1 96 210"
+          fill="none"
+          stroke="#9aa0a6"
+          strokeWidth="1.5"
+          strokeDasharray="6 6"
+        />
+        <text x="380" y="475" fill="#555" fontSize="16" fontWeight="650" textAnchor="middle">
+          real-time
+        </text>
+
+        <g fill="none" stroke="#a1a5ab" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M 170 390 L 170 292 Q 170 280 182 280 L 258 280" markerEnd={`url(#${arrowId})`} />
+          <path d="M 330 310 L 330 410 Q 330 420 318 420 L 242 420" markerEnd={`url(#${arrowId})`} />
+          <path d="M 330 250 L 330 160 Q 330 150 342 150 L 488 150" markerEnd={`url(#${arrowId})`} />
+          <path d="M 560 180 L 560 268 Q 560 280 548 280 L 402 280" markerEnd={`url(#${arrowId})`} />
+          <path d="M 560 120 L 560 70 Q 560 60 572 60 L 680 60 Q 690 60 690 72 L 690 138 Q 690 150 678 150 L 632 150" markerEnd={`url(#${arrowId})`} />
+        </g>
+
+        <g fill="#4a4a4a" fontSize="16" fontWeight="650">
+          <text x="350" y="138">context</text>
+          <text x="460" y="268" textAnchor="middle">response</text>
+          <text x="705" y="85" fontSize="15">tool calls</text>
+          <text x="705" y="105" fontSize="15">browsing</text>
+          <text x="705" y="125" fontSize="15">artifacts</text>
+        </g>
+
+        {animate ? (
+          <>
+            <circle r="5" fill="#5bc0de" filter={`url(#${blueGlowId})`}>
+              <animateMotion dur="1.4s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${userToTutorId}`} />
+              </animateMotion>
+            </circle>
+            <circle r="5" fill="#5bc0de" filter={`url(#${blueGlowId})`}>
+              <animateMotion dur="1.4s" begin="0.7s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${tutorToUserId}`} />
+              </animateMotion>
+            </circle>
+            <circle r="5" fill="#aadd77" filter={`url(#${greenGlowId})`}>
+              <animateMotion dur="1.7s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${contextPathId}`} />
+              </animateMotion>
+            </circle>
+            <circle r="5" fill="#aadd77" filter={`url(#${greenGlowId})`}>
+              <animateMotion dur="1.7s" begin="0.8s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${responsePathId}`} />
+              </animateMotion>
+            </circle>
+            <circle r="5" fill="#aadd77" filter={`url(#${greenGlowId})`}>
+              <animateMotion dur="2.4s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${toolLoopId}`} />
+              </animateMotion>
+            </circle>
+          </>
+        ) : null}
+
+        <g filter={`url(#${softShadowId})`}>
+          <rect x="100" y="390" width="140" height="60" rx="10" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
+          <text x="170" y="426" fill="#1f2933" fontSize="16" fontWeight="650" textAnchor="middle">
+            learner
+          </text>
+
+          <rect x="260" y="250" width="140" height="60" rx="10" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
+          <text x="330" y="275" fill="#1f2933" fontSize="16" fontWeight="650" textAnchor="middle">
+            interaction
+          </text>
+          <text x="330" y="295" fill="#1f2933" fontSize="16" fontWeight="650" textAnchor="middle">
+            tutor
+          </text>
+
+          <rect x="490" y="120" width="140" height="60" rx="10" fill="#ffffff" stroke="#d8dadd" strokeWidth="1.4" />
+          <text x="560" y="145" fill="#1f2933" fontSize="16" fontWeight="650" textAnchor="middle">
+            background
+          </text>
+          <text x="560" y="165" fill="#1f2933" fontSize="16" fontWeight="650" textAnchor="middle">
+            workers
+          </text>
+        </g>
+      </svg>
+      <figcaption className="mt-3 text-center font-sans text-sm text-zinc-600">
+        The learner stays in a real-time loop with the tutor while background workers handle tools, browsing, and artifacts.
+      </figcaption>
+    </figure>
+  );
 };
 
 type LibraryDeleteTarget = {
@@ -1399,6 +1822,14 @@ const builtInBooks: BuiltInBook[] = [
     chapters: tutorBook,
   },
   {
+    id: "user-brain-architecture",
+    name: "User Brain Architecture",
+    description:
+      "A consolidated book for the adaptive learner brain, OpenAI support guidance, interaction-model strategy, beta gates, and citations.",
+    hiddenKey: "user_brain_architecture_book_hidden",
+    chapters: userBrainArchitectureBook,
+  },
+  {
     id: "app-design-language",
     name: "App Design Language",
     description:
@@ -1661,6 +2092,7 @@ export function RevisionView() {
   const setActiveLearningBookId = useStore(
     (state) => state.setActiveLearningBookId,
   );
+  const setActiveDocumentId = useStore((state) => state.setActiveDocumentId);
   const setActiveProject = useStore((state) => state.setActiveProject);
   const [libraryRevision, setLibraryRevision] = useState(0);
 
@@ -1677,7 +2109,24 @@ export function RevisionView() {
       () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
       [],
     ) || [];
-  const visibleLearningBooks = learningBooks;
+  const visibleLearningBooks = React.useMemo(() => {
+    const general =
+      learningBooks.find((book) => book.id === GENERAL_STUDY_BOOK_ID) ||
+      learningBooks.find((book) => /^general study$/i.test(book.title.trim()));
+    const seen = new Set<string>();
+    const result: LearningBook[] = [];
+    if (general) {
+      result.push(general);
+      seen.add(general.id);
+    }
+    learningBooks.forEach((book) => {
+      if (seen.has(book.id)) return;
+      if (/^general study$/i.test(book.title.trim())) return;
+      result.push(book);
+      seen.add(book.id);
+    });
+    return result;
+  }, [learningBooks]);
   const learningBookConcepts =
     useLiveQuery(
       () => db.learningBookConcepts.orderBy("updatedAt").reverse().toArray(),
@@ -1802,6 +2251,9 @@ export function RevisionView() {
       "tutor-book": tutorBook
         .map((chapter) => chapter.content)
         .join("\n\n---\n\n"),
+      "user-brain-architecture": userBrainArchitectureBook
+        .map((chapter) => chapter.content)
+        .join("\n\n---\n\n"),
     }),
     [],
   );
@@ -1850,8 +2302,14 @@ export function RevisionView() {
     if (!canOpenBook) return;
     setCurrentChapterIndex(0);
     setActiveConceptId(pendingBookId);
+    const generatedBook = learningBooks.find((book) => book.id === pendingBookId);
+    if (generatedBook) {
+      setActiveLearningBookId(generatedBook.id);
+      setActiveProject(generatedBook.title);
+    }
+    scrollBookToTop("auto");
     localStorage.removeItem("revision_open_book_id");
-  }, [learningBooks]);
+  }, [learningBooks, setActiveLearningBookId, setActiveProject]);
 
   const cleanRevisionNote = React.useCallback(
     (value?: string) =>
@@ -1982,10 +2440,14 @@ export function RevisionView() {
   const deleteLearningBookRecords = React.useCallback(async (bookId: string) => {
     await db.transaction(
       "rw",
-      db.learningBooks,
-      db.learningBookConcepts,
-      db.learningEntries,
-      db.flashcards,
+      [
+        db.learningBooks,
+        db.learningBookConcepts,
+        db.learningEntries,
+        db.learningDocuments,
+        db.bookChatThreads,
+        db.flashcards,
+      ],
       async () => {
         const relatedFlashcardIds = (
           await db.flashcards
@@ -1994,6 +2456,8 @@ export function RevisionView() {
         ).map((card) => card.id);
         await db.learningBookConcepts.where("bookId").equals(bookId).delete();
         await db.learningEntries.where("bookId").equals(bookId).delete();
+        await db.learningDocuments.where("bookId").equals(bookId).delete();
+        await db.bookChatThreads.where("bookId").equals(bookId).delete();
         if (relatedFlashcardIds.length > 0) {
           await db.flashcards.bulkDelete(relatedFlashcardIds);
         }
@@ -2001,41 +2465,6 @@ export function RevisionView() {
       },
     );
   }, []);
-
-  useEffect(() => {
-    const cleanSlateKey = "revision_clean_slate_default_books_v1";
-    if (localStorage.getItem(cleanSlateKey) === "1") return;
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const books = await db.learningBooks.toArray();
-        await Promise.all(
-          books.map((book) => deleteLearningBookRecords(book.id)),
-        );
-        if (cancelled) return;
-        localStorage.setItem(cleanSlateKey, "1");
-        if (activeLearningBookId) {
-          setActiveLearningBookId(null);
-          setActiveProject("General Study");
-        }
-        setActiveConceptId((current) =>
-          current && books.some((book) => book.id === current) ? null : current,
-        );
-      } catch (error) {
-        console.warn("[RevisionView] Clean slate reset skipped:", error);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    activeLearningBookId,
-    deleteLearningBookRecords,
-    setActiveLearningBookId,
-    setActiveProject,
-  ]);
 
   const deleteConcept = async () => {
     if (!deleteTarget) return;
@@ -2052,6 +2481,7 @@ export function RevisionView() {
         await deleteLearningBookRecords(deleteTarget.id);
         if (activeLearningBookId === deleteTarget.id) {
           setActiveLearningBookId(null);
+          setActiveDocumentId(null);
           setActiveProject("General Study");
         }
       }
@@ -2070,7 +2500,7 @@ export function RevisionView() {
   return (
     <div
       ref={scrollRef}
-      className="w-full h-full bg-[#faf9f6] text-zinc-900 flex flex-col overflow-y-auto custom-scroll pt-20 md:pt-0 relative"
+      className="w-full h-full bg-[#faf9f6] text-zinc-900 flex flex-col overflow-y-auto custom-scroll pt-[4.75rem] lg:pt-0 relative"
     >
       {/* Subtle Paper Texture Overlay */}
       <div
@@ -2080,8 +2510,12 @@ export function RevisionView() {
             'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E")',
         }}
       />
+      <div
+        className="pointer-events-none fixed inset-x-0 top-0 z-40 h-[4.75rem] bg-[#faf9f6] lg:hidden"
+        aria-hidden="true"
+      />
       {activeConcept || activeLearningBook ? (
-        <div className="min-h-full flex w-full relative z-10 pt-24 md:pt-28 lg:pt-24 shrink-0">
+        <div className="min-h-full flex w-full relative z-10 pt-0 lg:pt-24 shrink-0">
           {/* Sidebar Navigation */}
           {(isBuiltInBook || activeLearningBook) && (
             <div className="sticky top-24 hidden h-[calc(100vh-96px)] w-72 flex-shrink-0 flex-col overflow-hidden border-r border-zinc-200/50 bg-[#faf9f6] px-4 py-5 self-start lg:flex">
@@ -2120,43 +2554,45 @@ export function RevisionView() {
           )}
 
           <div className="flex-1 flex flex-col w-full relative">
-            {/* Header for mobile or non-book views */}
-            <div className="sticky left-0 right-0 top-16 z-50 flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/70 bg-[#faf9f6] px-4 py-3 shadow-[0_14px_28px_rgba(250,249,246,0.98)] md:top-20 md:px-6 md:py-4 lg:hidden">
-              <button
-                onClick={returnToLibrary}
-                className="flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
-              >
-                <Menu size={16} /> Back to Library
-              </button>
-              <div className="min-w-0 flex-1 truncate text-center text-sm font-semibold tracking-wide text-zinc-800 md:max-w-md">
-                {activeTitle}
+            {/* Compact mobile book chrome */}
+            <div className="sticky left-0 right-0 top-0 z-50 border-b border-zinc-200/70 bg-[#faf9f6] shadow-[0_14px_28px_rgba(250,249,246,0.98)] after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-6 after:h-6 after:bg-[#faf9f6] after:content-[''] lg:hidden">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 md:px-6">
+                <button
+                  onClick={returnToLibrary}
+                  className="flex shrink-0 items-center gap-2 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900"
+                >
+                  <Menu size={16} /> Back to Library
+                </button>
+                <div className="min-w-0 flex-1 truncate text-left text-sm font-semibold tracking-wide text-zinc-800 sm:text-center md:max-w-md">
+                  {activeTitle}
+                </div>
+                <div className="hidden w-10 shrink-0 sm:block"></div>
               </div>
-              <div className="w-16"></div>
+              {(isBuiltInBook || activeLearningBook) && (
+                <div className="border-t border-zinc-200/70 px-4 pb-3 pt-3 md:px-6">
+                  <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+                    Contents
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-1 custom-scroll">
+                    {(
+                      activeBuiltInBook?.chapters ||
+                      activeLearningBook?.chapters ||
+                      []
+                    ).map((ch: any, idx: number) => (
+                      <button
+                        key={idx}
+                        onClick={() => selectChapter(idx)}
+                        className={`max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors ${idx === currentChapterIndex ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100"}`}
+                      >
+                        <span className="line-clamp-1">{ch.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            {(isBuiltInBook || activeLearningBook) && (
-              <div className="sticky top-[121px] z-40 border-b border-zinc-200/70 bg-[#faf9f6] px-4 py-3 shadow-[0_14px_28px_rgba(250,249,246,0.96)] md:top-[141px] lg:hidden">
-                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
-                  Contents
-                </div>
-                <div className="flex gap-2 overflow-x-auto pb-1 custom-scroll">
-                  {(
-                    activeBuiltInBook?.chapters ||
-                    activeLearningBook?.chapters ||
-                    []
-                  ).map((ch: any, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => selectChapter(idx)}
-                      className={`max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors ${idx === currentChapterIndex ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100"}`}
-                    >
-                      <span className="line-clamp-1">{ch.title}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            <div className="relative isolate mx-auto w-full max-w-4xl flex-1 p-5 sm:p-6 md:p-10 lg:p-16 xl:p-20">
+            <div className="relative isolate mx-auto w-full max-w-4xl flex-1 p-5 pt-6 sm:p-6 md:p-10 lg:p-16 xl:p-20">
                 <div
                   key={currentChapterIndex}
                   className="relative z-10 font-serif pb-12"
@@ -2170,7 +2606,7 @@ export function RevisionView() {
                           ? "Learning Book"
                           : "Concept Overview"}
                     </span>
-                    <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-6 font-serif leading-[1.15]">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-6 font-serif leading-[1.15]">
                       {activeBuiltInBook
                         ? activeBuiltInBook.chapters[currentChapterIndex]?.title
                         : activeLearningBook
@@ -2183,8 +2619,80 @@ export function RevisionView() {
                   {activeBuiltInBook?.renderChapter ? (
                     activeBuiltInBook.renderChapter(currentChapterIndex)
                   ) : (
-                    <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-zinc-900 prose-li:leading-[1.8] prose-li:text-zinc-800 prose-li:font-light prose-ul:my-5 prose-pre:bg-zinc-100 prose-pre:text-zinc-800 prose-pre:border prose-pre:border-zinc-200 prose-pre:shadow-inner prose-pre:my-8 prose-code:before:content-none prose-code:after:content-none prose-code:bg-transparent prose-code:px-0 prose-code:py-0 prose-code:font-mono prose-code:text-[0.88em] prose-code:font-normal prose-code:text-zinc-700 prose-strong:text-zinc-900 prose-strong:font-medium selection:bg-zinc-200 selection:text-zinc-950">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-a:text-blue-700 prose-a:decoration-blue-300 prose-a:underline-offset-4 prose-a:hover:text-blue-900 prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-zinc-900 prose-li:leading-[1.8] prose-li:text-zinc-800 prose-li:font-light prose-ul:my-5 prose-pre:bg-zinc-100 prose-pre:text-zinc-800 prose-pre:border prose-pre:border-zinc-200 prose-pre:shadow-inner prose-pre:my-8 prose-code:before:content-none prose-code:after:content-none prose-code:bg-transparent prose-code:px-0 prose-code:py-0 prose-code:font-mono prose-code:text-[0.88em] prose-code:font-normal prose-code:text-zinc-700 prose-strong:text-zinc-900 prose-strong:font-medium selection:bg-zinc-200 selection:text-zinc-950">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          a: ({ href, children, ...props }) => {
+                            const isExternal = href?.startsWith("http");
+                            return (
+                              <a
+                                {...props}
+                                href={href}
+                                target={isExternal ? "_blank" : undefined}
+                                rel={
+                                  isExternal
+                                    ? "noopener noreferrer"
+                                    : undefined
+                                }
+                              >
+                                {children}
+                              </a>
+                            );
+                          },
+                          code: ({ className, children, ...props }) => {
+                            const language =
+                              /language-([\w-]+)/.exec(className || "")?.[1] ||
+                              "";
+                            const code = String(children).replace(/\n$/, "");
+                            if (language === "mermaid") {
+                              return (
+                                <RevisionMermaid
+                                  chart={code}
+                                  variant={
+                                    activeBuiltInBook?.id ===
+                                    "user-brain-architecture"
+                                      ? "gemini"
+                                      : "default"
+                                  }
+                                />
+                              );
+                            }
+                            if (language === "interaction-runtime") {
+                              return <InteractionRuntimeDiagram />;
+                            }
+                            return (
+                              <code {...props} className={className}>
+                                {children}
+                              </code>
+                            );
+                          },
+                          img: ({ alt, ...props }) => (
+                            <img
+                              {...props}
+                              alt={alt || ""}
+                              className="not-prose my-8 w-full rounded-lg border border-zinc-200 shadow-[0_18px_48px_rgba(24,24,27,0.14)]"
+                            />
+                          ),
+                          table: ({ children }) => (
+                            <div className="not-prose my-8 overflow-x-auto rounded-lg border border-zinc-200 bg-white/70 shadow-sm">
+                              <table className="w-full border-collapse text-left font-sans text-sm text-zinc-700">
+                                {children}
+                              </table>
+                            </div>
+                          ),
+                          th: ({ children }) => (
+                            <th className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-xs font-semibold uppercase tracking-normal text-zinc-500">
+                              {children}
+                            </th>
+                          ),
+                          td: ({ children }) => (
+                            <td className="border-b border-zinc-100 px-4 py-3 align-top leading-6 text-zinc-700">
+                              {children}
+                            </td>
+                          ),
+                        }}
+                      >
                         {activeMarkdown}
                       </ReactMarkdown>
                     </div>
@@ -2295,6 +2803,9 @@ export function RevisionView() {
                         onClick={() => {
                           setCurrentChapterIndex(0);
                           setActiveConceptId(book.id);
+                          setActiveLearningBookId(book.id);
+                          setActiveProject(book.title);
+                          scrollBookToTop("auto");
                         }}
                       >
                         {(pressing) => (
@@ -2361,6 +2872,7 @@ export function RevisionView() {
                   onClick={() => {
                     setCurrentChapterIndex(0);
                     setActiveConceptId(concept.id);
+                    scrollBookToTop("auto");
                   }}
                 >
                   {(pressing) => (

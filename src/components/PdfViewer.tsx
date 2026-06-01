@@ -21,12 +21,15 @@ import {
 } from "lucide-react";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
 import { useMotionPreference } from "../hooks/useMotionPreference";
+import { db } from "../memory/longterm.memory";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 export function PdfViewer() {
   const { t } = useTranslation();
   const pdfUrl = useStore((state) => state.pdfUrl);
+  const activeLearningBookId = useStore((state) => state.activeLearningBookId);
+  const activeDocumentId = useStore((state) => state.activeDocumentId);
   const pdfScale = useStore((state) => state.pdfScale);
   const setPdfScale = useStore((state) => state.setPdfScale);
   const pdfPage = useStore((state) => state.pdfPage);
@@ -132,6 +135,7 @@ export function PdfViewer() {
                   return;
                 }
                 const apiKey = useStore.getState().apiKey;
+                if (!apiKey) return;
                 fetch("/api/title", {
                   method: "POST",
                   signal: controller.signal,
@@ -156,8 +160,37 @@ export function PdfViewer() {
                     const cleanTitle = data.title
                       .replace(/[^a-zA-Z0-9 -]/g, "")
                       .trim();
-                    useStore.getState().setActiveProject(cleanTitle);
-                    void brainOrchestrator.updateSessionBookTitle(cleanTitle);
+                    const { activeDocumentId, activeLearningBookId } =
+                      useStore.getState();
+                    if (activeDocumentId) {
+                      void db.learningDocuments.update(activeDocumentId, {
+                        title: cleanTitle,
+                        updatedAt: Date.now(),
+                      });
+                    }
+                    if (activeLearningBookId) {
+                      void db.learningBooks
+                        .get(activeLearningBookId)
+                        .then((book) => {
+                          const currentTitle = String(book?.title || "").trim();
+                          if (
+                            !book ||
+                            (currentTitle &&
+                              !/^(general study|conversation notes|study session)$/i.test(
+                                currentTitle,
+                              ))
+                          ) {
+                            return;
+                          }
+                          useStore.getState().setActiveProject(cleanTitle);
+                          void brainOrchestrator.updateLearningBookTitle(
+                            activeLearningBookId,
+                            cleanTitle,
+                            undefined,
+                            "pdf",
+                          );
+                        });
+                    }
                   })
                   .catch((error) => {
                     if (!controller.signal.aborted) console.error(error);
@@ -200,9 +233,62 @@ export function PdfViewer() {
   }, [pdfPage, pdfTotalPages, setPdfPage]);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    setPdfTotalPages(numPages);
-    setPdfPage(1);
+    const currentState = useStore.getState();
+    const currentPage = currentState.pdfPage || 1;
+    const nextPage = Math.min(Math.max(currentPage, 1), numPages);
+    if (currentState.pdfTotalPages !== numPages) {
+      setPdfTotalPages(numPages);
+    }
+    if (currentState.pdfPage !== nextPage) {
+      setPdfPage(nextPage);
+    }
+    if (activeDocumentId) {
+      void db.learningDocuments
+        .get(activeDocumentId)
+        .then((document) => {
+          if (document?.totalPages === numPages) return;
+          return db.learningDocuments.update(activeDocumentId, {
+            totalPages: numPages,
+            updatedAt: Date.now(),
+          });
+        })
+        .catch((error) =>
+          console.warn("[PdfViewer] Could not store PDF page count:", error),
+        );
+    }
   }
+
+  useEffect(() => {
+    if (!activeDocumentId) return;
+    void db.learningDocuments
+      .get(activeDocumentId)
+      .then((document) => {
+        if (document?.lastViewedPage === pdfPage) return;
+        return db.learningDocuments.update(activeDocumentId, {
+          lastViewedPage: pdfPage,
+          updatedAt: Date.now(),
+        });
+      })
+      .catch((error) =>
+        console.warn("[PdfViewer] Could not store PDF page:", error),
+      );
+  }, [activeDocumentId, pdfPage]);
+
+  useEffect(() => {
+    if (!activeDocumentId) return;
+    void db.learningDocuments
+      .get(activeDocumentId)
+      .then((document) => {
+        if (document?.scale === pdfScale) return;
+        return db.learningDocuments.update(activeDocumentId, {
+          scale: pdfScale,
+          updatedAt: Date.now(),
+        });
+      })
+      .catch((error) =>
+        console.warn("[PdfViewer] Could not store PDF zoom:", error),
+      );
+  }, [activeDocumentId, pdfScale]);
 
   const handleDoubleClick = () => {
     setIsFitWidth(!isFitWidth);
@@ -292,6 +378,8 @@ export function PdfViewer() {
 
     addAnnotation({
       id: Date.now().toString(),
+      bookId: activeLearningBookId || undefined,
+      documentId: activeDocumentId || undefined,
       pageNumber: pdfPage,
       rects: normalizedRects,
       text: selectionTooltip.text,
@@ -307,6 +395,8 @@ export function PdfViewer() {
     if (!draftNote || !noteText.trim()) return;
     addAnnotation({
       id: Date.now().toString(),
+      bookId: activeLearningBookId || undefined,
+      documentId: activeDocumentId || undefined,
       pageNumber: pdfPage,
       rects: draftNote.rects,
       text: selectionTooltip?.text || "",
@@ -354,7 +444,11 @@ export function PdfViewer() {
 
   const renderedScale = pdfScale;
 
-  const pageAnnotations = annotations.filter((a) => a.pageNumber === pdfPage);
+  const pageAnnotations = annotations.filter(
+    (a) =>
+      a.pageNumber === pdfPage &&
+      (!activeDocumentId || a.documentId === activeDocumentId),
+  );
 
   useEffect(() => {
     const borders = [actionBorderRef.current, selectionBorderRef.current].filter(

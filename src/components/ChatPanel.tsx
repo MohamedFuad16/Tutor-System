@@ -54,7 +54,8 @@ import { audio } from "../lib/audio";
 import { SiriLiquidGlass } from "./SiriLiquidGlass";
 import { useStore, type NormalizedWebSource } from "../store";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
-import { db } from "../memory/longterm.memory";
+import { db, GENERAL_STUDY_BOOK_ID } from "../memory/longterm.memory";
+import type { BookChatThread, LearningDocument } from "../memory/longterm.memory";
 import type { Message } from "../types";
 import { FloatingSkillsMenu } from "./FloatingSkillsMenu";
 import { useTranslation } from "../lib/translations";
@@ -64,6 +65,12 @@ import {
   getPlanOption,
   serviceMilestones,
 } from "../lib/accessPlans";
+import {
+  INTERACTION_THINKING_PAUSE_MS,
+  buildTutorInteractionContext,
+  createTutorInteractionSnapshot,
+  type TutorInteractionMode,
+} from "../lib/interactionModel";
 
 type MermaidApi = typeof import("mermaid").default;
 type Variants = Record<string, Record<string, any>>;
@@ -701,6 +708,87 @@ const archiveChatSnapshot = (
   ].slice(0, 20);
   writeChatArchives(next);
   return next;
+};
+
+const defaultChatMessages = (): Message[] => [
+  {
+    id: "1",
+    role: "assistant",
+    content: INITIAL_MESSAGE,
+  },
+];
+
+const normalizeChatMessages = (items?: Message[] | null): Message[] => {
+  if (!Array.isArray(items) || items.length === 0) return defaultChatMessages();
+  const hasGreeting = items.some((item) => item.id === "1");
+  return hasGreeting ? items : [...defaultChatMessages(), ...items];
+};
+
+const chatThreadIdForBook = (bookId: string) => `thread:${bookId}`;
+
+const chatTitleFromMessages = (items: Message[], fallback: string) => {
+  const firstUser = meaningfulChatMessages(items).find(
+    (item) => item.role === "user",
+  );
+  return (
+    firstUser?.content
+      .replace(/\s+/g, " ")
+      .replace(/^\[SYSTEM:[\s\S]*?\]\s*/i, "")
+      .slice(0, 72) ||
+    fallback ||
+    "General Study"
+  );
+};
+
+const persistBookChatThread = async (
+  bookId: string | null | undefined,
+  bookTitle: string,
+  items: Message[],
+) => {
+  if (!bookId) return null;
+  const now = Date.now();
+  const id = chatThreadIdForBook(bookId);
+  const existing = await db.bookChatThreads.get(id).catch(() => undefined);
+  const thread: BookChatThread = {
+    id,
+    bookId,
+    bookTitle: bookTitle || "General Study",
+    title: chatTitleFromMessages(items, bookTitle),
+    messages: normalizeChatMessages(items),
+    createdAt: existing?.createdAt || now,
+    updatedAt: now,
+  };
+  await db.bookChatThreads.put(thread);
+  return thread;
+};
+
+const buildDocumentContext = (documents: LearningDocument[]) => {
+  const readyDocuments = documents.filter(
+    (document) =>
+      document.processingStatus === "ready" &&
+      document.extractedText &&
+      document.extractedText.trim(),
+  );
+  if (!readyDocuments.length) return "";
+  return [
+    "### Active Book Document Contexts",
+    ...readyDocuments.slice(0, 6).map((document, index) => {
+      const excerpt = String(document.extractedText || "")
+        .replace(/\s+/g, " ")
+        .slice(0, index === 0 ? 5000 : 2600);
+      return [
+        `Document ${index + 1}: ${document.title}`,
+        `Document ID: ${document.id}`,
+        document.classification
+          ? `Classification: ${document.classification}`
+          : "",
+        document.extractionMode ? `Extraction: ${document.extractionMode}` : "",
+        `Excerpt: ${excerpt}`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }),
+  ].join("\n\n");
 };
 
 // ─── Smooth animated counter ──────────────────────────────────────────────────
@@ -2355,6 +2443,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const setActiveLearningBookId = useStore(
     (state) => state.setActiveLearningBookId,
   );
+  const activeDocumentId = useStore((state) => state.activeDocumentId);
   const ttsVoice = useStore((state) => state.ttsVoice);
   const setActiveView = useStore((state) => state.setActiveView);
   const aiModel = useStore((state) => state.aiModel);
@@ -2381,6 +2470,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const streamingFrameRef = useRef<number | null>(null);
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [interactionMode, setInteractionMode] =
+    useState<TutorInteractionMode>("idle");
+  const lastInputAtRef = useRef<number | null>(null);
+  const lastSubmitAtRef = useRef<number | null>(null);
+  const thinkingPauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const [isTyping, setIsTyping] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isSearchSkillActive, setIsSearchSkillActive] = useState(false);
@@ -2395,9 +2491,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const [chatArchives, setChatArchives] = useState<ChatArchive[]>(() =>
     readChatArchives(),
   );
+  const [isThreadLoading, setIsThreadLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAutoScrollPaused = useRef(false);
   const [isSkillsMenuOpen, setIsSkillsMenuOpen] = useState(false);
+  const loadedThreadBookIdRef = useRef<string | null>(null);
+  const latestMessagesRef = useRef<Message[]>(messages);
+  const latestBookTitleRef = useRef(activeProject);
 
   const flushStreamingAssistant = useCallback(() => {
     streamingFrameRef.current = null;
@@ -2476,19 +2576,71 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
       [],
     ) || [];
+  const dedupedLearningBooks = React.useMemo(() => {
+    const general =
+      learningBooks.find((book) => book.id === GENERAL_STUDY_BOOK_ID) ||
+      learningBooks.find((book) => /^general study$/i.test(book.title.trim()));
+    const seen = new Set<string>();
+    const result = [];
+    if (general) {
+      result.push(general);
+      seen.add(general.id);
+    }
+    learningBooks.forEach((book) => {
+      if (seen.has(book.id)) return;
+      if (/^general study$/i.test(book.title.trim())) return;
+      result.push(book);
+      seen.add(book.id);
+    });
+    return result;
+  }, [learningBooks]);
   const libraryContextBooks = React.useMemo(
-    () => learningBooks.filter((book) => !isReservedLibraryContext(book.title)),
-    [learningBooks],
+    () =>
+      dedupedLearningBooks.filter(
+        (book) => !isReservedLibraryContext(book.title),
+      ),
+    [dedupedLearningBooks],
   );
+  const generalStudyBook =
+    libraryContextBooks.find((book) => book.id === GENERAL_STUDY_BOOK_ID) ||
+    libraryContextBooks.find(
+      (book) => book.title.toLowerCase() === "general study",
+    );
   const activeLearningBook = activeLearningBookId
     ? libraryContextBooks.find((book) => book.id === activeLearningBookId)
-    : undefined;
+    : generalStudyBook;
   const activeLearningBookTitle = activeLearningBook?.title || activeProject;
+  const canonicalActiveBookId = activeLearningBook?.id || activeLearningBookId;
+  const activeBookDocuments = useLiveQuery(
+    () =>
+      canonicalActiveBookId
+        ? db.learningDocuments.where("bookId").equals(canonicalActiveBookId).toArray()
+        : Promise.resolve([]),
+    [canonicalActiveBookId],
+  );
+  const orderedBookDocuments = React.useMemo(() => {
+    const documents = [...(activeBookDocuments || [])].sort(
+      (a, b) => b.updatedAt - a.updatedAt,
+    );
+    if (!activeDocumentId) return documents;
+    return documents.sort((a, b) =>
+      a.id === activeDocumentId ? -1 : b.id === activeDocumentId ? 1 : 0,
+    );
+  }, [activeBookDocuments, activeDocumentId]);
   const visibleChatArchives = chatArchives.filter(
     (archive) =>
+      archive.bookId === canonicalActiveBookId &&
       !isReservedLibraryContext(archive.bookTitle) &&
       !isReservedLibraryContext(archive.title),
   );
+
+  useEffect(() => {
+    latestMessagesRef.current = messages;
+  }, [messages]);
+
+  useEffect(() => {
+    latestBookTitleRef.current = activeLearningBookTitle;
+  }, [activeLearningBookTitle]);
 
   const clearStudyDocumentContext = useCallback(() => {
     const currentPdfUrl = useStore.getState().pdfUrl;
@@ -2502,25 +2654,33 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   }, [setPdfPage, setPdfTotalPages, setPdfUrl, setSelectedTextContext]);
 
   const saveCurrentChatArchive = useCallback(() => {
+    const currentMessages = useStore.getState().messages;
+    void persistBookChatThread(
+      useStore.getState().activeLearningBookId || canonicalActiveBookId,
+      activeLearningBookTitle,
+      currentMessages,
+    ).catch((error) =>
+      console.warn("[ChatPanel] Book chat archive failed:", error),
+    );
     const next = archiveChatSnapshot(
-      useStore.getState().messages,
-      useStore.getState().activeLearningBookId,
+      currentMessages,
+      useStore.getState().activeLearningBookId || canonicalActiveBookId || null,
       activeLearningBookTitle,
     );
     if (next.length) setChatArchives(next);
-  }, [activeLearningBookTitle]);
+  }, [activeLearningBookTitle, canonicalActiveBookId]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
       archiveChatSnapshot(
         useStore.getState().messages,
-        useStore.getState().activeLearningBookId,
+        useStore.getState().activeLearningBookId || canonicalActiveBookId || null,
         activeLearningBookTitle,
       );
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [activeLearningBookTitle]);
+  }, [activeLearningBookTitle, canonicalActiveBookId]);
 
   useEffect(() => {
     if (libraryContextBooks.length === 0) return;
@@ -2532,12 +2692,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     const matchingBook = libraryContextBooks.find(
       (book) => book.title.toLowerCase() === activeProject.toLowerCase(),
     );
-    const nextBook = matchingBook || libraryContextBooks[0];
+    const nextBook = matchingBook || generalStudyBook || libraryContextBooks[0];
     setActiveLearningBookId(nextBook.id);
     setActiveProject(nextBook.title);
   }, [
     activeLearningBookId,
     activeProject,
+    generalStudyBook,
     libraryContextBooks,
     setActiveLearningBookId,
     setActiveProject,
@@ -2560,6 +2721,65 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   }, [setActiveLearningBookId, setActiveProject]);
 
   useEffect(() => {
+    if (!canonicalActiveBookId) return;
+    let cancelled = false;
+    const previousBookId = loadedThreadBookIdRef.current;
+    if (previousBookId && previousBookId !== canonicalActiveBookId) {
+      void persistBookChatThread(
+        previousBookId,
+        latestBookTitleRef.current,
+        latestMessagesRef.current,
+      ).catch((error) =>
+        console.warn("[ChatPanel] Previous book chat save failed:", error),
+      );
+    }
+
+    setIsThreadLoading(true);
+    clearStreamingAssistant();
+    void db.bookChatThreads
+      .get(chatThreadIdForBook(canonicalActiveBookId))
+      .then((thread) => {
+        if (cancelled) return;
+        loadedThreadBookIdRef.current = canonicalActiveBookId;
+        setMessages(normalizeChatMessages(thread?.messages));
+        requestAnimationFrame(() => forceScrollToBottom("auto"));
+      })
+      .catch((error) => {
+        console.warn("[ChatPanel] Book chat load failed:", error);
+        if (!cancelled) {
+          loadedThreadBookIdRef.current = canonicalActiveBookId;
+          setMessages(defaultChatMessages());
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsThreadLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    canonicalActiveBookId,
+    clearStreamingAssistant,
+    forceScrollToBottom,
+    setMessages,
+  ]);
+
+  useEffect(() => {
+    if (!canonicalActiveBookId || isThreadLoading) return;
+    const timeout = window.setTimeout(() => {
+      void persistBookChatThread(
+        canonicalActiveBookId,
+        activeLearningBookTitle,
+        messages,
+      ).catch((error) =>
+        console.warn("[ChatPanel] Book chat save failed:", error),
+      );
+    }, 250);
+    return () => window.clearTimeout(timeout);
+  }, [activeLearningBookTitle, canonicalActiveBookId, isThreadLoading, messages]);
+
+  useEffect(() => {
     return () => {
       // @ts-ignore
       if (window.currentAudio) {
@@ -2578,6 +2798,34 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const isValid =
     input.length === 0 || /^[a-zA-Z0-9\s.,!?'"()\-:;\n]*$/.test(input);
   const isActive = input.length > 0;
+
+  const clearThinkingPauseTimer = useCallback(() => {
+    if (thinkingPauseTimerRef.current) {
+      clearTimeout(thinkingPauseTimerRef.current);
+      thinkingPauseTimerRef.current = null;
+    }
+  }, []);
+
+  const handleInputChange = useCallback(
+    (value: string) => {
+      setInput(value);
+      lastInputAtRef.current = Date.now();
+      clearThinkingPauseTimer();
+
+      if (!value.trim()) {
+        setInteractionMode("idle");
+        return;
+      }
+
+      setInteractionMode("composing");
+      thinkingPauseTimerRef.current = setTimeout(() => {
+        setInteractionMode((current) =>
+          current === "composing" ? "thinking_pause" : current,
+        );
+      }, INTERACTION_THINKING_PAUSE_MS);
+    },
+    [clearThinkingPauseTimer],
+  );
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
@@ -2606,6 +2854,20 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     }
     return () => clearInterval(interval);
   }, [sendState]);
+
+  useEffect(() => () => clearThinkingPauseTimer(), [clearThinkingPauseTimer]);
+
+  useEffect(() => {
+    if (voiceState === "listening") {
+      setInteractionMode("listening");
+    } else if (voiceState === "speaking") {
+      setInteractionMode("speaking");
+    } else if (sendState === "sending") {
+      setInteractionMode("awaiting_response");
+    } else if (!input.trim()) {
+      setInteractionMode("idle");
+    }
+  }, [input, sendState, voiceState]);
 
   const stopVoice = () => {
     if (wsRef.current) {
@@ -2736,12 +2998,28 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 if (lastVoiceUserMessageRef.current && msg.content) {
                   const userMessage = lastVoiceUserMessageRef.current;
                   lastVoiceUserMessageRef.current = "";
-                  brainOrchestrator.trackInteraction(userMessage, msg.content);
+                  brainOrchestrator.trackInteraction(
+                    userMessage,
+                    msg.content,
+                    undefined,
+                    {
+                      bookId: canonicalActiveBookId,
+                      conversationId: canonicalActiveBookId
+                        ? chatThreadIdForBook(canonicalActiveBookId)
+                        : undefined,
+                      documentId: activeDocumentId,
+                    },
+                  );
                   void brainOrchestrator
                     .updateLearningBookFromConversation({
                       userName: learnerName,
                       activeProject,
-                      activeBookId: activeLearningBookId,
+                      activeBookId: canonicalActiveBookId,
+                      activeDocumentId,
+                      conversationId: canonicalActiveBookId
+                        ? chatThreadIdForBook(canonicalActiveBookId)
+                        : undefined,
+                      documentContexts: orderedBookDocuments,
                       userMessage,
                       assistantMessage: msg.content,
                       apiKey,
@@ -2964,6 +3242,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     if (!text.trim() || sendState !== "idle") return;
 
     audio.playClick();
+    clearThinkingPauseTimer();
+    lastSubmitAtRef.current = Date.now();
+    setInteractionMode("submitted");
     setSendState("sending");
 
     const searchPrefix = isSearchSkillActive
@@ -3048,12 +3329,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         }
       }
 
-      const relatedMemoryContext =
-        await brainOrchestrator.getRelevantContext(userMsgContent);
+      const relatedMemoryContext = await brainOrchestrator.getRelevantContext(
+        userMsgContent,
+        undefined,
+        canonicalActiveBookId,
+      );
       let activeBookContext = "";
-      if (activeLearningBookId) {
+      if (canonicalActiveBookId) {
         const book = await db.learningBooks
-          .get(activeLearningBookId)
+          .get(canonicalActiveBookId)
           .catch(() => undefined);
         if (book) {
           const bookConcepts = await db.learningBookConcepts
@@ -3079,7 +3363,29 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           ].join("\n");
         }
       }
-      const memoryContext = [relatedMemoryContext, activeBookContext]
+      const documentContext = buildDocumentContext(orderedBookDocuments);
+      const memoryContext = [
+        relatedMemoryContext,
+        activeBookContext,
+        documentContext,
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+      const interactionContext = buildTutorInteractionContext(
+        createTutorInteractionSnapshot({
+          mode: interactionMode === "idle" ? "submitted" : interactionMode,
+          text,
+          selectedTextAttached: Boolean(selectedTextContext),
+          webSearchSelected: isSearchSkillActive,
+          voiceState,
+          sendState: "sending",
+          activeBookId: canonicalActiveBookId,
+          activeBookTitle: activeLearningBook?.title || activeProject,
+          lastInputAt: lastInputAtRef.current,
+          lastSubmitAt: lastSubmitAtRef.current,
+        }),
+      );
+      const requestMemoryContext = [memoryContext, interactionContext]
         .filter(Boolean)
         .join("\n\n");
 
@@ -3108,11 +3414,18 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         body: JSON.stringify({
           messages: newMessages,
           currentPageImage,
-          memoryContext,
+          memoryContext: requestMemoryContext,
           aiModel,
           customPrompt: systemPrompt,
           activeProject: activeLearningBook?.title || activeProject,
-          activeBookId: activeLearningBookId,
+          activeBookId: canonicalActiveBookId,
+          activeDocumentId,
+          documentContexts: orderedBookDocuments.map((document) => ({
+            id: document.id,
+            title: document.title,
+            classification: document.classification,
+            extractionMode: document.extractionMode,
+          })),
           serperApiKey: serperApiKey || undefined,
           language: language || "en",
         }),
@@ -3478,12 +3791,28 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 return newM;
               });
 
-              brainOrchestrator.trackInteraction(userMsgContent, data.content);
+              brainOrchestrator.trackInteraction(
+                userMsgContent,
+                data.content,
+                undefined,
+                {
+                  bookId: canonicalActiveBookId,
+                  conversationId: canonicalActiveBookId
+                    ? chatThreadIdForBook(canonicalActiveBookId)
+                    : undefined,
+                  documentId: activeDocumentId,
+                },
+              );
               void brainOrchestrator
                 .updateLearningBookFromConversation({
                   userName: learnerName,
                   activeProject,
-                  activeBookId: activeLearningBookId,
+                  activeBookId: canonicalActiveBookId,
+                  activeDocumentId,
+                  conversationId: canonicalActiveBookId
+                    ? chatThreadIdForBook(canonicalActiveBookId)
+                    : undefined,
+                  documentContexts: orderedBookDocuments,
                   userMessage: userMsgContent,
                   assistantMessage: data.content,
                   apiKey,
@@ -3497,7 +3826,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               setChatArchives(
                 archiveChatSnapshot(
                   useStore.getState().messages,
-                  activeLearningBookId,
+                  canonicalActiveBookId || null,
                   activeLearningBook?.title || activeProject,
                 ),
               );
@@ -3518,7 +3847,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     .add({
                       id: Math.random().toString(36).substring(2, 15),
                       conceptId: card.conceptId || "general",
-                      bookId: activeLearningBookId || undefined,
+                      bookId: canonicalActiveBookId || undefined,
                       bookTitle:
                         activeLearningBook?.title || activeProject || undefined,
                       front: card.front,
@@ -3574,6 +3903,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       }
 
       setSendState("idle");
+      setInteractionMode("idle");
     } catch (err: any) {
       console.error(err);
       clearStreamingAssistant();
@@ -3585,6 +3915,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         ),
       );
       setSendState("idle");
+      setInteractionMode(input.trim() ? "composing" : "idle");
     } finally {
       setIsTyping(false);
     }
@@ -3593,7 +3924,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const handleSend = () => {
     if (!input.trim()) return;
     const currentInput = input;
-    setInput("");
+    handleInputChange("");
     sendMessage(currentInput);
   };
 
@@ -3602,6 +3933,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       setInput((prev) =>
         prev ? prev + "\n\n" + askTutorQuery : askTutorQuery,
       );
+      lastInputAtRef.current = Date.now();
+      setInteractionMode("composing");
       setAskTutorQuery("");
     }
   }, [askTutorQuery, setAskTutorQuery]);
@@ -3609,9 +3942,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   // When selectedTextContext changes (from PDF "Ask Tutor" button), auto-focus input
   useEffect(() => {
     if (selectedTextContext) {
-      setInput("");
+      handleInputChange("");
     }
-  }, [selectedTextContext]);
+  }, [handleInputChange, selectedTextContext]);
 
   const lastMessage = displayMessages[displayMessages.length - 1];
   const lastAutoScrolledMessageIdRef = useRef<string | null>(null);
@@ -3755,7 +4088,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                         ) {
                           const nextTitle = e.currentTarget.value.trim();
                           void brainOrchestrator
-                            .updateSessionBookTitle(
+                            .updateLearningBookTitle(
+                              canonicalActiveBookId || GENERAL_STUDY_BOOK_ID,
                               nextTitle,
                               learnerName,
                               "chat",
@@ -3787,13 +4121,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                         key={book.id}
                         onClick={() => {
                           saveCurrentChatArchive();
-                          clearStudyDocumentContext();
                           setActiveLearningBookId(book.id);
                           setActiveProject(book.title);
                           setIsProjectDropdownOpen(false);
                         }}
                         className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors text-left focus:outline-none ${
-                          activeLearningBookId === book.id
+                          canonicalActiveBookId === book.id
                             ? "bg-black/5 text-zinc-800"
                             : "text-zinc-500 hover:bg-black/5 hover:text-zinc-700"
                         }`}
@@ -3808,7 +4141,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                             {book.chapters?.length || 0} chapters
                           </span>
                         </span>
-                        {activeLearningBookId === book.id && (
+                        {canonicalActiveBookId === book.id && (
                           <Check size={14} className="ml-auto text-zinc-800" />
                         )}
                       </button>
@@ -3828,7 +4161,6 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                             type="button"
                             onClick={() => {
                               saveCurrentChatArchive();
-                              clearStudyDocumentContext();
                               setMessages(archive.messages);
                               if (archive.bookId) {
                                 if (
@@ -3942,7 +4274,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               onSetActiveView={setActiveView}
               setMessages={setMessages}
               apiKey={apiKey}
-              activeBookId={activeLearningBookId}
+              activeBookId={canonicalActiveBookId || null}
               activeBookTitle={activeLearningBook?.title || activeProject}
             />
           ))}
@@ -4150,7 +4482,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
                   transition={{ duration: 0.2 }}
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => handleInputChange(e.target.value)}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   onKeyDown={(e) => {

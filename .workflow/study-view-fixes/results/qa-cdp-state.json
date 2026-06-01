@@ -1,0 +1,159 @@
+{
+  "books": [
+    {
+      "id": "book:general-study",
+      "sessionId": "zj09jxmliql9zrrmldloj",
+      "title": "General Study",
+      "userName": "Learner",
+      "source": "mixed",
+      "overview": "A temporary session learning book. It will rename itself when a PDF or clear study topic is detected.",
+      "summary": "Key idea: I have ingested the document. Here is the extracted text context: ## **Calculus Notes** Derivatives describe instantaneous rate of change. Integrals accumulate area under a curve. The chain rule composes local rates. Why it matters: This page preserves the useful learning from I uploaded calculus-notes, a document classified as Native using pymupdf4llm. so it can be revised later without replaying the whole chat. How to review it: restate the idea, identify the mechanism, and test it with a fresh example.",
+      "knowledgeSummary": "No tutor conversation has been added yet. Key idea: I have ingested the document. Here is the extracted text context: ## **Python Basics** Functions bind names to reusable behavior. Lists preserve order and support iteration. Dictionaries map keys to values. Why it matters: This page preserves the useful learning from I uploaded python-basics, a document classified as Native using pymupdf4llm. so it can be revised later without replaying the whole chat. How to review it: restate the idea, identify the mechanism, and test it with a fresh example. Key idea: I have ingested the document. Here is the extracted text context: ## **Calculus Notes** Derivatives describe instantaneous rate of change. Integrals accumulate area under a curve. The chain rule composes local rates. Why it matters: This page preserves the useful learning from I uploaded calculus-notes, a document classified as Native using pymupdf4llm. so it can be revised later without replaying the whole chat. How to review it: restate the idea, identify the mechanism, and test it with a fresh example.",
+      "chapters": [
+        {
+          "id": "book:general-study:chapter:general-study",
+          "title": "General Study",
+          "summary": "Key idea: I have ingested the document. Here is the extracted text context: ## **Calculus Notes** Derivatives describe instantaneous rate of change. Integrals accumulate area under a curve. The chain rule composes local rates. Why it matters: This page preserves the useful learning from I uploaded calculus-notes, a document classified as Native using pymupdf4llm. so it can be revised later without replaying the whole chat. How to review it: restate the idea, identify the mechanism, and test it with a fresh example.",
+          "conceptIds": [
+            "book:general-study:concept:general-study"
+          ],
+          "conversationCount": 2,
+          "createdAt": 1780285172116,
+          "updatedAt": 1780285172592
+        }
+      ],
+      "conceptIds": [
+        "book:general-study:concept:general-study"
+      ],
+      "conversationCount": 2,
+      "createdAt": 1780285170641,
+      "updatedAt": 1780285174401,
+      "lastConversationId": "document:doc:e220a9d1-034a-48aa-ab7d-e1414b5fdb85",
+      "activeDocumentId": "doc:e220a9d1-034a-48aa-ab7d-e1414b5fdb85",
+      "documentIds": [
+        "doc:e220a9d1-034a-48aa-ab7d-e1414b5fdb85"
+      ],
+      "agentModel": "local-session-fallback"
+    },
+    {
+      "id": "book:python-qa",
+      "sessionId": "qa-session-python",
+      "title": "Python QA Book",
+      "userName": "Learner",
+      "source": "library",
+      "overview": "QA seeded Python book",
+      "chapters": [],
+      "conversationCount": 1,
+      "activeDocumentId": "doc:python-qa",
+      "documentIds": [
+        "doc:python-qa"
+      ],
+      "updatedAt": 1780285175499,
+      "createdAt": 1780285175499
+    }
+  ],
+  "docs": [
+    {
+      "id": "doc:e220a9d1-034a-48aa-ab7d-e1414b5fdb85",
+      "bookId": "book:general-study",
+      "title": "calculus-notes",
+      "mimeType": "application/pdf",
+      "size": 1700,
+      "blob": "[Blob 1700]",
+      "processingStatus": "ready",
+      "createdAt": 1780285172180,
+      "updatedAt": 1780285172584,
+      "lastViewedPage": 1,
+      "scale": 1,
+      "totalPages": 1,
+      "extractedText": "## **Calculus Notes** \n\nDerivatives describe instantaneous rate of change. \n\nIntegrals accumulate area under a curve. The chain rule composes local rates.",
+      "classification": "Native",
+      "extractionMode": "pymupdf4llm"
+    },
+    {
+      "id": "doc:python-qa",
+      "bookId": "book:python-qa",
+      "title": "python-qa-fixture",
+      "mimeType": "application/pdf",
+      "size": 1700,
+      "blob": "[Blob 1700]",
+      "extractedText": "Python QA fixture context for chat restore testing.",
+      "classification": "QA",
+      "extractionMode": "seeded",
+      "processingStatus": "ready",
+      "createdAt": 1780285175499,
+      "updatedAt": 1780285175499,
+      "lastViewedPage": 1,
+      "totalPages": 1,
+      "scale": 1
+    }
+  ],
+  "threads": [
+    {
+      "id": "thread:book:general-study",
+      "bookId": "book:general-study",
+      "bookTitle": "General Study",
+      "title": "GENERAL THREAD SEED",
+      "messages": [
+        {
+          "id": "1",
+          "role": "assistant",
+          "content": "**Hello. I'm your AI Tutor.**\n\nI'm ready to help you explore concepts, discuss code, and break down complex subjects. He"
+        },
+        {
+          "id": "gen-user",
+          "role": "user",
+          "content": "GENERAL THREAD SEED"
+        },
+        {
+          "id": "gen-assistant",
+          "role": "assistant",
+          "content": "General study context is active."
+        }
+      ],
+      "createdAt": 1780285175499,
+      "updatedAt": 1780285176986
+    },
+    {
+      "id": "thread:book:python-qa",
+      "bookId": "book:python-qa",
+      "bookTitle": "General Study",
+      "title": "PYTHON THREAD SEED",
+      "messages": [
+        {
+          "id": "1",
+          "role": "assistant",
+          "content": "**Hello. I'm your AI Tutor.**\n\nI'm ready to help you explore concepts, discuss code, and break down complex subjects. He"
+        },
+        {
+          "id": "py-user",
+          "role": "user",
+          "content": "PYTHON THREAD SEED"
+        },
+        {
+          "id": "py-assistant",
+          "role": "assistant",
+          "content": "Python context is active."
+        }
+      ],
+      "createdAt": 1780285175499,
+      "updatedAt": 1780285176713
+    }
+  ],
+  "activeBookId": "book:general-study",
+  "activeDocumentId": "doc:e220a9d1-034a-48aa-ab7d-e1414b5fdb85",
+  "activeProject": "General Study",
+  "overflow": 0,
+  "bodyText": "Study\nAnalytics\nRevision\ncalculus-notes\n1 PAGES\nAdd PDF\n/\n1\nCalculus Notes\n\n\nDerivatives describe instantaneous rate of change.\n\n\nIntegrals accumulate area under a curve.\n\n\nThe chain rule composes local rates.\nTutor\nGeneral Study\nHello. I'm your AI Tutor.\nI'm ready to help you explore concepts, discuss code, and break down complex subjects. Here are a few things we can do:\nAnalyze Documents: Upload a PDF and ask me questions about specific pages.\nDiscuss Code: Paste code snippets and we can debug or refactor them.\nLearn Concepts: Ask me general programming and computer science questions.\nWhat would you like to learn today?\nAdd to Graph\nRead Aloud\nGENERAL THREAD SEED\nGeneral study context is active.\nAdd to Graph\nRead Aloud",
+  "screenshots": {
+    "pre": "/Users/mfuad16/Documents/LearningAI/.workflow/study-view-fixes/results/qa-cdp-clean2-before-upload.png",
+    "first": "/Users/mfuad16/Documents/LearningAI/.workflow/study-view-fixes/results/qa-cdp-clean2-after-python-pdf.png",
+    "second": "/Users/mfuad16/Documents/LearningAI/.workflow/study-view-fixes/results/qa-cdp-clean2-after-two-pdfs.png",
+    "switched": "/Users/mfuad16/Documents/LearningAI/.workflow/study-view-fixes/results/qa-cdp-clean2-switch-python-pdf.png",
+    "removed": "/Users/mfuad16/Documents/LearningAI/.workflow/study-view-fixes/results/qa-cdp-clean2-after-remove-python-pdf.png",
+    "restored": "/Users/mfuad16/Documents/LearningAI/.workflow/study-view-fixes/results/qa-cdp-clean2-python-thread-restored.png",
+    "general": "/Users/mfuad16/Documents/LearningAI/.workflow/study-view-fixes/results/qa-cdp-clean2-general-thread-after-switch.png",
+    "mobile": "/Users/mfuad16/Documents/LearningAI/.workflow/study-view-fixes/results/qa-cdp-clean2-mobile-study.png"
+  },
+  "consoleEvents": []
+}

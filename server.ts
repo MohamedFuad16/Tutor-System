@@ -791,6 +791,12 @@ CRITICAL RULES:
               userName: body.userName || "Learner",
               activeProject: body.activeProject || "General Study",
               currentSessionId: body.currentSessionId || "",
+              activeBookId: body.activeBookId || "",
+              activeDocumentId: body.activeDocumentId || "",
+              conversationId: body.conversationId || "",
+              documentContexts: Array.isArray(body.documentContexts)
+                ? body.documentContexts.slice(0, 6)
+                : [],
               currentBook: body.currentBook || null,
               recentBookTitles: body.recentBookTitles || [],
               userMessage,

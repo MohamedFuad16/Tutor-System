@@ -1,10 +1,12 @@
 import { generateEmbedding, cosineSimilarity } from "./memory.embeddings";
 import {
   db,
+  GENERAL_STUDY_BOOK_ID,
   PersistentConcept,
   ConversationInteraction,
   LearningBook,
   LearningBookConcept,
+  LearningDocument,
 } from "./longterm.memory";
 
 function generateId() {
@@ -60,6 +62,12 @@ export interface LearningBookUpdateInput {
   userName: string;
   activeProject: string;
   activeBookId?: string | null;
+  activeDocumentId?: string | null;
+  conversationId?: string;
+  documentContexts?: Pick<
+    LearningDocument,
+    "id" | "title" | "classification" | "extractionMode" | "extractedText"
+  >[];
   userMessage: string;
   assistantMessage: string;
   apiKey?: string;
@@ -118,7 +126,11 @@ const buildStudyNoteFallback = (
   ].join("\n\n");
 };
 
-const announceActiveLearningBook = (book: LearningBook) => {
+const announceActiveLearningBook = (book: LearningBook, force = true) => {
+  if (!force) {
+    const storedBookId = localStorage.getItem("active_learning_book_id");
+    if (storedBookId && storedBookId !== book.id) return;
+  }
   localStorage.setItem("active_learning_book_id", book.id);
   localStorage.setItem("active_project", book.title);
   window.dispatchEvent(
@@ -150,7 +162,17 @@ export class MemoryOrchestrator {
       getStoredLearnerName(),
       "General Study",
     );
-    announceActiveLearningBook(book);
+    const storedBookId = localStorage.getItem("active_learning_book_id");
+    if (!storedBookId) {
+      announceActiveLearningBook(book);
+      return;
+    }
+    const storedBook = await db.learningBooks
+      .get(storedBookId)
+      .catch(() => undefined);
+    if (!storedBook) {
+      announceActiveLearningBook(book);
+    }
   }
 
   private async resetGeneratedLearningLibraryForSession() {
@@ -170,7 +192,7 @@ export class MemoryOrchestrator {
   }
 
   private sessionBookId(userName: string) {
-    return `book:${slugify(userName || "Learner")}:session:${this.currentSessionId}`;
+    return GENERAL_STUDY_BOOK_ID;
   }
 
   public getCurrentSessionId() {
@@ -186,7 +208,12 @@ export class MemoryOrchestrator {
     const safeTitle = title.trim() || "General Study";
     const bookId = this.sessionBookId(safeUserName);
     const existing = await db.learningBooks.get(bookId).catch(() => undefined);
-    if (existing) return existing;
+    if (existing) {
+      if (existing.sessionId === this.currentSessionId) return existing;
+      const nextBook = { ...existing, sessionId: this.currentSessionId };
+      await db.learningBooks.put(nextBook);
+      return nextBook;
+    }
 
     const book: LearningBook = {
       id: bookId,
@@ -247,10 +274,47 @@ export class MemoryOrchestrator {
     return nextBook;
   }
 
+  public async updateLearningBookTitle(
+    bookId: string,
+    title: string,
+    userName = getStoredLearnerName(),
+    source: LearningBook["source"] = "chat",
+  ) {
+    await this.initialization;
+    const cleanTitle =
+      compactText(title, "General Study")
+        .replace(/[^a-zA-Z0-9 .:;,_-]/g, "")
+        .trim() || "General Study";
+    const existing = await db.learningBooks.get(bookId).catch(() => undefined);
+    const base =
+      existing ||
+      (await this.upsertSessionLearningBook(userName, "General Study"));
+    const nextBook: LearningBook = {
+      ...base,
+      id: existing ? base.id : bookId,
+      title: cleanTitle,
+      source: existing?.source || source,
+      overview:
+        base.overview &&
+        !base.overview.startsWith("A temporary session learning book")
+          ? base.overview
+          : `A learning book for ${cleanTitle}. Tutor conversations and document notes are collected here.`,
+      updatedAt: Date.now(),
+    };
+    await db.learningBooks.put(nextBook);
+    announceActiveLearningBook(nextBook);
+    return nextBook;
+  }
+
   public async trackInteraction(
     userMessage: string,
     assistantMessage: string,
     pageNumber?: number,
+    context?: {
+      bookId?: string | null;
+      conversationId?: string;
+      documentId?: string | null;
+    },
   ) {
     await this.initialization;
     const interactionId = generateId();
@@ -275,6 +339,9 @@ export class MemoryOrchestrator {
       const interaction: ConversationInteraction = {
         id: interactionId,
         sessionId: this.currentSessionId,
+        bookId: context?.bookId || undefined,
+        conversationId: context?.conversationId,
+        documentId: context?.documentId || undefined,
         timestamp: Date.now(),
         userMessage,
         assistantMessage,
@@ -326,42 +393,48 @@ export class MemoryOrchestrator {
       .catch(() => []);
     let update: any = null;
 
-    try {
-      const response = await fetch("/api/learning-book-update", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-        },
-        body: JSON.stringify({
-          userName,
-          activeProject: input.activeProject || "General Study",
-          currentSessionId: this.currentSessionId,
-          currentBook: existingSessionBook
-            ? {
-                title: existingSessionBook.title,
-                overview: existingSessionBook.overview,
-                knowledgeSummary: existingSessionBook.knowledgeSummary,
-                chapters: existingSessionBook.chapters || [],
-                conversationCount: existingSessionBook.conversationCount,
-              }
-            : null,
-          userMessage,
-          assistantMessage,
-          recentBookTitles: recentBooks.map((book) => book.title),
-        }),
-      });
+    if (apiKey) {
+      try {
+        const response = await fetch("/api/learning-book-update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            userName,
+            activeProject: input.activeProject || "General Study",
+            currentSessionId: this.currentSessionId,
+            activeBookId: bookId,
+            activeDocumentId: input.activeDocumentId || null,
+            conversationId: input.conversationId || null,
+            documentContexts: input.documentContexts || [],
+            currentBook: existingSessionBook
+              ? {
+                  title: existingSessionBook.title,
+                  overview: existingSessionBook.overview,
+                  knowledgeSummary: existingSessionBook.knowledgeSummary,
+                  chapters: existingSessionBook.chapters || [],
+                  conversationCount: existingSessionBook.conversationCount,
+                }
+              : null,
+            userMessage,
+            assistantMessage,
+            recentBookTitles: recentBooks.map((book) => book.title),
+          }),
+        });
 
-      if (response.ok) {
-        update = await response.json();
-      } else {
-        console.warn(
-          "[Memory] Learning book agent unavailable:",
-          await response.text().catch(() => response.statusText),
-        );
+        if (response.ok) {
+          update = await response.json();
+        } else {
+          console.warn(
+            "[Memory] Learning book agent unavailable:",
+            await response.text().catch(() => response.statusText),
+          );
+        }
+      } catch (error) {
+        console.warn("[Memory] Learning book agent request failed:", error);
       }
-    } catch (error) {
-      console.warn("[Memory] Learning book agent request failed:", error);
     }
 
     if (!update) {
@@ -412,7 +485,7 @@ export class MemoryOrchestrator {
       existingSessionBook.title !== "General Study"
         ? existingSessionBook.title
         : proposedTitle;
-    const conversationId = generateId();
+    const conversationId = input.conversationId || generateId();
     const agentConcepts: LearningAgentConcept[] = Array.isArray(update.concepts)
       ? update.concepts
       : [];
@@ -543,6 +616,8 @@ export class MemoryOrchestrator {
       createdAt: existingBook?.createdAt || now,
       updatedAt: now,
       lastConversationId: conversationId,
+      activeDocumentId: input.activeDocumentId || existingBook?.activeDocumentId,
+      documentIds: existingBook?.documentIds || [],
       agentModel: String(update.model || "deepseek/deepseek-v4-flash"),
     };
     await db.learningBooks.put(book);
@@ -552,6 +627,7 @@ export class MemoryOrchestrator {
       id: generateId(),
       bookId,
       conversationId,
+      documentId: input.activeDocumentId || undefined,
       timestamp: now,
       userName,
       userMessage,
@@ -643,16 +719,24 @@ export class MemoryOrchestrator {
   public async getRelevantContext(
     query: string,
     pageNumber?: number,
+    activeBookId?: string | null,
   ): Promise<string> {
     try {
       const queryEmbedding = await generateEmbedding(query);
 
       // Fetch recent interactions (optimized from full table scan)
-      const interactions = await db.interactions
-        .orderBy("timestamp")
-        .reverse()
-        .limit(100)
-        .toArray();
+      const interactions = activeBookId
+        ? (await db.interactions
+            .where("bookId")
+            .equals(activeBookId)
+            .toArray())
+            .sort((a, b) => b.timestamp - a.timestamp)
+            .slice(0, 100)
+        : await db.interactions
+            .orderBy("timestamp")
+            .reverse()
+            .limit(100)
+            .toArray();
       const scoredInteractions = interactions
         .filter((i) => i.embedding)
         .map((i) => ({
