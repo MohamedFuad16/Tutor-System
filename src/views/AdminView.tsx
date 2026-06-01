@@ -4,6 +4,7 @@ import {
   db,
   type EvidenceEvent,
   type MasteryDelta,
+  type MemoryEvent,
   type ModelRun,
   type ToolJob,
 } from "../memory/longterm.memory";
@@ -39,6 +40,7 @@ type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
 type AdminTab =
   | "activity"
   | "models"
+  | "memory"
   | "evidence"
   | "tuning"
   | "traces"
@@ -223,6 +225,11 @@ export function AdminView() {
       () => db.modelRuns.orderBy("timestamp").reverse().limit(30).toArray(),
       [],
     ) || [];
+  const memoryEvents =
+    useLiveQuery(
+      () => db.memoryEvents.orderBy("timestamp").reverse().limit(50).toArray(),
+      [],
+    ) || [];
   const evidenceEventCount =
     useLiveQuery(() => db.evidenceEvents.count(), []) || 0;
   const verifiedEvidenceCount =
@@ -240,6 +247,7 @@ export function AdminView() {
     useLiveQuery(() => db.masteryDeltas.count(), []) || 0;
   const toolJobCount = useLiveQuery(() => db.toolJobs.count(), []) || 0;
   const modelRunCount = useLiveQuery(() => db.modelRuns.count(), []) || 0;
+  const memoryEventCount = useLiveQuery(() => db.memoryEvents.count(), []) || 0;
   const [serverLogs, setServerLogs] = useState<
     { type: string; msg: string; time: number }[]
   >([]);
@@ -416,6 +424,7 @@ export function AdminView() {
   const latestMasteryDelta = masteryDeltas[0] as MasteryDelta | undefined;
   const latestToolJob = toolJobs[0] as ToolJob | undefined;
   const latestModelRun = modelRuns[0] as ModelRun | undefined;
+  const latestMemoryEvent = memoryEvents[0] as MemoryEvent | undefined;
   const completedModelRuns = modelRuns.filter(
     (run) => run.status === "completed",
   ).length;
@@ -425,6 +434,27 @@ export function AdminView() {
   const fallbackModelRuns = modelRuns.filter(
     (run) => run.status === "fallback",
   ).length;
+  const completedMemoryEvents = memoryEvents.filter(
+    (event) => event.status === "completed",
+  ).length;
+  const failedMemoryEvents = memoryEvents.filter(
+    (event) => event.status === "failed",
+  ).length;
+  const learningBookMemoryEvents = memoryEvents.filter(
+    (event) => event.eventType === "learning_book_updated",
+  ).length;
+  const conceptMemoryEvents = memoryEvents.filter(
+    (event) =>
+      event.eventType === "learning_concept_updated" ||
+      event.eventType === "graph_concept_updated",
+  ).length;
+  const memoryEventsByType = memoryEvents.reduce<Record<string, number>>(
+    (acc, event) => {
+      acc[event.eventType] = (acc[event.eventType] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
   const mappedConceptCount = learningBookConcepts.length;
   const tracedBookCount = learningBooks.filter(
     (book) => (conceptsByBook[book.id] || []).length > 0,
@@ -527,6 +557,7 @@ export function AdminView() {
     learningBooks.length,
     logs?.length,
     masteryDeltas.length,
+    memoryEvents.length,
     modelRuns.length,
     motionEnabled,
     recentSystemEvents.length,
@@ -572,6 +603,13 @@ export function AdminView() {
             >
               <Cpu size={16} />
               <span className="line-clamp-1 leading-snug">Model Runs</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("memory")}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "memory" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+            >
+              <Network size={16} />
+              <span className="line-clamp-1 leading-snug">Memory Events</span>
             </button>
             <button
               onClick={() => setActiveTab("evidence")}
@@ -638,12 +676,14 @@ export function AdminView() {
                   signals. Use <strong>System Activity</strong> for the live
                   observability ledger, <strong>Model Runs</strong> to inspect
                   provider behavior, fallbacks, tokens, and failures,{" "}
-                  <strong>Evidence Ledger</strong> to inspect model-summary
-                  evidence and mastery deltas, <strong>Runtime Tuning</strong>{" "}
-                  for local behavior controls, <strong>DeepSeek Trace</strong>{" "}
-                  for persisted tutor updates, or switch to the{" "}
-                  <strong>Server Console</strong> to monitor live backend
-                  traffic, WebSocket streams, and TTS generation logs.
+                  <strong>Memory Events</strong> to inspect learner memory
+                  writes, <strong>Evidence Ledger</strong> to inspect
+                  model-summary evidence and mastery deltas,{" "}
+                  <strong>Runtime Tuning</strong> for local behavior controls,{" "}
+                  <strong>DeepSeek Trace</strong> for persisted tutor updates,
+                  or switch to the <strong>Server Console</strong> to monitor
+                  live backend traffic, WebSocket streams, and TTS generation
+                  logs.
                 </p>
               </div>
 
@@ -651,6 +691,7 @@ export function AdminView() {
                 {[
                   { id: "activity", label: "Activity", icon: Gauge },
                   { id: "models", label: "Models", icon: Cpu },
+                  { id: "memory", label: "Memory", icon: Network },
                   { id: "evidence", label: "Evidence", icon: BrainCircuit },
                   {
                     id: "tuning",
@@ -686,13 +727,15 @@ export function AdminView() {
                     ? "Observability"
                     : activeTab === "models"
                       ? "Model Behavior"
-                      : activeTab === "evidence"
-                        ? "Learner Evidence"
-                        : activeTab === "tuning"
-                          ? "Runtime Controls"
-                          : activeTab === "traces"
-                            ? "Diagnostics"
-                            : "Runtime Environment"}
+                      : activeTab === "memory"
+                        ? "Memory Audit"
+                        : activeTab === "evidence"
+                          ? "Learner Evidence"
+                          : activeTab === "tuning"
+                            ? "Runtime Controls"
+                            : activeTab === "traces"
+                              ? "Diagnostics"
+                              : "Runtime Environment"}
                 </span>
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-2 font-serif leading-[1.15]">
@@ -700,13 +743,15 @@ export function AdminView() {
                       ? "System Activity"
                       : activeTab === "models"
                         ? "Model Runs"
-                        : activeTab === "evidence"
-                          ? "Evidence Ledger"
-                          : activeTab === "tuning"
-                            ? "Runtime Tuning"
-                            : activeTab === "traces"
-                              ? "DeepSeek Trace Ledger"
-                              : "Live Server Console"}
+                        : activeTab === "memory"
+                          ? "Memory Events"
+                          : activeTab === "evidence"
+                            ? "Evidence Ledger"
+                            : activeTab === "tuning"
+                              ? "Runtime Tuning"
+                              : activeTab === "traces"
+                                ? "DeepSeek Trace Ledger"
+                                : "Live Server Console"}
                   </h1>
                   {activeTab === "activity" && (
                     <div
@@ -830,10 +875,12 @@ export function AdminView() {
                             Local Memory
                           </div>
                           <div className="mt-2 text-2xl font-semibold tabular-nums text-zinc-900">
-                            {learningEntries.length + traceCount}
+                            {learningEntries.length +
+                              memoryEventCount +
+                              traceCount}
                           </div>
                           <div className="mt-1 text-[10px] font-mono text-zinc-500">
-                            entries + traces
+                            entries + memory events + traces
                           </div>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
@@ -981,6 +1028,7 @@ export function AdminView() {
                               ["Mastery deltas", masteryDeltaCount],
                               ["Tool jobs", toolJobCount],
                               ["Model runs", modelRunCount],
+                              ["Memory events", memoryEventCount],
                               ["Active book", activeLearningBookId || "none"],
                               ["Project", activeProject],
                               [
@@ -1245,6 +1293,261 @@ export function AdminView() {
                           ))}
                         </div>
                       )}
+                    </section>
+                  </div>
+                ) : activeTab === "memory" ? (
+                  <div className="flex flex-col gap-8 font-sans">
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                            <Network size={13} /> Durable Memory Activity
+                          </div>
+                          <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
+                            Learner memory event ledger
+                          </h2>
+                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                            Append-only local records for memory sessions, saved
+                            chat interactions, learning-book updates, concept
+                            writes, and graph memory changes. This is the
+                            user-brain runtime audit trail, separate from
+                            Graphify's code architecture graph.
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
+                          <div className="text-2xl font-semibold text-zinc-900">
+                            {memoryEventCount}
+                          </div>
+                          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+                            Durable events
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-4">
+                        {[
+                          ["Completed", completedMemoryEvents],
+                          ["Failed", failedMemoryEvents],
+                          ["Book updates", learningBookMemoryEvents],
+                          ["Concept writes", conceptMemoryEvents],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
+                          >
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              {label}
+                            </div>
+                            <div className="mt-2 truncate text-lg font-semibold tabular-nums text-zinc-900">
+                              {value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+                      <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                          <div>
+                            <h3 className="text-xl font-serif font-medium text-zinc-900">
+                              Recent memory writes
+                            </h3>
+                            <p className="mt-1 text-sm text-zinc-500 font-serif">
+                              Newest first. Rows are written from local memory
+                              code paths so failures are visible without
+                              blocking the learner flow.
+                            </p>
+                          </div>
+                          <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                            {formatTime(latestMemoryEvent?.timestamp)}
+                          </div>
+                        </div>
+
+                        {memoryEvents.length === 0 ? (
+                          <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
+                            No durable memory events yet. Opening Tutor starts a
+                            local memory session; completed chats will add
+                            interaction and learning-book rows.
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {memoryEvents.map((event, index) => (
+                              <article
+                                key={event.id}
+                                className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 16 ? "admin-animated-item" : ""}`}
+                              >
+                                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                  <div className="flex min-w-0 gap-3">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-blue-600">
+                                      <Network size={17} />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                          {event.eventType.replace(/_/g, " ")}
+                                        </h4>
+                                        <span
+                                          className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(event.status)}`}
+                                        >
+                                          {event.status}
+                                        </span>
+                                      </div>
+                                      <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-zinc-600 font-serif">
+                                        {event.summary}
+                                      </p>
+                                      <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                        <span>{event.source}</span>
+                                        {event.bookId && (
+                                          <span className="max-w-[10rem] truncate">
+                                            book {event.bookId}
+                                          </span>
+                                        )}
+                                        {event.conceptId && (
+                                          <span className="max-w-[10rem] truncate">
+                                            concept {event.conceptId}
+                                          </span>
+                                        )}
+                                        {event.conversationId && (
+                                          <span className="max-w-[10rem] truncate">
+                                            convo {event.conversationId}
+                                          </span>
+                                        )}
+                                        {event.confidence !== undefined && (
+                                          <span>
+                                            confidence{" "}
+                                            {(event.confidence * 100).toFixed(
+                                              0,
+                                            )}
+                                            %
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="shrink-0 text-right text-[10px] font-mono text-zinc-500">
+                                    <div>{formatTime(event.timestamp)}</div>
+                                    {event.retentionPolicy && (
+                                      <div className="mt-1">
+                                        {event.retentionPolicy}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                {(event.sourceIds?.length ||
+                                  event.metadata) && (
+                                  <details className="group mt-3">
+                                    <summary className="flex cursor-pointer select-none items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-800">
+                                      <ChevronRight
+                                        size={14}
+                                        className="transition-transform group-open:rotate-90"
+                                      />
+                                      Source ids and metadata
+                                    </summary>
+                                    <pre className="mt-3 overflow-x-auto rounded-xl border border-zinc-200 bg-white p-3 text-[11px] text-zinc-600 shadow-inner">
+                                      {JSON.stringify(
+                                        {
+                                          sourceIds: event.sourceIds,
+                                          metadata: event.metadata,
+                                        },
+                                        null,
+                                        2,
+                                      )}
+                                    </pre>
+                                  </details>
+                                )}
+                              </article>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-4">
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Event mix
+                          </h3>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {Object.keys(memoryEventsByType).length === 0 ? (
+                              <span className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
+                                Waiting for memory writes.
+                              </span>
+                            ) : (
+                              Object.entries(memoryEventsByType).map(
+                                ([type, count]) => (
+                                  <span
+                                    key={type}
+                                    className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-semibold text-zinc-700"
+                                  >
+                                    {type.replace(/_/g, " ")}: {count}
+                                  </span>
+                                ),
+                              )
+                            )}
+                          </div>
+                        </section>
+
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Latest context
+                          </h3>
+                          <div className="mt-4 space-y-2">
+                            {[
+                              [
+                                "Latest source",
+                                latestMemoryEvent?.source || "none",
+                              ],
+                              [
+                                "Latest status",
+                                latestMemoryEvent?.status || "waiting",
+                              ],
+                              [
+                                "Retention",
+                                latestMemoryEvent?.retentionPolicy ||
+                                  "local_indexeddb",
+                              ],
+                              [
+                                "Active book",
+                                latestMemoryEvent?.bookId ||
+                                  activeLearningBookId ||
+                                  "none",
+                              ],
+                            ].map(([label, value]) => (
+                              <div
+                                key={label}
+                                className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2"
+                              >
+                                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                  {label}
+                                </span>
+                                <span className="min-w-0 truncate text-right text-xs font-semibold text-zinc-900">
+                                  {value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Boundary
+                          </h3>
+                          <div className="mt-4 grid gap-2 text-sm text-zinc-600 font-serif">
+                            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                              Memory Events describe the user-facing learner
+                              brain runtime.
+                            </div>
+                            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                              Graphify remains the separate code architecture
+                              graph for agents.
+                            </div>
+                            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                              AWS/cloud synchronization is still deferred until
+                              beta testing.
+                            </div>
+                          </div>
+                        </section>
+                      </div>
                     </section>
                   </div>
                 ) : activeTab === "evidence" ? (

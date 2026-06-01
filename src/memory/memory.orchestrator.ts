@@ -5,6 +5,7 @@ import {
   gateModelSummaryMastery,
 } from "./evidence.mastery";
 import { recordModelSummaryEvidence } from "./evidence.ledger";
+import { recordMemoryEvent } from "./memory.events";
 import {
   db,
   GENERAL_STUDY_BOOK_ID,
@@ -168,6 +169,19 @@ export class MemoryOrchestrator {
       getStoredLearnerName(),
       "General Study",
     );
+    await recordMemoryEvent({
+      eventType: "session_started",
+      status: "completed",
+      source: "memory_orchestrator",
+      sessionId: this.currentSessionId,
+      bookId: book.id,
+      summary: `Started local memory session for ${book.title}.`,
+      retentionPolicy: "local_indexeddb",
+      metadata: {
+        bookSource: book.source,
+        userName: book.userName,
+      },
+    });
     const storedBookId = localStorage.getItem("active_learning_book_id");
     if (!storedBookId) {
       announceActiveLearningBook(book);
@@ -361,6 +375,27 @@ export class MemoryOrchestrator {
       };
 
       await db.interactions.add(interaction);
+      await recordMemoryEvent({
+        eventType: "interaction_recorded",
+        status: "completed",
+        source: "memory_orchestrator",
+        sessionId: this.currentSessionId,
+        bookId: interaction.bookId,
+        conversationId: interaction.conversationId,
+        documentId: interaction.documentId,
+        summary: compactText(
+          userMessage || assistantMessage,
+          "Conversation interaction recorded.",
+        ),
+        retentionPolicy: "local_indexeddb",
+        metadata: {
+          assistantChars: assistantMessage.length,
+          hasEmbedding: Boolean(embedding?.length),
+          pageNumber,
+          userChars: userMessage.length,
+          userConfusionDetected: interaction.userConfusionDetected,
+        },
+      });
 
       // Log the conversation action to trace backend
       await this.logTrace("Conversation Interaction", {
@@ -564,6 +599,29 @@ export class MemoryOrchestrator {
           masteryGate: "model_summary_no_mastery_increase",
         },
       });
+      await recordMemoryEvent({
+        eventType: "learning_concept_updated",
+        status: "completed",
+        source: "learning_book_update",
+        sessionId: this.currentSessionId,
+        bookId,
+        conversationId,
+        documentId: input.activeDocumentId || undefined,
+        conceptId,
+        sourceIds: nextConcept.evidence,
+        summary: nextConcept.summary,
+        confidence: nextConcept.confidence,
+        retentionPolicy: "local_indexeddb",
+        metadata: {
+          acceptedMastery: nextConcept.mastery,
+          childConcepts: nextConcept.childConcepts,
+          conceptName: nextConcept.name,
+          evidenceCount: nextConcept.evidence.length,
+          fallback: update.model === "local-session-fallback",
+          model: update.model || "deepseek/deepseek-v4-flash",
+          parentConcepts: nextConcept.parentConcepts,
+        },
+      });
     }
 
     const existingBook =
@@ -667,6 +725,28 @@ export class MemoryOrchestrator {
       model: book.agentModel || "deepseek/deepseek-v4-flash",
       confidence: clamp01(update.confidence, 0.55),
     });
+    await recordMemoryEvent({
+      eventType: "learning_book_updated",
+      status: "completed",
+      source: "learning_book_update",
+      sessionId: this.currentSessionId,
+      bookId,
+      conversationId,
+      documentId: input.activeDocumentId || undefined,
+      sourceIds: conceptIds,
+      summary: book.summary,
+      confidence: clamp01(update.confidence, 0.55),
+      retentionPolicy: "local_indexeddb",
+      metadata: {
+        activeDocumentId: book.activeDocumentId,
+        chapterCount: book.chapters.length,
+        conceptCount: conceptIds.length,
+        conversationCount: book.conversationCount,
+        fallback: book.agentModel === "local-session-fallback",
+        model: book.agentModel,
+        title: book.title,
+      },
+    });
 
     await this.logTrace("Learning Book Update", {
       userName,
@@ -687,8 +767,11 @@ export class MemoryOrchestrator {
   ) {
     const id = name.toLowerCase().trim();
     const existing = await db.concepts.get(id);
+    let savedConcept: PersistentConcept | null = null;
+    let action: "created" | "updated" = "created";
 
     if (existing) {
+      action = "updated";
       existing.mastery = gateModelSummaryMastery(
         existing.mastery,
         understandingDelta,
@@ -716,6 +799,7 @@ export class MemoryOrchestrator {
           masteryGate: "model_summary_no_mastery_increase",
         },
       });
+      savedConcept = existing;
     } else {
       const newConcept: PersistentConcept = {
         id,
@@ -757,6 +841,29 @@ export class MemoryOrchestrator {
           sourcePage,
           acceptedMastery: newConcept.mastery,
           masteryGate: "model_summary_no_mastery_increase",
+        },
+      });
+      savedConcept = newConcept;
+    }
+
+    if (savedConcept) {
+      await recordMemoryEvent({
+        eventType: "graph_concept_updated",
+        status: "completed",
+        source: "chat_graph_update",
+        conceptId: id,
+        sourceIds: savedConcept.sourcePages.map((page) => `page:${page}`),
+        summary: description,
+        confidence: savedConcept.confidence,
+        retentionPolicy: "local_indexeddb",
+        metadata: {
+          acceptedMastery: savedConcept.mastery,
+          action,
+          conceptName: savedConcept.name,
+          masteryGate: "model_summary_no_mastery_increase",
+          revisionCount: savedConcept.revisionCount,
+          sourcePage,
+          understandingDelta,
         },
       });
     }

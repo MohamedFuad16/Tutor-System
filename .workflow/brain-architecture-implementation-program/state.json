@@ -99,16 +99,24 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/longterm.memory.ts, src/memory/model.runs.ts, server.ts, src/components/ChatPanel.tsx, src/views/AdminView.tsx, src/App.tsx, tests/model-runs.test.mjs, tests/system-activity.test.mjs, tests/runtime-settings.test.mjs, package.json"
+    },
+    {
+      "id": "N",
+      "name": "Durable memory events",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/longterm.memory.ts, src/memory/memory.events.ts, src/memory/memory.orchestrator.ts, src/views/AdminView.tsx, tests/memory-events.test.mjs, package.json, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_8_completed",
+    "status": "phase_9_completed",
     "checks": [
       "npm run lint",
       "npm run test",
       "npm run build",
+      "npm run format:check (known RevisionView.tsx formatting warning)",
       "browser QA",
-      "npm run graphify:update",
+      "graphify update . --force",
       "npm run graphify:tree",
       "graphify query smoke",
       "Graphify clean-worktree regeneration"

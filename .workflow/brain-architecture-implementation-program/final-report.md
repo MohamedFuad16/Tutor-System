@@ -313,3 +313,40 @@ Phase 8 makes chat model behavior durable and inspectable. It adds a local model
 - Add completed/fallback model-run integration tests with a fake streaming model harness.
 - Decide whether server-side model-run persistence is needed once there is a local worker or queue.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 9 report
+
+## Scope
+
+Phase 9 adds durable local memory events for the learner-brain runtime. It makes session starts, saved interactions, learning-book writes, learning-concept writes, and graph concept updates inspectable from Admin without introducing AWS/cloud synchronization.
+
+## Graphify Context
+
+- Graphify routed the slice through `src/memory/longterm.memory.ts`, `src/memory/memory.orchestrator.ts`, `src/memory/evidence.ledger.ts`, `src/views/AdminView.tsx`, and existing model/tool/evidence observability helpers.
+- Follow-up Graphify smoke after regeneration returned `memory.events.ts`, `MemoryEvent`, `createMemoryEventRecord()`, `recordMemoryEvent()`, `MemoryOrchestrator`, and `AdminView()`.
+
+## Integration Decisions
+
+- Added Dexie schema version 10 with an append-only `memoryEvents` table.
+- Added `src/memory/memory.events.ts` for event normalization, compact records, confidence clamping, deduped source IDs, and non-blocking IndexedDB writes.
+- Wired `MemoryOrchestrator` to record memory events for session start, interaction persistence, learning-book updates, learning-book concept updates, and chat graph concept writes.
+- Added Admin `Memory Events` with durable counts, event mix, recent writes, latest context, source/metadata expansion, and clear user-brain-vs-Graphify boundary copy.
+- Kept cloud sync, background queues, and AWS worker behavior out of scope for beta.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 35 tests.
+- `npm run build`: passed.
+- `npm run format:check`: still fails only on pre-existing `src/views/RevisionView.tsx`.
+- Browser QA on `http://127.0.0.1:3100`: Admin Memory rendered on desktop and mobile, displayed a real `session started` memory event from IndexedDB, had no horizontal overflow at 1280x900 or 390x844, and browser warning/error logs were 0.
+- Browser screenshot save to `.workflow/.../results/admin-memory-events-smoke.png` was blocked by browser runtime filesystem permissions (`EPERM`), so this phase records DOM/log QA evidence instead.
+- `graphify update . --force`: regenerated the code architecture graph with 624 nodes, 1029 edges, and 44 communities after temporarily stashing only unrelated `PdfViewer`/`StudyView` dirty edits.
+- `npm run graphify:tree`: passed.
+- Graphify artifact smoke: no `/private/tmp` or phase stash markers were found in checked graph artifacts.
+
+## Remaining Work
+
+- Add retrieval-context memory events once broader semantic retrieval tuning lands.
+- Decide during beta whether memory events need local retry/dead-letter handling.
+- AWS/cloud synchronization remains out of scope until beta testing.
