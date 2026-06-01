@@ -6,6 +6,7 @@ import {
 } from "./evidence.mastery";
 import { recordModelSummaryEvidence } from "./evidence.ledger";
 import { recordMemoryEvent } from "./memory.events";
+import { recordRetrievalEvent } from "./retrieval.events";
 import {
   db,
   GENERAL_STUDY_BOOK_ID,
@@ -882,6 +883,7 @@ export class MemoryOrchestrator {
     pageNumber?: number,
     activeBookId?: string | null,
   ): Promise<string> {
+    const startedAt = Date.now();
     try {
       const queryEmbedding = await generateEmbedding(query);
 
@@ -954,9 +956,43 @@ export class MemoryOrchestrator {
 
       contextStr += "\n\n" + tutorInstructions;
 
+      await recordRetrievalEvent({
+        status: "completed",
+        source: "memory_orchestrator",
+        querySummary: query,
+        activeBookId,
+        pageNumber,
+        durationMs: Date.now() - startedAt,
+        candidateInteractionCount: interactions.length,
+        candidateConceptCount: concepts.length,
+        selectedInteractionIds: scoredInteractions.map(({ i }) => i.id),
+        selectedConceptIds: scoredConcepts.map(({ c }) => c.id),
+        selectedConceptNames: scoredConcepts.map(({ c }) => c.name),
+        topInteractionScore: scoredInteractions[0]?.score,
+        topConceptScore: scoredConcepts[0]?.score,
+        contextChars: contextStr.length,
+        tutorInstructionChars: tutorInstructions.length,
+        metadata: {
+          activeBookFiltered: Boolean(activeBookId),
+          interactionsWithEmbeddings: interactions.filter((i) => i.embedding)
+            .length,
+          conceptsWithEmbeddings: concepts.filter((c) => c.embedding).length,
+          learnerSnapshotConceptId: scoredConcepts[0]?.c.id,
+        },
+      });
+
       return contextStr;
     } catch (e) {
       console.error(e);
+      await recordRetrievalEvent({
+        status: "failed",
+        source: "memory_orchestrator",
+        querySummary: query,
+        activeBookId,
+        pageNumber,
+        durationMs: Date.now() - startedAt,
+        error: e instanceof Error ? e.message : e,
+      });
       return "";
     }
   }

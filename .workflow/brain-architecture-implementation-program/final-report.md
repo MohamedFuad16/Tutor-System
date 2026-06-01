@@ -350,3 +350,39 @@ Phase 9 adds durable local memory events for the learner-brain runtime. It makes
 - Add retrieval-context memory events once broader semantic retrieval tuning lands.
 - Decide during beta whether memory events need local retry/dead-letter handling.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# brain architecture implementation program: phase 10 report
+
+## Scope
+
+Phase 10 adds durable local retrieval events for semantic memory context selection. It closes the Admin gap between "memory writes happened" and "which memory context was selected for a chat request" while keeping AWS/cloud synchronization out of scope.
+
+## Graphify Context
+
+- Graphify routed the slice through `src/memory/memory.orchestrator.ts`, `src/memory/longterm.memory.ts`, `src/views/AdminView.tsx`, `src/components/ChatPanel.tsx`, and `src/memory/learner.model.ts`.
+- Path checks confirmed Admin reaches retrieval data through Dexie storage and ChatPanel reaches retrieval through `MemoryOrchestrator.getRelevantContext()`.
+
+## Integration Decisions
+
+- Added Dexie schema version 11 with an append-only `retrievalEvents` table.
+- Added `src/memory/retrieval.events.ts` for local event normalization, stable IDs, compact fields, selected ID/name dedupe, score bounds, and non-blocking persistence.
+- Instrumented `MemoryOrchestrator.getRelevantContext()` to record completed and failed retrievals with query summary, active-book/page filters, candidates, selections, scores, context size, tutor-instruction size, latency, and metadata.
+- Added Admin `Retrieval Events` with durable counts, recent retrieval cards, selected concept chips, metadata details, and local-only semantic-memory boundary copy.
+- Fixed a live Admin shell horizontal overflow found during browser QA.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run test`: passed, 39 tests.
+- `npm run build`: passed.
+- `npm run format:check`: still fails only on pre-existing `src/views/RevisionView.tsx`.
+- Browser QA on `http://127.0.0.1:3100`: a real ChatPanel prompt created a completed retrieval event before the no-key chat request was blocked; Admin Retrieval displayed the query, completed status, context chars, selection counts, and boundary copy.
+- Desktop browser QA at 1280x900: Retrieval tab rendered with document width matching viewport width and browser warning/error logs were 0.
+- Mobile browser QA at 390x844: Retrieval tab and ledger rendered with document width matching viewport width and browser warning/error logs were 0.
+- Browser screenshot emission worked during QA; saving screenshot files to `.workflow/.../results/` was blocked by browser runtime filesystem permissions (`EPERM`).
+
+## Remaining Work
+
+- Add richer retrieval ranking diagnostics after beta usage clarifies which scores are worth tuning.
+- Decide whether retrieval failures need local retry/dead-letter states.
+- AWS/cloud synchronization remains out of scope until beta testing.
