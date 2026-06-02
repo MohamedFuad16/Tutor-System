@@ -275,6 +275,14 @@ const numberMetadataValue = (
   return Number.isFinite(numeric) ? Math.max(0, Math.round(numeric)) : 0;
 };
 
+const booleanMetadataValue = (
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+) => {
+  const value = metadata?.[key];
+  return typeof value === "boolean" ? value : undefined;
+};
+
 const stringListMetadataValue = (
   metadata: Record<string, unknown> | undefined,
   key: string,
@@ -1459,26 +1467,10 @@ export function AdminView() {
                   Admin Center
                 </h1>
                 <p className="text-zinc-600 leading-relaxed max-w-2xl text-sm font-serif">
-                  Welcome to the Tutor System's central command. This dashboard
-                  exposes behind-the-scenes model activity, tool calls, local
-                  memory updates, saved trace explanations, and backend health
-                  signals. Use <strong>System Activity</strong> for the live
-                  observability ledger, <strong>Model Runs</strong> to inspect
-                  provider behavior, fallbacks, tokens, and failures,{" "}
-                  <strong>Memory Events</strong> to inspect learner memory
-                  writes, <strong>Correction Requests</strong> to audit local
-                  mark-wrong and deletion-review intents,{" "}
-                  <strong>Source Artifacts</strong> to inspect captured web
-                  source cards and citation states,{" "}
-                  <strong>Beta Diagnostics</strong> to export a local readiness
-                  snapshot, <strong>Retrieval Events</strong> to inspect
-                  semantic memory context selection,{" "}
-                  <strong>Evidence Ledger</strong> to inspect model-summary
-                  evidence and mastery deltas, <strong>Runtime Tuning</strong>{" "}
-                  for local behavior controls, <strong>DeepSeek Trace</strong>{" "}
-                  for persisted tutor updates, or switch to the{" "}
-                  <strong>Server Console</strong> to monitor live backend
-                  traffic, WebSocket streams, and TTS generation logs.
+                  See what the tutor is doing behind the scenes: model calls,
+                  tools, memory, retrieval, voice activity, and local beta
+                  health. Start with System Activity for live timelines or Beta
+                  Diagnostics for readiness.
                 </p>
               </div>
 
@@ -1853,6 +1845,37 @@ export function AdminView() {
                                         event.metadata,
                                         "omittedReadyDocumentCount",
                                       );
+                                    const evidenceContract =
+                                      stringMetadataValue(
+                                        event.metadata,
+                                        "evidenceContract",
+                                      );
+                                    const evidenceRole = stringMetadataValue(
+                                      event.metadata,
+                                      "evidenceRole",
+                                    );
+                                    const evidenceVerified =
+                                      booleanMetadataValue(
+                                        event.metadata,
+                                        "evidenceVerified",
+                                      );
+                                    const masteryMutationAllowed =
+                                      booleanMetadataValue(
+                                        event.metadata,
+                                        "masteryMutationAllowed",
+                                      );
+                                    const confidenceMutationAllowed =
+                                      booleanMetadataValue(
+                                        event.metadata,
+                                        "confidenceMutationAllowed",
+                                      );
+                                    const showEvidenceGate =
+                                      Boolean(
+                                        evidenceContract || evidenceRole,
+                                      ) ||
+                                      evidenceVerified !== undefined ||
+                                      masteryMutationAllowed !== undefined ||
+                                      confidenceMutationAllowed !== undefined;
                                     return (
                                       <div
                                         key={event.id}
@@ -1896,6 +1919,66 @@ export function AdminView() {
                                               )}
                                             </div>
                                           )}
+                                        {showEvidenceGate && (
+                                          <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-mono text-amber-700">
+                                            {evidenceContract && (
+                                              <span className="rounded-full border border-amber-200 bg-white/70 px-2 py-0.5">
+                                                {evidenceContract}
+                                              </span>
+                                            )}
+                                            {evidenceRole && (
+                                              <span className="rounded-full border border-amber-200 bg-white/70 px-2 py-0.5">
+                                                {evidenceRole.replace(
+                                                  /_/g,
+                                                  " ",
+                                                )}
+                                              </span>
+                                            )}
+                                            {evidenceVerified !== undefined && (
+                                              <span
+                                                className={`rounded-full border px-2 py-0.5 ${
+                                                  evidenceVerified
+                                                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                    : "border-orange-200 bg-orange-50 text-orange-700"
+                                                }`}
+                                              >
+                                                {evidenceVerified
+                                                  ? "verified evidence"
+                                                  : "audit-only observation"}
+                                              </span>
+                                            )}
+                                            {masteryMutationAllowed !==
+                                              undefined && (
+                                              <span
+                                                className={`rounded-full border px-2 py-0.5 ${
+                                                  masteryMutationAllowed
+                                                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                    : "border-zinc-300 bg-white/80 text-zinc-600"
+                                                }`}
+                                              >
+                                                mastery{" "}
+                                                {masteryMutationAllowed
+                                                  ? "allowed"
+                                                  : "blocked"}
+                                              </span>
+                                            )}
+                                            {confidenceMutationAllowed !==
+                                              undefined && (
+                                              <span
+                                                className={`rounded-full border px-2 py-0.5 ${
+                                                  confidenceMutationAllowed
+                                                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                    : "border-zinc-300 bg-white/80 text-zinc-600"
+                                                }`}
+                                              >
+                                                confidence{" "}
+                                                {confidenceMutationAllowed
+                                                  ? "allowed"
+                                                  : "blocked"}
+                                              </span>
+                                            )}
+                                          </div>
+                                        )}
                                       </div>
                                     );
                                   })}

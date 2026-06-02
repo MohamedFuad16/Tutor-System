@@ -108,8 +108,9 @@ checked-in 3-4 minute audio guides, backed by
 
 Model summaries can propose concept mastery and confidence, but local learner
 mastery and durable learner confidence stay gated. Model-summary paths store
-accepted values and gate labels in evidence/memory metadata instead of raising
-those learner-state fields.
+accepted values, the `model_observation_v1` contract, non-verified status, and
+no-mutation gates in evidence/memory metadata instead of raising those
+learner-state fields.
 Validated recall attempts now provide the local confidence movement path:
 flashcard reviews and evaluated learner answers tied to real concept ids update
 BKT mastery and durable learner confidence with capped evidence deltas, and the
@@ -195,11 +196,11 @@ network access. Use the Deepgram provider in
   ledgers for chat context injection, voice context injection, request-id
   correlation across context/retrieval/model rows, chat and voice foreground
   tool jobs, chat and voice request-correlated evaluated mastery evidence, and
-  request-correlated chat and voice learner-memory writes before marking the
-  local flow ready.
+  request-correlated chat and voice learner-memory writes with model-observation
+  evidence gates before marking the local flow ready.
 - Beta Diagnostics also includes a deterministic synthetic wiring rehearsal.
   It exercises the shared multi-PDF packet helpers, typed-chat and live-voice
-  tool definitions, and the same eight-signal verifier in memory only. It does
+  tool definitions, and the same nine-signal verifier in memory only. It does
   not write Dexie, call providers, enter exports, or count toward live beta
   readiness.
 - Source-card local citation checks, generated flashcard provenance checks,

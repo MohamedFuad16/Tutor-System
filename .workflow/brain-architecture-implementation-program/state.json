@@ -442,6 +442,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/brain.context.ts, src/memory/brain.rehearsal.ts, src/components/ChatPanel.tsx, server.ts, src/views/AdminView.tsx, tests/brain-context.test.mjs, tests/system-activity.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABK",
+      "name": "Model-observation evidence gate",
+      "owner": "main agent + read-only sidecars Chandrasekhar and Curie",
+      "status": "completed",
+      "write_scope": "src/memory/evidence.mastery.ts, src/memory/memory.orchestrator.ts, src/memory/beta.diagnostics.ts, src/memory/brain.rehearsal.ts, src/views/AdminView.tsx, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, tests/evidence-mastery.test.mjs, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*"
     }
   ],
   "verification": {
@@ -735,8 +742,7 @@
     "Graphify smoke query found createGeneratedNoteClaimSpanCoverage(), normalization helpers, verifier, generated-note record builder, and Admin route",
     "graphify path createGeneratedNoteClaimSpanCoverage() to AdminView() found a three-hop path through artifact.records.ts and AdminView.tsx",
     "Graph artifact grep found no server.mjs or .tmp-test scratch nodes",
-    "Admin generated-note rows prefer the latest recomputed local citation-integrity claim-span coverage after reruns, with write-time coverage as the pre-rerun fallback"
-    ,
+    "Admin generated-note rows prefer the latest recomputed local citation-integrity claim-span coverage after reruns, with write-time coverage as the pre-rerun fallback",
     "Packet ABJ selected after Graphify routed multi-PDF chat/voice context through buildBrainDocumentContextReport(), buildBrainContextPacket(), ChatPanel(), server.ts, AdminView(), and focused tests",
     "Added an active-book PDF manifest plus ready excerpt context so pending, failed, ready, excerpted, and omitted PDFs stay visible in shared chat/voice context metadata",
     "Typed chat now sends brainContextMetadata to /api/chat; live voice auth now sends ready/context/pending/omitted PDF counts to the websocket backend",
@@ -759,6 +765,25 @@
     "npm run graphify:tree passed",
     "Graphify smoke query found buildBrainDocumentContextReport(), buildBrainContextPacket(), ChatPanel(), AdminRequestTimeline, and AdminView()",
     "graphify path buildBrainDocumentContextReport() to AdminView() found a four-hop path through brain.context.ts, ChatPanel.tsx, and useStore",
-    "Graph artifact grep found no server.mjs or .tmp-test scratch nodes"
-  ]
+    "Graph artifact grep found no server.mjs or .tmp-test scratch nodes",
+    "Packet ABK selected after Graphify routed evidence-gated background memory through MemoryOrchestrator, evidence.mastery.ts, beta.diagnostics.ts, brain.rehearsal.ts, AdminView(), and focused tests",
+    "Added modelObservationGateMetadata() with model_observation_v1, non-verified status, and no-mutation gates for mastery and confidence",
+    "MemoryOrchestrator learning-book, concept, and graph updates now label model-summary background rows as audit-only observations",
+    "Beta Diagnostics now uses a nine-signal verifier that requires model-observation gates on background memory rows",
+    "Admin request timelines now render audit-only, verified, mastery mutation, and confidence mutation chips for memory rows",
+    "Admin Center preface copy was simplified",
+    "README, Tutor System Architecture, User Brain Architecture, Tutor Architecture Library JSON, and App Design Language copy document the model-observation evidence gate",
+    "npm run test passed, 133 tests",
+    "Browser QA confirmed Admin Beta Diagnostics at 1440x1000 and 390x844 rendered simplified Admin copy, Evidence gate signal, nine-signal wording, no overflow, and no warning/error logs",
+    "Browser QA screenshots saved as ABK-iab-admin-beta-desktop.png and ABK-iab-admin-beta-mobile.png",
+    "graphify update . --force regenerated code architecture artifacts with 988 nodes, 1727 edges, and 61 communities",
+    "Graphify smoke query found modelObservationGateMetadata(), MemoryOrchestrator, buildBrainFlowCoverageFromLedgers(), AdminView(), and model-observation constants",
+    "graphify path modelObservationGateMetadata() to AdminView() found a three-hop path through runLocalBrainWiringRehearsal() and AdminView.tsx",
+    "graphify path modelObservationGateMetadata() to MemoryOrchestrator found a two-hop path through memory.orchestrator.ts"
+  ],
+  "brainArchitectureProgress": {
+    "estimatePercent": 69,
+    "basis": "Local architecture estimate after Packet ABK: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, and model-observation gates are implemented and verified; live provider-key chat/voice proof, retry/dead-letter background queue, and broader beta validation remain incomplete.",
+    "updatedAt": "2026-06-02T17:32:50.011Z"
+  }
 }

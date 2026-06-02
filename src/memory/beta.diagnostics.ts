@@ -5,6 +5,7 @@ import type {
   RetrievalEvent,
   ToolJob,
 } from "./longterm.memory";
+import { MODEL_OBSERVATION_EVIDENCE_CONTRACT } from "./evidence.mastery";
 
 export type BetaDiagnosticStatus = "ready" | "watch" | "blocked" | "deferred";
 
@@ -80,6 +81,8 @@ export type BetaBrainFlowCoverage = {
   chatBackgroundMemoryEvents: number;
   voiceBackgroundMemoryEvents: number;
   requestCorrelatedBackgroundMemoryEvents: number;
+  modelObservedBackgroundMemoryEvents: number;
+  ungatedBackgroundMemoryEvents: number;
   summary: string;
   missingSignals: string[];
   signals: BetaBrainFlowSignal[];
@@ -178,6 +181,14 @@ const metadataString = (
   return typeof value === "string" && value.trim() ? value : "";
 };
 
+const metadataBoolean = (
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+) => {
+  const value = metadata?.[key];
+  return typeof value === "boolean" ? value : undefined;
+};
+
 const hasRequestId = (requestId: unknown) =>
   typeof requestId === "string" && requestId.trim().length > 0;
 
@@ -192,6 +203,23 @@ const isVoiceLayer = (metadata: Record<string, unknown> | undefined) => {
   const mode = metadataString(metadata, "mode");
   return agentLayer === "voice_realtime" || mode === "voice";
 };
+
+const MODEL_OBSERVATION_MEMORY_EVENTS = new Set<MemoryEvent["eventType"]>([
+  "learning_book_updated",
+  "learning_concept_updated",
+  "graph_concept_updated",
+]);
+
+const hasModelObservationGate = (
+  metadata: Record<string, unknown> | undefined,
+) =>
+  metadataString(metadata, "evidenceContract") ===
+    MODEL_OBSERVATION_EVIDENCE_CONTRACT &&
+  metadataString(metadata, "evidenceRole") === "model_observation" &&
+  metadataString(metadata, "evidenceType") === "model_summary" &&
+  metadataBoolean(metadata, "evidenceVerified") === false &&
+  metadataBoolean(metadata, "masteryMutationAllowed") === false &&
+  metadataBoolean(metadata, "confidenceMutationAllowed") === false;
 
 export const buildBrainFlowCoverageFromLedgers = ({
   memoryEvents = [],
@@ -266,6 +294,16 @@ export const buildBrainFlowCoverageFromLedgers = ({
         "graph_concept_updated",
       ].includes(event.eventType),
   );
+  const modelObservationBackgroundRows = backgroundMemoryEvents.filter(
+    (event) => MODEL_OBSERVATION_MEMORY_EVENTS.has(event.eventType),
+  );
+  const modelObservedBackgroundMemoryEvents =
+    modelObservationBackgroundRows.filter((event) =>
+      hasModelObservationGate(event.metadata),
+    ).length;
+  const ungatedBackgroundMemoryEvents = modelObservationBackgroundRows.filter(
+    (event) => !hasModelObservationGate(event.metadata),
+  ).length;
   const requestCorrelatedBackgroundMemoryEvents = backgroundMemoryEvents.filter(
     (event) => hasRequestId(event.metadata?.requestId),
   );
@@ -355,6 +393,16 @@ export const buildBrainFlowCoverageFromLedgers = ({
       detail:
         "Typed chat and live voice both have request-correlated background learner-memory rows.",
     },
+    {
+      id: "evidence_gate_contract",
+      title: "Evidence gate contract",
+      ready:
+        modelObservedBackgroundMemoryEvents > 0 &&
+        ungatedBackgroundMemoryEvents === 0,
+      count: modelObservedBackgroundMemoryEvents,
+      detail:
+        "Model-derived learner-memory rows declare they are non-verified observations and cannot mutate mastery or confidence.",
+    },
   ];
   const readySignals = signals.filter((signal) => signal.ready).length;
   const totalSignals = signals.length;
@@ -390,9 +438,11 @@ export const buildBrainFlowCoverageFromLedgers = ({
     voiceBackgroundMemoryEvents,
     requestCorrelatedBackgroundMemoryEvents:
       requestCorrelatedBackgroundMemoryEvents.length,
+    modelObservedBackgroundMemoryEvents,
+    ungatedBackgroundMemoryEvents,
     summary:
       status === "ready"
-        ? "Chat, voice, retrieval, model, both foreground tool layers, both evaluated mastery layers, and background memory all have local evidence."
+        ? "Chat, voice, retrieval, model, both foreground tool layers, both evaluated mastery layers, background memory, and model-observation gates all have local evidence."
         : status === "blocked"
           ? `${failedRows} failed or blocked brain-flow rows need review before beta.`
           : `Missing local evidence for ${missingSignals.join(", ")}.`,

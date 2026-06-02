@@ -28,6 +28,7 @@
 - Packet F: See `packets/F-qa-docs-git.md`.
 - Packet AAI: See `packets/AAI-generated-note-preview-lexical-support.md`.
 - Packet ABJ: See `packets/ABJ-active-book-pdf-manifest-context.md`.
+- Packet ABK: See `packets/ABK-model-observation-evidence-gate.md`.
 
 ## Completion Audit
 

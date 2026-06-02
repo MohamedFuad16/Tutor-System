@@ -9,6 +9,7 @@ import {
   gateModelSummaryMastery,
   isDirectRecallEvidence,
   isVerifiedMasteryEvidence,
+  modelObservationGateMetadata,
   masteryFromEvidenceAttempt,
 } from "../.tmp-test/evidence.mastery.mjs";
 import {
@@ -24,6 +25,25 @@ test("model summaries cannot raise mastery", () => {
 test("model summaries cannot raise learner confidence", () => {
   assert.equal(confidenceFromModelSummary(0.25, 0.95), 0.25);
   assert.equal(confidenceFromModelSummary(undefined, 0.8), 0);
+});
+
+test("model observation metadata marks background writes as audit-only", () => {
+  const metadata = modelObservationGateMetadata({
+    requestId: "chat-req-1",
+    evidenceVerified: true,
+    masteryMutationAllowed: true,
+    confidenceMutationAllowed: true,
+  });
+
+  assert.equal(metadata.requestId, "chat-req-1");
+  assert.equal(metadata.evidenceContract, "model_observation_v1");
+  assert.equal(metadata.evidenceRole, "model_observation");
+  assert.equal(metadata.evidenceType, "model_summary");
+  assert.equal(metadata.evidenceVerified, false);
+  assert.equal(metadata.masteryMutationAllowed, false);
+  assert.equal(metadata.confidenceMutationAllowed, false);
+  assert.equal(metadata.confidenceGate, "model_summary_no_confidence_increase");
+  assert.equal(metadata.masteryGate, "model_summary_no_mastery_increase");
 });
 
 test("confidence can move separately from evidence-gated mastery", () => {

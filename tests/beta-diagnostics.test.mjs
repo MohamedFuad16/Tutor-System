@@ -6,6 +6,8 @@ const {
   buildBetaDiagnosticsSnapshot,
   buildBrainFlowCoverageFromLedgers,
 } = await import("../.tmp-test/beta.diagnostics.mjs");
+const { modelObservationGateMetadata } =
+  await import("../.tmp-test/evidence.mastery.mjs");
 
 const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
   memoryEvents: [
@@ -39,21 +41,21 @@ const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
       eventType: "learning_book_updated",
       status: "completed",
       timestamp: 4,
-      metadata: {
+      metadata: modelObservationGateMetadata({
         requestId: "chat-req-1",
         mode: "chat",
         agentLayer: "chat_stream",
-      },
+      }),
     },
     {
       eventType: "learning_book_updated",
       status: "completed",
       timestamp: 5,
-      metadata: {
+      metadata: modelObservationGateMetadata({
         requestId: "voice-req-1",
         mode: "voice",
         agentLayer: "voice_realtime",
-      },
+      }),
     },
   ],
   retrievalEvents: [
@@ -187,6 +189,8 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
   assert.equal(completeBrainFlow.chatForegroundToolJobs, 1);
   assert.equal(completeBrainFlow.voiceForegroundToolJobs, 1);
   assert.equal(completeBrainFlow.requestCorrelatedMasteryEvidenceEvents, 2);
+  assert.equal(completeBrainFlow.modelObservedBackgroundMemoryEvents, 2);
+  assert.equal(completeBrainFlow.ungatedBackgroundMemoryEvents, 0);
   assert.equal(completeBrainFlow.chatRequestCorrelatedMasteryEvidenceEvents, 1);
   assert.equal(
     completeBrainFlow.voiceRequestCorrelatedMasteryEvidenceEvents,
@@ -201,6 +205,12 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
   assert.equal(
     completeBrainFlow.signals.find(
       (signal) => signal.id === "voice_foreground_tools",
+    )?.ready,
+    true,
+  );
+  assert.equal(
+    completeBrainFlow.signals.find(
+      (signal) => signal.id === "evidence_gate_contract",
     )?.ready,
     true,
   );
@@ -231,21 +241,21 @@ test("brain flow coverage requires both chat and voice evaluated mastery", () =>
         eventType: "learning_book_updated",
         status: "completed",
         timestamp: 3,
-        metadata: {
+        metadata: modelObservationGateMetadata({
           requestId: "chat-req-1",
           mode: "chat",
           agentLayer: "chat_stream",
-        },
+        }),
       },
       {
         eventType: "learning_book_updated",
         status: "completed",
         timestamp: 4,
-        metadata: {
+        metadata: modelObservationGateMetadata({
           requestId: "voice-req-1",
           mode: "voice",
           agentLayer: "voice_realtime",
-        },
+        }),
       },
     ],
     retrievalEvents: [
@@ -342,11 +352,11 @@ test("brain flow coverage requires request-correlated voice memory evidence", ()
         eventType: "learning_book_updated",
         status: "completed",
         timestamp: 3,
-        metadata: {
+        metadata: modelObservationGateMetadata({
           requestId: "chat-req-1",
           mode: "chat",
           agentLayer: "chat_stream",
-        },
+        }),
       },
       {
         eventType: "learning_book_updated",
@@ -400,6 +410,110 @@ test("brain flow coverage requires request-correlated voice memory evidence", ()
   assert.ok(
     chatOnlyMemoryFlow.missingSignals.includes("Background memory agent"),
   );
+});
+
+test("brain flow coverage requires model-observation gates on background memory", () => {
+  const ungatedFlow = buildBrainFlowCoverageFromLedgers({
+    memoryEvents: [
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 1,
+        metadata: {
+          agentLayer: "chat_stream",
+          requestId: "chat-req-1",
+        },
+      },
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 2,
+        metadata: {
+          agentLayer: "voice_realtime",
+          requestId: "voice-req-1",
+        },
+      },
+      {
+        eventType: "learning_book_updated",
+        status: "completed",
+        timestamp: 3,
+        metadata: modelObservationGateMetadata({
+          requestId: "chat-req-1",
+          mode: "chat",
+          agentLayer: "chat_stream",
+        }),
+      },
+      {
+        eventType: "learning_book_updated",
+        status: "completed",
+        timestamp: 4,
+        metadata: {
+          requestId: "voice-req-1",
+          mode: "voice",
+          agentLayer: "voice_realtime",
+        },
+      },
+    ],
+    retrievalEvents: [
+      { status: "completed", requestId: "chat-req-1", timestamp: 5 },
+      { status: "completed", requestId: "voice-req-1", timestamp: 6 },
+    ],
+    modelRuns: [
+      {
+        status: "completed",
+        source: "chat_stream",
+        requestId: "chat-req-1",
+        timestamp: 7,
+      },
+      {
+        status: "completed",
+        source: "voice_agent",
+        requestId: "voice-req-1",
+        timestamp: 8,
+      },
+    ],
+    toolJobs: [
+      {
+        status: "completed",
+        source: "chat_stream",
+        requestId: "chat-req-1",
+        timestamp: 9,
+      },
+      {
+        status: "completed",
+        source: "voice_agent",
+        requestId: "voice-req-1",
+        timestamp: 10,
+      },
+    ],
+    evidenceEvents: [
+      {
+        evidenceType: "generation",
+        verified: true,
+        timestamp: 11,
+        metadata: {
+          requestId: "chat-req-1",
+          agentLayer: "chat_stream",
+          mode: "chat",
+        },
+      },
+      {
+        evidenceType: "generation",
+        verified: true,
+        timestamp: 12,
+        metadata: {
+          requestId: "voice-req-1",
+          agentLayer: "voice_realtime",
+          mode: "voice",
+        },
+      },
+    ],
+  });
+
+  assert.equal(ungatedFlow.status, "watch");
+  assert.equal(ungatedFlow.modelObservedBackgroundMemoryEvents, 1);
+  assert.equal(ungatedFlow.ungatedBackgroundMemoryEvents, 1);
+  assert.ok(ungatedFlow.missingSignals.includes("Evidence gate contract"));
 });
 
 test("brain flow coverage stays blocked when local flow rows fail", () => {

@@ -3437,3 +3437,88 @@ not spend provider-key chat or real Deepgram voice calls.
 - Add stronger semantic and document-wide grounding beyond compact saved
   previews.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 58: Model-Observation Evidence Gate
+
+## Scope
+
+Phase 58 tightens the learner-brain trust boundary for background model-summary
+writes. It keeps generated learning-book and concept updates useful, but marks
+them as audit-only observations that cannot mutate durable mastery or learner
+confidence. It also simplifies the Admin Center preface copy and adds a regular
+progress estimate for the broader brain architecture program.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 69%.
+
+## Graphify Context
+
+- `graphify query "evidence gated memory orchestrator BrainContextPacket dual
+  agent tool calls chat voice Admin system activity mastery updates" --budget
+  5000 --graph graphify-out/graph.json` routed the slice through
+  `BrainContextPacket`, `voice-agent-tools.test.mjs`, and local evidence tests.
+- `graphify path "MemoryOrchestrator" "AdminView()" --graph
+  graphify-out/graph.json` found the four-hop source path through
+  `memory.orchestrator.ts`, `longterm.memory.ts`, and `AdminView.tsx`.
+- `graphify query "memory.orchestrator.ts
+  updateLearningBookFromConversation createBrainContextMemoryEventInput system
+  activity memory event" --budget 5000 --graph graphify-out/graph.json`
+  identified `memory.orchestrator.ts`, `evidence.mastery.ts`,
+  `evidence.ledger.ts`, `beta.diagnostics.ts`, `brain.rehearsal.ts`,
+  `AdminView.tsx`, and tests as the connected source surface.
+
+## Integration Decisions
+
+- Added `modelObservationGateMetadata()` and the `model_observation_v1`
+  evidence contract.
+- Stamped learning-book concept updates, learning-book updates, and graph
+  concept updates with non-verified model-observation metadata and no-mutation
+  gates for mastery and confidence.
+- Extended Beta Diagnostics from the previous eight-signal local brain-flow
+  verifier to a nine-signal verifier that also requires model-observation
+  gates on background model-summary rows.
+- Updated the synthetic local brain wiring rehearsal so synthetic rows satisfy
+  the same nine-signal contract without writing Dexie or counting toward live
+  readiness.
+- Added Admin request-timeline memory chips for audit-only observation,
+  verified-evidence state, mastery mutation, and confidence mutation.
+- Simplified the Admin Center paragraph into a short plain-language summary.
+- Updated README, Tutor System Architecture, User Brain Architecture, Tutor
+  Architecture Library JSON, and App Design Language copy.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 133 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Browser QA confirmed Admin Beta Diagnostics at `1440x1000` and `390x844`
+  rendered the simplified Admin copy, Evidence gate signal, nine-signal wording,
+  no horizontal overflow, and zero warning/error logs.
+- Browser QA screenshots saved as `ABK-iab-admin-beta-desktop.png` and
+  `ABK-iab-admin-beta-mobile.png`.
+- `graphify update . --force`: passed, `988` nodes, `1727` edges, and `61`
+  communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `modelObservationGateMetadata()`,
+  `MemoryOrchestrator`, `buildBrainFlowCoverageFromLedgers()`, `AdminView()`,
+  and the model-observation constants.
+- `graphify path "modelObservationGateMetadata()" "AdminView()"` found a
+  three-hop path through `runLocalBrainWiringRehearsal()` and `AdminView.tsx`.
+- `graphify path "modelObservationGateMetadata()" "MemoryOrchestrator"` found a
+  two-hop path through `memory.orchestrator.ts`.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+- Workflow verifier passed.
+- `npm run audio:overview:dry-run`: passed, 25 present and 0 missing stored
+  guide assets.
+
+## Remaining Work
+
+- Run deliberate provider-key typed-chat and real voice turns when spending live
+  provider calls is in scope.
+- Add a durable local background queue with retries and dead-letter review.
+- Continue broader local beta validation until real chat, voice, retrieval,
+  tools, memory, evidence, corrections, Admin, and Revision operate together
+  under live beta conditions.
+- AWS/cloud synchronization remains out of scope until beta testing.

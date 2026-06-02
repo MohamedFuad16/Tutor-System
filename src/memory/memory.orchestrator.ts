@@ -2,6 +2,7 @@ import { generateEmbedding, cosineSimilarity } from "./memory.embeddings";
 import {
   confidenceFromModelSummary,
   gateModelSummaryMastery,
+  modelObservationGateMetadata,
 } from "./evidence.mastery";
 import { recordModelSummaryEvidence } from "./evidence.ledger";
 import { recordMemoryEvent } from "./memory.events";
@@ -648,15 +649,13 @@ export class MemoryOrchestrator {
         source: "learning_book_update",
         summary: nextConcept.summary,
         confidence: nextConcept.confidence,
-        metadata: {
+        metadata: modelObservationGateMetadata({
           ...traceMetadata,
           acceptedConfidence: nextConcept.confidence,
           proposedMastery: concept.mastery,
           proposedConfidence: concept.confidence,
           acceptedMastery: nextConcept.mastery,
-          confidenceGate: "model_summary_no_confidence_increase",
-          masteryGate: "model_summary_no_mastery_increase",
-        },
+        }),
       });
       await recordMemoryEvent({
         eventType: "learning_concept_updated",
@@ -671,18 +670,17 @@ export class MemoryOrchestrator {
         summary: nextConcept.summary,
         confidence: nextConcept.confidence,
         retentionPolicy: "local_indexeddb",
-        metadata: {
+        metadata: modelObservationGateMetadata({
           ...traceMetadata,
           acceptedMastery: nextConcept.mastery,
           acceptedConfidence: nextConcept.confidence,
           childConcepts: nextConcept.childConcepts,
-          confidenceGate: "model_summary_no_confidence_increase",
           conceptName: nextConcept.name,
           evidenceCount: nextConcept.evidence.length,
           fallback: update.model === "local-session-fallback",
           model: update.model || "deepseek/deepseek-v4-flash",
           parentConcepts: nextConcept.parentConcepts,
-        },
+        }),
       });
     }
 
@@ -838,7 +836,7 @@ export class MemoryOrchestrator {
       summary: book.summary,
       confidence: clamp01(update.confidence, 0.55),
       retentionPolicy: "local_indexeddb",
-      metadata: {
+      metadata: modelObservationGateMetadata({
         ...traceMetadata,
         activeDocumentId: book.activeDocumentId,
         chapterCount: book.chapters.length,
@@ -847,7 +845,7 @@ export class MemoryOrchestrator {
         fallback: book.agentModel === "local-session-fallback",
         model: book.agentModel,
         title: book.title,
-      },
+      }),
     });
 
     await this.logTrace("Learning Book Update", {
@@ -899,16 +897,14 @@ export class MemoryOrchestrator {
         sourceId: "addOrUpdateConcept",
         summary: description,
         confidence: existing.confidence,
-        metadata: {
+        metadata: modelObservationGateMetadata({
           ...traceMetadata,
           understandingDelta,
           sourcePage,
           proposedConfidence: understandingDelta,
           acceptedConfidence: existing.confidence,
           acceptedMastery: existing.mastery,
-          confidenceGate: "model_summary_no_confidence_increase",
-          masteryGate: "model_summary_no_mastery_increase",
-        },
+        }),
       });
       savedConcept = existing;
     } else {
@@ -949,16 +945,14 @@ export class MemoryOrchestrator {
         sourceId: "addOrUpdateConcept",
         summary: description,
         confidence: newConcept.confidence,
-        metadata: {
+        metadata: modelObservationGateMetadata({
           ...traceMetadata,
           understandingDelta,
           sourcePage,
           proposedConfidence: understandingDelta,
           acceptedConfidence: newConcept.confidence,
           acceptedMastery: newConcept.mastery,
-          confidenceGate: "model_summary_no_confidence_increase",
-          masteryGate: "model_summary_no_mastery_increase",
-        },
+        }),
       });
       savedConcept = newConcept;
     }
@@ -976,18 +970,16 @@ export class MemoryOrchestrator {
         summary: description,
         confidence: savedConcept.confidence,
         retentionPolicy: "local_indexeddb",
-        metadata: {
+        metadata: modelObservationGateMetadata({
           ...traceMetadata,
           acceptedMastery: savedConcept.mastery,
           acceptedConfidence: savedConcept.confidence,
           action,
           conceptName: savedConcept.name,
-          confidenceGate: "model_summary_no_confidence_increase",
-          masteryGate: "model_summary_no_mastery_increase",
           revisionCount: savedConcept.revisionCount,
           sourcePage,
           understandingDelta,
-        },
+        }),
       });
     }
 

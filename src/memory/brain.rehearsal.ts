@@ -12,6 +12,7 @@ import {
   buildBrainFlowCoverageFromLedgers,
   type BetaBrainFlowCoverage,
 } from "./beta.diagnostics";
+import { modelObservationGateMetadata } from "./evidence.mastery";
 import type { LearningDocument } from "./longterm.memory";
 
 export type BrainWiringRehearsalCheck = {
@@ -181,23 +182,23 @@ export const runLocalBrainWiringRehearsal = (
         eventType: "learning_book_updated",
         status: "completed",
         timestamp: 3,
-        metadata: {
+        metadata: modelObservationGateMetadata({
           requestId: chatPacket.requestId,
           mode: "chat",
           agentLayer: "chat_stream",
           synthetic: true,
-        },
+        }),
       },
       {
         eventType: "learning_book_updated",
         status: "completed",
         timestamp: 4,
-        metadata: {
+        metadata: modelObservationGateMetadata({
           requestId: voicePacket.requestId,
           mode: "voice",
           agentLayer: "voice_realtime",
           synthetic: true,
-        },
+        }),
       },
     ],
     retrievalEvents: [
@@ -316,7 +317,7 @@ export const runLocalBrainWiringRehearsal = (
       title: "Coverage contract",
       ready: coverage.status === "ready" && coverage.coveragePercent === 100,
       detail:
-        "Synthetic rows satisfy the same eight-signal verifier used for live local ledgers without being persisted into those ledgers.",
+        "Synthetic rows satisfy the same nine-signal verifier used for live local ledgers without being persisted into those ledgers.",
     },
   ];
   const ready = checks.every((check) => check.ready);
@@ -331,7 +332,7 @@ export const runLocalBrainWiringRehearsal = (
     liveCoverageMutated: false,
     status: ready ? "ready" : "failed",
     summary: ready
-      ? "Shared packet assembly, balanced multi-PDF context, dual-agent tools, and the eight-signal verifier passed in memory."
+      ? "Shared packet assembly, balanced multi-PDF context, dual-agent tools, and the nine-signal verifier passed in memory."
       : "One or more local wiring contracts failed rehearsal. Review the failed synthetic checks before live beta traffic.",
     documentIds: rehearsalDocuments.map((document) => document.id),
     chatToolNames: chatTools,

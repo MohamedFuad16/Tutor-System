@@ -90,3 +90,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   packets include an inspectable active-book PDF manifest, ready/excerpted/
   pending/failed/omitted counts, server activity metadata, and Admin request
   timeline chips so multiple PDFs stay visible beyond the PDF on screen.
+- ABK: Model-observation evidence gate. Make background learner-memory rows
+  explicitly audit-only when they come from model summaries, surface the gate in
+  Admin request timelines, and extend Beta Diagnostics from the eight-signal
+  flow verifier to a nine-signal verifier that also checks model-observation
+  gates.

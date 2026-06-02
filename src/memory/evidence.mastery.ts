@@ -4,6 +4,15 @@ export type MasteryEvidenceType =
   | "generation"
   | "transfer";
 
+export const MODEL_OBSERVATION_EVIDENCE_CONTRACT =
+  "model_observation_v1" as const;
+
+export const MODEL_SUMMARY_CONFIDENCE_GATE =
+  "model_summary_no_confidence_increase" as const;
+
+export const MODEL_SUMMARY_MASTERY_GATE =
+  "model_summary_no_mastery_increase" as const;
+
 const VERIFIED_MASTERY_EVIDENCE = new Set<MasteryEvidenceType>([
   "recognition",
   "generation",
@@ -55,6 +64,20 @@ export const gateModelSummaryMastery = (
   currentMastery: unknown,
   _proposedMastery?: unknown,
 ) => clamp01(currentMastery, 0);
+
+export const modelObservationGateMetadata = (
+  metadata: Record<string, unknown> = {},
+) => ({
+  ...metadata,
+  evidenceContract: MODEL_OBSERVATION_EVIDENCE_CONTRACT,
+  evidenceRole: "model_observation",
+  evidenceType: "model_summary",
+  evidenceVerified: false,
+  masteryMutationAllowed: false,
+  confidenceMutationAllowed: false,
+  confidenceGate: MODEL_SUMMARY_CONFIDENCE_GATE,
+  masteryGate: MODEL_SUMMARY_MASTERY_GATE,
+});
 
 export const confidenceFromModelSummary = (
   currentConfidence: unknown,
