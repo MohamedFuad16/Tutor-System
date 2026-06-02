@@ -464,6 +464,33 @@ const voiceServerWsUrl = () => {
   return `${wsProtocol}//${hostPort}`;
 };
 
+const captureCurrentPdfPageImage = () => {
+  const canvas = document.querySelector(
+    ".react-pdf__Page__canvas",
+  ) as HTMLCanvasElement | null;
+  if (!canvas) return null;
+
+  const MAX_SIZE = 1024;
+  let width = canvas.width;
+  let height = canvas.height;
+
+  if (width > MAX_SIZE || height > MAX_SIZE) {
+    const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
+    width = Math.floor(width * ratio);
+    height = Math.floor(height * ratio);
+  }
+
+  const offscreen = document.createElement("canvas");
+  offscreen.width = width;
+  offscreen.height = height;
+  const ctx = offscreen.getContext("2d");
+  if (ctx) {
+    ctx.drawImage(canvas, 0, 0, width, height);
+    return offscreen.toDataURL("image/jpeg", 0.6);
+  }
+  return canvas.toDataURL("image/jpeg", 0.5);
+};
+
 const RollingSubtitle = ({ caption }: { caption: VoiceCaption }) => {
   const [display, setDisplay] = useState("");
 
@@ -3529,7 +3556,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       memoryContextChars: context?.studyContextChars,
       iterations: voiceTurnsRef.current.length,
       error:
-        status === "failed" ? voiceSessionErrorRef.current || undefined : undefined,
+        status === "failed"
+          ? voiceSessionErrorRef.current || undefined
+          : undefined,
       runtimeSettings: { ...brainRuntimeSettings },
       metadata: {
         activeBookId: canonicalActiveBookId || undefined,
@@ -3593,10 +3622,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         type: "session_ended",
         status: voiceSessionErrorRef.current ? "failed" : "completed",
         sessionId,
-        summary:
-          voiceSessionErrorRef.current
-            ? `Voice session ended after an error: ${compactVoiceEventText(voiceSessionErrorRef.current)}`
-            : turns.length > 0
+        summary: voiceSessionErrorRef.current
+          ? `Voice session ended after an error: ${compactVoiceEventText(voiceSessionErrorRef.current)}`
+          : turns.length > 0
             ? `Voice session ended with ${turns.length} transcript turn${turns.length === 1 ? "" : "s"}.`
             : "Voice session ended before transcript turns were captured.",
         metadata: {
@@ -3826,6 +3854,57 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               cardCount: storedFlashcards.length,
               activeBookId: canonicalActiveBookId || "",
             };
+          } else if (toolName === "look_at_current_page") {
+            const query = String(
+              args.query ||
+                lastVoiceUserMessageRef.current ||
+                "Describe this page.",
+            )
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 500);
+            let image: string | null = null;
+            try {
+              image = captureCurrentPdfPageImage();
+            } catch (visionErr) {
+              console.warn("Could not extract voice vision image:", visionErr);
+            }
+            if (!image) {
+              toolCompletionStatus = "blocked";
+              result = {
+                status: "blocked",
+                query,
+                reason:
+                  "No rendered PDF page image was available for voice current-page inspection.",
+                activeDocumentId: activeDocumentId || "",
+              };
+            } else {
+              const response = await fetch("/api/voice-current-page", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+                },
+                body: JSON.stringify({
+                  requestId: sessionId,
+                  query,
+                  image,
+                }),
+              });
+              const payload = await response.json().catch(() => ({}));
+              if (!response.ok) {
+                throw new Error(
+                  payload.error || "Voice current-page vision unavailable.",
+                );
+              }
+              result = {
+                status: "ready",
+                query,
+                model: payload.model || "openai/gpt-4o-mini",
+                result: payload.result || "",
+                activeDocumentId: activeDocumentId || "",
+              };
+            }
           } else if (toolName === "web_search") {
             const query = String(args.query || "")
               .replace(/\s+/g, " ")
@@ -4044,6 +4123,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       activeDocumentId,
       activeLearningBookTitle,
       activeProject,
+      apiKey,
       brainRuntimeSettings.webSearchPolicy,
       buildVoiceStudyContext,
       cacheWebSources,
@@ -4702,36 +4782,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     setIsTyping(true);
 
     try {
-      const canvas = document.querySelector(
-        ".react-pdf__Page__canvas",
-      ) as HTMLCanvasElement;
       let currentPageImage = null;
       const needsVision =
         /page|this|image|look|what|read|pdf|diagram|chart|graph|screen|visible|shown|display|see|seeing/i.test(
           userMsgContent,
         );
-      if (needsVision && canvas) {
+      if (needsVision) {
         try {
-          const MAX_SIZE = 1024;
-          let width = canvas.width;
-          let height = canvas.height;
-
-          if (width > MAX_SIZE || height > MAX_SIZE) {
-            const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
-            width = Math.floor(width * ratio);
-            height = Math.floor(height * ratio);
-          }
-
-          const offscreen = document.createElement("canvas");
-          offscreen.width = width;
-          offscreen.height = height;
-          const ctx = offscreen.getContext("2d");
-          if (ctx) {
-            ctx.drawImage(canvas, 0, 0, width, height);
-            currentPageImage = offscreen.toDataURL("image/jpeg", 0.6);
-          } else {
-            currentPageImage = canvas.toDataURL("image/jpeg", 0.5);
-          }
+          currentPageImage = captureCurrentPdfPageImage();
         } catch (visionErr) {
           console.warn("Could not extract vision image:", visionErr);
         }

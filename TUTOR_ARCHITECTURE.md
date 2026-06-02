@@ -36,6 +36,8 @@ use a `#faf9f6` paper style to keep review and diagnostics readable.
 - WebSocket console broadcaster at `/ws/debug` for Admin server logs.
 - OpenAI SDK against OpenRouter-compatible models.
 - Deepgram voice agent and TTS routes.
+- Local voice current-page vision bridge at `/api/voice-current-page` for
+  rendered PDF page inspection from the Deepgram voice-agent tool loop.
 - Serper web/news search.
 - Local voice web search bridge at `/api/voice-web-search` for explicit
   web/freshness requests from the Deepgram voice-agent tool loop.
@@ -117,9 +119,11 @@ source-material-first answering, handles web-search events, and manages TTS and
 voice flows. Live voice uses a dark audio-reactive stage, grouped voice-session
 transcripts, typed-turn injection, Deepgram websocket usage events, local
 client-side tools, and a local voice-agent event ledger for Admin. Voice can call
-`web_search` for explicit web or freshness requests; source-material questions
-about the current page, selected text, active document, or active book stay local
-first. Web-search sources write source-card artifacts. Generated flashcards
+`look_at_current_page` for current-page, visible-diagram, screen, and reading
+context questions by sending the rendered PDF page image through the local
+vision bridge. It can call `web_search` for explicit web or freshness requests;
+selected-text, active-document, and active-book questions stay local first.
+Web-search sources write source-card artifacts. Generated flashcards
 write local `ArtifactRecord` provenance rows with `not_checked` citation states
 so Admin can audit them before broader verification exists.
 

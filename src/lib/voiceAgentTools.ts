@@ -83,6 +83,22 @@ export const VOICE_AGENT_TOOL_DEFINITIONS = [
     },
   },
   {
+    name: "look_at_current_page",
+    description:
+      "Inspect the currently rendered PDF page image when the student asks about the current page, screen, visible diagram, chart, or what they are reading. Do not use for live web facts.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "The specific question or analysis request about the visible page.",
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
     name: "web_search",
     description:
       "Search live web sources only when the student explicitly asks for web, internet, online, latest, current, recent, or news information. Do not use for current page, selected text, uploaded document, active library, or local study-context questions.",

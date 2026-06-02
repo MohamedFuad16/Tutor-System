@@ -1520,6 +1520,130 @@ CRITICAL RULES:
     }
   });
 
+  app.post("/api/voice-current-page", async (req, res) => {
+    const startedAt = Date.now();
+    const requestId =
+      normalizeClientRequestId(req.body?.requestId) || activityId();
+    const visionId = `voice_page_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const query = String(req.body?.query || "Describe this page.")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 500);
+    const image = String(req.body?.image || "").trim();
+
+    if (!image || !image.startsWith("data:image/")) {
+      recordSystemActivity({
+        kind: "tool",
+        status: "blocked",
+        title: "Voice current-page vision blocked",
+        detail: "Voice look_at_current_page requires a rendered page image.",
+        requestId,
+        toolName: "look_at_current_page",
+        phase: "voice_tool",
+        metadata: { visionId },
+      });
+      return res.status(400).json({
+        requestId,
+        visionId,
+        error: "Current page image is required.",
+      });
+    }
+
+    const apiKey = resolveOpenRouterApiKey(req.headers);
+    if (!apiKey) {
+      recordSystemActivity({
+        kind: "tool",
+        status: "blocked",
+        title: "Voice current-page vision blocked",
+        detail:
+          "OpenRouter API key is required before voice mode can inspect the current page image.",
+        requestId,
+        toolName: "look_at_current_page",
+        phase: "voice_tool",
+        metadata: { visionId },
+      });
+      return res.status(401).json({
+        requestId,
+        visionId,
+        error: openRouterRequiredMessage,
+      });
+    }
+
+    recordSystemActivity({
+      kind: "tool",
+      status: "started",
+      title: "Voice current-page vision started",
+      detail: query,
+      requestId,
+      model: "openai/gpt-4o-mini",
+      toolName: "look_at_current_page",
+      phase: "voice_tool",
+      metadata: { visionId },
+    });
+
+    try {
+      const openai = new OpenAI({
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey,
+      });
+      const visionResponse = await openai.chat.completions.create({
+        model: "openai/gpt-4o-mini",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: query || "Describe this page." },
+              { type: "image_url", image_url: { url: image } },
+            ],
+          },
+        ],
+      });
+      const result =
+        visionResponse.choices[0]?.message?.content ||
+        "Empty response from vision model.";
+      recordSystemActivity({
+        kind: "tool",
+        status: "completed",
+        title: "Voice current-page vision completed",
+        detail: "Voice mode inspected the currently rendered PDF page image.",
+        requestId,
+        model: "openai/gpt-4o-mini",
+        toolName: "look_at_current_page",
+        phase: "voice_tool",
+        durationMs: Date.now() - startedAt,
+        metadata: { visionId, resultChars: result.length },
+      });
+      return res.json({
+        requestId,
+        visionId,
+        model: "openai/gpt-4o-mini",
+        result,
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Current page vision unavailable.";
+      recordSystemActivity({
+        kind: "tool",
+        status: "failed",
+        title: "Voice current-page vision unavailable",
+        detail: message,
+        requestId,
+        model: "openai/gpt-4o-mini",
+        toolName: "look_at_current_page",
+        phase: "voice_tool",
+        durationMs: Date.now() - startedAt,
+        metadata: { visionId },
+      });
+      return res.status(503).json({
+        requestId,
+        visionId,
+        error: "Current page vision temporarily unavailable.",
+      });
+    }
+  });
+
   app.post("/api/voice-web-search", async (req, res) => {
     const startedAt = Date.now();
     const requestId =
@@ -3011,6 +3135,9 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               },
             ],
           },
+          look_at_current_page: {
+            query: "What is visible on the current study page?",
+          },
           web_search: {
             query: "latest local voice tool loop testing patterns",
             mode: "search",
@@ -3173,7 +3300,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               thinkPrompt += `\n\nLOCAL STUDY CONTEXT FOR THIS VOICE SESSION:\n${compactStudyContext}\n\nUse this local learner memory, active book, and document context before general knowledge. If the student asks about the current material, answer from this context and say when a detail is not available locally. Keep the spoken answer concise.`;
             }
             thinkPrompt +=
-              "\n\nVOICE TOOL POLICY: You may call local client-side tools during this voice session. Use look_at_study_context before answering about the active book, document, selected text, learner memory, or current study material when the prompt context is not enough. If the student asks for flashcards, revision cards, quiz questions, or active recall, call generate_flashcards with concise cards before saying they were created. When a new important concept should be added to the learner graph, call update_graph with one exact atomic concept. Keep spoken responses short after tool results.";
+              "\n\nVOICE TOOL POLICY: You may call local client-side tools during this voice session. Use look_at_study_context before answering about the active book, document, selected text, learner memory, or current study material when the prompt context is not enough. Use look_at_current_page when the student asks about the current page, screen, visible diagram, chart, or what they are reading. Use web_search only for explicit web, online, latest, current, recent, or news-style external facts, not for current-page or document questions. If the student asks for flashcards, revision cards, quiz questions, or active recall, call generate_flashcards with concise cards before saying they were created. When a new important concept should be added to the learner graph, call update_graph with one exact atomic concept. Keep spoken responses short after tool results.";
 
             const config = {
               type: "Settings",

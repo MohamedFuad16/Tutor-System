@@ -26,6 +26,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Chat and Study can capture local document context.
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
 - Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
+- Voice can now call the local \`look_at_current_page\` tool for current-page, visible-diagram, screen, and source-material questions by sending the rendered PDF page image through a local server vision bridge and recording Admin/tool activity.
 - Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
 - Admin exposes model runs, tool jobs, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
 - Generated learning-book notes now run an initial local provenance check when Memory writes them, so coherent note rows move from \`not_checked\` to \`verified\` immediately while remaining limited to ledger traceability. When document text is available, they also carry compact source-span preview anchors.
@@ -156,7 +157,7 @@ Implemented Admin surfaces:
 | System Activity | Request timelines, retrieval injections, and backend event summaries. |
 | Model Runs | Provider/model selection, fallbacks, token/cost metadata, failures. |
 | Tool Jobs | Tool lifecycle visibility. |
-| Voice Agent Timeline | Local voice websocket lifecycle, Deepgram settings, speaking/listening state, barge-in, transcript turns, web-search tool calls, and errors. |
+| Voice Agent Timeline | Local voice websocket lifecycle, Deepgram settings, speaking/listening state, barge-in, transcript turns, current-page vision calls, web-search tool calls, and errors. |
 | Memory/Retrieval Events | Learner-brain writes and context selection. |
 | Evidence Ledger | Evidence rows and BKT deltas. |
 | Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and chapter audio guide provenance. |
@@ -180,6 +181,7 @@ Good voice behavior means:
 - preserve learner state when voice falls back to text;
 - record voice costs and failures;
 - show voice lifecycle and interruption state in Admin;
+- let voice inspect the currently rendered PDF page for current-page, screen, visible-diagram, and reading-context questions;
 - let voice call live web search only for explicit web or freshness questions, while keeping current-page, selected-text, document, and active-book questions source-first;
 - avoid pretending live speech is evidence.
 
@@ -201,6 +203,7 @@ Implemented now:
 - durable evidence and mastery ledgers;
 - durable model/tool/memory/retrieval observability rows;
 - request-correlated retrieval, model-run, tool-job, server-activity, and voice-session timelines;
+- local voice current-page vision parity with typed chat for rendered PDF page questions;
 - local voice web-search tool parity with typed chat for explicit live-web/freshness questions;
 - runtime tuning controls;
 - correction request ledger and non-destructive propagation overlays;
@@ -222,7 +225,6 @@ Still local beta work:
 - generated-artifact verifiers for charts, code snippets, images, websites, previews, and other unsupported artifact kinds;
 - source-span claim matching for generated learning notes beyond the current provenance-level check;
 - audio-content transcript matching beyond the current stored-manifest integrity check;
-- voice current-page vision parity with typed chat;
 - durable job queue with retries and dead-letter review;
 - stronger tests that make mastery writes impossible without validated evidence and audit rows.
 

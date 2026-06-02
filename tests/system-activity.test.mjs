@@ -136,6 +136,7 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
   const toolNames = request.functions.map((fn) => fn.name).sort();
   assert.deepEqual(toolNames, [
     "generate_flashcards",
+    "look_at_current_page",
     "look_at_study_context",
     "update_graph",
     "web_search",
@@ -195,6 +196,38 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         event.status === "completed" &&
         event.title === "Voice study context attached" &&
         event.requestId === "voice-test-session-1",
+    ),
+  );
+});
+
+test("blocked voice current-page vision writes correlated system activity", async (t) => {
+  const { server, baseUrl } = await startApp();
+  t.after(() => server.close());
+
+  const response = await fetch(`${baseUrl}/api/voice-current-page`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      requestId: "voice-page-test-1",
+      query: "What is visible here?",
+      image: "",
+    }),
+  });
+
+  assert.equal(response.status, 400);
+  const payload = await response.json();
+  assert.equal(payload.requestId, "voice-page-test-1");
+  assert.equal(payload.error, "Current page image is required.");
+
+  const body = await readActivity(baseUrl);
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "tool" &&
+        event.status === "blocked" &&
+        event.title === "Voice current-page vision blocked" &&
+        event.requestId === "voice-page-test-1" &&
+        event.toolName === "look_at_current_page",
     ),
   );
 });

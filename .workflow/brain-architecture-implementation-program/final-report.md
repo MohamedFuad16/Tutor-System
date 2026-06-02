@@ -48,9 +48,9 @@ guide.
 ## Verification Evidence
 
 - Deepgram generation passed for `npm run audio:overview:generate -- --provider
-  deepgram --overwrite --speed 1 --book tutor-book`.
+deepgram --overwrite --speed 1 --book tutor-book`.
 - Deepgram generation passed for `npm run audio:overview:generate -- --provider
-  deepgram --overwrite --speed 1 --book app-design-language`.
+deepgram --overwrite --speed 1 --book app-design-language`.
 - `ffprobe` measured all 25 built-in chapter guide assets in range:
   - Tutor System Architecture: 220-240 seconds.
   - User Brain Architecture: 193-214 seconds.
@@ -112,7 +112,7 @@ own rewrite pass.
 ## Verification Evidence
 
 - Deepgram regeneration passed for `npm run audio:overview:generate -- --provider
-  deepgram --overwrite --speed 1 --book user-brain-architecture`.
+deepgram --overwrite --speed 1 --book user-brain-architecture`.
 - `ffprobe` measured the regenerated chapter durations as 207, 195, 196, 195,
   205, 193, 214, and 195 seconds.
 - `npm run audio:overview:dry-run`: passed, 25 present, 0 missing, 25 planned.
@@ -2235,5 +2235,75 @@ text, active document, or active book questions.
   scope.
 - Browser-verify a successful live Serper voice web-search response when a
   deliberate key-backed test is in scope.
-- Continue closing typed-chat vs voice parity for current-page vision.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 42: Voice Current-Page Vision Parity
+
+Phase 42 closes the other typed-chat vs voice parity gap from the recent voice
+tool work: current-page vision. Voice mode can now inspect the rendered PDF page
+for page, screen, visible-diagram, chart, and reading-context questions through
+a local `/api/voice-current-page` bridge, then return the text vision result to
+the Deepgram voice-agent tool loop.
+
+## Graphify Context
+
+- Graphify routed this slice through `VOICE_AGENT_TOOL_DEFINITIONS`,
+  `ChatPanel()`, `captureCurrentPdfPageImage()`, `server.ts`,
+  `voiceAgentTools.ts`, `PdfViewer()`, tests, and Admin/system-activity
+  surfaces.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+
+## Integration Decisions
+
+- Added `look_at_current_page` to the shared voice-agent tool definition list.
+- Added `/api/voice-current-page` as a local bridge that validates request id,
+  query, rendered page image, and OpenRouter key before using
+  `openai/gpt-4o-mini` for page inspection.
+- `ChatPanel` now reuses one current-PDF-canvas capture helper for typed chat
+  and voice mode.
+- Voice tool execution can now call `look_at_current_page`, return the vision
+  model text to the voice-agent loop, and record blocked/completed tool-job
+  status.
+- The mock voice provider derives the new tool from
+  `VOICE_AGENT_TOOL_DEFINITIONS`, so offline voice-tool tests catch future drift.
+- README, Tutor System Architecture, User Brain Architecture, App Design
+  Language, and workflow evidence now document local voice current-page
+  boundaries.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- Explicit `npx prettier --check` for `ChatPanel` and workflow files: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 94 tests.
+- `npm run build`: passed.
+- In-app Browser QA on `http://localhost:3100`: Admin/System Activity rendered
+  request timelines, tool signals, and voice activity with zero captured browser
+  error logs.
+- In-app Browser QA on `http://localhost:3100`: Study rendered after returning
+  from Admin with zero captured browser error logs.
+- In-app Browser QA at `390x844`: Study rendered with navigation available and
+  zero captured browser error logs.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  865 nodes, 1479 edges, and 47 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `VOICE_AGENT_TOOL_DEFINITIONS`, `ChatPanel()`,
+  `currentPageTool`, `server.ts`, `voiceAgentTools.ts`, `PdfViewer()`, and
+  `AdminView()`.
+- `graphify path "VOICE_AGENT_TOOL_DEFINITIONS"
+"captureCurrentPdfPageImage()"` found a three-hop path through
+  `voiceAgentTools.ts` and `ChatPanel.tsx`.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Remaining Work
+
+- Browser-verify a live Deepgram voice round trip when provider access is in
+  scope.
+- Browser-verify a successful live OpenRouter voice current-page vision response
+  when a deliberate key-backed test is in scope.
+- Browser-verify a successful live Serper voice web-search response when a
+  deliberate key-backed test is in scope.
 - AWS/cloud synchronization remains out of scope until beta testing.

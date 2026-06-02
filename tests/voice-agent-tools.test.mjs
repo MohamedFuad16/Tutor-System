@@ -13,9 +13,10 @@ test("voice agent tool definitions expose local study tools", () => {
     "look_at_study_context",
     "update_graph",
     "generate_flashcards",
+    "look_at_current_page",
     "web_search",
   ]);
-  assert.equal(VOICE_AGENT_TOOL_DEFINITIONS.length, 4);
+  assert.equal(VOICE_AGENT_TOOL_DEFINITIONS.length, 5);
   assert.equal(
     VOICE_AGENT_TOOL_DEFINITIONS.every((tool) => !("endpoint" in tool)),
     true,
@@ -28,6 +29,10 @@ test("voice agent tool definitions expose local study tools", () => {
     "search",
     "news",
   ]);
+  const currentPageTool = VOICE_AGENT_TOOL_DEFINITIONS.find(
+    (tool) => tool.name === "look_at_current_page",
+  );
+  assert.deepEqual(currentPageTool.parameters.required, ["query"]);
 });
 
 test("voice function arguments parse Deepgram arguments and input fields", () => {

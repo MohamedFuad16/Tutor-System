@@ -330,31 +330,42 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "server.ts, src/components/ChatPanel.tsx, src/lib/voiceAgentTools.ts, tests/system-activity.test.mjs, tests/voice-agent-tools.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "UU",
+      "name": "Voice current-page vision parity",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "server.ts, src/components/ChatPanel.tsx, src/lib/voiceAgentTools.ts, tests/system-activity.test.mjs, tests/voice-agent-tools.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_41_complete",
+    "status": "phase_42_complete",
     "checks": [
-      "Graphify routed the slice through VOICE_AGENT_TOOL_DEFINITIONS, ChatPanel(), server.ts, searchSerper(), voiceAgentTools.ts, web-search.ts, and Admin/source-artifact adjacent surfaces",
-      "Added web_search to the shared Deepgram voice-agent tool definition list",
-      "Added /api/voice-web-search as a local bridge that records web system activity for started, completed, blocked, and failed states",
-      "ChatPanel executes voice web_search tool calls, blocks source-local prompts conservatively, records web search/usage events, caches sources, and writes source-card artifact/citation provenance",
+      "Graphify routed the slice through VOICE_AGENT_TOOL_DEFINITIONS, ChatPanel(), captureCurrentPdfPageImage(), server.ts, voiceAgentTools.ts, PdfViewer(), tests, and Admin/system-activity surfaces",
+      "Added look_at_current_page to the shared Deepgram voice-agent tool definition list",
+      "Added /api/voice-current-page as a local bridge that records tool system activity for blocked, started, completed, and failed states",
+      "ChatPanel reuses one current-PDF-canvas capture helper for typed chat and voice mode",
+      "ChatPanel executes voice look_at_current_page tool calls, returns vision text into the voice-agent loop, and records blocked/completed tool-job status",
       "The mock voice provider now derives from VOICE_AGENT_TOOL_DEFINITIONS so offline voice-tool tests catch future drift",
-      "README, Tutor System Architecture, User Brain Architecture, App Design Language, and workflow evidence document local voice web-search boundaries",
+      "README, Tutor System Architecture, User Brain Architecture, App Design Language, and workflow evidence document local voice current-page boundaries",
       "npm run format passed",
       "npm run format:check passed",
+      "Explicit npx prettier check for ChatPanel and workflow files passed",
       "npm run lint passed",
-      "npm run test passed, 93 tests",
+      "npm run test passed, 94 tests",
       "npm run build passed",
-      "In-app Browser QA on http://localhost:3100 confirmed Admin/System Activity rendered request timelines, local activity copy, tool visibility, and voice controls with zero captured browser error logs",
-      "In-app Browser QA at 390x844 confirmed Admin/System Activity remained reachable with zero captured browser error logs",
-      "graphify update . --force regenerated Graphify artifacts with 863 nodes, 1477 edges, and 59 communities",
+      "In-app Browser QA on http://localhost:3100 confirmed Admin/System Activity rendered request timelines, tool signals, and voice activity with zero captured browser error logs",
+      "In-app Browser QA on http://localhost:3100 confirmed Study rendered after returning from Admin with zero captured browser error logs",
+      "In-app Browser QA at 390x844 confirmed Study rendered with navigation available and zero captured browser error logs",
+      "graphify update . --force regenerated Graphify artifacts with 865 nodes, 1479 edges, and 47 communities",
       "npm run graphify:tree passed",
-      "Graphify smoke query found VOICE_AGENT_TOOL_DEFINITIONS, ChatPanel(), searchSerper(), server.ts, voiceAgentTools.ts, and web-search.ts",
-      "graphify path VOICE_AGENT_TOOL_DEFINITIONS to searchSerper() found a two-hop path through server.ts",
+      "Graphify smoke query found VOICE_AGENT_TOOL_DEFINITIONS, ChatPanel(), currentPageTool, server.ts, voiceAgentTools.ts, PdfViewer(), and AdminView()",
+      "graphify path VOICE_AGENT_TOOL_DEFINITIONS to captureCurrentPdfPageImage() found a three-hop path through voiceAgentTools.ts and ChatPanel.tsx",
       "Graph artifact grep found no server.mjs or .tmp-test scratch nodes",
       "Scratch artifact checks found no server.mjs, .tmp-test, or running node server.mjs process after QA cleanup",
-      "Temporary local dev server on port 3100 was stopped after verification"
+      "Temporary local dev server on port 3100 was stopped after verification",
+      "npm run brain:postchange -- --reason skill-preflight was skipped because the current package.json has no brain:postchange script"
     ]
   }
 }

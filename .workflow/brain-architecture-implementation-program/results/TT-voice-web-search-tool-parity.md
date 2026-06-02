@@ -51,4 +51,4 @@
 - Browser-verify a live Deepgram voice round trip with real provider access.
 - Browser-verify a successful live Serper voice web-search response when a
   deliberate key-backed test is in scope.
-- Close voice current-page vision parity in a later local slice.
+- Voice current-page vision parity was closed by the next local slice.
