@@ -79,3 +79,10 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
 - `.workflow/brain-architecture-implementation-program/packets/*.md`
 - `.workflow/brain-architecture-implementation-program/results/*.md`
 - `.workflow/brain-architecture-implementation-program/final-report.md`
+
+## Current Slice
+
+- AAI: Generated-note preview lexical support. Add a conservative local
+  summary-preview to source-preview matcher, surface coverage in Admin, refresh
+  affected architecture/design guides, regenerate affected stored audio, verify,
+  commit, and push.

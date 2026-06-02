@@ -6,6 +6,7 @@ const {
   citationStateIdFor,
   createArtifactRecord,
   createCitationStateRecord,
+  createGeneratedNoteClaimSpanCoverage,
   createGeneratedNoteSourceSpans,
   createInitialLocalCitationIntegrityRecords,
   createGeneratedFlashcardsArtifactRecords,
@@ -270,6 +271,13 @@ test("generated learning notes persist source-span anchors when document context
   assert.equal(artifact.metadata.sourceSpanCount, 1);
   assert.deepEqual(artifact.metadata.sourceDocumentIds, ["document-1"]);
   assert.equal(artifact.metadata.sourceSpanCoverage, "anchored");
+  assert.equal(artifact.metadata.claimSpanCoverage.state, "matched");
+  assert.equal(artifact.metadata.claimSpanCoverage.coveragePercent, 100);
+  assert.equal(
+    artifact.metadata.claimSpanCoverage.semanticEntailmentChecked,
+    false,
+  );
+  assert.equal(artifact.metadata.claimSpanCoverage.factualTruthChecked, false);
   assert.equal(
     artifact.metadata.sourceSpanPreviews[0].documentId,
     "document-1",
@@ -367,7 +375,22 @@ test("initial local integrity check verifies generated notes with source-span an
   assert.equal(artifact.metadata.sourceSpanCoverage, "anchored");
   assert.equal(
     citation.metadata.localCitationIntegrity.claimCheck,
-    "generated_learning_note_provenance",
+    "generated_learning_note_preview_lexical_support",
+  );
+  assert.equal(
+    citation.metadata.localCitationIntegrity.generatedNoteClaimSpanCoverage
+      .state,
+    "matched",
+  );
+  assert.equal(
+    citation.metadata.localCitationIntegrity.generatedNoteClaimSpanCoverage
+      .semanticEntailmentChecked,
+    false,
+  );
+  assert.equal(
+    artifact.metadata.localCitationIntegrity.generatedNoteClaimSpanCoverage
+      .state,
+    "matched",
   );
 });
 
@@ -394,9 +417,111 @@ test("local citation verifier keeps generated notes unavailable when required so
   assert.equal(result.state, "unavailable");
   assert.equal(
     result.metadata.claimCheck,
-    "generated_learning_note_provenance",
+    "generated_learning_note_preview_lexical_support",
   );
   assert.match(result.failureReason || "", /source-span anchors/);
+});
+
+test("generated note claim-span coverage reports partial local lexical support without claiming truth", () => {
+  const spans = createGeneratedNoteSourceSpans([
+    {
+      documentId: "document-partial",
+      text: "Bayesian Knowledge Tracing updates mastery from observed evidence.",
+    },
+  ]);
+  const coverage = createGeneratedNoteClaimSpanCoverage(
+    [
+      "Bayesian Knowledge Tracing updates mastery from observed evidence.",
+      "Orange satellites measure ocean currents from orbit.",
+    ].join(" "),
+    spans,
+    true,
+  );
+
+  assert.equal(coverage.state, "partial");
+  assert.equal(coverage.claimCount, 2);
+  assert.equal(coverage.matchedClaimCount, 1);
+  assert.equal(coverage.unmatchedClaimCount, 1);
+  assert.equal(coverage.coveragePercent, 50);
+  assert.equal(coverage.semanticEntailmentChecked, false);
+  assert.equal(coverage.factualTruthChecked, false);
+});
+
+test("local citation verifier keeps generated notes unavailable when saved previews lack lexical support", () => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-unmatched-spans",
+      conversationId: "conversation-unmatched-spans",
+      bookId: "book-unmatched-spans",
+      chapterTitle: "BKT updates",
+      summary: "Bayesian Knowledge Tracing updates mastery from evidence.",
+      sourceSpanRequired: true,
+      sourceSpans: [
+        {
+          documentId: "document-unrelated",
+          text: "Orange satellites measure ocean currents from orbit.",
+        },
+      ],
+    },
+    100,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp: 1500,
+  });
+
+  assert.equal(result.state, "unavailable");
+  assert.equal(
+    result.metadata.claimCheck,
+    "generated_learning_note_preview_lexical_support",
+  );
+  assert.equal(result.metadata.generatedNoteClaimSpanCoverage.state, "missing");
+  assert.equal(
+    result.metadata.generatedNoteClaimSpanCoverage.factualTruthChecked,
+    false,
+  );
+  assert.match(result.failureReason || "", /lexically support 0\/1/);
+});
+
+test("local citation verifier rejects generated note source-span preview identity drift", () => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-tampered-spans",
+      conversationId: "conversation-tampered-spans",
+      bookId: "book-tampered-spans",
+      chapterTitle: "BKT updates",
+      summary: "Bayesian Knowledge Tracing updates mastery from evidence.",
+      sourceSpanRequired: true,
+      sourceSpans: [
+        {
+          documentId: "document-bkt",
+          text: "Bayesian Knowledge Tracing updates mastery from observed evidence.",
+        },
+      ],
+    },
+    100,
+  );
+  const unsafeArtifact = {
+    ...artifact,
+    metadata: {
+      ...artifact.metadata,
+      sourceSpanPreviews: artifact.metadata.sourceSpanPreviews.map((span) => ({
+        ...span,
+        id: "source-span-tampered",
+      })),
+    },
+  };
+
+  const result = verifyLocalCitationIntegrity({
+    artifact: unsafeArtifact,
+    citation,
+    timestamp: 1550,
+  });
+
+  assert.equal(result.state, "conflicting");
+  assert.match(result.failureReason || "", /previews do not match/);
 });
 
 test("stored audio overviews become not-checked artifact records with local provenance", () => {
@@ -655,6 +780,7 @@ test("local citation verifier marks coherent generated learning-note provenance 
     "metadata.sourceDocumentIds",
     "metadata.sourceSpanPreviews",
     "metadata.sourceSpanCoverage",
+    "metadata.claimSpanCoverage",
     "metadata.localOnly",
     "metadata.externalContentFetched",
   ]);

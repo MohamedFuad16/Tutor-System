@@ -2393,12 +2393,12 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Learning-note artifact rows",
         detail:
-          "Generated learning-book entries leave ArtifactRecord provenance, attach compact source-span anchors when document text exists, and run a local ledger-coherence check immediately.",
+          "Generated learning-book entries leave ArtifactRecord provenance, attach compact source-span anchors when document text exists, and run a local ledger-coherence check immediately. Notes with saved spans also report summary-preview to source-preview lexical support.",
       },
       {
         title: "Learning-note integrity checks",
         detail:
-          "Admin can re-run generated-note checks when the local entry, book or conversation, citation link, saved source-span anchors, and no-external-fetch metadata agree, while still leaving sentence-level source-span truth for later.",
+          "Admin can re-run generated-note checks when the local entry, book or conversation, citation link, saved source-span anchors, local preview-level lexical support, and no-external-fetch metadata agree. Shared preview terms are inspectable support, not semantic entailment or fact proof.",
       },
       {
         title: "Chapter audio guides",

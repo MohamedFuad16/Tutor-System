@@ -3263,3 +3263,93 @@ traffic.
 - Continue broader local beta validation until real chat, voice, retrieval,
   tools, memory, evidence, corrections, Admin, and Revision operate together.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 56: Generated-Note Preview Lexical Support
+
+## Scope
+
+Phase 56 closes the next local generated-note trust gap. Notes with saved
+document previews now need local summary-preview to source-preview lexical
+support before their scoped local integrity check can pass.
+
+## Graphify Context
+
+- `graphify path "createGeneratedNoteSourceSpans()"
+  "recordGeneratedNotesArtifact()"` found a two-hop path through
+  `artifact.records.ts`.
+- `graphify path "recordGeneratedNotesArtifact()"
+  "verifyArtifactCitationIntegrity()"` found a two-hop path through
+  `artifact.records.ts`.
+- Graphify routed the slice through `artifact.records.ts`,
+  `memory.orchestrator.ts`, artifact tests, Admin Source Artifacts, and the
+  architecture/design books.
+
+## Integration Decisions
+
+- Added `createGeneratedNoteClaimSpanCoverage()` with compact claim splitting,
+  normalized meaningful terms, best-span overlap, matched/partial/missing state,
+  matched counts, percentage, and explicit `semanticEntailmentChecked: false`
+  and `factualTruthChecked: false` flags.
+- Kept no-document notes provenance-only. Notes with saved spans require local
+  lexical support for every compact saved claim preview.
+- Mapped insufficient support to `unavailable`, not `conflicting`. Reserved
+  `conflicting` for saved count, id, citation-id, and preview-id drift.
+- Added a `claimSpanPolicy` marker to generated-note metadata.
+- Added Admin row-level preview lexical-support state, matched claims, percent,
+  and local-overlap-only boundary copy.
+- Admin rows prefer the latest recomputed citation-integrity coverage report
+  after a local rerun, falling back to the write-time snapshot before reruns.
+- Updated Tutor System Architecture, User Brain Architecture, the built-in
+  Tutor Architecture book, and App Design Language control patterns.
+- Refreshed three affected 3-4 minute stored audio guides with Deepgram Aura
+  Odysseus at speed `1`.
+- Kept AWS/cloud synchronization intentionally deferred.
+
+## Sidecar Findings
+
+- Ramanujan recommended the bounded no-fetch lexical overlap report and the
+  conservative `unavailable` mapping for insufficient support.
+- Carson mapped the following local-beta queue slice: add a local-only durable
+  background queue with retries and dead-letter review for bounded generated
+  note matching jobs without changing foreground tool telemetry.
+
+## Verification Evidence
+
+- Focused `artifact-records.test.mjs`: passed, 34 tests.
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: sandbox run reached 121 passing tests and failed only on the
+  known local socket-binding restriction; approved rerun passed, 129 tests.
+- `npm run build`: passed.
+- `npm run audio:overview:dry-run`: passed, 25 present and 0 missing assets.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the checkout has no `brain:postchange` script.
+- Browser QA confirmed Admin Sources at `1440x1000` and `390x844` rendered the
+  lexical-support and honest-boundary copy with no horizontal overflow and no
+  browser warnings or errors. The seeded browser database had no generated-note
+  rows, so row-state cases remain covered by focused tests.
+- Browser QA confirmed the affected User Brain, Tutor Architecture, and App
+  Design reader chapters rendered updated copy with one visible player, no
+  native media controls, no horizontal overflow, and clean logs.
+- Refreshed MP3s measured about `3:30`, `3:14`, and `3:44`.
+- `graphify update . --force`: passed, `968` nodes, `1692` edges, and `54`
+  communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found the matcher, normalization helpers, verifier,
+  generated-note record builder, and Admin route.
+- `graphify path "createGeneratedNoteClaimSpanCoverage()" "AdminView()"` found
+  a three-hop path through `artifact.records.ts` and `AdminView.tsx`.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Remaining Work
+
+- Add stronger semantic and document-wide grounding beyond compact saved
+  previews.
+- Add verifier contracts for charts, code snippets, images, websites, previews,
+  and other unsupported artifact kinds.
+- Add audio-content transcript matching beyond manifest integrity.
+- Add a durable local background queue with retries and dead-letter review.
+- Run deliberate provider-key chat and voice turns when spending live model
+  calls is in scope.
+- AWS/cloud synchronization remains out of scope until beta testing.

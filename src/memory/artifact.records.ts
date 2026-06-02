@@ -84,6 +84,34 @@ export type GeneratedNoteSourceSpan = {
   source?: string;
 };
 
+export type GeneratedNoteClaimSpanMatch = {
+  claim: string;
+  status: "matched" | "unmatched";
+  meaningfulTokenCount: number;
+  overlapTokenCount: number;
+  overlapRatio: number;
+  overlapTokens: string[];
+  sourceSpanId?: string;
+  sourceDocumentId?: string;
+};
+
+export type GeneratedNoteClaimSpanCoverage = {
+  verifier: "local_generated_note_preview_lexical_support";
+  verifierVersion: 1;
+  localOnly: true;
+  externalContentFetched: false;
+  semanticEntailmentChecked: false;
+  factualTruthChecked: false;
+  state: "matched" | "partial" | "missing" | "not_required";
+  sourceSpanRequired: boolean;
+  sourceSpanCount: number;
+  claimCount: number;
+  matchedClaimCount: number;
+  unmatchedClaimCount: number;
+  coveragePercent: number;
+  matches: GeneratedNoteClaimSpanMatch[];
+};
+
 export type GeneratedNotesArtifactInput = {
   entryId: string;
   bookId?: string;
@@ -145,7 +173,9 @@ export type CitationIntegrityResult = {
       | "artifact_level_source_card"
       | "generated_flashcard_provenance"
       | "generated_learning_note_provenance"
+      | "generated_learning_note_preview_lexical_support"
       | "stored_audio_overview_integrity";
+    generatedNoteClaimSpanCoverage?: GeneratedNoteClaimSpanCoverage;
   };
 };
 
@@ -434,6 +464,213 @@ export const createGeneratedNoteSourceSpans = (
     .filter(Boolean)
     .slice(0, limit) as GeneratedNoteSourceSpan[];
 
+const generatedNoteClaimStopWords = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "because",
+  "been",
+  "but",
+  "by",
+  "can",
+  "did",
+  "do",
+  "does",
+  "for",
+  "from",
+  "had",
+  "has",
+  "have",
+  "how",
+  "if",
+  "in",
+  "into",
+  "is",
+  "it",
+  "its",
+  "may",
+  "not",
+  "of",
+  "on",
+  "or",
+  "our",
+  "should",
+  "so",
+  "than",
+  "that",
+  "the",
+  "their",
+  "them",
+  "then",
+  "there",
+  "these",
+  "they",
+  "this",
+  "to",
+  "was",
+  "we",
+  "were",
+  "what",
+  "when",
+  "where",
+  "which",
+  "while",
+  "who",
+  "why",
+  "will",
+  "with",
+  "without",
+  "you",
+  "your",
+]);
+
+const normalizedGeneratedNoteClaimTokens = (value: unknown) =>
+  Array.from(
+    new Set(
+      compact(value)
+        .toLowerCase()
+        .match(/[a-z0-9]+/g)
+        ?.map((token) =>
+          token.length > 4 && token.endsWith("s") && !token.endsWith("ss")
+            ? token.slice(0, -1)
+            : token,
+        )
+        .filter(
+          (token) =>
+            token.length > 1 && !generatedNoteClaimStopWords.has(token),
+        ) || [],
+    ),
+  );
+
+const generatedNoteClaimsFromSummary = (value: unknown, limit = 8) => {
+  const text =
+    typeof value === "string"
+      ? value
+      : value === undefined || value === null
+        ? ""
+        : JSON.stringify(value);
+
+  return (text.match(/[^.!?\n]+(?:[.!?]+|$)/g) || [])
+    .map((claim) =>
+      compact(
+        claim.replace(
+          /^(key idea|why it matters|how to review it|learning note):\s*/i,
+          "",
+        ),
+      ),
+    )
+    .filter((claim) => normalizedGeneratedNoteClaimTokens(claim).length >= 3)
+    .slice(0, limit);
+};
+
+const generatedNoteSourceSpansFromMetadata = (
+  value: unknown,
+): GeneratedNoteSourceSpan[] =>
+  (Array.isArray(value) ? value : [])
+    .map((span) => {
+      if (!span || typeof span !== "object") return null;
+      const candidate = span as Record<string, unknown>;
+      const preview = compact(candidate.preview);
+      if (!preview) return null;
+
+      return {
+        id: compact(candidate.id),
+        documentId: optionalCompact(candidate.documentId),
+        title: optionalCompact(candidate.title),
+        classification: optionalCompact(candidate.classification),
+        extractionMode: optionalCompact(candidate.extractionMode),
+        preview,
+        textLength: Number(candidate.textLength) || preview.length,
+        source: optionalCompact(candidate.source),
+      };
+    })
+    .filter(Boolean) as GeneratedNoteSourceSpan[];
+
+export const createGeneratedNoteClaimSpanCoverage = (
+  summary: unknown,
+  sourceSpans: GeneratedNoteSourceSpan[],
+  sourceSpanRequired = false,
+): GeneratedNoteClaimSpanCoverage => {
+  const claims = generatedNoteClaimsFromSummary(summary);
+  const spanTokens = sourceSpans.map((span) => ({
+    span,
+    tokens: normalizedGeneratedNoteClaimTokens(span.preview),
+  }));
+  const matches = claims.map((claim) => {
+    const claimTokens = normalizedGeneratedNoteClaimTokens(claim);
+    const best = spanTokens.reduce<{
+      span?: GeneratedNoteSourceSpan;
+      overlapTokens: string[];
+    }>(
+      (current, candidate) => {
+        const candidateTokens = new Set(candidate.tokens);
+        const overlapTokens = claimTokens.filter((token) =>
+          candidateTokens.has(token),
+        );
+        return overlapTokens.length > current.overlapTokens.length
+          ? { span: candidate.span, overlapTokens }
+          : current;
+      },
+      { overlapTokens: [] },
+    );
+    const overlapRatio =
+      claimTokens.length > 0
+        ? best.overlapTokens.length / claimTokens.length
+        : 0;
+    const requiredOverlap = Math.max(3, Math.ceil(claimTokens.length * 0.45));
+    const status =
+      best.overlapTokens.length >= requiredOverlap ? "matched" : "unmatched";
+
+    return {
+      claim,
+      status,
+      meaningfulTokenCount: claimTokens.length,
+      overlapTokenCount: best.overlapTokens.length,
+      overlapRatio: Math.round(overlapRatio * 100) / 100,
+      overlapTokens: best.overlapTokens,
+      sourceSpanId: best.span?.id,
+      sourceDocumentId: best.span?.documentId,
+    } satisfies GeneratedNoteClaimSpanMatch;
+  });
+  const matchedClaimCount = matches.filter(
+    (match) => match.status === "matched",
+  ).length;
+  const state =
+    sourceSpans.length === 0
+      ? sourceSpanRequired
+        ? "missing"
+        : "not_required"
+      : matches.length === 0 || matchedClaimCount === 0
+        ? "missing"
+        : matchedClaimCount === matches.length
+          ? "matched"
+          : "partial";
+
+  return {
+    verifier: "local_generated_note_preview_lexical_support",
+    verifierVersion: 1,
+    localOnly: true,
+    externalContentFetched: false,
+    semanticEntailmentChecked: false,
+    factualTruthChecked: false,
+    state,
+    sourceSpanRequired,
+    sourceSpanCount: sourceSpans.length,
+    claimCount: matches.length,
+    matchedClaimCount,
+    unmatchedClaimCount: matches.length - matchedClaimCount,
+    coveragePercent:
+      matches.length > 0
+        ? Math.round((matchedClaimCount / matches.length) * 100)
+        : 0,
+    matches,
+  };
+};
+
 export const verifyLocalCitationIntegrity = (input: {
   artifact?: ArtifactRecord | null;
   citation: CitationState;
@@ -445,6 +682,16 @@ export const verifyLocalCitationIntegrity = (input: {
   const generatedFlashcardsArtifact = artifact?.artifactType === "flashcards";
   const generatedNoteArtifact = artifact?.artifactType === "notes";
   const audioOverviewArtifact = artifact?.artifactType === "audio_overview";
+  const generatedNoteClaimSpanCoverage = generatedNoteArtifact
+    ? createGeneratedNoteClaimSpanCoverage(
+        artifact?.metadata?.summaryPreview || artifact?.summary,
+        generatedNoteSourceSpansFromMetadata(
+          artifact?.metadata?.sourceSpanPreviews,
+        ),
+        artifact?.metadata?.sourceSpanRequired === true ||
+          citation.metadata?.sourceSpanRequired === true,
+      )
+    : undefined;
   const checkedFields = audioOverviewArtifact
     ? [
         "artifactId",
@@ -500,6 +747,7 @@ export const verifyLocalCitationIntegrity = (input: {
             "metadata.sourceDocumentIds",
             "metadata.sourceSpanPreviews",
             "metadata.sourceSpanCoverage",
+            "metadata.claimSpanCoverage",
             "metadata.localOnly",
             "metadata.externalContentFetched",
           ]
@@ -549,8 +797,11 @@ export const verifyLocalCitationIntegrity = (input: {
       : generatedFlashcardsArtifact
         ? "generated_flashcard_provenance"
         : generatedNoteArtifact
-          ? "generated_learning_note_provenance"
+          ? generatedNoteClaimSpanCoverage?.state === "not_required"
+            ? "generated_learning_note_provenance"
+            : "generated_learning_note_preview_lexical_support"
           : "artifact_level_source_card",
+    generatedNoteClaimSpanCoverage,
   };
   const result = (
     state: CitationIntegrityState,
@@ -831,11 +1082,8 @@ export const verifyLocalCitationIntegrity = (input: {
         : [citationMetadata.sourceSpanIds],
       32,
     );
-    const sourceSpanPreviews = cleanList(
-      Array.isArray(artifactMetadata.sourceSpanPreviews)
-        ? artifactMetadata.sourceSpanPreviews
-        : [artifactMetadata.sourceSpanPreviews],
-      8,
+    const sourceSpanPreviews = generatedNoteSourceSpansFromMetadata(
+      artifactMetadata.sourceSpanPreviews,
     );
     const sourceSpanCoverage = compact(artifactMetadata.sourceSpanCoverage);
 
@@ -935,7 +1183,8 @@ export const verifyLocalCitationIntegrity = (input: {
 
     if (
       citationSourceSpanIds.length > 0 &&
-      citationSourceSpanIds.some((spanId) => !sourceSpanIds.includes(spanId))
+      (citationSourceSpanIds.length !== sourceSpanIds.length ||
+        citationSourceSpanIds.some((spanId) => !sourceSpanIds.includes(spanId)))
     ) {
       return result(
         "conflicting",
@@ -947,6 +1196,28 @@ export const verifyLocalCitationIntegrity = (input: {
       return result(
         "conflicting",
         "Generated note artifact sourceIds do not include every saved source-span id.",
+      );
+    }
+
+    if (
+      sourceSpanIds.length > 0 &&
+      (!Number.isFinite(sourceSpanCount) ||
+        sourceSpanCount !== sourceSpanIds.length)
+    ) {
+      return result(
+        "conflicting",
+        "Generated note source-span count does not match its saved source-span ids.",
+      );
+    }
+
+    if (
+      sourceSpanPreviews.length > 0 &&
+      (sourceSpanPreviews.length !== sourceSpanIds.length ||
+        sourceSpanPreviews.some((span) => !sourceSpanIds.includes(span.id)))
+    ) {
+      return result(
+        "conflicting",
+        "Generated note source-span previews do not match its saved source-span ids.",
       );
     }
 
@@ -975,6 +1246,16 @@ export const verifyLocalCitationIntegrity = (input: {
           "Generated note source-span anchors have no saved preview text.",
         );
       }
+    }
+
+    if (
+      sourceSpanPreviews.length > 0 &&
+      generatedNoteClaimSpanCoverage?.state !== "matched"
+    ) {
+      return result(
+        "unavailable",
+        `Generated note source-span previews lexically support ${generatedNoteClaimSpanCoverage?.matchedClaimCount || 0}/${generatedNoteClaimSpanCoverage?.claimCount || 0} saved claims. This local preview check does not prove semantic entailment or factual truth.`,
+      );
     }
 
     if (
@@ -1270,8 +1551,19 @@ const applyArtifactCitationState = (
   artifact: ArtifactRecord,
   states: CitationState[],
   timestamp: number,
-) =>
-  createArtifactRecord(
+) => {
+  const generatedNoteClaimSpanCoverage = states
+    .map((state) => state.metadata?.localCitationIntegrity)
+    .filter(
+      (value) => value && typeof value === "object" && !Array.isArray(value),
+    )
+    .map(
+      (value) =>
+        (value as Record<string, unknown>).generatedNoteClaimSpanCoverage,
+    )
+    .find(Boolean);
+
+  return createArtifactRecord(
     {
       ...artifact,
       timestamp: artifact.timestamp,
@@ -1291,10 +1583,14 @@ const applyArtifactCitationState = (
           id: state.id,
           state: state.state,
         })),
+        ...(generatedNoteClaimSpanCoverage
+          ? { generatedNoteClaimSpanCoverage }
+          : {}),
       }),
     },
     artifact.timestamp,
   );
+};
 
 export const createInitialLocalCitationIntegrityRecords = (
   input: { artifact: ArtifactRecord; citation: CitationState },
@@ -1744,6 +2040,11 @@ export const createGeneratedNotesArtifactRecords = (
     : sourceSpans.length > 0
       ? "anchored"
       : "not_required";
+  const claimSpanCoverage = createGeneratedNoteClaimSpanCoverage(
+    noteSummary,
+    sourceSpans,
+    sourceSpanRequired,
+  );
 
   const sharedMetadata = {
     ...input.metadata,
@@ -1768,6 +2069,7 @@ export const createGeneratedNotesArtifactRecords = (
     sourceSpanIds,
     sourceDocumentIds,
     sourceSpanCoverage,
+    claimSpanCoverage,
     sourceSpanPreviews: sourceSpans.map((span) => ({
       id: span.id,
       documentId: span.documentId,

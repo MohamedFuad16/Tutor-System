@@ -819,6 +819,10 @@ export class MemoryOrchestrator {
           generatedNoteSourceSpans.length > 0
             ? "document_context_preview_anchors"
             : "no_document_source_text_available",
+        claimSpanPolicy:
+          generatedNoteSourceSpans.length > 0
+            ? "local_generated_note_preview_lexical_support"
+            : "provenance_only_no_document_source_text",
         sourceTable: "learningEntries",
       },
     });

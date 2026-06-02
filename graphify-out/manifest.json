@@ -20,8 +20,8 @@
     "hash": "151109156ebac4350c6a5da1c4fa9f51"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/artifact-records.test.mjs": {
-    "mtime": 1780369437.1756346,
-    "hash": "8a5b75b83459628492d847bfa141c658"
+    "mtime": 1780418949.4393013,
+    "hash": "994b5df7645afadff2e3745be6aac331"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/answer-evidence.test.mjs": {
     "mtime": 1780406453.1092412,
@@ -156,8 +156,8 @@
     "hash": "483a8ea56a1428f5a34c35c23b465e47"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/artifact.records.ts": {
-    "mtime": 1780369181.7347207,
-    "hash": "ee7ab161fed6925ac5dd05ce4e5afb3a"
+    "mtime": 1780418940.2914796,
+    "hash": "63443224edf2920bd2152e5829013545"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/answer.evidence.ts": {
     "mtime": 1780406439.391097,
@@ -192,8 +192,8 @@
     "hash": "2e8d59dfbbab1e657f4a4a3f237bd612"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/memory.orchestrator.ts": {
-    "mtime": 1780399726.6747396,
-    "hash": "ba7847222c7b73146423534780744381"
+    "mtime": 1780417984.2748284,
+    "hash": "3b65476952a370f1f32255eb3d6fea05"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/brain.rehearsal.ts": {
     "mtime": 1780417088.147289,
@@ -320,8 +320,8 @@
     "hash": "ecb181ff82756860ebd6a34bcaf3b638"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/userBrainArchitectureBook.ts": {
-    "mtime": 1780417126.369573,
-    "hash": "86165b82986902479df525ddd2b5162a"
+    "mtime": 1780418100.1894126,
+    "hash": "c02d8ff5491c53674b6c5b1534e0e373"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/chatAgentTools.ts": {
     "mtime": 1780417068.3185222,
@@ -340,16 +340,16 @@
     "hash": "a17c12b9d7a12044f64b9aa057e221ff"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/RevisionView.tsx": {
-    "mtime": 1780417126.47713,
-    "hash": "d916b6f6473c6dc7cbdf32447dcca29a"
+    "mtime": 1780418107.2010195,
+    "hash": "423c9f664ca5b0ea28da465f7a7d18d1"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AnalyticsView.tsx": {
     "mtime": 1780285414.7910829,
     "hash": "e50d88f62d7d8cfd330de4cd2ff382ee"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AdminView.tsx": {
-    "mtime": 1780417068.2178297,
-    "hash": "c6ffb8071a501f4796232d687b09e7a6"
+    "mtime": 1780418945.180687,
+    "hash": "1733eeaf36eb5f985f832f27c95481d0"
   },
   "/Users/mfuad16/Documents/LearningAI/src/store/index.ts": {
     "mtime": 1780378612.2948725,
@@ -376,8 +376,8 @@
     "hash": "d642a67e7461cadcc1cc05f28f1ee9db"
   },
   "/Users/mfuad16/Documents/LearningAI/TUTOR_ARCHITECTURE.md": {
-    "mtime": 1780417126.2598128,
-    "hash": "1c09841a8a8f832db335a7cf59324e23"
+    "mtime": 1780418079.0661113,
+    "hash": "52ba7e1dd2a2e4a194ff2a4d8d77fb71"
   },
   "/Users/mfuad16/Documents/LearningAI/test_native.pdf": {
     "mtime": 1779965165.4411347,
@@ -500,8 +500,8 @@
     "hash": "ea01e65cdc02202839a7a23f87c57321"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-retrieval-artifacts-overview.mp3": {
-    "mtime": 1780373195.0689828,
-    "hash": "2b56a9ed016bbc99169ddc08456146d1"
+    "mtime": 1780418282.8669791,
+    "hash": "a3b357c71fcd450dfed5978d83c9e5b0"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-10-model-provider-map.mp3": {
     "mtime": 1780375769.2725565,
@@ -516,8 +516,8 @@
     "hash": "a991c702aba08ef58514dc0eebbe0ec4"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/app-design-language-chapter-03-local-beta-control-patterns.mp3": {
-    "mtime": 1780376465.6356173,
-    "hash": "81feded695307d68180264f3de0c18be"
+    "mtime": 1780418502.0275338,
+    "hash": "565e42e782c62e9ce038859a174664d5"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-sources-glossary-overview.mp3": {
     "mtime": 1780373573.5710785,
@@ -544,7 +544,7 @@
     "hash": "f65e18f89a3e17a746b292f7b2fe1ead"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-ledger-overview.mp3": {
-    "mtime": 1780373016.6929908,
-    "hash": "483f86436ef4f5655cfa36c7b9360018"
+    "mtime": 1780418290.3979654,
+    "hash": "418bf4a87e8d729096d5839973343361"
   }
 }

@@ -266,6 +266,24 @@ const stringMetadataValue = (
   return typeof value === "string" && value.trim() ? value.trim() : "";
 };
 
+const generatedNoteClaimSpanCoverageFor = (record: ArtifactRecord) => {
+  if (record.artifactType !== "notes") return null;
+  const localCitationIntegrity = objectRecord(
+    record.metadata?.localCitationIntegrity,
+  );
+  const coverage =
+    objectRecord(localCitationIntegrity?.generatedNoteClaimSpanCoverage) ||
+    objectRecord(record.metadata?.claimSpanCoverage);
+  if (!coverage || typeof coverage.state !== "string") return null;
+
+  return {
+    state: coverage.state,
+    coveragePercent: Number(coverage.coveragePercent) || 0,
+    matchedClaimCount: Number(coverage.matchedClaimCount) || 0,
+    claimCount: Number(coverage.claimCount) || 0,
+  };
+};
+
 const requestIdForRetrievalEvent = (event: RetrievalEvent) =>
   event.requestId || stringMetadataValue(event.metadata, "requestId");
 
@@ -3070,10 +3088,10 @@ export function AdminView() {
                             their citations remain checking or not checked; the
                             local verifier checks saved source-card structure,
                             generated flashcard provenance, generated
-                            learning-note provenance with saved source-span
-                            anchors when document text exists, and stored
-                            audio-guide manifest integrity without fetching
-                            external pages.
+                            learning-note provenance plus local summary-preview
+                            to source-preview lexical support when document text
+                            exists, and stored audio-guide manifest integrity
+                            without fetching external pages.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -3260,6 +3278,36 @@ export function AdminView() {
                                           </span>
                                         )}
                                       </div>
+                                      {(() => {
+                                        const coverage =
+                                          generatedNoteClaimSpanCoverageFor(
+                                            record,
+                                          );
+                                        return coverage ? (
+                                          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-blue-100 bg-white px-3 py-2 text-[11px] text-zinc-600">
+                                            <span className="font-semibold text-zinc-800">
+                                              Preview lexical support
+                                            </span>
+                                            <span
+                                              className={`rounded-full border px-2 py-0.5 font-bold uppercase tracking-[0.1em] ${statusTone(coverage.state)}`}
+                                            >
+                                              {coverage.state.replace(
+                                                /_/g,
+                                                " ",
+                                              )}
+                                            </span>
+                                            <span className="font-mono">
+                                              {coverage.matchedClaimCount}/
+                                              {coverage.claimCount} claims (
+                                              {coverage.coveragePercent}%)
+                                            </span>
+                                            <span>
+                                              local overlap only, not entailment
+                                              or fact proof
+                                            </span>
+                                          </div>
+                                        ) : null;
+                                      })()}
                                       {record.url && (
                                         <a
                                           href={record.url}
@@ -3602,9 +3650,11 @@ export function AdminView() {
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               Source artifacts describe captured source cards,
                               generated artifacts, and citation state, not
-                              learner concept mastery. Generated note
-                              source-span anchors are local preview references,
-                              not sentence-level proof.
+                              learner concept mastery. Generated-note preview
+                              lexical support means saved summary and source
+                              previews share normalized content terms. It is not
+                              sentence-level entailment, note truth, or
+                              document-wide grounding.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               A checking citation is not a verified citation.
@@ -3612,11 +3662,12 @@ export function AdminView() {
                               source-card structure, citation linkage, URL
                               shape, domain consistency, generated flashcard
                               provenance, generated learning-note provenance,
-                              saved generated-note source-span anchors when
-                              available, plus stored audio-guide manifest
-                              integrity; it does not fetch or prove external
-                              page content, flashcard correctness, note sentence
-                              truth, or audio transcription accuracy.
+                              saved generated-note source-span anchors and local
+                              lexical overlap when available, plus stored
+                              audio-guide manifest integrity; it does not fetch
+                              or prove external page content, flashcard
+                              correctness, note sentence truth, semantic
+                              entailment, or audio transcription accuracy.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               AWS/cloud synchronization remains deferred until

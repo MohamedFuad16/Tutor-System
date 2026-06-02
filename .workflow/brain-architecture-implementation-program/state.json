@@ -428,6 +428,13 @@
       "owner": "main agent + read-only sidecars Lagrange and Socrates",
       "status": "completed",
       "write_scope": "src/lib/chatAgentTools.ts, src/memory/brain.rehearsal.ts, server.ts, src/views/AdminView.tsx, tests/brain-rehearsal.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "AAI",
+      "name": "Generated-note preview lexical support",
+      "owner": "main agent + read-only sidecars Ramanujan and Carson",
+      "status": "completed",
+      "write_scope": "src/memory/artifact.records.ts, src/memory/memory.orchestrator.ts, tests/artifact-records.test.mjs, src/views/AdminView.tsx, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, src/lib/chapterAudioOverviews.json, public/audio-overviews/* affected assets, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -697,5 +704,30 @@
       "Temporary local dev server on port 3100 was stopped after verification",
       "npm run brain:postchange -- --reason skill-preflight remained unavailable because current package.json has no brain:postchange script"
     ]
-  }
+  },
+  "evidence": [
+    "Packet AAI selected after Graphify routed generated-note source spans through createGeneratedNoteSourceSpans(), createGeneratedNotesArtifactRecords(), recordGeneratedNotesArtifact(), verifyLocalCitationIntegrity(), MemoryOrchestrator, artifact tests, and Admin Source Artifacts",
+    "Read-only sidecar Ramanujan recommended a no-fetch preview token-overlap report with unavailable state for insufficient overlap and conflicting state only for ledger identity drift",
+    "Read-only sidecar Carson mapped the following local-only durable queue slice with retries and dead-letter review for bounded background matching jobs, while preserving foreground tool telemetry",
+    "Added generated-note preview lexical-support coverage with compact claim splitting, normalized meaningful terms, best-span overlap, matched/partial/missing states, coverage percent, and explicit no-entailment/no-factual-truth flags",
+    "Admin Source Artifacts now renders generated-note preview lexical support state, matched claim count, coverage percent, and local-overlap-only boundary copy",
+    "Refreshed affected stored audio guides for User Brain Ledger, Retrieval/Artifacts, and App Design Local Beta Controls at 3-4 minute length",
+    "Packet AAI focused artifact-record test run passed, 34 tests",
+    "npm run format passed",
+    "npm run format:check passed",
+    "npm run lint passed",
+    "npm run test sandbox run reached 121 passing tests and failed only on socket EPERM; approved rerun passed, 129 tests",
+    "npm run build passed",
+    "npm run audio:overview:dry-run passed with 25 present and 0 missing stored guide assets",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "Browser QA confirmed Admin Sources desktop 1440x1000 and mobile 390x844 rendered lexical-support and honest-boundary copy with no overflow and clean logs; seeded browser database had audio manifests but no generated-note rows",
+    "Browser QA confirmed updated User Brain ledger/retrieval, App Design controls, and Tutor Architecture memory chapters with one visible player, no native controls, no overflow, and clean logs",
+    "Refreshed MP3s measured about 3:30, 3:14, and 3:44",
+    "graphify update . --force regenerated code architecture artifacts with 968 nodes, 1692 edges, and 54 communities",
+    "npm run graphify:tree passed",
+    "Graphify smoke query found createGeneratedNoteClaimSpanCoverage(), normalization helpers, verifier, generated-note record builder, and Admin route",
+    "graphify path createGeneratedNoteClaimSpanCoverage() to AdminView() found a three-hop path through artifact.records.ts and AdminView.tsx",
+    "Graph artifact grep found no server.mjs or .tmp-test scratch nodes",
+    "Admin generated-note rows prefer the latest recomputed local citation-integrity claim-span coverage after reruns, with write-time coverage as the pre-rerun fallback"
+  ]
 }
