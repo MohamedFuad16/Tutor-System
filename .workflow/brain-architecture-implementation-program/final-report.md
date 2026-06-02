@@ -1036,6 +1036,62 @@ generated-artifact verifier exists.
   slices.
 - AWS/cloud synchronization remains out of scope until beta testing.
 
+# Phase 27: Admin Verifier Coverage Meter
+
+Phase 27 keeps the source-artifact ledger honest by making verifier coverage
+visible in Admin. It does not add new trust claims for unsupported artifact
+kinds; instead, it shows how many local artifact rows have a no-fetch integrity
+contract and which loaded artifact types still need future contracts.
+
+## Graphify Context
+
+- Graphify routed this slice through `AdminView()`,
+  `supportsLocalCitationIntegrityArtifact()`, `artifact.records.ts`,
+  `ArtifactRecord`, `CitationState`, and the artifact-record tests.
+- A targeted source check found no live chart, code, image, website, preview, or
+  other artifact creation paths in the connected runtime; the existing chart row
+  is a synthetic unsupported-verifier test fixture.
+
+## Integration Decisions
+
+- Added `isLocallyVerifiableArtifactType()` in `AdminView.tsx`, delegating the
+  support matrix to `supportsLocalCitationIntegrityArtifact()`.
+- Added Admin Source Artifacts meters for learning-note artifacts and verifier
+  coverage percentage.
+- Added a local verifier coverage block that reports locally checkable rows,
+  rows awaiting a verifier contract, and any loaded unsupported artifact types.
+- Kept unsupported chart/code/image/website/preview rows visible as future work
+  rather than treating them as verified.
+
+## Verification Evidence
+
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 80 tests.
+- `npm run build`: passed.
+- `graphify update . --force`: regenerated the code architecture graph with 841
+  nodes, 1423 edges, and 65 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `isLocallyVerifiableArtifactType()`,
+  `AdminView()`, and `supportsLocalCitationIntegrityArtifact()`.
+- Browser QA on `http://127.0.0.1:3100`: Source Artifacts rendered the new
+  coverage block in the in-app browser at 488px width with no horizontal
+  overflow and zero warning/error logs.
+- Desktop QA through temporary headless Chrome at 1440x1000 confirmed the
+  coverage block rendered with no horizontal overflow (`scrollWidth` 1440,
+  `clientWidth` 1440).
+- Read-only final-check sidecar Kuhn found no blockers. Residual risk: the
+  Admin artifact type bucket list is manually maintained and must stay aligned
+  with future `ArtifactRecord["artifactType"]` additions.
+
+## Remaining Work
+
+- Add real local provenance contracts before marking chart, code, image,
+  website, preview, or other generated artifacts locally verifiable.
+- Continue source-span claim matching and external content verification as
+  future slices.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
 # Phase 23: Stored Audio-guide Integrity Verifier
 
 Phase 23 adds a conservative local verifier for stored chapter audio guides.

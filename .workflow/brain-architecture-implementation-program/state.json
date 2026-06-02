@@ -225,20 +225,28 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/artifact.records.ts, tests/artifact-records.test.mjs, src/views/AdminView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "FF",
+      "name": "Admin verifier coverage meter",
+      "owner": "main agent + read-only sidecar Kuhn",
+      "status": "completed",
+      "write_scope": "src/views/AdminView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_26_complete",
+    "status": "phase_27_complete",
     "checks": [
       "npm run format:check passed",
       "npm run lint passed",
       "npm run test passed, 80 tests",
       "npm run build passed",
-      "graphify update . --force passed with 840 nodes, 1421 edges, 58 communities",
+      "graphify update . --force passed with 841 nodes, 1423 edges, 65 communities",
       "npm run graphify:tree passed",
-      "Graphify smoke query found generated flashcard provenance verifier symbols and Admin neighbors",
-      "Browser QA covered Admin Source Artifacts on desktop and 390x844 mobile",
-      "Read-only final-check sidecar was spawned but shut down before producing findings"
+      "Graphify smoke query found Admin local verifier coverage symbols and verifier neighbors",
+      "Browser QA covered Admin Source Artifacts at 488px in-app width with no horizontal overflow and zero warning/error logs",
+      "Temporary headless Chrome desktop QA covered Admin Source Artifacts at 1440x1000 with no horizontal overflow",
+      "Read-only final-check sidecar Kuhn found no blockers"
     ]
   }
 }

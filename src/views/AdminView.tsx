@@ -196,6 +196,10 @@ const artifactTypeBuckets: ArtifactRecord["artifactType"][] = [
   "other",
 ];
 
+const isLocallyVerifiableArtifactType = (
+  artifactType: ArtifactRecord["artifactType"],
+) => supportsLocalCitationIntegrityArtifact({ artifactType });
+
 const formatTime = (timestamp?: number | null) =>
   timestamp
     ? new Date(timestamp).toLocaleTimeString([], {
@@ -748,8 +752,31 @@ export function AdminView() {
   }, {});
   const sourceCardArtifacts = artifactTypeCounts.source_card || 0;
   const flashcardArtifacts = artifactTypeCounts.flashcards || 0;
+  const noteArtifacts = artifactTypeCounts.notes || 0;
   const audioOverviewArtifacts = artifactTypeCounts.audio_overview || 0;
   const readyArtifactRecords = readyArtifactRecordCount;
+  const locallyVerifiableArtifactRecords = artifactTypeBuckets.reduce(
+    (sum, artifactType) =>
+      isLocallyVerifiableArtifactType(artifactType)
+        ? sum + (artifactTypeCounts[artifactType] || 0)
+        : sum,
+    0,
+  );
+  const locallyUnsupportedArtifactRecords = Math.max(
+    0,
+    artifactRecordCount - locallyVerifiableArtifactRecords,
+  );
+  const localVerifierCoveragePercent =
+    artifactRecordCount > 0
+      ? Math.round(
+          (locallyVerifiableArtifactRecords / artifactRecordCount) * 100,
+        )
+      : 0;
+  const unsupportedVerifierArtifactTypes = artifactTypeBuckets.filter(
+    (artifactType) =>
+      !isLocallyVerifiableArtifactType(artifactType) &&
+      (artifactTypeCounts[artifactType] || 0) > 0,
+  );
   const checkingCitationStates = checkingCitationStateCount;
   const unavailableCitationStates = unavailableCitationStateCount;
   const verifiedCitationStates = verifiedCitationStateCount;
@@ -2817,7 +2844,7 @@ export function AdminView() {
                             states captured from chat, memory, tool streams, and
                             built-in manifests. Artifacts can be ready while
                             their citations remain checking or not checked; the
-                            local verifier checks saved source-card structure
+                            local verifier checks saved source-card structure,
                             generated flashcard provenance, generated
                             learning-note provenance, and stored audio-guide
                             manifest integrity without fetching external pages.
@@ -2837,8 +2864,13 @@ export function AdminView() {
                         {[
                           ["Source cards", sourceCardArtifacts],
                           ["Flashcards", flashcardArtifacts],
+                          ["Learning notes", noteArtifacts],
                           ["Audio guides", audioOverviewArtifacts],
                           ["Ready artifacts", readyArtifactRecords],
+                          [
+                            "Verifier coverage",
+                            `${localVerifierCoveragePercent}%`,
+                          ],
                           ["Checking", checkingCitationStates],
                           ["Unavailable", unavailableCitationStates],
                           ["Verified", verifiedCitationStates],
@@ -2858,6 +2890,50 @@ export function AdminView() {
                             </div>
                           </div>
                         ))}
+                      </div>
+
+                      <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <h3 className="text-sm font-semibold text-zinc-900">
+                              Local verifier coverage
+                            </h3>
+                            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                              Coverage counts artifact rows that have a local,
+                              no-fetch integrity contract. Unsupported rows stay
+                              visible so future chart, code, image, website, or
+                              preview contracts can be added deliberately.
+                            </p>
+                          </div>
+                          <div className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-mono text-zinc-600">
+                            {locallyVerifiableArtifactRecords}/
+                            {artifactRecordCount} rows
+                          </div>
+                        </div>
+                        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white">
+                          <div
+                            className="h-full rounded-full bg-green-500"
+                            style={{
+                              width: `${localVerifierCoveragePercent}%`,
+                            }}
+                          />
+                        </div>
+                        <div className="mt-3 grid gap-2 text-xs text-zinc-600 sm:grid-cols-3">
+                          <div className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-green-700">
+                            {locallyVerifiableArtifactRecords} locally checkable
+                          </div>
+                          <div className="rounded-xl border border-zinc-200 bg-white px-3 py-2">
+                            {locallyUnsupportedArtifactRecords} awaiting a
+                            verifier contract
+                          </div>
+                          <div className="rounded-xl border border-zinc-200 bg-white px-3 py-2">
+                            {unsupportedVerifierArtifactTypes.length > 0
+                              ? unsupportedVerifierArtifactTypes
+                                  .map((type) => type.replace(/_/g, " "))
+                                  .join(", ")
+                              : "No unsupported artifact rows loaded"}
+                          </div>
+                        </div>
                       </div>
 
                       {(citationVerifierFeedback || citationVerifierError) && (

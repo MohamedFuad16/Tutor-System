@@ -1,16 +1,16 @@
 # Graph Report - LearningAI  (2026-06-02)
 
 ## Corpus Check
-- 82 files · ~144,385 words
+- 82 files · ~144,621 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 840 nodes · 1421 edges · 58 communities (42 shown, 16 thin omitted)
+- 841 nodes · 1423 edges · 65 communities (45 shown, 20 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 7 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d03097fb`
+- Built from commit: `ba7ceda8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -70,6 +70,13 @@
 - [[_COMMUNITY_Community 54|Community 54]]
 - [[_COMMUNITY_Community 55|Community 55]]
 - [[_COMMUNITY_Community 56|Community 56]]
+- [[_COMMUNITY_Community 58|Community 58]]
+- [[_COMMUNITY_Community 59|Community 59]]
+- [[_COMMUNITY_Community 60|Community 60]]
+- [[_COMMUNITY_Community 61|Community 61]]
+- [[_COMMUNITY_Community 62|Community 62]]
+- [[_COMMUNITY_Community 63|Community 63]]
+- [[_COMMUNITY_Community 64|Community 64]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `useMotionPreference()` - 24 edges
@@ -95,15 +102,15 @@
 - `searchSerper()` --calls--> `wait()`  [INFERRED]
   server.mjs → server/web-search.ts
 
-## Communities (58 total, 16 thin omitted)
+## Communities (65 total, 20 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.05
-Nodes (33): CognitiveLoadMonitor, CognitiveLoadState, IllusionDetector, LearnerModel, BookChatThread, BrainDatabase, ConversationInteraction, CorrectionEvent (+25 more)
+Cohesion: 0.14
+Nodes (10): BookChatThread, BrainDatabase, CitationState, ConversationInteraction, LearningChapter, LearningEntry, Misconception, PersistentConcept (+2 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.07
-Nodes (38): recordGeneratedNotesArtifact(), BKTAttemptOptions, BKTEngine, DEFAULT_BKT, compactSummary(), createLedgerId(), createMasteryDeltaRecords(), createModelSummaryEvidenceRecord() (+30 more)
+Cohesion: 0.06
+Nodes (43): recordGeneratedNotesArtifact(), BKTAttemptOptions, BKTEngine, DEFAULT_BKT, compactSummary(), createLedgerId(), createMasteryDeltaRecords(), createModelSummaryEvidenceRecord() (+35 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.05
@@ -118,8 +125,8 @@ Cohesion: 0.06
 Nodes (40): normalizeBrainRuntimeSettings(), BRAIN_RUNTIME_SETTING_LIMITS, BrainRuntimeSettings, BrainWebSearchPolicy, clampInteger(), DEFAULT_BRAIN_RUNTIME_SETTINGS, normalizeBrainRuntimeSettings(), normalizeWebSearchPolicy() (+32 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.12
-Nodes (44): applyArtifactCitationState(), applyCitationIntegrityResult(), artifactRecordIdFor(), ArtifactStatusInput, ArtifactVerificationInput, artifactVerificationStateForCitationStates(), CitationIntegrityResult, CitationIntegrityState (+36 more)
+Cohesion: 0.11
+Nodes (45): applyArtifactCitationState(), applyCitationIntegrityResult(), artifactRecordIdFor(), ArtifactStatusInput, ArtifactVerificationInput, artifactVerificationStateForCitationStates(), CitationIntegrityResult, CitationIntegrityState (+37 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.11
@@ -142,8 +149,8 @@ Cohesion: 0.09
 Nodes (22): 1. Prerequisites, 2. Install, 3. Configure Environment, 4. Run, 5. Generate Stored Chapter Audio, Book-Scoped Study Workflow, code:text (Upload), code:mermaid (graph TD) (+14 more)
 
 ### Community 11 - "Community 11"
-Cohesion: 0.14
-Nodes (18): RetrievalEvent, cosineSimilarity(), generateEmbedding(), normalize(), TOKEN_STOPWORDS, tokenize(), boundedScore(), cleanList() (+10 more)
+Cohesion: 0.24
+Nodes (13): RetrievalEvent, boundedScore(), cleanList(), compact(), createRetrievalEventRecord(), nonNegativeInteger(), normalizeRetrievalEventStatus(), optionalCompact() (+5 more)
 
 ### Community 12 - "Community 12"
 Cohesion: 0.09
@@ -253,15 +260,27 @@ Nodes (3): controller, prompt, seenKeys
 Cohesion: 0.67
 Nodes (3): codeFileName(), codeLanguageLabel(), PremiumCodeShell()
 
+### Community 58 - "Community 58"
+Cohesion: 0.22
+Nodes (5): IllusionDetector, db, PrerequisiteDAG, ScaffoldingEngine, ZPDCalculator
+
+### Community 59 - "Community 59"
+Cohesion: 0.36
+Nodes (8): ToolJob, compact(), createToolJobRecord(), normalizeToolJobStatus(), recordToolJobEvent(), ToolJobEventInput, toolJobIdFor(), ToolJobStatusInput
+
+### Community 61 - "Community 61"
+Cohesion: 0.4
+Nodes (4): ChatPhase, Message, MindMapLink, MindMapNode
+
 ## Knowledge Gaps
 - **294 isolated node(s):** `parsed`, `rows`, `seen`, `results`, `title` (+289 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **20 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `db` connect `Community 0` to `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 5`, `Community 6`, `Community 11`, `Community 13`, `Community 19`, `Community 22`, `Community 25`, `Community 30`?**
+- **Why does `db` connect `Community 58` to `Community 0`, `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 5`, `Community 6`, `Community 11`, `Community 13`, `Community 19`, `Community 22`, `Community 25`, `Community 59`, `Community 30`?**
   _High betweenness centrality (0.079) - this node is a cross-community bridge._
 - **Why does `BrainRuntimeSettings` connect `Community 4` to `Community 9`, `Community 12`?**
   _High betweenness centrality (0.032) - this node is a cross-community bridge._
@@ -270,8 +289,8 @@ _Questions this graph is uniquely positioned to answer:_
 - **What connects `parsed`, `rows`, `seen` to the rest of the system?**
   _294 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.14 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.07 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.05 - nodes in this community are weakly interconnected._
