@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  assembleBrainContextSections,
   buildActiveBookContext,
   buildBrainDocumentContext,
   compactBrainContext,
@@ -72,6 +73,86 @@ test("brain document context includes ready extracted documents only", () => {
   assert.doesNotMatch(context, /Failed Paper/);
 });
 
+test("brain document context balances multiple ready PDFs and marks the active document", () => {
+  const context = buildBrainDocumentContext(
+    [
+      {
+        id: "doc-1",
+        title: "Long Background Paper",
+        bookId: "book-1",
+        mimeType: "application/pdf",
+        size: 10,
+        processingStatus: "ready",
+        extractedText: "background-one ".repeat(800),
+        classification: "native_text_pdf",
+        extractionMode: "pymupdf4llm",
+        createdAt: 1,
+        updatedAt: 2,
+      },
+      {
+        id: "doc-2",
+        title: "Active Experiment Paper",
+        bookId: "book-1",
+        mimeType: "application/pdf",
+        size: 10,
+        processingStatus: "ready",
+        extractedText: "active-two ".repeat(800),
+        classification: "mixed_pdf",
+        extractionMode: "hybrid",
+        createdAt: 1,
+        updatedAt: 3,
+      },
+      {
+        id: "doc-3",
+        title: "Supplement Paper",
+        bookId: "book-1",
+        mimeType: "application/pdf",
+        size: 10,
+        processingStatus: "ready",
+        extractedText: "supplement-three ".repeat(800),
+        classification: "native_text_pdf",
+        extractionMode: "pymupdf4llm",
+        createdAt: 1,
+        updatedAt: 4,
+      },
+    ],
+    { activeDocumentId: "doc-2" },
+  );
+
+  assert.match(context, /Ready documents in active book: 3/);
+  assert.match(context, /Document 1: Active Experiment Paper/);
+  assert.match(context, /Document ID: doc-2/);
+  assert.match(context, /Role: Active document/);
+  assert.match(context, /Document ID: doc-1/);
+  assert.match(context, /Document ID: doc-3/);
+  assert.match(context, /active-two/);
+  assert.match(context, /background-one/);
+  assert.match(context, /supplement-three/);
+});
+
+test("voice context assembly keeps multi-document context ahead of long memory", () => {
+  const documentContext = [
+    "### Active Book Document Contexts",
+    "Document ID: doc-voice-1",
+    "Excerpt: voice-one ".repeat(80),
+    "Document ID: doc-voice-2",
+    "Excerpt: voice-two ".repeat(80),
+  ].join("\n");
+  const rawContext = assembleBrainContextSections({
+    mode: "voice",
+    activeBookContext: "### Active Library Book Context\nBook: Voice Book",
+    documentContext,
+    relatedMemoryContext: "memory-tail ".repeat(1200),
+    interactionContext: "### Interaction Context\nmode: listening",
+  });
+  const compacted = compactBrainContext(rawContext, 7000, "voice");
+
+  assert.match(compacted, /Document ID: doc-voice-1/);
+  assert.match(compacted, /Document ID: doc-voice-2/);
+  assert.match(compacted, /voice-one/);
+  assert.match(compacted, /voice-two/);
+});
+
 test("brain context memory event records request and agent-layer metadata", () => {
   const event = createBrainContextMemoryEventInput({
     requestId: "chat-req-1",
@@ -100,6 +181,7 @@ test("brain context memory event records request and agent-layer metadata", () =
   assert.deepEqual(event.sourceIds, ["doc-1", "doc-2"]);
   assert.equal(event.metadata.requestId, "chat-req-1");
   assert.equal(event.metadata.agentLayer, "chat_stream");
+  assert.deepEqual(event.metadata.documentIds, ["doc-1", "doc-2"]);
   assert.equal(event.metadata.rawContextChars, 11);
 });
 

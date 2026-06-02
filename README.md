@@ -56,7 +56,7 @@ repository architecture graph for maintainers.
 The Study, Chat, and Revision surfaces share one book-scoped context model. Each
 learning book owns exactly one durable chat thread, one active PDF selection, and
 any number of stored PDF documents. Switching books switches the visible chat,
-document rail, injected memory context, and revision notebook together.
+document rail, balanced multi-PDF brain context, and revision notebook together.
 Typed chat and live voice sessions also share request-level observability:
 browser-generated request ids connect the shared brain-context packet, memory
 retrieval, server activity, model runs, and tool jobs in Admin.
@@ -99,7 +99,7 @@ paper reading style for revision.
   <tr>
     <td width="50%" valign="top">
       <h3>Study Workspace</h3>
-      <p>Interactive multi-PDF study surface using <code>react-pdf</code>. Each learning book can store multiple PDFs, switch between them, preserve viewed pages, and feed extracted document context into chat.</p>
+      <p>Interactive multi-PDF study surface using <code>react-pdf</code>. Each learning book can store multiple PDFs, switch between them, preserve viewed pages, and feed balanced extracted document context into chat and voice.</p>
     </td>
     <td width="50%" valign="top">
       <h3>Streaming Chat Panel</h3>
@@ -190,13 +190,15 @@ Study books can now hold more than one PDF:
 3. The document rail lets you switch between PDFs without replacing the book.
 4. Removing a PDF deletes that document record and its document-scoped
    annotations without deleting the learning book notes.
-5. The active book's ready document extracts are injected alongside memory and
-   book summaries when Chat builds a tutor request.
+5. The active book's ready document extracts are indexed, balanced across
+   multiple PDFs, and injected alongside memory and book summaries when Chat or
+   Voice builds a tutor request.
 6. Each chat request builds a shared brain-context packet from memory, active
    book, document, and interaction state, then carries the browser request id
    through memory retrieval, `/api/chat`, model/tool ledgers, and Admin request
-   timelines. Voice uses the voice session id for the same local packet and
-   correlation path.
+   timelines. Voice uses the voice session id for the same local packet,
+   prioritizes book/document context before voice compaction, and reports the
+   attached document ids in local telemetry.
 7. Voice can call the local `look_at_current_page` bridge for current-page,
    visible-diagram, screen, and source-material questions from the rendered PDF
    canvas.

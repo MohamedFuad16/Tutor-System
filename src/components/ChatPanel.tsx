@@ -351,6 +351,7 @@ type VoiceStudyContextPayload = {
   activeBookContextChars: number;
   documentContextChars: number;
   documentCount: number;
+  documentIds: string[];
   contextCompacted: boolean;
 };
 
@@ -3131,6 +3132,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       activeBookContextChars: packet.activeBookContextChars,
       documentContextChars: packet.documentContextChars,
       documentCount: packet.documentCount,
+      documentIds: packet.documentIds,
       contextCompacted: packet.compacted,
     };
   }, [
@@ -4186,6 +4188,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             activeBookTitle: activeLearningBookTitle,
             documentId: activeDocumentId,
             documentCount: voiceContextPayload.documentCount,
+            documentIds: voiceContextPayload.documentIds,
             memoryContextChars: voiceContextPayload.memoryContextChars,
             activeBookContextChars: voiceContextPayload.activeBookContextChars,
             documentContextChars: voiceContextPayload.documentContextChars,
@@ -4319,11 +4322,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             activeBookId: canonicalActiveBookId || "",
             activeBookTitle: activeLearningBookTitle || activeProject,
             activeDocumentId: activeDocumentId || "",
+            documentIds: voiceContextPayload?.documentIds || [],
             documentCount: voiceContextPayload?.documentCount || 0,
             studyContextChars: voiceContextPayload?.studyContextChars || 0,
             studyContextMetadata: {
               mode: "voice",
               agentLayer: "voice_realtime",
+              documentIds: voiceContextPayload?.documentIds || [],
               contextCompacted: voiceContextPayload?.contextCompacted || false,
               rawContextChars: voiceContextPayload?.rawContextChars || 0,
               memoryContextChars: voiceContextPayload?.memoryContextChars || 0,

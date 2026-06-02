@@ -2985,7 +2985,7 @@ BKT-compatible persistent concepts before recording evaluated-answer evidence.
   `ensurePersistentConceptForLearningBookConcept()`, `LearningBookConcept`, and
   answer/flashcard evidence tests.
 - `graphify path "recordEvaluatedAnswerEvidence()"
-  "ensurePersistentConceptForLearningBookConceptId()"` found a two-hop
+"ensurePersistentConceptForLearningBookConceptId()"` found a two-hop
   import/contains path through `answer.evidence.ts`.
 - The refreshed Graphify artifacts are the code architecture graph for agents,
   not the user-facing learner brain graph.
@@ -3116,4 +3116,79 @@ agent layers separate readiness signals.
 - Continue the broader brain architecture program until the live app proves
   chat, voice, context injection, retrieval, tools, background memory, evidence,
   corrections, and Admin diagnostics all operate together.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 54: Multi-PDF Brain Context Parity
+
+## Scope
+
+Phase 54 addresses the user's latest concrete brain-architecture gap: when
+multiple PDFs are added to a learning book, chat and voice should not only see
+the PDF currently on screen. They should receive a shared local packet that
+represents the active book's ready documents while still marking the active PDF.
+
+## Graphify Context
+
+- Graphify CLI routed this slice through `ChatPanel.tsx`,
+  `src/memory/brain.context.ts`, `server.ts`, `tests/brain-context.test.mjs`,
+  `tests/system-activity.test.mjs`, `README.md`, and `RevisionView.tsx`.
+- Graphify MCP appeared stale for this thread and returned unrelated
+  player/anime nodes, so the explicit local `graphify-out/graph.json` CLI path
+  was used for architecture navigation.
+
+## Integration Decisions
+
+- `buildBrainDocumentContext()` now creates a ready-document index, marks the
+  active document, and balances excerpts across up to six ready PDFs.
+- Voice packets now assemble active-book and multi-document context before long
+  semantic memory, so live voice prompt compaction keeps the document set in
+  view.
+- Voice auth and system activity metadata now carry attached `documentIds`, and
+  brain-context memory events also store those ids in metadata.
+- The stored audio-overview UI keeps one visible player. Playback failures now
+  use bounded retry through the same hidden audio element without fallback-button
+  language.
+- README, Tutor System Architecture, User Brain Architecture, Tutor System
+  Architecture Library JSON, and App Design Language copy were updated to match
+  the implementation.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 123 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- Browser QA confirmed Tutor System Architecture chapter 5 rendered the balanced
+  ready-document index/excerpt copy and one visible audio player.
+- Browser QA confirmed desktop Admin Beta Diagnostics rendered Brain Flow
+  Coverage, chat/voice tool signals, no horizontal overflow, and zero browser
+  error logs.
+- Browser QA confirmed mobile Admin Beta rendered Brain Flow Coverage, chat/voice
+  tool signals, no horizontal overflow, and zero browser error logs at `390px`.
+- Browser QA confirmed App Design Language / Local Beta Control Patterns rendered
+  balanced multi-PDF context copy, bounded hidden retry copy, one visible audio
+  player, no horizontal overflow, and zero browser error logs.
+- `graphify update . --force`: regenerated code architecture artifacts with 942
+  nodes, 1634 edges, and 56 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `buildBrainDocumentContext()`,
+  `assembleBrainContextSections()`, `VoiceStudyContextPayload`,
+  `BrainDocumentContextOptions`, and `buildBrainContextPacket()`.
+- `graphify path "buildBrainDocumentContext()" "ChatPanel()"`: found a three-hop
+  path through `brain.context.ts` and `ChatPanel.tsx`.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+- Scratch cleanup found no `server.mjs`, `.tmp-test`, or running
+  `node server.mjs` process after Browser QA.
+
+## Remaining Work
+
+- Run deliberate provider-key chat and voice turns when spending live model
+  calls is in scope, so the end-to-end flow can be populated with real traffic.
+- Continue the broader brain architecture program until chat, voice, retrieval,
+  tools, memory, evidence, corrections, Admin, and Revision operate together
+  under live beta conditions.
 - AWS/cloud synchronization remains out of scope until beta testing.

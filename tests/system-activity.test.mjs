@@ -127,7 +127,8 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
       activeBookId: "book:voice-test",
       activeBookTitle: "Voice Tool Test",
       activeDocumentId: "doc:voice-test",
-      documentCount: 1,
+      documentIds: ["doc:voice-test", "doc:voice-supplement"],
+      documentCount: 2,
       studyContextChars: 35,
     }),
   );
@@ -196,7 +197,9 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         event.kind === "retrieval" &&
         event.status === "completed" &&
         event.title === "Voice study context attached" &&
-        event.requestId === "voice-test-session-1",
+        event.requestId === "voice-test-session-1" &&
+        event.metadata?.documentCount === 2 &&
+        event.metadata?.documentIds?.includes("doc:voice-supplement"),
     ),
   );
 });

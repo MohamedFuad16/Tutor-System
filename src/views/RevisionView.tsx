@@ -2019,6 +2019,8 @@ const StoredAudioOverview = ({
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pendingPlayRef = useRef<Promise<void> | null>(null);
+  const retryPlaybackTimerRef = useRef<number | null>(null);
+  const retryPlaybackAttemptsRef = useRef(0);
   const [audioIssue, setAudioIssue] = useState<"" | "playback" | "media">("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
@@ -2033,6 +2035,11 @@ const StoredAudioOverview = ({
   }, [playbackRate]);
 
   useEffect(() => {
+    if (retryPlaybackTimerRef.current) {
+      window.clearTimeout(retryPlaybackTimerRef.current);
+      retryPlaybackTimerRef.current = null;
+    }
+    retryPlaybackAttemptsRef.current = 0;
     setIsPlaying(false);
     setCurrentTime(0);
     setDuration(0);
@@ -2041,6 +2048,10 @@ const StoredAudioOverview = ({
     pendingPlayRef.current = null;
     return () => {
       audioRef.current?.pause();
+      if (retryPlaybackTimerRef.current) {
+        window.clearTimeout(retryPlaybackTimerRef.current);
+        retryPlaybackTimerRef.current = null;
+      }
       pendingPlayRef.current = null;
     };
   }, [overview.audioSrc]);
@@ -2052,8 +2063,21 @@ const StoredAudioOverview = ({
     if (audioElement.ended) audioElement.currentTime = 0;
     if (audioElement.readyState === 0) audioElement.load();
     await audioElement.play();
+    retryPlaybackAttemptsRef.current = 0;
     setError("");
     setAudioIssue("");
+  };
+
+  const schedulePlaybackRetry = () => {
+    if (retryPlaybackTimerRef.current) return;
+    if (retryPlaybackAttemptsRef.current >= 3) return;
+    retryPlaybackAttemptsRef.current += 1;
+    retryPlaybackTimerRef.current = window.setTimeout(() => {
+      retryPlaybackTimerRef.current = null;
+      void startPlayback().catch(() => {
+        setAudioIssue("playback");
+      });
+    }, 800);
   };
 
   const primePlayback = () => {
@@ -2075,8 +2099,9 @@ const StoredAudioOverview = ({
       } catch {
         setAudioIssue("playback");
         setError(
-          "Audio overview could not start yet. Interact with the page and press Play again; this same player will retry in the background.",
+          "Audio overview could not start yet. This same player is retrying in the background.",
         );
+        schedulePlaybackRetry();
       }
       return;
     }
@@ -2089,8 +2114,9 @@ const StoredAudioOverview = ({
     } catch {
       setAudioIssue("playback");
       setError(
-        "Audio overview could not start yet. Interact with the page and press Play again; this same player will retry in the background.",
+        "Audio overview could not start yet. This same player is retrying in the background.",
       );
+      schedulePlaybackRetry();
     }
   };
 
@@ -2111,11 +2137,13 @@ const StoredAudioOverview = ({
       : 0;
   const playbackStatus = error
     ? audioIssue === "playback"
-      ? "Playback retry available"
+      ? "Retrying through this player"
       : "Audio unavailable"
-    : duration > 0
-      ? "Local playback"
-      : "Loading audio metadata";
+    : isPlaying
+      ? "Playing audio guide"
+      : duration > 0
+        ? "Ready audio guide"
+        : "Loading audio metadata";
 
   return (
     <div className="mb-10 rounded-[30px] border border-zinc-200 bg-white/80 p-4 font-sans shadow-[0_20px_54px_rgba(46,36,22,0.08)] sm:p-5">
@@ -2201,6 +2229,7 @@ const StoredAudioOverview = ({
               : 0;
             setDuration(nextDuration);
             event.currentTarget.playbackRate = playbackRate;
+            if (audioIssue === "playback") schedulePlaybackRetry();
           }}
           onError={() => {
             setAudioIssue("media");
@@ -2314,7 +2343,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Brain context packet",
         detail:
-          "Typed chat and live voice share one context builder for memory, active-book summary, ready document excerpts, and interaction timing before the foreground agent answers.",
+          "Typed chat and live voice share one context builder for memory, active-book summary, balanced excerpts from multiple ready PDFs, and interaction timing before the foreground agent answers.",
       },
       {
         title: "Brain-flow coverage",
@@ -2369,7 +2398,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Chapter audio guides",
         detail:
-          "Every built-in Library chapter now attaches a 3-4 minute Deepgram-generated guide asset with one visible player for play, pause, speed, and seek, while hidden audio retry/fallback keeps Library listening fast without showing a second play button.",
+          "Every built-in Library chapter now attaches a 3-4 minute Deepgram-generated guide asset with one visible player for play, pause, speed, and seek, while bounded hidden retry keeps Library listening inside the same player without showing a second play button.",
       },
       {
         title: "Audio generation dry-run",

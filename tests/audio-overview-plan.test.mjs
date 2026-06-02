@@ -136,8 +136,9 @@ test("stored audio overview exposes one visible player", () => {
   assert.match(revisionViewSource, /className="sr-only"/);
   assert.match(
     revisionViewSource,
-    /this same player will retry in the background/,
+    /This same player is retrying in the background/,
   );
+  assert.match(revisionViewSource, /Retrying through this player/);
   assert.doesNotMatch(revisionViewSource, /controls=\{showNativeControls\}/);
   assert.doesNotMatch(revisionViewSource, /Native fallback available/);
   assert.doesNotMatch(revisionViewSource, /native fallback controls/i);

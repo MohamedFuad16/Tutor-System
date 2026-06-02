@@ -73,6 +73,11 @@ export type BrainContextPacket = {
   compacted: boolean;
 };
 
+export type BrainDocumentContextOptions = {
+  activeDocumentId?: string | null;
+  maxDocuments?: number;
+};
+
 const compact = (value: unknown, maxLength = 500) =>
   String(value || "")
     .replace(/\s+/g, " ")
@@ -95,23 +100,62 @@ export const compactBrainContext = (
 
 export const buildBrainDocumentContext = (
   documents: LearningDocument[] = [],
+  options: BrainDocumentContextOptions = {},
 ) => {
-  const readyDocuments = documents.filter(
-    (document) =>
-      document.processingStatus === "ready" &&
-      document.extractedText &&
-      document.extractedText.trim(),
-  );
-  if (!readyDocuments.length) return "";
+  const activeDocumentId = options.activeDocumentId || "";
+  const readyDocuments = documents
+    .filter(
+      (document) =>
+        document.processingStatus === "ready" &&
+        document.extractedText &&
+        document.extractedText.trim(),
+    )
+    .sort((a, b) =>
+      a.id === activeDocumentId ? -1 : b.id === activeDocumentId ? 1 : 0,
+    );
+  const contextDocuments = readyDocuments.slice(0, options.maxDocuments || 6);
+  if (!contextDocuments.length) return "";
+
+  const excerptBudget = contextDocuments.length === 1 ? 5000 : 5200;
+  const perDocumentExcerptChars =
+    contextDocuments.length === 1
+      ? excerptBudget
+      : Math.max(700, Math.floor(excerptBudget / contextDocuments.length));
+  const documentIndex = [
+    `Ready documents in active book: ${readyDocuments.length}`,
+    readyDocuments.length > contextDocuments.length
+      ? `Context includes first ${contextDocuments.length} ready documents; ${readyDocuments.length - contextDocuments.length} additional ready document(s) are omitted from this prompt.`
+      : "",
+    ...contextDocuments.map((document, index) =>
+      [
+        `Document ${index + 1}: ${document.title}`,
+        `Document ID: ${document.id}`,
+        document.id === activeDocumentId ? "Role: Active document" : "",
+        document.classification
+          ? `Classification: ${document.classification}`
+          : "",
+        document.extractionMode ? `Extraction: ${document.extractionMode}` : "",
+      ]
+        .filter(Boolean)
+        .join(" | "),
+    ),
+  ]
+    .filter(Boolean)
+    .join("\n");
+
   return [
     "### Active Book Document Contexts",
-    ...readyDocuments.slice(0, 6).map((document, index) => {
-      const excerpt = String(document.extractedText || "")
-        .replace(/\s+/g, " ")
-        .slice(0, index === 0 ? 5000 : 2600);
+    documentIndex,
+    ...contextDocuments.map((document, index) => {
+      const compactedText = String(document.extractedText || "").replace(
+        /\s+/g,
+        " ",
+      );
+      const excerpt = compactedText.slice(0, perDocumentExcerptChars);
       return [
         `Document ${index + 1}: ${document.title}`,
         `Document ID: ${document.id}`,
+        document.id === activeDocumentId ? "Role: Active document" : "",
         document.classification
           ? `Classification: ${document.classification}`
           : "",
@@ -122,6 +166,36 @@ export const buildBrainDocumentContext = (
         .join("\n");
     }),
   ].join("\n\n");
+};
+
+export const assembleBrainContextSections = ({
+  mode,
+  relatedMemoryContext,
+  activeBookContext,
+  documentContext,
+  interactionContext,
+}: {
+  mode: BrainContextMode;
+  relatedMemoryContext: string;
+  activeBookContext: string;
+  documentContext: string;
+  interactionContext: string;
+}) => {
+  const sections =
+    mode === "voice"
+      ? [
+          activeBookContext,
+          documentContext,
+          relatedMemoryContext,
+          interactionContext,
+        ]
+      : [
+          relatedMemoryContext,
+          activeBookContext,
+          documentContext,
+          interactionContext,
+        ];
+  return sections.filter(Boolean).join("\n\n");
 };
 
 export const buildActiveBookContext = (
@@ -163,6 +237,7 @@ export const createBrainContextMemoryEventInput = (
     agentLayer: packet.agentLayer,
     activeBookTitle: packet.activeBookTitle,
     documentCount: packet.documentCount,
+    documentIds: packet.documentIds,
     rawContextChars: packet.rawContextChars,
     memoryContextChars: packet.memoryContextChars,
     activeBookContextChars: packet.activeBookContextChars,
@@ -212,7 +287,9 @@ export const buildBrainContextPacket = async (
     }
   }
 
-  const documentContext = buildBrainDocumentContext(documents);
+  const documentContext = buildBrainDocumentContext(documents, {
+    activeDocumentId,
+  });
   const interactionContext = buildTutorInteractionContext(
     createTutorInteractionSnapshot({
       ...input.interaction,
@@ -220,14 +297,13 @@ export const buildBrainContextPacket = async (
       activeBookTitle,
     }),
   );
-  const rawContext = [
+  const rawContext = assembleBrainContextSections({
+    mode: input.mode,
     relatedMemoryContext,
     activeBookContext,
     documentContext,
     interactionContext,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
+  });
   const context = compactBrainContext(
     rawContext,
     input.maxContextChars,

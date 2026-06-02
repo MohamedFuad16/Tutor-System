@@ -125,9 +125,11 @@ mastery/BKT knowledge, and saving the previous/next values in `correctionState`.
 
 `src/memory/brain.context.ts` is the shared local context packet builder for
 typed chat and live voice. It combines semantic memory retrieval, active-book
-summary, ready document excerpts, and interaction timing state, then records a
-`brain_context_injected` memory event with the same request id used by retrieval,
-model, and tool ledgers.
+summary, a balanced index plus excerpts from multiple ready PDFs, and
+interaction timing state, then records a `brain_context_injected` memory event
+with the same request id used by retrieval, model, and tool ledgers. Voice
+packets prioritize active-book and multi-document context before long memory
+when the live prompt must be compacted.
 
 ## 6. Core Views
 
@@ -143,8 +145,8 @@ documents through the right extraction branch.
 `ChatPanel` streams tutor output via SSE, renders Markdown and Mermaid, supports
 source-material-first answering, handles web-search events, and manages TTS and
 voice flows. Chat and voice both ask the shared brain-context packet builder for
-local memory, active-book, document, and interaction context before the model or
-voice agent runs. Live voice uses a dark audio-reactive stage, grouped voice-session
+local memory, active-book, balanced multi-PDF document, and interaction context
+before the model or voice agent runs. Live voice uses a dark audio-reactive stage, grouped voice-session
 transcripts, typed-turn injection, Deepgram websocket usage events, local
 client-side tools, and a local voice-agent event ledger for Admin. Voice can call
 `look_at_current_page` for current-page, visible-diagram, screen, and reading
@@ -166,8 +168,8 @@ a paper-style reading surface. It also houses the app design language book with
 wireframes, tokens, interactive previews, and local beta control patterns.
 Built-in chapters include stored 3-4 minute audio guide assets with one visible
 local player for play/pause, speed, and seek. The hidden audio element keeps
-retry/fallback playback in the background, so chapter listening does not show a
-second play button or call the live read-aloud route on every play.
+bounded retry playback inside that same player, so chapter listening does not
+show a second play button or call the live read-aloud route on every play.
 `npm run audio:overview:dry-run` verifies the checked-in MP3 manifest without
 network access. Use the Deepgram provider in
 `scripts/generate-user-brain-audio-overviews.mjs` to regenerate assets when

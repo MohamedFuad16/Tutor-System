@@ -3732,6 +3732,14 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                   typeof authPayload.activeDocumentId === "string"
                     ? authPayload.activeDocumentId
                     : "",
+                documentIds: Array.isArray(authPayload.documentIds)
+                  ? authPayload.documentIds
+                      .filter(
+                        (documentId: unknown) =>
+                          typeof documentId === "string" && documentId.trim(),
+                      )
+                      .slice(0, 12)
+                  : [],
                 documentCount: Number(authPayload.documentCount || 0),
                 clientStudyContextChars: Number(
                   authPayload.studyContextChars || 0,
