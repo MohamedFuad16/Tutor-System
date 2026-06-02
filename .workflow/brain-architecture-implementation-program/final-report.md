@@ -1788,3 +1788,64 @@ false`, book/chapter/conversation/document context, concept ids, model, and
 - Source-span claim matching and external content verification remain future
   slices.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 35: Voice Learner-Context Injection
+
+Phase 35 moves the program back from documentation/audio polish into the runtime
+flow requirement: chat and voice should share the local learner-brain context
+path as much as the current provider architecture allows. Typed chat already
+retrieved local memory, active learning-book context, document excerpts, and
+interaction-state context before `/api/chat`. Voice mode now builds a bounded
+version of that same local context before opening the websocket and passes it to
+the local Node voice proxy during `voice_auth`.
+
+## Graphify Context
+
+- Graphify routed the slice through `ChatPanel.tsx`, `server.ts`,
+  `memory.orchestrator.ts`, `tool.jobs.ts`, `longterm.memory.ts`,
+  `AdminView.tsx`, and the store voice-agent event types.
+- Refreshed Graphify artifacts now include `compactVoiceStudyContext()` nodes in
+  `graphify-out/graph.json`, so future agents can navigate this path without
+  broad repository reads.
+
+## Integration Decisions
+
+- Added a bounded `buildVoiceStudyContext()` path in `ChatPanel.tsx`.
+- The context includes persistent memory retrieval, active learning-book
+  overview/knowledge summary/mapped concepts, active document excerpts, and the
+  local interaction model snapshot.
+- Voice auth now sends `studyContext`, active book/document metadata, and
+  context character counts to the local websocket proxy.
+- `server.ts` compacts the received study context, injects it into the
+  Deepgram/OpenRouter voice-agent prompt, and records a local retrieval/system
+  activity event named `Voice study context attached`.
+- The store now recognizes a `context_attached` voice-agent event so Admin can
+  show client-side evidence before the provider handshake.
+- AWS/cloud synchronization remains out of scope. Live Deepgram provider testing
+  was intentionally not part of this local implementation slice.
+
+## Verification Evidence
+
+- `npm run format:check`: passed.
+- `npm run test`: passed, 85 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser QA on `http://localhost:3100` confirmed Admin desktop exposes
+  model/tool/memory/retrieval meters and the Live voice timeline.
+- In-app Browser QA at `390x844` confirmed Admin remains responsive and mobile
+  Study/Chat exposes the tutor textbox plus `Start voice input`.
+- `graphify update . --force`: passed with 861 nodes, 1453 edges, and 59
+  communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke checks found the new `compactVoiceStudyContext()` graph nodes.
+
+## Remaining Work
+
+- Add a true local/offline voice-session contract test that can assert
+  `voice_auth` context injection without touching Deepgram.
+- Add Admin request correlation between client `context_attached` events and
+  server `Voice study context attached` system activity rows.
+- Continue tightening the gap between voice mode and typed chat tool-calling
+  depth; the current voice provider path receives context but does not yet use
+  the full typed-chat tool loop.
+- AWS/cloud synchronization remains out of scope until beta testing.

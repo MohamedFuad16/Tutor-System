@@ -332,6 +332,8 @@ type VoiceSessionTurn = {
   content: string;
 };
 
+const VOICE_AGENT_CONTEXT_CHAR_LIMIT = 7000;
+
 const buildBlobPath = (pts: Array<[number, number]>) => {
   const n = pts.length;
   let d = `M ${pts[0][0].toFixed(2)} ${pts[0][1].toFixed(2)} `;
@@ -411,6 +413,15 @@ const compactVoiceEventText = (text: string, maxLength = 120) => {
   const compact = text.replace(/\s+/g, " ").trim();
   if (compact.length <= maxLength) return compact;
   return `${compact.slice(0, maxLength - 3)}...`;
+};
+
+const compactVoiceStudyContext = (
+  context: string,
+  maxLength = VOICE_AGENT_CONTEXT_CHAR_LIMIT,
+) => {
+  const compact = context.replace(/\n{3,}/g, "\n\n").trim();
+  if (compact.length <= maxLength) return compact;
+  return `${compact.slice(0, maxLength - 68)}\n\n[Local voice context truncated for the live prompt.]`;
 };
 
 const voiceServerWsUrl = () => {
@@ -3074,6 +3085,93 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       a.id === activeDocumentId ? -1 : b.id === activeDocumentId ? 1 : 0,
     );
   }, [activeBookDocuments, activeDocumentId]);
+  const buildVoiceStudyContext = useCallback(async () => {
+    const contextQuery = [
+      `Voice tutoring session for ${activeLearningBookTitle || activeProject}.`,
+      activeDocumentId ? `Active document id: ${activeDocumentId}.` : "",
+      selectedTextContext ? `Selected text: ${selectedTextContext}` : "",
+      orderedBookDocuments[0]?.title
+        ? `Current document: ${orderedBookDocuments[0].title}.`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const relatedMemoryContext = await brainOrchestrator.getRelevantContext(
+      contextQuery,
+      undefined,
+      canonicalActiveBookId,
+    );
+    let activeBookContext = "";
+    if (canonicalActiveBookId) {
+      const book = await db.learningBooks
+        .get(canonicalActiveBookId)
+        .catch(() => undefined);
+      if (book) {
+        const bookConcepts = await db.learningBookConcepts
+          .where("bookId")
+          .equals(book.id)
+          .limit(brainRuntimeSettings.memoryConceptLimit)
+          .toArray()
+          .catch(() => []);
+        activeBookContext = [
+          "### Active Library Book Context",
+          `Book: ${book.title}`,
+          `Overview: ${book.overview || "Pending"}`,
+          `Knowledge Summary: ${book.knowledgeSummary || book.summary || "Pending"}`,
+          `Chapters: ${
+            (book.chapters || [])
+              .slice(-5)
+              .map((chapter) => chapter.title)
+              .join(", ") || "None yet"
+          }`,
+          bookConcepts.length
+            ? `Mapped Concepts: ${bookConcepts.map((concept) => `${concept.name} (${Math.round((concept.confidence || 0) * 100)}%)`).join(", ")}`
+            : "Mapped Concepts: None yet",
+        ].join("\n");
+      }
+    }
+    const documentContext = buildDocumentContext(orderedBookDocuments);
+    const interactionContext = buildTutorInteractionContext(
+      createTutorInteractionSnapshot({
+        mode: "listening",
+        text: contextQuery,
+        selectedTextAttached: Boolean(selectedTextContext),
+        webSearchSelected: false,
+        voiceState: "listening",
+        sendState: "idle",
+        activeBookId: canonicalActiveBookId,
+        activeBookTitle: activeLearningBookTitle || activeProject,
+        lastInputAt: lastInputAtRef.current,
+        lastSubmitAt: lastSubmitAtRef.current,
+      }),
+    );
+    const rawContext = [
+      relatedMemoryContext,
+      activeBookContext,
+      documentContext,
+      interactionContext,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    const studyContext = compactVoiceStudyContext(rawContext);
+    return {
+      studyContext,
+      studyContextChars: studyContext.length,
+      rawContextChars: rawContext.length,
+      memoryContextChars: relatedMemoryContext.length,
+      activeBookContextChars: activeBookContext.length,
+      documentContextChars: documentContext.length,
+      documentCount: orderedBookDocuments.length,
+    };
+  }, [
+    activeDocumentId,
+    activeLearningBookTitle,
+    activeProject,
+    brainRuntimeSettings.memoryConceptLimit,
+    canonicalActiveBookId,
+    orderedBookDocuments,
+    selectedTextContext,
+  ]);
   const visibleChatArchives = chatArchives.filter(
     (archive) =>
       archive.bookId === canonicalActiveBookId &&
@@ -3571,6 +3669,42 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         },
       ]);
       setVoiceState("listening");
+      const voiceContextPayload = await buildVoiceStudyContext().catch(
+        (error) => {
+          console.warn("[ChatPanel] Voice study context failed:", error);
+          recordVoiceAgentEvent({
+            type: "context_attached",
+            status: "failed",
+            sessionId,
+            summary:
+              "Voice context injection failed; continuing with base voice prompt.",
+            metadata: {
+              error: error instanceof Error ? error.message : String(error),
+              bookId: canonicalActiveBookId,
+              documentId: activeDocumentId,
+            },
+          });
+          return null;
+        },
+      );
+      if (voiceContextPayload?.studyContext) {
+        recordVoiceAgentEvent({
+          type: "context_attached",
+          status: "completed",
+          sessionId,
+          summary: `Attached ${voiceContextPayload.studyContextChars.toLocaleString()} chars of local book, memory, and document context to voice mode.`,
+          metadata: {
+            bookId: canonicalActiveBookId,
+            activeBookTitle: activeLearningBookTitle,
+            documentId: activeDocumentId,
+            documentCount: voiceContextPayload.documentCount,
+            memoryContextChars: voiceContextPayload.memoryContextChars,
+            activeBookContextChars: voiceContextPayload.activeBookContextChars,
+            documentContextChars: voiceContextPayload.documentContextChars,
+            rawContextChars: voiceContextPayload.rawContextChars,
+          },
+        });
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -3684,6 +3818,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             openRouterKey: apiKey,
             deepgramKey: deepgramApiKey,
             language,
+            studyContext: voiceContextPayload?.studyContext || "",
+            activeBookId: canonicalActiveBookId || "",
+            activeBookTitle: activeLearningBookTitle || activeProject,
+            activeDocumentId: activeDocumentId || "",
+            documentCount: voiceContextPayload?.documentCount || 0,
+            studyContextChars: voiceContextPayload?.studyContextChars || 0,
           }),
         );
         hasSentVoiceAuth = true;
@@ -3797,7 +3937,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 type: "barge_in",
                 status: "running",
                 sessionId: voiceSessionIdRef.current || undefined,
-                summary: "Student started speaking; current playback was interrupted.",
+                summary:
+                  "Student started speaking; current playback was interrupted.",
                 metadata: {
                   activeAudioNodes: activeAudioNodesRef.current.length,
                 },

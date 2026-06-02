@@ -191,6 +191,16 @@ const normalizeVoiceLanguage = (value: unknown) => {
   return language === "ja" || language === "ko" ? language : "en";
 };
 
+const VOICE_STUDY_CONTEXT_LIMIT = 8000;
+
+const compactVoiceStudyContext = (value: unknown) => {
+  const raw = typeof value === "string" ? value : "";
+  const compact = raw.replace(/\n{3,}/g, "\n\n").trim();
+  if (!compact) return "";
+  if (compact.length <= VOICE_STUDY_CONTEXT_LIMIT) return compact;
+  return `${compact.slice(0, VOICE_STUDY_CONTEXT_LIMIT - 68)}\n\n[Local voice context truncated by the server.]`;
+};
+
 const deepgramKeyFromRequest = (request: {
   headers: IncomingHttpHeaders;
   query?: Record<string, unknown>;
@@ -2828,6 +2838,8 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         providedOpenRouterKey: string,
         selectedLanguage: string,
         providedDeepgramKey = "",
+        studyContext = "",
+        studyContextMetadata: Record<string, unknown> = {},
       ) => {
         if (isVoiceSessionStarted) return true;
 
@@ -2864,6 +2876,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         }
 
         language = normalizeVoiceLanguage(selectedLanguage);
+        const compactStudyContext = compactVoiceStudyContext(studyContext);
         isVoiceSessionStarted = true;
         usageInterval = setInterval(() => sendVoiceUsage(0), 1000);
         recordSystemActivity({
@@ -2880,8 +2893,25 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 ? "flux-general-multi"
                 : "flux-general-en",
             speakModel: voiceAgentSpeakModel,
+            studyContextChars: compactStudyContext.length,
+            ...studyContextMetadata,
           },
         });
+        if (compactStudyContext) {
+          recordSystemActivity({
+            kind: "retrieval",
+            status: "completed",
+            title: "Voice study context attached",
+            detail:
+              "Local learner memory, active book, and document context were injected into the live voice prompt.",
+            requestId: voiceRequestId,
+            phase: "voice_context",
+            metadata: {
+              studyContextChars: compactStudyContext.length,
+              ...studyContextMetadata,
+            },
+          });
+        }
 
         try {
           const dgUrl = "wss://agent.deepgram.com/v1/agent/converse";
@@ -2935,6 +2965,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 "당신은 Aria라는 이름의 우수한 컴퓨터 과학 및 프로그래밍 튜터입니다. 현재 기술적인 내용을 학습하고 있는 학생을 돕고 있습니다. 시니어 엔지니어가 주니어 개발자를 멘토링하듯이 개념을 설명해 주세요. 현실 세계의 비유를 사용해 주세요. 답변은 3~5문장으로 제한해 주세요. 음성으로 대화 중이므로 글머리 기호, 마크다운, 코드 블록은 절대 사용하지 마세요. 기호는 말로 설명해 주세요. 각 답변의 끝에는 후속 질문을 하거나 더 자세히 설명하겠다고 제안해 주세요. 반드시 한국어로 자연스럽게 대화해 주세요.";
               greeting =
                 "안녕하세요! CS 튜터 Aria입니다. 오늘 어떤 내용을 공부하시겠어요?";
+            }
+
+            if (compactStudyContext) {
+              thinkPrompt += `\n\nLOCAL STUDY CONTEXT FOR THIS VOICE SESSION:\n${compactStudyContext}\n\nUse this local learner memory, active book, and document context before general knowledge. If the student asks about the current material, answer from this context and say when a detail is not available locally. Keep the spoken answer concise.`;
             }
 
             const config = {
@@ -3168,6 +3202,25 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               sanitizeApiKey(authPayload.openRouterKey),
               authPayload.language || language,
               sanitizeApiKey(authPayload.deepgramKey),
+              compactVoiceStudyContext(authPayload.studyContext),
+              {
+                activeBookId:
+                  typeof authPayload.activeBookId === "string"
+                    ? authPayload.activeBookId
+                    : "",
+                activeBookTitle:
+                  typeof authPayload.activeBookTitle === "string"
+                    ? authPayload.activeBookTitle
+                    : "",
+                activeDocumentId:
+                  typeof authPayload.activeDocumentId === "string"
+                    ? authPayload.activeDocumentId
+                    : "",
+                documentCount: Number(authPayload.documentCount || 0),
+                clientStudyContextChars: Number(
+                  authPayload.studyContextChars || 0,
+                ),
+              },
             );
             return;
           }

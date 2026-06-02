@@ -117,6 +117,7 @@ export interface WebSearchEvent {
 
 export type VoiceAgentEventType =
   | "session_started"
+  | "context_attached"
   | "settings_applied"
   | "user_turn"
   | "assistant_turn"

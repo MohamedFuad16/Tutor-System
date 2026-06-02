@@ -281,25 +281,34 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/lib/chapterAudioOverviews.json, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, README.md, TUTOR_ARCHITECTURE.md, public/audio-overviews/tutor-book-*.mp3, public/audio-overviews/app-design-language-*.mp3, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "NN",
+      "name": "Voice learner-context injection",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/components/ChatPanel.tsx, server.ts, src/store/index.ts, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_34_complete",
+    "status": "phase_35_complete",
     "checks": [
-      "Graphify routed the phase through tutorBook, RevisionView/AppDesignLanguagePage, chapterAudioOverviews, userBrainArchitectureBook, README, and audio overview plan tests",
-      "Expanded the remaining 13 Tutor System Architecture and 4 App Design Language transcripts into long-form, plain-language stored audio explainers",
-      "Deepgram generation passed for --book tutor-book and --book app-design-language with checked-in MP3 outputs",
-      "ffprobe measured all 25 built-in chapter guide durations in range: Tutor System Architecture 220-240 seconds, User Brain Architecture 193-214 seconds, and App Design Language 233-235 seconds",
-      "npm run audio:overview:dry-run passed with 25 present, 0 missing, 25 planned",
+      "Graphify routed the next runtime-flow slice through ChatPanel, server voice websocket handling, memory.orchestrator, tool.jobs, longterm.memory, AdminView, and store voice-agent events",
+      "ChatPanel now builds bounded local voice study context from retrieval memory, active learning-book summary/concepts, active document excerpts, and interaction timing",
+      "Voice websocket auth now carries that local context plus active book/document metadata to the local Node proxy",
+      "The voice proxy injects local learner/book/document context into the Deepgram/OpenRouter voice-agent prompt and records a local retrieval/system activity event when context is attached",
+      "Admin voice timeline now has a context_attached event type for local client-side evidence",
       "npm run format:check passed",
       "npm run test passed, 85 tests",
       "npm run lint passed",
       "npm run build passed",
-      "Headless Chrome QA confirmed Tutor System Architecture and App Design Language chapter 1 audio cards at 390x844 and 1440x900 with native controls, transcripts, 226/233-second loaded durations, no raw stored metadata in-card, and no horizontal overflow",
-      "Browser QA saved mobile screenshots to .workflow/brain-architecture-implementation-program/results/phase34-tutor-audio-mobile.png and phase34-app-design-audio-mobile.png",
-      "graphify update . --force passed with no topology changes after this documentation/audio-manifest slice",
+      "In-app Browser QA on http://localhost:3100 confirmed Admin desktop exposes model/tool/memory/retrieval meters and the Live voice timeline",
+      "In-app Browser QA at 390x844 confirmed Admin remains responsive and mobile Study/Chat exposes the tutor textbox plus Start voice input control",
+      "Live Deepgram voice was not exercised in this phase to keep QA local and avoid external provider dependency",
+      "graphify update . --force regenerated graphify-out with 861 nodes, 1453 edges, and 59 communities",
       "npm run graphify:tree passed",
-      "Temporary headless Chrome QA and local dev server were used only for verification"
+      "Graphify smoke query and artifact grep confirmed the refreshed graph includes compactVoiceStudyContext() for the new voice context path",
+      "Temporary local dev server on port 3100 was used only for verification"
     ]
   }
 }
