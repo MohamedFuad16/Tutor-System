@@ -470,10 +470,17 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/lib/chatThreadUtils.ts, src/memory/longterm.memory.ts, src/memory/beta.diagnostics.ts, src/memory/brain.rehearsal.ts, src/components/ChatPanel.tsx, src/views/AdminView.tsx, tests/chat-thread-utils.test.mjs, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABO",
+      "name": "Request-correlated transcript persistence",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/types.ts, src/lib/chatThreadUtils.ts, src/components/ChatPanel.tsx, src/memory/beta.diagnostics.ts, src/memory/brain.rehearsal.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, tests/chat-thread-utils.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_58_completed",
+    "status": "passed",
     "checks": [
       "graphify path runLocalBrainWiringRehearsal() to AdminView() found a two-hop path through buildBrainFlowCoverageFromLedgers()",
       "Graphify smoke query found runLocalBrainWiringRehearsal(), buildChatAgentToolDefinitions(), chatAgentToolNames(), buildBrainDocumentContext(), buildBrainFlowCoverageFromLedgers(), and AdminView()",
@@ -737,7 +744,16 @@
       "Graph artifact grep found no server.mjs or .tmp-test scratch nodes",
       "Scratch artifact checks found no server.mjs, .tmp-test, or running node server.mjs process after QA cleanup",
       "Temporary local dev server on port 3100 was stopped after verification",
-      "npm run brain:postchange -- --reason skill-preflight remained unavailable because current package.json has no brain:postchange script"
+      "npm run brain:postchange -- --reason skill-preflight remained unavailable because current package.json has no brain:postchange script",
+      "Packet ABO selected after Graphify routed request-correlated transcript persistence through Message, summarizeChatThreadPersistence(), persistBookChatThread(), AdminRequestTimeline, buildBrainFlowCoverageFromLedgers(), and runLocalBrainWiringRehearsal()",
+      "Focused beta/rehearsal/chat-thread contract tests passed",
+      "npm run test passed, 141 tests",
+      "Headless Chrome CDP QA confirmed Admin Activity and Diagnostics at 390x844 and 1440x900 with transcript/request-correlation copy, zero horizontal overflow, and no measured overflow elements",
+      "graphify update . --force regenerated Graphify artifacts with 1018 nodes, 1809 edges, and 65 communities",
+      "Graphify smoke query found requestCorrelatedThreadPersistenceEvents, book_chat_thread_saved, persistBookChatThread(), summarizeChatThreadPersistence(), AdminRequestTimeline, and buildBrainFlowCoverageFromLedgers()",
+      "graphify path persistBookChatThread() to AdminRequestTimeline found a four-hop route through shouldRecordBookChatThreadSave(), summarizeChatThreadPersistence(), and AdminView.tsx",
+      "graphify path summarizeChatThreadPersistence() to buildBrainFlowCoverageFromLedgers() found a two-hop route through AdminView.tsx",
+      "Packet ABO graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
     ]
   },
   "evidence": [
@@ -860,11 +876,18 @@
     "Graphify smoke query found persistBookChatThread(), summarizeChatThreadPersistence(), recordBookChatThreadSaveEvent(), recordMemoryEvent(), AdminView(), buildBrainFlowCoverageFromLedgers(), and runLocalBrainWiringRehearsal()",
     "graphify path persistBookChatThread() to AdminView() found a three-hop route through ChatPanel.tsx and useStore",
     "graphify path summarizeChatThreadPersistence() to buildBrainFlowCoverageFromLedgers() found a two-hop route through AdminView.tsx",
-    "Packet ABN graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABN graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABO selected after Graphify routed request-correlated transcript persistence through Message, summarizeChatThreadPersistence(), persistBookChatThread(), AdminRequestTimeline, buildBrainFlowCoverageFromLedgers(), and runLocalBrainWiringRehearsal()",
+    "npm run test passed, 141 tests",
+    "Headless Chrome CDP QA confirmed Admin Activity and Diagnostics at 390x844 and 1440x900 with transcript/request-correlation copy, zero horizontal overflow, and no measured overflow elements",
+    "graphify update . --force regenerated Graphify artifacts with 1018 nodes, 1809 edges, and 65 communities",
+    "Graphify smoke query found requestCorrelatedThreadPersistenceEvents, book_chat_thread_saved, persistBookChatThread(), summarizeChatThreadPersistence(), AdminRequestTimeline, and buildBrainFlowCoverageFromLedgers()",
+    "graphify path persistBookChatThread() to AdminRequestTimeline found a four-hop route through shouldRecordBookChatThreadSave(), summarizeChatThreadPersistence(), and AdminView.tsx",
+    "Packet ABO graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 76,
-    "basis": "Local architecture estimate after Packet ABN: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable retry/dead-letter state for interaction-memory, learning-book, and graph-concept local memory-worker jobs, and durable typed-chat/voice thread persistence proof are implemented; live provider-key chat/voice proof, remaining scheduler coverage, and broader beta validation remain incomplete.",
-    "updatedAt": "2026-06-03T08:05:00.000+09:00"
+    "estimatePercent": 78,
+    "basis": "Local architecture estimate after Packet ABO: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, and request-correlated transcript-save rows are implemented; live provider-key chat/voice proof, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T08:13:00.000+09:00"
   }
 }

@@ -1706,7 +1706,7 @@ export function AdminView() {
               <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 selection:bg-blue-200 selection:text-zinc-900">
                 {activeTab === "activity" ? (
                   <div className="flex flex-col gap-8 font-sans">
-                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                    <section className="min-w-0 rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
                       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                           <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
@@ -1746,8 +1746,8 @@ export function AdminView() {
                         </div>
                       ) : null}
 
-                      <div className="grid gap-3 md:grid-cols-4">
-                        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                      <div className="grid min-w-0 gap-3 md:grid-cols-4">
+                        <div className="min-w-0 rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
                             Activity Events
                           </div>
@@ -1758,7 +1758,7 @@ export function AdminView() {
                             limit {systemSummary?.retentionLimit || 250}
                           </div>
                         </div>
-                        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                        <div className="min-w-0 rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
                             Current Model
                           </div>
@@ -1769,7 +1769,7 @@ export function AdminView() {
                             {chatUsage.requests} chat requests
                           </div>
                         </div>
-                        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                        <div className="min-w-0 rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
                             Local Memory
                           </div>
@@ -1786,7 +1786,7 @@ export function AdminView() {
                             entries + memory + jobs + sources + traces
                           </div>
                         </div>
-                        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                        <div className="min-w-0 rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
                             Providers Ready
                           </div>
@@ -1800,20 +1800,20 @@ export function AdminView() {
                       </div>
                     </section>
 
-                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
-                      <div className="mb-4 flex items-center justify-between gap-3">
-                        <div>
+                    <section className="min-w-0 rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
                           <h3 className="text-xl font-serif font-medium text-zinc-900">
                             Request timelines
                           </h3>
                           <p className="mt-1 text-sm text-zinc-500 font-serif">
-                            Groups local server events, retrieval injections,
-                            durable model runs, tool jobs, and background jobs
-                            by request id so one tutor turn can be inspected
-                            without hopping between tabs.
+                            Groups local server events, saved transcript memory
+                            rows, retrieval injections, durable model runs, tool
+                            jobs, and background jobs by request id so one tutor
+                            turn can be inspected without hopping between tabs.
                           </p>
                         </div>
-                        <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
+                        <div className="w-fit max-w-full rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
                           {requestTimelines.length} grouped
                         </div>
                       </div>
@@ -1824,11 +1824,11 @@ export function AdminView() {
                           or blocked model call will create a local timeline.
                         </div>
                       ) : (
-                        <div className="grid gap-3 xl:grid-cols-2">
+                        <div className="grid min-w-0 gap-3 xl:grid-cols-2">
                           {requestTimelines.map((timeline, index) => (
                             <article
                               key={timeline.requestId}
-                              className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 8 ? "admin-animated-item" : ""}`}
+                              className={`min-w-0 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 8 ? "admin-animated-item" : ""}`}
                             >
                               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                                 <div className="min-w-0">
@@ -1856,23 +1856,23 @@ export function AdminView() {
                                     )}
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 text-center text-[10px] font-mono text-zinc-500 sm:grid-cols-6">
-                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                <div className="grid min-w-0 grid-cols-2 gap-2 text-center text-[10px] font-mono text-zinc-500 sm:grid-cols-6">
+                                  <span className="min-w-0 rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.events.length} events
                                   </span>
-                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                  <span className="min-w-0 rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.memoryEvents.length} memory
                                   </span>
-                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                  <span className="min-w-0 rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.retrievalEvents.length} retrievals
                                   </span>
-                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                  <span className="min-w-0 rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.modelRuns.length} models
                                   </span>
-                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                  <span className="min-w-0 rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.toolJobs.length} tools
                                   </span>
-                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                  <span className="min-w-0 rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.backgroundJobs.length} jobs
                                   </span>
                                 </div>
@@ -1941,6 +1941,23 @@ export function AdminView() {
                                         event.metadata,
                                         "omittedReadyDocumentCount",
                                       );
+                                    const requestIds = stringListMetadataValue(
+                                      event.metadata,
+                                      "requestIds",
+                                    );
+                                    const transcriptMode = stringMetadataValue(
+                                      event.metadata,
+                                      "mode",
+                                    );
+                                    const meaningfulMessageCount =
+                                      numberMetadataValue(
+                                        event.metadata,
+                                        "meaningfulMessageCount",
+                                      );
+                                    const voiceTurnCount = numberMetadataValue(
+                                      event.metadata,
+                                      "voiceTurnCount",
+                                    );
                                     const evidenceContract =
                                       stringMetadataValue(
                                         event.metadata,
@@ -2015,6 +2032,32 @@ export function AdminView() {
                                               )}
                                             </div>
                                           )}
+                                        {event.eventType ===
+                                          "book_chat_thread_saved" && (
+                                          <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-mono text-amber-700">
+                                            {transcriptMode && (
+                                              <span className="rounded-full border border-amber-200 bg-white/70 px-2 py-0.5">
+                                                {transcriptMode} transcript
+                                              </span>
+                                            )}
+                                            <span className="rounded-full border border-amber-200 bg-white/70 px-2 py-0.5">
+                                              {meaningfulMessageCount} messages
+                                            </span>
+                                            {voiceTurnCount > 0 && (
+                                              <span className="rounded-full border border-amber-200 bg-white/70 px-2 py-0.5">
+                                                {voiceTurnCount} voice turns
+                                              </span>
+                                            )}
+                                            {requestIds.length > 0 && (
+                                              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-700">
+                                                {requestIds.length} request id
+                                                {requestIds.length === 1
+                                                  ? ""
+                                                  : "s"}
+                                              </span>
+                                            )}
+                                          </div>
+                                        )}
                                         {showEvidenceGate && (
                                           <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-mono text-amber-700">
                                             {evidenceContract && (
@@ -2249,8 +2292,8 @@ export function AdminView() {
                         )}
                       </div>
 
-                      <div className="flex flex-col gap-4">
-                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="flex min-w-0 flex-col gap-4">
+                        <section className="min-w-0 rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
                           <h3 className="text-xl font-serif font-medium text-zinc-900">
                             Meters
                           </h3>
@@ -2286,12 +2329,12 @@ export function AdminView() {
                             ].map(([label, value]) => (
                               <div
                                 key={label}
-                                className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2"
+                                className="grid min-w-0 gap-1 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] sm:items-center sm:gap-3"
                               >
-                                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                <span className="min-w-0 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
                                   {label}
                                 </span>
-                                <span className="min-w-0 truncate text-right text-xs font-semibold text-zinc-900">
+                                <span className="min-w-0 break-words text-xs font-semibold text-zinc-900 sm:text-right">
                                   {value}
                                 </span>
                               </div>
@@ -2299,7 +2342,7 @@ export function AdminView() {
                           </div>
                         </section>
 
-                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <section className="min-w-0 rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-500/70">
@@ -2409,7 +2452,7 @@ export function AdminView() {
                           </div>
                         </section>
 
-                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                        <section className="min-w-0 rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
                           <h3 className="text-xl font-serif font-medium text-zinc-900">
                             Event mix
                           </h3>
@@ -2461,12 +2504,12 @@ export function AdminView() {
                                 ([label, value]) => (
                                   <div
                                     key={label}
-                                    className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2"
+                                    className="grid min-w-0 gap-1 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] sm:items-center sm:gap-3"
                                   >
-                                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+                                    <span className="min-w-0 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500">
                                       {label}
                                     </span>
-                                    <span className="truncate text-right font-semibold text-zinc-900">
+                                    <span className="min-w-0 break-words font-semibold text-zinc-900 sm:text-right">
                                       {value}
                                     </span>
                                   </div>

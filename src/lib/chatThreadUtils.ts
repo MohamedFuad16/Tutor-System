@@ -48,6 +48,9 @@ export type ChatThreadPersistenceSummary = {
   typedTurnCount: number;
   voiceSessionCount: number;
   voiceTurnCount: number;
+  requestIds: string[];
+  lastRequestId: string;
+  requestCorrelated: boolean;
   hasTypedChat: boolean;
   hasVoiceSession: boolean;
   lastMessageId: string;
@@ -71,6 +74,17 @@ export const summarizeChatThreadPersistence = (
   );
   const hasTypedChat = typedTurnCount > 0;
   const hasVoiceSession = voiceSessionCount > 0 || voiceTurnCount > 0;
+  const requestIds = Array.from(
+    new Set(
+      meaningful
+        .map(
+          (message) =>
+            message.requestId ||
+            (message.isVoice || message.voiceSession ? message.id : ""),
+        )
+        .filter((requestId) => requestId.trim().length > 0),
+    ),
+  ).slice(0, 24);
   const mode: ChatThreadPersistenceMode =
     hasTypedChat && hasVoiceSession
       ? "mixed"
@@ -91,6 +105,7 @@ export const summarizeChatThreadPersistence = (
     lastMessage?.role || "none",
     lastMessage?.content?.length || 0,
     lastMessage?.voiceSession?.durationSeconds || 0,
+    requestIds.join(",") || "no-request",
   ].join(":");
 
   return {
@@ -100,6 +115,9 @@ export const summarizeChatThreadPersistence = (
     typedTurnCount,
     voiceSessionCount,
     voiceTurnCount,
+    requestIds,
+    lastRequestId: requestIds[requestIds.length - 1] || "",
+    requestCorrelated: requestIds.length > 0,
     hasTypedChat,
     hasVoiceSession,
     lastMessageId: lastMessage?.id || "",

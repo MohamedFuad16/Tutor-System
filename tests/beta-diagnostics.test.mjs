@@ -65,6 +65,9 @@ const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
       conversationId: "thread:book-1",
       metadata: {
         mode: "chat",
+        requestId: "chat-req-1",
+        requestIds: ["chat-req-1"],
+        requestCorrelated: true,
         hasTypedChat: true,
         hasVoiceSession: false,
       },
@@ -77,6 +80,9 @@ const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
       conversationId: "thread:book-1",
       metadata: {
         mode: "voice",
+        requestId: "voice-req-1",
+        requestIds: ["voice-req-1"],
+        requestCorrelated: true,
         hasTypedChat: false,
         hasVoiceSession: true,
         voiceSessionCount: 1,
@@ -240,6 +246,7 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
   );
   assert.equal(completeBrainFlow.chatBackgroundMemoryEvents, 1);
   assert.equal(completeBrainFlow.voiceBackgroundMemoryEvents, 1);
+  assert.equal(completeBrainFlow.requestCorrelatedThreadPersistenceEvents, 2);
   assert.equal(completeBrainFlow.chatThreadPersistenceEvents, 1);
   assert.equal(completeBrainFlow.voiceThreadPersistenceEvents, 1);
   assert.equal(completeBrainFlow.requestCorrelatedBackgroundMemoryEvents, 3);
@@ -282,6 +289,144 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
       (signal) => signal.id === "voice_thread_persistence",
     )?.ready,
     true,
+  );
+});
+
+test("brain flow coverage requires request-correlated thread persistence", () => {
+  const uncorrelatedThreadFlow = buildBrainFlowCoverageFromLedgers({
+    memoryEvents: [
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 1,
+        metadata: {
+          agentLayer: "chat_stream",
+          requestId: "chat-req-1",
+        },
+      },
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 2,
+        metadata: {
+          agentLayer: "voice_realtime",
+          requestId: "voice-req-1",
+        },
+      },
+      {
+        eventType: "learning_book_updated",
+        status: "completed",
+        timestamp: 3,
+        metadata: modelObservationGateMetadata({
+          requestId: "chat-req-1",
+          mode: "chat",
+          agentLayer: "chat_stream",
+        }),
+      },
+      {
+        eventType: "learning_book_updated",
+        status: "completed",
+        timestamp: 4,
+        metadata: modelObservationGateMetadata({
+          requestId: "voice-req-1",
+          mode: "voice",
+          agentLayer: "voice_realtime",
+        }),
+      },
+      {
+        eventType: "book_chat_thread_saved",
+        status: "completed",
+        timestamp: 5,
+        bookId: "book-1",
+        conversationId: "thread:book-1",
+        metadata: {
+          mode: "chat",
+          hasTypedChat: true,
+        },
+      },
+      {
+        eventType: "book_chat_thread_saved",
+        status: "completed",
+        timestamp: 6,
+        bookId: "book-1",
+        conversationId: "thread:book-1",
+        metadata: {
+          mode: "voice",
+          hasVoiceSession: true,
+          voiceSessionCount: 1,
+          voiceTurnCount: 2,
+        },
+      },
+    ],
+    retrievalEvents: [
+      { status: "completed", requestId: "chat-req-1", timestamp: 7 },
+      { status: "completed", requestId: "voice-req-1", timestamp: 8 },
+    ],
+    modelRuns: [
+      {
+        status: "completed",
+        source: "chat_stream",
+        requestId: "chat-req-1",
+        timestamp: 9,
+      },
+      {
+        status: "completed",
+        source: "voice_agent",
+        requestId: "voice-req-1",
+        timestamp: 10,
+      },
+    ],
+    toolJobs: [
+      {
+        status: "completed",
+        source: "chat_stream",
+        requestId: "chat-req-1",
+        timestamp: 11,
+      },
+      {
+        status: "completed",
+        source: "voice_agent",
+        requestId: "voice-req-1",
+        timestamp: 12,
+      },
+    ],
+    evidenceEvents: [
+      {
+        evidenceType: "generation",
+        verified: true,
+        timestamp: 13,
+        metadata: {
+          requestId: "chat-req-1",
+          agentLayer: "chat_stream",
+          mode: "chat",
+        },
+      },
+      {
+        evidenceType: "generation",
+        verified: true,
+        timestamp: 14,
+        metadata: {
+          requestId: "voice-req-1",
+          agentLayer: "voice_realtime",
+          mode: "voice",
+        },
+      },
+    ],
+  });
+
+  assert.equal(uncorrelatedThreadFlow.status, "watch");
+  assert.equal(uncorrelatedThreadFlow.threadPersistenceEvents, 2);
+  assert.equal(
+    uncorrelatedThreadFlow.requestCorrelatedThreadPersistenceEvents,
+    0,
+  );
+  assert.equal(uncorrelatedThreadFlow.chatThreadPersistenceEvents, 0);
+  assert.equal(uncorrelatedThreadFlow.voiceThreadPersistenceEvents, 0);
+  assert.ok(
+    uncorrelatedThreadFlow.missingSignals.includes("Chat thread saved"),
+  );
+  assert.ok(
+    uncorrelatedThreadFlow.missingSignals.includes("Voice thread saved"),
   );
 });
 

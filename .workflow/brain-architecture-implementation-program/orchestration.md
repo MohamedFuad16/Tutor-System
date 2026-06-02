@@ -32,6 +32,7 @@
 - Packet ABL: See `packets/ABL-background-job-ledger.md`.
 - Packet ABM: See `packets/ABM-memory-worker-scheduler-coverage.md`.
 - Packet ABN: See `packets/ABN-chat-voice-thread-persistence-observability.md`.
+- Packet ABO: See `packets/ABO-request-correlated-thread-persistence.md`.
 
 ## Completion Audit
 

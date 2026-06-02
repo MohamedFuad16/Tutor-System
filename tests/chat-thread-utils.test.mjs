@@ -90,9 +90,15 @@ test("explicit generated voice titles are preferred when available", () => {
 test("chat thread persistence summaries distinguish typed and voice history", () => {
   const summary = summarizeChatThreadPersistence([
     { id: "1", role: "assistant", content: "Hello." },
-    { id: "typed-1", role: "user", content: "Continue." },
+    {
+      id: "typed-1",
+      requestId: "chat-req-1",
+      role: "user",
+      content: "Continue.",
+    },
     {
       id: "voice-1",
+      requestId: "voice-req-1",
       role: "assistant",
       content: "",
       isVoice: true,
@@ -112,6 +118,9 @@ test("chat thread persistence summaries distinguish typed and voice history", ()
   assert.equal(summary.typedTurnCount, 1);
   assert.equal(summary.voiceSessionCount, 1);
   assert.equal(summary.voiceTurnCount, 2);
+  assert.deepEqual(summary.requestIds, ["chat-req-1", "voice-req-1"]);
+  assert.equal(summary.lastRequestId, "voice-req-1");
+  assert.equal(summary.requestCorrelated, true);
   assert.equal(summary.hasTypedChat, true);
   assert.equal(summary.hasVoiceSession, true);
   assert.match(summary.signature, /^mixed:/);

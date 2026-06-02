@@ -107,3 +107,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   evidence when book-scoped typed-chat and voice transcript threads are saved,
   surface saved thread rows in Admin Memory and diagnostics export, and extend
   Beta Diagnostics to require both chat and voice transcript-persistence proof.
+- ABO: Request-correlated transcript persistence. Stamp typed-chat and
+  live-voice transcript messages with request/session IDs, include those IDs in
+  `book_chat_thread_saved` memory rows, make Beta Diagnostics require
+  request-correlated transcript persistence, and surface saved-transcript rows
+  in Admin request timelines.

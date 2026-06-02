@@ -3759,3 +3759,98 @@ graphify-out/graph.json` identified `runLocalBrainWiringRehearsal()`,
   tools, memory, evidence, corrections, Admin, and Revision operate together
   under live beta conditions.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+---
+
+# Phase 61: Request-Correlated Transcript Persistence
+
+Packet ABO closes the next local proof gap after Packet ABN: saved transcript
+rows are now joinable to request/session IDs. This lets Admin request timelines
+show transcript persistence beside retrieval, model, tool, background-job, and
+brain-context evidence, and it makes Beta Diagnostics reject uncorrelated saved
+thread rows.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 78%.
+
+## Graphify Context
+
+- `graphify query "remaining brain architecture gaps live provider-key chat
+voice end-to-end proof stored injected tool calling both agent layers Admin
+Beta Diagnostics book_chat_thread_saved brain_context_injected
+evaluate_answer toolJobs runLocalBrainWiringRehearsal" --budget 8000 --graph
+graphify-out/graph.json` routed the slice through
+  `runLocalBrainWiringRehearsal()`, `ChatPanel.tsx`, `AdminView.tsx`,
+  `longterm.memory.ts`, `memory.orchestrator.ts`, `beta.diagnostics.ts`,
+  `brain.context.ts`, and `tool.jobs.ts`.
+- `graphify query "AdminRequestTimeline requestIdForRetrievalEvent
+memoryEvents metadata requestId toolJobs modelRuns backgroundJobs
+book_chat_thread_saved" --budget 6000 --graph graphify-out/graph.json`
+  selected the Admin request timeline and request-ID grouping surface.
+- `graphify query "Message type requestId ChatPanel voiceSession sessionId
+appendVoiceTurn sendVoiceText stopVoice persisted thread metadata requestIds"
+--budget 6000 --graph graphify-out/graph.json` selected the chat/voice
+  message contract.
+- `graphify path "persistBookChatThread()" "AdminRequestTimeline" --graph
+graphify-out/graph.json` confirmed the saved-thread-to-Admin route through
+  `summarizeChatThreadPersistence()` and `AdminView.tsx`.
+
+## Integration Decisions
+
+- Added optional `requestId` to `Message`.
+- Stamped typed-chat user and assistant messages with the same generated
+  `chat-*` request ID.
+- Stamped live voice session transcript messages with the voice session ID.
+- Extended `summarizeChatThreadPersistence()` with compact `requestIds`,
+  `lastRequestId`, and `requestCorrelated` fields.
+- Added `requestId`, `requestIds`, `requestCorrelated`, `traceId`, and
+  voice-session `sessionId` metadata to `book_chat_thread_saved` rows.
+- Updated synthetic local brain wiring rehearsal rows to satisfy the same
+  request-correlated transcript contract.
+- Tightened Beta Diagnostics so typed-chat and voice transcript persistence
+  signals require request-correlated saved-thread rows.
+- Added saved-transcript chips to Admin request timelines and tightened Activity
+  mobile layout around request timelines, meters, and tuning rows.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run lint`: passed.
+- Focused contract tests passed with
+  `node --test --test-name-pattern "brain flow|beta diagnostics|local brain wiring|synthetic rehearsal|chat thread persistence" tests/beta-diagnostics.test.mjs tests/brain-rehearsal.test.mjs tests/chat-thread-utils.test.mjs`.
+- `npm run test`: passed, 141 tests.
+- `npm run build`: passed.
+- Headless Chrome CDP QA at `390x844` confirmed Admin Activity rendered saved
+  transcript memory-row request timeline copy with `horizontalOverflow: 0` and
+  no measured overflow elements.
+- Headless Chrome CDP QA at `390x844` confirmed Admin Diagnostics rendered
+  request timeline copy, Chat thread saved, and Voice thread saved with
+  `horizontalOverflow: 0` and no measured overflow elements.
+- Headless Chrome CDP QA at `1440x900` confirmed Admin Activity and Diagnostics
+  rendered the same request-correlation surfaces with `horizontalOverflow: 0`
+  and no measured overflow elements.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with `1018` nodes, `1809` edges, and `65` communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `requestCorrelatedThreadPersistenceEvents`,
+  `book_chat_thread_saved`, `persistBookChatThread()`,
+  `summarizeChatThreadPersistence()`, `AdminRequestTimeline`, and
+  `buildBrainFlowCoverageFromLedgers()`.
+- Graphify path `persistBookChatThread()` to `AdminRequestTimeline` found a
+  four-hop route through `shouldRecordBookChatThreadSave()`,
+  `summarizeChatThreadPersistence()`, and `AdminView.tsx`.
+- Graphify path `summarizeChatThreadPersistence()` to
+  `buildBrainFlowCoverageFromLedgers()` found a two-hop route through
+  `AdminView.tsx`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed-chat and real voice turns when spending live
+  provider calls is in scope, so request-correlated transcript rows can be
+  proven from real beta traffic.
+- Continue broader local beta validation until real chat, voice, retrieval,
+  tools, memory, evidence, corrections, Admin, and Revision operate together
+  under live beta conditions.
+- AWS/cloud synchronization remains out of scope until beta testing.

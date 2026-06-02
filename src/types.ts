@@ -10,6 +10,7 @@ export type ChatPhase =
 
 export type Message = {
   id: string;
+  requestId?: string;
   role: "user" | "assistant";
   content: string;
   isVoice?: boolean;

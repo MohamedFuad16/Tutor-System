@@ -1132,12 +1132,17 @@ const recordBookChatThreadSaveEvent = async (
     eventType: "book_chat_thread_saved",
     status: "completed",
     source: "book_chat_thread_persistence",
+    sessionId: summary.mode === "voice" ? summary.lastRequestId : undefined,
     bookId: thread.bookId,
     conversationId: thread.id,
+    traceId: summary.lastRequestId || undefined,
     summary: `Saved ${summary.mode} study thread "${thread.title}" with ${summary.meaningfulMessageCount} meaningful messages.`,
     retentionPolicy: "local_indexeddb",
     metadata: {
       mode: summary.mode,
+      requestId: summary.lastRequestId || undefined,
+      requestIds: summary.requestIds,
+      requestCorrelated: summary.requestCorrelated,
       hasTypedChat: summary.hasTypedChat,
       hasVoiceSession: summary.hasVoiceSession,
       messageCount: summary.messageCount,
@@ -4208,6 +4213,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         ...prev,
         {
           id: sessionId,
+          requestId: sessionId,
           role: "assistant",
           content: "",
           isVoice: true,
@@ -4821,20 +4827,22 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     setInput("");
     setIsSearchSkillActive(false);
 
+    const chatRequestId = createTutorRequestId("chat");
     const newMessages = [
       ...messages,
       {
         id: crypto.randomUUID(),
+        requestId: chatRequestId,
         role: "user" as const,
         content: userMsgContent,
       },
     ];
     const assistantMsgId = crypto.randomUUID();
-    const chatRequestId = createTutorRequestId("chat");
     setMessages([
       ...newMessages,
       {
         id: assistantMsgId,
+        requestId: chatRequestId,
         role: "assistant" as const,
         content: "",
         hasFlashcards: false,

@@ -84,6 +84,7 @@ export type BetaBrainFlowCoverage = {
   chatRequestCorrelatedMasteryEvidenceEvents: number;
   voiceRequestCorrelatedMasteryEvidenceEvents: number;
   threadPersistenceEvents: number;
+  requestCorrelatedThreadPersistenceEvents: number;
   chatThreadPersistenceEvents: number;
   voiceThreadPersistenceEvents: number;
   backgroundMemoryEvents: number;
@@ -348,12 +349,18 @@ export const buildBrainFlowCoverageFromLedgers = ({
       hasRequestId(event.bookId) &&
       hasRequestId(event.conversationId),
   );
-  const chatThreadPersistenceEvents = completedThreadPersistenceEvents.filter(
-    (event) => isChatThreadPersistence(event.metadata),
-  ).length;
-  const voiceThreadPersistenceEvents = completedThreadPersistenceEvents.filter(
-    (event) => isVoiceThreadPersistence(event.metadata),
-  ).length;
+  const requestCorrelatedThreadPersistenceRows =
+    completedThreadPersistenceEvents.filter((event) =>
+      hasRequestId(event.metadata?.requestId),
+    );
+  const chatThreadPersistenceEvents =
+    requestCorrelatedThreadPersistenceRows.filter((event) =>
+      isChatThreadPersistence(event.metadata),
+    ).length;
+  const voiceThreadPersistenceEvents =
+    requestCorrelatedThreadPersistenceRows.filter((event) =>
+      isVoiceThreadPersistence(event.metadata),
+    ).length;
   const backgroundMemoryEvents = memoryEvents.filter(
     (event) =>
       event.status === "completed" &&
@@ -419,9 +426,10 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count:
         requestCorrelatedContextInjections +
         requestCorrelatedRetrievalEvents +
-        requestCorrelatedModelRuns,
+        requestCorrelatedModelRuns +
+        requestCorrelatedThreadPersistenceRows.length,
       detail:
-        "Context injection, retrieval, and model-run rows share request ids for Admin request timelines.",
+        "Context injection, retrieval, model-run, and transcript-save rows share request ids for Admin request timelines.",
     },
     {
       id: "chat_foreground_tools",
@@ -461,7 +469,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
       ready: chatThreadPersistenceEvents > 0,
       count: chatThreadPersistenceEvents,
       detail:
-        "Typed chat has a durable book_chat_thread_saved row tied to a local book thread.",
+        "Typed chat has a durable book_chat_thread_saved row tied to a local book thread and request id.",
     },
     {
       id: "voice_thread_persistence",
@@ -469,7 +477,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
       ready: voiceThreadPersistenceEvents > 0,
       count: voiceThreadPersistenceEvents,
       detail:
-        "Live voice has a durable book_chat_thread_saved row with voice-session transcript evidence.",
+        "Live voice has a durable book_chat_thread_saved row with voice-session transcript evidence and a request id.",
     },
     {
       id: "background_memory",
@@ -520,6 +528,8 @@ export const buildBrainFlowCoverageFromLedgers = ({
     chatRequestCorrelatedMasteryEvidenceEvents,
     voiceRequestCorrelatedMasteryEvidenceEvents,
     threadPersistenceEvents: completedThreadPersistenceEvents.length,
+    requestCorrelatedThreadPersistenceEvents:
+      requestCorrelatedThreadPersistenceRows.length,
     chatThreadPersistenceEvents,
     voiceThreadPersistenceEvents,
     backgroundMemoryEvents: backgroundMemoryEvents.length,
@@ -726,7 +736,7 @@ export const buildBetaDiagnosticsSnapshot = (
       count:
         brainFlow.chatContextInjections +
         brainFlow.voiceContextInjections +
-        brainFlow.threadPersistenceEvents +
+        brainFlow.requestCorrelatedThreadPersistenceEvents +
         brainFlow.requestCorrelatedRetrievalEvents +
         brainFlow.requestCorrelatedModelRuns +
         brainFlow.foregroundToolJobs +

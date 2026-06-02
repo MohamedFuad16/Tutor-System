@@ -208,6 +208,9 @@ export const runLocalBrainWiringRehearsal = (
         conversationId: `thread:${chatPacket.activeBookId}:chat`,
         metadata: {
           mode: "chat",
+          requestId: chatPacket.requestId,
+          requestIds: [chatPacket.requestId],
+          requestCorrelated: true,
           hasTypedChat: true,
           hasVoiceSession: false,
           synthetic: true,
@@ -221,6 +224,9 @@ export const runLocalBrainWiringRehearsal = (
         conversationId: `thread:${voicePacket.activeBookId}:voice`,
         metadata: {
           mode: "voice",
+          requestId: voicePacket.requestId,
+          requestIds: [voicePacket.requestId],
+          requestCorrelated: true,
           hasTypedChat: false,
           hasVoiceSession: true,
           voiceSessionCount: 1,
