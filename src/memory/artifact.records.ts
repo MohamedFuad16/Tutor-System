@@ -120,6 +120,7 @@ export type CitationIntegrityResult = {
     normalizedDomain?: string;
     claimCheck:
       | "artifact_level_source_card"
+      | "generated_flashcard_provenance"
       | "generated_learning_note_provenance"
       | "stored_audio_overview_integrity";
   };
@@ -192,6 +193,7 @@ const isPlaceholderSourceRef = (value: unknown) => {
     text === "source" ||
     text === "source-card" ||
     text === "source-claim" ||
+    text === "generated-flashcards" ||
     text === "learning-entry" ||
     text === "generated-learning-note" ||
     text === "local"
@@ -367,6 +369,7 @@ export const supportsLocalCitationIntegrityArtifact = (
   artifact?: Pick<ArtifactRecord, "artifactType"> | null,
 ) =>
   artifact?.artifactType === "source_card" ||
+  artifact?.artifactType === "flashcards" ||
   artifact?.artifactType === "notes" ||
   artifact?.artifactType === "audio_overview";
 
@@ -383,6 +386,7 @@ export const verifyLocalCitationIntegrity = (input: {
   const checkedAt = Math.max(0, Math.round(input.timestamp || Date.now()));
   const artifact = input.artifact || null;
   const citation = input.citation;
+  const generatedFlashcardsArtifact = artifact?.artifactType === "flashcards";
   const generatedNoteArtifact = artifact?.artifactType === "notes";
   const audioOverviewArtifact = artifact?.artifactType === "audio_overview";
   const checkedFields = audioOverviewArtifact
@@ -406,6 +410,24 @@ export const verifyLocalCitationIntegrity = (input: {
         "metadata.localOnly",
         "metadata.externalContentFetched",
       ]
+    : generatedFlashcardsArtifact
+      ? [
+          "artifactId",
+          "citationStateIds",
+          "sourceRef",
+          "sourceIds",
+          "bookId",
+          "conversationId",
+          "summary",
+          "metadata.batchId",
+          "metadata.sourceMessageId",
+          "metadata.cardCount",
+          "metadata.cardIds",
+          "metadata.conceptIds",
+          "metadata.samplePrompts",
+          "metadata.localOnly",
+          "metadata.externalContentFetched",
+        ]
     : generatedNoteArtifact
       ? [
           "artifactId",
@@ -462,6 +484,8 @@ export const verifyLocalCitationIntegrity = (input: {
       : normalizeDomain(citation.domain || artifact?.domain) || undefined,
     claimCheck: audioOverviewArtifact
       ? "stored_audio_overview_integrity"
+      : generatedFlashcardsArtifact
+        ? "generated_flashcard_provenance"
       : generatedNoteArtifact
         ? "generated_learning_note_provenance"
         : "artifact_level_source_card",
@@ -494,7 +518,7 @@ export const verifyLocalCitationIntegrity = (input: {
   if (!supportsLocalCitationIntegrityArtifact(artifact)) {
     return result(
       "unsupported",
-      "The local verifier currently supports source-card, generated learning-note, and stored audio-guide citation rows only.",
+      "The local verifier currently supports source-card, generated flashcard, generated learning-note, and stored audio-guide citation rows only.",
     );
   }
 
@@ -513,6 +537,206 @@ export const verifyLocalCitationIntegrity = (input: {
       "conflicting",
       "Artifact citationStateIds do not include this citation row.",
     );
+  }
+
+  if (artifact.artifactType === "flashcards") {
+    const artifactMetadata = artifact.metadata || {};
+    const citationMetadata = citation.metadata || {};
+    const sourceRef = compact(citation.sourceRef);
+    const batchId = compact(artifactMetadata.batchId);
+    const citationBatchId = compact(citationMetadata.batchId);
+    const sourceMessageId = compact(artifactMetadata.sourceMessageId);
+    const citationSourceMessageId = compact(citationMetadata.sourceMessageId);
+    const artifactMessageId = compact(artifact.messageId);
+    const artifactBookId = compact(artifact.bookId);
+    const artifactConversationId = compact(artifact.conversationId);
+    const cardIds = cleanList(
+      Array.isArray(artifactMetadata.cardIds)
+        ? artifactMetadata.cardIds
+        : [artifactMetadata.cardIds],
+      64,
+    );
+    const citationCardIds = cleanList(
+      Array.isArray(citationMetadata.cardIds)
+        ? citationMetadata.cardIds
+        : [citationMetadata.cardIds],
+      64,
+    );
+    const conceptIds = cleanList(
+      Array.isArray(artifactMetadata.conceptIds)
+        ? artifactMetadata.conceptIds
+        : [artifactMetadata.conceptIds],
+      32,
+    );
+    const cardCount = Number(artifactMetadata.cardCount);
+    const citationCardCount = Number(citationMetadata.cardCount);
+    const samplePrompts = cleanList(
+      Array.isArray(artifactMetadata.samplePrompts)
+        ? artifactMetadata.samplePrompts
+        : [artifactMetadata.samplePrompts],
+      3,
+    );
+    const acceptedSourceRefs = cleanList(
+      [
+        sourceMessageId,
+        artifactMessageId,
+        batchId,
+        cardIds.length ? cardIds.join(":") : undefined,
+      ],
+      8,
+    );
+
+    if (
+      artifactMetadata.localOnly !== true ||
+      citationMetadata.localOnly !== true
+    ) {
+      return result(
+        "unavailable",
+        "Generated flashcard provenance is not marked local-only.",
+      );
+    }
+
+    if (
+      artifactMetadata.externalContentFetched !== false ||
+      citationMetadata.externalContentFetched !== false
+    ) {
+      return result(
+        "unavailable",
+        "Generated flashcard provenance does not prove that no external content was fetched.",
+      );
+    }
+
+    if (artifactMetadata.generatedArtifact !== true) {
+      return result(
+        "unavailable",
+        "Generated flashcard artifact metadata is missing the generated-artifact marker.",
+      );
+    }
+
+    if (compact(artifactMetadata.artifactType) !== "flashcards") {
+      return result(
+        "unavailable",
+        "Generated flashcard artifact metadata is not marked as flashcards.",
+      );
+    }
+
+    if (!sourceRef || isPlaceholderSourceRef(sourceRef)) {
+      return result(
+        "unavailable",
+        "Generated flashcard citation is missing a local source reference.",
+      );
+    }
+
+    if (!batchId || isPlaceholderSourceRef(batchId)) {
+      return result(
+        "unavailable",
+        "Generated flashcard metadata is missing the batch id.",
+      );
+    }
+
+    if (citationBatchId && citationBatchId !== batchId) {
+      return result(
+        "conflicting",
+        "Generated flashcard citation batch id disagrees with the artifact.",
+      );
+    }
+
+    if (citationSourceMessageId && citationSourceMessageId !== sourceMessageId) {
+      return result(
+        "conflicting",
+        "Generated flashcard citation source message disagrees with the artifact.",
+      );
+    }
+
+    if (
+      sourceMessageId &&
+      artifactMessageId &&
+      sourceMessageId !== artifactMessageId
+    ) {
+      return result(
+        "conflicting",
+        "Generated flashcard artifact message id disagrees with metadata.",
+      );
+    }
+
+    if (!acceptedSourceRefs.includes(sourceRef)) {
+      return result(
+        "conflicting",
+        "Generated flashcard citation source does not match the artifact batch or message anchor.",
+      );
+    }
+
+    if (!artifact.sourceIds.includes(sourceRef)) {
+      return result(
+        "conflicting",
+        "Generated flashcard artifact sourceIds do not include the citation source reference.",
+      );
+    }
+
+    if (!Number.isFinite(cardCount) || cardCount <= 0) {
+      return result(
+        "unavailable",
+        "Generated flashcard metadata has no saved card count.",
+      );
+    }
+
+    if (Number.isFinite(citationCardCount) && citationCardCount !== cardCount) {
+      return result(
+        "conflicting",
+        "Generated flashcard citation card count disagrees with the artifact.",
+      );
+    }
+
+    if (cardIds.length === 0 || cardIds.length !== cardCount) {
+      return result(
+        "unavailable",
+        "Generated flashcard metadata does not include every saved card id.",
+      );
+    }
+
+    if (
+      citationCardIds.length > 0 &&
+      citationCardIds.some((cardId) => !cardIds.includes(cardId))
+    ) {
+      return result(
+        "conflicting",
+        "Generated flashcard citation card ids disagree with the artifact.",
+      );
+    }
+
+    if (cardIds.some((cardId) => !artifact.sourceIds.includes(cardId))) {
+      return result(
+        "conflicting",
+        "Generated flashcard artifact sourceIds do not include every saved card id.",
+      );
+    }
+
+    if (
+      conceptIds.length > 0 &&
+      artifact.conceptId &&
+      !conceptIds.includes(artifact.conceptId)
+    ) {
+      return result(
+        "conflicting",
+        "Generated flashcard artifact conceptId disagrees with metadata.",
+      );
+    }
+
+    if (!artifactBookId && !artifactConversationId && !sourceMessageId) {
+      return result(
+        "unavailable",
+        "Generated flashcards have no local book, conversation, or message anchor.",
+      );
+    }
+
+    if (!compact(artifact.summary) || samplePrompts.length === 0) {
+      return result(
+        "unavailable",
+        "Generated flashcards have no saved prompt preview to inspect locally.",
+      );
+    }
+
+    return result("verified");
   }
 
   if (artifact.artifactType === "notes") {
@@ -1212,15 +1436,19 @@ export const createGeneratedFlashcardsArtifactRecords = (
       title,
       verifier: "generated_flashcard_provenance",
       metadata: {
+        ...input.metadata,
         localOnly: true,
+        externalContentFetched: false,
         generatedArtifact: true,
         artifactType: "flashcards",
         batchId,
         sourceMessageId: input.sourceMessageId,
+        messageId: input.messageId,
+        conversationId: input.conversationId,
+        bookId: input.bookId,
         cardCount,
         cardIds,
         conceptIds,
-        ...input.metadata,
       },
     },
     timestamp,
@@ -1253,10 +1481,16 @@ export const createGeneratedFlashcardsArtifactRecords = (
       bookId: input.bookId,
       conceptId: conceptIds.length === 1 ? conceptIds[0] : undefined,
       metadata: {
+        ...input.metadata,
         localOnly: true,
+        externalContentFetched: false,
         generatedArtifact: true,
+        artifactType: "flashcards",
         batchId,
         sourceMessageId: input.sourceMessageId,
+        messageId: input.messageId,
+        conversationId: input.conversationId,
+        bookId: input.bookId,
         bookTitle: input.bookTitle,
         cardCount,
         cardIds,
@@ -1265,7 +1499,6 @@ export const createGeneratedFlashcardsArtifactRecords = (
           (card) => compact(card.conceptId).toLowerCase() === "general",
         ).length,
         samplePrompts,
-        ...input.metadata,
       },
     },
     timestamp,

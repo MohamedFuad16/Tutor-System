@@ -133,9 +133,10 @@ without network access. Use the Deepgram provider in
 - System Activity, request timelines, model runs, memory/retrieval events, tool
   jobs, evidence/mastery ledgers, correction controls, source artifacts, and
   beta diagnostics.
-- Source-card local citation checks, generated learning-note provenance checks,
-  plus not-checked generated flashcard and chapter audio-guide artifact
-  provenance.
+- Source-card local citation checks, generated flashcard provenance checks,
+  generated learning-note provenance checks, plus chapter audio-guide manifest
+  integrity checks. Flashcard provenance checks saved card ids and local
+  anchors; it does not prove answer correctness.
 - DeepSeek Trace Ledger for persisted learning-book and trace events.
 - Server Console for live backend logs over WebSocket.
 

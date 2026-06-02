@@ -747,6 +747,7 @@ export function AdminView() {
     return acc;
   }, {});
   const sourceCardArtifacts = artifactTypeCounts.source_card || 0;
+  const flashcardArtifacts = artifactTypeCounts.flashcards || 0;
   const audioOverviewArtifacts = artifactTypeCounts.audio_overview || 0;
   const readyArtifactRecords = readyArtifactRecordCount;
   const checkingCitationStates = checkingCitationStateCount;
@@ -2817,9 +2818,9 @@ export function AdminView() {
                             built-in manifests. Artifacts can be ready while
                             their citations remain checking or not checked; the
                             local verifier checks saved source-card structure
-                            generated learning-note provenance, and stored
-                            audio-guide manifest integrity without fetching
-                            external pages.
+                            generated flashcard provenance, generated
+                            learning-note provenance, and stored audio-guide
+                            manifest integrity without fetching external pages.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -2835,6 +2836,7 @@ export function AdminView() {
                       <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-8">
                         {[
                           ["Source cards", sourceCardArtifacts],
+                          ["Flashcards", flashcardArtifacts],
                           ["Audio guides", audioOverviewArtifacts],
                           ["Ready artifacts", readyArtifactRecords],
                           ["Checking", checkingCitationStates],
@@ -3304,10 +3306,11 @@ export function AdminView() {
                               A checking citation is not a verified citation.
                               The local verifier can only check saved
                               source-card structure, citation linkage, URL
-                              shape, domain consistency, and generated
-                              learning-note provenance, plus stored audio-guide
-                              manifest integrity; it does not fetch or prove
-                              external page content or audio transcription
+                              shape, domain consistency, generated flashcard
+                              provenance, generated learning-note provenance,
+                              plus stored audio-guide manifest integrity; it
+                              does not fetch or prove external page content,
+                              flashcard correctness, or audio transcription
                               accuracy.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">

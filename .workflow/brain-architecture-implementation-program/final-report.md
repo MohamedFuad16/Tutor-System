@@ -14,6 +14,66 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 26 report
+
+## Scope
+
+Phase 26 promotes generated flashcard artifact rows from unsupported local
+artifacts to locally verifiable provenance records. It stays inside local beta:
+the verifier proves saved flashcard provenance, not flashcard answer
+correctness, and it does not fetch external pages or call models.
+
+## Graphify Context
+
+- Graphify routed this slice through `src/memory/artifact.records.ts`,
+  `tests/artifact-records.test.mjs`, `src/views/AdminView.tsx`,
+  `src/lib/userBrainArchitectureBook.ts`, `src/lib/tutorBook.json`, and
+  `TUTOR_ARCHITECTURE.md`.
+
+## Integration Decisions
+
+- Added `flashcards` support to `supportsLocalCitationIntegrityArtifact()`.
+- Added `generated_flashcard_provenance` as a local verifier claim scope.
+- Hardened generated flashcard artifact metadata so caller-supplied metadata
+  cannot override `localOnly: true` or `externalContentFetched: false`.
+- Added generated-flashcard verifier checks for batch id, source/message
+  anchors, card count, saved card ids, source ids, concept id consistency,
+  prompt preview, and local/no-external-fetch metadata.
+- Updated Admin Source Artifacts copy and metrics so flashcard artifacts are
+  visible alongside source cards, generated notes, and audio guides.
+- Updated the system architecture doc, in-app Tutor architecture book, and User
+  Brain Architecture book with the conservative verifier boundary.
+- Regenerated Graphify because this phase changed code architecture.
+
+## Verification Evidence
+
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 80 tests.
+- `npm run build`: passed.
+- `graphify update . --force`: passed, 840 nodes, 1421 edges, 58 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `verifyLocalCitationIntegrity()`,
+  `supportsLocalCitationIntegrityArtifact()`,
+  `createGeneratedFlashcardsArtifactRecords()`, `AdminView`, and flashcard
+  memory neighbors.
+- Browser QA on `http://localhost:3001`: Admin Source Artifacts rendered the
+  generated flashcard provenance copy, Flashcards metric, flashcard-correctness
+  boundary, and no old flashcard-unsupported wording.
+- Browser QA at 390x844: Admin Source Artifacts kept the generated flashcard
+  provenance copy and metric with no horizontal overflow.
+- A read-only final-check sidecar was spawned but did not finish within the wait
+  window; it was shut down before producing findings.
+
+## Remaining Work
+
+- Add source-span or answer-level checks before claiming generated flashcard
+  factual correctness.
+- Add local verifiers for charts, code, images, websites, previews, and other
+  artifact kinds.
+- Continue broader local beta learner-brain implementation before any AWS/cloud
+  work.
+
 # brain architecture implementation program: phase 25 report
 
 ## Scope

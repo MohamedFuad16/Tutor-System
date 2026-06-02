@@ -218,20 +218,27 @@
       "owner": "main agent + attempted read-only final-check sidecar",
       "status": "completed",
       "write_scope": "src/lib/chapterAudioOverviews.json, public/audio-overviews/*, tests/audio-overview-plan.test.mjs, .workflow/brain-architecture-implementation-program/*"
+    },
+    {
+      "id": "EE",
+      "name": "Generated flashcard provenance verifier",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/artifact.records.ts, tests/artifact-records.test.mjs, src/views/AdminView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_25_complete",
+    "status": "phase_26_complete",
     "checks": [
-      "npm run audio:overview:dry-run passed, 25 present and 0 missing",
-      "node --test tests/audio-overview-plan.test.mjs passed",
-      "ffprobe validated all 25 regenerated MP3 durations and manifest labels",
       "npm run format:check passed",
       "npm run lint passed",
-      "npm run test passed, 77 tests",
+      "npm run test passed, 80 tests",
       "npm run build passed",
-      "Browser QA covered regenerated Revision audio guides on desktop and mobile plus Admin Sources",
-      "Read-only final-check sidecar was attempted but hit the subagent usage limit before producing findings"
+      "graphify update . --force passed with 840 nodes, 1421 edges, 58 communities",
+      "npm run graphify:tree passed",
+      "Graphify smoke query found generated flashcard provenance verifier symbols and Admin neighbors",
+      "Browser QA covered Admin Source Artifacts on desktop and 390x844 mobile",
+      "Read-only final-check sidecar was spawned but shut down before producing findings"
     ]
   }
 }

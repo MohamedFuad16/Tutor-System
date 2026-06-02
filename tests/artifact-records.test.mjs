@@ -128,11 +128,14 @@ test("generated flashcards become not-checked artifact records with provenance",
   assert.deepEqual(artifact.metadata.conceptIds, ["concept-bkt"]);
   assert.equal(artifact.metadata.unresolvedCards, 1);
   assert.equal(artifact.metadata.localOnly, true);
+  assert.equal(artifact.metadata.externalContentFetched, false);
   assert.equal(citation.timestamp, 24680);
   assert.equal(citation.state, "not_checked");
   assert.equal(citation.artifactId, artifact.id);
   assert.equal(citation.sourceRef, "assistant-message-1");
   assert.equal(citation.verifier, "generated_flashcard_provenance");
+  assert.equal(citation.metadata.localOnly, true);
+  assert.equal(citation.metadata.externalContentFetched, false);
 });
 
 test("generated learning notes become not-checked artifact records with provenance", () => {
@@ -252,7 +255,7 @@ test("stored audio overviews become not-checked artifact records with local prov
   assert.equal(citation.metadata.externalContentFetched, false);
 });
 
-test("local source-card verifier support excludes generated flashcards", () => {
+test("local citation verifier supports flashcard, note, audio, and source-card rows", () => {
   assert.equal(
     supportsLocalCitationIntegrityArtifact({ artifactType: "source_card" }),
     true,
@@ -263,7 +266,7 @@ test("local source-card verifier support excludes generated flashcards", () => {
   );
   assert.equal(
     supportsLocalCitationIntegrityArtifact({ artifactType: "flashcards" }),
-    false,
+    true,
   );
   assert.equal(
     supportsLocalCitationIntegrityArtifact({ artifactType: "audio_overview" }),
@@ -336,6 +339,66 @@ test("local citation verifier marks coherent source-card links verified without 
   assert.equal(result.metadata.localOnly, true);
   assert.equal(result.metadata.externalContentFetched, false);
   assert.equal(result.metadata.claimCheck, "artifact_level_source_card");
+});
+
+test("local citation verifier marks coherent generated flashcard provenance verified", () => {
+  const { artifact, citation } = createGeneratedFlashcardsArtifactRecords(
+    {
+      batchId: "batch-verified",
+      source: "chat_tool_flashcard_generation",
+      sourceMessageId: "assistant-message-verified",
+      messageId: "assistant-message-verified",
+      conversationId: "thread:book-verified",
+      bookId: "book-verified",
+      bookTitle: "Graph learning",
+      cards: [
+        {
+          id: "card-verified-1",
+          front: "What changes mastery?",
+          back: "Accepted evidence rows.",
+          conceptId: "concept-evidence",
+        },
+        {
+          id: "card-verified-2",
+          front: "What stays inspectable?",
+          back: "Generated artifact provenance.",
+          conceptId: "concept-artifacts",
+        },
+      ],
+      metadata: { generationPath: "chat_stream_done" },
+    },
+    100,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp: 425,
+  });
+
+  assert.equal(result.state, "verified");
+  assert.equal(result.artifactVerificationState, "verified");
+  assert.equal(result.metadata.localOnly, true);
+  assert.equal(result.metadata.externalContentFetched, false);
+  assert.equal(result.metadata.sourceKind, "local_source_ref");
+  assert.equal(result.metadata.claimCheck, "generated_flashcard_provenance");
+  assert.deepEqual(result.metadata.checkedFields, [
+    "artifactId",
+    "citationStateIds",
+    "sourceRef",
+    "sourceIds",
+    "bookId",
+    "conversationId",
+    "summary",
+    "metadata.batchId",
+    "metadata.sourceMessageId",
+    "metadata.cardCount",
+    "metadata.cardIds",
+    "metadata.conceptIds",
+    "metadata.samplePrompts",
+    "metadata.localOnly",
+    "metadata.externalContentFetched",
+  ]);
 });
 
 test("local citation verifier marks coherent generated learning-note provenance verified", () => {
@@ -445,6 +508,74 @@ test("local citation verifier marks coherent stored audio guide provenance verif
     "metadata.localOnly",
     "metadata.externalContentFetched",
   ]);
+});
+
+test("local citation verifier catches conflicting generated flashcard source refs", () => {
+  const { artifact, citation } = createGeneratedFlashcardsArtifactRecords(
+    {
+      batchId: "batch-verified",
+      sourceMessageId: "assistant-message-verified",
+      messageId: "assistant-message-verified",
+      conversationId: "thread:book-verified",
+      bookId: "book-verified",
+      cards: [
+        {
+          id: "card-verified-1",
+          front: "What changes mastery?",
+          back: "Accepted evidence rows.",
+          conceptId: "concept-evidence",
+        },
+      ],
+    },
+    100,
+  );
+  const conflictingCitation = createCitationStateRecord(
+    {
+      ...citation,
+      sourceRef: "assistant-message-other",
+    },
+    citation.timestamp,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation: conflictingCitation,
+    timestamp: 450,
+  });
+
+  assert.equal(result.state, "conflicting");
+  assert.equal(result.metadata.claimCheck, "generated_flashcard_provenance");
+  assert.match(result.failureReason || "", /batch or message anchor/);
+});
+
+test("local citation verifier keeps incomplete generated flashcards unavailable", () => {
+  const { artifact, citation } = createGeneratedFlashcardsArtifactRecords(
+    {
+      batchId: "batch-incomplete",
+      sourceMessageId: "assistant-message-incomplete",
+      messageId: "assistant-message-incomplete",
+      conversationId: "thread:book-incomplete",
+      bookId: "book-incomplete",
+      cards: [
+        {
+          front: "What changes mastery?",
+          back: "Accepted evidence rows.",
+          conceptId: "concept-evidence",
+        },
+      ],
+    },
+    100,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp: 475,
+  });
+
+  assert.equal(result.state, "unavailable");
+  assert.equal(result.metadata.claimCheck, "generated_flashcard_provenance");
+  assert.match(result.failureReason || "", /saved card id/);
 });
 
 test("local citation verifier catches conflicting stored audio guide source refs", () => {
@@ -748,21 +879,21 @@ test("local citation verifier treats query and hash differences as URL conflicts
 test("local citation verifier reports unsupported artifact kinds explicitly", () => {
   const artifact = createArtifactRecord(
     {
-      id: "artifact-flashcards",
-      artifactType: "flashcards",
-      title: "Generated flashcards",
+      id: "artifact-chart",
+      artifactType: "chart",
+      title: "Generated chart",
       sourceIds: ["source-1"],
-      citationStateIds: ["citation-flashcards"],
+      citationStateIds: ["citation-chart"],
     },
     100,
   );
   const citation = createCitationStateRecord(
     {
-      id: "citation-flashcards",
+      id: "citation-chart",
       state: "checking",
-      claimId: "artifact-flashcards",
+      claimId: "artifact-chart",
       sourceRef: "source-1",
-      artifactId: "artifact-flashcards",
+      artifactId: "artifact-chart",
     },
     100,
   );
@@ -777,7 +908,7 @@ test("local citation verifier reports unsupported artifact kinds explicitly", ()
   assert.equal(result.artifactVerificationState, "unavailable");
   assert.match(
     result.failureReason || "",
-    /source-card, generated learning-note, and stored audio-guide/,
+    /source-card, generated flashcard, generated learning-note, and stored audio-guide/,
   );
 });
 
