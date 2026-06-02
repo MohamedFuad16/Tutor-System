@@ -2781,7 +2781,13 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       let lastUsageClientInputBytes = 0;
       let lastUsageDeepgramOutputBytes = 0;
       const voiceAgentSpeakModel = "aura-asteria-en";
-      const voiceRequestId = `voice_${voiceStartedAt}`;
+      let voiceRequestId = `voice_${voiceStartedAt}`;
+
+      const normalizeVoiceRequestId = (value: unknown) => {
+        if (typeof value !== "string") return "";
+        const trimmed = value.trim();
+        return /^[A-Za-z0-9_:-]{1,120}$/.test(trimmed) ? trimmed : "";
+      };
 
       const sendVoiceUsage = (sessions = 0) => {
         if (ws.readyState !== ws.OPEN) return;
@@ -3324,6 +3330,12 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         if (!isVoiceSessionStarted) {
           const authPayload = parseVoiceAuth(data, isBinary);
           if (authPayload) {
+            const clientRequestId = normalizeVoiceRequestId(
+              authPayload.voiceSessionId || authPayload.requestId,
+            );
+            if (clientRequestId) {
+              voiceRequestId = clientRequestId;
+            }
             startVoiceSession(
               sanitizeApiKey(authPayload.openRouterKey),
               authPayload.language || language,
@@ -3346,6 +3358,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 clientStudyContextChars: Number(
                   authPayload.studyContextChars || 0,
                 ),
+                clientRequestId: clientRequestId || undefined,
               },
             );
             return;

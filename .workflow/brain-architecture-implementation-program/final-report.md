@@ -2049,3 +2049,63 @@ for Admin.
 - Add stronger request correlation between browser voice model-run rows, server
   system-activity rows, and client-side tool jobs.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 39: Voice Request Correlation
+
+Phase 39 closes the request-correlation gap left by the voice continuity work.
+The browser already records voice model/tool rows with the voice session id,
+while the local websocket server previously generated a separate server-side
+voice request id. That made Admin request timelines split one voice session
+into two timelines. Voice auth now carries the browser session id to the server,
+and the server uses it for voice system-activity rows after conservative shape
+validation.
+
+## Graphify Context
+
+- Graphify routed this slice through `server.ts`, `ChatPanel.tsx`,
+  `tests/system-activity.test.mjs`, `recordToolJobEvent()`,
+  `recordModelRunEvent()`, and `createTutorServerApp()`.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+
+## Integration Decisions
+
+- `ChatPanel` sends `voiceSessionId` and `requestId` in the `voice_auth`
+  payload.
+- `server.ts` validates the client request id with a small
+  alphanumeric/underscore/colon/dash allowlist before adopting it as the local
+  voice `requestId`.
+- The server keeps its generated fallback id when no valid browser id is
+  supplied.
+- The mock websocket integration test now asserts shared request ids for
+  `Voice tool call requested`, `Voice client tool completed`,
+  `Mock voice provider ready`, and `Voice study context attached`.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run lint`: passed.
+- `npm run format:check`: passed.
+- `npm run test`: passed, 92 tests.
+- `npm run build`: passed.
+- In-app Browser QA on `http://localhost:3100`: root/Study rendered, Admin
+  activated through DOM CUA, and Admin showed Admin Center, System Activity,
+  Request timelines, Model Runs, and Live voice timeline with zero console
+  errors.
+- In-app Browser QA at `390x844`: Study rendered the tutor entry with zero
+  console errors.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  857 nodes, 1470 edges, and 50 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found the voice websocket test/server/client route, and
+  graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Remaining Work
+
+- Browser-verify a live voice function-call round trip once provider keys/access
+  are intentionally part of the test scope.
+- Keep closing the typed-chat vs voice parity gap: web search and current-page
+  vision tools are still typed-chat-only.
+- Add richer Admin labels around correlated voice timelines once real provider
+  calls are exercised.
+- AWS/cloud synchronization remains out of scope until beta testing.

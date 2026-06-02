@@ -121,6 +121,8 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
   ws.send(
     JSON.stringify({
       type: "voice_auth",
+      voiceSessionId: "voice-test-session-1",
+      requestId: "voice-test-session-1",
       studyContext: "Local websocket test study context.",
       activeBookId: "book:voice-test",
       activeBookTitle: "Voice Tool Test",
@@ -163,7 +165,8 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
       (event) =>
         event.kind === "tool" &&
         event.status === "started" &&
-        event.title === "Voice tool call requested",
+        event.title === "Voice tool call requested" &&
+        event.requestId === "voice-test-session-1",
     ),
   );
   assert.ok(
@@ -171,7 +174,8 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
       (event) =>
         event.kind === "tool" &&
         event.status === "completed" &&
-        event.title === "Voice client tool completed",
+        event.title === "Voice client tool completed" &&
+        event.requestId === "voice-test-session-1",
     ),
   );
   assert.ok(
@@ -179,7 +183,17 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
       (event) =>
         event.kind === "voice" &&
         event.status === "completed" &&
-        event.title === "Mock voice provider ready",
+        event.title === "Mock voice provider ready" &&
+        event.requestId === "voice-test-session-1",
+    ),
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "retrieval" &&
+        event.status === "completed" &&
+        event.title === "Voice study context attached" &&
+        event.requestId === "voice-test-session-1",
     ),
   );
 });

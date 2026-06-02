@@ -309,27 +309,34 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/components/ChatPanel.tsx, src/lib/chatThreadUtils.ts, tests/chat-thread-utils.test.mjs, package.json, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "RR",
+      "name": "Voice request correlation",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "server.ts, src/components/ChatPanel.tsx, tests/system-activity.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_38_complete",
+    "status": "phase_39_complete",
     "checks": [
-      "Graphify routed the slice through ChatPanel.tsx, src/lib/chatThreadUtils.ts, archiveChatSnapshot(), chatTitleFromMessages(), flattenChatMessagesForPrompt(), and meaningfulChatMessages()",
-      "Added shared chat-thread helpers for voice-session prompt flattening, meaningful-message detection, learner-turn detection, and title derivation",
-      "ChatPanel archive and book-thread title paths now treat voice transcript cards as meaningful chat material",
-      "Typed chat requests now inject prior voice turns through flattenChatMessagesForPrompt()",
-      "Live voice sessions now upsert durable voice_agent model-run rows on start, context attachment, completion, and failure",
-      "npm run test passed, 92 tests including chat-thread-utils.test.mjs",
+      "Graphify routed the slice through server.ts, ChatPanel.tsx, tests/system-activity.test.mjs, recordToolJobEvent(), recordModelRunEvent(), and createTutorServerApp()",
+      "ChatPanel sends voiceSessionId and requestId in the voice_auth payload",
+      "server.ts validates a browser-supplied voice request id before adopting it for server voice system-activity rows",
+      "The mock websocket integration test asserts shared request ids for Voice tool call requested, Voice client tool completed, Mock voice provider ready, and Voice study context attached",
       "npm run lint passed",
-      "npm run build passed",
       "npm run format:check passed",
-      "In-app Browser QA on http://localhost:3100 confirmed Admin Center, System Activity, Model Runs, and Live voice timeline render after DOM CUA activation",
-      "In-app Browser QA at 390x844 confirmed Admin remains responsive and mobile Study renders the tutor entry",
+      "npm run test passed, 92 tests",
+      "npm run build passed",
+      "In-app Browser QA on http://localhost:3100 confirmed root/Study renders and Admin shows Admin Center, System Activity, Request timelines, Model Runs, and Live voice timeline after DOM CUA activation",
+      "In-app Browser QA at 390x844 confirmed mobile Study renders the tutor entry",
       "Browser warning/error logs were empty during Admin and Study smoke QA",
       "Live Deepgram voice was not exercised in this phase to keep verification local and avoid external provider dependency",
-      "graphify update . --force regenerated graphify-out with 857 nodes, 1470 edges, and 50 communities",
+      "graphify update . --force regenerated Graphify artifacts with 857 nodes, 1470 edges, and 50 communities",
       "npm run graphify:tree passed",
-      "Graphify smoke query found chatThreadUtils.ts, flattenChatMessagesForPrompt(), meaningfulChatMessages(), archiveChatSnapshot(), and chatTitleFromMessages()",
+      "Graphify smoke query found the voice websocket test/server/client route",
+      "Graph artifact grep found no server.mjs or .tmp-test scratch nodes",
       "Scratch artifact checks found no server.mjs, .tmp-test, or running node server.mjs process after QA cleanup",
       "Temporary local dev server on port 3100 was stopped after verification"
     ]

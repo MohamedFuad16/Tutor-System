@@ -412,7 +412,7 @@
       "label": "startServer()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L3390",
+      "source_location": "L3403",
       "id": "learningai_server_startserver",
       "community": 10,
       "norm_label": "startserver()"
@@ -853,7 +853,7 @@
       "label": "toolNames",
       "file_type": "code",
       "source_file": "tests/system-activity.test.mjs",
-      "source_location": "L134",
+      "source_location": "L136",
       "id": "tests_system_activity_test_toolnames",
       "community": 10,
       "norm_label": "toolnames"
@@ -9048,9 +9048,9 @@
       "source_file": "tests/chat-thread-utils.test.mjs",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_chat_thread_utils_test_mjs",
-      "target": "tests_chat_thread_utils_test_voicemessage",
-      "confidence_score": 1.0
+      "target": "tests_chat_thread_utils_test_voicemessage"
     },
     {
       "relation": "contains",
@@ -10466,9 +10466,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "src_types_ts",
-      "confidence_score": 1.0
+      "target": "src_types_ts"
     },
     {
       "relation": "imports_from",
@@ -10510,9 +10510,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "src_types_message",
-      "confidence_score": 1.0
+      "target": "src_types_message"
     },
     {
       "relation": "imports",
@@ -18386,9 +18386,9 @@
       "source_file": "src/components/ChatPanel.tsx",
       "source_location": "L90",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_chatpanel_tsx",
-      "target": "src_lib_chatthreadutils_ts",
-      "confidence_score": 1.0
+      "target": "src_lib_chatthreadutils_ts"
     },
     {
       "relation": "imports",
@@ -18397,9 +18397,9 @@
       "source_file": "src/components/ChatPanel.tsx",
       "source_location": "L90",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_chatpanel_tsx",
-      "target": "lib_chatthreadutils_chattitlefrommessageset",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_chattitlefrommessageset"
     },
     {
       "relation": "imports",
@@ -18408,9 +18408,9 @@
       "source_file": "src/components/ChatPanel.tsx",
       "source_location": "L90",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_chatpanel_tsx",
-      "target": "lib_chatthreadutils_flattenchatmessagesforprompt",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_flattenchatmessagesforprompt"
     },
     {
       "relation": "imports",
@@ -18419,9 +18419,9 @@
       "source_file": "src/components/ChatPanel.tsx",
       "source_location": "L90",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_chatpanel_tsx",
-      "target": "lib_chatthreadutils_haslearnerchatturn",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_haslearnerchatturn"
     },
     {
       "relation": "imports",
@@ -18430,9 +18430,9 @@
       "source_file": "src/components/ChatPanel.tsx",
       "source_location": "L90",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_chatpanel_tsx",
-      "target": "lib_chatthreadutils_meaningfulchatmessages",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_meaningfulchatmessages"
     },
     {
       "relation": "contains",
@@ -20629,9 +20629,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "lib_chatthreadutils_promptturn",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_promptturn"
     },
     {
       "relation": "contains",
@@ -20639,9 +20639,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "lib_chatthreadutils_normalizetitletext",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_normalizetitletext"
     },
     {
       "relation": "contains",
@@ -20649,9 +20649,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "lib_chatthreadutils_hastext",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_hastext"
     },
     {
       "relation": "contains",
@@ -20659,9 +20659,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "lib_chatthreadutils_voiceturns",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_voiceturns"
     },
     {
       "relation": "contains",
@@ -20669,9 +20669,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L17",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "lib_chatthreadutils_flattenchatmessagesforprompt",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_flattenchatmessagesforprompt"
     },
     {
       "relation": "contains",
@@ -20679,9 +20679,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L31",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "lib_chatthreadutils_haslearnerchatturn",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_haslearnerchatturn"
     },
     {
       "relation": "contains",
@@ -20689,9 +20689,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L35",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "lib_chatthreadutils_ismeaningfulchatmessage",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_ismeaningfulchatmessage"
     },
     {
       "relation": "contains",
@@ -20699,9 +20699,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "lib_chatthreadutils_meaningfulchatmessages",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_meaningfulchatmessages"
     },
     {
       "relation": "contains",
@@ -20709,9 +20709,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "lib_chatthreadutils_titletextformessage",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_titletextformessage"
     },
     {
       "relation": "contains",
@@ -20719,9 +20719,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L57",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_chatthreadutils_ts",
-      "target": "lib_chatthreadutils_chattitlefrommessageset",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_chattitlefrommessageset"
     },
     {
       "relation": "calls",
@@ -20730,9 +20730,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L66",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_chatthreadutils_chattitlefrommessageset",
-      "target": "lib_chatthreadutils_normalizetitletext",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_normalizetitletext"
     },
     {
       "relation": "calls",
@@ -20741,9 +20741,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L32",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_chatthreadutils_haslearnerchatturn",
-      "target": "lib_chatthreadutils_hastext",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_hastext"
     },
     {
       "relation": "calls",
@@ -20752,9 +20752,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_chatthreadutils_ismeaningfulchatmessage",
-      "target": "lib_chatthreadutils_hastext",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_hastext"
     },
     {
       "relation": "calls",
@@ -20763,9 +20763,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L48",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_chatthreadutils_titletextformessage",
-      "target": "lib_chatthreadutils_hastext",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_hastext"
     },
     {
       "relation": "calls",
@@ -20774,9 +20774,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L33",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_chatthreadutils_haslearnerchatturn",
-      "target": "lib_chatthreadutils_voiceturns",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_voiceturns"
     },
     {
       "relation": "calls",
@@ -20785,9 +20785,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_chatthreadutils_ismeaningfulchatmessage",
-      "target": "lib_chatthreadutils_voiceturns",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_voiceturns"
     },
     {
       "relation": "calls",
@@ -20796,9 +20796,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L50",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_chatthreadutils_titletextformessage",
-      "target": "lib_chatthreadutils_voiceturns",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_voiceturns"
     },
     {
       "relation": "calls",
@@ -20807,9 +20807,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L62",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_chatthreadutils_chattitlefrommessageset",
-      "target": "lib_chatthreadutils_meaningfulchatmessages",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_meaningfulchatmessages"
     },
     {
       "relation": "calls",
@@ -20818,9 +20818,9 @@
       "source_file": "src/lib/chatThreadUtils.ts",
       "source_location": "L66",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_chatthreadutils_chattitlefrommessageset",
-      "target": "lib_chatthreadutils_titletextformessage",
-      "confidence_score": 1.0
+      "target": "lib_chatthreadutils_titletextformessage"
     },
     {
       "relation": "contains",
@@ -23117,5 +23117,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "8c125a2e902fb3e5a468328c9a19aaaf40fd017f"
+  "built_at_commit": "e19a5ff15e7fca24eca99d91ee7ae3aba2417f02"
 }

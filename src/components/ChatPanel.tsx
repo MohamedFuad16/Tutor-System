@@ -4078,6 +4078,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         ws.send(
           JSON.stringify({
             type: "voice_auth",
+            voiceSessionId: sessionId,
+            requestId: sessionId,
             openRouterKey: apiKey,
             deepgramKey: deepgramApiKey,
             language,
