@@ -115,6 +115,27 @@ export interface WebSearchEvent {
   timestamp: number;
 }
 
+export type VoiceAgentEventType =
+  | "session_started"
+  | "settings_applied"
+  | "user_turn"
+  | "assistant_turn"
+  | "agent_started_speaking"
+  | "agent_finished_speaking"
+  | "barge_in"
+  | "session_ended"
+  | "error";
+
+export interface VoiceAgentEvent {
+  id: string;
+  type: VoiceAgentEventType;
+  status: "started" | "running" | "completed" | "failed";
+  sessionId?: string;
+  summary: string;
+  timestamp: number;
+  metadata?: Record<string, unknown>;
+}
+
 const emptyChatUsage: ChatUsage = {
   provider: "openrouter",
   model: "deepseek/deepseek-v4-flash",
@@ -316,6 +337,11 @@ interface AppState {
     event: Omit<WebSearchEvent, "id" | "timestamp">,
   ) => void;
   cacheWebSources: (sources: NormalizedWebSource[]) => void;
+  voiceAgentEvents: VoiceAgentEvent[];
+  recordVoiceAgentEvent: (
+    event: Omit<VoiceAgentEvent, "id" | "timestamp">,
+  ) => void;
+  clearVoiceAgentEvents: () => void;
   selectedTextContext: string;
   setSelectedTextContext: (text: string) => void;
   messages: Message[];
@@ -546,16 +572,19 @@ export const useStore = create<AppState>()(
             listenModel: usage.listenModel || state.voiceUsage.listenModel,
             speakModel: usage.speakModel || state.voiceUsage.speakModel,
             connectionSeconds: Math.max(
-              state.voiceUsage.connectionSeconds,
-              usage.connectionSeconds || 0,
+              0,
+              state.voiceUsage.connectionSeconds +
+                (usage.connectionSeconds || 0),
             ),
             inputAudioSeconds: Math.max(
-              state.voiceUsage.inputAudioSeconds,
-              usage.inputAudioSeconds || 0,
+              0,
+              state.voiceUsage.inputAudioSeconds +
+                (usage.inputAudioSeconds || 0),
             ),
             outputAudioSeconds: Math.max(
-              state.voiceUsage.outputAudioSeconds,
-              usage.outputAudioSeconds || 0,
+              0,
+              state.voiceUsage.outputAudioSeconds +
+                (usage.outputAudioSeconds || 0),
             ),
             ttsCharacters:
               state.voiceUsage.ttsCharacters + (usage.ttsCharacters || 0),
@@ -636,6 +665,19 @@ export const useStore = create<AppState>()(
           });
           return { webSourceCache };
         }),
+      voiceAgentEvents: [],
+      recordVoiceAgentEvent: (event) =>
+        set((state) => ({
+          voiceAgentEvents: [
+            {
+              ...event,
+              id: `${event.type}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+              timestamp: Date.now(),
+            },
+            ...state.voiceAgentEvents,
+          ].slice(0, 100),
+        })),
+      clearVoiceAgentEvents: () => set({ voiceAgentEvents: [] }),
 
       selectedTextContext: "",
       setSelectedTextContext: (text) => set({ selectedTextContext: text }),

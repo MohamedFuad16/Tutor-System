@@ -407,6 +407,21 @@ const deriveFallbackTitle = (turns: VoiceSessionTurn[]): string => {
     : capitalized;
 };
 
+const compactVoiceEventText = (text: string, maxLength = 120) => {
+  const compact = text.replace(/\s+/g, " ").trim();
+  if (compact.length <= maxLength) return compact;
+  return `${compact.slice(0, maxLength - 3)}...`;
+};
+
+const voiceServerWsUrl = () => {
+  const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const hostPort =
+    import.meta.env.DEV && /^517\d$/.test(window.location.port)
+      ? `${window.location.hostname}:3000`
+      : window.location.host;
+  return `${wsProtocol}//${hostPort}`;
+};
+
 const RollingSubtitle = ({ caption }: { caption: VoiceCaption }) => {
   const [display, setDisplay] = useState("");
 
@@ -2865,6 +2880,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const brainRuntimeSettings = useStore((state) => state.brainRuntimeSettings);
   const recordChatUsage = useStore((state) => state.recordChatUsage);
   const recordVoiceUsage = useStore((state) => state.recordVoiceUsage);
+  const recordVoiceAgentEvent = useStore(
+    (state) => state.recordVoiceAgentEvent,
+  );
   const recordWebUsage = useStore((state) => state.recordWebUsage);
   const recordWebSearchEvent = useStore((state) => state.recordWebSearchEvent);
   const cacheWebSources = useStore((state) => state.cacheWebSources);
@@ -2975,6 +2993,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const endingRef = useRef(false);
   const endTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const voiceSessionIdRef = useRef<string | null>(null);
+  const voiceStartedAtRef = useRef<number | null>(null);
+  const voiceSessionCountedRef = useRef(false);
   const voiceTurnsRef = useRef<VoiceSessionTurn[]>([]);
 
   const forceScrollToBottom = useCallback(
@@ -3409,6 +3429,29 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     const sessionId = voiceSessionIdRef.current;
     if (sessionId) {
       const turns = voiceTurnsRef.current;
+      const durationSeconds = Math.max(
+        0,
+        Math.round(
+          (Date.now() - (voiceStartedAtRef.current || Date.now())) / 1000,
+        ),
+      );
+      recordVoiceAgentEvent({
+        type: "session_ended",
+        status: "completed",
+        sessionId,
+        summary:
+          turns.length > 0
+            ? `Voice session ended with ${turns.length} transcript turn${turns.length === 1 ? "" : "s"}.`
+            : "Voice session ended before transcript turns were captured.",
+        metadata: {
+          durationSeconds,
+          turnCount: turns.length,
+        },
+      });
+      if (!voiceSessionCountedRef.current) {
+        recordVoiceUsage({ sessions: 1 });
+        voiceSessionCountedRef.current = true;
+      }
       setMessages((prev) => {
         const index = prev.findIndex((message) => message.id === sessionId);
         if (index === -1) return prev;
@@ -3416,16 +3459,16 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         if (!session || session.turns.length === 0) {
           return prev.filter((message) => message.id !== sessionId);
         }
-        const durationSeconds = Math.max(
+        const persistedDurationSeconds = Math.max(
           session.durationSeconds,
-          Math.round((Date.now() - session.startedAt) / 1000),
+          durationSeconds,
         );
         const copy = [...prev];
         copy[index] = {
           ...copy[index],
           voiceSession: {
             ...session,
-            durationSeconds,
+            durationSeconds: persistedDurationSeconds,
             title: session.title || deriveFallbackTitle(turns),
           },
         };
@@ -3443,6 +3486,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       }
       voiceSessionIdRef.current = null;
     }
+    voiceStartedAtRef.current = null;
+    voiceSessionCountedRef.current = false;
     voiceTurnsRef.current = [];
     setVoiceState("idle");
   };
@@ -3454,6 +3499,16 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     appendVoiceTurn("user", trimmed);
     lastVoiceUserMessageRef.current = trimmed;
     setVoiceCaption({ role: "user", text: trimmed });
+    recordVoiceAgentEvent({
+      type: "user_turn",
+      status: "running",
+      sessionId: voiceSessionIdRef.current || undefined,
+      summary: `Typed voice turn injected: ${compactVoiceEventText(trimmed)}`,
+      metadata: {
+        source: "typed",
+        characterCount: trimmed.length,
+      },
+    });
     if (!endingRef.current && detectEndIntent(trimmed)) {
       endingRef.current = true;
       activeAudioNodesRef.current.forEach((node) => {
@@ -3488,6 +3543,19 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       voiceTurnsRef.current = [];
       const sessionId = `voice-${Date.now()}`;
       voiceSessionIdRef.current = sessionId;
+      voiceStartedAtRef.current = Date.now();
+      voiceSessionCountedRef.current = false;
+      recordVoiceAgentEvent({
+        type: "session_started",
+        status: "started",
+        sessionId,
+        summary: `Voice session starting for ${activeLearningBookTitle}.`,
+        metadata: {
+          language,
+          bookId: canonicalActiveBookId,
+          documentId: activeDocumentId,
+        },
+      });
       setMessages((prev) => [
         ...prev,
         {
@@ -3549,8 +3617,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       };
       outputRafRef.current = requestAnimationFrame(sampleOutput);
 
-      const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${wsProtocol}//${window.location.host}/api/voice-agent?language=${encodeURIComponent(language)}`;
+      const wsUrl = `${voiceServerWsUrl()}/api/voice-agent?language=${encodeURIComponent(language)}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
       let hasSentVoiceAuth = false;
@@ -3629,9 +3696,21 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             const msg = JSON.parse(event.data);
 
             if (msg.type === "usage" && msg.usage) {
+              if (Number(msg.usage.sessions || 0) > 0) {
+                voiceSessionCountedRef.current = true;
+              }
               recordVoiceUsage(msg.usage);
             } else if (msg.type === "SettingsApplied") {
               console.log("Deepgram SettingsApplied");
+              recordVoiceAgentEvent({
+                type: "settings_applied",
+                status: "completed",
+                sessionId: voiceSessionIdRef.current || undefined,
+                summary: "Deepgram voice-agent settings applied.",
+                metadata: {
+                  language,
+                },
+              });
             } else if (msg.type === "ConversationText") {
               if (msg.content) {
                 setVoiceCaption({
@@ -3642,6 +3721,16 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               if (msg.role === "user") {
                 lastVoiceUserMessageRef.current = msg.content || "";
                 appendVoiceTurn("user", msg.content || "");
+                recordVoiceAgentEvent({
+                  type: "user_turn",
+                  status: "running",
+                  sessionId: voiceSessionIdRef.current || undefined,
+                  summary: `Student said: ${compactVoiceEventText(msg.content || "")}`,
+                  metadata: {
+                    source: "microphone",
+                    characterCount: String(msg.content || "").length,
+                  },
+                });
                 if (!endingRef.current && detectEndIntent(msg.content || "")) {
                   endingRef.current = true;
                   activeAudioNodesRef.current.forEach((node) => {
@@ -3656,6 +3745,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 }
               } else if (msg.role === "assistant") {
                 appendVoiceTurn("assistant", msg.content || "");
+                recordVoiceAgentEvent({
+                  type: "assistant_turn",
+                  status: "completed",
+                  sessionId: voiceSessionIdRef.current || undefined,
+                  summary: `Aria replied: ${compactVoiceEventText(msg.content || "")}`,
+                  metadata: {
+                    characterCount: String(msg.content || "").length,
+                  },
+                });
                 if (lastVoiceUserMessageRef.current && msg.content) {
                   const userMessage = lastVoiceUserMessageRef.current;
                   lastVoiceUserMessageRef.current = "";
@@ -3695,6 +3793,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               }
             } else if (msg.type === "UserStartedSpeaking") {
               // Interrupt playing
+              recordVoiceAgentEvent({
+                type: "barge_in",
+                status: "running",
+                sessionId: voiceSessionIdRef.current || undefined,
+                summary: "Student started speaking; current playback was interrupted.",
+                metadata: {
+                  activeAudioNodes: activeAudioNodesRef.current.length,
+                },
+              });
               activeAudioNodesRef.current.forEach((node) => {
                 try {
                   node.stop();
@@ -3707,11 +3814,32 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               setVoiceCaption(null);
               setVoiceState("listening");
             } else if (msg.type === "AgentStartedSpeaking") {
+              recordVoiceAgentEvent({
+                type: "agent_started_speaking",
+                status: "running",
+                sessionId: voiceSessionIdRef.current || undefined,
+                summary: "Aria started speaking.",
+              });
               setVoiceState("speaking");
             } else if (msg.type === "AgentFinishedSpeaking") {
+              recordVoiceAgentEvent({
+                type: "agent_finished_speaking",
+                status: "completed",
+                sessionId: voiceSessionIdRef.current || undefined,
+                summary: "Aria finished speaking; listening resumed.",
+              });
               setVoiceState("listening");
             } else if (msg.type === "Error") {
               console.error("Deepgram Error", msg);
+              recordVoiceAgentEvent({
+                type: "error",
+                status: "failed",
+                sessionId: voiceSessionIdRef.current || undefined,
+                summary: `Deepgram voice-agent error: ${compactVoiceEventText(String(msg.message || msg.error || "unknown error"))}`,
+                metadata: {
+                  rawType: msg.type,
+                },
+              });
               stopVoice();
             }
           } catch (e) {
@@ -3764,6 +3892,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       ws.onclose = (event) => {
         if (event.code !== 1000 && event.reason) {
           console.warn("Voice connection closed:", event.reason);
+          recordVoiceAgentEvent({
+            type: "error",
+            status: "failed",
+            sessionId: voiceSessionIdRef.current || undefined,
+            summary: `Voice websocket closed: ${compactVoiceEventText(event.reason)}`,
+            metadata: {
+              code: event.code,
+            },
+          });
           window.alert(event.reason);
         }
         stopVoice();
@@ -3771,6 +3908,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
       ws.onerror = (e) => {
         console.error("WS error: ", e);
+        recordVoiceAgentEvent({
+          type: "error",
+          status: "failed",
+          sessionId: voiceSessionIdRef.current || undefined,
+          summary: "Voice websocket could not connect.",
+        });
         window.alert(
           "Voice mode could not connect. Check the voice service keys and try again.",
         );
@@ -3778,6 +3921,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       };
     } catch (err) {
       console.error("Voice start error", err);
+      recordVoiceAgentEvent({
+        type: "error",
+        status: "failed",
+        sessionId: voiceSessionIdRef.current || undefined,
+        summary: `Voice start failed: ${compactVoiceEventText(err instanceof Error ? err.message : String(err))}`,
+      });
       stopVoice();
     }
   };

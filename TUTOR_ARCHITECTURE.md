@@ -110,9 +110,12 @@ documents through the right extraction branch.
 
 `ChatPanel` streams tutor output via SSE, renders Markdown and Mermaid, supports
 source-material-first answering, handles web-search events, and manages TTS and
-voice flows. Web-search sources write source-card artifacts. Generated
-flashcards write local `ArtifactRecord` provenance rows with `not_checked`
-citation states so Admin can audit them before broader verification exists.
+voice flows. Live voice uses a dark audio-reactive stage, grouped voice-session
+transcripts, typed-turn injection, Deepgram websocket usage events, and a local
+voice-agent event ledger for Admin. Web-search sources write source-card
+artifacts. Generated flashcards write local `ArtifactRecord` provenance rows
+with `not_checked` citation states so Admin can audit them before broader
+verification exists.
 
 ### Revision View
 
@@ -132,8 +135,8 @@ network access. Use the Deepgram provider in
 `AdminView` provides:
 
 - System Activity, request timelines, model runs, memory/retrieval events, tool
-  jobs, evidence/mastery ledgers, correction controls, source artifacts, and
-  beta diagnostics.
+  jobs, voice-agent lifecycle events, evidence/mastery ledgers, correction
+  controls, source artifacts, and beta diagnostics.
 - Source-card local citation checks, generated flashcard provenance checks,
   generated learning-note provenance checks, plus chapter audio-guide manifest
   integrity checks. Flashcard provenance checks saved card ids and local

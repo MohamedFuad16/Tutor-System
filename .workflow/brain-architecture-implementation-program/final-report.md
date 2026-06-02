@@ -1149,6 +1149,76 @@ seek slider, clearer playback status, and native browser controls as a fallback.
   chapter audio guides.
 - AWS/cloud synchronization remains out of scope until beta testing.
 
+# Phase 29: Voice Agent Observability And Routing
+
+Phase 29 tightens the MegaaDev PR voice-chat integration without pulling the
+PR's unrelated image search, Mermaid generation, multi-PDF, or generated brain
+artifact changes. It adds a local voice-agent event timeline, fixes local
+backend routing for the live voice websocket, and makes Deepgram proxy activity
+visible in Admin.
+
+## Graphify Context
+
+- Graphify routed the slice through `ChatPanel()`, `VoiceUniverse()`,
+  `AdminView()`, `src/store/index.ts`, and the server `/api/voice-agent`
+  websocket path.
+- PR #4 inspection was limited to `src/components/ChatPanel.tsx`, `server.ts`,
+  `src/types.ts`, and `src/store/index.ts`; unrelated PR file groups were
+  explicitly excluded.
+
+## Integration Decisions
+
+- Added a capped local `voiceAgentEvents` buffer in Zustand with
+  `recordVoiceAgentEvent()` and `clearVoiceAgentEvents()`.
+- ChatPanel now records voice session start/end, Deepgram settings applied,
+  typed and microphone user turns, assistant turns, speaking/listening
+  transitions, barge-in, and voice errors.
+- ChatPanel's voice websocket now uses the same backend-aware dev-host routing
+  as Admin, so Vite `517x` origins target the Node backend instead of the Vite
+  host.
+- Voice usage duration/audio counters now accumulate server-sent deltas across
+  sessions. User-ended voice sessions locally count one completed session when
+  the server cannot send the final Deepgram-close usage frame.
+- Server system activity now treats voice as a first-class local activity kind
+  and records auth blocks, provider connection/settings readiness, errors, and
+  close cleanup.
+- Admin Activity now includes a `Live voice timeline` panel with event
+  summaries, status chips, metadata details, current voice model/listen/speak
+  meters, and a local clear control.
+- The Tutor System Architecture, User Brain Architecture, and App Design
+  Language books now mention the local voice-agent timeline and routing boundary
+  without expanding into a new chapter.
+
+## Verification Evidence
+
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 80 tests.
+- `npm run build`: passed.
+- Browser QA via local headless Chrome/CDP on `http://127.0.0.1:3100`: Admin
+  rendered the `Live voice timeline` and empty-state copy at 1280x900 and
+  390x844 with no horizontal overflow.
+- Browser QA opened Study's tutor chat and confirmed the ChatPanel textarea and
+  `Start voice input` control rendered with no horizontal overflow; the expected
+  local voice URL was `ws://127.0.0.1:3100/api/voice-agent?language=en`.
+- `graphify update . --force`: regenerated the code architecture graph with 845
+  nodes, 1427 edges, and 59 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke queries found `VoiceAgentEventType`, `VoiceAgentEvent`,
+  `voiceServerWsUrl()`, `AdminView()`, and the voice/Admin graph neighbors.
+- Read-only sidecar Pauli found six issues. This phase fixed the P1 websocket
+  host bug, P1 session-count gap, P2 cross-session duration undercount, P2 Admin
+  panel gap, P2 server activity gap, and P3 vague Deepgram error close.
+
+## Remaining Work
+
+- Real microphone, speaker, OpenRouter, and Deepgram end-to-end live voice still
+  need manual beta validation outside headless browser automation.
+- Voice visuals remain intentionally limited to the audio/UI/orchestration
+  subset from PR #4; visual diagram/image tool-calling remains out of scope for
+  this phase.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
 # Phase 23: Stored Audio-guide Integrity Verifier
 
 Phase 23 adds a conservative local verifier for stored chapter audio guides.

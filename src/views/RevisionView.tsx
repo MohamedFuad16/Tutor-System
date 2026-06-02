@@ -2284,6 +2284,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Admin groups server events, model runs, and tool jobs by request id so one tutor turn can be audited as a single story.",
       },
       {
+        title: "Voice agent timeline",
+        detail:
+          "Live voice mode records local session start, Deepgram settings, speaking/listening transitions, barge-in, transcript turns, and errors so the dark voice UI is debuggable from Admin.",
+      },
+      {
         title: "Correction overlays",
         detail:
           "Mark-wrong, deletion-review, and supersede actions stay non-destructive in beta while affected rows gain visible correction state.",
@@ -2311,7 +2316,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Chapter audio guides",
         detail:
-          "Every built-in Library chapter now attaches a Deepgram-generated guide asset with play, pause, and speed controls, keeping Library listening fast without calling live read-aloud each time.",
+          "Every built-in Library chapter now attaches a Deepgram-generated guide asset with play, pause, speed, seek, and native fallback controls, keeping Library listening fast without calling live read-aloud each time.",
       },
       {
         title: "Audio generation dry-run",

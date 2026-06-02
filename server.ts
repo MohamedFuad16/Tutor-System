@@ -266,6 +266,7 @@ type SystemActivityKind =
   | "tool"
   | "retrieval"
   | "memory"
+  | "voice"
   | "web"
   | "error";
 
@@ -2748,14 +2749,26 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       let lastUsageAt = voiceStartedAt;
       let clientInputBytes = 0;
       let deepgramOutputBytes = 0;
+      let lastUsageClientInputBytes = 0;
+      let lastUsageDeepgramOutputBytes = 0;
       const voiceAgentSpeakModel = "aura-asteria-en";
+      const voiceRequestId = `voice_${voiceStartedAt}`;
 
       const sendVoiceUsage = (sessions = 0) => {
         if (ws.readyState !== ws.OPEN) return;
         const now = Date.now();
         const deltaSeconds = Math.max(0, (now - lastUsageAt) / 1000);
-        const connectionSeconds = Math.max(0, (now - voiceStartedAt) / 1000);
+        const deltaInputBytes = Math.max(
+          0,
+          clientInputBytes - lastUsageClientInputBytes,
+        );
+        const deltaOutputBytes = Math.max(
+          0,
+          deepgramOutputBytes - lastUsageDeepgramOutputBytes,
+        );
         lastUsageAt = now;
+        lastUsageClientInputBytes = clientInputBytes;
+        lastUsageDeepgramOutputBytes = deepgramOutputBytes;
         ws.send(
           JSON.stringify({
             type: "usage",
@@ -2768,11 +2781,11 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                   : "flux-general-en",
               speakModel: voiceAgentSpeakModel,
               ttsModel: voiceAgentSpeakModel,
-              connectionSeconds,
+              connectionSeconds: deltaSeconds,
               inputAudioSeconds:
-                clientInputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
+                deltaInputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
               outputAudioSeconds:
-                deepgramOutputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
+                deltaOutputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
               cost: voiceAgentCostForSeconds(deltaSeconds),
               estimated: false,
               sessions,
@@ -2805,6 +2818,14 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           sanitizeApiKey(providedOpenRouterKey) ||
           getOpenRouterServerFallbackKey();
         if (!openRouterKey) {
+          recordSystemActivity({
+            kind: "voice",
+            status: "blocked",
+            title: "Voice auth blocked",
+            detail: openRouterRequiredMessage,
+            requestId: voiceRequestId,
+            phase: "auth",
+          });
           ws.close(1008, openRouterRequiredMessage);
           return false;
         }
@@ -2813,6 +2834,14 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           sanitizeApiKey(providedDeepgramKey) ||
           sanitizeApiKey(process.env.DEEPGRAM_API_KEY);
         if (!deepgramKey) {
+          recordSystemActivity({
+            kind: "voice",
+            status: "blocked",
+            title: "Voice auth blocked",
+            detail: "Deepgram API Key is missing",
+            requestId: voiceRequestId,
+            phase: "auth",
+          });
           ws.close(1011, "Deepgram API Key is missing");
           return false;
         }
@@ -2820,10 +2849,37 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         language = normalizeVoiceLanguage(selectedLanguage);
         isVoiceSessionStarted = true;
         usageInterval = setInterval(() => sendVoiceUsage(0), 1000);
+        recordSystemActivity({
+          kind: "voice",
+          status: "started",
+          title: "Voice session accepted",
+          detail: "Voice websocket auth accepted; connecting to Deepgram.",
+          requestId: voiceRequestId,
+          phase: "auth",
+          metadata: {
+            language,
+            listenModel:
+              language === "ja" || language === "ko"
+                ? "flux-general-multi"
+                : "flux-general-en",
+            speakModel: voiceAgentSpeakModel,
+          },
+        });
 
         try {
           const dgUrl = "wss://agent.deepgram.com/v1/agent/converse";
           console.log(`Connecting to Deepgram at: ${dgUrl}`);
+          recordSystemActivity({
+            kind: "voice",
+            status: "progress",
+            title: "Connecting voice provider",
+            detail: "Opening Deepgram Voice Agent websocket.",
+            requestId: voiceRequestId,
+            phase: "provider_connect",
+            metadata: {
+              provider: "deepgram",
+            },
+          });
           dgWs = new WSWebSocket(dgUrl, {
             headers: {
               Authorization: `Token ${deepgramKey}`,
@@ -2902,6 +2958,20 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               JSON.stringify(config, null, 2),
             );
             dgWs?.send(JSON.stringify(config));
+            recordSystemActivity({
+              kind: "voice",
+              status: "progress",
+              title: "Voice settings sent",
+              detail:
+                "Deepgram Voice Agent settings were sent; waiting for SettingsApplied.",
+              requestId: voiceRequestId,
+              phase: "settings",
+              metadata: {
+                listenModel,
+                speakModel: voiceAgentSpeakModel,
+                language,
+              },
+            });
 
             if (keepAliveInterval) clearInterval(keepAliveInterval);
             keepAliveInterval = setInterval(() => {
@@ -2915,6 +2985,18 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             console.error(
               `Deepgram WS Unexpected Response: ${res.statusCode} ${res.statusMessage}`,
             );
+            recordSystemActivity({
+              kind: "voice",
+              status: "failed",
+              title: "Voice provider rejected connection",
+              detail:
+                `Deepgram returned ${res.statusCode} ${res.statusMessage || ""}`.trim(),
+              requestId: voiceRequestId,
+              phase: "provider_connect",
+              metadata: {
+                statusCode: res.statusCode,
+              },
+            });
             console.error(
               "Deepgram Headers:",
               JSON.stringify(res.headers, null, 2),
@@ -2951,6 +3033,17 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                     parsed.type === "Welcome"
                   ) {
                     isDeepgramReady = true;
+                    recordSystemActivity({
+                      kind: "voice",
+                      status: "completed",
+                      title: "Voice provider ready",
+                      detail: `${parsed.type} received; buffered audio/control frames released.`,
+                      requestId: voiceRequestId,
+                      phase: "settings",
+                      metadata: {
+                        bufferedFrames: messageBuffer.length,
+                      },
+                    });
                     messageBuffer.forEach((msg) => {
                       if (dgWs?.readyState === WSWebSocket.OPEN) {
                         dgWs.send(
@@ -2976,6 +3069,18 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             }
             if (ws.readyState === ws.OPEN) {
               sendVoiceUsage(1);
+              recordSystemActivity({
+                kind: "voice",
+                status: "completed",
+                title: "Voice provider closed",
+                detail: "Deepgram closed the voice session.",
+                requestId: voiceRequestId,
+                phase: "closed",
+                metadata: {
+                  inputBytes: clientInputBytes,
+                  outputBytes: deepgramOutputBytes,
+                },
+              });
               ws.close();
             }
           });
@@ -2987,7 +3092,20 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               keepAliveInterval = null;
             }
             if (ws.readyState === ws.OPEN) {
-              ws.close();
+              const reason = "Deepgram voice agent error";
+              recordSystemActivity({
+                kind: "voice",
+                status: "failed",
+                title: "Voice provider error",
+                detail: reason,
+                requestId: voiceRequestId,
+                phase: "provider_error",
+                metadata: {
+                  message:
+                    error instanceof Error ? error.message : String(error),
+                },
+              });
+              ws.close(1011, reason);
             }
           });
         } catch (e) {
@@ -2996,6 +3114,17 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             usageInterval = null;
           }
           console.error("Failed to connect to Deepgram", e);
+          recordSystemActivity({
+            kind: "voice",
+            status: "failed",
+            title: "Voice provider connection failed",
+            detail: "Failed to connect to Deepgram.",
+            requestId: voiceRequestId,
+            phase: "provider_connect",
+            metadata: {
+              message: e instanceof Error ? e.message : String(e),
+            },
+          });
           ws.close(1011, "Failed to connect to Deepgram");
         }
 
@@ -3039,6 +3168,19 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           clearInterval(keepAliveInterval);
           keepAliveInterval = null;
         }
+        recordSystemActivity({
+          kind: "voice",
+          status: "completed",
+          title: "Voice client closed",
+          detail: "Browser voice websocket closed; Deepgram proxy cleanup ran.",
+          requestId: voiceRequestId,
+          phase: "client_close",
+          metadata: {
+            inputBytes: clientInputBytes,
+            outputBytes: deepgramOutputBytes,
+            ready: isDeepgramReady,
+          },
+        });
         if (dgWs && dgWs.readyState === dgWs.OPEN) {
           dgWs.close();
         }

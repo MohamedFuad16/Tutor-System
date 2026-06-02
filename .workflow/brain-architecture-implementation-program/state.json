@@ -239,23 +239,28 @@
       "owner": "main agent + read-only sidecar Dirac",
       "status": "completed",
       "write_scope": "src/views/RevisionView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "HH",
+      "name": "Voice agent observability and routing",
+      "owner": "main agent + read-only sidecar Pauli",
+      "status": "completed",
+      "write_scope": "server.ts, src/components/ChatPanel.tsx, src/store/index.ts, src/views/AdminView.tsx, src/views/RevisionView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_28_complete",
+    "status": "phase_29_complete",
     "checks": [
-      "npm run audio:overview:dry-run passed, 25 present and 0 missing",
-      "curl -I confirmed stored MP3 served as audio/mpeg",
-      "Browser QA reproduced blocked custom play and confirmed native fallback controls, enabled seek, and 1.5x playbackRate",
-      "Browser QA covered 390x844 and 1280x900 audio guide layouts with no horizontal overflow and zero warning/error logs",
       "npm run format:check passed",
       "npm run lint passed",
       "npm run test passed, 80 tests",
       "npm run build passed",
-      "graphify update . --force passed with 841 nodes, 1423 edges, 65 communities",
+      "Browser QA confirmed Admin Live voice timeline on 1280x900 and 390x844 with no horizontal overflow",
+      "Browser QA confirmed Study tutor chat opens with textarea and Start voice input control, no horizontal overflow, and expected local voice websocket URL",
+      "graphify update . --force passed with 845 nodes, 1427 edges, 59 communities",
       "npm run graphify:tree passed",
-      "Graphify smoke query found StoredAudioOverview and audio manifest neighbors",
-      "Read-only final-check sidecar Dirac findings were addressed before final verification"
+      "Graphify smoke queries found VoiceAgentEventType, VoiceAgentEvent, voiceServerWsUrl, AdminView, and voice/Admin graph neighbors",
+      "Read-only sidecar Pauli findings were addressed: websocket host, session count, duration accumulation, Admin panel, server activity, and Deepgram error reason"
     ]
   }
 }

@@ -25,7 +25,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 
 - Chat and Study can capture local document context.
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
-- Admin exposes model runs, tool jobs, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
+- Admin exposes model runs, tool jobs, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
 - Generated flashcards, generated learning-book notes, and stored chapter audio guides now leave explicit \`not_checked\` artifact provenance until a scoped local verifier runs.
 - Admin can locally verify generated flashcard provenance when the batch links back to saved card ids, a message or batch anchor, local-only metadata, and no external fetch.
 - Admin can locally verify generated learning-note provenance when the note links back to a learning entry, local book or conversation, local-only metadata, and no external fetch.
@@ -151,6 +151,7 @@ Implemented Admin surfaces:
 | System Activity | Request timelines and backend event summaries. |
 | Model Runs | Provider/model selection, fallbacks, token/cost metadata, failures. |
 | Tool Jobs | Tool lifecycle visibility. |
+| Voice Agent Timeline | Local voice websocket lifecycle, Deepgram settings, speaking/listening state, barge-in, transcript turns, and errors. |
 | Memory/Retrieval Events | Learner-brain writes and context selection. |
 | Evidence Ledger | Evidence rows and BKT deltas. |
 | Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and chapter audio guide provenance. |
@@ -158,7 +159,7 @@ Implemented Admin surfaces:
 | Runtime Tuning | Local knobs for source-vs-web, memory context, tool budget, and refresh cadence. |
 | Beta Diagnostics | Capped local export and readiness gate summary. |
 
-The key boundary: Admin reports recorded system state. It must not pretend to know private model internals beyond saved traces, summaries, tool rows, and artifacts.`,
+The key boundary: Admin reports recorded system state. It must not pretend to know private model internals beyond saved traces, summaries, tool rows, voice lifecycle events, and artifacts.`,
   },
   {
     title: "Chapter 6: Voice, Audio, And Timing",
@@ -173,6 +174,7 @@ Good voice behavior means:
 - keep explanations shorter in voice mode;
 - preserve learner state when voice falls back to text;
 - record voice costs and failures;
+- show voice lifecycle and interruption state in Admin;
 - avoid pretending live speech is evidence.
 
 For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a short energetic explanation, generated once, stored as an asset, and played from the browser with normal controls. Those controls now include play, pause, speed, seek, and native fallback playback when the browser blocks scripted play. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
