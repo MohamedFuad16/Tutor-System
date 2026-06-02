@@ -25,6 +25,7 @@ export type BetaDiagnosticItem = {
 export type BetaDiagnosticsInput = {
   learningBooks?: number;
   mappedConcepts?: number;
+  bookChatThreads?: number;
   memoryEvents?: number;
   retrievalEvents?: number;
   failedRetrievalEvents?: number;
@@ -82,6 +83,9 @@ export type BetaBrainFlowCoverage = {
   requestCorrelatedMasteryEvidenceEvents: number;
   chatRequestCorrelatedMasteryEvidenceEvents: number;
   voiceRequestCorrelatedMasteryEvidenceEvents: number;
+  threadPersistenceEvents: number;
+  chatThreadPersistenceEvents: number;
+  voiceThreadPersistenceEvents: number;
   backgroundMemoryEvents: number;
   chatBackgroundMemoryEvents: number;
   voiceBackgroundMemoryEvents: number;
@@ -96,7 +100,12 @@ export type BetaBrainFlowCoverage = {
 export type BetaBrainFlowLedgerInput = {
   memoryEvents?: Pick<
     MemoryEvent,
-    "eventType" | "status" | "metadata" | "timestamp"
+    | "eventType"
+    | "status"
+    | "bookId"
+    | "conversationId"
+    | "metadata"
+    | "timestamp"
   >[];
   retrievalEvents?: Pick<
     RetrievalEvent,
@@ -150,6 +159,7 @@ const requiredCounts = (
 ): BetaDiagnosticsSnapshot["counts"] => ({
   learningBooks: numberOrZero(input.learningBooks),
   mappedConcepts: numberOrZero(input.mappedConcepts),
+  bookChatThreads: numberOrZero(input.bookChatThreads),
   memoryEvents: numberOrZero(input.memoryEvents),
   retrievalEvents: numberOrZero(input.retrievalEvents),
   failedRetrievalEvents: numberOrZero(input.failedRetrievalEvents),
@@ -204,6 +214,14 @@ const metadataBoolean = (
   return typeof value === "boolean" ? value : undefined;
 };
 
+const metadataNumber = (
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+) => {
+  const value = metadata?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+};
+
 const hasRequestId = (requestId: unknown) =>
   typeof requestId === "string" && requestId.trim().length > 0;
 
@@ -217,6 +235,30 @@ const isVoiceLayer = (metadata: Record<string, unknown> | undefined) => {
   const agentLayer = metadataString(metadata, "agentLayer");
   const mode = metadataString(metadata, "mode");
   return agentLayer === "voice_realtime" || mode === "voice";
+};
+
+const isChatThreadPersistence = (
+  metadata: Record<string, unknown> | undefined,
+) => {
+  const mode = metadataString(metadata, "mode");
+  return (
+    mode === "chat" ||
+    mode === "mixed" ||
+    metadataBoolean(metadata, "hasTypedChat") === true
+  );
+};
+
+const isVoiceThreadPersistence = (
+  metadata: Record<string, unknown> | undefined,
+) => {
+  const mode = metadataString(metadata, "mode");
+  return (
+    mode === "voice" ||
+    mode === "mixed" ||
+    metadataBoolean(metadata, "hasVoiceSession") === true ||
+    metadataNumber(metadata, "voiceSessionCount") > 0 ||
+    metadataNumber(metadata, "voiceTurnCount") > 0
+  );
 };
 
 const MODEL_OBSERVATION_MEMORY_EVENTS = new Set<MemoryEvent["eventType"]>([
@@ -299,6 +341,19 @@ export const buildBrainFlowCoverageFromLedgers = ({
     requestCorrelatedMasteryEvidenceRows.filter((event) =>
       isVoiceLayer(event.metadata),
     ).length;
+  const completedThreadPersistenceEvents = memoryEvents.filter(
+    (event) =>
+      event.eventType === "book_chat_thread_saved" &&
+      event.status === "completed" &&
+      hasRequestId(event.bookId) &&
+      hasRequestId(event.conversationId),
+  );
+  const chatThreadPersistenceEvents = completedThreadPersistenceEvents.filter(
+    (event) => isChatThreadPersistence(event.metadata),
+  ).length;
+  const voiceThreadPersistenceEvents = completedThreadPersistenceEvents.filter(
+    (event) => isVoiceThreadPersistence(event.metadata),
+  ).length;
   const backgroundMemoryEvents = memoryEvents.filter(
     (event) =>
       event.status === "completed" &&
@@ -401,6 +456,22 @@ export const buildBrainFlowCoverageFromLedgers = ({
         "Live voice has verified non-model mastery evidence with a request id.",
     },
     {
+      id: "chat_thread_persistence",
+      title: "Chat thread saved",
+      ready: chatThreadPersistenceEvents > 0,
+      count: chatThreadPersistenceEvents,
+      detail:
+        "Typed chat has a durable book_chat_thread_saved row tied to a local book thread.",
+    },
+    {
+      id: "voice_thread_persistence",
+      title: "Voice thread saved",
+      ready: voiceThreadPersistenceEvents > 0,
+      count: voiceThreadPersistenceEvents,
+      detail:
+        "Live voice has a durable book_chat_thread_saved row with voice-session transcript evidence.",
+    },
+    {
       id: "background_memory",
       title: "Background memory agent",
       ready: chatBackgroundMemoryEvents > 0 && voiceBackgroundMemoryEvents > 0,
@@ -448,6 +519,9 @@ export const buildBrainFlowCoverageFromLedgers = ({
     requestCorrelatedMasteryEvidenceEvents,
     chatRequestCorrelatedMasteryEvidenceEvents,
     voiceRequestCorrelatedMasteryEvidenceEvents,
+    threadPersistenceEvents: completedThreadPersistenceEvents.length,
+    chatThreadPersistenceEvents,
+    voiceThreadPersistenceEvents,
     backgroundMemoryEvents: backgroundMemoryEvents.length,
     chatBackgroundMemoryEvents,
     voiceBackgroundMemoryEvents,
@@ -457,7 +531,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
     ungatedBackgroundMemoryEvents,
     summary:
       status === "ready"
-        ? "Chat, voice, retrieval, model, both foreground tool layers, both evaluated mastery layers, background memory, and model-observation gates all have local evidence."
+        ? "Chat, voice, retrieval, model, both foreground tool layers, both evaluated mastery layers, transcript persistence, background memory, and model-observation gates all have local evidence."
         : status === "blocked"
           ? `${failedRows} failed or blocked brain-flow rows need review before beta.`
           : `Missing local evidence for ${missingSignals.join(", ")}.`,
@@ -476,6 +550,7 @@ export const buildBetaDiagnosticsSnapshot = (
   const totalRows =
     counts.learningBooks +
     counts.mappedConcepts +
+    counts.bookChatThreads +
     counts.memoryEvents +
     counts.retrievalEvents +
     counts.modelRuns +
@@ -508,13 +583,27 @@ export const buildBetaDiagnosticsSnapshot = (
         counts.memoryEvents > 0 && counts.learningBooks > 0 ? "ready" : "watch",
       summary:
         counts.memoryEvents > 0
-          ? `${counts.memoryEvents} memory events and ${counts.learningBooks} learning books are visible.`
+          ? `${counts.memoryEvents} memory events, ${counts.learningBooks} learning books, and ${counts.bookChatThreads} saved book chat threads are visible.`
           : "No durable memory events have been observed yet.",
       count: counts.memoryEvents,
       action:
         counts.memoryEvents > 0
           ? "Keep watching for failed writes during beta."
           : "Complete a chat or learning-book update to create memory evidence.",
+    }),
+    item({
+      id: "conversation_persistence",
+      title: "Conversation persistence",
+      status: counts.bookChatThreads > 0 ? "ready" : "watch",
+      summary:
+        counts.bookChatThreads > 0
+          ? `${counts.bookChatThreads} local book chat thread rows can be reloaded.`
+          : "No book chat thread rows have been saved yet.",
+      count: counts.bookChatThreads,
+      action:
+        counts.bookChatThreads > 0
+          ? "Confirm typed chat and voice-session saves both appear in Brain Flow Coverage before beta."
+          : "Send a typed chat or voice turn with an active learning book to persist a local thread.",
     }),
     item({
       id: "model_behavior",
@@ -637,6 +726,7 @@ export const buildBetaDiagnosticsSnapshot = (
       count:
         brainFlow.chatContextInjections +
         brainFlow.voiceContextInjections +
+        brainFlow.threadPersistenceEvents +
         brainFlow.requestCorrelatedRetrievalEvents +
         brainFlow.requestCorrelatedModelRuns +
         brainFlow.foregroundToolJobs +
@@ -644,7 +734,7 @@ export const buildBetaDiagnosticsSnapshot = (
         brainFlow.backgroundMemoryEvents,
       action:
         brainFlow.status === "ready"
-          ? "Use this as the local beta smoke contract for chat, voice, both foreground tool layers, both evaluated mastery layers, and the background memory agent."
+          ? "Use this as the local beta smoke contract for chat, voice, transcript persistence, both foreground tool layers, both evaluated mastery layers, and the background memory agent."
           : brainFlow.status === "blocked"
             ? "Open System Activity and request timelines, then fix failed context, retrieval, model, tool, or memory rows."
             : "Run one typed chat turn, one voice turn, one tool action, and one learning-book update to complete local flow evidence.",

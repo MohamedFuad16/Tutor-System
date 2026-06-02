@@ -10,6 +10,7 @@ import {
   db,
   type ArtifactRecord,
   type BackgroundJob,
+  type BookChatThread,
   type CitationState,
   type CorrectionEvent,
   type EvidenceEvent,
@@ -72,6 +73,7 @@ import {
   type BrainWebSearchPolicy,
 } from "../lib/brainRuntimeSettings";
 import { builtInBookAudioOverviewEntries } from "../lib/chapterAudioOverviews";
+import { summarizeChatThreadPersistence } from "../lib/chatThreadUtils";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
 type AdminTab =
@@ -425,6 +427,12 @@ export function AdminView() {
       () => db.memoryEvents.orderBy("timestamp").reverse().limit(50).toArray(),
       [],
     ) || [];
+  const bookChatThreads =
+    useLiveQuery(
+      () =>
+        db.bookChatThreads.orderBy("updatedAt").reverse().limit(30).toArray(),
+      [],
+    ) || [];
   const retrievalEvents =
     useLiveQuery(
       () =>
@@ -508,6 +516,8 @@ export function AdminView() {
     useLiveQuery(() => db.backgroundJobs.count(), []) || 0;
   const modelRunCount = useLiveQuery(() => db.modelRuns.count(), []) || 0;
   const memoryEventCount = useLiveQuery(() => db.memoryEvents.count(), []) || 0;
+  const bookChatThreadCount =
+    useLiveQuery(() => db.bookChatThreads.count(), []) || 0;
   const retrievalEventCount =
     useLiveQuery(() => db.retrievalEvents.count(), []) || 0;
   const correctionEventCount =
@@ -766,6 +776,7 @@ export function AdminView() {
   const latestBackgroundJob = backgroundJobs[0] as BackgroundJob | undefined;
   const latestModelRun = modelRuns[0] as ModelRun | undefined;
   const latestMemoryEvent = memoryEvents[0] as MemoryEvent | undefined;
+  const latestBookChatThread = bookChatThreads[0] as BookChatThread | undefined;
   const latestRetrievalEvent = retrievalEvents[0] as RetrievalEvent | undefined;
   const latestCorrectionEvent = correctionEvents[0] as
     | CorrectionEvent
@@ -818,6 +829,16 @@ export function AdminView() {
     },
     {},
   );
+  const bookChatThreadSummaries = bookChatThreads.map((thread) => ({
+    thread,
+    summary: summarizeChatThreadPersistence(thread.messages),
+  }));
+  const savedTypedChatThreads = bookChatThreadSummaries.filter(
+    ({ summary }) => summary.mode === "chat" || summary.mode === "mixed",
+  ).length;
+  const savedVoiceThreads = bookChatThreadSummaries.filter(
+    ({ summary }) => summary.mode === "voice" || summary.mode === "mixed",
+  ).length;
   const completedRetrievalEvents = retrievalEvents.filter(
     (event) => event.status === "completed",
   ).length;
@@ -912,6 +933,7 @@ export function AdminView() {
     generatedAt: activityPayload?.generatedAt,
     learningBooks: learningBooks.length,
     mappedConcepts: learningBookConcepts.length,
+    bookChatThreads: bookChatThreadCount,
     memoryEvents: memoryEventCount,
     retrievalEvents: retrievalEventCount,
     failedRetrievalEvents,
@@ -1287,6 +1309,7 @@ export function AdminView() {
         learningBooks,
         learningBookConcepts,
         learningEntries,
+        bookChatThreads,
         memoryEvents,
         retrievalEvents,
         correctionEvents,
@@ -2878,6 +2901,77 @@ export function AdminView() {
 
                         <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
                           <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Saved threads
+                          </h3>
+                          <p className="mt-1 text-sm text-zinc-500 font-serif">
+                            Durable book chat rows prove typed chat and voice
+                            transcripts can be reloaded locally.
+                          </p>
+                          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                            {[
+                              ["Rows", bookChatThreadCount],
+                              ["Typed", savedTypedChatThreads],
+                              ["Voice", savedVoiceThreads],
+                            ].map(([label, value]) => (
+                              <div
+                                key={label}
+                                className="rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2"
+                              >
+                                <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                  {label}
+                                </div>
+                                <div className="mt-1 text-lg font-semibold tabular-nums text-zinc-900">
+                                  {value}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-4 space-y-2">
+                            {bookChatThreadSummaries.length === 0 ? (
+                              <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
+                                Waiting for a book-scoped chat or voice save.
+                              </div>
+                            ) : (
+                              bookChatThreadSummaries
+                                .slice(0, 4)
+                                .map(({ thread, summary }) => (
+                                  <div
+                                    key={thread.id}
+                                    className="rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-3"
+                                  >
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="min-w-0">
+                                        <div className="truncate text-sm font-semibold text-zinc-900">
+                                          {thread.title}
+                                        </div>
+                                        <div className="mt-1 truncate text-[11px] font-mono text-zinc-500">
+                                          {thread.bookTitle}
+                                        </div>
+                                      </div>
+                                      <span className="shrink-0 rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-600">
+                                        {summary.mode}
+                                      </span>
+                                    </div>
+                                    <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                      <span>
+                                        {summary.meaningfulMessageCount}{" "}
+                                        messages
+                                      </span>
+                                      <span>
+                                        {summary.voiceTurnCount} voice turns
+                                      </span>
+                                      <span>
+                                        {formatTime(thread.updatedAt)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))
+                            )}
+                          </div>
+                        </section>
+
+                        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
                             Latest context
                           </h3>
                           <div className="mt-4 space-y-2">
@@ -2889,6 +2983,10 @@ export function AdminView() {
                               [
                                 "Latest status",
                                 latestMemoryEvent?.status || "waiting",
+                              ],
+                              [
+                                "Latest thread",
+                                latestBookChatThread?.title || "none",
                               ],
                               [
                                 "Retention",
@@ -4026,11 +4124,11 @@ export function AdminView() {
                           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-500 font-serif">
                             This local verifier looks across context-injection
                             rows, retrieval rows, model runs, tool jobs, and
-                            request-correlated evaluated mastery plus background
-                            memory events for both chat and voice. It proves the
-                            brain flow is wired in the browser ledger; it does
-                            not call cloud services or inspect private model
-                            internals.
+                            request-correlated evaluated mastery, transcript
+                            persistence, and background memory events for both
+                            chat and voice. It proves the brain flow is wired in
+                            the browser ledger; it does not call cloud services
+                            or inspect private model internals.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -4386,6 +4484,7 @@ export function AdminView() {
                               ["Learning books", learningBooks.length],
                               ["Mapped concepts", learningBookConcepts.length],
                               ["Learning entries", learningEntries.length],
+                              ["Book chat threads", bookChatThreads.length],
                               ["Memory events", memoryEvents.length],
                               ["Retrieval events", retrievalEvents.length],
                               ["Correction requests", correctionEvents.length],

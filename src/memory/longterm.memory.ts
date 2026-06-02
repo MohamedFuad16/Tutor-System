@@ -240,6 +240,7 @@ export interface MemoryEvent {
     | "session_started"
     | "interaction_recorded"
     | "brain_context_injected"
+    | "book_chat_thread_saved"
     | "learning_book_updated"
     | "learning_concept_updated"
     | "graph_concept_updated"

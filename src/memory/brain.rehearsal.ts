@@ -200,34 +200,48 @@ export const runLocalBrainWiringRehearsal = (
           synthetic: true,
         }),
       },
+      {
+        eventType: "book_chat_thread_saved",
+        status: "completed",
+        timestamp: 5,
+        bookId: chatPacket.activeBookId,
+        conversationId: `thread:${chatPacket.activeBookId}:chat`,
+        metadata: {
+          mode: "chat",
+          hasTypedChat: true,
+          hasVoiceSession: false,
+          synthetic: true,
+        },
+      },
+      {
+        eventType: "book_chat_thread_saved",
+        status: "completed",
+        timestamp: 6,
+        bookId: voicePacket.activeBookId,
+        conversationId: `thread:${voicePacket.activeBookId}:voice`,
+        metadata: {
+          mode: "voice",
+          hasTypedChat: false,
+          hasVoiceSession: true,
+          voiceSessionCount: 1,
+          voiceTurnCount: 2,
+          synthetic: true,
+        },
+      },
     ],
     retrievalEvents: [
       {
         status: "completed",
         requestId: chatPacket.requestId,
-        timestamp: 5,
-      },
-      {
-        status: "completed",
-        requestId: voicePacket.requestId,
-        timestamp: 6,
-      },
-    ],
-    modelRuns: [
-      {
-        status: "completed",
-        requestId: chatPacket.requestId,
-        source: "chat_stream",
         timestamp: 7,
       },
       {
         status: "completed",
         requestId: voicePacket.requestId,
-        source: "voice_agent",
         timestamp: 8,
       },
     ],
-    toolJobs: [
+    modelRuns: [
       {
         status: "completed",
         requestId: chatPacket.requestId,
@@ -241,11 +255,25 @@ export const runLocalBrainWiringRehearsal = (
         timestamp: 10,
       },
     ],
+    toolJobs: [
+      {
+        status: "completed",
+        requestId: chatPacket.requestId,
+        source: "chat_stream",
+        timestamp: 11,
+      },
+      {
+        status: "completed",
+        requestId: voicePacket.requestId,
+        source: "voice_agent",
+        timestamp: 12,
+      },
+    ],
     evidenceEvents: [
       {
         evidenceType: "generation",
         verified: true,
-        timestamp: 11,
+        timestamp: 13,
         metadata: {
           requestId: chatPacket.requestId,
           mode: "chat",
@@ -256,7 +284,7 @@ export const runLocalBrainWiringRehearsal = (
       {
         evidenceType: "generation",
         verified: true,
-        timestamp: 12,
+        timestamp: 14,
         metadata: {
           requestId: voicePacket.requestId,
           mode: "voice",
@@ -317,7 +345,7 @@ export const runLocalBrainWiringRehearsal = (
       title: "Coverage contract",
       ready: coverage.status === "ready" && coverage.coveragePercent === 100,
       detail:
-        "Synthetic rows satisfy the same nine-signal verifier used for live local ledgers without being persisted into those ledgers.",
+        "Synthetic rows satisfy the same eleven-signal verifier used for live local ledgers without being persisted into those ledgers.",
     },
   ];
   const ready = checks.every((check) => check.ready);
@@ -332,7 +360,7 @@ export const runLocalBrainWiringRehearsal = (
     liveCoverageMutated: false,
     status: ready ? "ready" : "failed",
     summary: ready
-      ? "Shared packet assembly, balanced multi-PDF context, dual-agent tools, and the nine-signal verifier passed in memory."
+      ? "Shared packet assembly, balanced multi-PDF context, dual-agent tools, and the eleven-signal verifier passed in memory."
       : "One or more local wiring contracts failed rehearsal. Review the failed synthetic checks before live beta traffic.",
     documentIds: rehearsalDocuments.map((document) => document.id),
     chatToolNames: chatTools,

@@ -57,6 +57,32 @@ const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
         agentLayer: "voice_realtime",
       }),
     },
+    {
+      eventType: "book_chat_thread_saved",
+      status: "completed",
+      timestamp: 6,
+      bookId: "book-1",
+      conversationId: "thread:book-1",
+      metadata: {
+        mode: "chat",
+        hasTypedChat: true,
+        hasVoiceSession: false,
+      },
+    },
+    {
+      eventType: "book_chat_thread_saved",
+      status: "completed",
+      timestamp: 7,
+      bookId: "book-1",
+      conversationId: "thread:book-1",
+      metadata: {
+        mode: "voice",
+        hasTypedChat: false,
+        hasVoiceSession: true,
+        voiceSessionCount: 1,
+        voiceTurnCount: 2,
+      },
+    },
   ],
   retrievalEvents: [
     {
@@ -129,7 +155,8 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
     {
       learningBooks: 2,
       mappedConcepts: 8,
-      memoryEvents: 6,
+      bookChatThreads: 1,
+      memoryEvents: 7,
       retrievalEvents: 3,
       modelRuns: 4,
       toolJobs: 1,
@@ -163,6 +190,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
   });
   assert.equal(snapshot.counts.propagatedCorrectionRows, 2);
   assert.equal(snapshot.counts.backgroundJobs, 2);
+  assert.equal(snapshot.counts.bookChatThreads, 1);
   assert.equal(snapshot.brainFlow.status, "ready");
   assert.equal(
     snapshot.items.find((item) => item.id === "background_jobs")?.status,
@@ -196,7 +224,7 @@ test("beta diagnostics block when background jobs reach dead-letter", () => {
   );
 });
 
-test("brain flow coverage requires chat, voice, request ids, tools, mastery evidence, and background memory", () => {
+test("brain flow coverage requires chat, voice, request ids, tools, mastery evidence, transcript persistence, and background memory", () => {
   assert.equal(completeBrainFlow.status, "ready");
   assert.equal(completeBrainFlow.coveragePercent, 100);
   assert.deepEqual(completeBrainFlow.missingSignals, []);
@@ -212,6 +240,8 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
   );
   assert.equal(completeBrainFlow.chatBackgroundMemoryEvents, 1);
   assert.equal(completeBrainFlow.voiceBackgroundMemoryEvents, 1);
+  assert.equal(completeBrainFlow.chatThreadPersistenceEvents, 1);
+  assert.equal(completeBrainFlow.voiceThreadPersistenceEvents, 1);
   assert.equal(completeBrainFlow.requestCorrelatedBackgroundMemoryEvents, 3);
   assert.equal(completeBrainFlow.chatForegroundToolJobs, 1);
   assert.equal(completeBrainFlow.voiceForegroundToolJobs, 1);
@@ -238,6 +268,18 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
   assert.equal(
     completeBrainFlow.signals.find(
       (signal) => signal.id === "evidence_gate_contract",
+    )?.ready,
+    true,
+  );
+  assert.equal(
+    completeBrainFlow.signals.find(
+      (signal) => signal.id === "chat_thread_persistence",
+    )?.ready,
+    true,
+  );
+  assert.equal(
+    completeBrainFlow.signals.find(
+      (signal) => signal.id === "voice_thread_persistence",
     )?.ready,
     true,
   );

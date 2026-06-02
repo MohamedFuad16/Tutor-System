@@ -463,6 +463,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/memory.orchestrator.ts, src/views/AdminView.tsx, tests/background-jobs.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABN",
+      "name": "Chat/voice thread persistence observability",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/lib/chatThreadUtils.ts, src/memory/longterm.memory.ts, src/memory/beta.diagnostics.ts, src/memory/brain.rehearsal.ts, src/components/ChatPanel.tsx, src/views/AdminView.tsx, tests/chat-thread-utils.test.mjs, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -836,11 +843,28 @@
     "graphify path writeLearningBookFromConversation() to AdminView() found a four-hop path through generated note artifact records",
     "graphify path writeGraphConceptUpdate() to runBackgroundJob() found a three-hop path through memory trace/update wrappers",
     "Packet ABM graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
-    "Packet ABM npm run audio:overview:dry-run passed with 25 present and 0 missing stored guide assets"
+    "Packet ABM npm run audio:overview:dry-run passed with 25 present and 0 missing stored guide assets",
+    "Packet ABN selected after Graphify routed chat/voice thread persistence through persistBookChatThread(), bookChatThreads, recordMemoryEvent(), AdminView(), buildBrainFlowCoverageFromLedgers(), and runLocalBrainWiringRehearsal()",
+    "ChatPanel.persistBookChatThread now emits book_chat_thread_saved memory events when a normalized book-scoped thread signature changes",
+    "chatThreadUtils now summarizes typed, voice, and mixed transcript persistence history for Admin and event metadata",
+    "Beta Diagnostics now uses an eleven-signal verifier that requires both Chat thread saved and Voice thread saved evidence",
+    "Admin Memory now surfaces saved thread rows, typed/voice counts, latest thread context, diagnostics counts, and export coverage for bookChatThreads",
+    "Synthetic local brain wiring rehearsal now satisfies the same eleven-signal verifier without persisting beta traffic",
+    "npm run lint passed",
+    "Focused beta/rehearsal/chat-thread contract tests passed",
+    "npm run test passed, 140 tests",
+    "npm run build passed",
+    "In-app Browser QA at 1440x900 confirmed Admin Beta and Memory rendered the new thread persistence surfaces with zero horizontal overflow and zero clipped cards",
+    "In-app Browser QA at 390x844 confirmed Admin Beta and Memory rendered the new thread persistence surfaces with zero horizontal overflow, zero clipped text blocks, and no browser warning/error logs",
+    "Clean graphify update . --force and npm run graphify:tree regenerated code architecture artifacts with 1017 nodes, 1808 edges, and 61 communities",
+    "Graphify smoke query found persistBookChatThread(), summarizeChatThreadPersistence(), recordBookChatThreadSaveEvent(), recordMemoryEvent(), AdminView(), buildBrainFlowCoverageFromLedgers(), and runLocalBrainWiringRehearsal()",
+    "graphify path persistBookChatThread() to AdminView() found a three-hop route through ChatPanel.tsx and useStore",
+    "graphify path summarizeChatThreadPersistence() to buildBrainFlowCoverageFromLedgers() found a two-hop route through AdminView.tsx",
+    "Packet ABN graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 74,
-    "basis": "Local architecture estimate after Packet ABM: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, and durable retry/dead-letter state for interaction-memory, learning-book, and graph-concept local memory-worker jobs are implemented; live provider-key chat/voice proof, remaining scheduler coverage, and broader beta validation remain incomplete.",
-    "updatedAt": "2026-06-03T03:18:00.000+09:00"
+    "estimatePercent": 76,
+    "basis": "Local architecture estimate after Packet ABN: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable retry/dead-letter state for interaction-memory, learning-book, and graph-concept local memory-worker jobs, and durable typed-chat/voice thread persistence proof are implemented; live provider-key chat/voice proof, remaining scheduler coverage, and broader beta validation remain incomplete.",
+    "updatedAt": "2026-06-03T08:05:00.000+09:00"
   }
 }

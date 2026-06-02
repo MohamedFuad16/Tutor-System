@@ -103,3 +103,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   graph-concept updates through the existing local background-job ledger,
   surface job-name mix in Admin, and document that cloud worker scheduling
   remains out of scope.
+- ABN: Chat/voice thread persistence observability. Emit durable local memory
+  evidence when book-scoped typed-chat and voice transcript threads are saved,
+  surface saved thread rows in Admin Memory and diagnostics export, and extend
+  Beta Diagnostics to require both chat and voice transcript-persistence proof.

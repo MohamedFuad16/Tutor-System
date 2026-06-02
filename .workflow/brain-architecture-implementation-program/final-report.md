@@ -3339,10 +3339,10 @@ support before their scoped local integrity check can pass.
 ## Graphify Context
 
 - `graphify path "createGeneratedNoteSourceSpans()"
-  "recordGeneratedNotesArtifact()"` found a two-hop path through
+"recordGeneratedNotesArtifact()"` found a two-hop path through
   `artifact.records.ts`.
 - `graphify path "recordGeneratedNotesArtifact()"
-  "verifyArtifactCitationIntegrity()"` found a two-hop path through
+"verifyArtifactCitationIntegrity()"` found a two-hop path through
   `artifact.records.ts`.
 - Graphify routed the slice through `artifact.records.ts`,
   `memory.orchestrator.ts`, artifact tests, Admin Source Artifacts, and the
@@ -3430,16 +3430,16 @@ not spend provider-key chat or real Deepgram voice calls.
 ## Graphify Context
 
 - `graphify query "ChatPanel multi PDF document context voice memory
-  orchestrator active book source materials" --budget 5000 --graph
-  graphify-out/graph.json` routed the slice through `ChatPanel.tsx`,
+orchestrator active book source materials" --budget 5000 --graph
+graphify-out/graph.json` routed the slice through `ChatPanel.tsx`,
   `StudyView.tsx`, `memory.orchestrator.ts`, `brain.context.ts`,
   `longterm.memory.ts`, store, and tests.
 - `graphify path "buildBrainDocumentContext()" "ChatPanel()" --graph
-  graphify-out/graph.json` found the connected packet path through
+graphify-out/graph.json` found the connected packet path through
   `brain.context.ts` and `ChatPanel.tsx`.
 - `graphify query "AudioOverviewPlayer fallback local audio overview play button
-  RevisionView tutor book chapter audio" --budget 4000 --graph
-  graphify-out/graph.json` confirmed the single-player audio surface is
+RevisionView tutor book chapter audio" --budget 4000 --graph
+graphify-out/graph.json` confirmed the single-player audio surface is
   `StoredAudioOverview()` in `RevisionView.tsx`.
 
 ## Integration Decisions
@@ -3518,15 +3518,15 @@ about 69%.
 ## Graphify Context
 
 - `graphify query "evidence gated memory orchestrator BrainContextPacket dual
-  agent tool calls chat voice Admin system activity mastery updates" --budget
-  5000 --graph graphify-out/graph.json` routed the slice through
+agent tool calls chat voice Admin system activity mastery updates" --budget
+5000 --graph graphify-out/graph.json` routed the slice through
   `BrainContextPacket`, `voice-agent-tools.test.mjs`, and local evidence tests.
 - `graphify path "MemoryOrchestrator" "AdminView()" --graph
-  graphify-out/graph.json` found the four-hop source path through
+graphify-out/graph.json` found the four-hop source path through
   `memory.orchestrator.ts`, `longterm.memory.ts`, and `AdminView.tsx`.
 - `graphify query "memory.orchestrator.ts
-  updateLearningBookFromConversation createBrainContextMemoryEventInput system
-  activity memory event" --budget 5000 --graph graphify-out/graph.json`
+updateLearningBookFromConversation createBrainContextMemoryEventInput system
+activity memory event" --budget 5000 --graph graphify-out/graph.json`
   identified `memory.orchestrator.ts`, `evidence.mastery.ts`,
   `evidence.ledger.ts`, `beta.diagnostics.ts`, `brain.rehearsal.ts`,
   `AdminView.tsx`, and tests as the connected source surface.
@@ -3602,19 +3602,19 @@ about 72%.
 ## Graphify Context
 
 - `graphify query "background queue retry dead letter MemoryOrchestrator
-  setTimeout learning book update Admin diagnostics memory events background
-  jobs" --budget 6000 --graph graphify-out/graph.json` routed the slice through
+setTimeout learning book update Admin diagnostics memory events background
+jobs" --budget 6000 --graph graphify-out/graph.json` routed the slice through
   `MemoryOrchestrator`, `memory.events.ts`, `longterm.memory.ts`, and Admin
   diagnostics surfaces.
 - `graphify query "longterm.memory Dexie toolJobs modelRuns memoryEvents retry
-  status queued running failed blocked AdminView beta diagnostics" --budget
-  6000 --graph graphify-out/graph.json` identified the existing ledger patterns
+status queued running failed blocked AdminView beta diagnostics" --budget
+6000 --graph graphify-out/graph.json` identified the existing ledger patterns
   in `ToolJob`, `ModelRun`, and `AdminView.tsx`.
 - `graphify path "MemoryOrchestrator" "AdminView()" --graph
-  graphify-out/graph.json` confirmed the runtime-to-Admin route through the
+graphify-out/graph.json` confirmed the runtime-to-Admin route through the
   local memory database.
 - `graphify path "recordMemoryEvent()" "buildBetaDiagnosticsSnapshot()"
-  --graph graphify-out/graph.json` confirmed the diagnostics route through
+--graph graphify-out/graph.json` confirmed the diagnostics route through
   memory events and Admin.
 
 ## Integration Decisions
@@ -3669,6 +3669,92 @@ about 72%.
   provider calls is in scope.
 - Add broader scheduler controls for more background job kinds after the
   interaction-memory queue proves stable.
+- Continue broader local beta validation until real chat, voice, retrieval,
+  tools, memory, evidence, corrections, Admin, and Revision operate together
+  under live beta conditions.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
+---
+
+# Phase 60: Chat/Voice Thread Persistence Observability
+
+Packet ABN closes the local proof gap between "a thread was written to
+IndexedDB" and "Admin/Beta can see durable evidence that typed-chat and
+live-voice transcript threads were saved." The app now emits local
+`book_chat_thread_saved` memory events when normalized book-scoped threads
+change, and Admin/Beta expose those rows without implementing AWS/cloud sync.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 76%.
+
+## Graphify Context
+
+- `graphify query "ChatPanel persistBookChatThread voice session messages voice
+turns stored injected tools MemoryOrchestrator trackInteraction
+updateLearningBookFromConversation book chat thread Admin proof" --budget 7000
+--graph graphify-out/graph.json` routed the slice through
+  `persistBookChatThread()`, `ChatPanel()`, `MemoryOrchestrator`, `AdminView()`,
+  `bookChatThreads`, and `recordMemoryEvent()`.
+- `graphify query "remaining brain architecture live provider-key chat voice
+end-to-end proof memory injection tool calls evaluated_answer background jobs
+Admin Beta Diagnostics runLocalBrainWiringRehearsal" --budget 7000 --graph
+graphify-out/graph.json` identified `runLocalBrainWiringRehearsal()`,
+  `buildBrainFlowCoverageFromLedgers()`, `AdminView()`, and the local
+  diagnostic verifier as downstream contract surfaces.
+
+## Integration Decisions
+
+- Added typed/voice/mixed chat-thread persistence summaries in
+  `chatThreadUtils.ts`.
+- Added `book_chat_thread_saved` as a durable local memory event type.
+- Updated `persistBookChatThread()` to emit low-noise memory events only when
+  the normalized thread persistence signature changes.
+- Extended Beta Diagnostics from the previous nine-signal verifier to an
+  eleven-signal verifier that requires both `Chat thread saved` and
+  `Voice thread saved` evidence.
+- Added Admin Memory saved-thread cards, typed/voice counts, latest-thread
+  context, diagnostics counts, and diagnostics-export coverage for
+  `bookChatThreads`.
+- Updated the synthetic local brain wiring rehearsal to satisfy the same
+  eleven-signal verifier without writing live beta rows.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run lint`: passed.
+- Focused contract tests passed with
+  `node --test --test-name-pattern "brain flow|beta diagnostics|local brain wiring|synthetic rehearsal|chat thread persistence" tests/beta-diagnostics.test.mjs tests/brain-rehearsal.test.mjs tests/chat-thread-utils.test.mjs`.
+- `npm run test`: passed, 140 tests.
+- `npm run build`: passed.
+- In-app Browser QA at `1440x900` confirmed Admin Beta rendered Brain Flow
+  Coverage, Chat thread saved, Voice thread saved, and Conversation
+  persistence with zero horizontal overflow and zero clipped cards.
+- In-app Browser QA at `1440x900` confirmed Admin Memory rendered Saved
+  threads, Rows, Typed, Voice, and Latest thread with zero horizontal overflow
+  and zero clipped cards.
+- In-app Browser QA at `390x844` confirmed Admin Beta and Memory rendered the
+  same thread persistence surfaces with zero horizontal overflow, zero clipped
+  text blocks, and no browser warning/error logs.
+- Clean `graphify update . --force` plus `npm run graphify:tree`: passed,
+  regenerating `graphify-out` with `1017` nodes, `1808` edges, and `61`
+  communities.
+- Graphify smoke query found `persistBookChatThread()`,
+  `summarizeChatThreadPersistence()`, `recordBookChatThreadSaveEvent()`,
+  `recordMemoryEvent()`, `AdminView()`, `buildBrainFlowCoverageFromLedgers()`,
+  and `runLocalBrainWiringRehearsal()`.
+- Graphify path `persistBookChatThread()` to `AdminView()` found a three-hop
+  route through `ChatPanel.tsx` and `useStore`.
+- Graphify path `summarizeChatThreadPersistence()` to
+  `buildBrainFlowCoverageFromLedgers()` found a two-hop route through
+  `AdminView.tsx`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed-chat and real voice turns when spending live
+  provider calls is in scope, so the new persistence signals can move from
+  missing to ready in live beta data.
 - Continue broader local beta validation until real chat, voice, retrieval,
   tools, memory, evidence, corrections, Admin, and Revision operate together
   under live beta conditions.

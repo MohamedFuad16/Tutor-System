@@ -39,6 +39,74 @@ export const isMeaningfulChatMessage = (message: Message) =>
 export const meaningfulChatMessages = (messages: Message[]) =>
   messages.filter(isMeaningfulChatMessage);
 
+export type ChatThreadPersistenceMode = "empty" | "chat" | "voice" | "mixed";
+
+export type ChatThreadPersistenceSummary = {
+  mode: ChatThreadPersistenceMode;
+  messageCount: number;
+  meaningfulMessageCount: number;
+  typedTurnCount: number;
+  voiceSessionCount: number;
+  voiceTurnCount: number;
+  hasTypedChat: boolean;
+  hasVoiceSession: boolean;
+  lastMessageId: string;
+  signature: string;
+};
+
+export const summarizeChatThreadPersistence = (
+  messages: Message[],
+): ChatThreadPersistenceSummary => {
+  const meaningful = meaningfulChatMessages(messages);
+  const typedTurnCount = meaningful.filter(
+    (message) =>
+      !message.isVoice && !message.voiceSession && hasText(message.content),
+  ).length;
+  const voiceSessionCount = meaningful.filter(
+    (message) => message.isVoice || message.voiceSession,
+  ).length;
+  const voiceTurnCount = meaningful.reduce(
+    (sum, message) => sum + voiceTurns(message).length,
+    0,
+  );
+  const hasTypedChat = typedTurnCount > 0;
+  const hasVoiceSession = voiceSessionCount > 0 || voiceTurnCount > 0;
+  const mode: ChatThreadPersistenceMode =
+    hasTypedChat && hasVoiceSession
+      ? "mixed"
+      : hasVoiceSession
+        ? "voice"
+        : hasTypedChat
+          ? "chat"
+          : "empty";
+  const lastMessage = meaningful[meaningful.length - 1];
+  const signature = [
+    mode,
+    messages.length,
+    meaningful.length,
+    typedTurnCount,
+    voiceSessionCount,
+    voiceTurnCount,
+    lastMessage?.id || "none",
+    lastMessage?.role || "none",
+    lastMessage?.content?.length || 0,
+    lastMessage?.voiceSession?.durationSeconds || 0,
+  ].join(":");
+
+  return {
+    mode,
+    messageCount: messages.length,
+    meaningfulMessageCount: meaningful.length,
+    typedTurnCount,
+    voiceSessionCount,
+    voiceTurnCount,
+    hasTypedChat,
+    hasVoiceSession,
+    lastMessageId: lastMessage?.id || "",
+    signature,
+  };
+};
+
 const titleTextForMessage = (message: Message) => {
   const explicitVoiceTitle = message.voiceSession?.title?.trim();
   if (explicitVoiceTitle && !/^voice conversation$/i.test(explicitVoiceTitle)) {

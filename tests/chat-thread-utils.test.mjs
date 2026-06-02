@@ -6,6 +6,7 @@ import {
   flattenChatMessagesForPrompt,
   hasLearnerChatTurn,
   meaningfulChatMessages,
+  summarizeChatThreadPersistence,
 } from "../.tmp-test/chatThreadUtils.mjs";
 
 test("voice session messages are meaningful chat history", () => {
@@ -84,4 +85,34 @@ test("explicit generated voice titles are preferred when available", () => {
     ),
     "Understanding closures",
   );
+});
+
+test("chat thread persistence summaries distinguish typed and voice history", () => {
+  const summary = summarizeChatThreadPersistence([
+    { id: "1", role: "assistant", content: "Hello." },
+    { id: "typed-1", role: "user", content: "Continue." },
+    {
+      id: "voice-1",
+      role: "assistant",
+      content: "",
+      isVoice: true,
+      voiceSession: {
+        startedAt: 1,
+        durationSeconds: 5,
+        turns: [
+          { id: "u", role: "user", content: "What did I ask?" },
+          { id: "a", role: "assistant", content: "You asked about loops." },
+        ],
+      },
+    },
+  ]);
+
+  assert.equal(summary.mode, "mixed");
+  assert.equal(summary.meaningfulMessageCount, 2);
+  assert.equal(summary.typedTurnCount, 1);
+  assert.equal(summary.voiceSessionCount, 1);
+  assert.equal(summary.voiceTurnCount, 2);
+  assert.equal(summary.hasTypedChat, true);
+  assert.equal(summary.hasVoiceSession, true);
+  assert.match(summary.signature, /^mixed:/);
 });

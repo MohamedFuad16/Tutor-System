@@ -60,6 +60,7 @@ import {
   recordUnavailableCitationState,
   recordWebSourceArtifact,
 } from "../memory/artifact.records";
+import { recordMemoryEvent } from "../memory/memory.events";
 import { recordModelRunEvent } from "../memory/model.runs";
 import { recordToolJobEvent } from "../memory/tool.jobs";
 import { recordEvaluatedAnswerEvidenceBatch } from "../memory/answer.evidence";
@@ -92,6 +93,7 @@ import {
   flattenChatMessagesForPrompt,
   hasLearnerChatTurn,
   meaningfulChatMessages,
+  summarizeChatThreadPersistence,
 } from "../lib/chatThreadUtils";
 
 type MermaidApi = typeof import("mermaid").default;
@@ -1107,6 +1109,51 @@ const chatTitleFromMessages = (items: Message[], fallback: string) => {
   return chatTitleFromMessageSet(items, fallback, 72);
 };
 
+const shouldRecordBookChatThreadSave = (
+  existing: BookChatThread | undefined,
+  thread: BookChatThread,
+) => {
+  const summary = summarizeChatThreadPersistence(thread.messages);
+  if (summary.meaningfulMessageCount === 0 || summary.mode === "empty") {
+    return null;
+  }
+  if (existing) {
+    const previous = summarizeChatThreadPersistence(existing.messages);
+    if (previous.signature === summary.signature) return null;
+  }
+  return summary;
+};
+
+const recordBookChatThreadSaveEvent = async (
+  thread: BookChatThread,
+  summary: NonNullable<ReturnType<typeof shouldRecordBookChatThreadSave>>,
+) => {
+  await recordMemoryEvent({
+    eventType: "book_chat_thread_saved",
+    status: "completed",
+    source: "book_chat_thread_persistence",
+    bookId: thread.bookId,
+    conversationId: thread.id,
+    summary: `Saved ${summary.mode} study thread "${thread.title}" with ${summary.meaningfulMessageCount} meaningful messages.`,
+    retentionPolicy: "local_indexeddb",
+    metadata: {
+      mode: summary.mode,
+      hasTypedChat: summary.hasTypedChat,
+      hasVoiceSession: summary.hasVoiceSession,
+      messageCount: summary.messageCount,
+      meaningfulMessageCount: summary.meaningfulMessageCount,
+      typedTurnCount: summary.typedTurnCount,
+      voiceSessionCount: summary.voiceSessionCount,
+      voiceTurnCount: summary.voiceTurnCount,
+      lastMessageId: summary.lastMessageId,
+      persistenceSignature: summary.signature,
+      threadId: thread.id,
+      threadTitle: thread.title,
+      bookTitle: thread.bookTitle,
+    },
+  });
+};
+
 const persistBookChatThread = async (
   bookId: string | null | undefined,
   bookTitle: string,
@@ -1125,7 +1172,11 @@ const persistBookChatThread = async (
     createdAt: existing?.createdAt || now,
     updatedAt: now,
   };
+  const persistenceSummary = shouldRecordBookChatThreadSave(existing, thread);
   await db.bookChatThreads.put(thread);
+  if (persistenceSummary) {
+    await recordBookChatThreadSaveEvent(thread, persistenceSummary);
+  }
   return thread;
 };
 
