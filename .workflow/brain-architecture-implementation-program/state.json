@@ -435,10 +435,17 @@
       "owner": "main agent + read-only sidecars Ramanujan and Carson",
       "status": "completed",
       "write_scope": "src/memory/artifact.records.ts, src/memory/memory.orchestrator.ts, tests/artifact-records.test.mjs, src/views/AdminView.tsx, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, src/lib/chapterAudioOverviews.json, public/audio-overviews/* affected assets, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABJ",
+      "name": "Active-book PDF manifest context",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/brain.context.ts, src/memory/brain.rehearsal.ts, src/components/ChatPanel.tsx, server.ts, src/views/AdminView.tsx, tests/brain-context.test.mjs, tests/system-activity.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_55_completed",
+    "status": "phase_57_completed",
     "checks": [
       "graphify path runLocalBrainWiringRehearsal() to AdminView() found a two-hop path through buildBrainFlowCoverageFromLedgers()",
       "Graphify smoke query found runLocalBrainWiringRehearsal(), buildChatAgentToolDefinitions(), chatAgentToolNames(), buildBrainDocumentContext(), buildBrainFlowCoverageFromLedgers(), and AdminView()",
@@ -729,5 +736,29 @@
     "graphify path createGeneratedNoteClaimSpanCoverage() to AdminView() found a three-hop path through artifact.records.ts and AdminView.tsx",
     "Graph artifact grep found no server.mjs or .tmp-test scratch nodes",
     "Admin generated-note rows prefer the latest recomputed local citation-integrity claim-span coverage after reruns, with write-time coverage as the pre-rerun fallback"
+    ,
+    "Packet ABJ selected after Graphify routed multi-PDF chat/voice context through buildBrainDocumentContextReport(), buildBrainContextPacket(), ChatPanel(), server.ts, AdminView(), and focused tests",
+    "Added an active-book PDF manifest plus ready excerpt context so pending, failed, ready, excerpted, and omitted PDFs stay visible in shared chat/voice context metadata",
+    "Typed chat now sends brainContextMetadata to /api/chat; live voice auth now sends ready/context/pending/omitted PDF counts to the websocket backend",
+    "Server system activity now preserves compact brain-context metadata without raw context text",
+    "Admin request timelines render PDF count chips for brain_context_injected memory events",
+    "README, Tutor System Architecture, User Brain Architecture, Tutor Architecture Library JSON, and App Design Language copy document the active-book PDF manifest boundary",
+    "Stored audio overview UI remained one visible player with hidden retry inside the same component",
+    "npm run format passed",
+    "Workflow verifier passed",
+    "npm run format:check passed",
+    "npm run lint passed",
+    "npm run test passed, 131 tests",
+    "npm run build passed",
+    "npm run audio:overview:dry-run passed with 25 present and 0 missing assets",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "Browser QA confirmed Admin request timelines at 1440x1000 and 390x844 with no horizontal overflow",
+    "Browser QA confirmed App Design Language Local Beta Control Patterns at 390x844 and 1440x1000 rendered PDF manifest copy with one visible Play button, one hidden audio element, zero native controls, and no horizontal overflow",
+    "Browser QA screenshots saved as ABJ-iab-admin-desktop.png, ABJ-iab-admin-mobile.png, and ABJ-iab-app-design-desktop.png",
+    "graphify update . --force regenerated code architecture artifacts with 978 nodes, 1707 edges, and 63 communities",
+    "npm run graphify:tree passed",
+    "Graphify smoke query found buildBrainDocumentContextReport(), buildBrainContextPacket(), ChatPanel(), AdminRequestTimeline, and AdminView()",
+    "graphify path buildBrainDocumentContextReport() to AdminView() found a four-hop path through brain.context.ts, ChatPanel.tsx, and useStore",
+    "Graph artifact grep found no server.mjs or .tmp-test scratch nodes"
   ]
 }

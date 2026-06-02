@@ -61,7 +61,12 @@ export type BrainContextPacket = {
   activeBookTitle?: string;
   activeDocumentId?: string;
   documentIds: string[];
+  readyDocumentIds: string[];
+  contextDocumentIds: string[];
   documentCount: number;
+  readyDocumentCount: number;
+  unreadyDocumentCount: number;
+  omittedReadyDocumentCount: number;
   context: string;
   rawContext: string;
   contextChars: number;
@@ -76,6 +81,17 @@ export type BrainContextPacket = {
 export type BrainDocumentContextOptions = {
   activeDocumentId?: string | null;
   maxDocuments?: number;
+};
+
+export type BrainDocumentContextReport = {
+  context: string;
+  documentIds: string[];
+  readyDocumentIds: string[];
+  contextDocumentIds: string[];
+  documentCount: number;
+  readyDocumentCount: number;
+  unreadyDocumentCount: number;
+  omittedReadyDocumentCount: number;
 };
 
 const compact = (value: unknown, maxLength = 500) =>
@@ -101,26 +117,100 @@ export const compactBrainContext = (
 export const buildBrainDocumentContext = (
   documents: LearningDocument[] = [],
   options: BrainDocumentContextOptions = {},
+) => buildBrainDocumentContextReport(documents, options).context;
+
+export const buildBrainDocumentContextReport = (
+  documents: LearningDocument[] = [],
+  options: BrainDocumentContextOptions = {},
 ) => {
   const activeDocumentId = options.activeDocumentId || "";
-  const readyDocuments = documents
-    .filter(
-      (document) =>
-        document.processingStatus === "ready" &&
-        document.extractedText &&
-        document.extractedText.trim(),
-    )
-    .sort((a, b) =>
-      a.id === activeDocumentId ? -1 : b.id === activeDocumentId ? 1 : 0,
-    );
+  const documentIds = documents.map((document) => document.id).filter(Boolean);
+  const orderedDocuments = [...documents].sort((a, b) =>
+    a.id === activeDocumentId ? -1 : b.id === activeDocumentId ? 1 : 0,
+  );
+  const readyDocuments = orderedDocuments.filter(
+    (document) =>
+      document.processingStatus === "ready" &&
+      document.extractedText &&
+      document.extractedText.trim(),
+  );
+  const readyDocumentIds = readyDocuments
+    .map((document) => document.id)
+    .filter(Boolean);
   const contextDocuments = readyDocuments.slice(0, options.maxDocuments || 6);
-  if (!contextDocuments.length) return "";
+  const contextDocumentIds = contextDocuments
+    .map((document) => document.id)
+    .filter(Boolean);
+  const unreadyDocumentCount = Math.max(
+    0,
+    documents.length - readyDocuments.length,
+  );
+  const omittedReadyDocumentCount = Math.max(
+    0,
+    readyDocuments.length - contextDocuments.length,
+  );
+  if (!documents.length) {
+    return {
+      context: "",
+      documentIds,
+      readyDocumentIds,
+      contextDocumentIds,
+      documentCount: 0,
+      readyDocumentCount: 0,
+      unreadyDocumentCount: 0,
+      omittedReadyDocumentCount: 0,
+    };
+  }
 
   const excerptBudget = contextDocuments.length === 1 ? 5000 : 5200;
   const perDocumentExcerptChars =
-    contextDocuments.length === 1
-      ? excerptBudget
-      : Math.max(700, Math.floor(excerptBudget / contextDocuments.length));
+    contextDocuments.length === 0
+      ? 0
+      : contextDocuments.length === 1
+        ? excerptBudget
+        : Math.max(700, Math.floor(excerptBudget / contextDocuments.length));
+  const manifestDocuments = orderedDocuments.slice(0, 12);
+  const documentManifest = [
+    "### Active Book Document Manifest",
+    `Added PDFs in active book: ${documents.length}`,
+    `Ready extracted PDFs: ${readyDocuments.length}`,
+    `PDFs with excerpts in this prompt: ${contextDocuments.length}`,
+    unreadyDocumentCount
+      ? `PDFs without usable extracted text yet: ${unreadyDocumentCount}`
+      : "",
+    omittedReadyDocumentCount
+      ? `Ready PDFs omitted because of prompt budget: ${omittedReadyDocumentCount}`
+      : "",
+    documents.length > manifestDocuments.length
+      ? `Manifest includes first ${manifestDocuments.length} added PDFs; ${documents.length - manifestDocuments.length} additional PDF(s) are not listed.`
+      : "",
+    ...manifestDocuments.map((document, index) => {
+      const isReady = readyDocumentIds.includes(document.id);
+      const isIncluded = contextDocumentIds.includes(document.id);
+      const role = document.id === activeDocumentId ? "active" : "companion";
+      const status =
+        document.processingStatus === "ready" && !isReady
+          ? "ready_without_extracted_text"
+          : document.processingStatus || "processing";
+      return [
+        `PDF ${index + 1}: ${document.title}`,
+        `Document ID: ${document.id}`,
+        `Role: ${role}`,
+        `Status: ${status}`,
+        isIncluded
+          ? "Prompt context: included with excerpt"
+          : isReady
+            ? "Prompt context: ready but omitted by budget"
+            : "Prompt context: manifest only until extraction succeeds",
+        document.error ? `Error: ${compact(document.error, 180)}` : "",
+      ]
+        .filter(Boolean)
+        .join(" | ");
+    }),
+  ]
+    .filter(Boolean)
+    .join("\n");
+
   const documentIndex = [
     `Ready documents in active book: ${readyDocuments.length}`,
     readyDocuments.length > contextDocuments.length
@@ -143,7 +233,7 @@ export const buildBrainDocumentContext = (
     .filter(Boolean)
     .join("\n");
 
-  return [
+  const readyExcerptContext = [
     "### Active Book Document Contexts",
     documentIndex,
     ...contextDocuments.map((document, index) => {
@@ -165,7 +255,24 @@ export const buildBrainDocumentContext = (
         .filter(Boolean)
         .join("\n");
     }),
-  ].join("\n\n");
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const context = [documentManifest, readyExcerptContext]
+    .filter(Boolean)
+    .join("\n\n");
+
+  return {
+    context,
+    documentIds,
+    readyDocumentIds,
+    contextDocumentIds,
+    documentCount: documents.length,
+    readyDocumentCount: readyDocuments.length,
+    unreadyDocumentCount,
+    omittedReadyDocumentCount,
+  };
 };
 
 export const assembleBrainContextSections = ({
@@ -238,6 +345,11 @@ export const createBrainContextMemoryEventInput = (
     activeBookTitle: packet.activeBookTitle,
     documentCount: packet.documentCount,
     documentIds: packet.documentIds,
+    readyDocumentCount: packet.readyDocumentCount,
+    readyDocumentIds: packet.readyDocumentIds,
+    contextDocumentIds: packet.contextDocumentIds,
+    unreadyDocumentCount: packet.unreadyDocumentCount,
+    omittedReadyDocumentCount: packet.omittedReadyDocumentCount,
     rawContextChars: packet.rawContextChars,
     memoryContextChars: packet.memoryContextChars,
     activeBookContextChars: packet.activeBookContextChars,
@@ -287,9 +399,10 @@ export const buildBrainContextPacket = async (
     }
   }
 
-  const documentContext = buildBrainDocumentContext(documents, {
+  const documentReport = buildBrainDocumentContextReport(documents, {
     activeDocumentId,
   });
+  const documentContext = documentReport.context;
   const interactionContext = buildTutorInteractionContext(
     createTutorInteractionSnapshot({
       ...input.interaction,
@@ -317,8 +430,13 @@ export const buildBrainContextPacket = async (
     activeBookId,
     activeBookTitle,
     activeDocumentId,
-    documentIds: documents.map((document) => document.id).filter(Boolean),
-    documentCount: documents.length,
+    documentIds: documentReport.documentIds,
+    readyDocumentIds: documentReport.readyDocumentIds,
+    contextDocumentIds: documentReport.contextDocumentIds,
+    documentCount: documentReport.documentCount,
+    readyDocumentCount: documentReport.readyDocumentCount,
+    unreadyDocumentCount: documentReport.unreadyDocumentCount,
+    omittedReadyDocumentCount: documentReport.omittedReadyDocumentCount,
     context,
     rawContext,
     contextChars: context.length,

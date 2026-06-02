@@ -266,6 +266,26 @@ const stringMetadataValue = (
   return typeof value === "string" && value.trim() ? value.trim() : "";
 };
 
+const numberMetadataValue = (
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+) => {
+  const value = metadata?.[key];
+  const numeric = Number(value || 0);
+  return Number.isFinite(numeric) ? Math.max(0, Math.round(numeric)) : 0;
+};
+
+const stringListMetadataValue = (
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+) =>
+  Array.isArray(metadata?.[key])
+    ? (metadata?.[key] as unknown[])
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.trim())
+        .filter(Boolean)
+    : [];
+
 const generatedNoteClaimSpanCoverageFor = (record: ArtifactRecord) => {
   if (record.artifactType !== "notes") return null;
   const localCitationIntegrity = objectRecord(
@@ -1808,22 +1828,77 @@ export function AdminView() {
                                       </div>
                                     </div>
                                   ))}
-                                  {timeline.memoryEvents.map((event) => (
-                                    <div
-                                      key={event.id}
-                                      className="rounded-xl border border-amber-100 bg-amber-50/60 px-3 py-2 text-[11px] text-amber-800"
-                                    >
-                                      Memory {event.status}: {event.eventType}
-                                      <div className="mt-1 text-[10px] font-mono text-amber-700/80">
-                                        {event.metadata?.agentLayer
-                                          ? `agent ${String(event.metadata.agentLayer)}`
-                                          : event.source}
-                                        {event.metadata?.rawContextChars
-                                          ? ` - raw ${String(event.metadata.rawContextChars)} chars`
-                                          : ""}
+                                  {timeline.memoryEvents.map((event) => {
+                                    const contextDocumentIds =
+                                      stringListMetadataValue(
+                                        event.metadata,
+                                        "contextDocumentIds",
+                                      );
+                                    const documentCount = numberMetadataValue(
+                                      event.metadata,
+                                      "documentCount",
+                                    );
+                                    const readyDocumentCount =
+                                      numberMetadataValue(
+                                        event.metadata,
+                                        "readyDocumentCount",
+                                      );
+                                    const unreadyDocumentCount =
+                                      numberMetadataValue(
+                                        event.metadata,
+                                        "unreadyDocumentCount",
+                                      );
+                                    const omittedReadyDocumentCount =
+                                      numberMetadataValue(
+                                        event.metadata,
+                                        "omittedReadyDocumentCount",
+                                      );
+                                    return (
+                                      <div
+                                        key={event.id}
+                                        className="rounded-xl border border-amber-100 bg-amber-50/60 px-3 py-2 text-[11px] text-amber-800"
+                                      >
+                                        Memory {event.status}: {event.eventType}
+                                        <div className="mt-1 text-[10px] font-mono text-amber-700/80">
+                                          {event.metadata?.agentLayer
+                                            ? `agent ${String(event.metadata.agentLayer)}`
+                                            : event.source}
+                                          {event.metadata?.rawContextChars
+                                            ? ` - raw ${String(event.metadata.rawContextChars)} chars`
+                                            : ""}
+                                        </div>
+                                        {event.eventType ===
+                                          "brain_context_injected" &&
+                                          documentCount > 0 && (
+                                            <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-mono text-amber-700">
+                                              <span className="rounded-full border border-amber-200 bg-white/70 px-2 py-0.5">
+                                                PDFs {documentCount}
+                                              </span>
+                                              <span className="rounded-full border border-amber-200 bg-white/70 px-2 py-0.5">
+                                                ready {readyDocumentCount}
+                                              </span>
+                                              <span className="rounded-full border border-amber-200 bg-white/70 px-2 py-0.5">
+                                                excerpted{" "}
+                                                {contextDocumentIds.length}
+                                              </span>
+                                              {unreadyDocumentCount > 0 && (
+                                                <span className="rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-orange-700">
+                                                  pending or failed{" "}
+                                                  {unreadyDocumentCount}
+                                                </span>
+                                              )}
+                                              {omittedReadyDocumentCount >
+                                                0 && (
+                                                <span className="rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-orange-700">
+                                                  omitted ready{" "}
+                                                  {omittedReadyDocumentCount}
+                                                </span>
+                                              )}
+                                            </div>
+                                          )}
                                       </div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                                   {timeline.retrievalEvents.map((event) => (
                                     <div
                                       key={event.id}

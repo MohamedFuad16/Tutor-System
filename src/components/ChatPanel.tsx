@@ -352,6 +352,11 @@ type VoiceStudyContextPayload = {
   documentContextChars: number;
   documentCount: number;
   documentIds: string[];
+  readyDocumentCount: number;
+  readyDocumentIds: string[];
+  contextDocumentIds: string[];
+  unreadyDocumentCount: number;
+  omittedReadyDocumentCount: number;
   contextCompacted: boolean;
 };
 
@@ -3133,6 +3138,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       documentContextChars: packet.documentContextChars,
       documentCount: packet.documentCount,
       documentIds: packet.documentIds,
+      readyDocumentCount: packet.readyDocumentCount,
+      readyDocumentIds: packet.readyDocumentIds,
+      contextDocumentIds: packet.contextDocumentIds,
+      unreadyDocumentCount: packet.unreadyDocumentCount,
+      omittedReadyDocumentCount: packet.omittedReadyDocumentCount,
       contextCompacted: packet.compacted,
     };
   }, [
@@ -4189,6 +4199,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             documentId: activeDocumentId,
             documentCount: voiceContextPayload.documentCount,
             documentIds: voiceContextPayload.documentIds,
+            readyDocumentCount: voiceContextPayload.readyDocumentCount,
+            readyDocumentIds: voiceContextPayload.readyDocumentIds,
+            contextDocumentIds: voiceContextPayload.contextDocumentIds,
+            unreadyDocumentCount: voiceContextPayload.unreadyDocumentCount,
+            omittedReadyDocumentCount:
+              voiceContextPayload.omittedReadyDocumentCount,
             memoryContextChars: voiceContextPayload.memoryContextChars,
             activeBookContextChars: voiceContextPayload.activeBookContextChars,
             documentContextChars: voiceContextPayload.documentContextChars,
@@ -4324,11 +4340,26 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             activeDocumentId: activeDocumentId || "",
             documentIds: voiceContextPayload?.documentIds || [],
             documentCount: voiceContextPayload?.documentCount || 0,
+            readyDocumentIds: voiceContextPayload?.readyDocumentIds || [],
+            readyDocumentCount: voiceContextPayload?.readyDocumentCount || 0,
+            contextDocumentIds: voiceContextPayload?.contextDocumentIds || [],
+            unreadyDocumentCount:
+              voiceContextPayload?.unreadyDocumentCount || 0,
+            omittedReadyDocumentCount:
+              voiceContextPayload?.omittedReadyDocumentCount || 0,
             studyContextChars: voiceContextPayload?.studyContextChars || 0,
             studyContextMetadata: {
               mode: "voice",
               agentLayer: "voice_realtime",
               documentIds: voiceContextPayload?.documentIds || [],
+              readyDocumentIds: voiceContextPayload?.readyDocumentIds || [],
+              contextDocumentIds:
+                voiceContextPayload?.contextDocumentIds || [],
+              readyDocumentCount: voiceContextPayload?.readyDocumentCount || 0,
+              unreadyDocumentCount:
+                voiceContextPayload?.unreadyDocumentCount || 0,
+              omittedReadyDocumentCount:
+                voiceContextPayload?.omittedReadyDocumentCount || 0,
               contextCompacted: voiceContextPayload?.contextCompacted || false,
               rawContextChars: voiceContextPayload?.rawContextChars || 0,
               memoryContextChars: voiceContextPayload?.memoryContextChars || 0,
@@ -4839,6 +4870,21 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           requestId: chatRequestId,
           currentPageImage,
           memoryContext: requestMemoryContext,
+          brainContextMetadata: {
+            documentIds: brainContextPacket.documentIds,
+            readyDocumentIds: brainContextPacket.readyDocumentIds,
+            contextDocumentIds: brainContextPacket.contextDocumentIds,
+            documentCount: brainContextPacket.documentCount,
+            readyDocumentCount: brainContextPacket.readyDocumentCount,
+            unreadyDocumentCount: brainContextPacket.unreadyDocumentCount,
+            omittedReadyDocumentCount:
+              brainContextPacket.omittedReadyDocumentCount,
+            rawContextChars: brainContextPacket.rawContextChars,
+            memoryContextChars: brainContextPacket.memoryContextChars,
+            activeBookContextChars: brainContextPacket.activeBookContextChars,
+            documentContextChars: brainContextPacket.documentContextChars,
+            contextCompacted: brainContextPacket.compacted,
+          },
           aiModel,
           customPrompt: systemPrompt,
           runtimeSettings: brainRuntimeSettings,

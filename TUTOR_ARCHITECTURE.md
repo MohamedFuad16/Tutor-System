@@ -128,11 +128,14 @@ mastery/BKT knowledge, and saving the previous/next values in `correctionState`.
 
 `src/memory/brain.context.ts` is the shared local context packet builder for
 typed chat and live voice. It combines semantic memory retrieval, active-book
-summary, a balanced index plus excerpts from multiple ready PDFs, and
-interaction timing state, then records a `brain_context_injected` memory event
-with the same request id used by retrieval, model, and tool ledgers. Voice
-packets prioritize active-book and multi-document context before long memory
-when the live prompt must be compacted.
+summary, an active-book PDF manifest, balanced excerpts from multiple ready
+PDFs, and interaction timing state, then records a `brain_context_injected`
+memory event with the same request id used by retrieval, model, and tool
+ledgers. The packet metadata records added, ready, excerpted, pending/failed,
+and omitted ready PDFs so Admin can inspect whether chat or voice saw more than
+the document currently on screen. Voice packets prioritize active-book and
+multi-document context before long memory when the live prompt must be
+compacted.
 
 ## 6. Core Views
 
@@ -148,8 +151,8 @@ documents through the right extraction branch.
 `ChatPanel` streams tutor output via SSE, renders Markdown and Mermaid, supports
 source-material-first answering, handles web-search events, and manages TTS and
 voice flows. Chat and voice both ask the shared brain-context packet builder for
-local memory, active-book, balanced multi-PDF document, and interaction context
-before the model or voice agent runs. Live voice uses a dark audio-reactive stage, grouped voice-session
+local memory, active-book, active-book PDF manifest, balanced multi-PDF document
+excerpts, and interaction context before the model or voice agent runs. Live voice uses a dark audio-reactive stage, grouped voice-session
 transcripts, typed-turn injection, Deepgram websocket usage events, local
 client-side tools, and a local voice-agent event ledger for Admin. Voice can call
 `look_at_current_page` for current-page, visible-diagram, screen, and reading
@@ -186,6 +189,8 @@ network access. Use the Deepgram provider in
   memory events, retrieval events, tool jobs, voice-agent lifecycle events,
   evidence/mastery ledgers, correction
   controls, source artifacts, and beta diagnostics.
+  Brain-context rows surface document counts for added, ready, excerpted,
+  pending/failed, and omitted PDFs.
 - Beta Diagnostics includes a brain-flow coverage verifier. It checks local
   ledgers for chat context injection, voice context injection, request-id
   correlation across context/retrieval/model rows, chat and voice foreground

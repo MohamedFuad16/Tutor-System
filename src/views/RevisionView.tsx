@@ -2343,7 +2343,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Brain context packet",
         detail:
-          "Typed chat and live voice share one context builder for memory, active-book summary, balanced excerpts from multiple ready PDFs, and interaction timing before the foreground agent answers.",
+          "Typed chat and live voice share one context builder for memory, active-book summary, a PDF manifest, balanced excerpts from multiple ready PDFs, and interaction timing before the foreground agent answers. Admin chips should show added, ready, excerpted, pending/failed, and omitted PDF counts for that packet.",
       },
       {
         title: "Brain-flow coverage",

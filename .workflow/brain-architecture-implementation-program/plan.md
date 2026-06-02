@@ -86,3 +86,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   summary-preview to source-preview matcher, surface coverage in Admin, refresh
   affected architecture/design guides, regenerate affected stored audio, verify,
   commit, and push.
+- ABJ: Active-book PDF manifest context. Make shared typed-chat and live-voice
+  packets include an inspectable active-book PDF manifest, ready/excerpted/
+  pending/failed/omitted counts, server activity metadata, and Admin request
+  timeline chips so multiple PDFs stay visible beyond the PDF on screen.

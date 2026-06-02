@@ -3353,3 +3353,87 @@ support before their scoped local integrity check can pass.
 - Run deliberate provider-key chat and voice turns when spending live model
   calls is in scope.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 57: Active-Book PDF Manifest Context
+
+## Scope
+
+Phase 57 tightens the shared typed-chat/live-voice brain-context packet so the
+active learning book's full PDF set remains visible to the foreground agent and
+to Admin. The slice focuses on local packet metadata and UI evidence; it does
+not spend provider-key chat or real Deepgram voice calls.
+
+## Graphify Context
+
+- `graphify query "ChatPanel multi PDF document context voice memory
+  orchestrator active book source materials" --budget 5000 --graph
+  graphify-out/graph.json` routed the slice through `ChatPanel.tsx`,
+  `StudyView.tsx`, `memory.orchestrator.ts`, `brain.context.ts`,
+  `longterm.memory.ts`, store, and tests.
+- `graphify path "buildBrainDocumentContext()" "ChatPanel()" --graph
+  graphify-out/graph.json` found the connected packet path through
+  `brain.context.ts` and `ChatPanel.tsx`.
+- `graphify query "AudioOverviewPlayer fallback local audio overview play button
+  RevisionView tutor book chapter audio" --budget 4000 --graph
+  graphify-out/graph.json` confirmed the single-player audio surface is
+  `StoredAudioOverview()` in `RevisionView.tsx`.
+
+## Integration Decisions
+
+- Added `buildBrainDocumentContextReport()` to emit an active-book PDF manifest,
+  ready excerpt context, and counts for added, ready, excerpted, pending/failed,
+  and omitted ready PDFs.
+- Kept non-ready PDFs visible as manifest-only rows instead of pretending they
+  have usable extracted text.
+- Added packet metadata fields for `readyDocumentIds`, `contextDocumentIds`,
+  `readyDocumentCount`, `unreadyDocumentCount`, and
+  `omittedReadyDocumentCount`.
+- Threaded the metadata through typed chat `/api/chat` requests, live voice
+  websocket auth, server system-activity rows, voice study-context activity, and
+  Admin request timeline chips.
+- Updated README, Tutor System Architecture, User Brain Architecture, the
+  built-in Tutor Architecture book, and App Design Language control patterns.
+- Confirmed the stored audio-overview UI still exposes one visible player and
+  hidden retry inside the same component, not a second play button.
+- Kept AWS/cloud synchronization intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- Workflow verifier: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 131 tests.
+- `npm run build`: passed.
+- `npm run audio:overview:dry-run`: passed, 25 present and 0 missing stored
+  guide assets.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the checkout has no `brain:postchange` script.
+- Browser QA confirmed Admin request timelines at `1440x1000` and `390x844`
+  rendered with no horizontal overflow. The in-app Browser read-only evaluation
+  context did not expose IndexedDB, so live seeded multi-PDF Admin chips remain
+  covered by focused tests instead of browser-seeded data.
+- Browser QA confirmed App Design Language / Local Beta Control Patterns at
+  `390x844` and `1440x1000` rendered the new PDF manifest copy with one visible
+  `Play` button, one hidden audio element, zero native controls, and no
+  horizontal overflow.
+- Screenshots saved as `ABJ-iab-admin-desktop.png`,
+  `ABJ-iab-admin-mobile.png`, and `ABJ-iab-app-design-desktop.png`.
+- `graphify update . --force`: passed, `978` nodes, `1707` edges, and `63`
+  communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `buildBrainDocumentContextReport()`,
+  `buildBrainContextPacket()`, `ChatPanel()`, `AdminRequestTimeline`, and
+  `AdminView()`.
+- `graphify path "buildBrainDocumentContextReport()" "AdminView()"` found a
+  four-hop path through `brain.context.ts`, `ChatPanel.tsx`, and `useStore`.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed-chat and real voice turns when spending live
+  provider calls is in scope.
+- Add a durable local background queue with retries and dead-letter review.
+- Add stronger semantic and document-wide grounding beyond compact saved
+  previews.
+- AWS/cloud synchronization remains out of scope until beta testing.

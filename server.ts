@@ -335,6 +335,45 @@ const safeActivityMetadata = (metadata?: Record<string, unknown>) => {
   return safe;
 };
 
+const objectMetadata = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+
+const compactStringList = (value: unknown, limit = 12) =>
+  Array.isArray(value)
+    ? value
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .slice(0, limit)
+    : [];
+
+const nonNegativeInteger = (value: unknown) => {
+  const next = Number(value || 0);
+  return Number.isFinite(next) ? Math.max(0, Math.round(next)) : 0;
+};
+
+const compactBrainContextMetadata = (value: unknown) => {
+  const metadata = objectMetadata(value);
+  return {
+    documentIds: compactStringList(metadata.documentIds),
+    readyDocumentIds: compactStringList(metadata.readyDocumentIds),
+    contextDocumentIds: compactStringList(metadata.contextDocumentIds),
+    documentCount: nonNegativeInteger(metadata.documentCount),
+    readyDocumentCount: nonNegativeInteger(metadata.readyDocumentCount),
+    unreadyDocumentCount: nonNegativeInteger(metadata.unreadyDocumentCount),
+    omittedReadyDocumentCount: nonNegativeInteger(
+      metadata.omittedReadyDocumentCount,
+    ),
+    rawContextChars: nonNegativeInteger(metadata.rawContextChars),
+    memoryContextChars: nonNegativeInteger(metadata.memoryContextChars),
+    activeBookContextChars: nonNegativeInteger(metadata.activeBookContextChars),
+    documentContextChars: nonNegativeInteger(metadata.documentContextChars),
+    contextCompacted: Boolean(metadata.contextCompacted),
+  };
+};
+
 const compactRuntimeSettings = (settings: BrainRuntimeSettings) => ({
   webSearchPolicy: settings.webSearchPolicy,
   toolIterationLimit: settings.toolIterationLimit,
@@ -1839,6 +1878,7 @@ CRITICAL RULES:
         messages,
         currentPageImage,
         memoryContext,
+        brainContextMetadata: rawBrainContextMetadata,
         aiModel,
         customPrompt,
         runtimeSettings: rawRuntimeSettings,
@@ -1850,6 +1890,9 @@ CRITICAL RULES:
       requestId = normalizeClientRequestId(clientRequestId) || requestId;
       const runtimeSettings = normalizeBrainRuntimeSettings(rawRuntimeSettings);
       const runtimeSettingsSnapshot = compactRuntimeSettings(runtimeSettings);
+      const brainContextMetadata = compactBrainContextMetadata(
+        rawBrainContextMetadata,
+      );
       runtimeSettingsForRun = runtimeSettingsSnapshot;
       const serperRuntimeKey =
         sanitizeApiKey(req.headers["x-serper-api-key"]) ||
@@ -1922,6 +1965,7 @@ CRITICAL RULES:
           hasCurrentPageImage: Boolean(currentPageImage),
           language: language || "en",
           runtimeSettings: runtimeSettingsSnapshot,
+          brainContext: brainContextMetadata,
         },
       });
       const sourceMaterialRequest =
@@ -1956,6 +2000,7 @@ CRITICAL RULES:
           messageCount: Array.isArray(messages) ? messages.length : 0,
           hasCurrentPageImage: Boolean(currentPageImage),
           language: language || "en",
+          brainContext: brainContextMetadata,
         },
       });
       if (memoryContext) {
@@ -1974,6 +2019,7 @@ CRITICAL RULES:
             explicitWebSearch,
             requestedWebSearch,
             runtimeSettings: runtimeSettingsSnapshot,
+            brainContext: brainContextMetadata,
           },
         });
       }
@@ -3544,6 +3590,9 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             if (clientRequestId) {
               voiceRequestId = clientRequestId;
             }
+            const studyContextMetadata = objectMetadata(
+              authPayload.studyContextMetadata,
+            );
             startVoiceSession(
               sanitizeApiKey(authPayload.openRouterKey),
               authPayload.language || language,
@@ -3571,8 +3620,43 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                       .slice(0, 12)
                   : [],
                 documentCount: Number(authPayload.documentCount || 0),
+                readyDocumentIds: compactStringList(
+                  authPayload.readyDocumentIds ||
+                    studyContextMetadata.readyDocumentIds,
+                ),
+                readyDocumentCount: nonNegativeInteger(
+                  authPayload.readyDocumentCount ??
+                    studyContextMetadata.readyDocumentCount,
+                ),
+                contextDocumentIds: compactStringList(
+                  authPayload.contextDocumentIds ||
+                    studyContextMetadata.contextDocumentIds,
+                ),
+                unreadyDocumentCount: nonNegativeInteger(
+                  authPayload.unreadyDocumentCount ??
+                    studyContextMetadata.unreadyDocumentCount,
+                ),
+                omittedReadyDocumentCount: nonNegativeInteger(
+                  authPayload.omittedReadyDocumentCount ??
+                    studyContextMetadata.omittedReadyDocumentCount,
+                ),
                 clientStudyContextChars: Number(
                   authPayload.studyContextChars || 0,
+                ),
+                rawContextChars: nonNegativeInteger(
+                  studyContextMetadata.rawContextChars,
+                ),
+                memoryContextChars: nonNegativeInteger(
+                  studyContextMetadata.memoryContextChars,
+                ),
+                activeBookContextChars: nonNegativeInteger(
+                  studyContextMetadata.activeBookContextChars,
+                ),
+                documentContextChars: nonNegativeInteger(
+                  studyContextMetadata.documentContextChars,
+                ),
+                contextCompacted: Boolean(
+                  studyContextMetadata.contextCompacted,
                 ),
                 clientRequestId: clientRequestId || undefined,
               },
