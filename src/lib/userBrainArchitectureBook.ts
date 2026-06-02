@@ -43,7 +43,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 ## What This Is Not
 
 - Not silent fine-tuning after every conversation.
-- Not a claim that model summaries can change mastery by themselves.
+- Not a claim that model summaries can change mastery or durable learner confidence by themselves.
 - Not cloud production architecture yet. AWS and tenant isolation remain deferred until beta testing.`,
   },
   {
@@ -73,7 +73,7 @@ The local beta rule is intentionally conservative: generated notes, flashcards, 
 
 ## Current Enforcement
 
-- Model summaries can add evidence rows, but cannot raise mastery.
+- Model summaries can add evidence rows, but cannot raise mastery or durable learner confidence.
 - Flashcard reviews can write BKT evidence only when a real concept id exists.
 - Generated learning notes write \`ArtifactRecord\` rows, save source-span preview anchors when document context is present, and immediately run the local generated-note provenance verifier when the entry/book/conversation anchors are coherent.
 - Generated flashcards and built-in chapter audio guide manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states until Admin or another local caller runs their verifier.
@@ -97,7 +97,7 @@ Useful teaching states:
 | Detect misconception | Compare answer to known weak spots. | Misconception candidate with source context. |
 | Repair explanation | Re-teach in a different style. | Remediation event. |
 | Schedule recall | Prepare flashcards or review prompts. | Flashcard rows and due dates. |
-| Update mastery | Change learner score. | Only from validated evidence. |
+| Update mastery/confidence | Change durable learner score. | Only from validated evidence. |
 
 Soft signals can shape the live lesson: hesitation, repeated questions, selected page context, voice state, or confusion markers can change the next explanation. They should not silently become permanent truth.
 

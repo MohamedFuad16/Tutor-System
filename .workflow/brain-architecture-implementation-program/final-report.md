@@ -2452,3 +2452,76 @@ all exist in local evidence before the flow is called ready.
   especially around evidence-gated state transitions and background memory
   behavior.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 45: Model Summary Confidence Gate
+
+## Scope
+
+Phase 45 closes the remaining local learner-confidence drift in the background
+memory path. Earlier work kept model summaries from raising mastery; this phase
+applies the same conservative boundary to durable learner confidence while
+keeping proposed confidence visible in evidence and memory metadata.
+
+## Graphify Context
+
+- Graphify routed this slice through `MemoryOrchestrator`,
+  `updateLearningBookFromConversation()`, `addOrUpdateConcept()`,
+  `confidenceFromModelSummary()`, `gateModelSummaryMastery()`,
+  `recordModelSummaryEvidence()`, and `evidence.mastery.ts`.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+- `graphify path "confidenceFromModelSummary()" ".updateLearningBookFromConversation()"` found
+  a direct call edge.
+- `graphify path "confidenceFromModelSummary()" ".addOrUpdateConcept()"` found
+  a direct call edge.
+- A graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Integration Decisions
+
+- `confidenceFromModelSummary()` now preserves the current durable confidence
+  instead of accepting a model-summary proposal.
+- Learning-book concept updates now record `proposedConfidence`,
+  `acceptedConfidence`, and
+  `confidenceGate: "model_summary_no_confidence_increase"` in evidence and
+  memory metadata.
+- Chat graph concept updates use the same gate, so new model-summary concepts
+  start with accepted durable confidence `0`.
+- Documentation and built-in Library book copy now say that model summaries can
+  propose mastery/confidence and write rows, but cannot raise durable learner
+  mastery or confidence by themselves.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 102 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- Headless Chrome CDP QA via
+  `.workflow/brain-architecture-implementation-program/packets/phase45-browser-qa.mjs`:
+  desktop Revision rendered the User Brain Architecture confidence gate at
+  `1440x1000` with `scrollWidth` 1440 and zero captured browser errors.
+- Headless Chrome CDP QA at `390x844`: mobile Revision rendered the same
+  confidence gate with `scrollWidth` 390 and zero captured browser errors.
+- Browser QA screenshots were saved as
+  `XX-cdp-user-brain-confidence-desktop.png` and
+  `XX-cdp-user-brain-confidence-mobile.png`.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  888 nodes, 1530 edges, and 62 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `confidenceFromModelSummary()`,
+  `MemoryOrchestrator`, `gateModelSummaryMastery()`,
+  `updateLearningBookFromConversation()`, `addOrUpdateConcept()`,
+  `recordModelSummaryEvidence()`, and `evidence.mastery.ts`.
+
+## Remaining Work
+
+- Populate real successful chat and voice flow evidence in the browser with
+  deliberate provider-key spending when that is in scope.
+- Continue tightening validated evidence paths so durable confidence can move
+  from recall, quiz, correction, and BKT-backed learner evidence rather than
+  model summaries.
+- AWS/cloud synchronization remains out of scope until beta testing.

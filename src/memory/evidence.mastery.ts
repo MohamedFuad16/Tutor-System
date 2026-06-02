@@ -40,12 +40,8 @@ export const gateModelSummaryMastery = (
 
 export const confidenceFromModelSummary = (
   currentConfidence: unknown,
-  proposedConfidence: unknown,
-) => {
-  const current = clamp01(currentConfidence, 0);
-  const proposed = clamp01(proposedConfidence, current);
-  return Math.max(0, Math.min(1, proposed));
-};
+  _proposedConfidence: unknown,
+) => clamp01(currentConfidence, 0);
 
 export const confidenceFromUnderstandingDelta = (
   currentConfidence: unknown,

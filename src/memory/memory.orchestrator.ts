@@ -1,7 +1,6 @@
 import { generateEmbedding, cosineSimilarity } from "./memory.embeddings";
 import {
   confidenceFromModelSummary,
-  confidenceFromUnderstandingDelta,
   gateModelSummaryMastery,
 } from "./evidence.mastery";
 import { recordModelSummaryEvidence } from "./evidence.ledger";
@@ -576,7 +575,7 @@ export class MemoryOrchestrator {
           concept.mastery,
         ),
         confidence: confidenceFromModelSummary(
-          existing?.confidence ?? 0.35,
+          existing?.confidence ?? 0,
           concept.confidence,
         ),
         parentConcepts: mergeUnique(
@@ -618,8 +617,11 @@ export class MemoryOrchestrator {
         summary: nextConcept.summary,
         confidence: nextConcept.confidence,
         metadata: {
+          acceptedConfidence: nextConcept.confidence,
           proposedMastery: concept.mastery,
+          proposedConfidence: concept.confidence,
           acceptedMastery: nextConcept.mastery,
+          confidenceGate: "model_summary_no_confidence_increase",
           masteryGate: "model_summary_no_mastery_increase",
         },
       });
@@ -638,7 +640,9 @@ export class MemoryOrchestrator {
         retentionPolicy: "local_indexeddb",
         metadata: {
           acceptedMastery: nextConcept.mastery,
+          acceptedConfidence: nextConcept.confidence,
           childConcepts: nextConcept.childConcepts,
+          confidenceGate: "model_summary_no_confidence_increase",
           conceptName: nextConcept.name,
           evidenceCount: nextConcept.evidence.length,
           fallback: update.model === "local-session-fallback",
@@ -834,7 +838,7 @@ export class MemoryOrchestrator {
         existing.mastery,
         understandingDelta,
       );
-      existing.confidence = confidenceFromUnderstandingDelta(
+      existing.confidence = confidenceFromModelSummary(
         existing.confidence,
         understandingDelta,
       );
@@ -853,7 +857,10 @@ export class MemoryOrchestrator {
         metadata: {
           understandingDelta,
           sourcePage,
+          proposedConfidence: understandingDelta,
+          acceptedConfidence: existing.confidence,
           acceptedMastery: existing.mastery,
+          confidenceGate: "model_summary_no_confidence_increase",
           masteryGate: "model_summary_no_mastery_increase",
         },
       });
@@ -864,7 +871,7 @@ export class MemoryOrchestrator {
         name,
         description,
         mastery: 0,
-        confidence: confidenceFromUnderstandingDelta(0, understandingDelta),
+        confidence: confidenceFromModelSummary(0, understandingDelta),
 
         // Phase 5 defaults
         p_learn: 0.2,
@@ -897,7 +904,10 @@ export class MemoryOrchestrator {
         metadata: {
           understandingDelta,
           sourcePage,
+          proposedConfidence: understandingDelta,
+          acceptedConfidence: newConcept.confidence,
           acceptedMastery: newConcept.mastery,
+          confidenceGate: "model_summary_no_confidence_increase",
           masteryGate: "model_summary_no_mastery_increase",
         },
       });
@@ -916,8 +926,10 @@ export class MemoryOrchestrator {
         retentionPolicy: "local_indexeddb",
         metadata: {
           acceptedMastery: savedConcept.mastery,
+          acceptedConfidence: savedConcept.confidence,
           action,
           conceptName: savedConcept.name,
+          confidenceGate: "model_summary_no_confidence_increase",
           masteryGate: "model_summary_no_mastery_increase",
           revisionCount: savedConcept.revisionCount,
           sourcePage,
@@ -931,6 +943,7 @@ export class MemoryOrchestrator {
       conceptName: name,
       understandingDelta,
       sourcePage,
+      confidenceGate: "model_summary_no_confidence_increase",
       masteryGate: "model_summary_no_mastery_increase",
     });
   }

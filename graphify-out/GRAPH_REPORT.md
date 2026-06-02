@@ -1,16 +1,16 @@
 # Graph Report - LearningAI  (2026-06-02)
 
 ## Corpus Check
-- 87 files · ~145,843 words
+- 87 files · ~145,959 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 888 nodes · 1529 edges · 62 communities (48 shown, 14 thin omitted)
+- 888 nodes · 1530 edges · 62 communities (48 shown, 14 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b79ef1f5`
+- Built from commit: `4cf98f81`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -104,7 +104,7 @@
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
-Nodes (53): compactSummary(), createLedgerId(), createMasteryDeltaRecords(), createModelSummaryEvidenceRecord(), MasteryDeltaInput, ModelSummaryEvidenceInput, recordMasteryDelta(), recordModelSummaryEvidence() (+45 more)
+Nodes (51): compactSummary(), createLedgerId(), createMasteryDeltaRecords(), createModelSummaryEvidenceRecord(), MasteryDeltaInput, ModelSummaryEvidenceInput, recordMasteryDelta(), recordModelSummaryEvidence() (+43 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.03
@@ -156,7 +156,7 @@ Nodes (7): CognitiveLoadMonitor, CognitiveLoadState, IllusionDetector, db, Prere
 
 ### Community 13 - "Community 13"
 Cohesion: 0.12
-Nodes (16): BetaBrainFlowCoverage, BetaBrainFlowLedgerInput, BetaBrainFlowSignal, BetaDiagnosticItem, BetaDiagnosticOverallStatus, BetaDiagnosticsExportInput, BetaDiagnosticsInput, BetaDiagnosticsSnapshot (+8 more)
+Nodes (17): BetaBrainFlowCoverage, BetaBrainFlowLedgerInput, BetaBrainFlowSignal, BetaDiagnosticItem, BetaDiagnosticOverallStatus, BetaDiagnosticsExportInput, BetaDiagnosticsInput, BetaDiagnosticsSnapshot (+9 more)
 
 ### Community 14 - "Community 14"
 Cohesion: 0.11
@@ -195,12 +195,12 @@ Cohesion: 0.25
 Nodes (13): archiveChatSnapshot(), readChatArchives(), writeChatArchives(), chatTitleFromMessageSet(), flattenChatMessagesForPrompt(), hasLearnerChatTurn(), hasText(), isMeaningfulChatMessage() (+5 more)
 
 ### Community 23 - "Community 23"
-Cohesion: 0.28
-Nodes (12): chooseFlashcardConcept(), compact(), containsConceptPhrase(), createFlashcardForStorage(), ensurePersistentConceptForLearningBookConcept(), FlashcardConceptResolution, FlashcardStorageContext, GeneratedFlashcardInput (+4 more)
+Cohesion: 0.23
+Nodes (14): chooseFlashcardConcept(), compact(), containsConceptPhrase(), createFlashcardForStorage(), ensurePersistentConceptForLearningBookConcept(), FlashcardConceptResolution, FlashcardStorageContext, GeneratedFlashcardInput (+6 more)
 
 ### Community 24 - "Community 24"
-Cohesion: 0.17
-Nodes (10): ArtifactRecord, BookChatThread, BrainDatabase, ConversationInteraction, LearningBookConcept, LearningChapter, LearningEntry, Misconception (+2 more)
+Cohesion: 0.18
+Nodes (9): ArtifactRecord, BookChatThread, BrainDatabase, ConversationInteraction, LearningChapter, LearningEntry, Misconception, SessionMemoryRecord (+1 more)
 
 ### Community 25 - "Community 25"
 Cohesion: 0.2
@@ -219,8 +219,8 @@ Cohesion: 0.24
 Nodes (9): BRAIN_RUNTIME_SETTING_LIMITS, BrainRuntimeSettings, BrainWebSearchPolicy, clampInteger(), DEFAULT_BRAIN_RUNTIME_SETTINGS, normalizeBrainRuntimeSettings(), normalizeWebSearchPolicy(), WEB_SEARCH_POLICIES (+1 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.36
-Nodes (8): Flashcard, compact(), flashcardEvidenceConceptId(), FlashcardReviewEvidenceResult, flashcardReviewOutcome(), flashcardReviewSummary(), recordFlashcardReviewEvidence(), RevisionEvidenceEngine
+Cohesion: 0.43
+Nodes (7): compact(), flashcardEvidenceConceptId(), FlashcardReviewEvidenceResult, flashcardReviewOutcome(), flashcardReviewSummary(), recordFlashcardReviewEvidence(), RevisionEvidenceEngine
 
 ### Community 30 - "Community 30"
 Cohesion: 0.36
@@ -247,8 +247,8 @@ Cohesion: 0.33
 Nodes (5): buildVoiceFunctionCallResponse(), parseVoiceFunctionArguments(), VOICE_AGENT_TOOL_DEFINITIONS, VoiceAgentFunctionCall, voiceAgentToolNames
 
 ### Community 37 - "Community 37"
-Cohesion: 0.4
-Nodes (3): BKTAttemptOptions, BKTEngine, DEFAULT_BKT
+Cohesion: 0.38
+Nodes (4): BKTAttemptOptions, BKTEngine, DEFAULT_BKT, masteryFromEvidenceAttempt()
 
 ### Community 39 - "Community 39"
 Cohesion: 0.4

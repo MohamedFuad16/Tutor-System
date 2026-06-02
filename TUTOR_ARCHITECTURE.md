@@ -103,6 +103,11 @@ checked-in 3-4 minute audio guides, backed by
 `src/lib/chapterAudioOverviews.json` and the Deepgram regeneration script in
 `scripts/generate-user-brain-audio-overviews.mjs`.
 
+Model summaries can propose concept mastery and confidence, but local learner
+mastery and durable learner confidence stay gated. Model-summary paths store
+accepted values and gate labels in evidence/memory metadata instead of raising
+those learner-state fields.
+
 `src/memory/brain.context.ts` is the shared local context packet builder for
 typed chat and live voice. It combines semantic memory retrieval, active-book
 summary, ready document excerpts, and interaction timing state, then records a

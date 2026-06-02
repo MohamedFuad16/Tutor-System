@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  confidenceFromModelSummary,
   confidenceFromUnderstandingDelta,
   gateModelSummaryMastery,
   isDirectRecallEvidence,
@@ -16,6 +17,11 @@ import {
 test("model summaries cannot raise mastery", () => {
   assert.equal(gateModelSummaryMastery(0.2, 0.95), 0.2);
   assert.equal(gateModelSummaryMastery(undefined, 0.75), 0);
+});
+
+test("model summaries cannot raise learner confidence", () => {
+  assert.equal(confidenceFromModelSummary(0.25, 0.95), 0.25);
+  assert.equal(confidenceFromModelSummary(undefined, 0.8), 0);
 });
 
 test("confidence can move separately from evidence-gated mastery", () => {
@@ -40,7 +46,13 @@ test("model-summary evidence records are durable but not mastery evidence", () =
       source: "chat_graph_update",
       summary: "Model noticed the learner discussed Bayes rule.",
       confidence: 0.7,
-      metadata: { proposedMastery: 0.9, acceptedMastery: 0.2 },
+      metadata: {
+        proposedMastery: 0.9,
+        acceptedMastery: 0.2,
+        proposedConfidence: 0.9,
+        acceptedConfidence: 0.2,
+        confidenceGate: "model_summary_no_confidence_increase",
+      },
     },
     123,
   );
@@ -49,6 +61,10 @@ test("model-summary evidence records are durable but not mastery evidence", () =
   assert.equal(event.verified, false);
   assert.equal(event.conceptId, "bayes");
   assert.equal(event.confidence, 0.7);
+  assert.equal(
+    event.metadata.confidenceGate,
+    "model_summary_no_confidence_increase",
+  );
 });
 
 test("mastery delta records link explicit evidence to BKT changes", () => {
