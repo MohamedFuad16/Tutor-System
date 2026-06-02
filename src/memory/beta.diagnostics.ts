@@ -1,3 +1,10 @@
+import type {
+  MemoryEvent,
+  ModelRun,
+  RetrievalEvent,
+  ToolJob,
+} from "./longterm.memory";
+
 export type BetaDiagnosticStatus = "ready" | "watch" | "blocked" | "deferred";
 
 export type BetaDiagnosticOverallStatus = "ready" | "needs_review" | "blocked";
@@ -38,8 +45,48 @@ export type BetaDiagnosticsInput = {
   masteryDeltas?: number;
   traceEvents?: number;
   webSearches?: number;
+  brainFlow?: BetaBrainFlowCoverage;
   runtimeSettings?: unknown;
   generatedAt?: string;
+};
+
+export type BetaBrainFlowSignal = {
+  id: string;
+  title: string;
+  ready: boolean;
+  count: number;
+  detail: string;
+};
+
+export type BetaBrainFlowCoverage = {
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  coveragePercent: number;
+  readySignals: number;
+  totalSignals: number;
+  failedRows: number;
+  chatContextInjections: number;
+  voiceContextInjections: number;
+  requestCorrelatedContextInjections: number;
+  requestCorrelatedRetrievalEvents: number;
+  requestCorrelatedModelRuns: number;
+  foregroundToolJobs: number;
+  backgroundMemoryEvents: number;
+  summary: string;
+  missingSignals: string[];
+  signals: BetaBrainFlowSignal[];
+};
+
+export type BetaBrainFlowLedgerInput = {
+  memoryEvents?: Pick<
+    MemoryEvent,
+    "eventType" | "status" | "metadata" | "timestamp"
+  >[];
+  retrievalEvents?: Pick<
+    RetrievalEvent,
+    "status" | "requestId" | "timestamp"
+  >[];
+  modelRuns?: Pick<ModelRun, "status" | "requestId" | "source" | "timestamp">[];
+  toolJobs?: Pick<ToolJob, "status" | "requestId" | "source" | "timestamp">[];
 };
 
 export type BetaDiagnosticsSnapshot = {
@@ -54,8 +101,9 @@ export type BetaDiagnosticsSnapshot = {
     deferred: number;
   };
   counts: Required<
-    Omit<BetaDiagnosticsInput, "runtimeSettings" | "generatedAt">
+    Omit<BetaDiagnosticsInput, "brainFlow" | "runtimeSettings" | "generatedAt">
   >;
+  brainFlow: BetaBrainFlowCoverage;
   runtimeSettings?: unknown;
   items: BetaDiagnosticItem[];
   outOfScope: string[];
@@ -104,11 +152,168 @@ const requiredCounts = (
 
 const item = (entry: BetaDiagnosticItem): BetaDiagnosticItem => entry;
 
+const objectRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const metadataString = (
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+) => {
+  const value = metadata?.[key];
+  return typeof value === "string" && value.trim() ? value : "";
+};
+
+const hasRequestId = (requestId: unknown) =>
+  typeof requestId === "string" && requestId.trim().length > 0;
+
+export const buildBrainFlowCoverageFromLedgers = ({
+  memoryEvents = [],
+  retrievalEvents = [],
+  modelRuns = [],
+  toolJobs = [],
+}: BetaBrainFlowLedgerInput = {}): BetaBrainFlowCoverage => {
+  const completedContextEvents = memoryEvents.filter(
+    (event) =>
+      event.eventType === "brain_context_injected" &&
+      event.status === "completed",
+  );
+  const chatContextInjections = completedContextEvents.filter((event) => {
+    const agentLayer = metadataString(event.metadata, "agentLayer");
+    const mode = metadataString(event.metadata, "mode");
+    return agentLayer === "chat_stream" || mode === "chat";
+  }).length;
+  const voiceContextInjections = completedContextEvents.filter((event) => {
+    const agentLayer = metadataString(event.metadata, "agentLayer");
+    const mode = metadataString(event.metadata, "mode");
+    return agentLayer === "voice_realtime" || mode === "voice";
+  }).length;
+  const requestCorrelatedContextInjections = completedContextEvents.filter(
+    (event) => hasRequestId(event.metadata?.requestId),
+  ).length;
+  const requestCorrelatedRetrievalEvents = retrievalEvents.filter(
+    (event) => event.status === "completed" && hasRequestId(event.requestId),
+  ).length;
+  const requestCorrelatedModelRuns = modelRuns.filter(
+    (run) =>
+      (run.status === "completed" || run.status === "fallback") &&
+      hasRequestId(run.requestId),
+  ).length;
+  const foregroundToolJobs = toolJobs.filter(
+    (job) =>
+      job.status === "completed" &&
+      hasRequestId(job.requestId) &&
+      ["chat_stream", "voice_agent"].includes(job.source || ""),
+  ).length;
+  const backgroundMemoryEvents = memoryEvents.filter(
+    (event) =>
+      event.status === "completed" &&
+      [
+        "interaction_recorded",
+        "learning_book_updated",
+        "learning_concept_updated",
+        "graph_concept_updated",
+      ].includes(event.eventType),
+  ).length;
+  const failedRows =
+    memoryEvents.filter((event) => event.status === "failed").length +
+    retrievalEvents.filter((event) => event.status === "failed").length +
+    modelRuns.filter((run) => ["blocked", "failed"].includes(run.status))
+      .length +
+    toolJobs.filter((job) => ["blocked", "failed"].includes(job.status)).length;
+
+  const signals: BetaBrainFlowSignal[] = [
+    {
+      id: "chat_context",
+      title: "Chat context injected",
+      ready: chatContextInjections > 0,
+      count: chatContextInjections,
+      detail:
+        "Typed chat has at least one durable brain_context_injected row from the shared context packet builder.",
+    },
+    {
+      id: "voice_context",
+      title: "Voice context injected",
+      ready: voiceContextInjections > 0,
+      count: voiceContextInjections,
+      detail:
+        "Live voice has at least one durable brain_context_injected row from the same packet boundary.",
+    },
+    {
+      id: "request_correlation",
+      title: "Request correlation",
+      ready:
+        requestCorrelatedContextInjections > 0 &&
+        requestCorrelatedRetrievalEvents > 0 &&
+        requestCorrelatedModelRuns > 0,
+      count:
+        requestCorrelatedContextInjections +
+        requestCorrelatedRetrievalEvents +
+        requestCorrelatedModelRuns,
+      detail:
+        "Context injection, retrieval, and model-run rows share request ids for Admin request timelines.",
+    },
+    {
+      id: "foreground_tools",
+      title: "Foreground tool calls",
+      ready: foregroundToolJobs > 0,
+      count: foregroundToolJobs,
+      detail:
+        "The visible tutor or voice agent has completed at least one request-correlated tool job.",
+    },
+    {
+      id: "background_memory",
+      title: "Background memory agent",
+      ready: backgroundMemoryEvents > 0,
+      count: backgroundMemoryEvents,
+      detail:
+        "The background learner-memory layer has stored interaction, book, concept, or graph update rows.",
+    },
+  ];
+  const readySignals = signals.filter((signal) => signal.ready).length;
+  const totalSignals = signals.length;
+  const missingSignals = signals
+    .filter((signal) => !signal.ready)
+    .map((signal) => signal.title);
+  const status =
+    failedRows > 0
+      ? "blocked"
+      : readySignals === totalSignals
+        ? "ready"
+        : "watch";
+
+  return {
+    status,
+    coveragePercent: Math.round((readySignals / totalSignals) * 100),
+    readySignals,
+    totalSignals,
+    failedRows,
+    chatContextInjections,
+    voiceContextInjections,
+    requestCorrelatedContextInjections,
+    requestCorrelatedRetrievalEvents,
+    requestCorrelatedModelRuns,
+    foregroundToolJobs,
+    backgroundMemoryEvents,
+    summary:
+      status === "ready"
+        ? "Chat, voice, retrieval, model, foreground tools, and background memory all have local evidence."
+        : status === "blocked"
+          ? `${failedRows} failed or blocked brain-flow rows need review before beta.`
+          : `Missing local evidence for ${missingSignals.join(", ")}.`,
+    missingSignals,
+    signals,
+  };
+};
+
 export const buildBetaDiagnosticsSnapshot = (
   input: BetaDiagnosticsInput,
   fallbackNow = new Date(),
 ): BetaDiagnosticsSnapshot => {
   const counts = requiredCounts(input);
+  const brainFlow =
+    input.brainFlow || buildBrainFlowCoverageFromLedgers({ memoryEvents: [] });
   const totalRows =
     counts.learningBooks +
     counts.mappedConcepts +
@@ -238,6 +443,26 @@ export const buildBetaDiagnosticsSnapshot = (
           : "Run active recall to populate mastery audit evidence.",
     }),
     item({
+      id: "brain_flow_coverage",
+      title: "Brain flow coverage",
+      status: brainFlow.status,
+      summary: `${brainFlow.coveragePercent}% local coverage: ${brainFlow.summary}`,
+      detail: brainFlow.missingSignals.join(", "),
+      count:
+        brainFlow.chatContextInjections +
+        brainFlow.voiceContextInjections +
+        brainFlow.requestCorrelatedRetrievalEvents +
+        brainFlow.requestCorrelatedModelRuns +
+        brainFlow.foregroundToolJobs +
+        brainFlow.backgroundMemoryEvents,
+      action:
+        brainFlow.status === "ready"
+          ? "Use this as the local beta smoke contract for chat, voice, foreground tools, and the background memory agent."
+          : brainFlow.status === "blocked"
+            ? "Open System Activity and request timelines, then fix failed context, retrieval, model, tool, or memory rows."
+            : "Run one typed chat turn, one voice turn, one tool action, and one learning-book update to complete local flow evidence.",
+    }),
+    item({
       id: "diagnostic_export",
       title: "Diagnostic export",
       status: totalRows > 0 ? "ready" : "watch",
@@ -273,6 +498,7 @@ export const buildBetaDiagnosticsSnapshot = (
       deferred,
     },
     counts,
+    brainFlow,
     runtimeSettings: input.runtimeSettings,
     items,
     outOfScope: [
@@ -283,11 +509,6 @@ export const buildBetaDiagnosticsSnapshot = (
     ],
   };
 };
-
-const objectRecord = (value: unknown): Record<string, unknown> | null =>
-  value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
 
 const correctionOverlayForRow = (row: unknown) => {
   const record = objectRecord(row);

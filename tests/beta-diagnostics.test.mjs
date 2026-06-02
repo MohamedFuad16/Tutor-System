@@ -1,8 +1,84 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-const { buildBetaDiagnosticsExport, buildBetaDiagnosticsSnapshot } =
-  await import("../.tmp-test/beta.diagnostics.mjs");
+const {
+  buildBetaDiagnosticsExport,
+  buildBetaDiagnosticsSnapshot,
+  buildBrainFlowCoverageFromLedgers,
+} = await import("../.tmp-test/beta.diagnostics.mjs");
+
+const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
+  memoryEvents: [
+    {
+      eventType: "brain_context_injected",
+      status: "completed",
+      timestamp: 1,
+      metadata: {
+        agentLayer: "chat_stream",
+        requestId: "chat-req-1",
+      },
+    },
+    {
+      eventType: "brain_context_injected",
+      status: "completed",
+      timestamp: 2,
+      metadata: {
+        agentLayer: "voice_realtime",
+        requestId: "voice-req-1",
+      },
+    },
+    {
+      eventType: "interaction_recorded",
+      status: "completed",
+      timestamp: 3,
+      metadata: {
+        requestId: "chat-req-1",
+      },
+    },
+    {
+      eventType: "learning_book_updated",
+      status: "completed",
+      timestamp: 4,
+      metadata: {
+        requestId: "chat-req-1",
+      },
+    },
+  ],
+  retrievalEvents: [
+    {
+      status: "completed",
+      requestId: "chat-req-1",
+      timestamp: 5,
+    },
+    {
+      status: "completed",
+      requestId: "voice-req-1",
+      timestamp: 6,
+    },
+  ],
+  modelRuns: [
+    {
+      status: "completed",
+      source: "chat_stream",
+      requestId: "chat-req-1",
+      timestamp: 7,
+    },
+    {
+      status: "completed",
+      source: "voice_agent",
+      requestId: "voice-req-1",
+      timestamp: 8,
+    },
+  ],
+  toolJobs: [
+    {
+      status: "completed",
+      source: "voice_agent",
+      requestId: "voice-req-1",
+      timestamp: 9,
+    },
+  ],
+});
 
 test("beta diagnostics mark clean local ledgers as export-ready while cloud stays deferred", () => {
   const snapshot = buildBetaDiagnosticsSnapshot(
@@ -22,6 +98,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
       evidenceEvents: 3,
       masteryDeltas: 1,
       traceEvents: 2,
+      brainFlow: completeBrainFlow,
       runtimeSettings: { webSearchPolicy: "source_first" },
     },
     new Date("2026-06-01T00:00:00.000Z"),
@@ -40,11 +117,96 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
     webSearchPolicy: "source_first",
   });
   assert.equal(snapshot.counts.propagatedCorrectionRows, 2);
+  assert.equal(snapshot.brainFlow.status, "ready");
   assert.match(
     snapshot.items.find((item) => item.id === "correction_control")?.summary ||
       "",
     /2 local rows/,
   );
+});
+
+test("brain flow coverage requires chat, voice, request ids, tools, and background memory", () => {
+  assert.equal(completeBrainFlow.status, "ready");
+  assert.equal(completeBrainFlow.coveragePercent, 100);
+  assert.deepEqual(completeBrainFlow.missingSignals, []);
+  assert.equal(
+    completeBrainFlow.signals.find((signal) => signal.id === "chat_context")
+      ?.ready,
+    true,
+  );
+  assert.equal(
+    completeBrainFlow.signals.find((signal) => signal.id === "voice_context")
+      ?.ready,
+    true,
+  );
+});
+
+test("brain flow coverage stays blocked when local flow rows fail", () => {
+  const coverage = buildBrainFlowCoverageFromLedgers({
+    memoryEvents: [
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 1,
+        metadata: {
+          agentLayer: "chat_stream",
+          requestId: "chat-req-1",
+        },
+      },
+      {
+        eventType: "memory_error",
+        status: "failed",
+        timestamp: 2,
+        metadata: {
+          requestId: "chat-req-1",
+        },
+      },
+    ],
+    retrievalEvents: [
+      {
+        status: "failed",
+        requestId: "chat-req-1",
+        timestamp: 3,
+      },
+    ],
+    modelRuns: [
+      {
+        status: "blocked",
+        source: "chat_stream",
+        requestId: "chat-req-1",
+        timestamp: 4,
+      },
+    ],
+    toolJobs: [
+      {
+        status: "blocked",
+        source: "chat_stream",
+        requestId: "chat-req-1",
+        timestamp: 5,
+      },
+    ],
+  });
+
+  assert.equal(coverage.status, "blocked");
+  assert.equal(coverage.failedRows, 4);
+  assert.ok(coverage.missingSignals.includes("Voice context injected"));
+  assert.ok(coverage.coveragePercent < 100);
+
+  const snapshot = buildBetaDiagnosticsSnapshot({
+    memoryEvents: 2,
+    retrievalEvents: 1,
+    failedRetrievalEvents: 1,
+    modelRuns: 1,
+    blockedOrFailedModelRuns: 1,
+    toolJobs: 1,
+    brainFlow: coverage,
+  });
+
+  const flowItem = snapshot.items.find(
+    (item) => item.id === "brain_flow_coverage",
+  );
+  assert.equal(flowItem?.status, "blocked");
+  assert.match(flowItem?.summary || "", /failed or blocked/);
 });
 
 test("beta diagnostics escalate failed model and retrieval rows", () => {

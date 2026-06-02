@@ -45,6 +45,7 @@ import { gsap } from "gsap";
 import { useStore } from "../store";
 import { useMotionPreference } from "../hooks/useMotionPreference";
 import {
+  buildBrainFlowCoverageFromLedgers,
   buildBetaDiagnosticsExport,
   buildBetaDiagnosticsSnapshot,
 } from "../memory/beta.diagnostics";
@@ -809,6 +810,12 @@ export function AdminView() {
     },
     {},
   );
+  const brainFlowCoverage = buildBrainFlowCoverageFromLedgers({
+    memoryEvents,
+    retrievalEvents,
+    modelRuns,
+    toolJobs,
+  });
   const betaDiagnosticsSnapshot = buildBetaDiagnosticsSnapshot({
     generatedAt: activityPayload?.generatedAt,
     learningBooks: learningBooks.length,
@@ -836,6 +843,7 @@ export function AdminView() {
     masteryDeltas: masteryDeltaCount,
     traceEvents: traceCount,
     webSearches: webUsage.requests,
+    brainFlow: brainFlowCoverage,
     runtimeSettings: brainRuntimeSettings,
   });
   const mappedConceptCount = learningBookConcepts.length;
@@ -3688,6 +3696,88 @@ export function AdminView() {
                           </div>
                         ))}
                       </div>
+                    </section>
+
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                            <BrainCircuit size={13} /> Brain Flow Coverage
+                          </div>
+                          <h3 className="mt-2 text-xl font-serif font-medium text-zinc-900">
+                            Chat, voice, tools, and memory proof
+                          </h3>
+                          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-500 font-serif">
+                            This local verifier looks across context-injection
+                            rows, retrieval rows, model runs, tool jobs, and
+                            background memory events. It proves the brain flow
+                            is wired in the browser ledger; it does not call
+                            cloud services or inspect private model internals.
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                            Coverage
+                          </div>
+                          <div className="mt-1 text-2xl font-semibold tabular-nums text-zinc-900">
+                            {betaDiagnosticsSnapshot.brainFlow.coveragePercent}%
+                          </div>
+                          <span
+                            className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(betaDiagnosticsSnapshot.brainFlow.status)}`}
+                          >
+                            {betaDiagnosticsSnapshot.brainFlow.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3 lg:grid-cols-5">
+                        {betaDiagnosticsSnapshot.brainFlow.signals.map(
+                          (signal) => (
+                            <article
+                              key={signal.id}
+                              className={`rounded-2xl border p-3 ${
+                                signal.ready
+                                  ? "border-green-200 bg-green-50"
+                                  : "border-zinc-200 bg-zinc-50"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                  {signal.title}
+                                </div>
+                                {signal.ready ? (
+                                  <ShieldCheck
+                                    size={14}
+                                    className="shrink-0 text-green-600"
+                                  />
+                                ) : (
+                                  <Clock
+                                    size={14}
+                                    className="shrink-0 text-zinc-400"
+                                  />
+                                )}
+                              </div>
+                              <div className="mt-2 text-xl font-semibold tabular-nums text-zinc-900">
+                                {signal.count}
+                              </div>
+                              <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-zinc-600 font-serif">
+                                {signal.detail}
+                              </p>
+                            </article>
+                          ),
+                        )}
+                      </div>
+
+                      {betaDiagnosticsSnapshot.brainFlow.missingSignals.length >
+                        0 && (
+                        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                          Missing local evidence:{" "}
+                          {betaDiagnosticsSnapshot.brainFlow.missingSignals.join(
+                            ", ",
+                          )}
+                          .
+                        </div>
+                      )}
                     </section>
 
                     <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">

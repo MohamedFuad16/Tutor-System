@@ -2323,6 +2323,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Typed chat and live voice share one context builder for memory, active-book summary, ready document excerpts, and interaction timing before the foreground agent answers.",
       },
       {
+        title: "Brain-flow coverage",
+        detail:
+          "Beta Diagnostics checks chat context, voice context, request correlation, foreground tools, and background memory rows as one local readiness proof instead of five disconnected counters.",
+      },
+      {
         title: "Voice agent timeline",
         detail:
           "Live voice mode records local session start, Deepgram settings, speaking/listening transitions, barge-in, transcript turns, and errors so the dark voice UI is debuggable from Admin.",

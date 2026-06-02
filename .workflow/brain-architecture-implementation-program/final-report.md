@@ -2376,3 +2376,79 @@ before the foreground agent answers.
   until chat mode, voice mode, tools, evidence, memory, retrieval, and Admin
   tuning are proven end to end.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 44: Brain Flow Coverage Verifier
+
+## Scope
+
+Phase 44 adds a local beta proof layer for the complete brain-flow story. The
+previous phase made typed chat and live voice share one context packet, but Beta
+Diagnostics still showed separate ledgers. This phase adds one conservative
+verifier that checks whether chat context injection, voice context injection,
+request correlation, foreground tool calls, and background learner-memory rows
+all exist in local evidence before the flow is called ready.
+
+## Graphify Context
+
+- Graphify routed this slice through `beta.diagnostics.ts`, `AdminView.tsx`,
+  `brain.context.ts`, `ChatPanel()`, `MemoryEvent`, `RetrievalEvent`,
+  `ModelRun`, and `ToolJob`.
+- The first graph refresh saw the temporary dev-server `server.mjs` bundle. The
+  stale `graphify-out` folder was moved to
+  `/private/tmp/learningai-graphify-clean.fhewU1/graphify-out`, then Graphify
+  rebuilt from the clean source tree.
+- Clean Graphify rebuild result: 888 nodes, 1529 edges, and 62 communities.
+- `graphify path "buildBrainFlowCoverageFromLedgers()" "AdminView()"` found a
+  direct call edge.
+- A graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes after
+  the clean rebuild.
+
+## Integration Decisions
+
+- Added `buildBrainFlowCoverageFromLedgers()` in
+  `src/memory/beta.diagnostics.ts`.
+- Added a `brain_flow_coverage` readiness item to Beta Diagnostics.
+- The verifier marks missing evidence as `watch` and failed/blocked local rows
+  as `blocked`; it marks `ready` only when the complete local flow has evidence.
+- Admin Beta Diagnostics now renders a Brain Flow Coverage panel with coverage
+  percent, signal counts, status, and missing-evidence copy.
+- The repository format gates now include `src/memory/beta.diagnostics.ts`.
+- README, Tutor System Architecture, the user-brain architecture book, the
+  built-in Tutor System Architecture Library JSON, and the App Design Language
+  pattern list now describe the verifier as a local beta proof, not a cloud or
+  hidden-model guarantee.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 101 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- Browser QA via
+  `.workflow/brain-architecture-implementation-program/packets/phase44-browser-qa.mjs`:
+  desktop Admin Beta rendered Brain Flow Coverage and missing-evidence state
+  with zero captured browser errors.
+- Browser QA at 390x844: mobile Admin Beta rendered Brain Flow Coverage with
+  `scrollWidth` 390 and zero captured browser errors.
+- Browser QA confirmed Revision rendered the App Design Library entry.
+- Browser QA screenshots were saved as
+  `WW-cdp-admin-beta-desktop.png` and `WW-cdp-admin-beta-mobile.png`.
+- `graphify update . --force`: clean regeneration succeeded after stale graph
+  artifacts were moved aside.
+- `npm run graphify:tree`: passed after the clean graph rebuild.
+- Graphify smoke query found `buildBrainFlowCoverageFromLedgers()`,
+  `beta.diagnostics.ts`, `AdminView()`, `MemoryEvent`, `RetrievalEvent`,
+  `ModelRun`, `ToolJob`, and `beta-diagnostics.test.mjs`.
+
+## Remaining Work
+
+- Populate real successful chat and voice flow evidence in the browser with
+  deliberate provider-key spending when that is in scope.
+- Continue tightening local learner-brain runtime parity against the book,
+  especially around evidence-gated state transitions and background memory
+  behavior.
+- AWS/cloud synchronization remains out of scope until beta testing.

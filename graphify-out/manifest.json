@@ -28,8 +28,8 @@
     "hash": "52ceec43881e19eafc68a807d65a67fa"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/beta-diagnostics.test.mjs": {
-    "mtime": 1780318985.1505053,
-    "hash": "fd78d818c81e1367d2deecccc8510121"
+    "mtime": 1780391756.6742077,
+    "hash": "98e1f982dc392582c4798e3bdc5b0a08"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/document-ingest.test.mjs": {
     "mtime": 1780146650.2664282,
@@ -168,8 +168,8 @@
     "hash": "0f77529b6365cb91cf75b6d2533c0abc"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/beta.diagnostics.ts": {
-    "mtime": 1780318985.1500745,
-    "hash": "22442927d9e4324c48180c229d9b49b7"
+    "mtime": 1780391916.1167655,
+    "hash": "33acb3c1071a8e0ba5d2ca637728c224"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/retrieval.events.ts": {
     "mtime": 1780386947.8736541,
@@ -300,8 +300,8 @@
     "hash": "ecb181ff82756860ebd6a34bcaf3b638"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/userBrainArchitectureBook.ts": {
-    "mtime": 1780390328.2428627,
-    "hash": "534a3d7b40d05cf57acfe8711c99d1e3"
+    "mtime": 1780391822.1007957,
+    "hash": "99eb82f2a796b9b17111422aa35bb241"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/brainRuntimeSettings.ts": {
     "mtime": 1780300316.6761577,
@@ -316,16 +316,16 @@
     "hash": "a17c12b9d7a12044f64b9aa057e221ff"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/RevisionView.tsx": {
-    "mtime": 1780390344.0497022,
-    "hash": "aa76b20cf44bfce0743fe836223bf9a6"
+    "mtime": 1780391859.6907694,
+    "hash": "5f857d0f788cfa83fdb0fa30591e0abf"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AnalyticsView.tsx": {
     "mtime": 1780285414.7910829,
     "hash": "e50d88f62d7d8cfd330de4cd2ff382ee"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AdminView.tsx": {
-    "mtime": 1780390192.5486455,
-    "hash": "8ef3516a9a3b11d18c9737c7090cea01"
+    "mtime": 1780391915.9726217,
+    "hash": "513154ab2ddaf374f336cbaffea4859d"
   },
   "/Users/mfuad16/Documents/LearningAI/src/store/index.ts": {
     "mtime": 1780378612.2948725,
@@ -344,16 +344,16 @@
     "hash": "bb37f2cb6388a248ff064b049483371d"
   },
   "/Users/mfuad16/Documents/LearningAI/README.md": {
-    "mtime": 1780390309.9277673,
-    "hash": "9dc938e345dcd9b4df871652244a75f0"
+    "mtime": 1780391806.3333611,
+    "hash": "64c9c40b29246f679c09790fe97fedf1"
   },
   "/Users/mfuad16/Documents/LearningAI/AGENTS.md": {
     "mtime": 1780338192.5483513,
     "hash": "d642a67e7461cadcc1cc05f28f1ee9db"
   },
   "/Users/mfuad16/Documents/LearningAI/TUTOR_ARCHITECTURE.md": {
-    "mtime": 1780390321.0937262,
-    "hash": "22f87b23e9cdf3e7061657f376d4e3c1"
+    "mtime": 1780391812.7841938,
+    "hash": "77521c7f88b92dc28d8e02e060f25bba"
   },
   "/Users/mfuad16/Documents/LearningAI/test_native.pdf": {
     "mtime": 1779965165.4411347,
