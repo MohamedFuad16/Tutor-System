@@ -72,6 +72,9 @@ export interface LearningBookUpdateInput {
   activeBookId?: string | null;
   activeDocumentId?: string | null;
   conversationId?: string;
+  requestId?: string;
+  mode?: "chat" | "voice" | "revision" | "admin";
+  agentLayer?: "chat_stream" | "voice_realtime";
   documentContexts?: Pick<
     LearningDocument,
     "id" | "title" | "classification" | "extractionMode" | "extractedText"
@@ -86,6 +89,17 @@ type RelevantContextOptions = {
   mode?: "chat" | "voice" | "revision" | "admin";
   activeDocumentId?: string | null;
   documentCount?: number;
+};
+
+type MemoryTraceContext = {
+  requestId?: string;
+  mode?: "chat" | "voice" | "revision" | "admin";
+  agentLayer?: "chat_stream" | "voice_realtime";
+  bookId?: string | null;
+  conversationId?: string;
+  documentId?: string | null;
+  toolCallId?: string;
+  source?: string;
 };
 
 interface LearningAgentConcept {
@@ -105,6 +119,13 @@ const compactText = (value: unknown, fallback = "") => {
   const text = String(value || fallback || "").trim();
   return text.replace(/\s+/g, " ").slice(0, 1800);
 };
+
+const memoryTraceMetadata = (context?: MemoryTraceContext) => ({
+  ...(context?.requestId ? { requestId: context.requestId } : {}),
+  ...(context?.mode ? { mode: context.mode } : {}),
+  ...(context?.agentLayer ? { agentLayer: context.agentLayer } : {}),
+  ...(context?.toolCallId ? { toolCallId: context.toolCallId } : {}),
+});
 
 const stripConversationArtifacts = (value: string) =>
   compactText(value)
@@ -357,6 +378,9 @@ export class MemoryOrchestrator {
       bookId?: string | null;
       conversationId?: string;
       documentId?: string | null;
+      requestId?: string;
+      mode?: "chat" | "voice" | "revision" | "admin";
+      agentLayer?: "chat_stream" | "voice_realtime";
     },
   ) {
     await this.initialization;
@@ -385,6 +409,9 @@ export class MemoryOrchestrator {
         bookId: context?.bookId || undefined,
         conversationId: context?.conversationId,
         documentId: context?.documentId || undefined,
+        requestId: context?.requestId,
+        mode: context?.mode,
+        agentLayer: context?.agentLayer,
         timestamp: Date.now(),
         userMessage,
         assistantMessage,
@@ -412,6 +439,7 @@ export class MemoryOrchestrator {
         ),
         retentionPolicy: "local_indexeddb",
         metadata: {
+          ...memoryTraceMetadata(context),
           assistantChars: assistantMessage.length,
           hasEmbedding: Boolean(embedding?.length),
           pageNumber,
@@ -436,6 +464,7 @@ export class MemoryOrchestrator {
     const userMessage = input.userMessage.trim();
     const assistantMessage = input.assistantMessage.trim();
     if (!userMessage && !assistantMessage) return null;
+    const traceMetadata = memoryTraceMetadata(input);
 
     const apiKey = input.apiKey || getStoredOpenRouterKey();
     const userName = (input.userName || "Learner").trim() || "Learner";
@@ -472,6 +501,9 @@ export class MemoryOrchestrator {
             activeBookId: bookId,
             activeDocumentId: input.activeDocumentId || null,
             conversationId: input.conversationId || null,
+            requestId: input.requestId || null,
+            mode: input.mode || "chat",
+            agentLayer: input.agentLayer || null,
             documentContexts: input.documentContexts || [],
             currentBook: existingSessionBook
               ? {
@@ -617,6 +649,7 @@ export class MemoryOrchestrator {
         summary: nextConcept.summary,
         confidence: nextConcept.confidence,
         metadata: {
+          ...traceMetadata,
           acceptedConfidence: nextConcept.confidence,
           proposedMastery: concept.mastery,
           proposedConfidence: concept.confidence,
@@ -639,6 +672,7 @@ export class MemoryOrchestrator {
         confidence: nextConcept.confidence,
         retentionPolicy: "local_indexeddb",
         metadata: {
+          ...traceMetadata,
           acceptedMastery: nextConcept.mastery,
           acceptedConfidence: nextConcept.confidence,
           childConcepts: nextConcept.childConcepts,
@@ -777,6 +811,7 @@ export class MemoryOrchestrator {
       sourceSpanRequired: generatedNoteSourceSpans.length > 0,
       sourceSpans: generatedNoteSourceSpans,
       metadata: {
+        ...traceMetadata,
         activeProject: input.activeProject || "General Study",
         fallback: book.agentModel === "local-session-fallback",
         generatedBy: "MemoryOrchestrator.updateLearningBookFromConversation",
@@ -800,6 +835,7 @@ export class MemoryOrchestrator {
       confidence: clamp01(update.confidence, 0.55),
       retentionPolicy: "local_indexeddb",
       metadata: {
+        ...traceMetadata,
         activeDocumentId: book.activeDocumentId,
         chapterCount: book.chapters.length,
         conceptCount: conceptIds.length,
@@ -826,11 +862,14 @@ export class MemoryOrchestrator {
     description: string,
     understandingDelta: number,
     sourcePage?: number,
+    context?: MemoryTraceContext,
   ) {
     const id = name.toLowerCase().trim();
     const existing = await db.concepts.get(id);
     let savedConcept: PersistentConcept | null = null;
     let action: "created" | "updated" = "created";
+    const traceMetadata = memoryTraceMetadata(context);
+    const source = context?.source || "chat_graph_update";
 
     if (existing) {
       action = "updated";
@@ -850,11 +889,14 @@ export class MemoryOrchestrator {
       await db.concepts.put(existing);
       await recordModelSummaryEvidence({
         conceptId: id,
-        source: "chat_graph_update",
+        bookId: context?.bookId || undefined,
+        conversationId: context?.conversationId,
+        source,
         sourceId: "addOrUpdateConcept",
         summary: description,
         confidence: existing.confidence,
         metadata: {
+          ...traceMetadata,
           understandingDelta,
           sourcePage,
           proposedConfidence: understandingDelta,
@@ -897,11 +939,14 @@ export class MemoryOrchestrator {
       await db.concepts.put(newConcept);
       await recordModelSummaryEvidence({
         conceptId: id,
-        source: "chat_graph_update",
+        bookId: context?.bookId || undefined,
+        conversationId: context?.conversationId,
+        source,
         sourceId: "addOrUpdateConcept",
         summary: description,
         confidence: newConcept.confidence,
         metadata: {
+          ...traceMetadata,
           understandingDelta,
           sourcePage,
           proposedConfidence: understandingDelta,
@@ -918,13 +963,17 @@ export class MemoryOrchestrator {
       await recordMemoryEvent({
         eventType: "graph_concept_updated",
         status: "completed",
-        source: "chat_graph_update",
+        source,
+        bookId: context?.bookId || undefined,
+        conversationId: context?.conversationId,
+        documentId: context?.documentId || undefined,
         conceptId: id,
         sourceIds: savedConcept.sourcePages.map((page) => `page:${page}`),
         summary: description,
         confidence: savedConcept.confidence,
         retentionPolicy: "local_indexeddb",
         metadata: {
+          ...traceMetadata,
           acceptedMastery: savedConcept.mastery,
           acceptedConfidence: savedConcept.confidence,
           action,
@@ -943,6 +992,9 @@ export class MemoryOrchestrator {
       conceptName: name,
       understandingDelta,
       sourcePage,
+      requestId: context?.requestId,
+      mode: context?.mode,
+      agentLayer: context?.agentLayer,
       confidenceGate: "model_summary_no_confidence_increase",
       masteryGate: "model_summary_no_mastery_increase",
     });

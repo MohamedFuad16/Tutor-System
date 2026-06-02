@@ -2525,3 +2525,87 @@ keeping proposed confidence visible in evidence and memory metadata.
   from recall, quiz, correction, and BKT-backed learner evidence rather than
   model summaries.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 46: Request-Correlated Background Memory
+
+## Scope
+
+Phase 46 tightens the complete local brain-flow contract. Typed chat and live
+voice already injected shared brain context and wrote background memory rows,
+but the MemoryOrchestrator rows were not guaranteed to carry the same foreground
+request id that Admin uses for request timelines. This phase threads that
+request metadata into background memory and makes Beta Diagnostics require
+request-correlated chat and voice memory evidence before calling the flow ready.
+
+## Graphify Context
+
+- Graphify routed this slice through `ChatPanel()`, `MemoryOrchestrator`,
+  `trackInteraction()`, `updateLearningBookFromConversation()`,
+  `addOrUpdateConcept()`, `recordMemoryEvent()`,
+  `buildBrainFlowCoverageFromLedgers()`, and `AdminView()`.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+- `graphify path "buildBrainFlowCoverageFromLedgers()" "AdminView()"` found a
+  direct call edge.
+- `graphify path "memoryTraceMetadata()" "ChatPanel()"` found a three-hop path
+  through `memory.orchestrator.ts` and `StudyView.tsx`.
+- A graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Integration Decisions
+
+- Added request trace fields to `LearningBookUpdateInput`,
+  `trackInteraction()` context, stored `ConversationInteraction` rows, and graph
+  concept update context.
+- Typed chat now passes `chatRequestId`, `mode: "chat"`, and
+  `agentLayer: "chat_stream"` into interaction, learning-book, and graph update
+  writes.
+- Live voice now passes the voice session id, `mode: "voice"`, and
+  `agentLayer: "voice_realtime"` into interaction, learning-book, and
+  `update_graph` tool writes.
+- `MemoryOrchestrator` stores trace metadata in memory events,
+  model-summary evidence metadata, generated-note artifact metadata, and
+  interaction rows.
+- Beta Diagnostics now keeps the background memory signal on watch unless both
+  chat and voice have request-correlated background memory rows.
+- README, Tutor System Architecture, User Brain Architecture, the built-in
+  Tutor System Architecture Library JSON, and App Design Language copy now
+  describe the request-correlated memory boundary.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- Targeted workflow Prettier check for Packet YY files: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 103 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- Headless Chrome CDP QA via
+  `.workflow/brain-architecture-implementation-program/packets/phase46-browser-qa.mjs`:
+  desktop Admin Beta rendered request-correlated memory copy at `1440x1000`
+  with `scrollWidth` 1440 and zero captured browser errors.
+- Headless Chrome CDP QA at `390x844`: mobile Admin Beta rendered
+  request-correlated memory copy with `scrollWidth` 390 and zero captured
+  browser errors.
+- Headless Chrome CDP QA confirmed the App Design Language book rendered the
+  request-correlated memory pattern with `scrollWidth` 1440.
+- Browser QA screenshots were saved as
+  `YY-cdp-admin-beta-request-memory-desktop.png`,
+  `YY-cdp-admin-beta-request-memory-mobile.png`, and
+  `YY-cdp-app-design-request-memory.png`.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  891 nodes, 1535 edges, and 57 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `MemoryOrchestrator`, `ChatPanel()`,
+  `memoryTraceMetadata()`, `buildBrainFlowCoverageFromLedgers()`,
+  `AdminView()`, and request-correlation ledger types.
+
+## Remaining Work
+
+- Populate real successful chat and voice flow evidence in the browser with
+  deliberate provider-key spending when that is in scope.
+- Continue tightening validated learner evidence paths for recall, corrections,
+  and durable confidence movement.
+- AWS/cloud synchronization remains out of scope until beta testing.

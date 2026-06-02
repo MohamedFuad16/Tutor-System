@@ -60,6 +60,9 @@ document rail, injected memory context, and revision notebook together.
 Typed chat and live voice sessions also share request-level observability:
 browser-generated request ids connect the shared brain-context packet, memory
 retrieval, server activity, model runs, and tool jobs in Admin.
+Background learner-memory writes now carry the same request metadata, so Admin
+timelines can group the foreground answer and the MemoryOrchestrator book,
+interaction, and graph rows together.
 Admin Beta Diagnostics now includes a local brain-flow coverage verifier that
 checks whether chat context injection, voice context injection, request
 correlation, foreground tool calls, and background learner-memory writes all

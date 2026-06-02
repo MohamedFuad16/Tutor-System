@@ -71,6 +71,9 @@ export type BetaBrainFlowCoverage = {
   requestCorrelatedModelRuns: number;
   foregroundToolJobs: number;
   backgroundMemoryEvents: number;
+  chatBackgroundMemoryEvents: number;
+  voiceBackgroundMemoryEvents: number;
+  requestCorrelatedBackgroundMemoryEvents: number;
   summary: string;
   missingSignals: string[];
   signals: BetaBrainFlowSignal[];
@@ -215,7 +218,22 @@ export const buildBrainFlowCoverageFromLedgers = ({
         "learning_concept_updated",
         "graph_concept_updated",
       ].includes(event.eventType),
-  ).length;
+  );
+  const requestCorrelatedBackgroundMemoryEvents = backgroundMemoryEvents.filter(
+    (event) => hasRequestId(event.metadata?.requestId),
+  );
+  const chatBackgroundMemoryEvents =
+    requestCorrelatedBackgroundMemoryEvents.filter((event) => {
+      const agentLayer = metadataString(event.metadata, "agentLayer");
+      const mode = metadataString(event.metadata, "mode");
+      return agentLayer === "chat_stream" || mode === "chat";
+    }).length;
+  const voiceBackgroundMemoryEvents =
+    requestCorrelatedBackgroundMemoryEvents.filter((event) => {
+      const agentLayer = metadataString(event.metadata, "agentLayer");
+      const mode = metadataString(event.metadata, "mode");
+      return agentLayer === "voice_realtime" || mode === "voice";
+    }).length;
   const failedRows =
     memoryEvents.filter((event) => event.status === "failed").length +
     retrievalEvents.filter((event) => event.status === "failed").length +
@@ -265,10 +283,10 @@ export const buildBrainFlowCoverageFromLedgers = ({
     {
       id: "background_memory",
       title: "Background memory agent",
-      ready: backgroundMemoryEvents > 0,
-      count: backgroundMemoryEvents,
+      ready: chatBackgroundMemoryEvents > 0 && voiceBackgroundMemoryEvents > 0,
+      count: requestCorrelatedBackgroundMemoryEvents.length,
       detail:
-        "The background learner-memory layer has stored interaction, book, concept, or graph update rows.",
+        "Typed chat and live voice both have request-correlated background learner-memory rows.",
     },
   ];
   const readySignals = signals.filter((signal) => signal.ready).length;
@@ -295,7 +313,11 @@ export const buildBrainFlowCoverageFromLedgers = ({
     requestCorrelatedRetrievalEvents,
     requestCorrelatedModelRuns,
     foregroundToolJobs,
-    backgroundMemoryEvents,
+    backgroundMemoryEvents: backgroundMemoryEvents.length,
+    chatBackgroundMemoryEvents,
+    voiceBackgroundMemoryEvents,
+    requestCorrelatedBackgroundMemoryEvents:
+      requestCorrelatedBackgroundMemoryEvents.length,
     summary:
       status === "ready"
         ? "Chat, voice, retrieval, model, foreground tools, and background memory all have local evidence."

@@ -3719,6 +3719,19 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               name,
               description,
               understandingDelta,
+              undefined,
+              {
+                requestId: sessionId,
+                mode: "voice",
+                agentLayer: "voice_realtime",
+                bookId: canonicalActiveBookId,
+                conversationId: canonicalActiveBookId
+                  ? chatThreadIdForBook(canonicalActiveBookId)
+                  : undefined,
+                documentId: activeDocumentId,
+                toolCallId,
+                source: "voice_graph_update",
+              },
             );
             result = {
               status: "stored",
@@ -4371,6 +4384,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                         ? chatThreadIdForBook(canonicalActiveBookId)
                         : undefined,
                       documentId: activeDocumentId,
+                      requestId: voiceSessionIdRef.current || undefined,
+                      mode: "voice",
+                      agentLayer: "voice_realtime",
                     },
                   );
                   void brainOrchestrator
@@ -4379,6 +4395,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       activeProject,
                       activeBookId: canonicalActiveBookId,
                       activeDocumentId,
+                      requestId: voiceSessionIdRef.current || undefined,
+                      mode: "voice",
+                      agentLayer: "voice_realtime",
                       conversationId: canonicalActiveBookId
                         ? chatThreadIdForBook(canonicalActiveBookId)
                         : undefined,
@@ -5297,6 +5316,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     ? chatThreadIdForBook(canonicalActiveBookId)
                     : undefined,
                   documentId: activeDocumentId,
+                  requestId: chatRequestId,
+                  mode: "chat",
+                  agentLayer: "chat_stream",
                 },
               );
               void brainOrchestrator
@@ -5305,6 +5327,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   activeProject,
                   activeBookId: canonicalActiveBookId,
                   activeDocumentId,
+                  requestId: chatRequestId,
+                  mode: "chat",
+                  agentLayer: "chat_stream",
                   conversationId: canonicalActiveBookId
                     ? chatThreadIdForBook(canonicalActiveBookId)
                     : undefined,
@@ -5333,6 +5358,18 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     update.name,
                     update.description,
                     update.understandingDelta,
+                    undefined,
+                    {
+                      requestId: chatRequestId,
+                      mode: "chat",
+                      agentLayer: "chat_stream",
+                      bookId: canonicalActiveBookId,
+                      conversationId: canonicalActiveBookId
+                        ? chatThreadIdForBook(canonicalActiveBookId)
+                        : undefined,
+                      documentId: activeDocumentId,
+                      source: "chat_graph_update",
+                    },
                   );
                 });
               }

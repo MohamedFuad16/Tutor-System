@@ -164,7 +164,8 @@ network access. Use the Deepgram provider in
 - Beta Diagnostics includes a brain-flow coverage verifier. It checks local
   ledgers for chat context injection, voice context injection, request-id
   correlation across context/retrieval/model rows, foreground tool jobs, and
-  background learner-memory writes before marking the local flow ready.
+  request-correlated chat and voice learner-memory writes before marking the
+  local flow ready.
 - Source-card local citation checks, generated flashcard provenance checks,
   generated learning-note provenance checks, plus chapter audio-guide manifest
   integrity checks. Flashcard provenance checks saved card ids and local

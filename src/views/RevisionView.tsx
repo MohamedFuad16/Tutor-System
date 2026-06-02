@@ -2315,7 +2315,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Request timelines",
         detail:
-          "Admin groups brain-context packet injections, server events, retrieval injections, model runs, and tool jobs by request id so one tutor turn can be audited as a single story.",
+          "Admin groups brain-context packet injections, server events, retrieval injections, model runs, tool jobs, and background memory writes by request id so one tutor turn can be audited as a single story.",
       },
       {
         title: "Brain context packet",
@@ -2325,7 +2325,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Brain-flow coverage",
         detail:
-          "Beta Diagnostics checks chat context, voice context, request correlation, foreground tools, and background memory rows as one local readiness proof instead of five disconnected counters.",
+          "Beta Diagnostics checks chat context, voice context, request correlation, foreground tools, and request-correlated chat and voice memory rows as one local readiness proof instead of disconnected counters.",
       },
       {
         title: "Voice agent timeline",

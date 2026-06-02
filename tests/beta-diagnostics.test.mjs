@@ -41,6 +41,18 @@ const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
       timestamp: 4,
       metadata: {
         requestId: "chat-req-1",
+        mode: "chat",
+        agentLayer: "chat_stream",
+      },
+    },
+    {
+      eventType: "learning_book_updated",
+      status: "completed",
+      timestamp: 5,
+      metadata: {
+        requestId: "voice-req-1",
+        mode: "voice",
+        agentLayer: "voice_realtime",
       },
     },
   ],
@@ -85,7 +97,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
     {
       learningBooks: 2,
       mappedConcepts: 8,
-      memoryEvents: 5,
+      memoryEvents: 6,
       retrievalEvents: 3,
       modelRuns: 4,
       toolJobs: 1,
@@ -138,6 +150,94 @@ test("brain flow coverage requires chat, voice, request ids, tools, and backgrou
     completeBrainFlow.signals.find((signal) => signal.id === "voice_context")
       ?.ready,
     true,
+  );
+  assert.equal(completeBrainFlow.chatBackgroundMemoryEvents, 1);
+  assert.equal(completeBrainFlow.voiceBackgroundMemoryEvents, 1);
+  assert.equal(completeBrainFlow.requestCorrelatedBackgroundMemoryEvents, 3);
+});
+
+test("brain flow coverage requires request-correlated voice memory evidence", () => {
+  const chatOnlyMemoryFlow = buildBrainFlowCoverageFromLedgers({
+    memoryEvents: [
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 1,
+        metadata: {
+          agentLayer: "chat_stream",
+          requestId: "chat-req-1",
+        },
+      },
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 2,
+        metadata: {
+          agentLayer: "voice_realtime",
+          requestId: "voice-req-1",
+        },
+      },
+      {
+        eventType: "learning_book_updated",
+        status: "completed",
+        timestamp: 3,
+        metadata: {
+          requestId: "chat-req-1",
+          mode: "chat",
+          agentLayer: "chat_stream",
+        },
+      },
+      {
+        eventType: "learning_book_updated",
+        status: "completed",
+        timestamp: 4,
+        metadata: {
+          mode: "voice",
+          agentLayer: "voice_realtime",
+        },
+      },
+    ],
+    retrievalEvents: [
+      {
+        status: "completed",
+        requestId: "chat-req-1",
+        timestamp: 5,
+      },
+      {
+        status: "completed",
+        requestId: "voice-req-1",
+        timestamp: 6,
+      },
+    ],
+    modelRuns: [
+      {
+        status: "completed",
+        source: "chat_stream",
+        requestId: "chat-req-1",
+        timestamp: 7,
+      },
+      {
+        status: "completed",
+        source: "voice_agent",
+        requestId: "voice-req-1",
+        timestamp: 8,
+      },
+    ],
+    toolJobs: [
+      {
+        status: "completed",
+        source: "voice_agent",
+        requestId: "voice-req-1",
+        timestamp: 9,
+      },
+    ],
+  });
+
+  assert.equal(chatOnlyMemoryFlow.status, "watch");
+  assert.equal(chatOnlyMemoryFlow.chatBackgroundMemoryEvents, 1);
+  assert.equal(chatOnlyMemoryFlow.voiceBackgroundMemoryEvents, 0);
+  assert.ok(
+    chatOnlyMemoryFlow.missingSignals.includes("Background memory agent"),
   );
 });
 

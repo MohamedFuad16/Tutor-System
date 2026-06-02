@@ -66,6 +66,9 @@ export interface ConversationInteraction {
   bookId?: string;
   conversationId?: string;
   documentId?: string;
+  requestId?: string;
+  mode?: "chat" | "voice" | "revision" | "admin";
+  agentLayer?: "chat_stream" | "voice_realtime";
   timestamp: number;
   userMessage: string;
   assistantMessage: string;
