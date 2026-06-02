@@ -910,11 +910,32 @@
     "graphify update . --force regenerated Graphify artifacts with 1021 nodes, 1813 edges, and 63 communities",
     "Graphify smoke query found summarizeBrainWiringRehearsalGap(), BrainWiringRehearsalGap, runLocalBrainWiringRehearsal(), and AdminView()",
     "graphify path summarizeBrainWiringRehearsalGap() to AdminView() found a two-hop route through AdminView.tsx",
-    "Packet ABP graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABP graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABQ selected after Graphify routed multi-PDF proof gates through brain.context.ts, ChatPanel.tsx, voiceAgentTools.ts, beta.diagnostics.ts, brain.rehearsal.ts, AdminView.tsx, and focused tests",
+    "Beta Diagnostics now uses a thirteen-signal verifier that separately requires Chat multi-PDF context and Voice multi-PDF context evidence",
+    "Multi-PDF context proof requires request-correlated context metadata with more than one active-book document and more than one contextDocumentIds entry",
+    "Admin and rehearsal copy now describe the thirteen-signal verifier",
+    "User Brain Architecture, Tutor System Architecture, and App Design Language copy now document the multi-PDF proof gate",
+    "Tutor System Architecture Graphify policy now matches AGENTS.md explicit local regeneration rules",
+    "Admin Center preface copy was simplified again",
+    "npm run format passed",
+    "npm run test passed, 143 tests",
+    "npm run format:check passed",
+    "npm run lint passed",
+    "npm run build passed",
+    "In-app Browser QA at 1440x1000 confirmed Admin Beta Diagnostics rendered simplified Admin copy, Chat multi-PDF context, Voice multi-PDF context, thirteen-signal copy, and only normal Vite/React dev logs",
+    "In-app Browser QA at 390x844 confirmed Admin Beta Diagnostics rendered the same multi-PDF gates and rehearsal copy in the mobile layout",
+    "In-app Browser QA clicked Run local rehearsal and confirmed synthetic 100% contract coverage, active and companion PDF ids, and live beta coverage staying at 0% until real chat/voice traffic fills the ledger",
+    "In-app Browser QA confirmed Revision App Design Language Local Beta Control Patterns rendered shared multi-PDF context, chat/voice multi-PDF proof, request correlation, and thirteen-signal rehearsal copy",
+    "Clean graphify update . --force regenerated code architecture artifacts with 1025 nodes, 1820 edges, and 57 communities after removing ignored server.mjs and .tmp-test scratch files",
+    "npm run graphify:tree passed for Packet ABQ",
+    "Graphify smoke query found buildBrainFlowCoverageFromLedgers(), buildBetaDiagnosticsSnapshot(), AdminView(), runLocalBrainWiringRehearsal(), ChatPanel.tsx, RevisionView.tsx, and brain-context.test.mjs",
+    "graphify path buildBrainFlowCoverageFromLedgers() to AdminView() found a one-hop route through AdminView()",
+    "Packet ABQ graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 80,
-    "basis": "Local architecture estimate after Packet ABP: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, and an Admin live-vs-synthetic brain-flow gap surface are implemented; deliberate provider-key chat/voice proof, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T08:29:00.000+09:00"
+    "estimatePercent": 82,
+    "basis": "Local architecture estimate after Packet ABQ: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, and an Admin live-vs-synthetic brain-flow gap surface are implemented; deliberate provider-key chat/voice proof, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T08:49:46.000+09:00"
   }
 }

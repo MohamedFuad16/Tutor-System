@@ -3929,3 +3929,88 @@ rehearsal` and confirmed live beta gap, provider-key ready, rehearsed
   tools, memory, evidence, corrections, Admin, and Revision operate together
   under live beta conditions.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+---
+
+# Phase 63: Live Multi-PDF Beta Proof Gate
+
+Packet ABQ turns the existing multi-PDF chat/voice context behavior into a
+local beta proof gate. The app already builds shared brain-context packets from
+the active learning book and multiple ready PDFs; this phase makes Beta
+Diagnostics require separate typed-chat and live-voice evidence that more than
+one ready PDF actually reached the request-correlated prompt context.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 82%.
+
+## Graphify Context
+
+- `graphify query "brain architecture next implementation slice multi PDF
+context injection chat voice mode stored injected tool calling agent layers
+Admin diagnostics live beta proof" --budget 8000 --graph
+graphify-out/graph.json` routed the slice through `brain.context.ts`,
+  `ChatPanel.tsx`, `voiceAgentTools.ts`, `beta.diagnostics.ts`,
+  `brain.rehearsal.ts`, `AdminView.tsx`, and `tests/brain-context.test.mjs`.
+- `graphify query "userBrainArchitectureBook tutorBook app design book system
+architecture beta diagnostics thirteen signal multi-PDF context Admin source
+files" --budget 7000 --graph graphify-out/graph.json` routed the book/design
+  updates through `userBrainArchitectureBook.ts`, `tutorBook.json`,
+  `RevisionView.tsx`, and audio-overview plan tests.
+
+## Integration Decisions
+
+- Added chat and voice multi-PDF context counters to
+  `BetaBrainFlowCoverage`.
+- Added `Chat multi-PDF context` and `Voice multi-PDF context` signals. Each
+  requires request-correlated context metadata with more than one active-book
+  document and more than one `contextDocumentIds` entry.
+- Kept the existing packet builder behavior unchanged: it still orders the
+  active document first and includes up to six ready PDFs by prompt budget.
+- Updated Admin and rehearsal copy from eleven-signal to thirteen-signal.
+- Updated User Brain Architecture, Tutor System Architecture, and App Design
+  Language copy to describe the thirteen-signal local beta verifier.
+- Simplified the Admin Center preface copy.
+- Corrected the Tutor System Architecture Graphify rebuild policy to match
+  AGENTS.md: no automatic GitHub Actions graph refresh on push or PR.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 143 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser QA at `1440x1000` confirmed Admin Beta Diagnostics renders the
+  simplified Admin Center preface, `Chat multi-PDF context`, `Voice multi-PDF
+context`, and thirteen-signal copy with only normal Vite/React dev logs.
+- In-app Browser QA at `390x844` confirmed the same Admin Beta Diagnostics
+  gates and rehearsal copy render in the mobile layout.
+- In-app Browser QA clicked `Run local rehearsal` and confirmed the synthetic
+  contract reaches `100%`, includes active and companion PDF ids, and leaves
+  live beta coverage at `0%` until real chat/voice traffic fills the ledger.
+- In-app Browser QA opened Revision > App Design Language > Local Beta Control
+  Patterns and confirmed the new shared multi-PDF context, chat/voice
+  multi-PDF proof, request-correlation, and thirteen-signal rehearsal copy.
+- Clean `graphify update . --force`: passed after removing ignored
+  `server.mjs`/`.tmp-test` scratch files, regenerating code architecture
+  artifacts with `1025` nodes, `1820` edges, and `57` communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`76.5 KB`).
+- Graphify smoke query found `buildBrainFlowCoverageFromLedgers()`,
+  `buildBetaDiagnosticsSnapshot()`, `AdminView()`,
+  `runLocalBrainWiringRehearsal()`, `ChatPanel.tsx`, `RevisionView.tsx`,
+  and `brain-context.test.mjs`.
+- Graphify path `buildBrainFlowCoverageFromLedgers()` to `AdminView()` found a
+  one-hop route through `AdminView()`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key chat and voice turns when live traffic is in
+  scope, then use the new thirteen-signal verifier to confirm real ledger rows
+  fill chat/voice multi-PDF context, tools, mastery, transcript persistence,
+  and memory evidence together.
+- Continue broader local beta validation across real Study, Chat, Voice, Admin,
+  Revision, corrections, retrieval, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until beta testing.

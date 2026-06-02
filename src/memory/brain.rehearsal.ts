@@ -364,7 +364,7 @@ export const runLocalBrainWiringRehearsal = (
       title: "Coverage contract",
       ready: coverage.status === "ready" && coverage.coveragePercent === 100,
       detail:
-        "Synthetic rows satisfy the same eleven-signal verifier used for live local ledgers without being persisted into those ledgers.",
+        "Synthetic rows satisfy the same thirteen-signal verifier used for live local ledgers without being persisted into those ledgers.",
     },
   ];
   const ready = checks.every((check) => check.ready);
@@ -379,7 +379,7 @@ export const runLocalBrainWiringRehearsal = (
     liveCoverageMutated: false,
     status: ready ? "ready" : "failed",
     summary: ready
-      ? "Shared packet assembly, balanced multi-PDF context, dual-agent tools, and the eleven-signal verifier passed in memory."
+      ? "Shared packet assembly, balanced multi-PDF context, dual-agent tools, and the thirteen-signal verifier passed in memory."
       : "One or more local wiring contracts failed rehearsal. Review the failed synthetic checks before live beta traffic.",
     chatRequestId: chatPacket.requestId,
     voiceRequestId: voicePacket.requestId,

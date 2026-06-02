@@ -116,3 +116,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   rehearsal compare its in-memory eleven-signal pass against live local ledger
   coverage, expose provider-key readiness, and show the rehearsed chat/voice
   request IDs, multi-PDF context IDs, and tool contracts.
+- ABQ: Live multi-PDF beta proof gate. Extend Beta Diagnostics to require
+  request-correlated typed-chat and live-voice context rows whose active-book
+  prompt context included excerpts from more than one ready PDF, update Admin
+  and architecture/design copy to the thirteen-signal contract, and keep
+  provider-key traffic out of scope.

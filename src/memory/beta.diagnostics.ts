@@ -74,6 +74,8 @@ export type BetaBrainFlowCoverage = {
   failedRows: number;
   chatContextInjections: number;
   voiceContextInjections: number;
+  chatMultiPdfContextInjections: number;
+  voiceMultiPdfContextInjections: number;
   requestCorrelatedContextInjections: number;
   requestCorrelatedRetrievalEvents: number;
   requestCorrelatedModelRuns: number;
@@ -223,6 +225,14 @@ const metadataNumber = (
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
 };
 
+const metadataArrayLength = (
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+) => {
+  const value = metadata?.[key];
+  return Array.isArray(value) ? value.length : 0;
+};
+
 const hasRequestId = (requestId: unknown) =>
   typeof requestId === "string" && requestId.trim().length > 0;
 
@@ -237,6 +247,13 @@ const isVoiceLayer = (metadata: Record<string, unknown> | undefined) => {
   const mode = metadataString(metadata, "mode");
   return agentLayer === "voice_realtime" || mode === "voice";
 };
+
+const isMultiPdfContextInjection = (
+  metadata: Record<string, unknown> | undefined,
+) =>
+  hasRequestId(metadata?.requestId) &&
+  metadataNumber(metadata, "documentCount") > 1 &&
+  metadataArrayLength(metadata, "contextDocumentIds") > 1;
 
 const isChatThreadPersistence = (
   metadata: Record<string, unknown> | undefined,
@@ -296,6 +313,15 @@ export const buildBrainFlowCoverageFromLedgers = ({
   ).length;
   const voiceContextInjections = completedContextEvents.filter((event) =>
     isVoiceLayer(event.metadata),
+  ).length;
+  const chatMultiPdfContextInjections = completedContextEvents.filter(
+    (event) =>
+      isChatLayer(event.metadata) && isMultiPdfContextInjection(event.metadata),
+  ).length;
+  const voiceMultiPdfContextInjections = completedContextEvents.filter(
+    (event) =>
+      isVoiceLayer(event.metadata) &&
+      isMultiPdfContextInjection(event.metadata),
   ).length;
   const requestCorrelatedContextInjections = completedContextEvents.filter(
     (event) => hasRequestId(event.metadata?.requestId),
@@ -417,6 +443,22 @@ export const buildBrainFlowCoverageFromLedgers = ({
         "Live voice has at least one durable brain_context_injected row from the same packet boundary.",
     },
     {
+      id: "chat_multi_pdf_context",
+      title: "Chat multi-PDF context",
+      ready: chatMultiPdfContextInjections > 0,
+      count: chatMultiPdfContextInjections,
+      detail:
+        "Typed chat has a request-correlated context row whose prompt included excerpts from more than one ready PDF in the active book.",
+    },
+    {
+      id: "voice_multi_pdf_context",
+      title: "Voice multi-PDF context",
+      ready: voiceMultiPdfContextInjections > 0,
+      count: voiceMultiPdfContextInjections,
+      detail:
+        "Live voice has a request-correlated context row whose prompt included excerpts from more than one ready PDF in the active book.",
+    },
+    {
       id: "request_correlation",
       title: "Request correlation",
       ready:
@@ -518,6 +560,8 @@ export const buildBrainFlowCoverageFromLedgers = ({
     failedRows,
     chatContextInjections,
     voiceContextInjections,
+    chatMultiPdfContextInjections,
+    voiceMultiPdfContextInjections,
     requestCorrelatedContextInjections,
     requestCorrelatedRetrievalEvents,
     requestCorrelatedModelRuns,
@@ -541,7 +585,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
     ungatedBackgroundMemoryEvents,
     summary:
       status === "ready"
-        ? "Chat, voice, retrieval, model, both foreground tool layers, both evaluated mastery layers, transcript persistence, background memory, and model-observation gates all have local evidence."
+        ? "Chat, voice, multi-PDF context, retrieval, model, both foreground tool layers, both evaluated mastery layers, transcript persistence, background memory, and model-observation gates all have local evidence."
         : status === "blocked"
           ? `${failedRows} failed or blocked brain-flow rows need review before beta.`
           : `Missing local evidence for ${missingSignals.join(", ")}.`,

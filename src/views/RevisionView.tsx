@@ -2348,12 +2348,12 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Brain-flow coverage",
         detail:
-          "Beta Diagnostics checks chat context, voice context, request correlation, chat and voice foreground tools, chat and voice evaluated mastery evidence, request-correlated memory rows, and model-observation gates as one local readiness proof instead of disconnected counters.",
+          "Beta Diagnostics checks chat context, voice context, chat and voice multi-PDF context, request correlation, foreground tools, evaluated mastery evidence, transcript saves, request-correlated memory rows, and model-observation gates as one local readiness proof instead of disconnected counters.",
       },
       {
         title: "Synthetic wiring rehearsal",
         detail:
-          "Admin can exercise the shared multi-PDF packet helpers, typed-chat and live-voice tool definitions, and the same nine-signal verifier in memory only. The rehearsal is labeled synthetic and cannot raise live beta coverage.",
+          "Admin can exercise the shared multi-PDF packet helpers, typed-chat and live-voice tool definitions, and the same thirteen-signal verifier in memory only. The rehearsal is labeled synthetic and cannot raise live beta coverage.",
       },
       {
         title: "Validated confidence meters",

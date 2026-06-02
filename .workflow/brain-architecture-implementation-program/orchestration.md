@@ -34,6 +34,7 @@
 - Packet ABN: See `packets/ABN-chat-voice-thread-persistence-observability.md`.
 - Packet ABO: See `packets/ABO-request-correlated-thread-persistence.md`.
 - Packet ABP: See `packets/ABP-rehearsal-live-gap-proof-surface.md`.
+- Packet ABQ: See `packets/ABQ-live-multi-pdf-beta-proof-gate.md`.
 
 ## Completion Audit
 

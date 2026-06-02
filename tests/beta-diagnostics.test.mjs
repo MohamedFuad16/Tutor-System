@@ -9,25 +9,29 @@ const {
 const { modelObservationGateMetadata } =
   await import("../.tmp-test/evidence.mastery.mjs");
 
+const multiPdfContextMetadata = (agentLayer, requestId) => ({
+  agentLayer,
+  requestId,
+  documentCount: 2,
+  readyDocumentCount: 2,
+  documentIds: ["doc-active", "doc-companion"],
+  readyDocumentIds: ["doc-active", "doc-companion"],
+  contextDocumentIds: ["doc-active", "doc-companion"],
+});
+
 const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
   memoryEvents: [
     {
       eventType: "brain_context_injected",
       status: "completed",
       timestamp: 1,
-      metadata: {
-        agentLayer: "chat_stream",
-        requestId: "chat-req-1",
-      },
+      metadata: multiPdfContextMetadata("chat_stream", "chat-req-1"),
     },
     {
       eventType: "brain_context_injected",
       status: "completed",
       timestamp: 2,
-      metadata: {
-        agentLayer: "voice_realtime",
-        requestId: "voice-req-1",
-      },
+      metadata: multiPdfContextMetadata("voice_realtime", "voice-req-1"),
     },
     {
       eventType: "interaction_recorded",
@@ -244,6 +248,20 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
       ?.ready,
     true,
   );
+  assert.equal(completeBrainFlow.chatMultiPdfContextInjections, 1);
+  assert.equal(completeBrainFlow.voiceMultiPdfContextInjections, 1);
+  assert.equal(
+    completeBrainFlow.signals.find(
+      (signal) => signal.id === "chat_multi_pdf_context",
+    )?.ready,
+    true,
+  );
+  assert.equal(
+    completeBrainFlow.signals.find(
+      (signal) => signal.id === "voice_multi_pdf_context",
+    )?.ready,
+    true,
+  );
   assert.equal(completeBrainFlow.chatBackgroundMemoryEvents, 1);
   assert.equal(completeBrainFlow.voiceBackgroundMemoryEvents, 1);
   assert.equal(completeBrainFlow.requestCorrelatedThreadPersistenceEvents, 2);
@@ -289,6 +307,46 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
       (signal) => signal.id === "voice_thread_persistence",
     )?.ready,
     true,
+  );
+});
+
+test("brain flow coverage requires chat and voice multi-PDF context evidence", () => {
+  const singlePdfContextFlow = buildBrainFlowCoverageFromLedgers({
+    memoryEvents: [
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 1,
+        metadata: {
+          agentLayer: "chat_stream",
+          requestId: "chat-req-1",
+          documentCount: 2,
+          contextDocumentIds: ["doc-active"],
+        },
+      },
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 2,
+        metadata: {
+          agentLayer: "voice_realtime",
+          requestId: "voice-req-1",
+          documentCount: 2,
+          contextDocumentIds: ["doc-active"],
+        },
+      },
+    ],
+  });
+
+  assert.equal(singlePdfContextFlow.chatContextInjections, 1);
+  assert.equal(singlePdfContextFlow.voiceContextInjections, 1);
+  assert.equal(singlePdfContextFlow.chatMultiPdfContextInjections, 0);
+  assert.equal(singlePdfContextFlow.voiceMultiPdfContextInjections, 0);
+  assert.ok(
+    singlePdfContextFlow.missingSignals.includes("Chat multi-PDF context"),
+  );
+  assert.ok(
+    singlePdfContextFlow.missingSignals.includes("Voice multi-PDF context"),
   );
 });
 

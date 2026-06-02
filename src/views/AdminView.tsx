@@ -1570,10 +1570,9 @@ export function AdminView() {
                   Admin Center
                 </h1>
                 <p className="text-zinc-600 leading-relaxed max-w-2xl text-sm font-serif">
-                  See what the tutor is doing behind the scenes: model calls,
-                  tools, memory, retrieval, voice activity, and local beta
-                  health. Start with System Activity for live timelines or Beta
-                  Diagnostics for readiness.
+                  Track model calls, tools, memory, retrieval, voice, and beta
+                  health in one place. Use Activity for live timelines and Beta
+                  for readiness.
                 </p>
               </div>
 
@@ -4341,7 +4340,7 @@ export function AdminView() {
                             Runs a deterministic in-memory rehearsal through the
                             shared multi-PDF packet helpers, typed-chat tool
                             definitions, live-voice tool definitions, and the
-                            same eleven-signal coverage verifier. It writes no
+                            same thirteen-signal coverage verifier. It writes no
                             durable rows, calls no providers, and never raises
                             the live coverage meter above.
                           </p>
