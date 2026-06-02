@@ -175,7 +175,7 @@ Good voice behavior means:
 - record voice costs and failures;
 - avoid pretending live speech is evidence.
 
-For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a short energetic explanation, generated once, stored as an asset, and played from the browser with normal controls. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
+For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a short energetic explanation, generated once, stored as an asset, and played from the browser with normal controls. Those controls now include play, pause, speed, seek, and native fallback playback when the browser blocks scripted play. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
 
 This phase extends that pattern to every built-in Library chapter: Tutor System Architecture, User Brain Architecture, and App Design Language. \`src/lib/chapterAudioOverviews.json\` holds the chapter scripts, target filenames, provider metadata, and local MP3 manifest. \`npm run audio:overview:dry-run\` verifies which assets are checked in, while \`npm run audio:overview:generate -- --provider deepgram --overwrite\` regenerates them with Deepgram when \`DEEPGRAM_API_KEY\` is available. The reader uses the stored assets directly, so playback is instant and does not depend on a live model call.`,
   },

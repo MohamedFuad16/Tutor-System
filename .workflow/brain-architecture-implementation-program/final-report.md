@@ -1092,6 +1092,63 @@ contract and which loaded artifact types still need future contracts.
   future slices.
 - AWS/cloud synchronization remains out of scope until beta testing.
 
+# Phase 28: Audio Guide Playback Resilience
+
+Phase 28 makes the stored chapter audio guide player recover when the browser
+blocks scripted playback from the custom Play button. The MP3 assets were
+already present; this slice improves the live reader controls so the user has a
+seek slider, clearer playback status, and native browser controls as a fallback.
+
+## Graphify Context
+
+- Graphify routed the slice through `RevisionView()`, `StoredAudioOverview()`,
+  `chapterAudioOverviews.ts`, `builtInBookAudioOverviews`, `audio.ts`, and the
+  built-in user-brain book.
+- A targeted manifest check found 25 audio overview entries across Tutor System
+  Architecture, User Brain Architecture, and App Design Language, with 25 local
+  MP3 files present and 0 missing.
+
+## Integration Decisions
+
+- Added a seek range input wired to the same local `<audio>` element.
+- Added visible native browser audio controls when the custom `audio.play()`
+  path is blocked or the media load fails.
+- Split playback-blocked fallback status from true media-unavailable status so
+  the UI does not claim recovery when the MP3 itself cannot load.
+- Updated the architecture docs and in-app books to mention seek and native
+  fallback controls without changing the no-live-TTS boundary.
+
+## Verification Evidence
+
+- `npm run audio:overview:dry-run`: passed, 25 present, 0 missing.
+- `curl -I /audio-overviews/user-brain-voice-audio-overview.mp3`: returned 200
+  with `Content-Type: audio/mpeg`.
+- Browser QA on `http://127.0.0.1:3100`: reproduced the previous blocked custom
+  playback path, then confirmed native controls appeared, the audio had duration
+  53.568s, seek was enabled, and `1.5x` updated the real audio playback rate.
+- Browser QA covered 390x844 and 1280x900 viewports with no horizontal overflow
+  and zero warning/error logs.
+- Read-only final-check sidecar Dirac found two issues in the first draft
+  (fallback overclaiming and control placement); both were fixed before final
+  verification.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 80 tests.
+- `npm run build`: passed.
+- `graphify update . --force`: regenerated the code architecture graph with 841
+  nodes, 1423 edges, and 65 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `StoredAudioOverview()`, `formatAudioTime()`,
+  `chapterAudioOverviews.ts`, and the stored audio artifact input path.
+
+## Remaining Work
+
+- Real users still need an actual audio-output listen check outside automation;
+  the browser QA verifies element state, fallback controls, and served MP3s.
+- Continue broader live voice-chat replacement work separately from stored
+  chapter audio guides.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
 # Phase 23: Stored Audio-guide Integrity Verifier
 
 Phase 23 adds a conservative local verifier for stored chapter audio guides.

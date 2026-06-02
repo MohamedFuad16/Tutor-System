@@ -6406,7 +6406,7 @@
       "label": "AppDesignLanguagePage()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2149",
+      "source_location": "L2198",
       "id": "views_revisionview_appdesignlanguagepage",
       "community": 2,
       "norm_label": "appdesignlanguagepage()"
@@ -6415,7 +6415,7 @@
       "label": "builtInBooks",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2342",
+      "source_location": "L2391",
       "id": "views_revisionview_builtinbooks",
       "community": 2,
       "norm_label": "builtinbooks"
@@ -6424,7 +6424,7 @@
       "label": "builtInBookIds",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2386",
+      "source_location": "L2435",
       "id": "views_revisionview_builtinbookids",
       "community": 2,
       "norm_label": "builtinbookids"
@@ -6433,7 +6433,7 @@
       "label": "createBuiltInBookConcept()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2388",
+      "source_location": "L2437",
       "id": "views_revisionview_createbuiltinbookconcept",
       "community": 2,
       "norm_label": "createbuiltinbookconcept()"
@@ -6442,7 +6442,7 @@
       "label": "LongPressWrapper()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2409",
+      "source_location": "L2458",
       "id": "views_revisionview_longpresswrapper",
       "community": 2,
       "norm_label": "longpresswrapper()"
@@ -6451,7 +6451,7 @@
       "label": "FlashcardUI",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2467",
+      "source_location": "L2516",
       "id": "views_revisionview_flashcardui",
       "community": 2,
       "norm_label": "flashcardui"
@@ -6460,7 +6460,7 @@
       "label": "FlashcardDeck()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2579",
+      "source_location": "L2628",
       "id": "views_revisionview_flashcarddeck",
       "community": 2,
       "norm_label": "flashcarddeck()"
@@ -6469,7 +6469,7 @@
       "label": "RevisionView()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2622",
+      "source_location": "L2671",
       "id": "views_revisionview_revisionview",
       "community": 23,
       "norm_label": "revisionview()"
@@ -7531,7 +7531,7 @@
       "label": "Admin View",
       "file_type": "document",
       "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L129",
+      "source_location": "L130",
       "id": "learningai_tutor_architecture_admin_view",
       "community": 15,
       "norm_label": "admin view"
@@ -7540,7 +7540,7 @@
       "label": "7. Graphify Architecture Layer",
       "file_type": "document",
       "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L146",
+      "source_location": "L147",
       "id": "learningai_tutor_architecture_7_graphify_architecture_layer",
       "community": 15,
       "norm_label": "7. graphify architecture layer"
@@ -7549,7 +7549,7 @@
       "label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)",
       "file_type": "document",
       "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L158",
+      "source_location": "L159",
       "id": "learningai_tutor_architecture_codeblock_1",
       "community": 15,
       "norm_label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)"
@@ -7558,7 +7558,7 @@
       "label": "8. Maintenance Boundaries",
       "file_type": "document",
       "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L178",
+      "source_location": "L179",
       "id": "learningai_tutor_architecture_8_maintenance_boundaries",
       "community": 15,
       "norm_label": "8. maintenance boundaries"
@@ -7567,7 +7567,7 @@
       "label": "code:bash (npm run lint)",
       "file_type": "document",
       "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L192",
+      "source_location": "L193",
       "id": "learningai_tutor_architecture_codeblock_2",
       "community": 15,
       "norm_label": "code:bash (npm run lint)"
@@ -21445,9 +21445,9 @@
       "source_file": "src/views/AdminView.tsx",
       "source_location": "L199",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_views_adminview_tsx",
-      "target": "views_adminview_islocallyverifiableartifacttype",
-      "confidence_score": 1.0
+      "target": "views_adminview_islocallyverifiableartifacttype"
     },
     {
       "relation": "contains",
@@ -22467,5 +22467,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ba7ceda85d3eb8369911b5afacaadacf8df4ef54"
+  "built_at_commit": "66f59eeb283b804306432e05de87ba41b366bac8"
 }

@@ -119,10 +119,11 @@ citation states so Admin can audit them before broader verification exists.
 `RevisionView` renders generated learning books and built-in reference books in
 a paper-style reading surface. It also houses the app design language book with
 wireframes, tokens, interactive previews, and local beta control patterns.
-Built-in chapters include stored audio guide assets with local playback
-controls, so chapter listening does not call the live read-aloud route on every
-play. `npm run audio:overview:dry-run` verifies the checked-in MP3 manifest
-without network access. Use the Deepgram provider in
+Built-in chapters include stored audio guide assets with local play/pause,
+speed, seek, and native fallback controls, so chapter listening does not call
+the live read-aloud route on every play.
+`npm run audio:overview:dry-run` verifies the checked-in MP3 manifest without
+network access. Use the Deepgram provider in
 `scripts/generate-user-brain-audio-overviews.mjs` to regenerate assets when
 `DEEPGRAM_API_KEY` is available.
 

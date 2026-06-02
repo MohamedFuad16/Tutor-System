@@ -2018,11 +2018,13 @@ const StoredAudioOverview = ({
   overview: ChapterAudioOverview;
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioIssue, setAudioIssue] = useState<"" | "playback" | "media">("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState("");
+  const [showNativeControls, setShowNativeControls] = useState(false);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -2035,6 +2037,8 @@ const StoredAudioOverview = ({
     setCurrentTime(0);
     setDuration(0);
     setError("");
+    setAudioIssue("");
+    setShowNativeControls(false);
     return () => {
       audioRef.current?.pause();
     };
@@ -2051,36 +2055,41 @@ const StoredAudioOverview = ({
     try {
       await audioElement.play();
       setError("");
+      setAudioIssue("");
     } catch {
+      setAudioIssue("playback");
+      setShowNativeControls(true);
       setError(
-        "Audio overview could not start. Try again after interacting with the page.",
+        "Audio overview could not start from the custom button. Use the native player in this card, or try Play again after interacting with the page.",
       );
     }
+  };
+
+  const seekAudio = (nextTime: number) => {
+    const audioElement = audioRef.current;
+    if (!audioElement || !Number.isFinite(nextTime)) return;
+    const boundedTime = Math.min(
+      Math.max(0, nextTime),
+      Number.isFinite(duration) && duration > 0 ? duration : nextTime,
+    );
+    audioElement.currentTime = boundedTime;
+    setCurrentTime(boundedTime);
   };
 
   const progress =
     duration > 0
       ? Math.min(100, Math.max(0, (currentTime / duration) * 100))
       : 0;
+  const playbackStatus = error
+    ? audioIssue === "playback"
+      ? "Native fallback available"
+      : "Audio unavailable"
+    : duration > 0
+      ? "Local playback"
+      : "Loading audio metadata";
 
   return (
     <div className="mb-10 rounded-[30px] border border-zinc-200 bg-white/80 p-4 font-sans shadow-[0_20px_54px_rgba(46,36,22,0.08)] sm:p-5">
-      <audio
-        ref={audioRef}
-        src={overview.audioSrc}
-        preload="metadata"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onEnded={() => setIsPlaying(false)}
-        onTimeUpdate={(event) =>
-          setCurrentTime(event.currentTarget.currentTime)
-        }
-        onLoadedMetadata={(event) => {
-          setDuration(event.currentTarget.duration || 0);
-          event.currentTarget.playbackRate = playbackRate;
-        }}
-        onError={() => setError("Audio guide is unavailable in this build.")}
-      />
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-500/70">
@@ -2123,13 +2132,53 @@ const StoredAudioOverview = ({
             style={{ width: `${progress}%` }}
           />
         </div>
+        <input
+          type="range"
+          min={0}
+          max={duration || 0}
+          step={0.1}
+          value={duration > 0 ? Math.min(currentTime, duration) : 0}
+          disabled={duration <= 0}
+          aria-label="Seek chapter audio guide"
+          onChange={(event) => seekAudio(Number(event.currentTarget.value))}
+          className="mt-3 h-2 w-full cursor-pointer accent-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
+        />
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-zinc-400">
           <span>
             {formatAudioTime(currentTime)} /{" "}
             {duration ? formatAudioTime(duration) : overview.durationLabel}
           </span>
-          <span>Local playback</span>
+          <span>{playbackStatus}</span>
         </div>
+        <audio
+          ref={audioRef}
+          src={overview.audioSrc}
+          preload="metadata"
+          controls={showNativeControls}
+          className={showNativeControls ? "mt-3 w-full" : "hidden"}
+          onPlay={() => {
+            setIsPlaying(true);
+            setError("");
+            setAudioIssue("");
+          }}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => setIsPlaying(false)}
+          onTimeUpdate={(event) =>
+            setCurrentTime(event.currentTarget.currentTime)
+          }
+          onLoadedMetadata={(event) => {
+            const nextDuration = Number.isFinite(event.currentTarget.duration)
+              ? event.currentTarget.duration
+              : 0;
+            setDuration(nextDuration);
+            event.currentTarget.playbackRate = playbackRate;
+          }}
+          onError={() => {
+            setAudioIssue("media");
+            setShowNativeControls(true);
+            setError("Audio guide is unavailable in this build.");
+          }}
+        />
       </div>
       {error && (
         <div className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">

@@ -232,21 +232,30 @@
       "owner": "main agent + read-only sidecar Kuhn",
       "status": "completed",
       "write_scope": "src/views/AdminView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "GG",
+      "name": "Audio guide playback resilience",
+      "owner": "main agent + read-only sidecar Dirac",
+      "status": "completed",
+      "write_scope": "src/views/RevisionView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_27_complete",
+    "status": "phase_28_complete",
     "checks": [
+      "npm run audio:overview:dry-run passed, 25 present and 0 missing",
+      "curl -I confirmed stored MP3 served as audio/mpeg",
+      "Browser QA reproduced blocked custom play and confirmed native fallback controls, enabled seek, and 1.5x playbackRate",
+      "Browser QA covered 390x844 and 1280x900 audio guide layouts with no horizontal overflow and zero warning/error logs",
       "npm run format:check passed",
       "npm run lint passed",
       "npm run test passed, 80 tests",
       "npm run build passed",
       "graphify update . --force passed with 841 nodes, 1423 edges, 65 communities",
       "npm run graphify:tree passed",
-      "Graphify smoke query found Admin local verifier coverage symbols and verifier neighbors",
-      "Browser QA covered Admin Source Artifacts at 488px in-app width with no horizontal overflow and zero warning/error logs",
-      "Temporary headless Chrome desktop QA covered Admin Source Artifacts at 1440x1000 with no horizontal overflow",
-      "Read-only final-check sidecar Kuhn found no blockers"
+      "Graphify smoke query found StoredAudioOverview and audio manifest neighbors",
+      "Read-only final-check sidecar Dirac findings were addressed before final verification"
     ]
   }
 }

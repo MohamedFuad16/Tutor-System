@@ -1,7 +1,7 @@
 # Graph Report - LearningAI  (2026-06-02)
 
 ## Corpus Check
-- 82 files · ~144,621 words
+- 82 files · ~144,792 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ba7ceda8`
+- Built from commit: `66f59eeb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
