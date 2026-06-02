@@ -23,6 +23,7 @@ import {
   normalizeBrainRuntimeSettings,
   type BrainRuntimeSettings,
 } from "./src/lib/brainRuntimeSettings.js";
+import { VOICE_AGENT_TOOL_DEFINITIONS } from "./src/lib/voiceAgentTools.js";
 
 export {
   BRAIN_RUNTIME_SETTING_LIMITS,
@@ -2970,6 +2971,8 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             if (compactStudyContext) {
               thinkPrompt += `\n\nLOCAL STUDY CONTEXT FOR THIS VOICE SESSION:\n${compactStudyContext}\n\nUse this local learner memory, active book, and document context before general knowledge. If the student asks about the current material, answer from this context and say when a detail is not available locally. Keep the spoken answer concise.`;
             }
+            thinkPrompt +=
+              "\n\nVOICE TOOL POLICY: You may call local client-side tools during this voice session. Use look_at_study_context before answering about the active book, document, selected text, learner memory, or current study material when the prompt context is not enough. If the student asks for flashcards, revision cards, quiz questions, or active recall, call generate_flashcards with concise cards before saying they were created. When a new important concept should be added to the learner graph, call update_graph with one exact atomic concept. Keep spoken responses short after tool results.";
 
             const config = {
               type: "Settings",
@@ -2994,6 +2997,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                     model: "gpt-4o-mini",
                   },
                   prompt: thinkPrompt,
+                  functions: VOICE_AGENT_TOOL_DEFINITIONS,
                 },
                 speak: {
                   provider: {
@@ -3106,6 +3110,54 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                       }
                     });
                     messageBuffer = [];
+                  } else if (parsed.type === "FunctionCallRequest") {
+                    const functions = Array.isArray(parsed.functions)
+                      ? parsed.functions
+                      : [];
+                    recordSystemActivity({
+                      kind: "tool",
+                      status: "started",
+                      title: "Voice tool call requested",
+                      detail:
+                        functions
+                          .map((fn: any) => fn?.name)
+                          .filter(Boolean)
+                          .join(", ") || "voice tool",
+                      requestId: voiceRequestId,
+                      phase: "voice_tool_request",
+                      metadata: {
+                        toolCount: functions.length,
+                        toolNames: functions
+                          .map((fn: any) => fn?.name)
+                          .filter(Boolean),
+                        clientSideCount: functions.filter(
+                          (fn: any) => fn?.client_side !== false,
+                        ).length,
+                      },
+                    });
+                  } else if (parsed.type === "FunctionCallResponse") {
+                    recordSystemActivity({
+                      kind: "tool",
+                      status: "completed",
+                      title: "Voice tool response received",
+                      detail:
+                        typeof parsed.name === "string"
+                          ? parsed.name
+                          : "voice tool",
+                      requestId: voiceRequestId,
+                      toolName:
+                        typeof parsed.name === "string"
+                          ? parsed.name
+                          : undefined,
+                      phase: "voice_tool_response",
+                      metadata: {
+                        toolCallId: parsed.id,
+                        contentChars:
+                          typeof parsed.content === "string"
+                            ? parsed.content.length
+                            : 0,
+                      },
+                    });
                   }
                 } catch (e) {}
                 ws.send(messageStr);
@@ -3185,6 +3237,35 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       const forwardClientMessage = (data: any, isBinary: boolean) => {
         if (isBinary) {
           clientInputBytes += rawByteLength(data);
+        } else {
+          const text = Buffer.isBuffer(data)
+            ? data.toString("utf8")
+            : String(data);
+          try {
+            const payload = JSON.parse(text);
+            if (payload?.type === "FunctionCallResponse") {
+              recordSystemActivity({
+                kind: "tool",
+                status: "completed",
+                title: "Voice client tool completed",
+                detail:
+                  typeof payload.name === "string"
+                    ? payload.name
+                    : "voice tool",
+                requestId: voiceRequestId,
+                toolName:
+                  typeof payload.name === "string" ? payload.name : undefined,
+                phase: "voice_tool_response",
+                metadata: {
+                  toolCallId: payload.id,
+                  contentChars:
+                    typeof payload.content === "string"
+                      ? payload.content.length
+                      : 0,
+                },
+              });
+            }
+          } catch {}
         }
         // Proxy messages to Deepgram once ready
         if (isDeepgramReady && dgWs && dgWs.readyState === dgWs.OPEN) {

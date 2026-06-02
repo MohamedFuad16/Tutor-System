@@ -1849,3 +1849,71 @@ the local Node voice proxy during `voice_auth`.
   depth; the current voice provider path receives context but does not yet use
   the full typed-chat tool loop.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 36: Voice Client-Side Tool Calls
+
+Phase 36 gives voice mode an actual local tool-calling path instead of only
+static prompt context. The Deepgram voice-agent settings now advertise local
+client-side functions, and `ChatPanel` can execute those function requests
+against the same learner-brain surfaces used by typed chat.
+
+## Graphify Context
+
+- Graphify routed the slice through `ChatPanel.tsx`, `server.ts`,
+  `src/store/index.ts`, the tool-job ledger, `MemoryOrchestrator`, and the new
+  `src/lib/voiceAgentTools.ts` helper.
+- The Tutor debug skill was checked, but the current `package.json` has no
+  `brain:*` scripts (`brain:postchange`, `brain:retrieve`, and `brain:impact`
+  are absent). This phase therefore used Graphify plus the current repo's
+  standard gates as the executable workflow.
+
+## Integration Decisions
+
+- Added `src/lib/voiceAgentTools.ts` with the voice tool definitions and
+  protocol helpers for `FunctionCallRequest` arguments and
+  `FunctionCallResponse` payloads.
+- Added three local voice tools:
+  - `look_at_study_context` returns active book, learner memory, document, and
+    selection context.
+  - `update_graph` writes one atomic concept into the local learner graph using
+    `brainOrchestrator.addOrUpdateConcept()`.
+  - `generate_flashcards` stores voice-generated active-recall cards in Dexie
+    and the existing flashcard/artifact provenance ledgers.
+- `server.ts` now includes those definitions in Deepgram voice `Settings`,
+  updates the spoken prompt with the voice tool policy, and logs
+  `FunctionCallRequest`/`FunctionCallResponse` activity to the local system
+  activity ledger.
+- `ChatPanel.tsx` now handles `FunctionCallRequest`, records voice tool jobs,
+  executes local tools, sends `FunctionCallResponse`, and records client-side
+  `tool_call` voice events for Admin.
+- This remains local and GitHub-pushable. AWS/cloud synchronization is still
+  deferred.
+
+## Verification Evidence
+
+- `npm run test`: passed, 88 tests including `voice-agent-tools.test.mjs`.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- In-app Browser QA on `http://localhost:3100` confirmed Admin still exposes
+  voice/tool/memory/retrieval surfaces.
+- In-app Browser QA at `390x844` confirmed mobile Tutor still exposes the
+  textbox, `Start voice input`, and `Send message`.
+- Browser warning/error logs were empty during smoke QA.
+- `graphify update . --force`: passed with 870 nodes, 1466 edges, and 60
+  communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke checks found `voiceAgentTools.ts`,
+  `VOICE_AGENT_TOOL_DEFINITIONS`, `parseVoiceFunctionArguments()`, and
+  `buildVoiceFunctionCallResponse()`.
+
+## Remaining Work
+
+- Add an offline websocket harness that simulates Deepgram
+  `FunctionCallRequest` messages through the real `/api/voice-agent` proxy
+  without calling the external provider.
+- Browser-verify a live voice function-call round trip once provider keys/access
+  are intentionally part of the test scope.
+- Keep closing the remaining typed-chat vs voice parity gap: web search and
+  current-page vision tools are still typed-chat-only.
+- AWS/cloud synchronization remains out of scope until beta testing.

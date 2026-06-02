@@ -288,26 +288,34 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/components/ChatPanel.tsx, server.ts, src/store/index.ts, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "OO",
+      "name": "Voice client-side tool calls",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "server.ts, src/components/ChatPanel.tsx, src/store/index.ts, src/lib/voiceAgentTools.ts, package.json, tests/voice-agent-tools.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_35_complete",
+    "status": "phase_36_complete",
     "checks": [
-      "Graphify routed the next runtime-flow slice through ChatPanel, server voice websocket handling, memory.orchestrator, tool.jobs, longterm.memory, AdminView, and store voice-agent events",
-      "ChatPanel now builds bounded local voice study context from retrieval memory, active learning-book summary/concepts, active document excerpts, and interaction timing",
-      "Voice websocket auth now carries that local context plus active book/document metadata to the local Node proxy",
-      "The voice proxy injects local learner/book/document context into the Deepgram/OpenRouter voice-agent prompt and records a local retrieval/system activity event when context is attached",
-      "Admin voice timeline now has a context_attached event type for local client-side evidence",
+      "Graphify routed the slice through ChatPanel, server voice websocket settings, store voice events, and the new voiceAgentTools helper",
+      "Older tutor-debug brain runner hooks were checked but current package.json has no brain:* scripts, so the phase used Graphify plus standard repo gates",
+      "Added client-side Deepgram voice tools for look_at_study_context, update_graph, and generate_flashcards",
+      "Server voice Settings now advertises the local tool definitions and logs FunctionCallRequest/FunctionCallResponse activity in the system ledger",
+      "ChatPanel now handles FunctionCallRequest, executes local study-context retrieval, graph updates, and flashcard persistence, responds with FunctionCallResponse, and records voice tool jobs",
+      "Generated voice flashcards write the existing flashcard/artifact provenance ledgers and mark the voice session message as having flashcards",
       "npm run format:check passed",
-      "npm run test passed, 85 tests",
+      "npm run test passed, 88 tests including voice-agent tool contract tests",
       "npm run lint passed",
       "npm run build passed",
-      "In-app Browser QA on http://localhost:3100 confirmed Admin desktop exposes model/tool/memory/retrieval meters and the Live voice timeline",
-      "In-app Browser QA at 390x844 confirmed Admin remains responsive and mobile Study/Chat exposes the tutor textbox plus Start voice input control",
-      "Live Deepgram voice was not exercised in this phase to keep QA local and avoid external provider dependency",
-      "graphify update . --force regenerated graphify-out with 861 nodes, 1453 edges, and 59 communities",
+      "In-app Browser QA on http://localhost:3100 confirmed Admin still exposes voice/tool/memory/retrieval surfaces and mobile Tutor still exposes textbox, Start voice input, and Send message",
+      "Browser warning/error logs were empty during smoke QA",
+      "Live Deepgram voice was not exercised in this phase to keep verification local and avoid external provider dependency",
+      "graphify update . --force regenerated graphify-out with 870 nodes, 1466 edges, and 60 communities",
       "npm run graphify:tree passed",
-      "Graphify smoke query and artifact grep confirmed the refreshed graph includes compactVoiceStudyContext() for the new voice context path",
+      "Graphify smoke query and artifact grep confirmed the refreshed graph includes voiceAgentTools, VOICE_AGENT_TOOL_DEFINITIONS, parseVoiceFunctionArguments(), and buildVoiceFunctionCallResponse()",
       "Temporary local dev server on port 3100 was used only for verification"
     ]
   }

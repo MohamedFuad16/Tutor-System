@@ -1,16 +1,16 @@
 # Graph Report - LearningAI  (2026-06-02)
 
 ## Corpus Check
-- 82 files · ~148,994 words
+- 84 files · ~150,835 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 861 nodes · 1453 edges · 59 communities (42 shown, 17 thin omitted)
+- 870 nodes · 1466 edges · 60 communities (43 shown, 17 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 7 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d594df31`
+- Built from commit: `25791bd7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -41,6 +41,7 @@
 - [[_COMMUNITY_Community 23|Community 23]]
 - [[_COMMUNITY_Community 24|Community 24]]
 - [[_COMMUNITY_Community 25|Community 25]]
+- [[_COMMUNITY_Community 26|Community 26]]
 - [[_COMMUNITY_Community 27|Community 27]]
 - [[_COMMUNITY_Community 28|Community 28]]
 - [[_COMMUNITY_Community 29|Community 29]]
@@ -67,10 +68,10 @@
 - [[_COMMUNITY_Community 51|Community 51]]
 - [[_COMMUNITY_Community 53|Community 53]]
 - [[_COMMUNITY_Community 54|Community 54]]
+- [[_COMMUNITY_Community 55|Community 55]]
 - [[_COMMUNITY_Community 58|Community 58]]
 - [[_COMMUNITY_Community 60|Community 60]]
 - [[_COMMUNITY_Community 63|Community 63]]
-- [[_COMMUNITY_Community 64|Community 64]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `useMotionPreference()` - 24 edges
@@ -96,35 +97,35 @@
 - `searchSerper()` --calls--> `wait()`  [INFERRED]
   server.mjs → server/web-search.ts
 
-## Communities (59 total, 17 thin omitted)
+## Communities (60 total, 17 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.15
-Nodes (11): ArtifactRecord, BookChatThread, BrainDatabase, CitationState, CorrectionEvent, LearningChapter, LearningEntry, MasteryDelta (+3 more)
+Cohesion: 0.13
+Nodes (13): ArtifactRecord, BookChatThread, BrainDatabase, CitationState, LearningChapter, LearningEntry, Misconception, SessionMemoryRecord (+5 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.06
-Nodes (47): BKTAttemptOptions, BKTEngine, DEFAULT_BKT, compactSummary(), createLedgerId(), createMasteryDeltaRecords(), createModelSummaryEvidenceRecord(), MasteryDeltaInput (+39 more)
+Cohesion: 0.07
+Nodes (45): compactSummary(), createLedgerId(), createMasteryDeltaRecords(), createModelSummaryEvidenceRecord(), MasteryDeltaInput, ModelSummaryEvidenceInput, recordMasteryDelta(), recordModelSummaryEvidence() (+37 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.05
-Nodes (37): PatternCard(), pressDots, themes, SvgBeige(), SvgDark(), SvgOrange(), audioOverviewEntries, builtInBookAudioOverviews (+29 more)
+Cohesion: 0.06
+Nodes (30): PatternCard(), pressDots, themes, SvgBeige(), SvgDark(), SvgOrange(), audioOverviewEntries, builtInBookAudioOverviews (+22 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.04
-Nodes (23): AnimatedMarkdown, ChatArchive, END_INTENT_PATTERNS, gsapMotion, InteractiveCodeBlock, languageExtensions, languageLabels, markdownComponents (+15 more)
+Nodes (24): AnimatedMarkdown, ChatArchive, END_INTENT_PATTERNS, gsapMotion, InteractiveCodeBlock, languageExtensions, languageLabels, markdownComponents (+16 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.06
-Nodes (42): normalizeBrainRuntimeSettings(), BRAIN_RUNTIME_SETTING_LIMITS, BrainRuntimeSettings, BrainWebSearchPolicy, clampInteger(), DEFAULT_BRAIN_RUNTIME_SETTINGS, normalizeBrainRuntimeSettings(), normalizeWebSearchPolicy() (+34 more)
+Nodes (40): recordStoredAudioOverviewArtifacts(), BetaDiagnosticItem, BetaDiagnosticOverallStatus, BetaDiagnosticsExportInput, BetaDiagnosticsInput, BetaDiagnosticsSnapshot, BetaDiagnosticStatus, buildBetaDiagnosticsExport() (+32 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.11
-Nodes (49): applyArtifactCitationState(), applyCitationIntegrityResult(), artifactRecordIdFor(), ArtifactStatusInput, ArtifactVerificationInput, artifactVerificationStateForCitationStates(), CitationIntegrityResult, CitationIntegrityState (+41 more)
+Cohesion: 0.1
+Nodes (50): applyArtifactCitationState(), applyCitationIntegrityResult(), artifactRecordIdFor(), ArtifactStatusInput, ArtifactVerificationInput, artifactVerificationStateForCitationStates(), CitationIntegrityResult, CitationIntegrityState (+42 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.12
-Nodes (32): addRows(), addTarget(), applyCorrectionPropagation(), buildCorrectionPropagationMetadata(), buildCorrectionPropagationPatch(), cleanList(), collectCorrectionPropagationTargets(), compact() (+24 more)
+Cohesion: 0.11
+Nodes (33): addRows(), addTarget(), applyCorrectionPropagation(), buildCorrectionPropagationMetadata(), buildCorrectionPropagationPatch(), cleanList(), collectCorrectionPropagationTargets(), compact() (+25 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.07
@@ -136,7 +137,7 @@ Nodes (31): assistantMessage, codeBlockMatch, compact, createTutorServerApp(), d
 
 ### Community 9 - "Community 9"
 Cohesion: 0.05
-Nodes (43): debugAdminToken, debugTokenFromRequest(), DEEPGRAM_PRICING, deepgramKeyFromRequest(), fetchOpenRouterPricing(), firstHeader(), getOpenRouterServerFallbackKey(), hostNameFromHeader() (+35 more)
+Nodes (52): debugAdminToken, debugTokenFromRequest(), DEEPGRAM_PRICING, deepgramKeyFromRequest(), fetchOpenRouterPricing(), firstHeader(), getOpenRouterServerFallbackKey(), hostNameFromHeader() (+44 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.09
@@ -183,8 +184,8 @@ Cohesion: 0.12
 Nodes (16): artifact, { artifact, citation }, { artifact, citation, result }, artifactA, artifactB, citation, citationA, citationB (+8 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.4
-Nodes (4): ChatPhase, Message, MindMapLink, MindMapNode
+Cohesion: 0.43
+Nodes (7): compact(), flashcardEvidenceConceptId(), FlashcardReviewEvidenceResult, flashcardReviewOutcome(), flashcardReviewSummary(), recordFlashcardReviewEvidence(), RevisionEvidenceEngine
 
 ### Community 22 - "Community 22"
 Cohesion: 0.18
@@ -199,8 +200,12 @@ Cohesion: 0.2
 Nodes (9): 1. Mobile-First Design, 2. Component Layout, 3. Typography Scaling, 4. Testing & Validation, Best Practices, Breakpoints Overview, Responsive Design Guidelines, Tailwind Breakpoint Mapping (+1 more)
 
 ### Community 25 - "Community 25"
+Cohesion: 0.38
+Nodes (4): BKTAttemptOptions, BKTEngine, DEFAULT_BKT, masteryFromEvidenceAttempt()
+
+### Community 26 - "Community 26"
 Cohesion: 0.33
-Nodes (9): ModelRun, compact(), createModelRunRecord(), ModelRunEventInput, modelRunIdFor(), ModelRunStatusInput, nonNegativeNumber(), normalizeModelRunStatus() (+1 more)
+Nodes (5): buildVoiceFunctionCallResponse(), parseVoiceFunctionArguments(), VOICE_AGENT_TOOL_DEFINITIONS, VoiceAgentFunctionCall, voiceAgentToolNames
 
 ### Community 27 - "Community 27"
 Cohesion: 0.2
@@ -247,15 +252,15 @@ Cohesion: 0.67
 Nodes (3): codeFileName(), codeLanguageLabel(), PremiumCodeShell()
 
 ### Community 58 - "Community 58"
-Cohesion: 0.19
-Nodes (6): CognitiveLoadMonitor, CognitiveLoadState, IllusionDetector, db, PrerequisiteDAG, ZPDCalculator
+Cohesion: 0.15
+Nodes (7): CognitiveLoadMonitor, CognitiveLoadState, IllusionDetector, LearnerModel, db, PrerequisiteDAG, ZPDCalculator
 
 ### Community 63 - "Community 63"
 Cohesion: 0.18
 Nodes (4): PersistentConcept, ProductiveFailureEngine, StruggleState, ScaffoldingEngine
 
 ## Knowledge Gaps
-- **303 isolated node(s):** `parsed`, `rows`, `seen`, `results`, `title` (+298 more)
+- **306 isolated node(s):** `parsed`, `rows`, `seen`, `results`, `title` (+301 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **17 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -263,16 +268,16 @@ Nodes (4): PersistentConcept, ProductiveFailureEngine, StruggleState, Scaffoldin
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `db` connect `Community 58` to `Community 0`, `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 5`, `Community 6`, `Community 11`, `Community 13`, `Community 14`, `Community 19`, `Community 22`, `Community 25`, `Community 30`, `Community 63`?**
-  _High betweenness centrality (0.077) - this node is a cross-community bridge._
-- **Why does `BrainRuntimeSettings` connect `Community 4` to `Community 9`, `Community 12`?**
-  _High betweenness centrality (0.032) - this node is a cross-community bridge._
-- **Why does `DEFAULT_BRAIN_RUNTIME_SETTINGS` connect `Community 4` to `Community 9`, `Community 12`?**
-  _High betweenness centrality (0.032) - this node is a cross-community bridge._
+  _High betweenness centrality (0.073) - this node is a cross-community bridge._
+- **Why does `useStore` connect `Community 23` to `Community 33`, `Community 2`, `Community 3`, `Community 4`, `Community 12`, `Community 13`, `Community 18`, `Community 22`, `Community 30`?**
+  _High betweenness centrality (0.025) - this node is a cross-community bridge._
+- **Why does `createTutorServerApp()` connect `Community 8` to `Community 9`?**
+  _High betweenness centrality (0.021) - this node is a cross-community bridge._
 - **What connects `parsed`, `rows`, `seen` to the rest of the system?**
-  _303 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _306 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Community 0` be split into smaller, more focused modules?**
+  _Cohesion score 0.13 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
-- **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.04 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06 - nodes in this community are weakly interconnected._

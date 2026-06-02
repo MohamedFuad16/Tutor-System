@@ -119,6 +119,7 @@ export type VoiceAgentEventType =
   | "session_started"
   | "context_attached"
   | "settings_applied"
+  | "tool_call"
   | "user_turn"
   | "assistant_turn"
   | "agent_started_speaking"

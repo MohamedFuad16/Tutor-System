@@ -82,6 +82,11 @@ import {
   createTutorInteractionSnapshot,
   type TutorInteractionMode,
 } from "../lib/interactionModel";
+import {
+  buildVoiceFunctionCallResponse,
+  parseVoiceFunctionArguments,
+  type VoiceAgentFunctionCall,
+} from "../lib/voiceAgentTools";
 
 type MermaidApi = typeof import("mermaid").default;
 type Variants = Record<string, Record<string, any>>;
@@ -330,6 +335,15 @@ type VoiceCaption = {
 type VoiceSessionTurn = {
   role: "user" | "assistant";
   content: string;
+};
+type VoiceStudyContextPayload = {
+  studyContext: string;
+  studyContextChars: number;
+  rawContextChars: number;
+  memoryContextChars: number;
+  activeBookContextChars: number;
+  documentContextChars: number;
+  documentCount: number;
 };
 
 const VOICE_AGENT_CONTEXT_CHAR_LIMIT = 7000;
@@ -3007,6 +3021,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const voiceStartedAtRef = useRef<number | null>(null);
   const voiceSessionCountedRef = useRef(false);
   const voiceTurnsRef = useRef<VoiceSessionTurn[]>([]);
+  const voiceStudyContextRef = useRef<VoiceStudyContextPayload | null>(null);
 
   const forceScrollToBottom = useCallback(
     (behavior: ScrollBehavior = "smooth") => {
@@ -3585,6 +3600,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       voiceSessionIdRef.current = null;
     }
     voiceStartedAtRef.current = null;
+    voiceStudyContextRef.current = null;
     voiceSessionCountedRef.current = false;
     voiceTurnsRef.current = [];
     setVoiceState("idle");
@@ -3621,6 +3637,206 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     }
     ws.send(JSON.stringify({ type: "InjectUserMessage", content: trimmed }));
   };
+
+  const handleVoiceFunctionCallRequest = useCallback(
+    async (msg: { functions?: VoiceAgentFunctionCall[] }, ws: WebSocket) => {
+      const functionCalls = Array.isArray(msg.functions) ? msg.functions : [];
+      const sessionId = voiceSessionIdRef.current || `voice-${Date.now()}`;
+
+      for (const call of functionCalls) {
+        const toolName = call.name || "unknown_tool";
+        const toolCallId = call.id || `${toolName}-${Date.now()}`;
+        const startedAt = Date.now();
+        const rawArgs = call.arguments ?? call.input ?? "{}";
+        const inputSummary = compactVoiceEventText(
+          `${toolName}: ${rawArgs}`,
+          180,
+        );
+
+        if (call.client_side === false) {
+          recordVoiceAgentEvent({
+            type: "tool_call",
+            status: "completed",
+            sessionId,
+            summary: `Voice tool handled by provider: ${toolName}`,
+            metadata: { toolCallId, clientSide: false },
+          });
+          continue;
+        }
+
+        recordVoiceAgentEvent({
+          type: "tool_call",
+          status: "running",
+          sessionId,
+          summary: `Voice tool requested: ${toolName}`,
+          metadata: { toolCallId, inputSummary },
+        });
+        await recordToolJobEvent({
+          toolName,
+          status: "running",
+          requestId: sessionId,
+          source: "voice_agent",
+          inputSummary,
+          metadata: { toolCallId, voiceSessionId: sessionId },
+        });
+
+        try {
+          const args = parseVoiceFunctionArguments(call);
+          let result: Record<string, unknown>;
+
+          if (toolName === "look_at_study_context") {
+            const contextPayload =
+              voiceStudyContextRef.current || (await buildVoiceStudyContext());
+            voiceStudyContextRef.current = contextPayload;
+            result = {
+              status: "ready",
+              question: String(args.question || "").slice(0, 500),
+              activeBookId: canonicalActiveBookId || "",
+              activeBookTitle: activeLearningBookTitle || activeProject,
+              activeDocumentId: activeDocumentId || "",
+              documentCount: contextPayload.documentCount,
+              contextChars: contextPayload.studyContextChars,
+              context: contextPayload.studyContext,
+            };
+          } else if (toolName === "update_graph") {
+            const name = String(args.name || "").trim();
+            const description = String(args.description || "").trim();
+            if (!name || !description) {
+              throw new Error("update_graph requires name and description.");
+            }
+            const understandingDelta = Math.max(
+              -0.2,
+              Math.min(0.2, Number(args.understandingDelta || 0)),
+            );
+            await brainOrchestrator.addOrUpdateConcept(
+              name,
+              description,
+              understandingDelta,
+            );
+            result = {
+              status: "stored",
+              concept: name,
+              understandingDelta,
+              activeBookId: canonicalActiveBookId || "",
+            };
+          } else if (toolName === "generate_flashcards") {
+            const cards = Array.isArray(args.cards)
+              ? args.cards
+                  .filter((card: any) => card?.front && card?.back)
+                  .slice(0, 8)
+              : [];
+            if (!cards.length) {
+              throw new Error(
+                "generate_flashcards requires at least one card.",
+              );
+            }
+            const storedFlashcards = await Promise.all(
+              cards.map(async (card: any) => {
+                const { flashcard } = await createFlashcardForStorage(card, {
+                  id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+                  bookId: canonicalActiveBookId || undefined,
+                  bookTitle:
+                    activeLearningBookTitle || activeProject || undefined,
+                });
+                await db.flashcards.add(flashcard);
+                return flashcard;
+              }),
+            );
+            await recordGeneratedFlashcardsArtifact({
+              batchId: `${sessionId}:${toolCallId}:voice-flashcards`,
+              cards: storedFlashcards,
+              source: "voice_tool_flashcard_generation",
+              sourceMessageId: sessionId,
+              messageId: sessionId,
+              conversationId: canonicalActiveBookId
+                ? chatThreadIdForBook(canonicalActiveBookId)
+                : undefined,
+              bookId: canonicalActiveBookId || undefined,
+              bookTitle: activeLearningBookTitle || activeProject || undefined,
+              metadata: {
+                generationPath: "voice_agent_function_call",
+                toolCallId,
+                voiceSessionId: sessionId,
+              },
+            });
+            setMessages((prev) =>
+              prev.map((message) =>
+                message.id === sessionId
+                  ? { ...message, hasFlashcards: true }
+                  : message,
+              ),
+            );
+            result = {
+              status: "stored",
+              cardCount: storedFlashcards.length,
+              activeBookId: canonicalActiveBookId || "",
+            };
+          } else {
+            throw new Error(`Unsupported voice tool: ${toolName}`);
+          }
+
+          ws.send(JSON.stringify(buildVoiceFunctionCallResponse(call, result)));
+          recordVoiceAgentEvent({
+            type: "tool_call",
+            status: "completed",
+            sessionId,
+            summary: `Voice tool completed: ${toolName}`,
+            metadata: { toolCallId, result },
+          });
+          await recordToolJobEvent({
+            toolName,
+            status: "completed",
+            requestId: sessionId,
+            source: "voice_agent",
+            inputSummary,
+            outputSummary:
+              typeof result.status === "string"
+                ? String(result.status)
+                : "Voice tool completed.",
+            durationMs: Date.now() - startedAt,
+            metadata: { toolCallId, voiceSessionId: sessionId, result },
+          });
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          ws.send(
+            JSON.stringify(
+              buildVoiceFunctionCallResponse(call, {
+                status: "failed",
+                error: message,
+              }),
+            ),
+          );
+          recordVoiceAgentEvent({
+            type: "tool_call",
+            status: "failed",
+            sessionId,
+            summary: `Voice tool failed: ${toolName}`,
+            metadata: { toolCallId, error: message },
+          });
+          await recordToolJobEvent({
+            toolName,
+            status: "failed",
+            requestId: sessionId,
+            source: "voice_agent",
+            inputSummary,
+            error: message,
+            durationMs: Date.now() - startedAt,
+            metadata: { toolCallId, voiceSessionId: sessionId },
+          });
+        }
+      }
+    },
+    [
+      activeDocumentId,
+      activeLearningBookTitle,
+      activeProject,
+      buildVoiceStudyContext,
+      canonicalActiveBookId,
+      recordVoiceAgentEvent,
+      setMessages,
+    ],
+  );
 
   const startVoice = async () => {
     if (!apiKey) {
@@ -3687,6 +3903,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           return null;
         },
       );
+      voiceStudyContextRef.current = voiceContextPayload;
       if (voiceContextPayload?.studyContext) {
         recordVoiceAgentEvent({
           type: "context_attached",
@@ -3931,6 +4148,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     });
                 }
               }
+            } else if (msg.type === "FunctionCallRequest") {
+              await handleVoiceFunctionCallRequest(msg, ws);
             } else if (msg.type === "UserStartedSpeaking") {
               // Interrupt playing
               recordVoiceAgentEvent({
