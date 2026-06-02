@@ -267,24 +267,33 @@
       "owner": "main agent + read-only explorer Averroes",
       "status": "completed",
       "write_scope": "server.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "LL",
+      "name": "Long-form user-brain audio explainers",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/lib/chapterAudioOverviews.json, src/lib/userBrainArchitectureBook.ts, scripts/generate-user-brain-audio-overviews.mjs, public/audio-overviews/user-brain-*.mp3, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_32_complete",
+    "status": "phase_33_complete",
     "checks": [
-      "Graphify routed the phase through ChatPanel voice title generation, createTutorServerApp /api/title, RevisionView StoredAudioOverview, and chapterAudioOverviews",
-      "Read-only explorer Averroes inspected PR #4 and confirmed only voice/session-title pieces should be lifted; image search, Mermaid, multiple-PDF, generated brain artifacts, and stale workflow edits were excluded",
-      "Tracked YAML workflow list is empty, so no GitHub Actions Graphify refresh workflow remains on main",
+      "Graphify routed the phase through RevisionView StoredAudioOverview, chapterAudioOverviews, and userBrainArchitectureBook",
+      "Expanded all 8 User Brain Architecture transcripts into simple long-form stored-audio explainers; Tutor System Architecture and App Design Language long-form rewrites remain out of this phase",
+      "Updated the Deepgram generator to split long scripts under the provider input limit and stitch MP3 chunks back together locally",
+      "Deepgram generation passed for --book user-brain-architecture with checked-in MP3 outputs",
+      "ffprobe measured User Brain Architecture chapter durations at 207, 195, 196, 195, 205, 193, 214, and 195 seconds",
       "npm run audio:overview:dry-run passed with 25 present, 0 missing, 25 planned",
-      "npm run test passed, 85 tests",
       "npm run format:check passed",
+      "npm run test passed, 85 tests",
       "npm run lint passed",
       "npm run build passed",
-      "curl -I confirmed /audio-overviews/user-brain-runtime-overview.mp3 serves 200 audio/mpeg with a 321408 byte content length",
-      "Browser QA confirmed the User Brain Architecture audio card at 488x822 with custom controls, native controls, loaded duration, transcript, no forbidden metadata, and no horizontal overflow",
-      "graphify update . --force passed with 854 nodes, 1442 edges, 61 communities",
+      "Browser QA confirmed User Brain Architecture chapter 1 audio at 390x844 and 1440x900 with native controls, transcript, 207-second duration, no raw stored metadata in the audio card, and no horizontal overflow",
+      "Browser emitted a mobile QA screenshot of the audio card; file save into the workflow results directory was blocked by the browser runtime's file permissions",
+      "graphify update . --force passed; first run produced 858 nodes, 1450 edges, 60 communities, and the final run reported no further topology changes after the book note edit",
       "npm run graphify:tree passed",
-      "Graphify smoke query found StoredAudioOverview and createTutorServerApp paths for the updated audio/title surfaces"
+      "Graphify smoke query found StoredAudioOverview, chapterAudioOverviews, RevisionView, and userBrainArchitectureBook paths for this phase"
     ]
   }
 }

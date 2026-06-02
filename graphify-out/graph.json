@@ -117,7 +117,7 @@
       "source_file": "server.mjs",
       "source_location": "L185",
       "id": "learningai_server_normalizebrainruntimesettings",
-      "community": 4,
+      "community": 9,
       "norm_label": "normalizebrainruntimesettings()"
     },
     {
@@ -1645,7 +1645,7 @@
       "label": "execFileAsync",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L26",
+      "source_location": "L33",
       "id": "scripts_generate_user_brain_audio_overviews_execfileasync",
       "community": 7,
       "norm_label": "execfileasync"
@@ -1654,7 +1654,7 @@
       "label": "args",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L27",
+      "source_location": "L34",
       "id": "scripts_generate_user_brain_audio_overviews_args",
       "community": 7,
       "norm_label": "args"
@@ -1663,7 +1663,7 @@
       "label": "hasArg()",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L29",
+      "source_location": "L36",
       "id": "scripts_generate_user_brain_audio_overviews_hasarg",
       "community": 7,
       "norm_label": "hasarg()"
@@ -1672,7 +1672,7 @@
       "label": "valueForArg()",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L31",
+      "source_location": "L38",
       "id": "scripts_generate_user_brain_audio_overviews_valueforarg",
       "community": 7,
       "norm_label": "valueforarg()"
@@ -1681,7 +1681,7 @@
       "label": "dryRun",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L64",
+      "source_location": "L71",
       "id": "scripts_generate_user_brain_audio_overviews_dryrun",
       "community": 7,
       "norm_label": "dryrun"
@@ -1690,7 +1690,7 @@
       "label": "overwrite",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L65",
+      "source_location": "L72",
       "id": "scripts_generate_user_brain_audio_overviews_overwrite",
       "community": 7,
       "norm_label": "overwrite"
@@ -1699,7 +1699,7 @@
       "label": "chapterArg",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L66",
+      "source_location": "L73",
       "id": "scripts_generate_user_brain_audio_overviews_chapterarg",
       "community": 7,
       "norm_label": "chapterarg"
@@ -1708,7 +1708,7 @@
       "label": "bookArg",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L67",
+      "source_location": "L74",
       "id": "scripts_generate_user_brain_audio_overviews_bookarg",
       "community": 7,
       "norm_label": "bookarg"
@@ -1717,7 +1717,7 @@
       "label": "modelArg",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L70",
+      "source_location": "L77",
       "id": "scripts_generate_user_brain_audio_overviews_modelarg",
       "community": 7,
       "norm_label": "modelarg"
@@ -1726,7 +1726,7 @@
       "label": "speedArg",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L71",
+      "source_location": "L78",
       "id": "scripts_generate_user_brain_audio_overviews_speedarg",
       "community": 7,
       "norm_label": "speedarg"
@@ -1735,7 +1735,7 @@
       "label": "voiceArg",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L72",
+      "source_location": "L79",
       "id": "scripts_generate_user_brain_audio_overviews_voicearg",
       "community": 7,
       "norm_label": "voicearg"
@@ -1744,7 +1744,7 @@
       "label": "rateArg",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L73",
+      "source_location": "L80",
       "id": "scripts_generate_user_brain_audio_overviews_ratearg",
       "community": 7,
       "norm_label": "ratearg"
@@ -1753,7 +1753,7 @@
       "label": "tempoArg",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L74",
+      "source_location": "L81",
       "id": "scripts_generate_user_brain_audio_overviews_tempoarg",
       "community": 7,
       "norm_label": "tempoarg"
@@ -1762,7 +1762,7 @@
       "label": "selectedEntries",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L131",
+      "source_location": "L138",
       "id": "scripts_generate_user_brain_audio_overviews_selectedentries",
       "community": 7,
       "norm_label": "selectedentries"
@@ -1771,7 +1771,7 @@
       "label": "outputDir",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L142",
+      "source_location": "L149",
       "id": "scripts_generate_user_brain_audio_overviews_outputdir",
       "community": 7,
       "norm_label": "outputdir"
@@ -1780,7 +1780,7 @@
       "label": "outputPathFor()",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L144",
+      "source_location": "L151",
       "id": "scripts_generate_user_brain_audio_overviews_outputpathfor",
       "community": 7,
       "norm_label": "outputpathfor()"
@@ -1789,16 +1789,52 @@
       "label": "fileExists()",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L146",
+      "source_location": "L154",
       "id": "scripts_generate_user_brain_audio_overviews_fileexists",
       "community": 7,
       "norm_label": "fileexists()"
     },
     {
+      "label": "splitLongSpeechInput()",
+      "file_type": "code",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L163",
+      "id": "scripts_generate_user_brain_audio_overviews_splitlongspeechinput",
+      "community": 7,
+      "norm_label": "splitlongspeechinput()"
+    },
+    {
+      "label": "ffmpegConcatFileLine()",
+      "file_type": "code",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L215",
+      "id": "scripts_generate_user_brain_audio_overviews_ffmpegconcatfileline",
+      "community": 7,
+      "norm_label": "ffmpegconcatfileline()"
+    },
+    {
+      "label": "concatMp3Files()",
+      "file_type": "code",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L218",
+      "id": "scripts_generate_user_brain_audio_overviews_concatmp3files",
+      "community": 7,
+      "norm_label": "concatmp3files()"
+    },
+    {
+      "label": "synthesizeDeepgramInput()",
+      "file_type": "code",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L246",
+      "id": "scripts_generate_user_brain_audio_overviews_synthesizedeepgraminput",
+      "community": 7,
+      "norm_label": "synthesizedeepgraminput()"
+    },
+    {
       "label": "existingFiles",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L155",
+      "source_location": "L271",
       "id": "scripts_generate_user_brain_audio_overviews_existingfiles",
       "community": 7,
       "norm_label": "existingfiles"
@@ -1807,7 +1843,7 @@
       "label": "report",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L163",
+      "source_location": "L279",
       "id": "scripts_generate_user_brain_audio_overviews_report",
       "community": 7,
       "norm_label": "report"
@@ -1816,7 +1852,7 @@
       "label": "printReport()",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L169",
+      "source_location": "L285",
       "id": "scripts_generate_user_brain_audio_overviews_printreport",
       "community": 7,
       "norm_label": "printreport()"
@@ -1825,7 +1861,7 @@
       "label": "synthesizeWithDeepgram()",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L216",
+      "source_location": "L332",
       "id": "scripts_generate_user_brain_audio_overviews_synthesizewithdeepgram",
       "community": 7,
       "norm_label": "synthesizewithdeepgram()"
@@ -1834,7 +1870,7 @@
       "label": "synthesizeWithOpenAI()",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L242",
+      "source_location": "L359",
       "id": "scripts_generate_user_brain_audio_overviews_synthesizewithopenai",
       "community": 7,
       "norm_label": "synthesizewithopenai()"
@@ -1843,7 +1879,7 @@
       "label": "synthesizeWithMacSay()",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L257",
+      "source_location": "L374",
       "id": "scripts_generate_user_brain_audio_overviews_synthesizewithmacsay",
       "community": 7,
       "norm_label": "synthesizewithmacsay()"
@@ -1852,7 +1888,7 @@
       "label": "targetPath",
       "file_type": "code",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
-      "source_location": "L295",
+      "source_location": "L412",
       "id": "scripts_generate_user_brain_audio_overviews_targetpath",
       "community": 7,
       "norm_label": "targetpath"
@@ -2241,7 +2277,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L1",
       "id": "src_memory_memory_events_ts",
-      "community": 22,
+      "community": 1,
       "norm_label": "memory.events.ts"
     },
     {
@@ -2250,7 +2286,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L3",
       "id": "memory_memory_events_memoryeventstatusinput",
-      "community": 22,
+      "community": 1,
       "norm_label": "memoryeventstatusinput"
     },
     {
@@ -2259,7 +2295,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L11",
       "id": "memory_memory_events_memoryeventinput",
-      "community": 22,
+      "community": 1,
       "norm_label": "memoryeventinput"
     },
     {
@@ -2268,7 +2304,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L30",
       "id": "memory_memory_events_compact",
-      "community": 22,
+      "community": 1,
       "norm_label": "compact()"
     },
     {
@@ -2277,7 +2313,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L40",
       "id": "memory_memory_events_optionalcompact",
-      "community": 22,
+      "community": 1,
       "norm_label": "optionalcompact()"
     },
     {
@@ -2286,7 +2322,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L45",
       "id": "memory_memory_events_clamp01",
-      "community": 22,
+      "community": 1,
       "norm_label": "clamp01()"
     },
     {
@@ -2295,7 +2331,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L51",
       "id": "memory_memory_events_cleansourceids",
-      "community": 22,
+      "community": 1,
       "norm_label": "cleansourceids()"
     },
     {
@@ -2304,7 +2340,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L56",
       "id": "memory_memory_events_normalizememoryeventstatus",
-      "community": 22,
+      "community": 1,
       "norm_label": "normalizememoryeventstatus()"
     },
     {
@@ -2313,7 +2349,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L73",
       "id": "memory_memory_events_memoryeventidfor",
-      "community": 22,
+      "community": 1,
       "norm_label": "memoryeventidfor()"
     },
     {
@@ -2322,7 +2358,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L92",
       "id": "memory_memory_events_creatememoryeventrecord",
-      "community": 22,
+      "community": 1,
       "norm_label": "creatememoryeventrecord()"
     },
     {
@@ -2655,7 +2691,7 @@
       "source_file": "src/memory/artifact.records.ts",
       "source_location": "L391",
       "id": "memory_artifact_records_supportslocalcitationintegrityartifact",
-      "community": 5,
+      "community": 4,
       "norm_label": "supportslocalcitationintegrityartifact()"
     },
     {
@@ -4005,7 +4041,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L78",
       "id": "memory_longterm_memory_flashcard",
-      "community": 19,
+      "community": 2,
       "norm_label": "flashcard"
     },
     {
@@ -4095,7 +4131,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L217",
       "id": "memory_longterm_memory_memoryevent",
-      "community": 22,
+      "community": 1,
       "norm_label": "memoryevent"
     },
     {
@@ -4113,7 +4149,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L264",
       "id": "memory_longterm_memory_correctionevent",
-      "community": 6,
+      "community": 0,
       "norm_label": "correctionevent"
     },
     {
@@ -4122,7 +4158,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L294",
       "id": "memory_longterm_memory_artifactrecord",
-      "community": 0,
+      "community": 6,
       "norm_label": "artifactrecord"
     },
     {
@@ -6066,7 +6102,7 @@
       "source_file": "src/lib/brainRuntimeSettings.ts",
       "source_location": "L1",
       "id": "src_lib_brainruntimesettings_ts",
-      "community": 4,
+      "community": 9,
       "norm_label": "brainruntimesettings.ts"
     },
     {
@@ -6075,7 +6111,7 @@
       "source_file": "src/lib/brainRuntimeSettings.ts",
       "source_location": "L1",
       "id": "lib_brainruntimesettings_web_search_policies",
-      "community": 4,
+      "community": 9,
       "norm_label": "web_search_policies"
     },
     {
@@ -6084,7 +6120,7 @@
       "source_file": "src/lib/brainRuntimeSettings.ts",
       "source_location": "L7",
       "id": "lib_brainruntimesettings_brainwebsearchpolicy",
-      "community": 4,
+      "community": 9,
       "norm_label": "brainwebsearchpolicy"
     },
     {
@@ -6093,7 +6129,7 @@
       "source_file": "src/lib/brainRuntimeSettings.ts",
       "source_location": "L9",
       "id": "lib_brainruntimesettings_brainruntimesettings",
-      "community": 4,
+      "community": 9,
       "norm_label": "brainruntimesettings"
     },
     {
@@ -6102,7 +6138,7 @@
       "source_file": "src/lib/brainRuntimeSettings.ts",
       "source_location": "L16",
       "id": "lib_brainruntimesettings_brain_runtime_setting_limits",
-      "community": 4,
+      "community": 9,
       "norm_label": "brain_runtime_setting_limits"
     },
     {
@@ -6111,7 +6147,7 @@
       "source_file": "src/lib/brainRuntimeSettings.ts",
       "source_location": "L22",
       "id": "lib_brainruntimesettings_default_brain_runtime_settings",
-      "community": 4,
+      "community": 9,
       "norm_label": "default_brain_runtime_settings"
     },
     {
@@ -6120,7 +6156,7 @@
       "source_file": "src/lib/brainRuntimeSettings.ts",
       "source_location": "L29",
       "id": "lib_brainruntimesettings_clampinteger",
-      "community": 4,
+      "community": 9,
       "norm_label": "clampinteger()"
     },
     {
@@ -6129,7 +6165,7 @@
       "source_file": "src/lib/brainRuntimeSettings.ts",
       "source_location": "L40",
       "id": "lib_brainruntimesettings_normalizewebsearchpolicy",
-      "community": 4,
+      "community": 9,
       "norm_label": "normalizewebsearchpolicy()"
     },
     {
@@ -6138,7 +6174,7 @@
       "source_file": "src/lib/brainRuntimeSettings.ts",
       "source_location": "L45",
       "id": "lib_brainruntimesettings_normalizebrainruntimesettings",
-      "community": 4,
+      "community": 9,
       "norm_label": "normalizebrainruntimesettings()"
     },
     {
@@ -6768,7 +6804,7 @@
       "source_file": "src/views/AdminView.tsx",
       "source_location": "L199",
       "id": "views_adminview_islocallyverifiableartifacttype",
-      "community": 5,
+      "community": 4,
       "norm_label": "islocallyverifiableartifacttype()"
     },
     {
@@ -10134,6 +10170,46 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "scripts_generate_user_brain_audio_overviews_mjs",
+      "target": "scripts_generate_user_brain_audio_overviews_splitlongspeechinput",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L215",
+      "weight": 1.0,
+      "source": "scripts_generate_user_brain_audio_overviews_mjs",
+      "target": "scripts_generate_user_brain_audio_overviews_ffmpegconcatfileline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L218",
+      "weight": 1.0,
+      "source": "scripts_generate_user_brain_audio_overviews_mjs",
+      "target": "scripts_generate_user_brain_audio_overviews_concatmp3files",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L246",
+      "weight": 1.0,
+      "source": "scripts_generate_user_brain_audio_overviews_mjs",
+      "target": "scripts_generate_user_brain_audio_overviews_synthesizedeepgraminput",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
       "source_location": "L155",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10205,11 +10281,55 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L229",
+      "weight": 1.0,
+      "source": "scripts_generate_user_brain_audio_overviews_concatmp3files",
+      "target": "scripts_generate_user_brain_audio_overviews_execfileasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
       "source_location": "L265",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "scripts_generate_user_brain_audio_overviews_synthesizewithmacsay",
       "target": "scripts_generate_user_brain_audio_overviews_execfileasync"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L334",
+      "weight": 1.0,
+      "source": "scripts_generate_user_brain_audio_overviews_synthesizewithdeepgram",
+      "target": "scripts_generate_user_brain_audio_overviews_splitlongspeechinput",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L353",
+      "weight": 1.0,
+      "source": "scripts_generate_user_brain_audio_overviews_synthesizewithdeepgram",
+      "target": "scripts_generate_user_brain_audio_overviews_concatmp3files",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/generate-user-brain-audio-overviews.mjs",
+      "source_location": "L336",
+      "weight": 1.0,
+      "source": "scripts_generate_user_brain_audio_overviews_synthesizewithdeepgram",
+      "target": "scripts_generate_user_brain_audio_overviews_synthesizedeepgraminput",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -22780,5 +22900,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "9d603e239e344316340885fffd9c3a4ced48ca04"
+  "built_at_commit": "a6d004621456f025a514956a049e6c386db10801"
 }

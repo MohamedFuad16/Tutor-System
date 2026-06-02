@@ -14,6 +14,67 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 33 report
+
+## Scope
+
+Phase 33 focuses only on the User Brain Architecture book's voice overview
+requirement. It expands every User Brain Architecture chapter script into a
+plain-language, long-form stored audio explainer, regenerates the checked-in
+MP3 assets, and documents the boundary in the book itself: Tutor System
+Architecture and App Design Language still use shorter guide assets until their
+own rewrite pass.
+
+## Graphify Context
+
+- Graphify routed this slice through `RevisionView`, `StoredAudioOverview()`,
+  `chapterAudioOverviews`, `userBrainArchitectureBook.ts`, and the generated
+  `graphify-out` artifacts.
+
+## Integration Decisions
+
+- Expanded the 8 User Brain Architecture audio transcripts in
+  `src/lib/chapterAudioOverviews.json` with simple explanations for the runtime,
+  ledger, teaching loop, grounding, Admin tuning, voice timing, local beta, and
+  glossary chapters.
+- Updated `scripts/generate-user-brain-audio-overviews.mjs` so Deepgram inputs
+  longer than the provider limit are split on sentence boundaries, synthesized
+  as chunks, and stitched back into one MP3 with `ffmpeg`.
+- Added a workflow packet helper for this phase so the transcript expansion is
+  reproducible and idempotent.
+- Updated `src/lib/userBrainArchitectureBook.ts` to say the User Brain
+  Architecture guides are now 3-4 minute stored explainers while the other
+  built-in books remain a follow-up.
+
+## Verification Evidence
+
+- Deepgram regeneration passed for `npm run audio:overview:generate -- --provider
+  deepgram --overwrite --speed 1 --book user-brain-architecture`.
+- `ffprobe` measured the regenerated chapter durations as 207, 195, 196, 195,
+  205, 193, 214, and 195 seconds.
+- `npm run audio:overview:dry-run`: passed, 25 present, 0 missing, 25 planned.
+- `npm run format:check`: passed.
+- `npm run test`: passed, 85 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Browser QA: User Brain Architecture chapter 1 loaded the stored
+  `/audio-overviews/user-brain-runtime-overview.mp3` asset with native controls,
+  custom controls, transcript, 207-second duration, no raw stored metadata in
+  the audio card, and no horizontal overflow at 390x844 and 1440x900.
+- `graphify update . --force`: passed. The first phase run produced 858 nodes,
+  1450 edges, and 60 communities; the final run after the book note edit found
+  no further topology changes.
+- `npm run graphify:tree`: passed.
+
+## Remaining Work
+
+- Expand Tutor System Architecture and App Design Language stored audio guides
+  to the same 3-4 minute standard.
+- Continue the complete local learner-brain runtime flow: voice/chat storage,
+  context injection, tool calling, Admin observability, and agent-layer behavior.
+- AWS/cloud deployment remains intentionally deferred until local beta flow is
+  proven.
+
 # brain architecture implementation program: phase 32 report
 
 ## Scope

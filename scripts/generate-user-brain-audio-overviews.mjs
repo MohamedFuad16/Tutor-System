@@ -3,7 +3,14 @@
 import "dotenv/config";
 
 import { execFile } from "node:child_process";
-import { access, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import {
+  access,
+  copyFile,
+  mkdir,
+  mkdtemp,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
@@ -142,6 +149,7 @@ if (selectedEntries.length === 0) {
 const outputDir = path.resolve(process.cwd(), AUDIO_OVERVIEW_OUTPUT_DIR);
 
 const outputPathFor = (entry) => path.join(outputDir, entry.outputFile);
+const DEEPGRAM_INPUT_LIMIT = 1900;
 
 const fileExists = async (filePath) => {
   try {
@@ -150,6 +158,114 @@ const fileExists = async (filePath) => {
   } catch {
     return false;
   }
+};
+
+const splitLongSpeechInput = (text, limit = DEEPGRAM_INPUT_LIMIT) => {
+  const input = String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!input) return [];
+  if (input.length <= limit) return [input];
+
+  const sentences = input.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [input];
+  const chunks = [];
+  let current = "";
+
+  const pushCurrent = () => {
+    if (current.trim()) chunks.push(current.trim());
+    current = "";
+  };
+
+  const pushLongSentence = (sentence) => {
+    const words = sentence.trim().split(/\s+/).filter(Boolean);
+    let part = "";
+    for (const word of words) {
+      const next = part ? `${part} ${word}` : word;
+      if (next.length > limit) {
+        if (part) chunks.push(part.trim());
+        part = word;
+      } else {
+        part = next;
+      }
+    }
+    if (part.trim()) chunks.push(part.trim());
+  };
+
+  for (const rawSentence of sentences) {
+    const sentence = rawSentence.trim();
+    if (!sentence) continue;
+    if (sentence.length > limit) {
+      pushCurrent();
+      pushLongSentence(sentence);
+      continue;
+    }
+    const next = current ? `${current} ${sentence}` : sentence;
+    if (next.length > limit) {
+      pushCurrent();
+      current = sentence;
+    } else {
+      current = next;
+    }
+  }
+  pushCurrent();
+
+  return chunks;
+};
+
+const ffmpegConcatFileLine = (filePath) =>
+  `file '${filePath.replace(/'/g, "'\\''")}'`;
+
+const concatMp3Files = async (partPaths, targetPath, tempDir) => {
+  if (partPaths.length === 1) {
+    await copyFile(partPaths[0], targetPath);
+    return;
+  }
+
+  const listPath = path.join(tempDir, "concat.txt");
+  await writeFile(
+    listPath,
+    `${partPaths.map(ffmpegConcatFileLine).join("\n")}\n`,
+  );
+  await execFileAsync("ffmpeg", [
+    "-y",
+    "-hide_banner",
+    "-loglevel",
+    "error",
+    "-f",
+    "concat",
+    "-safe",
+    "0",
+    "-i",
+    listPath,
+    "-codec",
+    "copy",
+    targetPath,
+  ]);
+};
+
+const synthesizeDeepgramInput = async (input, entry, targetPath) => {
+  const url = new URL("https://api.deepgram.com/v1/speak");
+  url.searchParams.set("model", modelArg || AUDIO_OVERVIEW_DEEPGRAM_MODEL);
+  url.searchParams.set("speed", String(deepgramSpeed));
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Token ${process.env.DEEPGRAM_API_KEY}`,
+      "Content-Type": "text/plain",
+    },
+    body: input,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new Error(
+      `Deepgram synthesis failed for ${entry.outputFile}: HTTP ${response.status} ${errorText.slice(0, 180)}`,
+    );
+  }
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  await writeFile(targetPath, buffer);
 };
 
 const existingFiles = new Set();
@@ -215,28 +331,29 @@ await mkdir(outputDir, { recursive: true });
 
 const synthesizeWithDeepgram = async (entry, targetPath) => {
   const input = buildAudioOverviewSpeechInput(entry);
-  const url = new URL("https://api.deepgram.com/v1/speak");
-  url.searchParams.set("model", modelArg || AUDIO_OVERVIEW_DEEPGRAM_MODEL);
-  url.searchParams.set("speed", String(deepgramSpeed));
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Token ${process.env.DEEPGRAM_API_KEY}`,
-      "Content-Type": "text/plain",
-    },
-    body: input,
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => "");
-    throw new Error(
-      `Deepgram synthesis failed for ${entry.outputFile}: HTTP ${response.status} ${errorText.slice(0, 180)}`,
-    );
+  const chunks = splitLongSpeechInput(input);
+  if (chunks.length <= 1) {
+    await synthesizeDeepgramInput(input, entry, targetPath);
+    return;
   }
 
-  const buffer = Buffer.from(await response.arrayBuffer());
-  await writeFile(targetPath, buffer);
+  const tempDir = await mkdtemp(
+    path.join(os.tmpdir(), "learningai-deepgram-overview-"),
+  );
+  try {
+    const partPaths = [];
+    for (const [index, chunk] of chunks.entries()) {
+      const partPath = path.join(tempDir, `part-${index}.mp3`);
+      console.log(
+        `  Deepgram chunk ${index + 1}/${chunks.length} (${chunk.length} chars)`,
+      );
+      await synthesizeDeepgramInput(chunk, entry, partPath);
+      partPaths.push(partPath);
+    }
+    await concatMp3Files(partPaths, targetPath, tempDir);
+  } finally {
+    await rm(tempDir, { force: true, recursive: true });
+  }
 };
 
 const synthesizeWithOpenAI = async (entry, targetPath) => {
