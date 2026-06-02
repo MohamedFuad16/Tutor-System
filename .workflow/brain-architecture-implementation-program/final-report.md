@@ -2684,3 +2684,81 @@ proposals remain observational.
 - Continue tightening correction and quiz evidence paths so more learner actions
   can move durable confidence through audited local evidence.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 48: Concept Correction Quarantine
+
+## Scope
+
+Phase 48 makes Admin correction propagation protect durable learner-state scores.
+Before this slice, correction requests could mark connected local rows stale,
+skipped, unsupported, conflicting, or unverified, but a corrected concept could
+keep stale confidence/mastery in the `concepts` table.
+
+## Graphify Context
+
+- Graphify routed this slice through `CorrectionEvent`,
+  `applyCorrectionPropagation()`, `correction.events.ts`,
+  `PersistentConcept`, `longterm.memory.ts`, `AdminView()`, and
+  `tests/correction-events.test.mjs`.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+- Graphify smoke query found `buildConceptCorrectionPatch()`,
+  `applyCorrectionPropagation()`, `PersistentConcept`, `correctionState`,
+  `confidence`, `mastery`, and `p_learn`.
+- A graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Integration Decisions
+
+- Added `concepts` as a correction propagation target.
+- Added `correctionState` to durable `PersistentConcept` rows.
+- `applyCorrectionPropagation()` now adds concept targets from direct concept
+  correction requests and concept-linked correction requests.
+- Mark-wrong, deletion-review, and supersede corrections clear durable concept
+  confidence, cap mastery and BKT `p_learn` at 20%, and preserve before/after
+  values in `correctionState`.
+- Review-only concept corrections record review state without lowering learner
+  scores.
+- Admin, README, Tutor System Architecture, User Brain Architecture, Tutor
+  System Architecture Library JSON, and App Design Language copy now document
+  concept correction quarantine.
+- `package.json` format scripts now include the changed correction and long-term
+  memory files.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 107 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- Headless Chrome CDP QA via
+  `.workflow/brain-architecture-implementation-program/packets/phase48-browser-qa.mjs`:
+  desktop Admin Corrections rendered concept quarantine copy at `1440x1000`
+  with `scrollWidth` 1440 and zero captured browser errors.
+- Headless Chrome CDP QA at `390x844`: mobile Admin Corrections rendered the
+  same copy with `scrollWidth` 390 and zero captured browser errors.
+- Headless Chrome CDP QA confirmed desktop User Brain Architecture rendered the
+  concept correction quarantine copy with `scrollWidth` 1440.
+- Headless Chrome CDP QA confirmed desktop Tutor System Architecture rendered
+  the concept correction quarantine copy with `scrollWidth` 1440.
+- Headless Chrome CDP QA confirmed desktop App Design Language rendered the
+  corrected-concept quarantine copy with `scrollWidth` 1440.
+- Browser QA screenshots were saved as
+  `AAA-cdp-admin-corrections-desktop.png`,
+  `AAA-cdp-admin-corrections-mobile.png`,
+  `AAA-cdp-user-brain-correction.png`, `AAA-cdp-tutor-book-correction.png`, and
+  `AAA-cdp-app-design-correction.png`.
+- `graphify update . --force`: regenerated code architecture artifacts with 900
+  nodes, 1557 edges, and 59 communities.
+- `npm run graphify:tree`: passed.
+
+## Remaining Work
+
+- Populate real successful chat and voice flow evidence in the browser with
+  deliberate provider-key spending when that is in scope.
+- Continue tightening quiz/evaluated-answer evidence paths so learner answers
+  outside flashcards can move durable confidence through audited local evidence.
+- AWS/cloud synchronization remains out of scope until beta testing.

@@ -7,9 +7,11 @@ import {
   type MasteryDelta,
   type MemoryEvent,
   type ModelRun,
+  type PersistentConcept,
   type RetrievalEvent,
   type ToolJob,
 } from "./longterm.memory";
+import { clamp01 } from "./evidence.mastery";
 
 type CorrectionEventStatusInput =
   | CorrectionEvent["status"]
@@ -55,6 +57,7 @@ export type CorrectionEventInput = {
 };
 
 export type CorrectionPropagationTable =
+  | "concepts"
   | "memoryEvents"
   | "retrievalEvents"
   | "evidenceEvents"
@@ -209,6 +212,7 @@ export const createCorrectionEventRecord = (
 const targetTableByType: Partial<
   Record<CorrectionEvent["targetType"], CorrectionPropagationTable>
 > = {
+  concept: "concepts",
   memory_event: "memoryEvents",
   retrieval_event: "retrievalEvents",
   evidence_event: "evidenceEvents",
@@ -267,12 +271,67 @@ export const buildCorrectionPropagationMetadata = (
   },
 });
 
+export const buildConceptCorrectionPatch = (
+  event: CorrectionEvent,
+  timestamp = Date.now(),
+  existingConcept?: Partial<PersistentConcept>,
+): Partial<PersistentConcept> => {
+  const effect = effectForAction(event.action);
+  const previousConfidence = clamp01(existingConcept?.confidence, 0);
+  const previousMastery = clamp01(existingConcept?.mastery, 0);
+  const previousPLearn = clamp01(existingConcept?.p_learn, 0);
+  const isReviewOnly = effect === "review_requested";
+
+  const nextConfidence = isReviewOnly ? previousConfidence : 0;
+  const nextMastery = isReviewOnly
+    ? previousMastery
+    : Math.min(previousMastery, 0.2);
+  const nextPLearn = isReviewOnly
+    ? previousPLearn
+    : Math.min(previousPLearn, 0.2);
+
+  return {
+    ...(isReviewOnly
+      ? {}
+      : {
+          confidence: nextConfidence,
+          mastery: nextMastery,
+          p_learn: nextPLearn,
+          lastReviewedAt: timestamp,
+        }),
+    correctionState: {
+      status: isReviewOnly ? "review_requested" : "quarantined",
+      eventId: event.id,
+      action: event.action,
+      effect,
+      reason: event.reason,
+      source: event.source,
+      appliedAt: timestamp,
+      nonDestructive: true,
+      previousConfidence,
+      nextConfidence,
+      previousMastery,
+      nextMastery,
+      previousPLearn,
+      nextPLearn,
+    },
+  };
+};
+
 export const buildCorrectionPropagationPatch = (
   event: CorrectionEvent,
   table: CorrectionPropagationTable,
   timestamp = Date.now(),
   existingMetadata?: Record<string, unknown>,
 ): Record<string, unknown> => {
+  if (table === "concepts") {
+    return buildConceptCorrectionPatch(
+      event,
+      timestamp,
+      existingMetadata as Partial<PersistentConcept>,
+    ) as Record<string, unknown>;
+  }
+
   const metadata = buildCorrectionPropagationMetadata(
     event,
     table,
@@ -341,7 +400,16 @@ const collectCorrectionPropagationTargets = async (event: CorrectionEvent) => {
     guessTablesForId(id).forEach((table) => addTarget(targets, table, id));
   });
 
+  if (event.conceptId) {
+    addTarget(targets, "concepts", event.conceptId);
+  }
+
   if (event.targetType === "evidence_event") {
+    const evidence = await db.evidenceEvents.get(event.targetId);
+    if (evidence?.conceptId) {
+      addTarget(targets, "concepts", evidence.conceptId);
+    }
+
     addRows(
       targets,
       "masteryDeltas",
@@ -375,6 +443,7 @@ const collectCorrectionPropagationTargets = async (event: CorrectionEvent) => {
 
   if (event.targetType === "concept") {
     const conceptId = event.conceptId || event.targetId;
+    addTarget(targets, "concepts", conceptId);
     addRows(
       targets,
       "memoryEvents",
@@ -459,6 +528,7 @@ const collectCorrectionPropagationTargets = async (event: CorrectionEvent) => {
 };
 
 type PropagationRow =
+  | PersistentConcept
   | ArtifactRecord
   | CitationState
   | EvidenceEvent
@@ -472,6 +542,7 @@ const getPropagationRow = async (
   table: CorrectionPropagationTable,
   id: string,
 ): Promise<PropagationRow | undefined> => {
+  if (table === "concepts") return db.concepts.get(id);
   if (table === "memoryEvents") return db.memoryEvents.get(id);
   if (table === "retrievalEvents") return db.retrievalEvents.get(id);
   if (table === "evidenceEvents") return db.evidenceEvents.get(id);
@@ -487,6 +558,8 @@ const updatePropagationRow = async (
   id: string,
   patch: Record<string, unknown>,
 ) => {
+  if (table === "concepts")
+    return db.concepts.update(id, patch as Partial<PersistentConcept>);
   if (table === "memoryEvents")
     return db.memoryEvents.update(id, patch as Partial<MemoryEvent>);
   if (table === "retrievalEvents")
@@ -540,7 +613,9 @@ export const applyCorrectionPropagation = async (
         event,
         table,
         timestamp,
-        metadataRecord("metadata" in row ? row.metadata : undefined),
+        table === "concepts"
+          ? (row as unknown as Record<string, unknown>)
+          : metadataRecord("metadata" in row ? row.metadata : undefined),
       );
       const updated = await updatePropagationRow(table, id, patch);
       if (updated) {

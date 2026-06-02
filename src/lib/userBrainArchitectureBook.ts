@@ -81,7 +81,8 @@ The local beta rule is intentionally conservative: generated notes, flashcards, 
 - Generated flashcards and built-in chapter audio guide manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states until Admin or another local caller runs their verifier.
 - Admin's local verifier mutates \`source_card\` artifacts, generated flashcard provenance, generated learning-note provenance, and stored audio-guide manifest integrity when the local ledger links are coherent; charts, code, images, and websites remain explicitly unsupported until real verifiers exist.
 - Flashcard provenance verification proves saved card ids, batch/message anchors, local-only metadata, and no-external-fetch status. It does not prove the card answer is factually correct.
-- Correction propagation marks related rows stale, skipped, unsupported, conflicting, or unverified instead of hard-deleting history.`,
+- Correction propagation marks related rows stale, skipped, unsupported, conflicting, or unverified instead of hard-deleting history.
+- Concept-level corrections now quarantine durable learner state locally: mark-wrong, deletion-review, and supersede requests clear confidence, cap mastery/BKT knowledge, and preserve before/after values in \`correctionState\`.`,
   },
   {
     title: "Chapter 3: Teaching Loop And State",

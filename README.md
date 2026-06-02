@@ -75,6 +75,11 @@ Validated flashcard reviews linked to real concepts now supply that local
 evidence path: BKT mastery and durable learner confidence move together with
 capped recall-evidence deltas, and Admin evidence metadata can show the
 confidence before/after values.
+Admin correction requests now protect stale learner state too: mark-wrong,
+deletion-review, or supersede requests that target a concept, or a corrected
+row with a concept id, quarantine the concept score locally by clearing durable
+confidence and capping mastery/BKT knowledge while preserving the previous
+values in `correctionState`.
 
 ## Core Surfaces
 

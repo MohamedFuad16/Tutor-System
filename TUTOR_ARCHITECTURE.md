@@ -111,6 +111,10 @@ Validated recall attempts now provide the local confidence movement path:
 flashcard reviews tied to real concept ids update BKT mastery and durable
 learner confidence with capped evidence deltas, and the evidence metadata stores
 the previous/next confidence values.
+Admin correction propagation protects the same durable state in the other
+direction: mark-wrong, deletion-review, and supersede requests that touch a
+concept quarantine that concept locally by clearing durable confidence, capping
+mastery/BKT knowledge, and saving the previous/next values in `correctionState`.
 
 `src/memory/brain.context.ts` is the shared local context packet builder for
 typed chat and live voice. It combines semantic memory retrieval, active-book

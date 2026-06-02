@@ -2350,7 +2350,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Correction overlays",
         detail:
-          "Mark-wrong, deletion-review, and supersede actions stay non-destructive in beta while affected rows gain visible correction state.",
+          "Mark-wrong, deletion-review, and supersede actions stay non-destructive in beta while affected rows gain visible correction state and corrected concepts quarantine confidence/mastery instead of keeping stale scores.",
       },
       {
         title: "Local citation checks",

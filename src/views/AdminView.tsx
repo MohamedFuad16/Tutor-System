@@ -1062,7 +1062,7 @@ export function AdminView() {
     });
     setCorrectionFeedback(
       propagation.impactedRows > 0
-        ? `${record.action.replace(/_/g, " ")} applied non-destructively to ${propagation.impactedRows} local row${propagation.impactedRows === 1 ? "" : "s"}.`
+        ? `${record.action.replace(/_/g, " ")} applied non-destructively to ${propagation.impactedRows} local row${propagation.impactedRows === 1 ? "" : "s"}; concept targets quarantine learner confidence/mastery instead of deleting data.`
         : `${record.action.replace(/_/g, " ")} recorded for ${record.targetType.replace(/_/g, " ")}; no local target row was found yet.`,
     );
   };
@@ -1072,7 +1072,7 @@ export function AdminView() {
     const propagation = await applyCorrectionPropagation(event);
     setCorrectionFeedback(
       propagation.impactedRows > 0
-        ? `Applied correction overlay to ${propagation.impactedRows} local row${propagation.impactedRows === 1 ? "" : "s"}.`
+        ? `Applied correction overlay to ${propagation.impactedRows} local row${propagation.impactedRows === 1 ? "" : "s"}; concept targets quarantine learner confidence/mastery instead of deleting data.`
         : "No local target row was found; the request remains open.",
     );
   };
@@ -3023,6 +3023,12 @@ export function AdminView() {
                               with correction metadata and conservative
                               stale/skipped states. They do not destructively
                               delete learner data.
+                            </div>
+                            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                              Concept corrections quarantine learner-state
+                              scores locally: confidence is cleared, mastery/BKT
+                              knowledge are capped, and previous values stay in
+                              correctionState for review.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               Later propagation must mark derived summaries,

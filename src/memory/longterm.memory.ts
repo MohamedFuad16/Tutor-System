@@ -34,6 +34,22 @@ export interface PersistentConcept {
   firstLearnedAt: number;
   linkedAnnotations: string[];
   embedding?: number[];
+  correctionState?: {
+    status: "review_requested" | "quarantined";
+    eventId: string;
+    action: string;
+    effect: string;
+    reason: string;
+    source: string;
+    appliedAt: number;
+    nonDestructive: boolean;
+    previousConfidence?: number;
+    nextConfidence?: number;
+    previousMastery?: number;
+    nextMastery?: number;
+    previousPLearn?: number;
+    nextPLearn?: number;
+  };
 }
 
 export interface Misconception {

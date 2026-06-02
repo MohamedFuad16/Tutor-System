@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 const {
+  buildConceptCorrectionPatch,
   buildCorrectionPropagationMetadata,
   buildCorrectionPropagationPatch,
   correctionEventIdFor,
@@ -119,6 +120,69 @@ test("correction propagation marks evidence and mastery rows unverified", () => 
     appliedAt: 5678,
     table: "evidenceEvents",
   });
+});
+
+test("correction propagation quarantines corrected concept scores non-destructively", () => {
+  const event = createCorrectionEventRecord(
+    {
+      id: "correction-concept",
+      action: "wrong",
+      targetType: "concept",
+      targetId: "bayes-rule",
+      reason: "The concept summary was attached to the wrong learner idea.",
+      source: "admin_test",
+    },
+    1234,
+  );
+
+  const patch = buildConceptCorrectionPatch(event, 5678, {
+    confidence: 0.91,
+    mastery: 0.74,
+    p_learn: 0.66,
+  });
+
+  assert.equal(patch.confidence, 0);
+  assert.equal(patch.mastery, 0.2);
+  assert.equal(patch.p_learn, 0.2);
+  assert.equal(patch.lastReviewedAt, 5678);
+  assert.equal(patch.correctionState.status, "quarantined");
+  assert.equal(patch.correctionState.eventId, "correction-concept");
+  assert.equal(patch.correctionState.nonDestructive, true);
+  assert.equal(patch.correctionState.previousConfidence, 0.91);
+  assert.equal(patch.correctionState.nextConfidence, 0);
+  assert.equal(patch.correctionState.previousMastery, 0.74);
+  assert.equal(patch.correctionState.nextMastery, 0.2);
+  assert.equal(patch.correctionState.previousPLearn, 0.66);
+  assert.equal(patch.correctionState.nextPLearn, 0.2);
+});
+
+test("concept review requests mark review state without lowering scores", () => {
+  const event = createCorrectionEventRecord(
+    {
+      id: "correction-concept-review",
+      action: "review",
+      targetType: "concept",
+      targetId: "bayes-rule",
+      reason: "Needs a human pass before the score changes.",
+      source: "admin_test",
+    },
+    1234,
+  );
+
+  const patch = buildCorrectionPropagationPatch(event, "concepts", 5678, {
+    confidence: 0.7,
+    mastery: 0.6,
+    p_learn: 0.5,
+  });
+
+  assert.equal("confidence" in patch, false);
+  assert.equal("mastery" in patch, false);
+  assert.equal("p_learn" in patch, false);
+  assert.equal(patch.correctionState.status, "review_requested");
+  assert.equal(patch.correctionState.previousConfidence, 0.7);
+  assert.equal(patch.correctionState.nextConfidence, 0.7);
+  assert.equal(patch.correctionState.nextMastery, 0.6);
+  assert.equal(patch.correctionState.nextPLearn, 0.5);
 });
 
 test("correction propagation keeps deletion requests non-destructive", () => {
