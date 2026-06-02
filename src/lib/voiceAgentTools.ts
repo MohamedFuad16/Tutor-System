@@ -83,6 +83,58 @@ export const VOICE_AGENT_TOOL_DEFINITIONS = [
     },
   },
   {
+    name: "evaluate_answer",
+    description:
+      "Evaluate a learner's active-recall or quiz answer and store local mastery evidence only when it maps to a real existing concept id.",
+    parameters: {
+      type: "object",
+      properties: {
+        conceptId: {
+          type: "string",
+          description:
+            "Existing learner concept id from local memory/book context. Do not invent this value.",
+        },
+        question: {
+          type: "string",
+          description: "The recall, quiz, or self-check question.",
+        },
+        learnerAnswer: {
+          type: "string",
+          description: "The learner's answer being evaluated.",
+        },
+        correct: {
+          type: "boolean",
+          description:
+            "Explicit correctness when the answer has a clear pass/fail evaluation.",
+        },
+        score: {
+          type: "number",
+          description: "Numeric score awarded by the rubric.",
+        },
+        maxScore: {
+          type: "number",
+          description: "Maximum possible numeric score.",
+        },
+        threshold: {
+          type: "number",
+          description: "Optional pass threshold as a score ratio from 0 to 1.",
+        },
+        evidenceType: {
+          type: "string",
+          enum: ["recognition", "generation", "transfer"],
+          description:
+            "Use recognition for selecting/identifying, generation for explaining from memory, and transfer for applying in a new situation.",
+        },
+        rubric: {
+          type: "array",
+          items: { type: "string" },
+          description: "Brief rubric checks used for the evaluation.",
+        },
+      },
+      required: ["conceptId", "question", "learnerAnswer"],
+    },
+  },
+  {
     name: "look_at_current_page",
     description:
       "Inspect the currently rendered PDF page image when the student asks about the current page, screen, visible diagram, chart, or what they are reading. Do not use for live web facts.",

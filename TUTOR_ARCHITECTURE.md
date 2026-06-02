@@ -112,6 +112,9 @@ flashcard reviews and evaluated learner answers tied to real concept ids update
 BKT mastery and durable learner confidence with capped evidence deltas, and the
 evidence metadata stores the previous/next confidence values plus rubric, score,
 and request anchors when present.
+Chat and live voice can now call `evaluate_answer` for quiz or active-recall
+turns. The browser records the staged evaluation locally only when the payload
+has a real concept id and an explicit score or correct/incorrect outcome.
 Admin correction propagation protects the same durable state in the other
 direction: mark-wrong, deletion-review, and supersede requests that touch a
 concept quarantine that concept locally by clearing durable confidence, capping
@@ -148,6 +151,10 @@ selected-text, active-document, and active-book questions stay local first.
 Web-search sources write source-card artifacts. Generated flashcards
 write local `ArtifactRecord` provenance rows with `not_checked` citation states
 so Admin can audit them before broader verification exists.
+The `evaluate_answer` tool is available in typed chat and live voice. It stages
+quiz or active-recall evaluations into the final chat payload or voice tool
+result; `ChatPanel` then records BKT evidence only if the local evidence
+contract accepts the concept id and evaluation.
 
 ### Revision View
 
@@ -173,9 +180,9 @@ network access. Use the Deepgram provider in
   controls, source artifacts, and beta diagnostics.
 - Beta Diagnostics includes a brain-flow coverage verifier. It checks local
   ledgers for chat context injection, voice context injection, request-id
-  correlation across context/retrieval/model rows, foreground tool jobs, and
-  request-correlated chat and voice learner-memory writes before marking the
-  local flow ready.
+  correlation across context/retrieval/model rows, foreground tool jobs,
+  request-correlated evaluated mastery evidence, and request-correlated chat and
+  voice learner-memory writes before marking the local flow ready.
 - Source-card local citation checks, generated flashcard provenance checks,
   generated learning-note provenance checks, plus chapter audio-guide manifest
   integrity checks. Flashcard provenance checks saved card ids and local

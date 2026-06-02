@@ -65,8 +65,9 @@ timelines can group the foreground answer and the MemoryOrchestrator book,
 interaction, and graph rows together.
 Admin Beta Diagnostics now includes a local brain-flow coverage verifier that
 checks whether chat context injection, voice context injection, request
-correlation, foreground tool calls, and background learner-memory writes all
-have durable local evidence before broader beta claims.
+correlation, foreground tool calls, evaluated mastery evidence, and background
+learner-memory writes all have durable local evidence before broader beta
+claims.
 Background memory updates now keep model-summary mastery and learner-confidence
 proposals observational: accepted values and gate labels are written to local
 evidence/memory metadata, but those learner-state fields do not rise without
@@ -76,6 +77,9 @@ concepts now supply that local evidence path: BKT mastery and durable learner
 confidence move together with capped recall-evidence deltas, and Admin evidence
 metadata can show the confidence before/after values, score, rubric, and request
 anchors.
+Typed chat and live voice now expose an `evaluate_answer` tool that can write
+that evidence from quiz or active-recall turns, while the local recorder still
+skips invented concept ids or unevaluated answers.
 Admin correction requests now protect stale learner state too: mark-wrong,
 deletion-review, or supersede requests that target a concept, or a corrected
 row with a concept id, quarantine the concept score locally by clearing durable

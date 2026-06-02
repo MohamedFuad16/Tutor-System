@@ -4,7 +4,7 @@ import type { PersistentConcept } from "./longterm.memory";
 
 type AnswerEvidenceType = Exclude<MasteryEvidenceType, "model_summary">;
 
-type AnswerEvidenceEngine = {
+export type AnswerEvidenceEngine = {
   updateConceptAttempt: (
     conceptId: string,
     isCorrect: boolean,
@@ -34,6 +34,19 @@ export type EvaluatedAnswerEvidenceInput = {
   sourceId?: string;
   evaluator?: "local_rubric" | "model_rubric" | "human_review";
   source?: string;
+  metadata?: Record<string, unknown>;
+};
+
+export type EvaluatedAnswerEvidenceContext = Pick<
+  EvaluatedAnswerEvidenceInput,
+  | "bookId"
+  | "bookTitle"
+  | "conversationId"
+  | "requestId"
+  | "sourceId"
+  | "source"
+  | "evaluator"
+> & {
   metadata?: Record<string, unknown>;
 };
 
@@ -68,6 +81,64 @@ const finitePositive = (value: unknown) => {
   const numeric = Number(value);
   return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
 };
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const stringValue = (value: unknown) =>
+  typeof value === "string" ? compact(value) : "";
+
+const optionalString = (value: unknown) => {
+  const text = stringValue(value);
+  return text || undefined;
+};
+
+const optionalNumber = (value: unknown) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : undefined;
+};
+
+const optionalBoolean = (value: unknown) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (["true", "correct", "yes", "pass", "passed"].includes(normalized)) {
+    return true;
+  }
+  if (["false", "incorrect", "no", "fail", "failed"].includes(normalized)) {
+    return false;
+  }
+  return undefined;
+};
+
+const evidenceTypeValue = (value: unknown): AnswerEvidenceType | undefined => {
+  if (value === "recognition" || value === "generation" || value === "transfer")
+    return value;
+  return undefined;
+};
+
+const evaluatorValue = (
+  value: unknown,
+): EvaluatedAnswerEvidenceInput["evaluator"] | undefined => {
+  if (
+    value === "local_rubric" ||
+    value === "model_rubric" ||
+    value === "human_review"
+  ) {
+    return value;
+  }
+  return undefined;
+};
+
+const rubricValue = (value: unknown) =>
+  Array.isArray(value)
+    ? value
+        .map((item) => stringValue(item))
+        .filter(Boolean)
+        .slice(0, 8)
+    : undefined;
 
 export const evaluatedAnswerConceptId = (
   input: Pick<EvaluatedAnswerEvidenceInput, "conceptId">,
@@ -156,6 +227,42 @@ export const evaluatedAnswerMetadata = (
   sourceId: input.sourceId,
 });
 
+export const normalizeEvaluatedAnswerEvidenceInput = (
+  payload: unknown,
+  context: EvaluatedAnswerEvidenceContext = {},
+): EvaluatedAnswerEvidenceInput | null => {
+  const record = asRecord(payload);
+  if (!record) return null;
+  const question = stringValue(record.question);
+  if (!question) return null;
+
+  const metadata = asRecord(record.metadata);
+
+  return {
+    conceptId: optionalString(record.conceptId),
+    question,
+    learnerAnswer: optionalString(record.learnerAnswer || record.answer),
+    correct: optionalBoolean(record.correct),
+    score: optionalNumber(record.score),
+    maxScore: optionalNumber(record.maxScore),
+    threshold: optionalNumber(record.threshold),
+    evidenceType: evidenceTypeValue(record.evidenceType),
+    rubric: rubricValue(record.rubric),
+    bookId: optionalString(record.bookId) || context.bookId,
+    bookTitle: optionalString(record.bookTitle) || context.bookTitle,
+    conversationId:
+      optionalString(record.conversationId) || context.conversationId,
+    requestId: optionalString(record.requestId) || context.requestId,
+    sourceId: optionalString(record.sourceId) || context.sourceId,
+    evaluator: evaluatorValue(record.evaluator) || context.evaluator,
+    source: optionalString(record.source) || context.source,
+    metadata: {
+      ...context.metadata,
+      ...(metadata || {}),
+    },
+  };
+};
+
 export const recordEvaluatedAnswerEvidence = async (
   input: EvaluatedAnswerEvidenceInput,
   engine: AnswerEvidenceEngine = bktEngine,
@@ -197,4 +304,20 @@ export const recordEvaluatedAnswerEvidence = async (
     evidenceType: outcome.evidenceType,
     scoreRatio: outcome.scoreRatio,
   };
+};
+
+export const recordEvaluatedAnswerEvidenceBatch = async (
+  payloads: unknown[],
+  context: EvaluatedAnswerEvidenceContext = {},
+  engine: AnswerEvidenceEngine = bktEngine,
+): Promise<EvaluatedAnswerEvidenceResult[]> => {
+  const results: EvaluatedAnswerEvidenceResult[] = [];
+
+  for (const payload of payloads) {
+    const input = normalizeEvaluatedAnswerEvidenceInput(payload, context);
+    if (!input) continue;
+    results.push(await recordEvaluatedAnswerEvidence(input, engine));
+  }
+
+  return results;
 };

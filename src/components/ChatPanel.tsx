@@ -62,6 +62,7 @@ import {
 } from "../memory/artifact.records";
 import { recordModelRunEvent } from "../memory/model.runs";
 import { recordToolJobEvent } from "../memory/tool.jobs";
+import { recordEvaluatedAnswerEvidenceBatch } from "../memory/answer.evidence";
 import { createFlashcardForStorage } from "../memory/flashcard.concepts";
 import type {
   BookChatThread,
@@ -3791,6 +3792,36 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               cardCount: storedFlashcards.length,
               activeBookId: canonicalActiveBookId || "",
             };
+          } else if (toolName === "evaluate_answer") {
+            const results = await recordEvaluatedAnswerEvidenceBatch([args], {
+              bookId: canonicalActiveBookId || undefined,
+              bookTitle: activeLearningBookTitle || activeProject || undefined,
+              conversationId: canonicalActiveBookId
+                ? chatThreadIdForBook(canonicalActiveBookId)
+                : undefined,
+              requestId: sessionId,
+              sourceId: toolCallId,
+              source: "voice_tool_evaluate_answer",
+              evaluator: "model_rubric",
+              metadata: {
+                toolCallId,
+                voiceSessionId: sessionId,
+                agentLayer: "voice_realtime",
+                mode: "voice",
+              },
+            });
+            const recordedCount = results.filter(
+              (item) => item.status === "recorded",
+            ).length;
+            if (recordedCount === 0) {
+              toolCompletionStatus = "blocked";
+            }
+            result = {
+              status: recordedCount > 0 ? "stored" : "skipped",
+              recordedCount,
+              evaluations: results,
+              activeBookId: canonicalActiveBookId || "",
+            };
           } else if (toolName === "look_at_current_page") {
             const query = String(
               args.query ||
@@ -5206,6 +5237,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               clearStreamingAssistant();
               const hasFlashcards =
                 data.flashcardsUpdates && data.flashcardsUpdates.length > 0;
+              const evaluatedAnswerPayloads = Array.isArray(
+                data.evaluatedAnswers,
+              )
+                ? data.evaluatedAnswers
+                : [];
               const finalSources = (data.sources ||
                 []) as NormalizedWebSource[];
               if (finalSources.length) cacheWebSources(finalSources);
@@ -5370,6 +5406,34 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       documentId: activeDocumentId,
                       source: "chat_graph_update",
                     },
+                  );
+                });
+              }
+
+              if (evaluatedAnswerPayloads.length > 0) {
+                void recordEvaluatedAnswerEvidenceBatch(
+                  evaluatedAnswerPayloads,
+                  {
+                    bookId: canonicalActiveBookId || undefined,
+                    bookTitle:
+                      activeLearningBook?.title || activeProject || undefined,
+                    conversationId: canonicalActiveBookId
+                      ? chatThreadIdForBook(canonicalActiveBookId)
+                      : undefined,
+                    requestId: chatRequestId,
+                    source: "chat_tool_evaluate_answer",
+                    evaluator: "model_rubric",
+                    metadata: {
+                      agentLayer: "chat_stream",
+                      mode: "chat",
+                      activeDocumentId: activeDocumentId || undefined,
+                      sourceUserMessage: userMsgContent.slice(0, 240),
+                    },
+                  },
+                ).catch((error) => {
+                  console.warn(
+                    "[ChatPanel] Evaluated answer evidence failed:",
+                    error,
                   );
                 });
               }

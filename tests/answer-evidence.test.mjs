@@ -5,6 +5,8 @@ import {
   evaluatedAnswerConceptId,
   evaluatedAnswerOutcome,
   evaluatedAnswerSummary,
+  normalizeEvaluatedAnswerEvidenceInput,
+  recordEvaluatedAnswerEvidenceBatch,
   recordEvaluatedAnswerEvidence,
 } from "../.tmp-test/answer.evidence.mjs";
 
@@ -60,6 +62,52 @@ test("evaluated answer summary keeps the learner question visible", () => {
   );
 });
 
+test("evaluated answer payloads normalize chat and voice tool metadata", () => {
+  const input = normalizeEvaluatedAnswerEvidenceInput(
+    {
+      conceptId: " concept:bayes ",
+      question: "Explain posterior probability.",
+      answer: "It is the updated probability after evidence.",
+      correct: "correct",
+      evidenceType: "transfer",
+      rubric: ["Uses prior", "", "Uses evidence"],
+      metadata: { toolCallId: "tool-1" },
+    },
+    {
+      bookId: "book:bayes",
+      requestId: "chat-1",
+      source: "chat_tool_evaluate_answer",
+      evaluator: "model_rubric",
+      metadata: { agentLayer: "chat_stream" },
+    },
+  );
+
+  assert.equal(input.conceptId, "concept:bayes");
+  assert.equal(
+    input.learnerAnswer,
+    "It is the updated probability after evidence.",
+  );
+  assert.equal(input.correct, true);
+  assert.equal(input.evidenceType, "transfer");
+  assert.equal(input.bookId, "book:bayes");
+  assert.equal(input.requestId, "chat-1");
+  assert.equal(input.source, "chat_tool_evaluate_answer");
+  assert.equal(input.evaluator, "model_rubric");
+  assert.deepEqual(input.rubric, ["Uses prior", "Uses evidence"]);
+  assert.deepEqual(input.metadata, {
+    agentLayer: "chat_stream",
+    toolCallId: "tool-1",
+  });
+});
+
+test("evaluated answer payload normalization drops invalid tool payloads", () => {
+  assert.equal(normalizeEvaluatedAnswerEvidenceInput(null), null);
+  assert.equal(
+    normalizeEvaluatedAnswerEvidenceInput({ conceptId: "bayes" }),
+    null,
+  );
+});
+
 test("evaluated answer evidence refuses unevaluated answers", async () => {
   const engine = createEngine();
   const result = await recordEvaluatedAnswerEvidence(
@@ -74,6 +122,33 @@ test("evaluated answer evidence refuses unevaluated answers", async () => {
   assert.equal(result.status, "skipped_unevaluated");
   assert.equal(result.conceptId, "bayes");
   assert.equal(engine.calls.length, 0);
+});
+
+test("evaluated answer evidence batch records only normalized payloads", async () => {
+  const engine = createEngine();
+  const results = await recordEvaluatedAnswerEvidenceBatch(
+    [
+      {
+        conceptId: "bayes",
+        question: "Define likelihood.",
+        correct: true,
+      },
+      {
+        conceptId: "bayes",
+      },
+    ],
+    {
+      requestId: "voice-1",
+      source: "voice_tool_evaluate_answer",
+    },
+    engine,
+  );
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].status, "recorded");
+  assert.equal(engine.calls.length, 1);
+  assert.equal(engine.calls[0][3].source, "voice_tool_evaluate_answer");
+  assert.equal(engine.calls[0][3].metadata.requestId, "voice-1");
 });
 
 test("evaluated answer evidence records scored attempts through BKT", async () => {

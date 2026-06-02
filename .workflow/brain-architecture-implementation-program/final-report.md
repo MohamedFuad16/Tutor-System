@@ -2897,3 +2897,73 @@ playback in the background behind the same visible component.
   background memory, evidence, retrieval, and tool calls all work together under
   live provider conditions.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 51: Chat And Voice Evaluated-Answer Tool Wiring
+
+## Scope
+
+Phase 51 connects the Phase 49 evaluated-answer evidence contract to actual
+typed-chat and live-voice tool paths. The slice adds a local `evaluate_answer`
+tool for quiz and active-recall turns, while preserving the rule that BKT
+mastery can move only when a real concept id and explicit evaluation are
+present.
+
+## Graphify Context
+
+- Graphify routed the slice through `ChatPanel()`, `server.ts` chat tools,
+  `voiceAgentTools.ts`, `answer.evidence.ts`, `beta.diagnostics.ts`, and
+  `AdminView()`.
+- The slice intentionally reads connected runtime and Admin files only.
+- The refreshed Graphify artifact step is pending until final verification for
+  this phase.
+
+## Integration Decisions
+
+- Added `evaluate_answer` to the chat SSE tool definitions.
+- Chat server handling now stages `evaluatedAnswers` in the final `done` event
+  and records tool/model/system metadata for the call.
+- `ChatPanel` records staged chat evaluations through
+  `recordEvaluatedAnswerEvidenceBatch()`.
+- Added `evaluate_answer` to shared live voice tool definitions.
+- Live voice records evaluated answers through the same batch helper and marks
+  the tool job blocked when no evidence is recorded.
+- `answer.evidence.ts` now exposes normalization and batch helpers so chat and
+  voice share the same guardrails.
+- Beta Diagnostics now requires verified, request-correlated non-model-summary
+  evidence before complete brain-flow coverage can be ready.
+- README, Tutor System Architecture, User Brain Architecture, Tutor System
+  Architecture Library JSON, and App Design Language copy document the current
+  chat/voice evaluated-answer path.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 117 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- Browser QA was attempted with the in-app Browser at `localhost:3100`, but
+  local socket connections are blocked in this environment with
+  `EPERM`/`ERR_CONNECTION_REFUSED`. The package has no `brain:ui-regression`
+  fallback script.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  931 nodes, 1615 edges, and 61 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `recordEvaluatedAnswerEvidenceBatch()`,
+  `ChatPanel()`, `answer.evidence.ts`,
+  `normalizeEvaluatedAnswerEvidenceInput()`,
+  `recordEvaluatedAnswerEvidence()`, `VOICE_AGENT_TOOL_DEFINITIONS`, and
+  `VoiceAgentFunctionCall`.
+- `graphify path "recordEvaluatedAnswerEvidenceBatch()" "ChatPanel()"` found a
+  two-hop import/contains path.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Remaining Work
+
+- Keep confidence calibration risk explicit until real provider-key chat and
+  voice turns exercise evaluated-answer evidence in the browser.
+- Browser-rendered Admin QA remains pending until the local socket restriction
+  is lifted or a non-network UI regression harness is added.
+- AWS/cloud synchronization remains out of scope until beta testing.

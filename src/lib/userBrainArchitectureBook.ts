@@ -29,10 +29,11 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
 - Background learner-memory writes now carry the same request metadata, so chat and voice learning-book, interaction, and graph update rows can be grouped with the foreground request in Admin.
 - Validated flashcard reviews and evaluated learner answers linked to real concepts now move BKT mastery and durable learner confidence with capped recall-evidence deltas, while storing the confidence before/after values, score/rubric fields, and request anchors in evidence metadata.
+- Typed chat and live voice can now call \`evaluate_answer\` for quiz or active-recall turns; the browser records BKT evidence only when the staged payload has a real concept id plus score or explicit correct/incorrect outcome.
 - Voice can now call the local \`look_at_current_page\` tool for current-page, visible-diagram, screen, and source-material questions by sending the rendered PDF page image through a local server vision bridge and recording Admin/tool activity.
 - Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
 - Admin exposes model runs, tool jobs, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
-- Beta Diagnostics now includes a local brain-flow coverage verifier for chat context injection, voice context injection, request correlation, foreground tool calls, and background learner-memory writes.
+- Beta Diagnostics now includes a local brain-flow coverage verifier for chat context injection, voice context injection, request correlation, foreground tool calls, evaluated mastery evidence, and background learner-memory writes.
 - Generated learning-book notes now run an initial local provenance check when Memory writes them, so coherent note rows move from \`not_checked\` to \`verified\` immediately while remaining limited to ledger traceability. When document text is available, they also carry compact source-span preview anchors.
 - Generated flashcards and stored chapter audio guides still leave explicit \`not_checked\` artifact provenance until a scoped local verifier runs.
 - Admin can locally verify generated flashcard provenance when the batch links back to saved card ids, a message or batch anchor, local-only metadata, and no external fetch.
@@ -168,7 +169,7 @@ Implemented Admin surfaces:
 | Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and chapter audio guide provenance. |
 | Correction Requests | Non-destructive review and propagation state. |
 | Runtime Tuning | Local knobs for source-vs-web, memory context, tool budget, and refresh cadence. |
-| Beta Diagnostics | Capped local export, readiness gate summary, and brain-flow coverage for chat, voice, tool, retrieval, model, and request-correlated background memory evidence. |
+| Beta Diagnostics | Capped local export, readiness gate summary, and brain-flow coverage for chat, voice, tool, retrieval, model, request-correlated evaluated mastery evidence, and background memory evidence. |
 
 The key boundary: Admin reports recorded system state. It must not pretend to know private model internals beyond saved traces, summaries, tool rows, voice lifecycle events, and artifacts.`,
   },

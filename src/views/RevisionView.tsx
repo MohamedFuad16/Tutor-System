@@ -2319,7 +2319,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Brain-flow coverage",
         detail:
-          "Beta Diagnostics checks chat context, voice context, request correlation, foreground tools, and request-correlated chat and voice memory rows as one local readiness proof instead of disconnected counters.",
+          "Beta Diagnostics checks chat context, voice context, request correlation, foreground tools, evaluated mastery evidence, and request-correlated chat and voice memory rows as one local readiness proof instead of disconnected counters.",
       },
       {
         title: "Validated confidence meters",

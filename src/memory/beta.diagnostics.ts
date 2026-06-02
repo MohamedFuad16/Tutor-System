@@ -1,4 +1,5 @@
 import type {
+  EvidenceEvent,
   MemoryEvent,
   ModelRun,
   RetrievalEvent,
@@ -70,6 +71,7 @@ export type BetaBrainFlowCoverage = {
   requestCorrelatedRetrievalEvents: number;
   requestCorrelatedModelRuns: number;
   foregroundToolJobs: number;
+  requestCorrelatedMasteryEvidenceEvents: number;
   backgroundMemoryEvents: number;
   chatBackgroundMemoryEvents: number;
   voiceBackgroundMemoryEvents: number;
@@ -90,6 +92,10 @@ export type BetaBrainFlowLedgerInput = {
   >[];
   modelRuns?: Pick<ModelRun, "status" | "requestId" | "source" | "timestamp">[];
   toolJobs?: Pick<ToolJob, "status" | "requestId" | "source" | "timestamp">[];
+  evidenceEvents?: Pick<
+    EvidenceEvent,
+    "evidenceType" | "verified" | "metadata" | "timestamp"
+  >[];
 };
 
 export type BetaDiagnosticsSnapshot = {
@@ -176,6 +182,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
   retrievalEvents = [],
   modelRuns = [],
   toolJobs = [],
+  evidenceEvents = [],
 }: BetaBrainFlowLedgerInput = {}): BetaBrainFlowCoverage => {
   const completedContextEvents = memoryEvents.filter(
     (event) =>
@@ -208,6 +215,12 @@ export const buildBrainFlowCoverageFromLedgers = ({
       job.status === "completed" &&
       hasRequestId(job.requestId) &&
       ["chat_stream", "voice_agent"].includes(job.source || ""),
+  ).length;
+  const requestCorrelatedMasteryEvidenceEvents = evidenceEvents.filter(
+    (event) =>
+      event.verified &&
+      event.evidenceType !== "model_summary" &&
+      hasRequestId(event.metadata?.requestId),
   ).length;
   const backgroundMemoryEvents = memoryEvents.filter(
     (event) =>
@@ -281,6 +294,14 @@ export const buildBrainFlowCoverageFromLedgers = ({
         "The visible tutor or voice agent has completed at least one request-correlated tool job.",
     },
     {
+      id: "evaluated_mastery",
+      title: "Evaluated mastery evidence",
+      ready: requestCorrelatedMasteryEvidenceEvents > 0,
+      count: requestCorrelatedMasteryEvidenceEvents,
+      detail:
+        "At least one verified flashcard or evaluated-answer evidence row moved mastery with a request id.",
+    },
+    {
       id: "background_memory",
       title: "Background memory agent",
       ready: chatBackgroundMemoryEvents > 0 && voiceBackgroundMemoryEvents > 0,
@@ -313,6 +334,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
     requestCorrelatedRetrievalEvents,
     requestCorrelatedModelRuns,
     foregroundToolJobs,
+    requestCorrelatedMasteryEvidenceEvents,
     backgroundMemoryEvents: backgroundMemoryEvents.length,
     chatBackgroundMemoryEvents,
     voiceBackgroundMemoryEvents,
@@ -320,7 +342,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
       requestCorrelatedBackgroundMemoryEvents.length,
     summary:
       status === "ready"
-        ? "Chat, voice, retrieval, model, foreground tools, and background memory all have local evidence."
+        ? "Chat, voice, retrieval, model, foreground tools, evaluated mastery, and background memory all have local evidence."
         : status === "blocked"
           ? `${failedRows} failed or blocked brain-flow rows need review before beta.`
           : `Missing local evidence for ${missingSignals.join(", ")}.`,
@@ -476,10 +498,11 @@ export const buildBetaDiagnosticsSnapshot = (
         brainFlow.requestCorrelatedRetrievalEvents +
         brainFlow.requestCorrelatedModelRuns +
         brainFlow.foregroundToolJobs +
+        brainFlow.requestCorrelatedMasteryEvidenceEvents +
         brainFlow.backgroundMemoryEvents,
       action:
         brainFlow.status === "ready"
-          ? "Use this as the local beta smoke contract for chat, voice, foreground tools, and the background memory agent."
+          ? "Use this as the local beta smoke contract for chat, voice, foreground tools, evaluated mastery, and the background memory agent."
           : brainFlow.status === "blocked"
             ? "Open System Activity and request timelines, then fix failed context, retrieval, model, tool, or memory rows."
             : "Run one typed chat turn, one voice turn, one tool action, and one learning-book update to complete local flow evidence.",

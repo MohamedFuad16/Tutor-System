@@ -2092,7 +2092,8 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 1. If the user asks questions about "the current page", "this chapter", "the document", "the screen", or asks you to explain something visible in what they are reading, use the provided screenshot context when present. If you need an additional page inspection and the \`look_at_current_page\` tool is available, call it. Do NOT claim you cannot see the screen when screenshot context is attached.
 2. If the user requests flashcards, active recall questions, or revision cards, YOU MUST forcefully use the \`generate_flashcards\` tool to create them. NEVER simply write out the flashcards in text. ALWAYS use the tool. Start your message slightly confirming you generated them and suggest they navigate to the Revision tab.
 3. Source-material questions come first. If the user asks "what is this about", "what's on the screen", "what is this page about", "explain this page", "summarize this document", or similar reading-context questions, answer from selected text, active library context, and the page image via \`look_at_current_page\` when available. Do not use \`web_search\` for these questions unless the user explicitly asks to search the web.
-4. Use \`web_search\` only when the user explicitly asks for web/internet/online search, or when the answer depends on fresh external facts such as latest/current/recent news, rankings, pricing, releases, trends, sports scores, elections, weather, laws, schedules, or named people/company roles. When using web sources, cite freshness-sensitive claims with compact references like [1] and [2]. Do not dump raw URLs in the answer body.`;
+4. Use \`web_search\` only when the user explicitly asks for web/internet/online search, or when the answer depends on fresh external facts such as latest/current/recent news, rankings, pricing, releases, trends, sports scores, elections, weather, laws, schedules, or named people/company roles. When using web sources, cite freshness-sensitive claims with compact references like [1] and [2]. Do not dump raw URLs in the answer body.
+5. If the user is answering a quiz, active-recall, or self-check question and you can identify a real local concept id from the supplied memory/book context, call \`evaluate_answer\` with the concept id, question, learner answer, and either score/maxScore or explicit correct/incorrect. If you cannot identify a real concept id, give normal feedback but do not fake mastery evidence.`;
 
       if (customPrompt) {
         systemInstruction = `${customPrompt}\n\n${systemInstruction}`;
@@ -2222,6 +2223,62 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         {
           type: "function",
           function: {
+            name: "evaluate_answer",
+            description:
+              "Record a scored active-recall or quiz answer as local mastery evidence only when it maps to a real existing learner concept id.",
+            parameters: {
+              type: "object",
+              properties: {
+                conceptId: {
+                  type: "string",
+                  description:
+                    "Existing learner concept id from local memory/book context. Do not invent this value.",
+                },
+                question: {
+                  type: "string",
+                  description: "The recall, quiz, or self-check question.",
+                },
+                learnerAnswer: {
+                  type: "string",
+                  description: "The learner's answer being evaluated.",
+                },
+                correct: {
+                  type: "boolean",
+                  description:
+                    "Explicit correctness when the answer has a clear pass/fail evaluation.",
+                },
+                score: {
+                  type: "number",
+                  description: "Numeric score awarded by the rubric.",
+                },
+                maxScore: {
+                  type: "number",
+                  description: "Maximum possible numeric score.",
+                },
+                threshold: {
+                  type: "number",
+                  description:
+                    "Optional pass threshold as a score ratio from 0 to 1.",
+                },
+                evidenceType: {
+                  type: "string",
+                  enum: ["recognition", "generation", "transfer"],
+                  description:
+                    "Use recognition for selecting/identifying, generation for explaining from memory, and transfer for applying in a new situation.",
+                },
+                rubric: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Brief rubric checks used for the evaluation.",
+                },
+              },
+              required: ["conceptId", "question", "learnerAnswer"],
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
             name: "web_search",
             description:
               "Search the live web only when the user explicitly asks for web/internet/online search or needs fresh external facts. Do not use for current page, screen, document, PDF, selected text, uploaded source material, or active library questions.",
@@ -2276,6 +2333,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
       let graphUpdates: any[] = [];
       let flashcardsUpdates: any[] = [];
+      let evaluatedAnswers: any[] = [];
 
       let iterations = 0;
       const MAX_ITERATIONS = runtimeSettings.toolIterationLimit;
@@ -2813,6 +2871,94 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 metadata: { toolCallId: toolCall.id },
               });
             }
+          } else if (functionName === "evaluate_answer") {
+            try {
+              sendEvent("reasoning_summary", {
+                content: "Evaluating learner answer",
+              });
+              const args = JSON.parse(functionArguments);
+              const evaluation = {
+                ...args,
+                source: "chat_tool_evaluate_answer",
+                sourceId: toolCall.id,
+                evaluator: args?.evaluator || "model_rubric",
+                metadata: {
+                  toolCallId: toolCall.id,
+                  agentLayer: "chat_stream",
+                  mode: "chat",
+                },
+              };
+              evaluatedAnswers.push(evaluation);
+              formattedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content:
+                  "Answer evaluation staged. The browser will record local mastery evidence only if the concept id exists and the score is explicit.",
+              });
+              recordSystemActivity({
+                kind: "memory",
+                status: "completed",
+                title: "Evaluated-answer evidence staged",
+                detail: args?.conceptId || "evaluate_answer",
+                requestId,
+                toolName: functionName,
+                phase: "tool_execution",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: {
+                  toolCallId: toolCall.id,
+                  conceptId: args?.conceptId,
+                  evidenceType: args?.evidenceType || "generation",
+                  hasScore:
+                    Number.isFinite(Number(args?.score)) &&
+                    Number.isFinite(Number(args?.maxScore)),
+                  hasCorrect: typeof args?.correct === "boolean",
+                },
+              });
+              sendToolJobEvent({
+                status: "completed",
+                toolName: functionName,
+                inputSummary,
+                outputSummary: args?.conceptId
+                  ? `Evaluation staged for ${args.conceptId}.`
+                  : "Evaluation staged without concept id.",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: {
+                  toolCallId: toolCall.id,
+                  conceptId: args?.conceptId,
+                  evidenceContract: "evaluated_answer_v1",
+                  score: args?.score,
+                  maxScore: args?.maxScore,
+                  correct: args?.correct,
+                  evidenceType: args?.evidenceType || "generation",
+                },
+              });
+            } catch (e) {
+              formattedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: "Error parsing arguments.",
+              });
+              recordSystemActivity({
+                kind: "memory",
+                status: "failed",
+                title: "Evaluated-answer tool parse failed",
+                detail:
+                  e instanceof Error ? e.message : "Error parsing arguments.",
+                requestId,
+                toolName: functionName,
+                phase: "tool_execution",
+                durationMs: Date.now() - toolStartedAt,
+              });
+              sendToolJobEvent({
+                status: "failed",
+                toolName: functionName,
+                inputSummary,
+                error:
+                  e instanceof Error ? e.message : "Error parsing arguments.",
+                durationMs: Date.now() - toolStartedAt,
+                metadata: { toolCallId: toolCall.id },
+              });
+            }
           } else {
             formattedMessages.push({
               role: "tool",
@@ -2875,6 +3021,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         webSources: webSources.length,
         graphUpdates: graphUpdates.length,
         flashcards: flashcardsUpdates.length,
+        evaluatedAnswers: evaluatedAnswers.length,
         iterations: iterations + 1,
         runtimeSettings: runtimeSettingsSnapshot,
       });
@@ -2896,6 +3043,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           estimated: usageEstimated || cost === 0,
           graphUpdates: graphUpdates.length,
           flashcards: flashcardsUpdates.length,
+          evaluatedAnswers: evaluatedAnswers.length,
           webSources: webSources.length,
           iterations: iterations + 1,
           runtimeSettings: runtimeSettingsSnapshot,
@@ -2905,6 +3053,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         content: finalContent,
         graphUpdates,
         flashcardsUpdates,
+        evaluatedAnswers,
         sources: webSources,
         usage: {
           provider: "openrouter",
@@ -3135,6 +3284,15 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               },
             ],
           },
+          evaluate_answer: {
+            conceptId: "general",
+            question: "What does the voice tool loop verify?",
+            learnerAnswer:
+              "It verifies local FunctionCallRequest and FunctionCallResponse handling.",
+            correct: true,
+            evidenceType: "generation",
+            rubric: ["Names local function-call handling"],
+          },
           look_at_current_page: {
             query: "What is visible on the current study page?",
           },
@@ -3300,7 +3458,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               thinkPrompt += `\n\nLOCAL STUDY CONTEXT FOR THIS VOICE SESSION:\n${compactStudyContext}\n\nUse this local learner memory, active book, and document context before general knowledge. If the student asks about the current material, answer from this context and say when a detail is not available locally. Keep the spoken answer concise.`;
             }
             thinkPrompt +=
-              "\n\nVOICE TOOL POLICY: You may call local client-side tools during this voice session. Use look_at_study_context before answering about the active book, document, selected text, learner memory, or current study material when the prompt context is not enough. Use look_at_current_page when the student asks about the current page, screen, visible diagram, chart, or what they are reading. Use web_search only for explicit web, online, latest, current, recent, or news-style external facts, not for current-page or document questions. If the student asks for flashcards, revision cards, quiz questions, or active recall, call generate_flashcards with concise cards before saying they were created. When a new important concept should be added to the learner graph, call update_graph with one exact atomic concept. Keep spoken responses short after tool results.";
+              "\n\nVOICE TOOL POLICY: You may call local client-side tools during this voice session. Use look_at_study_context before answering about the active book, document, selected text, learner memory, or current study material when the prompt context is not enough. Use look_at_current_page when the student asks about the current page, screen, visible diagram, chart, or what they are reading. Use web_search only for explicit web, online, latest, current, recent, or news-style external facts, not for current-page or document questions. If the student asks for flashcards, revision cards, quiz questions, or active recall, call generate_flashcards with concise cards before saying they were created. If the student answers a quiz or active-recall question and you can identify a real local concept id from the study context, call evaluate_answer with the concept id plus a clear score or correct/incorrect outcome; do not invent concept ids. When a new important concept should be added to the learner graph, call update_graph with one exact atomic concept. Keep spoken responses short after tool results.";
 
             const config = {
               type: "Settings",

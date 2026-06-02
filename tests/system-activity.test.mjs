@@ -135,6 +135,7 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
   const request = await functionRequest;
   const toolNames = request.functions.map((fn) => fn.name).sort();
   assert.deepEqual(toolNames, [
+    "evaluate_answer",
     "generate_flashcards",
     "look_at_current_page",
     "look_at_study_context",

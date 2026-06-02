@@ -90,6 +90,17 @@ const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
       timestamp: 9,
     },
   ],
+  evidenceEvents: [
+    {
+      evidenceType: "generation",
+      verified: true,
+      timestamp: 10,
+      metadata: {
+        requestId: "voice-req-1",
+        evidenceContract: "evaluated_answer_v1",
+      },
+    },
+  ],
 });
 
 test("beta diagnostics mark clean local ledgers as export-ready while cloud stays deferred", () => {
@@ -137,7 +148,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
   );
 });
 
-test("brain flow coverage requires chat, voice, request ids, tools, and background memory", () => {
+test("brain flow coverage requires chat, voice, request ids, tools, mastery evidence, and background memory", () => {
   assert.equal(completeBrainFlow.status, "ready");
   assert.equal(completeBrainFlow.coveragePercent, 100);
   assert.deepEqual(completeBrainFlow.missingSignals, []);
@@ -154,6 +165,7 @@ test("brain flow coverage requires chat, voice, request ids, tools, and backgrou
   assert.equal(completeBrainFlow.chatBackgroundMemoryEvents, 1);
   assert.equal(completeBrainFlow.voiceBackgroundMemoryEvents, 1);
   assert.equal(completeBrainFlow.requestCorrelatedBackgroundMemoryEvents, 3);
+  assert.equal(completeBrainFlow.requestCorrelatedMasteryEvidenceEvents, 1);
 });
 
 test("brain flow coverage requires request-correlated voice memory evidence", () => {
