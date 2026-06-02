@@ -14,6 +14,67 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 25 report
+
+## Scope
+
+Phase 25 improves the stored audio overview experience for every built-in
+Library book. It keeps playback local, regenerates the checked-in MP3 assets
+from more natural chapter-specific scripts, and leaves AWS/cloud audio storage
+out of scope.
+
+## Graphify Context
+
+- Graphify routed this slice through `StoredAudioOverview()`,
+  `src/lib/chapterAudioOverviews.ts`,
+  `src/lib/chapterAudioOverviews.json`,
+  `scripts/user-brain-audio-overview-plan.mjs`,
+  `scripts/generate-user-brain-audio-overviews.mjs`, and
+  `tests/audio-overview-plan.test.mjs`.
+
+## Integration Decisions
+
+- Rewrote all 25 manifest transcripts as longer explanatory guides with more
+  sentence breaks so Deepgram has room for a more natural cadence.
+- Regenerated all 25 checked-in MP3 assets with Deepgram
+  `aura-2-odysseus-en` at speed `1`.
+- Updated manifest `durationLabel` values from actual `ffprobe` durations after
+  regeneration.
+- Added an audio-plan regression guard requiring substantial script length and
+  at least seven sentence breaks per guide.
+- Did not regenerate Graphify because this phase changed content, tests, and
+  checked-in media assets rather than code architecture.
+
+## Verification Evidence
+
+- `npm run audio:overview:dry-run`: passed, 25 present and 0 missing MP3
+  assets.
+- `node --test tests/audio-overview-plan.test.mjs`: passed, 5 tests.
+- `ffprobe` duration check: all 25 regenerated MP3 files are valid and range
+  from about 41 to 57 seconds; manifest labels match rounded durations.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 77 tests.
+- `npm run build`: passed.
+- Browser QA on `http://localhost:3001`: User Brain Architecture and App Design
+  Language audio cards loaded regenerated local MP3 paths, showed updated
+  durations and 1x/1.25x/1.5x controls, and did not show the old generated-by
+  metadata, stored MP3 label, stored date, or overview title.
+- Browser QA at 390x844: the App Design Language final chapter audio card kept
+  controls visible with no horizontal overflow.
+- Admin Sources still exposed the audio-guide provenance surface without old
+  audio metadata strings.
+- A read-only final-check sidecar was spawned, but it hit the subagent usage
+  limit before producing findings. The main thread completed the final audit.
+
+## Remaining Work
+
+- Browser automation could validate loaded MP3 source paths, durations, and
+  speed state, but not audible playback progression after the Play click in the
+  in-app browser environment.
+- Continue broader local beta learner-brain implementation before any AWS/cloud
+  work.
+
 # brain architecture implementation program: phase 22 report
 
 ## Scope

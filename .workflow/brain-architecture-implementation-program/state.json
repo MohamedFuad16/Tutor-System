@@ -211,17 +211,27 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "server.ts, src/components/ChatPanel.tsx, src/store/index.ts, src/types.ts, AGENTS.md, README.md, TUTOR_ARCHITECTURE.md, package.json, .github/workflows/graphify-refresh.yml, graphify-out/*"
+    },
+    {
+      "id": "DD",
+      "name": "Natural audio overview regeneration",
+      "owner": "main agent + attempted read-only final-check sidecar",
+      "status": "completed",
+      "write_scope": "src/lib/chapterAudioOverviews.json, public/audio-overviews/*, tests/audio-overview-plan.test.mjs, .workflow/brain-architecture-implementation-program/*"
     }
   ],
   "verification": {
-    "status": "phase_24_complete",
+    "status": "phase_25_complete",
     "checks": [
-      "npm run format:check passed after Graphify workflow path removal",
+      "npm run audio:overview:dry-run passed, 25 present and 0 missing",
+      "node --test tests/audio-overview-plan.test.mjs passed",
+      "ffprobe validated all 25 regenerated MP3 durations and manifest labels",
+      "npm run format:check passed",
       "npm run lint passed",
       "npm run test passed, 77 tests",
       "npm run build passed",
-      "Browser QA covered Admin source artifacts, Revision audio guide loading, and the voice active UI",
-      "Graphify update/tree passed and smoke query found new voice UI symbols"
+      "Browser QA covered regenerated Revision audio guides on desktop and mobile plus Admin Sources",
+      "Read-only final-check sidecar was attempted but hit the subagent usage limit before producing findings"
     ]
   }
 }

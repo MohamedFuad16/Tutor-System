@@ -82,7 +82,8 @@ test("audio overview plan covers every built-in book chapter", () => {
       assert.match(entry.outputFile, /^[a-z0-9-]+\.mp3$/);
       assert.equal(entry.assetStatus, "stored");
       assert.equal(entry.transcript.includes("```"), false);
-      assert.ok(buildAudioOverviewSpeechInput(entry).length > 220);
+      assert.ok(buildAudioOverviewSpeechInput(entry).length > 620);
+      assert.ok((entry.transcript.match(/[.!?]/g) || []).length >= 7);
       assert.match(
         audioOverviewPublicSrcFor(entry),
         /^\/audio-overviews\/.+\.mp3$/,
