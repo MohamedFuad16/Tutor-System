@@ -854,27 +854,44 @@ export async function createTutorServerApp(
         apiKey: apiKey,
       });
 
-      const { image } = req.body;
+      const { image, text } = req.body;
+      const transcriptText = typeof text === "string" ? text.trim() : "";
 
-      if (!image) {
-        return res.status(400).json({ error: "Image is required." });
+      if (!image && !transcriptText) {
+        return res.status(400).json({ error: "Image or text is required." });
       }
 
-      const response = await openai.chat.completions.create({
-        model: "qwen/qwen2.5-vl-72b-instruct",
-        messages: [
-          {
-            role: "user",
-            content: [
+      const response = transcriptText
+        ? await openai.chat.completions.create({
+            model: "openai/gpt-4o-mini",
+            temperature: 0.2,
+            messages: [
               {
-                type: "text",
-                text: "Look at this page from a document. Generate a very short (2-4 words) specific topic or title for what this document is about. Output ONLY the title.",
+                role: "system",
+                content:
+                  "Generate a very short, specific title for a voice tutoring conversation. Output only the title, 2 to 5 words, with no quotes or punctuation.",
               },
-              { type: "image_url", image_url: { url: image } },
+              {
+                role: "user",
+                content: transcriptText.slice(0, 4000),
+              },
             ],
-          },
-        ],
-      });
+          })
+        : await openai.chat.completions.create({
+            model: "qwen/qwen2.5-vl-72b-instruct",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: "Look at this page from a document. Generate a very short (2-4 words) specific topic or title for what this document is about. Output ONLY the title.",
+                  },
+                  { type: "image_url", image_url: { url: image } },
+                ],
+              },
+            ],
+          });
 
       const title = response.choices[0]?.message?.content?.trim();
       res.json({ title: title || "General Study" });

@@ -14,6 +14,65 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 32 report
+
+## Scope
+
+Phase 32 handles the user-requested voice/audio follow-up without merging PR #4
+wholesale. The phase inspected MegaaDev's open PR, kept the already-safer
+current `main` voice transport, lifted only the missing voice-session title
+route behavior, and made stored chapter audio guides usable even when the custom
+media play promise is blocked by the browser.
+
+## Graphify Context
+
+- Graphify routed this slice through `ChatPanel()`, `createTutorServerApp()`,
+  `/api/title`, `RevisionView`, `StoredAudioOverview()`,
+  `chapterAudioOverviews`, and the generated `graphify-out` artifacts.
+
+## Integration Decisions
+
+- Added a text-transcript branch to `/api/title`, preserving the current
+  OpenRouter auth resolver and the existing image-title path.
+- Kept PR #4's image search, Mermaid generation, multiple-PDF changes,
+  generated brain artifacts, stale workflow edits, and `server.mjs` changes out
+  of this phase.
+- Preserved the current Node/WebSocket voice-agent routing, Deepgram key path,
+  KeepAlive, EOT tuning, usage events, and Admin observability already present
+  on `main`.
+- Updated `StoredAudioOverview()` so the custom Play button primes playback on
+  pointer down and the browser-native audio controls are always visible beneath
+  the custom controls.
+- Confirmed there is no tracked GitHub Actions YAML workflow left on `main` for
+  automatic Graphify refresh.
+
+## Verification Evidence
+
+- Read-only explorer Averroes inspected PR #4 and returned a voice-only
+  extraction map.
+- `git ls-files '*.yml' '*.yaml'`: no tracked YAML workflows.
+- `npm run audio:overview:dry-run`: passed, 25 present, 0 missing, 25 planned.
+- `npm run format:check`: passed.
+- `npm run test`: passed, 85 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `curl -I /audio-overviews/user-brain-runtime-overview.mp3`: served 200
+  `audio/mpeg` with a 321408 byte content length.
+- Browser QA with the in-app browser at 488x822: User Brain Architecture audio
+  card rendered custom controls, native controls, loaded duration, transcript,
+  no forbidden stored-metadata copy, and no horizontal overflow.
+- `graphify update . --force`: passed, 854 nodes, 1442 edges, 61 communities.
+- `npm run graphify:tree`: passed.
+
+## Remaining Work
+
+- A live `/api/title` text-title model call was not forced during verification
+  to avoid spending a network/model request; source, build, and route structure
+  verify the local branch.
+- Live voice remains Node/WebSocket-only. The Vercel warning path should remain
+  in place until a real realtime host is selected after beta.
+- Continue the broader local learner-brain wiring before AWS/cloud work.
+
 # brain architecture implementation program: phase 31 report
 
 ## Scope

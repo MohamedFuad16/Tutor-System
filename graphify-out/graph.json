@@ -286,7 +286,7 @@
       "label": "startServer()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L3194",
+      "source_location": "L3211",
       "id": "learningai_server_startserver",
       "community": 8,
       "norm_label": "startserver()"
@@ -6505,7 +6505,7 @@
       "label": "AppDesignLanguagePage()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2198",
+      "source_location": "L2232",
       "id": "views_revisionview_appdesignlanguagepage",
       "community": 2,
       "norm_label": "appdesignlanguagepage()"
@@ -6514,7 +6514,7 @@
       "label": "builtInBooks",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2396",
+      "source_location": "L2430",
       "id": "views_revisionview_builtinbooks",
       "community": 2,
       "norm_label": "builtinbooks"
@@ -6523,7 +6523,7 @@
       "label": "builtInBookIds",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2440",
+      "source_location": "L2474",
       "id": "views_revisionview_builtinbookids",
       "community": 2,
       "norm_label": "builtinbookids"
@@ -6532,7 +6532,7 @@
       "label": "createBuiltInBookConcept()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2442",
+      "source_location": "L2476",
       "id": "views_revisionview_createbuiltinbookconcept",
       "community": 2,
       "norm_label": "createbuiltinbookconcept()"
@@ -6541,7 +6541,7 @@
       "label": "LongPressWrapper()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2463",
+      "source_location": "L2497",
       "id": "views_revisionview_longpresswrapper",
       "community": 2,
       "norm_label": "longpresswrapper()"
@@ -6550,7 +6550,7 @@
       "label": "FlashcardUI",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2521",
+      "source_location": "L2555",
       "id": "views_revisionview_flashcardui",
       "community": 2,
       "norm_label": "flashcardui"
@@ -6559,7 +6559,7 @@
       "label": "FlashcardDeck()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2633",
+      "source_location": "L2667",
       "id": "views_revisionview_flashcarddeck",
       "community": 2,
       "norm_label": "flashcarddeck()"
@@ -6568,7 +6568,7 @@
       "label": "RevisionView()",
       "file_type": "code",
       "source_file": "src/views/RevisionView.tsx",
-      "source_location": "L2676",
+      "source_location": "L2710",
       "id": "views_revisionview_revisionview",
       "community": 30,
       "norm_label": "revisionview()"
@@ -9019,9 +9019,9 @@
       "source_file": "tests/artifact-records.test.mjs",
       "source_location": "L205",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_artifact_records_test_mjs",
-      "target": "tests_artifact_records_test_sourcetext",
-      "confidence_score": 1.0
+      "target": "tests_artifact_records_test_sourcetext"
     },
     {
       "relation": "contains",
@@ -9029,9 +9029,9 @@
       "source_file": "tests/artifact-records.test.mjs",
       "source_location": "L207",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_artifact_records_test_mjs",
-      "target": "tests_artifact_records_test_spans",
-      "confidence_score": 1.0
+      "target": "tests_artifact_records_test_spans"
     },
     {
       "relation": "contains",
@@ -11518,9 +11518,9 @@
       "source_file": "src/memory/artifact.records.ts",
       "source_location": "L66",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_artifact_records_ts",
-      "target": "memory_artifact_records_generatednotesourcespaninput",
-      "confidence_score": 1.0
+      "target": "memory_artifact_records_generatednotesourcespaninput"
     },
     {
       "relation": "contains",
@@ -11528,9 +11528,9 @@
       "source_file": "src/memory/artifact.records.ts",
       "source_location": "L76",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_artifact_records_ts",
-      "target": "memory_artifact_records_generatednotesourcespan",
-      "confidence_score": 1.0
+      "target": "memory_artifact_records_generatednotesourcespan"
     },
     {
       "relation": "contains",
@@ -11778,9 +11778,9 @@
       "source_file": "src/memory/artifact.records.ts",
       "source_location": "L404",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_artifact_records_ts",
-      "target": "memory_artifact_records_creategeneratednotesourcespans",
-      "confidence_score": 1.0
+      "target": "memory_artifact_records_creategeneratednotesourcespans"
     },
     {
       "relation": "contains",
@@ -12794,9 +12794,9 @@
       "source_file": "src/memory/artifact.records.ts",
       "source_location": "L1730",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_artifact_records_creategeneratednotesartifactrecords",
-      "target": "memory_artifact_records_creategeneratednotesourcespans",
-      "confidence_score": 1.0
+      "target": "memory_artifact_records_creategeneratednotesourcespans"
     },
     {
       "relation": "calls",
@@ -15080,9 +15080,9 @@
       "source_file": "src/memory/memory.orchestrator.ts",
       "source_location": "L138",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_memory_orchestrator_ts",
-      "target": "memory_memory_orchestrator_buildgeneratednotesourcespans",
-      "confidence_score": 1.0
+      "target": "memory_memory_orchestrator_buildgeneratednotesourcespans"
     },
     {
       "relation": "contains",
@@ -15330,9 +15330,9 @@
       "source_file": "src/memory/memory.orchestrator.ts",
       "source_location": "L747",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_memory_orchestrator_memoryorchestrator_updatelearningbookfromconversation",
-      "target": "memory_memory_orchestrator_buildgeneratednotesourcespans",
-      "confidence_score": 1.0
+      "target": "memory_memory_orchestrator_buildgeneratednotesourcespans"
     },
     {
       "relation": "calls",
@@ -22780,5 +22780,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "fa3a5a1ba707b8f2b344326c0b2d862ff2271769"
+  "built_at_commit": "9d603e239e344316340885fffd9c3a4ced48ca04"
 }

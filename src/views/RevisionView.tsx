@@ -2018,13 +2018,14 @@ const StoredAudioOverview = ({
   overview: ChapterAudioOverview;
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const pendingPlayRef = useRef<Promise<void> | null>(null);
   const [audioIssue, setAudioIssue] = useState<"" | "playback" | "media">("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState("");
-  const [showNativeControls, setShowNativeControls] = useState(false);
+  const [showNativeControls, setShowNativeControls] = useState(true);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -2038,24 +2039,56 @@ const StoredAudioOverview = ({
     setDuration(0);
     setError("");
     setAudioIssue("");
-    setShowNativeControls(false);
+    setShowNativeControls(true);
+    pendingPlayRef.current = null;
     return () => {
       audioRef.current?.pause();
+      pendingPlayRef.current = null;
     };
   }, [overview.audioSrc]);
+
+  const startPlayback = async () => {
+    const audioElement = audioRef.current;
+    if (!audioElement) throw new Error("Audio element is not ready.");
+    audioElement.playbackRate = playbackRate;
+    if (audioElement.ended) audioElement.currentTime = 0;
+    if (audioElement.readyState === 0) audioElement.load();
+    await audioElement.play();
+    setError("");
+    setAudioIssue("");
+  };
+
+  const primePlayback = () => {
+    const audioElement = audioRef.current;
+    if (!audioElement || isPlaying || pendingPlayRef.current) return;
+    if (!audioElement.paused && !audioElement.ended) return;
+    pendingPlayRef.current = startPlayback().finally(() => {
+      pendingPlayRef.current = null;
+    });
+  };
 
   const togglePlayback = async () => {
     const audioElement = audioRef.current;
     if (!audioElement) return;
-    audioElement.playbackRate = playbackRate;
-    if (isPlaying) {
+    const pendingPlay = pendingPlayRef.current;
+    if (pendingPlay) {
+      try {
+        await pendingPlay;
+      } catch {
+        setAudioIssue("playback");
+        setShowNativeControls(true);
+        setError(
+          "Audio overview could not start from the custom button. Use the native player in this card, or try Play again after interacting with the page.",
+        );
+      }
+      return;
+    }
+    if (isPlaying || (!audioElement.paused && !audioElement.ended)) {
       audioElement.pause();
       return;
     }
     try {
-      await audioElement.play();
-      setError("");
-      setAudioIssue("");
+      await startPlayback();
     } catch {
       setAudioIssue("playback");
       setShowNativeControls(true);
@@ -2103,6 +2136,7 @@ const StoredAudioOverview = ({
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           <button
             type="button"
+            onPointerDown={primePlayback}
             onClick={togglePlayback}
             className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-800"
           >
@@ -2153,9 +2187,9 @@ const StoredAudioOverview = ({
         <audio
           ref={audioRef}
           src={overview.audioSrc}
-          preload="metadata"
+          preload="auto"
           controls={showNativeControls}
-          className={showNativeControls ? "mt-3 w-full" : "hidden"}
+          className="mt-3 w-full"
           onPlay={() => {
             setIsPlaying(true);
             setError("");
