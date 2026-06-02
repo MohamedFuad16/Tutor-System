@@ -3737,6 +3737,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         try {
           const args = parseVoiceFunctionArguments(call);
           let result: Record<string, unknown>;
+          let toolCompletionStatus: "completed" | "blocked" = "completed";
 
           if (toolName === "look_at_study_context") {
             const contextPayload =
@@ -3825,6 +3826,164 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               cardCount: storedFlashcards.length,
               activeBookId: canonicalActiveBookId || "",
             };
+          } else if (toolName === "web_search") {
+            const query = String(args.query || "")
+              .replace(/\s+/g, " ")
+              .trim();
+            if (!query) {
+              throw new Error("web_search requires a query.");
+            }
+            const mode = args.mode === "news" ? "news" : "search";
+            const maxResults = Math.min(
+              Math.max(Number(args.maxResults || 6) || 6, 1),
+              10,
+            );
+            const intentText = `${lastVoiceUserMessageRef.current} ${query}`;
+            const explicitWebIntent =
+              /\b(web|internet|online|search|google|look up|browse)\b/i.test(
+                intentText,
+              );
+            const freshnessIntent =
+              /\b(latest|current|recent|today|yesterday|news|price|pricing|release|ranking|rankings|weather|score|schedule|trend|trending)\b/i.test(
+                intentText,
+              );
+            const sourceLocalIntent =
+              /\b(current page|this page|screen|document|pdf|selected text|uploaded|active book|study context|chapter)\b/i.test(
+                intentText,
+              );
+            const allowed =
+              explicitWebIntent ||
+              (freshnessIntent && !sourceLocalIntent) ||
+              (brainRuntimeSettings.webSearchPolicy !== "manual_only" &&
+                freshnessIntent);
+
+            if (!allowed) {
+              toolCompletionStatus = "blocked";
+              result = {
+                status: "blocked",
+                query,
+                reason:
+                  "Voice web search stayed local because the turn looked like a source-material or memory-context question.",
+                policy: brainRuntimeSettings.webSearchPolicy,
+              };
+            } else {
+              const searchStartedAt = Date.now();
+              const response = await fetch("/api/voice-web-search", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...(serperApiKey ? { "X-Serper-API-Key": serperApiKey } : {}),
+                },
+                body: JSON.stringify({
+                  requestId: sessionId,
+                  query,
+                  mode,
+                  maxResults,
+                  serperApiKey: serperApiKey || undefined,
+                }),
+              });
+              const payload = await response.json().catch(() => ({}));
+              const searchId =
+                typeof payload.searchId === "string"
+                  ? payload.searchId
+                  : `voice_web_${Date.now()}`;
+              const sources = Array.isArray(payload.sources)
+                ? (payload.sources as NormalizedWebSource[])
+                : [];
+
+              recordWebSearchEvent({
+                type: "started",
+                searchId,
+                query,
+                mode,
+              });
+              recordWebUsage({
+                provider: "serper",
+                requests: 1,
+                searchRequests: mode === "news" ? 0 : 1,
+                newsRequests: mode === "news" ? 1 : 0,
+                estimated: true,
+              });
+
+              if (!response.ok) {
+                recordWebSearchEvent({
+                  type: "error",
+                  searchId,
+                  status: payload.error || "Voice web search unavailable.",
+                });
+                recordWebUsage({
+                  provider: "serper",
+                  failures: 1,
+                  estimated: true,
+                });
+                await recordUnavailableCitationState({
+                  searchId,
+                  query,
+                  reason: payload.error || "Voice web search unavailable.",
+                  source: "voice_web_search",
+                  metadata: { toolCallId, voiceSessionId: sessionId },
+                });
+                throw new Error(
+                  payload.error || "Voice web search unavailable.",
+                );
+              }
+
+              if (sources.length) {
+                cacheWebSources(sources);
+              }
+              recordWebSearchEvent({
+                type: "complete",
+                searchId,
+                sources,
+                status: `Reviewed ${sources.length} source${sources.length === 1 ? "" : "s"}`,
+              });
+              recordWebUsage({
+                provider: "serper",
+                sourcesReviewed: sources.length,
+                estimated: true,
+              });
+              sources.forEach(
+                (source) =>
+                  void recordWebSourceArtifact({
+                    webSource: source,
+                    searchId,
+                    query,
+                    eventSource: "voice_web_search",
+                    messageId: sessionId,
+                    conversationId: canonicalActiveBookId
+                      ? chatThreadIdForBook(canonicalActiveBookId)
+                      : undefined,
+                    bookId: canonicalActiveBookId || undefined,
+                    metadata: {
+                      toolCallId,
+                      voiceSessionId: sessionId,
+                      durationMs: Date.now() - searchStartedAt,
+                    },
+                  }),
+              );
+              if (!sources.length) {
+                await recordUnavailableCitationState({
+                  searchId,
+                  query,
+                  reason: "No web sources returned.",
+                  source: "voice_web_search",
+                  metadata: { toolCallId, voiceSessionId: sessionId },
+                });
+              }
+              result = {
+                status: sources.length ? "ready" : "empty",
+                query,
+                mode,
+                sourceCount: sources.length,
+                sources: sources.slice(0, 6).map((source) => ({
+                  title: source.title,
+                  url: source.url,
+                  domain: source.domain,
+                  snippet: source.snippet,
+                  date: source.date,
+                })),
+              };
+            }
           } else {
             throw new Error(`Unsupported voice tool: ${toolName}`);
           }
@@ -3834,12 +3993,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             type: "tool_call",
             status: "completed",
             sessionId,
-            summary: `Voice tool completed: ${toolName}`,
+            summary: `Voice tool ${toolCompletionStatus}: ${toolName}`,
             metadata: { toolCallId, result },
           });
           await recordToolJobEvent({
             toolName,
-            status: "completed",
+            status: toolCompletionStatus,
             requestId: sessionId,
             source: "voice_agent",
             inputSummary,
@@ -3885,9 +4044,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       activeDocumentId,
       activeLearningBookTitle,
       activeProject,
+      brainRuntimeSettings.webSearchPolicy,
       buildVoiceStudyContext,
+      cacheWebSources,
       canonicalActiveBookId,
       recordVoiceAgentEvent,
+      recordWebSearchEvent,
+      recordWebUsage,
+      serperApiKey,
       setMessages,
     ],
   );

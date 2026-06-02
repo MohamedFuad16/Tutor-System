@@ -2173,6 +2173,67 @@ session id.
   so a live retrieval/model/tool timeline can be inspected end to end.
 - Browser-verify a live Deepgram voice round trip when provider access is in
   scope.
-- Continue closing typed-chat vs voice parity for current-page vision and web
-  search tools.
+- Continue closing typed-chat vs voice parity for current-page vision.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 41: Voice Web-Search Tool Parity
+
+Phase 41 closes one of the remaining typed-chat vs voice parity gaps: live web
+search for explicit web, current, recent, latest, or news-style questions. Voice
+mode can now expose the same local source-card provenance path as typed chat
+without weakening the source-material-first boundary for current page, selected
+text, active document, or active book questions.
+
+## Graphify Context
+
+- Graphify routed this slice through `VOICE_AGENT_TOOL_DEFINITIONS`,
+  `ChatPanel()`, `server.ts`, `searchSerper()`, `voiceAgentTools.ts`,
+  `web-search.ts`, and the Admin/source-artifact adjacent surfaces.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+
+## Integration Decisions
+
+- Added `web_search` to the shared Deepgram voice-agent tool definition list.
+- Added `/api/voice-web-search` as a local server bridge that validates the
+  request id/query/mode/count, calls the existing Serper helper, and records
+  web system activity for started, completed, blocked, and failed states.
+- `ChatPanel` now executes voice `web_search` calls, blocks source-local prompts
+  conservatively, records web search/usage events, caches sources, and writes
+  source-card artifact/citation provenance for voice-returned sources.
+- The mock voice provider now derives from the shared voice tool definition list
+  so offline voice-tool tests catch future drift.
+- README, Tutor System Architecture, User Brain Architecture, App Design
+  Language, and workflow evidence now document the local voice web-search
+  boundary.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 93 tests.
+- `npm run build`: passed.
+- In-app Browser QA on `http://localhost:3100`: Admin/System Activity rendered
+  request timelines, local activity copy, tool visibility, and voice controls
+  with zero captured browser error logs.
+- In-app Browser QA at `390x844`: Admin/System Activity remained reachable and
+  rendered with zero captured browser error logs.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  863 nodes, 1477 edges, and 59 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `VOICE_AGENT_TOOL_DEFINITIONS`, `ChatPanel()`,
+  `searchSerper()`, `server.ts`, `voiceAgentTools.ts`, and `web-search.ts`.
+- `graphify path "VOICE_AGENT_TOOL_DEFINITIONS" "searchSerper()"` found a
+  two-hop path through `server.ts`.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Remaining Work
+
+- Browser-verify a live Deepgram voice round trip when provider access is in
+  scope.
+- Browser-verify a successful live Serper voice web-search response when a
+  deliberate key-backed test is in scope.
+- Continue closing typed-chat vs voice parity for current-page vision.
 - AWS/cloud synchronization remains out of scope until beta testing.

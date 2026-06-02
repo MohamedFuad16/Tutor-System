@@ -37,6 +37,8 @@ use a `#faf9f6` paper style to keep review and diagnostics readable.
 - OpenAI SDK against OpenRouter-compatible models.
 - Deepgram voice agent and TTS routes.
 - Serper web/news search.
+- Local voice web search bridge at `/api/voice-web-search` for explicit
+  web/freshness requests from the Deepgram voice-agent tool loop.
 - Python document classifier/extractor through `scripts/classify_and_extract.py`.
 
 ## 3. Model Inventory
@@ -113,11 +115,13 @@ documents through the right extraction branch.
 `ChatPanel` streams tutor output via SSE, renders Markdown and Mermaid, supports
 source-material-first answering, handles web-search events, and manages TTS and
 voice flows. Live voice uses a dark audio-reactive stage, grouped voice-session
-transcripts, typed-turn injection, Deepgram websocket usage events, and a local
-voice-agent event ledger for Admin. Web-search sources write source-card
-artifacts. Generated flashcards write local `ArtifactRecord` provenance rows
-with `not_checked` citation states so Admin can audit them before broader
-verification exists.
+transcripts, typed-turn injection, Deepgram websocket usage events, local
+client-side tools, and a local voice-agent event ledger for Admin. Voice can call
+`web_search` for explicit web or freshness requests; source-material questions
+about the current page, selected text, active document, or active book stay local
+first. Web-search sources write source-card artifacts. Generated flashcards
+write local `ArtifactRecord` provenance rows with `not_checked` citation states
+so Admin can audit them before broader verification exists.
 
 ### Revision View
 

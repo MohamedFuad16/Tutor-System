@@ -166,6 +166,8 @@ Study books can now hold more than one PDF:
 6. Each chat request carries a browser request id through memory retrieval,
    `/api/chat`, model/tool ledgers, and Admin request timelines. Voice uses the
    voice session id for the same local correlation.
+7. Voice can call the local `web_search` bridge for explicit web or freshness
+   questions, with Admin recording the voice tool status and source cards.
 
 PDF blobs, extracted text, active document ID, page position, and zoom are stored
 locally in the browser. Large scanned documents may still be bounded by browser

@@ -82,6 +82,31 @@ export const VOICE_AGENT_TOOL_DEFINITIONS = [
       required: ["cards"],
     },
   },
+  {
+    name: "web_search",
+    description:
+      "Search live web sources only when the student explicitly asks for web, internet, online, latest, current, recent, or news information. Do not use for current page, selected text, uploaded document, active library, or local study-context questions.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "The concise web search query.",
+        },
+        mode: {
+          type: "string",
+          enum: ["search", "news"],
+          description:
+            "Use news for current events/headlines; use search for general web retrieval.",
+        },
+        maxResults: {
+          type: "number",
+          description: "Number of sources to retrieve, from 1 to 10.",
+        },
+      },
+      required: ["query"],
+    },
+  },
 ] as const;
 
 export const voiceAgentToolNames = VOICE_AGENT_TOOL_DEFINITIONS.map(

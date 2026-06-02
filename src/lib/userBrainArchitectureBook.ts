@@ -26,6 +26,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Chat and Study can capture local document context.
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
 - Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
+- Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
 - Admin exposes model runs, tool jobs, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
 - Generated learning-book notes now run an initial local provenance check when Memory writes them, so coherent note rows move from \`not_checked\` to \`verified\` immediately while remaining limited to ledger traceability. When document text is available, they also carry compact source-span preview anchors.
 - Generated flashcards and stored chapter audio guides still leave explicit \`not_checked\` artifact provenance until a scoped local verifier runs.
@@ -155,7 +156,7 @@ Implemented Admin surfaces:
 | System Activity | Request timelines, retrieval injections, and backend event summaries. |
 | Model Runs | Provider/model selection, fallbacks, token/cost metadata, failures. |
 | Tool Jobs | Tool lifecycle visibility. |
-| Voice Agent Timeline | Local voice websocket lifecycle, Deepgram settings, speaking/listening state, barge-in, transcript turns, and errors. |
+| Voice Agent Timeline | Local voice websocket lifecycle, Deepgram settings, speaking/listening state, barge-in, transcript turns, web-search tool calls, and errors. |
 | Memory/Retrieval Events | Learner-brain writes and context selection. |
 | Evidence Ledger | Evidence rows and BKT deltas. |
 | Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and chapter audio guide provenance. |
@@ -179,6 +180,7 @@ Good voice behavior means:
 - preserve learner state when voice falls back to text;
 - record voice costs and failures;
 - show voice lifecycle and interruption state in Admin;
+- let voice call live web search only for explicit web or freshness questions, while keeping current-page, selected-text, document, and active-book questions source-first;
 - avoid pretending live speech is evidence.
 
 For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a prepared explanation, generated once, stored as an asset, and played from the browser with normal controls. The target is a simple 3-4 minute explanation for each built-in chapter, long enough to teach the idea without turning into a lecture. Those controls now include play, pause, speed, seek, and native fallback playback when the browser blocks scripted play. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
@@ -199,6 +201,7 @@ Implemented now:
 - durable evidence and mastery ledgers;
 - durable model/tool/memory/retrieval observability rows;
 - request-correlated retrieval, model-run, tool-job, server-activity, and voice-session timelines;
+- local voice web-search tool parity with typed chat for explicit live-web/freshness questions;
 - runtime tuning controls;
 - correction request ledger and non-destructive propagation overlays;
 - source artifact and citation-state ledger;
@@ -219,6 +222,7 @@ Still local beta work:
 - generated-artifact verifiers for charts, code snippets, images, websites, previews, and other unsupported artifact kinds;
 - source-span claim matching for generated learning notes beyond the current provenance-level check;
 - audio-content transcript matching beyond the current stored-manifest integrity check;
+- voice current-page vision parity with typed chat;
 - durable job queue with retries and dead-letter review;
 - stronger tests that make mastery writes impossible without validated evidence and audit rows.
 

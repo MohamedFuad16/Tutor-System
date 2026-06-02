@@ -14,8 +14,8 @@ records the request/response loop in the local system activity ledger.
 
 - Added `voiceProvider?: "deepgram" | "mock"` to the server app options.
 - Added a mock voice provider branch that marks the voice websocket ready,
-  records `Mock voice provider ready`, and sends tool calls for
-  `look_at_study_context`, `update_graph`, and `generate_flashcards`.
+  records `Mock voice provider ready`, and sends tool calls from the shared
+  voice tool definition list instead of a separate hand-written list.
 - Shared voice tool request/response activity recording between the Deepgram
   path and the mock harness.
 - Added a websocket integration test that replies to each mock function call
@@ -51,5 +51,5 @@ records the request/response loop in the local system activity ledger.
 - Live Deepgram voice was not exercised in this phase.
 - The mock provider is only selected through the server factory option used by
   tests; the default provider remains Deepgram.
-- Web search and current-page vision remain typed-chat-only voice parity gaps.
+- Current-page vision remains a typed-chat-only voice parity gap.
 - AWS/cloud synchronization remains out of scope until beta testing.

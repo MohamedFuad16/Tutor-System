@@ -2323,6 +2323,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Live voice mode records local session start, Deepgram settings, speaking/listening transitions, barge-in, transcript turns, and errors so the dark voice UI is debuggable from Admin.",
       },
       {
+        title: "Voice web search tool",
+        detail:
+          "Voice can call live web search for explicit web or freshness questions, while current-page, selected-text, document, and active-book questions keep the source-material-first path.",
+      },
+      {
         title: "Correction overlays",
         detail:
           "Mark-wrong, deletion-review, and supersede actions stay non-destructive in beta while affected rows gain visible correction state.",

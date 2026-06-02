@@ -1520,6 +1520,103 @@ CRITICAL RULES:
     }
   });
 
+  app.post("/api/voice-web-search", async (req, res) => {
+    const startedAt = Date.now();
+    const requestId =
+      normalizeClientRequestId(req.body?.requestId) || activityId();
+    const searchId = `voice_web_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const query = String(req.body?.query || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 240);
+    const mode: WebSearchMode = req.body?.mode === "news" ? "news" : "search";
+    const maxResults = Math.min(
+      Math.max(Number(req.body?.maxResults || 6) || 6, 1),
+      10,
+    );
+    const serperRuntimeKey =
+      sanitizeApiKey(req.headers["x-serper-api-key"]) ||
+      sanitizeApiKey(req.body?.serperApiKey) ||
+      sanitizeApiKey(process.env.SERPER_API_KEY);
+
+    if (!query) {
+      recordSystemActivity({
+        kind: "web",
+        status: "blocked",
+        title: "Voice web search blocked",
+        detail: "Voice web_search requires a query.",
+        requestId,
+        toolName: "web_search",
+        phase: "voice_tool",
+      });
+      return res.status(400).json({
+        requestId,
+        searchId,
+        sources: [],
+        error: "Query is required.",
+      });
+    }
+
+    recordSystemActivity({
+      kind: "web",
+      status: "started",
+      title: "Voice web search started",
+      detail: query,
+      requestId,
+      toolName: "web_search",
+      phase: "voice_tool",
+      metadata: { searchId, mode, maxResults },
+    });
+
+    try {
+      const sources = await searchSerper({
+        query,
+        mode,
+        maxResults,
+        apiKey: serperRuntimeKey || undefined,
+      });
+      recordSystemActivity({
+        kind: "web",
+        status: "completed",
+        title: "Voice web search completed",
+        detail: `${sources.length} source${sources.length === 1 ? "" : "s"} returned.`,
+        requestId,
+        toolName: "web_search",
+        phase: "voice_tool",
+        durationMs: Date.now() - startedAt,
+        metadata: {
+          searchId,
+          mode,
+          sourceCount: sources.length,
+          domains: sources.map((source) => source.domain).slice(0, 8),
+        },
+      });
+      return res.json({ requestId, searchId, sources });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Search temporarily unavailable.";
+      recordSystemActivity({
+        kind: "web",
+        status: "failed",
+        title: "Voice web search unavailable",
+        detail: message,
+        requestId,
+        toolName: "web_search",
+        phase: "voice_tool",
+        durationMs: Date.now() - startedAt,
+        metadata: { searchId, mode },
+      });
+      return res.status(503).json({
+        requestId,
+        searchId,
+        sources: [],
+        error: "Search temporarily unavailable",
+      });
+    }
+  });
+
   app.post("/api/chat", async (req, res) => {
     const activityStartedAt = Date.now();
     let requestId = activityId();
@@ -2896,43 +2993,37 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           phase: "settings",
         });
         ws.send(JSON.stringify({ type: "SettingsApplied" }));
-        const functions = [
-          {
-            id: "mock_context",
-            name: "look_at_study_context",
-            arguments: JSON.stringify({
-              question: "What local study context is active?",
-            }),
-            client_side: true,
-            thought_signature: "mock_context_signature",
+        const mockToolArguments: Record<string, Record<string, unknown>> = {
+          look_at_study_context: {
+            question: "What local study context is active?",
           },
-          {
-            id: "mock_graph",
-            name: "update_graph",
-            arguments: JSON.stringify({
-              name: "Voice Tool Loop",
-              description:
-                "A local voice-agent function call executed by the browser client.",
-              understandingDelta: 0.05,
-            }),
-            client_side: true,
-            thought_signature: "mock_graph_signature",
+          update_graph: {
+            name: "Voice Tool Loop",
+            description:
+              "A local voice-agent function call executed by the browser client.",
+            understandingDelta: 0.05,
           },
-          {
-            id: "mock_flashcards",
-            name: "generate_flashcards",
-            arguments: JSON.stringify({
-              cards: [
-                {
-                  front: "What does the voice tool loop verify?",
-                  back: "It verifies local FunctionCallRequest and FunctionCallResponse handling without Deepgram.",
-                },
-              ],
-            }),
-            client_side: true,
-            thought_signature: "mock_flashcards_signature",
+          generate_flashcards: {
+            cards: [
+              {
+                front: "What does the voice tool loop verify?",
+                back: "It verifies local FunctionCallRequest and FunctionCallResponse handling without Deepgram.",
+              },
+            ],
           },
-        ];
+          web_search: {
+            query: "latest local voice tool loop testing patterns",
+            mode: "search",
+            maxResults: 2,
+          },
+        };
+        const functions = VOICE_AGENT_TOOL_DEFINITIONS.map((tool) => ({
+          id: `mock_${tool.name}`,
+          name: tool.name,
+          arguments: JSON.stringify(mockToolArguments[tool.name] || {}),
+          client_side: true,
+          thought_signature: `mock_${tool.name}_signature`,
+        }));
         recordVoiceToolRequest(functions);
         ws.send(JSON.stringify({ type: "FunctionCallRequest", functions }));
       };

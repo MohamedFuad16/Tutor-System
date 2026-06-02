@@ -138,6 +138,7 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
     "generate_flashcards",
     "look_at_study_context",
     "update_graph",
+    "web_search",
   ]);
 
   request.functions.forEach((fn) => {
@@ -194,6 +195,38 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         event.status === "completed" &&
         event.title === "Voice study context attached" &&
         event.requestId === "voice-test-session-1",
+    ),
+  );
+});
+
+test("blocked voice web search writes correlated system activity", async (t) => {
+  const { server, baseUrl } = await startApp();
+  t.after(() => server.close());
+
+  const response = await fetch(`${baseUrl}/api/voice-web-search`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      requestId: "voice-web-test-1",
+      query: "",
+      mode: "search",
+    }),
+  });
+
+  assert.equal(response.status, 400);
+  const payload = await response.json();
+  assert.equal(payload.requestId, "voice-web-test-1");
+  assert.equal(payload.error, "Query is required.");
+
+  const body = await readActivity(baseUrl);
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "web" &&
+        event.status === "blocked" &&
+        event.title === "Voice web search blocked" &&
+        event.requestId === "voice-web-test-1" &&
+        event.toolName === "web_search",
     ),
   );
 });

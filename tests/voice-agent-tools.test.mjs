@@ -13,12 +13,21 @@ test("voice agent tool definitions expose local study tools", () => {
     "look_at_study_context",
     "update_graph",
     "generate_flashcards",
+    "web_search",
   ]);
-  assert.equal(VOICE_AGENT_TOOL_DEFINITIONS.length, 3);
+  assert.equal(VOICE_AGENT_TOOL_DEFINITIONS.length, 4);
   assert.equal(
     VOICE_AGENT_TOOL_DEFINITIONS.every((tool) => !("endpoint" in tool)),
     true,
   );
+  const webSearchTool = VOICE_AGENT_TOOL_DEFINITIONS.find(
+    (tool) => tool.name === "web_search",
+  );
+  assert.deepEqual(webSearchTool.parameters.required, ["query"]);
+  assert.deepEqual(webSearchTool.parameters.properties.mode.enum, [
+    "search",
+    "news",
+  ]);
 });
 
 test("voice function arguments parse Deepgram arguments and input fields", () => {
