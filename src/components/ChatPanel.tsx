@@ -87,6 +87,12 @@ import {
   parseVoiceFunctionArguments,
   type VoiceAgentFunctionCall,
 } from "../lib/voiceAgentTools";
+import {
+  chatTitleFromMessageSet,
+  flattenChatMessagesForPrompt,
+  hasLearnerChatTurn,
+  meaningfulChatMessages,
+} from "../lib/chatThreadUtils";
 
 type MermaidApi = typeof import("mermaid").default;
 type Variants = Record<string, Record<string, any>>;
@@ -1001,14 +1007,6 @@ const isGenericLibraryTitle = (title?: string | null) =>
     String(title || "").trim(),
   );
 
-const meaningfulChatMessages = (items: Message[]) =>
-  items.filter(
-    (item) =>
-      item.id !== "1" &&
-      item.content.trim() &&
-      (item.role === "user" || item.role === "assistant"),
-  );
-
 const readChatArchives = (): ChatArchive[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(CHAT_ARCHIVE_KEY) || "[]");
@@ -1028,13 +1026,8 @@ const archiveChatSnapshot = (
   bookTitle: string,
 ) => {
   const archivedMessages = meaningfulChatMessages(items);
-  if (!archivedMessages.some((item) => item.role === "user")) return [];
-  const firstUser = archivedMessages.find((item) => item.role === "user");
-  const title =
-    firstUser?.content
-      .replace(/\s+/g, " ")
-      .replace(/^\[SYSTEM:[\s\S]*?\]\s*/i, "")
-      .slice(0, 64) || bookTitle;
+  if (!archivedMessages.some(hasLearnerChatTurn)) return [];
+  const title = chatTitleFromMessageSet(archivedMessages, bookTitle, 64);
   const snapshot: ChatArchive = {
     id: bookId || `chat:${Date.now()}`,
     title,
@@ -1075,17 +1068,7 @@ const normalizeChatMessages = (items?: Message[] | null): Message[] => {
 const chatThreadIdForBook = (bookId: string) => `thread:${bookId}`;
 
 const chatTitleFromMessages = (items: Message[], fallback: string) => {
-  const firstUser = meaningfulChatMessages(items).find(
-    (item) => item.role === "user",
-  );
-  return (
-    firstUser?.content
-      .replace(/\s+/g, " ")
-      .replace(/^\[SYSTEM:[\s\S]*?\]\s*/i, "")
-      .slice(0, 72) ||
-    fallback ||
-    "General Study"
-  );
+  return chatTitleFromMessageSet(items, fallback, 72);
 };
 
 const persistBookChatThread = async (
@@ -3020,6 +3003,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const voiceSessionIdRef = useRef<string | null>(null);
   const voiceStartedAtRef = useRef<number | null>(null);
   const voiceSessionCountedRef = useRef(false);
+  const voiceSessionErrorRef = useRef<string | null>(null);
   const voiceTurnsRef = useRef<VoiceSessionTurn[]>([]);
   const voiceStudyContextRef = useRef<VoiceStudyContextPayload | null>(null);
 
@@ -3506,6 +3490,44 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     });
   };
 
+  const recordVoiceModelRun = (
+    status: "started" | "completed" | "failed",
+    sessionId: string,
+    metadata: Record<string, unknown> = {},
+  ) => {
+    const context = voiceStudyContextRef.current;
+    const startedAt = voiceStartedAtRef.current;
+    void recordModelRunEvent({
+      status,
+      provider: "deepgram",
+      source: "voice_agent",
+      requestId: sessionId,
+      requestedModel: "Deepgram Voice Agent",
+      usedModel: "Deepgram Voice Agent",
+      estimated: true,
+      durationMs:
+        status === "started" || !startedAt ? undefined : Date.now() - startedAt,
+      memoryContextChars: context?.studyContextChars,
+      iterations: voiceTurnsRef.current.length,
+      error:
+        status === "failed" ? voiceSessionErrorRef.current || undefined : undefined,
+      runtimeSettings: { ...brainRuntimeSettings },
+      metadata: {
+        activeBookId: canonicalActiveBookId || undefined,
+        activeBookTitle: activeLearningBookTitle || activeProject,
+        activeDocumentId: activeDocumentId || undefined,
+        channel: "websocket",
+        documentCount: context?.documentCount,
+        memoryContextChars: context?.memoryContextChars,
+        activeBookContextChars: context?.activeBookContextChars,
+        documentContextChars: context?.documentContextChars,
+        ...metadata,
+      },
+    }).catch((error) => {
+      console.warn("[ChatPanel] Voice model run write failed:", error);
+    });
+  };
+
   const stopVoice = () => {
     if (endTimerRef.current) {
       clearTimeout(endTimerRef.current);
@@ -3550,17 +3572,29 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       );
       recordVoiceAgentEvent({
         type: "session_ended",
-        status: "completed",
+        status: voiceSessionErrorRef.current ? "failed" : "completed",
         sessionId,
         summary:
-          turns.length > 0
+          voiceSessionErrorRef.current
+            ? `Voice session ended after an error: ${compactVoiceEventText(voiceSessionErrorRef.current)}`
+            : turns.length > 0
             ? `Voice session ended with ${turns.length} transcript turn${turns.length === 1 ? "" : "s"}.`
             : "Voice session ended before transcript turns were captured.",
         metadata: {
           durationSeconds,
           turnCount: turns.length,
+          error: voiceSessionErrorRef.current || undefined,
         },
       });
+      recordVoiceModelRun(
+        voiceSessionErrorRef.current ? "failed" : "completed",
+        sessionId,
+        {
+          phase: "session_ended",
+          durationSeconds,
+          turnCount: turns.length,
+        },
+      );
       if (!voiceSessionCountedRef.current) {
         recordVoiceUsage({ sessions: 1 });
         voiceSessionCountedRef.current = true;
@@ -3602,6 +3636,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     voiceStartedAtRef.current = null;
     voiceStudyContextRef.current = null;
     voiceSessionCountedRef.current = false;
+    voiceSessionErrorRef.current = null;
     voiceTurnsRef.current = [];
     setVoiceState("idle");
   };
@@ -3859,6 +3894,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       voiceSessionIdRef.current = sessionId;
       voiceStartedAtRef.current = Date.now();
       voiceSessionCountedRef.current = false;
+      voiceSessionErrorRef.current = null;
       recordVoiceAgentEvent({
         type: "session_started",
         status: "started",
@@ -3869,6 +3905,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           bookId: canonicalActiveBookId,
           documentId: activeDocumentId,
         },
+      });
+      recordVoiceModelRun("started", sessionId, {
+        phase: "session_started",
+        language,
       });
       setMessages((prev) => [
         ...prev,
@@ -3920,6 +3960,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             documentContextChars: voiceContextPayload.documentContextChars,
             rawContextChars: voiceContextPayload.rawContextChars,
           },
+        });
+        recordVoiceModelRun("started", sessionId, {
+          phase: "context_attached",
+          language,
+          contextAttached: true,
+          rawContextChars: voiceContextPayload.rawContextChars,
         });
       }
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -4191,11 +4237,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               setVoiceState("listening");
             } else if (msg.type === "Error") {
               console.error("Deepgram Error", msg);
+              voiceSessionErrorRef.current = compactVoiceEventText(
+                String(msg.message || msg.error || "unknown error"),
+              );
               recordVoiceAgentEvent({
                 type: "error",
                 status: "failed",
                 sessionId: voiceSessionIdRef.current || undefined,
-                summary: `Deepgram voice-agent error: ${compactVoiceEventText(String(msg.message || msg.error || "unknown error"))}`,
+                summary: `Deepgram voice-agent error: ${voiceSessionErrorRef.current}`,
                 metadata: {
                   rawType: msg.type,
                 },
@@ -4252,11 +4301,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       ws.onclose = (event) => {
         if (event.code !== 1000 && event.reason) {
           console.warn("Voice connection closed:", event.reason);
+          voiceSessionErrorRef.current = compactVoiceEventText(event.reason);
           recordVoiceAgentEvent({
             type: "error",
             status: "failed",
             sessionId: voiceSessionIdRef.current || undefined,
-            summary: `Voice websocket closed: ${compactVoiceEventText(event.reason)}`,
+            summary: `Voice websocket closed: ${voiceSessionErrorRef.current}`,
             metadata: {
               code: event.code,
             },
@@ -4268,6 +4318,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
       ws.onerror = (e) => {
         console.error("WS error: ", e);
+        voiceSessionErrorRef.current = "Voice websocket could not connect.";
         recordVoiceAgentEvent({
           type: "error",
           status: "failed",
@@ -4281,11 +4332,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       };
     } catch (err) {
       console.error("Voice start error", err);
+      voiceSessionErrorRef.current = compactVoiceEventText(
+        err instanceof Error ? err.message : String(err),
+      );
       recordVoiceAgentEvent({
         type: "error",
         status: "failed",
         sessionId: voiceSessionIdRef.current || undefined,
-        summary: `Voice start failed: ${compactVoiceEventText(err instanceof Error ? err.message : String(err))}`,
+        summary: `Voice start failed: ${voiceSessionErrorRef.current}`,
       });
       stopVoice();
     }
@@ -4580,14 +4634,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           ...(serperApiKey ? { "X-Serper-API-Key": serperApiKey } : {}),
         },
         body: JSON.stringify({
-          messages: newMessages.flatMap((message) =>
-            message.voiceSession
-              ? message.voiceSession.turns.map((turn) => ({
-                  role: turn.role,
-                  content: turn.content,
-                }))
-              : [message],
-          ),
+          messages: flattenChatMessagesForPrompt(newMessages),
           currentPageImage,
           memoryContext: requestMemoryContext,
           aiModel,

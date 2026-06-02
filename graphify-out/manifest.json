@@ -43,6 +43,10 @@
     "mtime": 1780379337.8011737,
     "hash": "3fcf4c27ce354d2300d3322d4c8f303f"
   },
+  "/Users/mfuad16/Documents/LearningAI/tests/chat-thread-utils.test.mjs": {
+    "mtime": 1780380353.7678761,
+    "hash": "4782d73ad818659e4dd1f97553048f3a"
+  },
   "/Users/mfuad16/Documents/LearningAI/tests/audio-overview-plan.test.mjs": {
     "mtime": 1780338642.848053,
     "hash": "17aa409316cc416f7e111137efcc1ef3"
@@ -240,8 +244,8 @@
     "hash": "9bc10b581e5bc65e134a855223d4989d"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/ChatPanel.tsx": {
-    "mtime": 1780378824.7890933,
-    "hash": "9a585f065de7cef60894d6f2f9a4d5ea"
+    "mtime": 1780380447.866568,
+    "hash": "a046604bb29762c96ff618c55f34cbb0"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/AnimatedScrollText.tsx": {
     "mtime": 1779879420.319919,
@@ -274,6 +278,10 @@
   "/Users/mfuad16/Documents/LearningAI/src/lib/voiceAgentTools.ts": {
     "mtime": 1780378611.9312022,
     "hash": "d3551c06c018cf10657e30d7a9abf605"
+  },
+  "/Users/mfuad16/Documents/LearningAI/src/lib/chatThreadUtils.ts": {
+    "mtime": 1780380360.5458293,
+    "hash": "f4f35e55c6dfe7aaa1db752223c63a70"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/interactionModel.ts": {
     "mtime": 1780285414.7904036,

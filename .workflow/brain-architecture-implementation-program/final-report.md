@@ -1982,3 +1982,70 @@ loop in the Admin system activity ledger.
 - Continue correlating client-side voice tool jobs with server system-activity
   rows across richer request timelines.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 38: Voice Chat-Thread Continuity
+
+Phase 38 tightens the voice/text continuity layer. Voice transcripts were
+already visible as grouped message cards and could update the learner brain per
+completed turn, but the lightweight chat-history/title helpers still treated
+the parent voice-session message as empty content. This phase makes voice
+session turns first-class chat material and adds durable voice model-run rows
+for Admin.
+
+## Graphify Context
+
+- Graphify routed this slice through `ChatPanel.tsx`,
+  `src/lib/chatThreadUtils.ts`, `archiveChatSnapshot()`,
+  `chatTitleFromMessages()`, `flattenChatMessagesForPrompt()`, and
+  `meaningfulChatMessages()`.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+
+## Integration Decisions
+
+- Added `src/lib/chatThreadUtils.ts` as a small pure helper for:
+  - flattening voice-session turns into prompt messages;
+  - treating voice-session cards as meaningful chat history;
+  - detecting learner turns inside typed and voice messages;
+  - deriving archive/thread titles from generated voice titles or the first
+    learner voice turn.
+- Updated ChatPanel archive and book-thread title paths to use the shared
+  helper.
+- Updated typed chat request assembly to use
+  `flattenChatMessagesForPrompt()` so prior voice turns are injected through a
+  tested path.
+- Added `recordVoiceModelRun()` in ChatPanel so live voice sessions upsert a
+  durable `voice_agent` model-run row on start/context attachment and complete
+  or fail it when the session ends.
+- Added unit tests for voice-session meaningful history, prompt flattening, and
+  generated voice-title preference.
+
+## Verification Evidence
+
+- `npm run test`: passed, 92 tests including `chat-thread-utils.test.mjs`.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- In-app Browser QA on `http://localhost:3100`: Admin activated through DOM CUA
+  and rendered Admin Center, System Activity, Model Runs, and Live voice
+  timeline with zero browser console errors.
+- In-app Browser QA at `390x844`: Admin remained responsive and mobile Study
+  rendered the tutor entry with zero browser console errors.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  857 nodes, 1470 edges, and 50 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `chatThreadUtils.ts`,
+  `flattenChatMessagesForPrompt()`, `meaningfulChatMessages()`,
+  `archiveChatSnapshot()`, and `chatTitleFromMessages()`.
+- Scratch artifact checks found no `server.mjs`, `.tmp-test`, or running
+  `node server.mjs` process after QA cleanup.
+
+## Remaining Work
+
+- Browser-verify a live voice function-call round trip once provider keys/access
+  are intentionally part of the test scope.
+- Keep closing the typed-chat vs voice parity gap: web search and current-page
+  vision tools are still typed-chat-only.
+- Add stronger request correlation between browser voice model-run rows, server
+  system-activity rows, and client-side tool jobs.
+- AWS/cloud synchronization remains out of scope until beta testing.
