@@ -14,6 +14,69 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 34 report
+
+## Scope
+
+Phase 34 completes the built-in book voice-overview requirement. The previous
+phase expanded User Brain Architecture only; this phase expands the remaining
+Tutor System Architecture and App Design Language guides so every built-in
+Library chapter now has a checked-in, plain-language, 3-4 minute stored MP3
+guide.
+
+## Graphify Context
+
+- Graphify routed this slice through `tutorBook`, `RevisionView`,
+  `AppDesignLanguagePage()`, `StoredAudioOverview()`,
+  `chapterAudioOverviews`, the audio overview plan tests, README/Tutor
+  architecture docs, and the generated `graphify-out` artifacts.
+
+## Integration Decisions
+
+- Added a reproducible phase packet that expands only the remaining short
+  system/app-design audio scripts and keeps reruns idempotent.
+- Regenerated all 13 Tutor System Architecture MP3 assets and all 4 App Design
+  Language MP3 assets with Deepgram `aura-2-odysseus-en` at speed `1`.
+- Updated manifest duration labels to match measured playback.
+- Updated the Tutor System Architecture book, User Brain Architecture book,
+  App Design Language control-pattern copy, README, and system architecture doc
+  so they all describe 3-4 minute stored guides instead of shorter pending
+  assets.
+- Added a local headless-Chrome QA helper after the in-app browser session
+  timed out on basic click/screenshot operations.
+
+## Verification Evidence
+
+- Deepgram generation passed for `npm run audio:overview:generate -- --provider
+  deepgram --overwrite --speed 1 --book tutor-book`.
+- Deepgram generation passed for `npm run audio:overview:generate -- --provider
+  deepgram --overwrite --speed 1 --book app-design-language`.
+- `ffprobe` measured all 25 built-in chapter guide assets in range:
+  - Tutor System Architecture: 220-240 seconds.
+  - User Brain Architecture: 193-214 seconds.
+  - App Design Language: 233-235 seconds.
+- `npm run audio:overview:dry-run`: passed, 25 present, 0 missing, 25 planned.
+- `npm run format:check`: passed.
+- `npm run test`: passed, 85 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Headless Chrome QA at 390x844 and 1440x900: Tutor System Architecture and
+  App Design Language chapter 1 audio cards loaded native controls, transcripts,
+  226/233-second durations, no raw stored metadata in-card, and no horizontal
+  overflow.
+- QA screenshots were saved under
+  `.workflow/brain-architecture-implementation-program/results/`.
+- `graphify update . --force`: passed with no topology changes for this
+  documentation/audio-manifest slice.
+- `npm run graphify:tree`: passed.
+
+## Remaining Work
+
+- Continue the complete local learner-brain runtime flow: voice/chat storage,
+  context injection, tool calling, Admin observability, and agent-layer behavior.
+- AWS/cloud deployment remains intentionally deferred until local beta flow is
+  proven.
+
 # brain architecture implementation program: phase 33 report
 
 ## Scope

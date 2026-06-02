@@ -2350,7 +2350,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Chapter audio guides",
         detail:
-          "Every built-in Library chapter now attaches a Deepgram-generated guide asset with play, pause, speed, seek, and native fallback controls, keeping Library listening fast without calling live read-aloud each time.",
+          "Every built-in Library chapter now attaches a 3-4 minute Deepgram-generated guide asset with play, pause, speed, seek, and native fallback controls, keeping Library listening fast without calling live read-aloud each time.",
       },
       {
         title: "Audio generation dry-run",

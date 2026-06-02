@@ -95,8 +95,8 @@ for manifest integrity: local MP3 path, overview id, book/chapter anchors,
 transcript length, summary, voice, duration, stored date, and no-external-fetch
 provenance. That check is local traceability only; it does not claim
 audio-content transcription accuracy. Every built-in Library book now has
-checked-in audio guides, backed by `src/lib/chapterAudioOverviews.json` and the
-Deepgram regeneration script in
+checked-in 3-4 minute audio guides, backed by
+`src/lib/chapterAudioOverviews.json` and the Deepgram regeneration script in
 `scripts/generate-user-brain-audio-overviews.mjs`.
 
 ## 6. Core Views
@@ -124,9 +124,9 @@ verification exists.
 `RevisionView` renders generated learning books and built-in reference books in
 a paper-style reading surface. It also houses the app design language book with
 wireframes, tokens, interactive previews, and local beta control patterns.
-Built-in chapters include stored audio guide assets with local play/pause,
-speed, seek, and native fallback controls, so chapter listening does not call
-the live read-aloud route on every play.
+Built-in chapters include stored 3-4 minute audio guide assets with local
+play/pause, speed, seek, and native fallback controls, so chapter listening does
+not call the live read-aloud route on every play.
 `npm run audio:overview:dry-run` verifies the checked-in MP3 manifest without
 network access. Use the Deepgram provider in
 `scripts/generate-user-brain-audio-overviews.mjs` to regenerate assets when

@@ -1,7 +1,7 @@
 {
   "/Users/mfuad16/Documents/LearningAI/server.mjs": {
-    "mtime": 1780369957.695729,
-    "hash": "dad8fef99e60727621fa964046a980c6"
+    "mtime": 1780376692.848183,
+    "hash": "b96994af360b9e073e215af3d10765c7"
   },
   "/Users/mfuad16/Documents/LearningAI/vite.config.ts": {
     "mtime": 1780042874.3058963,
@@ -280,8 +280,8 @@
     "hash": "ecb181ff82756860ebd6a34bcaf3b638"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/userBrainArchitectureBook.ts": {
-    "mtime": 1780373778.9588552,
-    "hash": "3208bbf4982436340a8e6ceffc0b4b41"
+    "mtime": 1780376553.4947388,
+    "hash": "15a680ff58879f1b641853f71c9c833a"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/brainRuntimeSettings.ts": {
     "mtime": 1780300316.6761577,
@@ -296,8 +296,8 @@
     "hash": "a17c12b9d7a12044f64b9aa057e221ff"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/RevisionView.tsx": {
-    "mtime": 1780370251.0426407,
-    "hash": "ef3e452a7dd5770b3d5803f63a604769"
+    "mtime": 1780376575.4821556,
+    "hash": "227ddbaee2b0a7d613e95455cf76de0a"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AnalyticsView.tsx": {
     "mtime": 1780285414.7910829,
@@ -324,16 +324,16 @@
     "hash": "bb37f2cb6388a248ff064b049483371d"
   },
   "/Users/mfuad16/Documents/LearningAI/README.md": {
-    "mtime": 1780338192.548467,
-    "hash": "88b0017cf8773137289d255006246de2"
+    "mtime": 1780376568.557974,
+    "hash": "f795554de76eb835eeee1935d5256ef8"
   },
   "/Users/mfuad16/Documents/LearningAI/AGENTS.md": {
     "mtime": 1780338192.5483513,
     "hash": "d642a67e7461cadcc1cc05f28f1ee9db"
   },
   "/Users/mfuad16/Documents/LearningAI/TUTOR_ARCHITECTURE.md": {
-    "mtime": 1780369269.9168694,
-    "hash": "a73327e8596898904073298183fe2171"
+    "mtime": 1780376562.819392,
+    "hash": "185a4f584fdffa2659c83459b760debc"
   },
   "/Users/mfuad16/Documents/LearningAI/test_native.pdf": {
     "mtime": 1779965165.4411347,
@@ -404,100 +404,100 @@
     "hash": "f1d628e37e7baa288bb61463161ced4b"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-06-memory-dexie-library.mp3": {
-    "mtime": 1780338814.0299795,
-    "hash": "9bb35b5408e42c17db0e7f935467dd0a"
+    "mtime": 1780375347.5747645,
+    "hash": "0087d5919bd194caa335cb3a7bb7db6d"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-voice-audio-overview.mp3": {
     "mtime": 1780373386.0795054,
     "hash": "647b150688b5960829d921325148e02d"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-05-chat-tutor-tools.mp3": {
-    "mtime": 1780338787.2850218,
-    "hash": "3cc44aecff86fc2df2dd0a0f0b975da8"
+    "mtime": 1780375234.0386965,
+    "hash": "2af10b90fe2122246d638cafd58e53b8"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-teaching-loop-overview.mp3": {
     "mtime": 1780373105.4974945,
     "hash": "dd59629bd0ac56194e4f9ac049f8203a"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-11-graphify-debugging-safety.mp3": {
-    "mtime": 1780338925.702635,
-    "hash": "5cea639f133c94891d6e1a87a8d3998d"
+    "mtime": 1780375881.344954,
+    "hash": "003d3c2b1a61e0d4ce74e601cd7ddbe5"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-local-beta-roadmap-overview.mp3": {
     "mtime": 1780373483.8384879,
     "hash": "a7c17be718e7d050abe4f607b6f918d4"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-03-frontend-flow.mp3": {
-    "mtime": 1780338742.2000124,
-    "hash": "1b1f4307e29a3879a67a133bbe7059d5"
+    "mtime": 1780375016.8601615,
+    "hash": "7d8500e84b4c5eaab4afa013697f2559"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-02-tools-in-plain-english.mp3": {
-    "mtime": 1780338719.656367,
-    "hash": "c6397e7fbff48dab7a045eb46dbf677b"
+    "mtime": 1780374907.4883199,
+    "hash": "37d1679fbf89e25ae7a9f94a9935222c"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-09-background-workflow.mp3": {
-    "mtime": 1780338878.7602844,
-    "hash": "83819a7b35f56f2a5f203ac77b0c1c06"
+    "mtime": 1780375664.2312663,
+    "hash": "06e2fd6f901244a8b4f615a70df87275"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-00-how-to-read-this-book.mp3": {
-    "mtime": 1780338676.149177,
-    "hash": "2174b4914248ef25aa392c2a0553c8f8"
+    "mtime": 1780374692.5621848,
+    "hash": "d7fd09a5387f2da07c50a6c4cf5cf567"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/app-design-language-chapter-01-theme-system.mp3": {
-    "mtime": 1780339177.3597665,
-    "hash": "e1b8bd90c72ccffc2f15ab2a9ed55002"
+    "mtime": 1780376246.8996484,
+    "hash": "0f712379ae8c1ca8c95f16b54427edbf"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-runtime-overview.mp3": {
     "mtime": 1780372926.1118495,
     "hash": "98d78f2d305537df255409ad82a365af"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-01-product-map.mp3": {
-    "mtime": 1780338697.6714857,
-    "hash": "98d413a26a48b26be81cd016e11bb7db"
+    "mtime": 1780374800.0277584,
+    "hash": "ea01e65cdc02202839a7a23f87c57321"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-retrieval-artifacts-overview.mp3": {
     "mtime": 1780373195.0689828,
     "hash": "2b56a9ed016bbc99169ddc08456146d1"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-10-model-provider-map.mp3": {
-    "mtime": 1780338903.163698,
-    "hash": "05831728ddac163b1e905955bf7bc944"
+    "mtime": 1780375769.2725565,
+    "hash": "48e9b10cc636f002160d7f2ff323f7f1"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-12-maintenance-boundaries.mp3": {
-    "mtime": 1780338950.8733718,
-    "hash": "090aded67244ed7bc208cd082a7d542a"
+    "mtime": 1780375983.591339,
+    "hash": "07b26a551266794f24403ea77bd96bf7"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-admin-tuning-overview.mp3": {
     "mtime": 1780373291.4332156,
     "hash": "a991c702aba08ef58514dc0eebbe0ec4"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/app-design-language-chapter-03-local-beta-control-patterns.mp3": {
-    "mtime": 1780339225.8579924,
-    "hash": "9d003170e66952030e1e8bd3abc8b5ca"
+    "mtime": 1780376465.6356173,
+    "hash": "81feded695307d68180264f3de0c18be"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-sources-glossary-overview.mp3": {
     "mtime": 1780373573.5710785,
     "hash": "85220ce46aae7ea2be44cbec7666e160"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-08-analytics-admin.mp3": {
-    "mtime": 1780338856.604569,
-    "hash": "2bfd4620ed2e66a14b3545629c0beffd"
+    "mtime": 1780375557.1898491,
+    "hash": "9ec41de38cb187fa92faa0eb22ebd529"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/app-design-language-chapter-02-ui-component-snapshots.mp3": {
-    "mtime": 1780339202.0026379,
-    "hash": "efd79023192846a8a024013bc4130ab5"
+    "mtime": 1780376358.04647,
+    "hash": "baa2a0e54d4941537818c5fb14f9ee4d"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-07-revision-active-recall.mp3": {
-    "mtime": 1780338833.2709467,
-    "hash": "6e359867dad5da690d2f71a43076d16e"
+    "mtime": 1780375450.6380243,
+    "hash": "9205afea0a2011f5a8da82bc3e8f84a8"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/tutor-book-chapter-04-study-document-ingestion.mp3": {
-    "mtime": 1780338762.1416912,
-    "hash": "983735e1add5ab2e364670a1b8b9c897"
+    "mtime": 1780375124.3785894,
+    "hash": "d0ff754a58416994f1adbdc4399c9f75"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/app-design-language-chapter-00-wireframe-connections.mp3": {
-    "mtime": 1780339153.5105548,
-    "hash": "7ad0e3ae984e3f47ed692e5ec89914c6"
+    "mtime": 1780376139.8244362,
+    "hash": "f65e18f89a3e17a746b292f7b2fe1ead"
   },
   "/Users/mfuad16/Documents/LearningAI/public/audio-overviews/user-brain-ledger-overview.mp3": {
     "mtime": 1780373016.6929908,

@@ -32,7 +32,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Admin can locally verify generated learning-note provenance when the note links back to a learning entry, local book or conversation, local-only metadata, and no external fetch.
 - Admin can locally verify stored audio-guide manifest integrity when the guide links back to its checked-in MP3 path, book/chapter anchors, transcript metadata, voice, duration, stored date, and no external fetch.
 - Revision shows this book in a shorter reader path and can play a saved Deepgram chapter audio guide for every chapter.
-- User Brain Architecture chapter guides are now long-form, plain-language, 3-4 minute stored explainers. The Tutor System Architecture and App Design Language books still use shorter stored guide assets until their own expansion pass.
+- Every built-in Library chapter guide is now a long-form, plain-language, 3-4 minute stored explainer across Tutor System Architecture, User Brain Architecture, and App Design Language.
 - A local audio-guide manifest now covers every built-in Library book, with checked-in MP3 assets and Deepgram \`aura-2-odysseus-en\` regeneration at speed \`1\` when \`DEEPGRAM_API_KEY\` is available.
 
 ## What This Is Not
@@ -180,9 +180,9 @@ Good voice behavior means:
 - show voice lifecycle and interruption state in Admin;
 - avoid pretending live speech is evidence.
 
-For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a prepared explanation, generated once, stored as an asset, and played from the browser with normal controls. For the User Brain Architecture book, the target is a simple 3-4 minute explanation for each chapter, long enough to teach the idea without turning into a lecture. Those controls now include play, pause, speed, seek, and native fallback playback when the browser blocks scripted play. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
+For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a prepared explanation, generated once, stored as an asset, and played from the browser with normal controls. The target is a simple 3-4 minute explanation for each built-in chapter, long enough to teach the idea without turning into a lecture. Those controls now include play, pause, speed, seek, and native fallback playback when the browser blocks scripted play. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
 
-This phase extends that stored-asset pattern to every built-in Library chapter: Tutor System Architecture, User Brain Architecture, and App Design Language. The User Brain Architecture book now uses the long-form treatment; the other two books remain shorter stored guides until their own rewrite pass. \`src/lib/chapterAudioOverviews.json\` holds the chapter scripts, target filenames, provider metadata, and local MP3 manifest. \`npm run audio:overview:dry-run\` verifies which assets are checked in, while \`npm run audio:overview:generate -- --provider deepgram --overwrite\` regenerates them with Deepgram when \`DEEPGRAM_API_KEY\` is available. The reader uses the stored assets directly, so playback is instant and does not depend on a live model call.`,
+This phase extends that long-form stored-asset pattern to every built-in Library chapter: Tutor System Architecture, User Brain Architecture, and App Design Language. \`src/lib/chapterAudioOverviews.json\` holds the chapter scripts, target filenames, provider metadata, and local MP3 manifest. \`npm run audio:overview:dry-run\` verifies which assets are checked in, while \`npm run audio:overview:generate -- --provider deepgram --overwrite\` regenerates them with Deepgram when \`DEEPGRAM_API_KEY\` is available. The reader uses the stored assets directly, so playback is instant and does not depend on a live model call.`,
   },
   {
     title: "Chapter 7: Local Beta Roadmap",
@@ -208,11 +208,10 @@ Implemented now:
 - capped beta diagnostics export;
 - stored audio guide UI for every built-in Library chapter;
 - chapter-by-chapter stored-audio manifest, checked-in MP3 assets, dry-run report, and Deepgram \`aura-2-odysseus-en\` regeneration path.
-- long-form 3-4 minute stored audio explainers for every User Brain Architecture chapter.
+- long-form 3-4 minute stored audio explainers for every built-in Library chapter.
 
 Still local beta work:
 
-- long-form stored audio rewrites for the Tutor System Architecture and App Design Language books;
 - source-span claim matching;
 - stronger source-span matching beyond the current generated-note preview anchors;
 - generated-artifact verifiers for charts, code snippets, images, websites, previews, and other unsupported artifact kinds;

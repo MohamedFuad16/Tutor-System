@@ -274,26 +274,32 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/lib/chapterAudioOverviews.json, src/lib/userBrainArchitectureBook.ts, scripts/generate-user-brain-audio-overviews.mjs, public/audio-overviews/user-brain-*.mp3, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "MM",
+      "name": "Long-form built-in book audio completion",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/lib/chapterAudioOverviews.json, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, README.md, TUTOR_ARCHITECTURE.md, public/audio-overviews/tutor-book-*.mp3, public/audio-overviews/app-design-language-*.mp3, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_33_complete",
+    "status": "phase_34_complete",
     "checks": [
-      "Graphify routed the phase through RevisionView StoredAudioOverview, chapterAudioOverviews, and userBrainArchitectureBook",
-      "Expanded all 8 User Brain Architecture transcripts into simple long-form stored-audio explainers; Tutor System Architecture and App Design Language long-form rewrites remain out of this phase",
-      "Updated the Deepgram generator to split long scripts under the provider input limit and stitch MP3 chunks back together locally",
-      "Deepgram generation passed for --book user-brain-architecture with checked-in MP3 outputs",
-      "ffprobe measured User Brain Architecture chapter durations at 207, 195, 196, 195, 205, 193, 214, and 195 seconds",
+      "Graphify routed the phase through tutorBook, RevisionView/AppDesignLanguagePage, chapterAudioOverviews, userBrainArchitectureBook, README, and audio overview plan tests",
+      "Expanded the remaining 13 Tutor System Architecture and 4 App Design Language transcripts into long-form, plain-language stored audio explainers",
+      "Deepgram generation passed for --book tutor-book and --book app-design-language with checked-in MP3 outputs",
+      "ffprobe measured all 25 built-in chapter guide durations in range: Tutor System Architecture 220-240 seconds, User Brain Architecture 193-214 seconds, and App Design Language 233-235 seconds",
       "npm run audio:overview:dry-run passed with 25 present, 0 missing, 25 planned",
       "npm run format:check passed",
       "npm run test passed, 85 tests",
       "npm run lint passed",
       "npm run build passed",
-      "Browser QA confirmed User Brain Architecture chapter 1 audio at 390x844 and 1440x900 with native controls, transcript, 207-second duration, no raw stored metadata in the audio card, and no horizontal overflow",
-      "Browser emitted a mobile QA screenshot of the audio card; file save into the workflow results directory was blocked by the browser runtime's file permissions",
-      "graphify update . --force passed; first run produced 858 nodes, 1450 edges, 60 communities, and the final run reported no further topology changes after the book note edit",
+      "Headless Chrome QA confirmed Tutor System Architecture and App Design Language chapter 1 audio cards at 390x844 and 1440x900 with native controls, transcripts, 226/233-second loaded durations, no raw stored metadata in-card, and no horizontal overflow",
+      "Browser QA saved mobile screenshots to .workflow/brain-architecture-implementation-program/results/phase34-tutor-audio-mobile.png and phase34-app-design-audio-mobile.png",
+      "graphify update . --force passed with no topology changes after this documentation/audio-manifest slice",
       "npm run graphify:tree passed",
-      "Graphify smoke query found StoredAudioOverview, chapterAudioOverviews, RevisionView, and userBrainArchitectureBook paths for this phase"
+      "Temporary headless Chrome QA and local dev server were used only for verification"
     ]
   }
 }
