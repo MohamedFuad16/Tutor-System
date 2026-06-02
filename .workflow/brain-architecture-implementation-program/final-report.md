@@ -14,6 +14,68 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 30 report
+
+## Scope
+
+Phase 30 tightens generated learning-note provenance. It keeps constructors
+conservative, but the Memory runtime write path now runs the local generated-note
+integrity check immediately after creating the artifact/citation pair. This
+proves ledger coherence only: learning entry, book or conversation anchor,
+local-only metadata, no external fetch, and saved summary preview. It does not
+claim sentence-level source-span truth.
+
+## Graphify Context
+
+- Graphify routed this slice through `MemoryOrchestrator`,
+  `recordGeneratedNotesArtifact()`, `verifyLocalCitationIntegrity()`,
+  `src/memory/artifact.records.ts`, `tests/artifact-records.test.mjs`,
+  `src/lib/userBrainArchitectureBook.ts`, `src/lib/tutorBook.json`,
+  `src/views/RevisionView.tsx`, and `TUTOR_ARCHITECTURE.md`.
+
+## Integration Decisions
+
+- Added `createInitialLocalCitationIntegrityRecords()` as a pure helper for the
+  write-time trust transition.
+- Updated `recordGeneratedNotesArtifact()` so coherent generated learning-note
+  rows are saved as locally verified instead of staying `not_checked`.
+- Preserved `createGeneratedNotesArtifactRecords()` as a conservative
+  `not_checked` constructor for tests, review tools, and manual artifact
+  assembly.
+- Updated the system architecture doc, in-app Tutor architecture book, User
+  Brain Architecture book, and App Design Language pattern text with the new
+  auto-check boundary.
+
+## Verification Evidence
+
+- `npm run test`: passed, 81 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Browser QA with the in-app browser at 1280x900: Admin Source Artifacts rendered
+  the artifact/citation ledger, generated learning-note provenance copy, local
+  verifier coverage, and no-fetch boundary with no horizontal overflow.
+- Browser QA with the in-app browser at 390x844: Admin Source Artifacts rendered
+  through the mobile `Sources` tab with the same generated-note verifier copy
+  and no horizontal overflow.
+- Browser QA with the in-app browser at 1280x900 and 390x844: User Brain
+  Architecture opened to Chapter 1, rendered the new auto provenance-check
+  wording, and had no horizontal overflow.
+- `graphify update . --force`: passed, 848 nodes, 1434 edges, 62 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `createInitialLocalCitationIntegrityRecords()`,
+  `recordGeneratedNotesArtifact()`, `verifyLocalCitationIntegrity()`, and the
+  `MemoryOrchestrator` path to the new helper.
+
+## Remaining Work
+
+- Add sentence-level source-span matching before generated notes can be treated
+  as factually grounded evidence.
+- Add verifier contracts for charts, code, images, websites, previews, and other
+  unsupported artifact kinds.
+- Continue broader local beta learner-brain implementation before any AWS/cloud
+  work.
+
 # brain architecture implementation program: phase 26 report
 
 ## Scope

@@ -6,6 +6,7 @@ const {
   citationStateIdFor,
   createArtifactRecord,
   createCitationStateRecord,
+  createInitialLocalCitationIntegrityRecords,
   createGeneratedFlashcardsArtifactRecords,
   createGeneratedNotesArtifactRecords,
   createStoredAudioOverviewArtifactRecords,
@@ -197,6 +198,56 @@ test("generated learning notes become not-checked artifact records with provenan
   assert.equal(citation.sourceRef, "entry-1");
   assert.equal(citation.metadata.externalContentFetched, false);
   assert.equal(citation.verifier, "generated_learning_entry_provenance");
+});
+
+test("initial local integrity check verifies coherent generated learning-note records", () => {
+  const records = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-auto-verified",
+      source: "learning_book_update",
+      conversationId: "conversation-auto",
+      bookId: "book-auto",
+      bookTitle: "Graph learning",
+      chapterId: "chapter-auto",
+      chapterTitle: "Evidence ledgers",
+      documentId: "document-auto",
+      userName: "Learner",
+      model: "local-session-fallback",
+      confidence: 0.61,
+      conceptIds: ["concept-evidence"],
+      summary:
+        "The learner connected generated notes to local provenance checks.",
+      knowledgeSummary:
+        "Generated learning notes should be traceable before Admin review.",
+      assistantSummary:
+        "A concise tutor explanation about local evidence provenance.",
+      metadata: { generationPath: "memory_orchestrator" },
+    },
+    1000,
+  );
+
+  assert.equal(records.artifact.verificationState, "not_checked");
+  assert.equal(records.citation.state, "not_checked");
+
+  const { artifact, citation, result } =
+    createInitialLocalCitationIntegrityRecords(records, 1250);
+
+  assert.equal(result.state, "verified");
+  assert.equal(result.checkedAt, 1250);
+  assert.equal(artifact.timestamp, 1000);
+  assert.equal(artifact.verificationState, "verified");
+  assert.equal(citation.timestamp, 1000);
+  assert.equal(citation.state, "verified");
+  assert.equal(citation.checkedAt, 1250);
+  assert.equal(citation.verifier, "local_citation_integrity");
+  assert.equal(
+    citation.metadata.localCitationIntegrity.claimCheck,
+    "generated_learning_note_provenance",
+  );
+  assert.equal(artifact.metadata.localCitationIntegrity.checkedAt, 1250);
+  assert.deepEqual(artifact.metadata.localCitationIntegrity.citationStates, [
+    { id: citation.id, state: "verified" },
+  ]);
 });
 
 test("stored audio overviews become not-checked artifact records with local provenance", () => {

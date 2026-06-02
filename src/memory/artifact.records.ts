@@ -428,28 +428,28 @@ export const verifyLocalCitationIntegrity = (input: {
           "metadata.localOnly",
           "metadata.externalContentFetched",
         ]
-    : generatedNoteArtifact
-      ? [
-          "artifactId",
-          "citationStateIds",
-          "sourceRef",
-          "sourceIds",
-          "bookId",
-          "conversationId",
-          "summary",
-          "metadata.entryId",
-          "metadata.localOnly",
-          "metadata.externalContentFetched",
-        ]
-      : [
-          "artifactId",
-          "citationStateIds",
-          "url",
-          "domain",
-          "sourceRef",
-          "sourceIds",
-          "title",
-        ];
+      : generatedNoteArtifact
+        ? [
+            "artifactId",
+            "citationStateIds",
+            "sourceRef",
+            "sourceIds",
+            "bookId",
+            "conversationId",
+            "summary",
+            "metadata.entryId",
+            "metadata.localOnly",
+            "metadata.externalContentFetched",
+          ]
+        : [
+            "artifactId",
+            "citationStateIds",
+            "url",
+            "domain",
+            "sourceRef",
+            "sourceIds",
+            "title",
+          ];
   const sourceUrl = citation.url || artifact?.url;
   const parsedUrl = parseHttpUrl(sourceUrl);
   const explicitLocalSourceRefs = cleanList([
@@ -486,9 +486,9 @@ export const verifyLocalCitationIntegrity = (input: {
       ? "stored_audio_overview_integrity"
       : generatedFlashcardsArtifact
         ? "generated_flashcard_provenance"
-      : generatedNoteArtifact
-        ? "generated_learning_note_provenance"
-        : "artifact_level_source_card",
+        : generatedNoteArtifact
+          ? "generated_learning_note_provenance"
+          : "artifact_level_source_card",
   };
   const result = (
     state: CitationIntegrityState,
@@ -641,7 +641,10 @@ export const verifyLocalCitationIntegrity = (input: {
       );
     }
 
-    if (citationSourceMessageId && citationSourceMessageId !== sourceMessageId) {
+    if (
+      citationSourceMessageId &&
+      citationSourceMessageId !== sourceMessageId
+    ) {
       return result(
         "conflicting",
         "Generated flashcard citation source message disagrees with the artifact.",
@@ -955,7 +958,11 @@ export const verifyLocalCitationIntegrity = (input: {
       );
     }
 
-    if (!artifactBookId || !metadataBookId || artifactBookId !== metadataBookId) {
+    if (
+      !artifactBookId ||
+      !metadataBookId ||
+      artifactBookId !== metadataBookId
+    ) {
       return result(
         "conflicting",
         "Stored audio guide artifact bookId disagrees with metadata.",
@@ -983,7 +990,10 @@ export const verifyLocalCitationIntegrity = (input: {
       );
     }
 
-    if (!compact(artifact.summary) || !compact(artifactMetadata.summaryPreview)) {
+    if (
+      !compact(artifact.summary) ||
+      !compact(artifactMetadata.summaryPreview)
+    ) {
       return result(
         "unavailable",
         "Stored audio guide has no saved summary preview to inspect locally.",
@@ -1144,6 +1154,25 @@ const applyArtifactCitationState = (
     },
     artifact.timestamp,
   );
+
+export const createInitialLocalCitationIntegrityRecords = (
+  input: { artifact: ArtifactRecord; citation: CitationState },
+  timestamp = Date.now(),
+) => {
+  const result = verifyLocalCitationIntegrity({
+    artifact: input.artifact,
+    citation: input.citation,
+    timestamp,
+  });
+  const citation = applyCitationIntegrityResult(input.citation, result);
+  const artifact = applyArtifactCitationState(
+    input.artifact,
+    [citation],
+    result.checkedAt,
+  );
+
+  return { artifact, citation, result };
+};
 
 export const verifyCitationStateIntegrity = async (
   citationId: string,
@@ -1722,7 +1751,10 @@ export const createStoredAudioOverviewArtifactRecords = (
 export const recordGeneratedNotesArtifact = async (
   input: GeneratedNotesArtifactInput,
 ) => {
-  const { artifact, citation } = createGeneratedNotesArtifactRecords(input);
+  const { artifact, citation, result } =
+    createInitialLocalCitationIntegrityRecords(
+      createGeneratedNotesArtifactRecords(input),
+    );
 
   try {
     await db.transaction("rw", db.artifactRecords, db.citationStates, () =>
@@ -1735,7 +1767,7 @@ export const recordGeneratedNotesArtifact = async (
     console.warn("[ArtifactRecords] note artifact write failed", error);
   }
 
-  return { artifact, citation };
+  return { artifact, citation, result };
 };
 
 export const recordStoredAudioOverviewArtifacts = async (

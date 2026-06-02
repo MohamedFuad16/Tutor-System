@@ -2306,12 +2306,12 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Learning-note artifact rows",
         detail:
-          "Generated learning-book entries also leave not-checked ArtifactRecord provenance, so saved study notes stay inspectable without being treated as verified source evidence.",
+          "Generated learning-book entries leave ArtifactRecord provenance and now run a local ledger-coherence check immediately, without treating saved study notes as verified source evidence.",
       },
       {
         title: "Learning-note integrity checks",
         detail:
-          "Admin can verify generated-note provenance when the local entry, book or conversation, citation link, and no-external-fetch metadata agree, while still leaving sentence-level source-span checks for later.",
+          "Admin can re-run generated-note provenance checks when the local entry, book or conversation, citation link, and no-external-fetch metadata agree, while still leaving sentence-level source-span checks for later.",
       },
       {
         title: "Chapter audio guides",

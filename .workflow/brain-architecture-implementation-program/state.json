@@ -246,21 +246,28 @@
       "owner": "main agent + read-only sidecar Pauli",
       "status": "completed",
       "write_scope": "server.ts, src/components/ChatPanel.tsx, src/store/index.ts, src/views/AdminView.tsx, src/views/RevisionView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "II",
+      "name": "Generated note auto provenance check",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/artifact.records.ts, tests/artifact-records.test.mjs, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, src/views/RevisionView.tsx, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_29_complete",
+    "status": "phase_30_complete",
     "checks": [
+      "Graphify routed the phase through MemoryOrchestrator, artifact.records, Admin artifact/citation state, and architecture-book docs",
+      "npm run test passed, 81 tests",
       "npm run format:check passed",
       "npm run lint passed",
-      "npm run test passed, 80 tests",
       "npm run build passed",
-      "Browser QA confirmed Admin Live voice timeline on 1280x900 and 390x844 with no horizontal overflow",
-      "Browser QA confirmed Study tutor chat opens with textarea and Start voice input control, no horizontal overflow, and expected local voice websocket URL",
-      "graphify update . --force passed with 845 nodes, 1427 edges, 59 communities",
+      "Browser QA confirmed Admin Source Artifacts at 1280x900 and 390x844 with generated learning-note verifier copy and no horizontal overflow",
+      "Browser QA confirmed User Brain Architecture reader at 1280x900 and 390x844 with the new auto provenance-check wording and no horizontal overflow",
+      "graphify update . --force passed with 848 nodes, 1434 edges, 62 communities",
       "npm run graphify:tree passed",
-      "Graphify smoke queries found VoiceAgentEventType, VoiceAgentEvent, voiceServerWsUrl, AdminView, and voice/Admin graph neighbors",
-      "Read-only sidecar Pauli findings were addressed: websocket host, session count, duration accumulation, Admin panel, server activity, and Deepgram error reason"
+      "Graphify smoke query found createInitialLocalCitationIntegrityRecords, recordGeneratedNotesArtifact, verifyLocalCitationIntegrity, and MemoryOrchestrator path"
     ]
   }
 }

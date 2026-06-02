@@ -26,7 +26,8 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Chat and Study can capture local document context.
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
 - Admin exposes model runs, tool jobs, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
-- Generated flashcards, generated learning-book notes, and stored chapter audio guides now leave explicit \`not_checked\` artifact provenance until a scoped local verifier runs.
+- Generated learning-book notes now run an initial local provenance check when Memory writes them, so coherent note rows move from \`not_checked\` to \`verified\` immediately while remaining limited to ledger traceability.
+- Generated flashcards and stored chapter audio guides still leave explicit \`not_checked\` artifact provenance until a scoped local verifier runs.
 - Admin can locally verify generated flashcard provenance when the batch links back to saved card ids, a message or batch anchor, local-only metadata, and no external fetch.
 - Admin can locally verify generated learning-note provenance when the note links back to a learning entry, local book or conversation, local-only metadata, and no external fetch.
 - Admin can locally verify stored audio-guide manifest integrity when the guide links back to its checked-in MP3 path, book/chapter anchors, transcript metadata, voice, duration, stored date, and no external fetch.
@@ -68,7 +69,8 @@ The local beta rule is intentionally conservative: generated notes, flashcards, 
 
 - Model summaries can add evidence rows, but cannot raise mastery.
 - Flashcard reviews can write BKT evidence only when a real concept id exists.
-- Generated flashcards, generated learning notes, and built-in chapter audio guide manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states.
+- Generated learning notes write \`ArtifactRecord\` rows and immediately run the local generated-note provenance verifier when the entry/book/conversation anchors are coherent.
+- Generated flashcards and built-in chapter audio guide manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states until Admin or another local caller runs their verifier.
 - Admin's local verifier mutates \`source_card\` artifacts, generated flashcard provenance, generated learning-note provenance, and stored audio-guide manifest integrity when the local ledger links are coherent; charts, code, images, and websites remain explicitly unsupported until real verifiers exist.
 - Flashcard provenance verification proves saved card ids, batch/message anchors, local-only metadata, and no-external-fetch status. It does not prove the card answer is factually correct.
 - Correction propagation marks related rows stale, skipped, unsupported, conflicting, or unverified instead of hard-deleting history.`,
@@ -125,7 +127,7 @@ Citation states:
 | \`conflicting\` | Saved source fields or claims disagree. |
 | \`unsupported\` | The local verifier cannot assess this artifact kind yet. |
 
-Current local implementation verifies source-card structure without fetching external pages. It checks saved links, URL shape, domain consistency, source ids, and artifact/citation linkage. Generated learning notes have a separate local provenance check for entry id, book/conversation anchors, local-only metadata, no external fetch, and saved summary preview. Stored chapter audio guides have a local manifest-integrity check for the MP3 path, overview id, book/chapter anchors, transcript length, summary, voice, duration, stored date, and no-external-fetch provenance. Those checks prove local traceability for their scope, not sentence-level source-span truth or audio-content transcription accuracy. Generated flashcards still stay \`not_checked\` until their own verifier exists.`,
+Current local implementation verifies source-card structure without fetching external pages. It checks saved links, URL shape, domain consistency, source ids, and artifact/citation linkage. Generated learning notes have a separate local provenance check for entry id, book/conversation anchors, local-only metadata, no external fetch, and saved summary preview; Memory runs that check immediately for newly written learning-entry artifacts. Generated flashcards have their own provenance check for saved card ids, batch/message anchors, local-only metadata, and no external fetch, but they still start \`not_checked\` until Admin or another local caller runs it. Stored chapter audio guides have a local manifest-integrity check for the MP3 path, overview id, book/chapter anchors, transcript length, summary, voice, duration, stored date, and no-external-fetch provenance. Those checks prove local traceability for their scope, not sentence-level source-span truth, flashcard answer correctness, or audio-content transcription accuracy.`,
   },
   {
     title: "Chapter 5: Admin And Runtime Tuning",
@@ -209,7 +211,7 @@ Implemented now:
 Still local beta work:
 
 - source-span claim matching;
-- generated-artifact verifiers for charts, code snippets, images, websites, and flashcards;
+- generated-artifact verifiers for charts, code snippets, images, websites, previews, and other unsupported artifact kinds;
 - source-span claim matching for generated learning notes beyond the current provenance-level check;
 - audio-content transcript matching beyond the current stored-manifest integrity check;
 - durable job queue with retries and dead-letter review;

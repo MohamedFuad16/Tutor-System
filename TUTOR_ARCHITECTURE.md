@@ -84,11 +84,12 @@ Important tables:
 
 `MemoryOrchestrator` stores conversations, requests structured learning-book
 updates, writes concepts and entries, records generated learning-note artifact
-provenance, announces active books, and records trace explanations. Admin can
-now run a local generated-note integrity check that verifies learning-entry,
-book/conversation, local-only, and no-external-fetch provenance without claiming
-the generated note is factually source-span verified. Built-in chapter audio
-guide manifests seed `audio_overview` artifact rows that Admin can locally check
+provenance, runs the initial local generated-note integrity check, announces
+active books, and records trace explanations. Admin can re-run that check for
+learning-entry, book/conversation, local-only, and no-external-fetch provenance
+without claiming the generated note is factually source-span verified. Built-in
+chapter audio guide manifests seed `audio_overview` artifact rows that Admin can
+locally check
 for manifest integrity: local MP3 path, overview id, book/chapter anchors,
 transcript length, summary, voice, duration, stored date, and no-external-fetch
 provenance. That check is local traceability only; it does not claim
@@ -140,7 +141,9 @@ network access. Use the Deepgram provider in
 - Source-card local citation checks, generated flashcard provenance checks,
   generated learning-note provenance checks, plus chapter audio-guide manifest
   integrity checks. Flashcard provenance checks saved card ids and local
-  anchors; it does not prove answer correctness.
+  anchors; generated-note checks are run once at write time and can be re-run in
+  Admin. Neither check proves answer correctness or sentence-level source-span
+  truth.
 - DeepSeek Trace Ledger for persisted learning-book and trace events.
 - Server Console for live backend logs over WebSocket.
 
