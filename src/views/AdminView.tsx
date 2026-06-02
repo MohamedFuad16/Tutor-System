@@ -107,6 +107,7 @@ type AdminRequestTimeline = {
   model?: string;
   durationMs?: number;
   events: SystemActivityEvent[];
+  retrievalEvents: RetrievalEvent[];
   modelRuns: ModelRun[];
   toolJobs: ToolJob[];
 };
@@ -250,6 +251,17 @@ const objectRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
+
+const stringMetadataValue = (
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+) => {
+  const value = metadata?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : "";
+};
+
+const requestIdForRetrievalEvent = (event: RetrievalEvent) =>
+  event.requestId || stringMetadataValue(event.metadata, "requestId");
 
 const correctionPropagationFor = (event: CorrectionEvent) => {
   const metadata = objectRecord(event.metadata);
@@ -854,6 +866,7 @@ export function AdminView() {
           model,
           durationMs,
           events: [],
+          retrievalEvents: [],
           modelRuns: [],
           toolJobs: [],
         };
@@ -899,6 +912,20 @@ export function AdminView() {
       timeline.modelRuns.push(run);
     });
 
+    retrievalEvents.forEach((event) => {
+      const requestId = requestIdForRetrievalEvent(event);
+      if (!requestId) return;
+      const timeline = ensureTimeline(
+        requestId,
+        event.timestamp,
+        event.querySummary || "Memory retrieval",
+        event.status,
+        undefined,
+        event.durationMs,
+      );
+      timeline.retrievalEvents.push(event);
+    });
+
     toolJobs.forEach((job) => {
       if (!job.requestId) return;
       const timeline = ensureTimeline(
@@ -916,6 +943,9 @@ export function AdminView() {
       .map((timeline) => ({
         ...timeline,
         events: [...timeline.events].sort((a, b) => a.timestamp - b.timestamp),
+        retrievalEvents: [...timeline.retrievalEvents].sort(
+          (a, b) => a.timestamp - b.timestamp,
+        ),
         modelRuns: [...timeline.modelRuns].sort(
           (a, b) => a.timestamp - b.timestamp,
         ),
@@ -925,7 +955,7 @@ export function AdminView() {
       }))
       .sort((a, b) => b.latestAt - a.latestAt)
       .slice(0, 12);
-  }, [modelRuns, systemEvents, toolJobs]);
+  }, [modelRuns, retrievalEvents, systemEvents, toolJobs]);
   const totalChatTokens = chatUsage.inputTokens + chatUsage.outputTokens;
   const totalEstimatedCost = chatUsage.cost + voiceUsage.cost + webUsage.cost;
   const latestVoiceAgentEvent = voiceAgentEvents[0];
@@ -1619,9 +1649,10 @@ export function AdminView() {
                             Request timelines
                           </h3>
                           <p className="mt-1 text-sm text-zinc-500 font-serif">
-                            Groups local server events, durable model runs, and
-                            durable tool jobs by request id so one tutor turn
-                            can be inspected without hopping between tabs.
+                            Groups local server events, retrieval injections,
+                            durable model runs, and durable tool jobs by request
+                            id so one tutor turn can be inspected without
+                            hopping between tabs.
                           </p>
                         </div>
                         <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
@@ -1667,9 +1698,12 @@ export function AdminView() {
                                     )}
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono text-zinc-500">
+                                <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-mono text-zinc-500">
                                   <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.events.length} events
+                                  </span>
+                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                    {timeline.retrievalEvents.length} retrievals
                                   </span>
                                   <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.modelRuns.length} models
@@ -1715,6 +1749,22 @@ export function AdminView() {
                                         {event.toolName && (
                                           <span>tool {event.toolName}</span>
                                         )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {timeline.retrievalEvents.map((event) => (
+                                    <div
+                                      key={event.id}
+                                      className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-[11px] text-emerald-800"
+                                    >
+                                      Retrieval {event.status}:{" "}
+                                      {event.contextChars.toLocaleString()}{" "}
+                                      context chars
+                                      <div className="mt-1 text-[10px] font-mono text-emerald-700/80">
+                                        {event.selectedConceptIds.length}{" "}
+                                        concepts -{" "}
+                                        {event.selectedInteractionIds.length}{" "}
+                                        interactions
                                       </div>
                                     </div>
                                   ))}
@@ -3896,6 +3946,12 @@ export function AdminView() {
                                         {event.activeBookId && (
                                           <span className="max-w-[10rem] truncate">
                                             book {event.activeBookId}
+                                          </span>
+                                        )}
+                                        {requestIdForRetrievalEvent(event) && (
+                                          <span className="max-w-[10rem] truncate">
+                                            request{" "}
+                                            {requestIdForRetrievalEvent(event)}
                                           </span>
                                         )}
                                         {event.durationMs !== undefined && (

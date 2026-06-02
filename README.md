@@ -57,6 +57,9 @@ The Study, Chat, and Revision surfaces share one book-scoped context model. Each
 learning book owns exactly one durable chat thread, one active PDF selection, and
 any number of stored PDF documents. Switching books switches the visible chat,
 document rail, injected memory context, and revision notebook together.
+Typed chat and live voice sessions also share request-level observability:
+browser-generated request ids connect memory retrieval, injected context,
+server activity, model runs, and tool jobs in Admin.
 
 ## Core Surfaces
 
@@ -91,7 +94,7 @@ paper reading style for revision.
     </td>
     <td width="50%" valign="top">
       <h3>Admin Diagnostics Console</h3>
-      <p>Inspect DeepSeek trace entries and watch live backend logs from the server console.</p>
+      <p>Inspect request timelines, model runs, tool jobs, memory/retrieval injections, voice events, DeepSeek trace entries, and live backend logs from the server console.</p>
     </td>
   </tr>
 </table>
@@ -160,6 +163,9 @@ Study books can now hold more than one PDF:
    annotations without deleting the learning book notes.
 5. The active book's ready document extracts are injected alongside memory and
    book summaries when Chat builds a tutor request.
+6. Each chat request carries a browser request id through memory retrieval,
+   `/api/chat`, model/tool ledgers, and Admin request timelines. Voice uses the
+   voice session id for the same local correlation.
 
 PDF blobs, extracted text, active document ID, page position, and zoom are stored
 locally in the browser. Large scanned documents may still be bounded by browser

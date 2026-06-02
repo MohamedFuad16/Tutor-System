@@ -2315,7 +2315,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Request timelines",
         detail:
-          "Admin groups server events, model runs, and tool jobs by request id so one tutor turn can be audited as a single story.",
+          "Admin groups server events, retrieval injections, model runs, and tool jobs by request id so one tutor turn can be audited as a single story.",
       },
       {
         title: "Voice agent timeline",

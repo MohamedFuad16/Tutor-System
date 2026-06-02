@@ -343,6 +343,7 @@ type VoiceSessionTurn = {
   content: string;
 };
 type VoiceStudyContextPayload = {
+  requestId?: string;
   studyContext: string;
   studyContextChars: number;
   rawContextChars: number;
@@ -353,6 +354,16 @@ type VoiceStudyContextPayload = {
 };
 
 const VOICE_AGENT_CONTEXT_CHAR_LIMIT = 7000;
+
+const createTutorRequestId = (prefix: "chat" | "voice") => {
+  const randomPart =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+  return `${prefix}-${Date.now()}-${randomPart}`
+    .replace(/[^A-Za-z0-9_:-]/g, "-")
+    .slice(0, 120);
+};
 
 const buildBlobPath = (pts: Array<[number, number]>) => {
   const n = pts.length;
@@ -3095,10 +3106,17 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     ]
       .filter(Boolean)
       .join("\n");
+    const voiceRequestId = voiceSessionIdRef.current || undefined;
     const relatedMemoryContext = await brainOrchestrator.getRelevantContext(
       contextQuery,
       undefined,
       canonicalActiveBookId,
+      {
+        requestId: voiceRequestId,
+        mode: "voice",
+        activeDocumentId,
+        documentCount: orderedBookDocuments.length,
+      },
     );
     let activeBookContext = "";
     if (canonicalActiveBookId) {
@@ -3154,6 +3172,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       .join("\n\n");
     const studyContext = compactVoiceStudyContext(rawContext);
     return {
+      requestId: voiceRequestId,
       studyContext,
       studyContextChars: studyContext.length,
       rawContextChars: rawContext.length,
@@ -4494,6 +4513,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       },
     ];
     const assistantMsgId = crypto.randomUUID();
+    const chatRequestId = createTutorRequestId("chat");
     setMessages([
       ...newMessages,
       {
@@ -4557,6 +4577,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         userMsgContent,
         undefined,
         canonicalActiveBookId,
+        {
+          requestId: chatRequestId,
+          mode: "chat",
+          activeDocumentId,
+          documentCount: orderedBookDocuments.length,
+        },
       );
       let activeBookContext = "";
       if (canonicalActiveBookId) {
@@ -4637,6 +4663,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         },
         body: JSON.stringify({
           messages: flattenChatMessagesForPrompt(newMessages),
+          requestId: chatRequestId,
           currentPageImage,
           memoryContext: requestMemoryContext,
           aiModel,

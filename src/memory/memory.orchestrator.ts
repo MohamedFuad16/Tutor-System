@@ -82,6 +82,13 @@ export interface LearningBookUpdateInput {
   apiKey?: string;
 }
 
+type RelevantContextOptions = {
+  requestId?: string;
+  mode?: "chat" | "voice" | "revision" | "admin";
+  activeDocumentId?: string | null;
+  documentCount?: number;
+};
+
 interface LearningAgentConcept {
   name: string;
   summary?: string;
@@ -932,6 +939,7 @@ export class MemoryOrchestrator {
     query: string,
     pageNumber?: number,
     activeBookId?: string | null,
+    options: RelevantContextOptions = {},
   ): Promise<string> {
     const startedAt = Date.now();
     try {
@@ -1010,6 +1018,7 @@ export class MemoryOrchestrator {
         status: "completed",
         source: "memory_orchestrator",
         querySummary: query,
+        requestId: options.requestId,
         activeBookId,
         pageNumber,
         durationMs: Date.now() - startedAt,
@@ -1023,6 +1032,10 @@ export class MemoryOrchestrator {
         contextChars: contextStr.length,
         tutorInstructionChars: tutorInstructions.length,
         metadata: {
+          mode: options.mode,
+          requestId: options.requestId,
+          activeDocumentId: options.activeDocumentId || undefined,
+          documentCount: options.documentCount,
           activeBookFiltered: Boolean(activeBookId),
           interactionsWithEmbeddings: interactions.filter((i) => i.embedding)
             .length,
@@ -1038,10 +1051,17 @@ export class MemoryOrchestrator {
         status: "failed",
         source: "memory_orchestrator",
         querySummary: query,
+        requestId: options.requestId,
         activeBookId,
         pageNumber,
         durationMs: Date.now() - startedAt,
         error: e instanceof Error ? e.message : e,
+        metadata: {
+          mode: options.mode,
+          requestId: options.requestId,
+          activeDocumentId: options.activeDocumentId || undefined,
+          documentCount: options.documentCount,
+        },
       });
       return "";
     }

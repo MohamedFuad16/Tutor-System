@@ -12,6 +12,7 @@ export type RetrievalEventInput = {
   status?: RetrievalEventStatusInput;
   source?: string;
   querySummary?: unknown;
+  requestId?: string;
   activeBookId?: string | null;
   pageNumber?: number;
   durationMs?: number;
@@ -101,6 +102,7 @@ export const createRetrievalEventRecord = (
     status: normalizeRetrievalEventStatus(input.status),
     source: compact(input.source, "memory_retrieval"),
     querySummary: compact(input.querySummary, "Memory retrieval request."),
+    requestId: optionalCompact(input.requestId),
     activeBookId: optionalCompact(input.activeBookId),
     pageNumber: optionalNonNegativeInteger(input.pageNumber),
     durationMs: optionalNonNegativeInteger(input.durationMs),

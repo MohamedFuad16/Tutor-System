@@ -2109,3 +2109,70 @@ validation.
 - Add richer Admin labels around correlated voice timelines once real provider
   calls are exercised.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 40: Request-Correlated Brain Context Injection
+
+Phase 40 makes the memory-context injection path visible inside the same Admin
+request timeline as model runs, tool jobs, and server activity. Before this
+slice, typed chat retrieval rows could be inspected in the Retrieval tab, but
+they did not share a request id with the server-side tutor turn. Voice retrieval
+also attached context, but the retrieval row did not explicitly carry the voice
+session id.
+
+## Graphify Context
+
+- Graphify routed this slice through `ChatPanel.tsx`,
+  `memory.orchestrator.ts`, `retrieval.events.ts`, `longterm.memory.ts`,
+  `AdminView.tsx`, `server.ts`, and the built-in architecture/design books.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+
+## Integration Decisions
+
+- `ChatPanel` creates a browser `chat-*` request id before typed-chat retrieval
+  starts.
+- `ChatPanel` passes that id to `MemoryOrchestrator.getRelevantContext()` and
+  `/api/chat`.
+- Voice retrieval rows use the existing voice session id.
+- `server.ts` now uses one conservative client-request-id validator for typed
+  chat and voice.
+- `RetrievalEvent` records preserve an optional `requestId`; no Dexie indexed
+  schema bump was needed because Admin groups recent retrieval rows in memory.
+- Admin request timelines now group server events, retrieval injections, model
+  runs, and tool jobs by request id.
+- README, Tutor System Architecture, User Brain Architecture, and App Design
+  Language copy now describe request-correlated brain context injection.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run lint`: passed.
+- `npm run format:check`: passed.
+- `npm run test`: passed, 92 tests.
+- `npm run build`: passed.
+- Headless Chrome CDP fallback QA on `http://127.0.0.1:3100`: Study desktop
+  rendered with zero console/page errors.
+- Headless Chrome CDP fallback QA at `390x844`: Study mobile rendered with zero
+  console/page errors.
+- Headless Chrome CDP fallback QA for Admin: System Activity rendered Request
+  timelines; Retrieval Events tab showed Recent retrievals and memory context
+  selection copy; Model Runs body showed provider/model/tool language; all with
+  zero console/page errors.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  862 nodes, 1476 edges, and 56 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `RetrievalEvent`, `AdminView()`,
+  `normalizeClientRequestId()`, `createRetrievalEventRecord()`,
+  `recordRetrievalEvent()`, `ChatPanel()`, and the request/retrieval route.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Remaining Work
+
+- Browser-verify a real successful chat request with a configured OpenRouter key
+  so a live retrieval/model/tool timeline can be inspected end to end.
+- Browser-verify a live Deepgram voice round trip when provider access is in
+  scope.
+- Continue closing typed-chat vs voice parity for current-page vision and web
+  search tools.
+- AWS/cloud synchronization remains out of scope until beta testing.

@@ -311,6 +311,12 @@ const SYSTEM_ACTIVITY_LIMIT = 250;
 const activityId = () =>
   `activity_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
+const normalizeClientRequestId = (value: unknown) => {
+  if (typeof value !== "string") return "";
+  const trimmed = value.trim();
+  return /^[A-Za-z0-9_:-]{1,120}$/.test(trimmed) ? trimmed : "";
+};
+
 const safeActivityMetadata = (metadata?: Record<string, unknown>) => {
   if (!metadata) return undefined;
   const safe: Record<string, unknown> = {};
@@ -1516,7 +1522,7 @@ CRITICAL RULES:
 
   app.post("/api/chat", async (req, res) => {
     const activityStartedAt = Date.now();
-    const requestId = activityId();
+    let requestId = activityId();
     let requestedModelForRun = DEFAULT_CHAT_MODEL;
     let usedModelForRun = DEFAULT_CHAT_MODEL;
     let runtimeSettingsForRun: Record<string, string | number> | undefined;
@@ -1617,7 +1623,9 @@ CRITICAL RULES:
         webSearchExplicit,
         serperApiKey: bodySerperKey,
         language,
+        requestId: clientRequestId,
       } = req.body;
+      requestId = normalizeClientRequestId(clientRequestId) || requestId;
       const runtimeSettings = normalizeBrainRuntimeSettings(rawRuntimeSettings);
       const runtimeSettingsSnapshot = compactRuntimeSettings(runtimeSettings);
       runtimeSettingsForRun = runtimeSettingsSnapshot;
@@ -2783,12 +2791,6 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       const voiceAgentSpeakModel = "aura-asteria-en";
       let voiceRequestId = `voice_${voiceStartedAt}`;
 
-      const normalizeVoiceRequestId = (value: unknown) => {
-        if (typeof value !== "string") return "";
-        const trimmed = value.trim();
-        return /^[A-Za-z0-9_:-]{1,120}$/.test(trimmed) ? trimmed : "";
-      };
-
       const sendVoiceUsage = (sessions = 0) => {
         if (ws.readyState !== ws.OPEN) return;
         const now = Date.now();
@@ -3330,7 +3332,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         if (!isVoiceSessionStarted) {
           const authPayload = parseVoiceAuth(data, isBinary);
           if (authPayload) {
-            const clientRequestId = normalizeVoiceRequestId(
+            const clientRequestId = normalizeClientRequestId(
               authPayload.voiceSessionId || authPayload.requestId,
             );
             if (clientRequestId) {

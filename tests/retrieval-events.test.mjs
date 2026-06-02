@@ -32,6 +32,7 @@ test("retrieval event records compact query text and preserve selection metadata
       status: "completed",
       source: "memory_orchestrator",
       querySummary: ` ${"retrieval ".repeat(80)} `,
+      requestId: " chat-req-1 ",
       activeBookId: "book-1",
       pageNumber: 4.7,
       durationMs: 12.3,
@@ -51,6 +52,7 @@ test("retrieval event records compact query text and preserve selection metadata
 
   assert.equal(record.timestamp, 456);
   assert.equal(record.querySummary.length, 500);
+  assert.equal(record.requestId, "chat-req-1");
   assert.equal(record.pageNumber, 5);
   assert.equal(record.durationMs, 12);
   assert.equal(record.candidateInteractionCount, 50);

@@ -25,6 +25,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 
 - Chat and Study can capture local document context.
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
+- Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
 - Admin exposes model runs, tool jobs, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
 - Generated learning-book notes now run an initial local provenance check when Memory writes them, so coherent note rows move from \`not_checked\` to \`verified\` immediately while remaining limited to ledger traceability. When document text is available, they also carry compact source-span preview anchors.
 - Generated flashcards and stored chapter audio guides still leave explicit \`not_checked\` artifact provenance until a scoped local verifier runs.
@@ -151,7 +152,7 @@ Implemented Admin surfaces:
 
 | Surface | What it proves locally |
 | --- | --- |
-| System Activity | Request timelines and backend event summaries. |
+| System Activity | Request timelines, retrieval injections, and backend event summaries. |
 | Model Runs | Provider/model selection, fallbacks, token/cost metadata, failures. |
 | Tool Jobs | Tool lifecycle visibility. |
 | Voice Agent Timeline | Local voice websocket lifecycle, Deepgram settings, speaking/listening state, barge-in, transcript turns, and errors. |
@@ -197,6 +198,7 @@ Implemented now:
 - evidence-gated BKT machinery;
 - durable evidence and mastery ledgers;
 - durable model/tool/memory/retrieval observability rows;
+- request-correlated retrieval, model-run, tool-job, server-activity, and voice-session timelines;
 - runtime tuning controls;
 - correction request ledger and non-destructive propagation overlays;
 - source artifact and citation-state ledger;

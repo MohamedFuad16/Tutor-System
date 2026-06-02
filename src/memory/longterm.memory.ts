@@ -245,6 +245,7 @@ export interface RetrievalEvent {
   status: "completed" | "failed" | "skipped";
   source: string;
   querySummary: string;
+  requestId?: string;
   activeBookId?: string;
   pageNumber?: number;
   durationMs?: number;
