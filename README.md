@@ -65,9 +65,9 @@ timelines can group the foreground answer and the MemoryOrchestrator book,
 interaction, and graph rows together.
 Admin Beta Diagnostics now includes a local brain-flow coverage verifier that
 checks whether chat context injection, voice context injection, request
-correlation, foreground tool calls, evaluated mastery evidence, and background
-learner-memory writes all have durable local evidence before broader beta
-claims.
+correlation, chat and voice foreground tool calls, chat and voice evaluated
+mastery evidence, and background learner-memory writes all have durable local
+evidence before broader beta claims.
 Background memory updates now keep model-summary mastery and learner-confidence
 proposals observational: accepted values and gate labels are written to local
 evidence/memory metadata, but those learner-state fields do not rise without

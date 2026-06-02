@@ -85,19 +85,38 @@ const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
   toolJobs: [
     {
       status: "completed",
+      source: "chat_stream",
+      requestId: "chat-req-1",
+      timestamp: 9,
+    },
+    {
+      status: "completed",
       source: "voice_agent",
       requestId: "voice-req-1",
-      timestamp: 9,
+      timestamp: 10,
     },
   ],
   evidenceEvents: [
     {
       evidenceType: "generation",
       verified: true,
-      timestamp: 10,
+      timestamp: 11,
+      metadata: {
+        requestId: "chat-req-1",
+        evidenceContract: "evaluated_answer_v1",
+        agentLayer: "chat_stream",
+        mode: "chat",
+      },
+    },
+    {
+      evidenceType: "generation",
+      verified: true,
+      timestamp: 12,
       metadata: {
         requestId: "voice-req-1",
         evidenceContract: "evaluated_answer_v1",
+        agentLayer: "voice_realtime",
+        mode: "voice",
       },
     },
   ],
@@ -165,7 +184,137 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
   assert.equal(completeBrainFlow.chatBackgroundMemoryEvents, 1);
   assert.equal(completeBrainFlow.voiceBackgroundMemoryEvents, 1);
   assert.equal(completeBrainFlow.requestCorrelatedBackgroundMemoryEvents, 3);
-  assert.equal(completeBrainFlow.requestCorrelatedMasteryEvidenceEvents, 1);
+  assert.equal(completeBrainFlow.chatForegroundToolJobs, 1);
+  assert.equal(completeBrainFlow.voiceForegroundToolJobs, 1);
+  assert.equal(completeBrainFlow.requestCorrelatedMasteryEvidenceEvents, 2);
+  assert.equal(completeBrainFlow.chatRequestCorrelatedMasteryEvidenceEvents, 1);
+  assert.equal(
+    completeBrainFlow.voiceRequestCorrelatedMasteryEvidenceEvents,
+    1,
+  );
+  assert.equal(
+    completeBrainFlow.signals.find(
+      (signal) => signal.id === "chat_foreground_tools",
+    )?.ready,
+    true,
+  );
+  assert.equal(
+    completeBrainFlow.signals.find(
+      (signal) => signal.id === "voice_foreground_tools",
+    )?.ready,
+    true,
+  );
+});
+
+test("brain flow coverage requires both chat and voice evaluated mastery", () => {
+  const voiceOnlyEvidenceFlow = buildBrainFlowCoverageFromLedgers({
+    memoryEvents: [
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 1,
+        metadata: {
+          agentLayer: "chat_stream",
+          requestId: "chat-req-1",
+        },
+      },
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 2,
+        metadata: {
+          agentLayer: "voice_realtime",
+          requestId: "voice-req-1",
+        },
+      },
+      {
+        eventType: "learning_book_updated",
+        status: "completed",
+        timestamp: 3,
+        metadata: {
+          requestId: "chat-req-1",
+          mode: "chat",
+          agentLayer: "chat_stream",
+        },
+      },
+      {
+        eventType: "learning_book_updated",
+        status: "completed",
+        timestamp: 4,
+        metadata: {
+          requestId: "voice-req-1",
+          mode: "voice",
+          agentLayer: "voice_realtime",
+        },
+      },
+    ],
+    retrievalEvents: [
+      {
+        status: "completed",
+        requestId: "chat-req-1",
+        timestamp: 5,
+      },
+      {
+        status: "completed",
+        requestId: "voice-req-1",
+        timestamp: 6,
+      },
+    ],
+    modelRuns: [
+      {
+        status: "completed",
+        source: "chat_stream",
+        requestId: "chat-req-1",
+        timestamp: 7,
+      },
+      {
+        status: "completed",
+        source: "voice_agent",
+        requestId: "voice-req-1",
+        timestamp: 8,
+      },
+    ],
+    toolJobs: [
+      {
+        status: "completed",
+        source: "chat_stream",
+        requestId: "chat-req-1",
+        timestamp: 9,
+      },
+      {
+        status: "completed",
+        source: "voice_agent",
+        requestId: "voice-req-1",
+        timestamp: 10,
+      },
+    ],
+    evidenceEvents: [
+      {
+        evidenceType: "generation",
+        verified: true,
+        timestamp: 11,
+        metadata: {
+          requestId: "voice-req-1",
+          evidenceContract: "evaluated_answer_v1",
+          agentLayer: "voice_realtime",
+          mode: "voice",
+        },
+      },
+    ],
+  });
+
+  assert.equal(voiceOnlyEvidenceFlow.status, "watch");
+  assert.equal(
+    voiceOnlyEvidenceFlow.chatRequestCorrelatedMasteryEvidenceEvents,
+    0,
+  );
+  assert.equal(
+    voiceOnlyEvidenceFlow.voiceRequestCorrelatedMasteryEvidenceEvents,
+    1,
+  );
+  assert.ok(
+    voiceOnlyEvidenceFlow.missingSignals.includes("Chat evaluated mastery"),
+  );
 });
 
 test("brain flow coverage requires request-correlated voice memory evidence", () => {

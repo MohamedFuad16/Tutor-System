@@ -3718,9 +3718,10 @@ export function AdminView() {
                             This local verifier looks across context-injection
                             rows, retrieval rows, model runs, tool jobs, and
                             request-correlated evaluated mastery plus background
-                            memory events. It proves the brain flow is wired in
-                            the browser ledger; it does not call cloud services
-                            or inspect private model internals.
+                            memory events for both chat and voice. It proves the
+                            brain flow is wired in the browser ledger; it does
+                            not call cloud services or inspect private model
+                            internals.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -3738,7 +3739,7 @@ export function AdminView() {
                         </div>
                       </div>
 
-                      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+                      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                         {betaDiagnosticsSnapshot.brainFlow.signals.map(
                           (signal) => (
                             <article

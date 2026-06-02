@@ -71,7 +71,11 @@ export type BetaBrainFlowCoverage = {
   requestCorrelatedRetrievalEvents: number;
   requestCorrelatedModelRuns: number;
   foregroundToolJobs: number;
+  chatForegroundToolJobs: number;
+  voiceForegroundToolJobs: number;
   requestCorrelatedMasteryEvidenceEvents: number;
+  chatRequestCorrelatedMasteryEvidenceEvents: number;
+  voiceRequestCorrelatedMasteryEvidenceEvents: number;
   backgroundMemoryEvents: number;
   chatBackgroundMemoryEvents: number;
   voiceBackgroundMemoryEvents: number;
@@ -177,6 +181,18 @@ const metadataString = (
 const hasRequestId = (requestId: unknown) =>
   typeof requestId === "string" && requestId.trim().length > 0;
 
+const isChatLayer = (metadata: Record<string, unknown> | undefined) => {
+  const agentLayer = metadataString(metadata, "agentLayer");
+  const mode = metadataString(metadata, "mode");
+  return agentLayer === "chat_stream" || mode === "chat";
+};
+
+const isVoiceLayer = (metadata: Record<string, unknown> | undefined) => {
+  const agentLayer = metadataString(metadata, "agentLayer");
+  const mode = metadataString(metadata, "mode");
+  return agentLayer === "voice_realtime" || mode === "voice";
+};
+
 export const buildBrainFlowCoverageFromLedgers = ({
   memoryEvents = [],
   retrievalEvents = [],
@@ -189,16 +205,12 @@ export const buildBrainFlowCoverageFromLedgers = ({
       event.eventType === "brain_context_injected" &&
       event.status === "completed",
   );
-  const chatContextInjections = completedContextEvents.filter((event) => {
-    const agentLayer = metadataString(event.metadata, "agentLayer");
-    const mode = metadataString(event.metadata, "mode");
-    return agentLayer === "chat_stream" || mode === "chat";
-  }).length;
-  const voiceContextInjections = completedContextEvents.filter((event) => {
-    const agentLayer = metadataString(event.metadata, "agentLayer");
-    const mode = metadataString(event.metadata, "mode");
-    return agentLayer === "voice_realtime" || mode === "voice";
-  }).length;
+  const chatContextInjections = completedContextEvents.filter((event) =>
+    isChatLayer(event.metadata),
+  ).length;
+  const voiceContextInjections = completedContextEvents.filter((event) =>
+    isVoiceLayer(event.metadata),
+  ).length;
   const requestCorrelatedContextInjections = completedContextEvents.filter(
     (event) => hasRequestId(event.metadata?.requestId),
   ).length;
@@ -216,12 +228,34 @@ export const buildBrainFlowCoverageFromLedgers = ({
       hasRequestId(job.requestId) &&
       ["chat_stream", "voice_agent"].includes(job.source || ""),
   ).length;
-  const requestCorrelatedMasteryEvidenceEvents = evidenceEvents.filter(
+  const chatForegroundToolJobs = toolJobs.filter(
+    (job) =>
+      job.status === "completed" &&
+      hasRequestId(job.requestId) &&
+      job.source === "chat_stream",
+  ).length;
+  const voiceForegroundToolJobs = toolJobs.filter(
+    (job) =>
+      job.status === "completed" &&
+      hasRequestId(job.requestId) &&
+      job.source === "voice_agent",
+  ).length;
+  const requestCorrelatedMasteryEvidenceRows = evidenceEvents.filter(
     (event) =>
       event.verified &&
       event.evidenceType !== "model_summary" &&
       hasRequestId(event.metadata?.requestId),
-  ).length;
+  );
+  const requestCorrelatedMasteryEvidenceEvents =
+    requestCorrelatedMasteryEvidenceRows.length;
+  const chatRequestCorrelatedMasteryEvidenceEvents =
+    requestCorrelatedMasteryEvidenceRows.filter((event) =>
+      isChatLayer(event.metadata),
+    ).length;
+  const voiceRequestCorrelatedMasteryEvidenceEvents =
+    requestCorrelatedMasteryEvidenceRows.filter((event) =>
+      isVoiceLayer(event.metadata),
+    ).length;
   const backgroundMemoryEvents = memoryEvents.filter(
     (event) =>
       event.status === "completed" &&
@@ -237,15 +271,11 @@ export const buildBrainFlowCoverageFromLedgers = ({
   );
   const chatBackgroundMemoryEvents =
     requestCorrelatedBackgroundMemoryEvents.filter((event) => {
-      const agentLayer = metadataString(event.metadata, "agentLayer");
-      const mode = metadataString(event.metadata, "mode");
-      return agentLayer === "chat_stream" || mode === "chat";
+      return isChatLayer(event.metadata);
     }).length;
   const voiceBackgroundMemoryEvents =
     requestCorrelatedBackgroundMemoryEvents.filter((event) => {
-      const agentLayer = metadataString(event.metadata, "agentLayer");
-      const mode = metadataString(event.metadata, "mode");
-      return agentLayer === "voice_realtime" || mode === "voice";
+      return isVoiceLayer(event.metadata);
     }).length;
   const failedRows =
     memoryEvents.filter((event) => event.status === "failed").length +
@@ -286,20 +316,36 @@ export const buildBrainFlowCoverageFromLedgers = ({
         "Context injection, retrieval, and model-run rows share request ids for Admin request timelines.",
     },
     {
-      id: "foreground_tools",
-      title: "Foreground tool calls",
-      ready: foregroundToolJobs > 0,
-      count: foregroundToolJobs,
+      id: "chat_foreground_tools",
+      title: "Chat tool calls",
+      ready: chatForegroundToolJobs > 0,
+      count: chatForegroundToolJobs,
       detail:
-        "The visible tutor or voice agent has completed at least one request-correlated tool job.",
+        "Typed chat has completed at least one request-correlated foreground tool job.",
     },
     {
-      id: "evaluated_mastery",
-      title: "Evaluated mastery evidence",
-      ready: requestCorrelatedMasteryEvidenceEvents > 0,
-      count: requestCorrelatedMasteryEvidenceEvents,
+      id: "voice_foreground_tools",
+      title: "Voice tool calls",
+      ready: voiceForegroundToolJobs > 0,
+      count: voiceForegroundToolJobs,
       detail:
-        "At least one verified flashcard or evaluated-answer evidence row moved mastery with a request id.",
+        "Live voice has completed at least one request-correlated foreground tool job.",
+    },
+    {
+      id: "chat_evaluated_mastery",
+      title: "Chat evaluated mastery",
+      ready: chatRequestCorrelatedMasteryEvidenceEvents > 0,
+      count: chatRequestCorrelatedMasteryEvidenceEvents,
+      detail:
+        "Typed chat has verified non-model mastery evidence with a request id.",
+    },
+    {
+      id: "voice_evaluated_mastery",
+      title: "Voice evaluated mastery",
+      ready: voiceRequestCorrelatedMasteryEvidenceEvents > 0,
+      count: voiceRequestCorrelatedMasteryEvidenceEvents,
+      detail:
+        "Live voice has verified non-model mastery evidence with a request id.",
     },
     {
       id: "background_memory",
@@ -334,7 +380,11 @@ export const buildBrainFlowCoverageFromLedgers = ({
     requestCorrelatedRetrievalEvents,
     requestCorrelatedModelRuns,
     foregroundToolJobs,
+    chatForegroundToolJobs,
+    voiceForegroundToolJobs,
     requestCorrelatedMasteryEvidenceEvents,
+    chatRequestCorrelatedMasteryEvidenceEvents,
+    voiceRequestCorrelatedMasteryEvidenceEvents,
     backgroundMemoryEvents: backgroundMemoryEvents.length,
     chatBackgroundMemoryEvents,
     voiceBackgroundMemoryEvents,
@@ -342,7 +392,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
       requestCorrelatedBackgroundMemoryEvents.length,
     summary:
       status === "ready"
-        ? "Chat, voice, retrieval, model, foreground tools, evaluated mastery, and background memory all have local evidence."
+        ? "Chat, voice, retrieval, model, both foreground tool layers, both evaluated mastery layers, and background memory all have local evidence."
         : status === "blocked"
           ? `${failedRows} failed or blocked brain-flow rows need review before beta.`
           : `Missing local evidence for ${missingSignals.join(", ")}.`,
@@ -502,7 +552,7 @@ export const buildBetaDiagnosticsSnapshot = (
         brainFlow.backgroundMemoryEvents,
       action:
         brainFlow.status === "ready"
-          ? "Use this as the local beta smoke contract for chat, voice, foreground tools, evaluated mastery, and the background memory agent."
+          ? "Use this as the local beta smoke contract for chat, voice, both foreground tool layers, both evaluated mastery layers, and the background memory agent."
           : brainFlow.status === "blocked"
             ? "Open System Activity and request timelines, then fix failed context, retrieval, model, tool, or memory rows."
             : "Run one typed chat turn, one voice turn, one tool action, and one learning-book update to complete local flow evidence.",

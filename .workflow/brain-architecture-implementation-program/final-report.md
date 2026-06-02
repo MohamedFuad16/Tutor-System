@@ -3044,3 +3044,76 @@ BKT-compatible persistent concepts before recording evaluated-answer evidence.
   injection, retrieval, tools, background memory, evidence, corrections, and
   Admin diagnostics all operate together under live beta conditions.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 53: Dual-Agent Brain Flow Coverage
+
+## Scope
+
+Phase 53 tightens the local brain-flow readiness gate. Before this phase, Beta
+Diagnostics could mark the local flow ready with any request-correlated
+foreground tool job and any request-correlated evaluated mastery row. The user's
+target is stricter: typed chat and live voice should both have stored,
+injected, tool-calling, and evaluated-evidence paths. This phase makes those
+agent layers separate readiness signals.
+
+## Graphify Context
+
+- Graphify routed the slice through `buildBrainFlowCoverageFromLedgers()`,
+  `beta.diagnostics.ts`, `AdminView()`, `EvidenceEvent`, `ToolJob`, and
+  `tests/beta-diagnostics.test.mjs`.
+- `graphify path "buildBrainFlowCoverageFromLedgers()" "AdminView()"` found a
+  direct call edge.
+- The refreshed Graphify artifacts are the code architecture graph for agents,
+  not the user-facing learner brain graph.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes after
+  a clean rebuild.
+
+## Integration Decisions
+
+- Split foreground tool readiness into `Chat tool calls` and `Voice tool calls`.
+- Split evaluated mastery readiness into `Chat evaluated mastery` and
+  `Voice evaluated mastery`.
+- Added chat/voice-specific count fields to `BetaBrainFlowCoverage`.
+- Reused existing `agentLayer`, `mode`, and tool-job `source` metadata instead
+  of inventing new ledgers.
+- Updated Admin Beta Diagnostics copy and grid layout for the stricter
+  eight-signal verifier.
+- Updated README, Tutor System Architecture, User Brain Architecture, Tutor
+  System Architecture Library JSON, and App Design Language copy to describe
+  both foreground tool layers and both evaluated mastery layers.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 121 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- In-app Browser QA on `http://localhost:3100` confirmed Admin Beta Diagnostics
+  rendered the eight stricter signals at desktop width with no horizontal
+  overflow.
+- In-app Browser QA confirmed the compact mobile Admin `Beta` tab and the same
+  eight-signal Beta Diagnostics content at `390px` width with no horizontal
+  overflow.
+- Initial Graphify regeneration picked up generated `server.mjs` from the dev
+  server. The generated file was removed and Graphify was cleanly rebuilt with
+  approval after sandbox `Operation not permitted`.
+- Clean `graphify update . --force`: regenerated code architecture artifacts
+  with 938 nodes, 1629 edges, and 55 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `buildBrainFlowCoverageFromLedgers()`,
+  `isChatLayer()`, `isVoiceLayer()`, `BetaBrainFlowCoverage`, and Admin edges.
+- Temporary local dev server on port `3100` was stopped after Browser QA.
+
+## Remaining Work
+
+- Run deliberate provider-key chat and voice turns when spending live model
+  calls is in scope, so the stricter readiness gate can be populated by real
+  beta traffic.
+- Continue the broader brain architecture program until the live app proves
+  chat, voice, context injection, retrieval, tools, background memory, evidence,
+  corrections, and Admin diagnostics all operate together.
+- AWS/cloud synchronization remains out of scope until beta testing.
