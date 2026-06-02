@@ -1,15 +1,11 @@
 {
-  "/Users/mfuad16/Documents/LearningAI/server.mjs": {
-    "mtime": 1780378910.7932646,
-    "hash": "f699542865ad58293153985a80172975"
-  },
   "/Users/mfuad16/Documents/LearningAI/vite.config.ts": {
     "mtime": 1780042874.3058963,
     "hash": "cbe4dd018d422f1967ab47ee905f39b0"
   },
   "/Users/mfuad16/Documents/LearningAI/server.ts": {
-    "mtime": 1780378639.4941885,
-    "hash": "535c26a9cfac8311b9a18e8463532184"
+    "mtime": 1780379344.0709364,
+    "hash": "65f750810a9525bfd62fc155adbc96d5"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/memory-events.test.mjs": {
     "mtime": 1780306804.5613449,
@@ -44,8 +40,8 @@
     "hash": "e521f62589d41736bbc78882f7547bc9"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/system-activity.test.mjs": {
-    "mtime": 1780305498.5794392,
-    "hash": "2d9021eb2190ddcebcbcb98598fb5825"
+    "mtime": 1780379337.8011737,
+    "hash": "3fcf4c27ce354d2300d3322d4c8f303f"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/audio-overview-plan.test.mjs": {
     "mtime": 1780338642.848053,

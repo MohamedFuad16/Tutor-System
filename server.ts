@@ -436,6 +436,7 @@ const fallbackLearningUpdate = (body: any) => {
 
 type TutorServerAppOptions = {
   serveClient?: boolean;
+  voiceProvider?: "deepgram" | "mock";
 };
 
 export async function createTutorServerApp(
@@ -2835,6 +2836,99 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         }
       };
 
+      const recordVoiceToolRequest = (functions: any[]) => {
+        recordSystemActivity({
+          kind: "tool",
+          status: "started",
+          title: "Voice tool call requested",
+          detail:
+            functions
+              .map((fn: any) => fn?.name)
+              .filter(Boolean)
+              .join(", ") || "voice tool",
+          requestId: voiceRequestId,
+          phase: "voice_tool_request",
+          metadata: {
+            toolCount: functions.length,
+            toolNames: functions.map((fn: any) => fn?.name).filter(Boolean),
+            clientSideCount: functions.filter(
+              (fn: any) => fn?.client_side !== false,
+            ).length,
+          },
+        });
+      };
+
+      const recordVoiceToolResponse = (payload: any, title: string) => {
+        recordSystemActivity({
+          kind: "tool",
+          status: "completed",
+          title,
+          detail:
+            typeof payload.name === "string" ? payload.name : "voice tool",
+          requestId: voiceRequestId,
+          toolName: typeof payload.name === "string" ? payload.name : undefined,
+          phase: "voice_tool_response",
+          metadata: {
+            toolCallId: payload.id,
+            contentChars:
+              typeof payload.content === "string" ? payload.content.length : 0,
+          },
+        });
+      };
+
+      const startMockVoiceProvider = () => {
+        isDeepgramReady = true;
+        recordSystemActivity({
+          kind: "voice",
+          status: "completed",
+          title: "Mock voice provider ready",
+          detail:
+            "Local mock voice provider is simulating a Deepgram tool-call loop.",
+          requestId: voiceRequestId,
+          phase: "settings",
+        });
+        ws.send(JSON.stringify({ type: "SettingsApplied" }));
+        const functions = [
+          {
+            id: "mock_context",
+            name: "look_at_study_context",
+            arguments: JSON.stringify({
+              question: "What local study context is active?",
+            }),
+            client_side: true,
+            thought_signature: "mock_context_signature",
+          },
+          {
+            id: "mock_graph",
+            name: "update_graph",
+            arguments: JSON.stringify({
+              name: "Voice Tool Loop",
+              description:
+                "A local voice-agent function call executed by the browser client.",
+              understandingDelta: 0.05,
+            }),
+            client_side: true,
+            thought_signature: "mock_graph_signature",
+          },
+          {
+            id: "mock_flashcards",
+            name: "generate_flashcards",
+            arguments: JSON.stringify({
+              cards: [
+                {
+                  front: "What does the voice tool loop verify?",
+                  back: "It verifies local FunctionCallRequest and FunctionCallResponse handling without Deepgram.",
+                },
+              ],
+            }),
+            client_side: true,
+            thought_signature: "mock_flashcards_signature",
+          },
+        ];
+        recordVoiceToolRequest(functions);
+        ws.send(JSON.stringify({ type: "FunctionCallRequest", functions }));
+      };
+
       const startVoiceSession = (
         providedOpenRouterKey: string,
         selectedLanguage: string,
@@ -2843,11 +2937,12 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         studyContextMetadata: Record<string, unknown> = {},
       ) => {
         if (isVoiceSessionStarted) return true;
+        const useMockVoiceProvider = options.voiceProvider === "mock";
 
         const openRouterKey =
           sanitizeApiKey(providedOpenRouterKey) ||
           getOpenRouterServerFallbackKey();
-        if (!openRouterKey) {
+        if (!openRouterKey && !useMockVoiceProvider) {
           recordSystemActivity({
             kind: "voice",
             status: "blocked",
@@ -2863,7 +2958,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         const deepgramKey =
           sanitizeApiKey(providedDeepgramKey) ||
           sanitizeApiKey(process.env.DEEPGRAM_API_KEY);
-        if (!deepgramKey) {
+        if (!deepgramKey && !useMockVoiceProvider) {
           recordSystemActivity({
             kind: "voice",
             status: "blocked",
@@ -2884,7 +2979,9 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           kind: "voice",
           status: "started",
           title: "Voice session accepted",
-          detail: "Voice websocket auth accepted; connecting to Deepgram.",
+          detail: useMockVoiceProvider
+            ? "Voice websocket auth accepted; using local mock voice provider."
+            : "Voice websocket auth accepted; connecting to Deepgram.",
           requestId: voiceRequestId,
           phase: "auth",
           metadata: {
@@ -2912,6 +3009,11 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               ...studyContextMetadata,
             },
           });
+        }
+
+        if (useMockVoiceProvider) {
+          startMockVoiceProvider();
+          return true;
         }
 
         try {
@@ -3114,50 +3216,12 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                     const functions = Array.isArray(parsed.functions)
                       ? parsed.functions
                       : [];
-                    recordSystemActivity({
-                      kind: "tool",
-                      status: "started",
-                      title: "Voice tool call requested",
-                      detail:
-                        functions
-                          .map((fn: any) => fn?.name)
-                          .filter(Boolean)
-                          .join(", ") || "voice tool",
-                      requestId: voiceRequestId,
-                      phase: "voice_tool_request",
-                      metadata: {
-                        toolCount: functions.length,
-                        toolNames: functions
-                          .map((fn: any) => fn?.name)
-                          .filter(Boolean),
-                        clientSideCount: functions.filter(
-                          (fn: any) => fn?.client_side !== false,
-                        ).length,
-                      },
-                    });
+                    recordVoiceToolRequest(functions);
                   } else if (parsed.type === "FunctionCallResponse") {
-                    recordSystemActivity({
-                      kind: "tool",
-                      status: "completed",
-                      title: "Voice tool response received",
-                      detail:
-                        typeof parsed.name === "string"
-                          ? parsed.name
-                          : "voice tool",
-                      requestId: voiceRequestId,
-                      toolName:
-                        typeof parsed.name === "string"
-                          ? parsed.name
-                          : undefined,
-                      phase: "voice_tool_response",
-                      metadata: {
-                        toolCallId: parsed.id,
-                        contentChars:
-                          typeof parsed.content === "string"
-                            ? parsed.content.length
-                            : 0,
-                      },
-                    });
+                    recordVoiceToolResponse(
+                      parsed,
+                      "Voice tool response received",
+                    );
                   }
                 } catch (e) {}
                 ws.send(messageStr);
@@ -3244,26 +3308,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           try {
             const payload = JSON.parse(text);
             if (payload?.type === "FunctionCallResponse") {
-              recordSystemActivity({
-                kind: "tool",
-                status: "completed",
-                title: "Voice client tool completed",
-                detail:
-                  typeof payload.name === "string"
-                    ? payload.name
-                    : "voice tool",
-                requestId: voiceRequestId,
-                toolName:
-                  typeof payload.name === "string" ? payload.name : undefined,
-                phase: "voice_tool_response",
-                metadata: {
-                  toolCallId: payload.id,
-                  contentChars:
-                    typeof payload.content === "string"
-                      ? payload.content.length
-                      : 0,
-                },
-              });
+              recordVoiceToolResponse(payload, "Voice client tool completed");
             }
           } catch {}
         }

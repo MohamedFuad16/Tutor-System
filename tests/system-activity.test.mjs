@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { once } from "node:events";
+import { WebSocket } from "ws";
 
 import { createTutorServerApp } from "../.tmp-test/server.mjs";
 
@@ -12,12 +13,38 @@ const startApp = async () => {
   return { server, baseUrl: `http://127.0.0.1:${port}` };
 };
 
+const startVoiceApp = async () => {
+  const { app, attachWebSockets } = await createTutorServerApp({
+    serveClient: false,
+    voiceProvider: "mock",
+  });
+  const server = app.listen(0);
+  attachWebSockets(server);
+  await once(server, "listening");
+  const { port } = server.address();
+  return {
+    server,
+    baseUrl: `http://127.0.0.1:${port}`,
+    wsUrl: `ws://127.0.0.1:${port}/api/voice-agent?language=en`,
+  };
+};
+
 const readActivity = async (baseUrl) => {
   const response = await fetch(`${baseUrl}/api/debug/system-activity`, {
     cache: "no-store",
   });
   assert.equal(response.status, 200);
   return response.json();
+};
+
+const waitForActivity = async (baseUrl, predicate) => {
+  const deadline = Date.now() + 1500;
+  while (Date.now() < deadline) {
+    const body = await readActivity(baseUrl);
+    if (predicate(body)) return body;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  return readActivity(baseUrl);
 };
 
 test("system activity endpoint exposes local ledger metadata", async (t) => {
@@ -63,6 +90,96 @@ test("blocked chat requests are recorded without live model calls", async (t) =>
         event.kind === "model" &&
         event.status === "blocked" &&
         event.title === "Chat request blocked",
+    ),
+  );
+});
+
+test("mock voice websocket records a local tool-call loop", async (t) => {
+  const { server, baseUrl, wsUrl } = await startVoiceApp();
+  t.after(() => server.close());
+
+  const ws = new WebSocket(wsUrl);
+  t.after(() => {
+    if (ws.readyState === WebSocket.OPEN) ws.close();
+  });
+  await once(ws, "open");
+
+  const functionRequest = new Promise((resolve, reject) => {
+    const timeout = setTimeout(
+      () => reject(new Error("FunctionCallRequest was not received.")),
+      1000,
+    );
+    ws.on("message", (data) => {
+      const parsed = JSON.parse(data.toString());
+      if (parsed.type === "FunctionCallRequest") {
+        clearTimeout(timeout);
+        resolve(parsed);
+      }
+    });
+  });
+
+  ws.send(
+    JSON.stringify({
+      type: "voice_auth",
+      studyContext: "Local websocket test study context.",
+      activeBookId: "book:voice-test",
+      activeBookTitle: "Voice Tool Test",
+      activeDocumentId: "doc:voice-test",
+      documentCount: 1,
+      studyContextChars: 35,
+    }),
+  );
+
+  const request = await functionRequest;
+  const toolNames = request.functions.map((fn) => fn.name).sort();
+  assert.deepEqual(toolNames, [
+    "generate_flashcards",
+    "look_at_study_context",
+    "update_graph",
+  ]);
+
+  request.functions.forEach((fn) => {
+    ws.send(
+      JSON.stringify({
+        type: "FunctionCallResponse",
+        id: fn.id,
+        name: fn.name,
+        content: JSON.stringify({ status: "ok" }),
+      }),
+    );
+  });
+
+  const body = await waitForActivity(baseUrl, (activity) =>
+    activity.events.some(
+      (event) =>
+        event.kind === "tool" &&
+        event.status === "completed" &&
+        event.title === "Voice client tool completed",
+    ),
+  );
+
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "tool" &&
+        event.status === "started" &&
+        event.title === "Voice tool call requested",
+    ),
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "tool" &&
+        event.status === "completed" &&
+        event.title === "Voice client tool completed",
+    ),
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "voice" &&
+        event.status === "completed" &&
+        event.title === "Mock voice provider ready",
     ),
   );
 });

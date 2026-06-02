@@ -295,28 +295,36 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "server.ts, src/components/ChatPanel.tsx, src/store/index.ts, src/lib/voiceAgentTools.ts, package.json, tests/voice-agent-tools.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "PP",
+      "name": "Offline voice tool-loop harness",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "server.ts, tests/system-activity.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_36_complete",
+    "status": "phase_37_complete",
     "checks": [
-      "Graphify routed the slice through ChatPanel, server voice websocket settings, store voice events, and the new voiceAgentTools helper",
-      "Older tutor-debug brain runner hooks were checked but current package.json has no brain:* scripts, so the phase used Graphify plus standard repo gates",
-      "Added client-side Deepgram voice tools for look_at_study_context, update_graph, and generate_flashcards",
-      "Server voice Settings now advertises the local tool definitions and logs FunctionCallRequest/FunctionCallResponse activity in the system ledger",
-      "ChatPanel now handles FunctionCallRequest, executes local study-context retrieval, graph updates, and flashcard persistence, responds with FunctionCallResponse, and records voice tool jobs",
-      "Generated voice flashcards write the existing flashcard/artifact provenance ledgers and mark the voice session message as having flashcards",
-      "npm run format:check passed",
-      "npm run test passed, 88 tests including voice-agent tool contract tests",
+      "Graphify routed the slice through server.ts, createTutorServerApp(), tests/system-activity.test.mjs, startVoiceApp(), functionRequest, and toolNames",
+      "Added a test-only mock voice provider option for createTutorServerApp() while keeping Deepgram as the default provider",
+      "Mock voice provider sends FunctionCallRequest messages for look_at_study_context, update_graph, and generate_flashcards after local voice_auth",
+      "Server system activity now records shared voice tool request/response rows for both live Deepgram and mock-provider paths",
+      "Added websocket integration coverage that replies with FunctionCallResponse and asserts Voice tool call requested plus Voice client tool completed rows",
+      "npm run test passed, 89 tests including the mock voice websocket tool-loop test",
       "npm run lint passed",
       "npm run build passed",
-      "In-app Browser QA on http://localhost:3100 confirmed Admin still exposes voice/tool/memory/retrieval surfaces and mobile Tutor still exposes textbox, Start voice input, and Send message",
-      "Browser warning/error logs were empty during smoke QA",
+      "npm run format:check passed",
+      "In-app Browser QA on http://localhost:3100 confirmed Admin desktop renders System Activity, meters, voice timeline, tool jobs, model runs, memory events, and runtime tuning",
+      "In-app Browser QA at 390x844 confirmed Admin remains responsive and mobile Study shows the reader/tutor entry carousel",
+      "Browser warning/error logs were empty during Admin and Study smoke QA",
       "Live Deepgram voice was not exercised in this phase to keep verification local and avoid external provider dependency",
-      "graphify update . --force regenerated graphify-out with 870 nodes, 1466 edges, and 60 communities",
+      "graphify update . --force clean-regenerated graphify-out with 844 nodes, 1440 edges, and 59 communities",
       "npm run graphify:tree passed",
-      "Graphify smoke query and artifact grep confirmed the refreshed graph includes voiceAgentTools, VOICE_AGENT_TOOL_DEFINITIONS, parseVoiceFunctionArguments(), and buildVoiceFunctionCallResponse()",
-      "Temporary local dev server on port 3100 was used only for verification"
+      "Graphify smoke query found createTutorServerApp(), tests/system-activity.test.mjs, startVoiceApp(), functionRequest, and toolNames",
+      "Graphify artifact grep found no server.mjs or .tmp-test nodes after clean regeneration",
+      "Temporary local dev server on port 3100 was stopped and generated scratch artifacts were removed after verification"
     ]
   }
 }

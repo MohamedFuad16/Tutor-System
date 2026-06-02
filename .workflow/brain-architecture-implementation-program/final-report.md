@@ -1917,3 +1917,68 @@ against the same learner-brain surfaces used by typed chat.
 - Keep closing the remaining typed-chat vs voice parity gap: web search and
   current-page vision tools are still typed-chat-only.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 37: Offline Voice Tool-Loop Harness
+
+Phase 37 adds the missing local contract test for voice tool calling. Instead
+of relying on Deepgram availability, the server factory can now start a mock
+voice provider in tests. The mock provider uses the real `/api/voice-agent`
+websocket path, emits provider-shaped `FunctionCallRequest` messages for the
+three local voice tools, accepts `FunctionCallResponse` replies, and records the
+loop in the Admin system activity ledger.
+
+## Graphify Context
+
+- Graphify routed this slice through `server.ts`, `createTutorServerApp()`,
+  `tests/system-activity.test.mjs`, `startVoiceApp()`, `functionRequest`, and
+  `toolNames`.
+- The refreshed graph artifacts are a clean regeneration of the code
+  architecture graph, not the user-facing learner brain graph.
+
+## Integration Decisions
+
+- Added `voiceProvider?: "deepgram" | "mock"` to the local server factory
+  options. The default remains Deepgram.
+- Added a mock provider branch that bypasses external provider keys, records
+  `Mock voice provider ready`, and sends one request each for
+  `look_at_study_context`, `update_graph`, and `generate_flashcards`.
+- Shared voice tool request/response system-activity recording between the live
+  Deepgram path and the mock harness.
+- Added a websocket integration test that authenticates with local study
+  context, validates the requested tool names, replies with
+  `FunctionCallResponse`, and asserts `Voice tool call requested` plus
+  `Voice client tool completed` rows through `/api/debug/system-activity`.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run test`: passed, 89 tests including the mock voice websocket
+  tool-loop test.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- In-app Browser QA on `http://localhost:3100`: Admin desktop rendered System
+  Activity, meters, voice timeline, tool jobs, model runs, memory events, and
+  runtime tuning with zero browser console errors.
+- In-app Browser QA at `390x844`: Admin remained responsive, and mobile Study
+  showed the reader/tutor entry carousel with zero browser console errors.
+- Browser QA screenshots were emitted in the browser tool output. The browser
+  runtime could not write PNG files into the workflow folder, so no screenshot
+  files were added to the repo.
+- `graphify update . --force`: clean regeneration passed with 844 nodes, 1440
+  edges, and 59 communities after moving stale generated graph artifacts aside
+  and rebuilding.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `createTutorServerApp()`,
+  `tests/system-activity.test.mjs`, `startVoiceApp()`, `functionRequest`, and
+  `toolNames`; artifact grep found no `server.mjs` or `.tmp-test` nodes.
+
+## Remaining Work
+
+- Browser-verify a live voice function-call round trip once provider keys/access
+  are intentionally part of the test scope.
+- Keep closing the typed-chat vs voice parity gap: web search and current-page
+  vision tools are still typed-chat-only.
+- Continue correlating client-side voice tool jobs with server system-activity
+  rows across richer request timelines.
+- AWS/cloud synchronization remains out of scope until beta testing.
