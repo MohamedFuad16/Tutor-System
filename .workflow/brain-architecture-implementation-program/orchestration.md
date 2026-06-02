@@ -33,6 +33,7 @@
 - Packet ABM: See `packets/ABM-memory-worker-scheduler-coverage.md`.
 - Packet ABN: See `packets/ABN-chat-voice-thread-persistence-observability.md`.
 - Packet ABO: See `packets/ABO-request-correlated-thread-persistence.md`.
+- Packet ABP: See `packets/ABP-rehearsal-live-gap-proof-surface.md`.
 
 ## Completion Audit
 

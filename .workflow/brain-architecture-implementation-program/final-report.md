@@ -3854,3 +3854,78 @@ graphify-out/graph.json` confirmed the saved-thread-to-Admin route through
   tools, memory, evidence, corrections, Admin, and Revision operate together
   under live beta conditions.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+---
+
+# Phase 62: Rehearsal Live-Gap Proof Surface
+
+Packet ABP makes the local brain wiring rehearsal more useful for the next beta
+step. Admin can now run the synthetic rehearsal and see both sides of the proof:
+the in-memory eleven-signal contract pass and the live local ledger evidence
+that still has to be filled by real chat and voice turns.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 80%.
+
+## Graphify Context
+
+- `graphify query "remaining brain architecture gaps after request-correlated
+transcript persistence live provider-key chat voice end-to-end proof stored
+injected tool calling both agent layers Admin Beta Diagnostics
+runLocalBrainWiringRehearsal local verifier" --budget 8000 --graph
+graphify-out/graph.json` routed the slice through
+  `runLocalBrainWiringRehearsal()`, `buildBrainFlowCoverageFromLedgers()`,
+  `AdminView()`, `brain.context.ts`, `chatAgentTools.ts`,
+  `voiceAgentTools.ts`, and `tests/brain-rehearsal.test.mjs`.
+- `graphify query "Admin Diagnostics run local brain wiring rehearsal button
+synthetic verifier live ledger proof chat voice request correlated tools
+memory retrieval model runs source files" --budget 8000 --graph
+graphify-out/graph.json` selected the Admin Diagnostics rehearsal panel and
+  live ledger contract surfaces.
+
+## Integration Decisions
+
+- Added `BrainWiringRehearsalGap` and
+  `summarizeBrainWiringRehearsalGap()` to keep synthetic contract coverage
+  separate from live beta ledger coverage.
+- Added `chatRequestId` and `voiceRequestId` to rehearsal results so Admin can
+  show the exact synthetic request anchors.
+- Updated Admin Diagnostics rehearsal copy from nine-signal to eleven-signal.
+- Added a `Live beta gap` panel after rehearsal that shows synthetic coverage,
+  live coverage, provider-key readiness, and missing live ledger signals.
+- Added a `Rehearsed contracts` panel that exposes chat/voice request IDs,
+  multi-PDF context IDs, and chat/voice tool chips.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run lint`: passed.
+- Focused `node --test tests/brain-rehearsal.test.mjs`: passed, 4 tests.
+- `npm run test`: passed, 142 tests.
+- `npm run build`: passed.
+- Headless Chrome CDP QA at `390x844` clicked Admin Diagnostics `Run local
+rehearsal` and confirmed live beta gap, provider-key ready, rehearsed
+  contracts, chat tools, voice tools, request IDs, context PDF IDs,
+  eleven-signal copy, and `horizontalOverflow: 0`.
+- Headless Chrome CDP QA at `1440x900` confirmed the same Admin Diagnostics
+  rehearsal surface with `horizontalOverflow: 0`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with `1021` nodes, `1813` edges, and `63` communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `summarizeBrainWiringRehearsalGap()`,
+  `BrainWiringRehearsalGap`, `runLocalBrainWiringRehearsal()`, and
+  `AdminView()`.
+- Graphify path `summarizeBrainWiringRehearsalGap()` to `AdminView()` found a
+  two-hop route through `AdminView.tsx`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key chat and voice turns when spending live provider
+  calls is in scope, then use the new live-gap panel to confirm real traffic
+  fills the remaining ledger signals.
+- Continue broader local beta validation until real chat, voice, retrieval,
+  tools, memory, evidence, corrections, Admin, and Revision operate together
+  under live beta conditions.
+- AWS/cloud synchronization remains out of scope until beta testing.

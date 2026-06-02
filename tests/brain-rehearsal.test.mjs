@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { runLocalBrainWiringRehearsal } from "../.tmp-test/brain.rehearsal.mjs";
+import {
+  runLocalBrainWiringRehearsal,
+  summarizeBrainWiringRehearsalGap,
+} from "../.tmp-test/brain.rehearsal.mjs";
 import { buildBetaDiagnosticsSnapshot } from "../.tmp-test/beta.diagnostics.mjs";
 
 test("local brain wiring rehearsal proves shared contracts without persisting beta traffic", () => {
@@ -28,6 +31,8 @@ test("local brain wiring rehearsal proves shared contracts without persisting be
     "rehearsal-doc-active",
     "rehearsal-doc-companion",
   ]);
+  assert.equal(rehearsal.chatRequestId, "rehearsal-chat-request");
+  assert.equal(rehearsal.voiceRequestId, "rehearsal-voice-request");
 });
 
 test("synthetic rehearsal cannot raise an empty live beta snapshot", () => {
@@ -58,4 +63,21 @@ test("local brain wiring rehearsal checks the shared typed-chat and voice tool c
     rehearsal.checks.find((check) => check.id === "dual_agent_tools")?.ready,
     true,
   );
+});
+
+test("local brain wiring rehearsal gap distinguishes synthetic and live proof", () => {
+  const rehearsal = runLocalBrainWiringRehearsal();
+  const liveSnapshot = buildBetaDiagnosticsSnapshot({});
+  const gap = summarizeBrainWiringRehearsalGap(
+    rehearsal,
+    liveSnapshot.brainFlow,
+  );
+
+  assert.equal(gap.syntheticCoveragePercent, 100);
+  assert.equal(gap.syntheticStatus, "ready");
+  assert.equal(gap.liveCoveragePercent, 0);
+  assert.equal(gap.liveStatus, "watch");
+  assert.equal(gap.readyForProviderKeyRun, true);
+  assert.ok(gap.liveMissingSignals.includes("Chat context injected"));
+  assert.match(gap.summary, /live beta still needs/);
 });

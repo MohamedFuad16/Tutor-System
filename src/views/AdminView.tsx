@@ -53,6 +53,7 @@ import {
 } from "../memory/beta.diagnostics";
 import {
   runLocalBrainWiringRehearsal,
+  summarizeBrainWiringRehearsalGap,
   type BrainWiringRehearsalResult,
 } from "../memory/brain.rehearsal";
 import {
@@ -964,6 +965,16 @@ export function AdminView() {
     brainFlow: brainFlowCoverage,
     runtimeSettings: brainRuntimeSettings,
   });
+  const brainWiringRehearsalGap = useMemo(
+    () =>
+      brainWiringRehearsal
+        ? summarizeBrainWiringRehearsalGap(
+            brainWiringRehearsal,
+            betaDiagnosticsSnapshot.brainFlow,
+          )
+        : null,
+    [brainWiringRehearsal, betaDiagnosticsSnapshot.brainFlow],
+  );
   const mappedConceptCount = learningBookConcepts.length;
   const tracedBookCount = learningBooks.filter(
     (book) => (conceptsByBook[book.id] || []).length > 0,
@@ -4330,7 +4341,7 @@ export function AdminView() {
                             Runs a deterministic in-memory rehearsal through the
                             shared multi-PDF packet helpers, typed-chat tool
                             definitions, live-voice tool definitions, and the
-                            same nine-signal coverage verifier. It writes no
+                            same eleven-signal coverage verifier. It writes no
                             durable rows, calls no providers, and never raises
                             the live coverage meter above.
                           </p>
@@ -4389,6 +4400,147 @@ export function AdminView() {
                               </div>
                             </div>
                           </div>
+
+                          {brainWiringRehearsalGap && (
+                            <div className="mt-3 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
+                              <div className="rounded-2xl border border-blue-200 bg-white p-4">
+                                <div className="flex items-center justify-between gap-3">
+                                  <div>
+                                    <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-blue-600">
+                                      Live beta gap
+                                    </div>
+                                    <p className="mt-1 text-sm leading-relaxed text-zinc-600 font-serif">
+                                      {brainWiringRehearsalGap.summary}
+                                    </p>
+                                  </div>
+                                  <span
+                                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${brainWiringRehearsalGap.readyForProviderKeyRun ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                                  >
+                                    {brainWiringRehearsalGap.readyForProviderKeyRun
+                                      ? "provider-key ready"
+                                      : "fix live blockers"}
+                                  </span>
+                                </div>
+                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2">
+                                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                      Synthetic
+                                    </div>
+                                    <div className="mt-1 text-lg font-semibold tabular-nums text-zinc-900">
+                                      {
+                                        brainWiringRehearsalGap.syntheticCoveragePercent
+                                      }
+                                      %
+                                    </div>
+                                    <div className="text-[10px] font-mono text-zinc-500">
+                                      {brainWiringRehearsalGap.syntheticStatus}
+                                    </div>
+                                  </div>
+                                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2">
+                                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                      Live ledger
+                                    </div>
+                                    <div className="mt-1 text-lg font-semibold tabular-nums text-zinc-900">
+                                      {
+                                        brainWiringRehearsalGap.liveCoveragePercent
+                                      }
+                                      %
+                                    </div>
+                                    <div className="text-[10px] font-mono text-zinc-500">
+                                      {brainWiringRehearsalGap.liveStatus}
+                                    </div>
+                                  </div>
+                                </div>
+                                {brainWiringRehearsalGap.liveMissingSignals
+                                  .length > 0 && (
+                                  <div className="mt-3 flex flex-wrap gap-1.5">
+                                    {brainWiringRehearsalGap.liveMissingSignals.map(
+                                      (signal) => (
+                                        <span
+                                          key={signal}
+                                          className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700"
+                                        >
+                                          {signal}
+                                        </span>
+                                      ),
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="rounded-2xl border border-blue-200 bg-white p-4">
+                                <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-blue-600">
+                                  Rehearsed contracts
+                                </div>
+                                <div className="mt-3 grid gap-2 md:grid-cols-2">
+                                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2">
+                                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                      Request IDs
+                                    </div>
+                                    <div className="mt-1 space-y-1 text-[10px] font-mono text-zinc-700">
+                                      <div className="truncate">
+                                        chat{" "}
+                                        {brainWiringRehearsal.chatRequestId}
+                                      </div>
+                                      <div className="truncate">
+                                        voice{" "}
+                                        {brainWiringRehearsal.voiceRequestId}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2">
+                                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                      Context PDFs
+                                    </div>
+                                    <div className="mt-1 flex flex-wrap gap-1">
+                                      {brainWiringRehearsal.documentIds.map(
+                                        (documentId) => (
+                                          <span
+                                            key={documentId}
+                                            className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-mono text-zinc-600"
+                                          >
+                                            {documentId}
+                                          </span>
+                                        ),
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="mt-3 grid gap-2 md:grid-cols-2">
+                                  {[
+                                    {
+                                      label: "Chat tools",
+                                      tools: brainWiringRehearsal.chatToolNames,
+                                    },
+                                    {
+                                      label: "Voice tools",
+                                      tools:
+                                        brainWiringRehearsal.voiceToolNames,
+                                    },
+                                  ].map(({ label, tools }) => (
+                                    <div
+                                      key={label}
+                                      className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2"
+                                    >
+                                      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                        {label}
+                                      </div>
+                                      <div className="mt-1 flex flex-wrap gap-1">
+                                        {tools.map((toolName) => (
+                                          <span
+                                            key={toolName}
+                                            className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700"
+                                          >
+                                            {toolName.replace(/_/g, " ")}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                           <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                             {brainWiringRehearsal.checks.map((check) => (

@@ -32,11 +32,24 @@ export type BrainWiringRehearsalResult = {
   liveCoverageMutated: false;
   status: "ready" | "failed";
   summary: string;
+  chatRequestId: string;
+  voiceRequestId: string;
   documentIds: string[];
   chatToolNames: string[];
   voiceToolNames: string[];
   coverage: BetaBrainFlowCoverage;
   checks: BrainWiringRehearsalCheck[];
+};
+
+export type BrainWiringRehearsalGap = {
+  syntheticCoveragePercent: number;
+  liveCoveragePercent: number;
+  syntheticStatus: BetaBrainFlowCoverage["status"];
+  liveStatus: BetaBrainFlowCoverage["status"];
+  readyForProviderKeyRun: boolean;
+  liveMissingSignals: string[];
+  syntheticMissingSignals: string[];
+  summary: string;
 };
 
 const REQUIRED_DUAL_AGENT_TOOL_NAMES = [
@@ -368,10 +381,44 @@ export const runLocalBrainWiringRehearsal = (
     summary: ready
       ? "Shared packet assembly, balanced multi-PDF context, dual-agent tools, and the eleven-signal verifier passed in memory."
       : "One or more local wiring contracts failed rehearsal. Review the failed synthetic checks before live beta traffic.",
+    chatRequestId: chatPacket.requestId,
+    voiceRequestId: voicePacket.requestId,
     documentIds: rehearsalDocuments.map((document) => document.id),
     chatToolNames: chatTools,
     voiceToolNames: voiceTools,
     coverage,
     checks,
+  };
+};
+
+export const summarizeBrainWiringRehearsalGap = (
+  rehearsal: BrainWiringRehearsalResult,
+  liveCoverage: BetaBrainFlowCoverage,
+): BrainWiringRehearsalGap => {
+  const syntheticReady =
+    rehearsal.status === "ready" &&
+    rehearsal.coverage.status === "ready" &&
+    rehearsal.coverage.missingSignals.length === 0;
+  const liveBlocked = liveCoverage.status === "blocked";
+  const readyForProviderKeyRun = syntheticReady && !liveBlocked;
+  const liveMissingSignals = liveCoverage.missingSignals;
+  const syntheticMissingSignals = rehearsal.coverage.missingSignals;
+  const summary = !syntheticReady
+    ? "Synthetic contracts are failing; fix local wiring before provider-key beta turns."
+    : liveCoverage.status === "ready"
+      ? "Synthetic contracts and live local ledger evidence are both ready."
+      : liveBlocked
+        ? "Synthetic contracts pass, but live ledger failures are blocking beta proof."
+        : `Synthetic contracts pass; live beta still needs ${liveMissingSignals.length} signal${liveMissingSignals.length === 1 ? "" : "s"}.`;
+
+  return {
+    syntheticCoveragePercent: rehearsal.coverage.coveragePercent,
+    liveCoveragePercent: liveCoverage.coveragePercent,
+    syntheticStatus: rehearsal.coverage.status,
+    liveStatus: liveCoverage.status,
+    readyForProviderKeyRun,
+    liveMissingSignals,
+    syntheticMissingSignals,
+    summary,
   };
 };

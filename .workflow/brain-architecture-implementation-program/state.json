@@ -477,6 +477,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/types.ts, src/lib/chatThreadUtils.ts, src/components/ChatPanel.tsx, src/memory/beta.diagnostics.ts, src/memory/brain.rehearsal.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, tests/chat-thread-utils.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABP",
+      "name": "Rehearsal live-gap proof surface",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/brain.rehearsal.ts, src/views/AdminView.tsx, tests/brain-rehearsal.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -753,7 +760,17 @@
       "Graphify smoke query found requestCorrelatedThreadPersistenceEvents, book_chat_thread_saved, persistBookChatThread(), summarizeChatThreadPersistence(), AdminRequestTimeline, and buildBrainFlowCoverageFromLedgers()",
       "graphify path persistBookChatThread() to AdminRequestTimeline found a four-hop route through shouldRecordBookChatThreadSave(), summarizeChatThreadPersistence(), and AdminView.tsx",
       "graphify path summarizeChatThreadPersistence() to buildBrainFlowCoverageFromLedgers() found a two-hop route through AdminView.tsx",
-      "Packet ABO graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+      "Packet ABO graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+      "Packet ABP selected after Graphify routed live-vs-synthetic brain proof through runLocalBrainWiringRehearsal(), summarizeBrainWiringRehearsalGap(), AdminView(), beta diagnostics, chat tools, and voice tools",
+      "Added BrainWiringRehearsalGap and summarizeBrainWiringRehearsalGap() to keep synthetic coverage separate from live ledger coverage",
+      "Admin Diagnostics now shows Live beta gap, provider-key readiness, request IDs, context PDFs, chat tool chips, and voice tool chips after running the local rehearsal",
+      "Focused brain rehearsal tests passed, 4 tests",
+      "npm run test passed, 142 tests",
+      "Headless Chrome CDP QA confirmed Admin Diagnostics rehearsal surface at 390x844 and 1440x900 with live beta gap, provider-key ready, rehearsed contracts, chat tools, voice tools, request IDs, context PDFs, eleven-signal copy, and zero horizontal overflow",
+      "graphify update . --force regenerated Graphify artifacts with 1021 nodes, 1813 edges, and 63 communities",
+      "Graphify smoke query found summarizeBrainWiringRehearsalGap(), BrainWiringRehearsalGap, runLocalBrainWiringRehearsal(), and AdminView()",
+      "graphify path summarizeBrainWiringRehearsalGap() to AdminView() found a two-hop route through AdminView.tsx",
+      "Packet ABP graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
     ]
   },
   "evidence": [
@@ -883,11 +900,21 @@
     "graphify update . --force regenerated Graphify artifacts with 1018 nodes, 1809 edges, and 65 communities",
     "Graphify smoke query found requestCorrelatedThreadPersistenceEvents, book_chat_thread_saved, persistBookChatThread(), summarizeChatThreadPersistence(), AdminRequestTimeline, and buildBrainFlowCoverageFromLedgers()",
     "graphify path persistBookChatThread() to AdminRequestTimeline found a four-hop route through shouldRecordBookChatThreadSave(), summarizeChatThreadPersistence(), and AdminView.tsx",
-    "Packet ABO graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABO graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABP selected after Graphify routed live-vs-synthetic brain proof through runLocalBrainWiringRehearsal(), summarizeBrainWiringRehearsalGap(), AdminView(), beta diagnostics, chat tools, and voice tools",
+    "Added BrainWiringRehearsalGap and summarizeBrainWiringRehearsalGap() to keep synthetic coverage separate from live ledger coverage",
+    "Admin Diagnostics now shows Live beta gap, provider-key readiness, request IDs, context PDFs, chat tool chips, and voice tool chips after running the local rehearsal",
+    "Focused brain rehearsal tests passed, 4 tests",
+    "npm run test passed, 142 tests",
+    "Headless Chrome CDP QA confirmed Admin Diagnostics rehearsal surface at 390x844 and 1440x900 with live beta gap, provider-key ready, rehearsed contracts, chat tools, voice tools, request IDs, context PDFs, eleven-signal copy, and zero horizontal overflow",
+    "graphify update . --force regenerated Graphify artifacts with 1021 nodes, 1813 edges, and 63 communities",
+    "Graphify smoke query found summarizeBrainWiringRehearsalGap(), BrainWiringRehearsalGap, runLocalBrainWiringRehearsal(), and AdminView()",
+    "graphify path summarizeBrainWiringRehearsalGap() to AdminView() found a two-hop route through AdminView.tsx",
+    "Packet ABP graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 78,
-    "basis": "Local architecture estimate after Packet ABO: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, and request-correlated transcript-save rows are implemented; live provider-key chat/voice proof, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T08:13:00.000+09:00"
+    "estimatePercent": 80,
+    "basis": "Local architecture estimate after Packet ABP: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, and an Admin live-vs-synthetic brain-flow gap surface are implemented; deliberate provider-key chat/voice proof, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T08:29:00.000+09:00"
   }
 }

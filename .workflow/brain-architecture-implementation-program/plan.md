@@ -112,3 +112,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   `book_chat_thread_saved` memory rows, make Beta Diagnostics require
   request-correlated transcript persistence, and surface saved-transcript rows
   in Admin request timelines.
+- ABP: Rehearsal live-gap proof surface. Make the Admin synthetic wiring
+  rehearsal compare its in-memory eleven-signal pass against live local ledger
+  coverage, expose provider-key readiness, and show the rehearsed chat/voice
+  request IDs, multi-PDF context IDs, and tool contracts.
