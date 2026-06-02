@@ -220,6 +220,7 @@ export interface MemoryEvent {
   eventType:
     | "session_started"
     | "interaction_recorded"
+    | "brain_context_injected"
     | "learning_book_updated"
     | "learning_concept_updated"
     | "graph_concept_updated"

@@ -337,35 +337,42 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "server.ts, src/components/ChatPanel.tsx, src/lib/voiceAgentTools.ts, tests/system-activity.test.mjs, tests/voice-agent-tools.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "VV",
+      "name": "Unified brain context packets",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/brain.context.ts, src/components/ChatPanel.tsx, src/memory/longterm.memory.ts, src/views/AdminView.tsx, tests/brain-context.test.mjs, tests/memory-events.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_42_complete",
+    "status": "phase_43_complete",
     "checks": [
-      "Graphify routed the slice through VOICE_AGENT_TOOL_DEFINITIONS, ChatPanel(), captureCurrentPdfPageImage(), server.ts, voiceAgentTools.ts, PdfViewer(), tests, and Admin/system-activity surfaces",
-      "Added look_at_current_page to the shared Deepgram voice-agent tool definition list",
-      "Added /api/voice-current-page as a local bridge that records tool system activity for blocked, started, completed, and failed states",
-      "ChatPanel reuses one current-PDF-canvas capture helper for typed chat and voice mode",
-      "ChatPanel executes voice look_at_current_page tool calls, returns vision text into the voice-agent loop, and records blocked/completed tool-job status",
-      "The mock voice provider now derives from VOICE_AGENT_TOOL_DEFINITIONS so offline voice-tool tests catch future drift",
-      "README, Tutor System Architecture, User Brain Architecture, App Design Language, and workflow evidence document local voice current-page boundaries",
+      "Graphify routed the slice through buildBrainContextPacket(), brain.context.ts, ChatPanel(), AdminView(), MemoryOrchestrator, memory events, retrieval events, and the architecture/design books",
+      "Added src/memory/brain.context.ts as the shared typed-chat/live-voice brain-context packet builder",
+      "Added brain_context_injected as a durable memory-event type without a Dexie schema bump",
+      "ChatPanel typed chat now builds one packet from semantic memory, active-book summary, ready document excerpts, and interaction timing before /api/chat",
+      "ChatPanel live voice now builds the same packet before /api/voice-agent and passes packet metadata in studyContextMetadata",
+      "Admin request timelines now include request-correlated memory context injection rows beside retrieval, model, and tool rows",
+      "README, Tutor System Architecture, User Brain Architecture, App Design Language, and workflow evidence document the shared packet boundary",
       "npm run format passed",
       "npm run format:check passed",
-      "Explicit npx prettier check for ChatPanel and workflow files passed",
+      "Explicit npx prettier check for ChatPanel and Packet VV workflow files passed",
       "npm run lint passed",
-      "npm run test passed, 94 tests",
+      "npm run test passed, 99 tests",
       "npm run build passed",
-      "In-app Browser QA on http://localhost:3100 confirmed Admin/System Activity rendered request timelines, tool signals, and voice activity with zero captured browser error logs",
-      "In-app Browser QA on http://localhost:3100 confirmed Study rendered after returning from Admin with zero captured browser error logs",
-      "In-app Browser QA at 390x844 confirmed Study rendered with navigation available and zero captured browser error logs",
-      "graphify update . --force regenerated Graphify artifacts with 865 nodes, 1479 edges, and 47 communities",
+      "Headless Chrome CDP QA on http://127.0.0.1:3100 confirmed desktop Study rendered with zero captured browser error logs",
+      "Headless Chrome CDP QA confirmed desktop Admin rendered Admin Center, System Activity, Request timelines, memory/context copy, and local observability copy with zero captured browser error logs",
+      "Headless Chrome CDP QA at 390x844 confirmed Study/mobile navigation rendered with zero captured browser error logs",
+      "graphify update . --force regenerated Graphify artifacts with 882 nodes, 1519 edges, and 58 communities",
       "npm run graphify:tree passed",
-      "Graphify smoke query found VOICE_AGENT_TOOL_DEFINITIONS, ChatPanel(), currentPageTool, server.ts, voiceAgentTools.ts, PdfViewer(), and AdminView()",
-      "graphify path VOICE_AGENT_TOOL_DEFINITIONS to captureCurrentPdfPageImage() found a three-hop path through voiceAgentTools.ts and ChatPanel.tsx",
+      "Graphify smoke query found buildBrainContextPacket(), brain.context.ts, ChatPanel(), AdminView(), recordBrainContextInjected(), MemoryOrchestrator, recordMemoryEvent(), and retrieval events",
+      "graphify path buildBrainContextPacket() to AdminView() found a three-hop path through ChatPanel.tsx and useStore",
       "Graph artifact grep found no server.mjs or .tmp-test scratch nodes",
       "Scratch artifact checks found no server.mjs, .tmp-test, or running node server.mjs process after QA cleanup",
       "Temporary local dev server on port 3100 was stopped after verification",
-      "npm run brain:postchange -- --reason skill-preflight was skipped because the current package.json has no brain:postchange script"
+      "npm run brain:postchange -- --reason skill-preflight remained unavailable because current package.json has no brain:postchange script"
     ]
   }
 }

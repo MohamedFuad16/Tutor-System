@@ -58,8 +58,8 @@ learning book owns exactly one durable chat thread, one active PDF selection, an
 any number of stored PDF documents. Switching books switches the visible chat,
 document rail, injected memory context, and revision notebook together.
 Typed chat and live voice sessions also share request-level observability:
-browser-generated request ids connect memory retrieval, injected context,
-server activity, model runs, and tool jobs in Admin.
+browser-generated request ids connect the shared brain-context packet, memory
+retrieval, server activity, model runs, and tool jobs in Admin.
 
 ## Core Surfaces
 
@@ -163,9 +163,11 @@ Study books can now hold more than one PDF:
    annotations without deleting the learning book notes.
 5. The active book's ready document extracts are injected alongside memory and
    book summaries when Chat builds a tutor request.
-6. Each chat request carries a browser request id through memory retrieval,
-   `/api/chat`, model/tool ledgers, and Admin request timelines. Voice uses the
-   voice session id for the same local correlation.
+6. Each chat request builds a shared brain-context packet from memory, active
+   book, document, and interaction state, then carries the browser request id
+   through memory retrieval, `/api/chat`, model/tool ledgers, and Admin request
+   timelines. Voice uses the voice session id for the same local packet and
+   correlation path.
 7. Voice can call the local `look_at_current_page` bridge for current-page,
    visible-diagram, screen, and source-material questions from the rendered PDF
    canvas.

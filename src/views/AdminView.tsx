@@ -107,6 +107,7 @@ type AdminRequestTimeline = {
   model?: string;
   durationMs?: number;
   events: SystemActivityEvent[];
+  memoryEvents: MemoryEvent[];
   retrievalEvents: RetrievalEvent[];
   modelRuns: ModelRun[];
   toolJobs: ToolJob[];
@@ -866,6 +867,7 @@ export function AdminView() {
           model,
           durationMs,
           events: [],
+          memoryEvents: [],
           retrievalEvents: [],
           modelRuns: [],
           toolJobs: [],
@@ -926,6 +928,21 @@ export function AdminView() {
       timeline.retrievalEvents.push(event);
     });
 
+    memoryEvents.forEach((event) => {
+      const requestId =
+        typeof event.metadata?.requestId === "string"
+          ? event.metadata.requestId
+          : undefined;
+      if (!requestId) return;
+      const timeline = ensureTimeline(
+        requestId,
+        event.timestamp,
+        event.summary || "Memory event",
+        event.status,
+      );
+      timeline.memoryEvents.push(event);
+    });
+
     toolJobs.forEach((job) => {
       if (!job.requestId) return;
       const timeline = ensureTimeline(
@@ -943,6 +960,9 @@ export function AdminView() {
       .map((timeline) => ({
         ...timeline,
         events: [...timeline.events].sort((a, b) => a.timestamp - b.timestamp),
+        memoryEvents: [...timeline.memoryEvents].sort(
+          (a, b) => a.timestamp - b.timestamp,
+        ),
         retrievalEvents: [...timeline.retrievalEvents].sort(
           (a, b) => a.timestamp - b.timestamp,
         ),
@@ -955,7 +975,7 @@ export function AdminView() {
       }))
       .sort((a, b) => b.latestAt - a.latestAt)
       .slice(0, 12);
-  }, [modelRuns, retrievalEvents, systemEvents, toolJobs]);
+  }, [memoryEvents, modelRuns, retrievalEvents, systemEvents, toolJobs]);
   const totalChatTokens = chatUsage.inputTokens + chatUsage.outputTokens;
   const totalEstimatedCost = chatUsage.cost + voiceUsage.cost + webUsage.cost;
   const latestVoiceAgentEvent = voiceAgentEvents[0];
@@ -1698,9 +1718,12 @@ export function AdminView() {
                                     )}
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-mono text-zinc-500">
+                                <div className="grid grid-cols-2 gap-2 text-center text-[10px] font-mono text-zinc-500 sm:grid-cols-5">
                                   <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.events.length} events
+                                  </span>
+                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                    {timeline.memoryEvents.length} memory
                                   </span>
                                   <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.retrievalEvents.length} retrievals
@@ -1749,6 +1772,22 @@ export function AdminView() {
                                         {event.toolName && (
                                           <span>tool {event.toolName}</span>
                                         )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {timeline.memoryEvents.map((event) => (
+                                    <div
+                                      key={event.id}
+                                      className="rounded-xl border border-amber-100 bg-amber-50/60 px-3 py-2 text-[11px] text-amber-800"
+                                    >
+                                      Memory {event.status}: {event.eventType}
+                                      <div className="mt-1 text-[10px] font-mono text-amber-700/80">
+                                        {event.metadata?.agentLayer
+                                          ? `agent ${String(event.metadata.agentLayer)}`
+                                          : event.source}
+                                        {event.metadata?.rawContextChars
+                                          ? ` - raw ${String(event.metadata.rawContextChars)} chars`
+                                          : ""}
                                       </div>
                                     </div>
                                   ))}

@@ -2307,3 +2307,72 @@ the Deepgram voice-agent tool loop.
 - Browser-verify a successful live Serper voice web-search response when a
   deliberate key-backed test is in scope.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 43: Unified Brain Context Packets
+
+## Scope
+
+Phase 43 turns chat/voice context injection into one local packet contract.
+Typed chat and live voice now use the same builder for semantic memory,
+active-book summary, ready document excerpts, and interaction timing state
+before the foreground agent answers.
+
+## Graphify Context
+
+- Graphify routed this slice through `MemoryOrchestrator`,
+  `memory.orchestrator.ts`, `retrieval.events.ts`, `memory.events.ts`,
+  `ChatPanel()`, `AdminView()`, `TUTOR_ARCHITECTURE.md`, and the built-in
+  architecture/design books.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+
+## Integration Decisions
+
+- Added `src/memory/brain.context.ts` as the shared packet builder.
+- Added a durable `brain_context_injected` memory-event type without a Dexie
+  schema bump because the value is stored in an already-indexed table field.
+- Replaced duplicated ChatPanel typed-chat and voice context assembly with the
+  shared packet builder.
+- Kept `/api/chat` and `/api/voice-agent` request shapes compatible by sending
+  the packet text as the existing `memoryContext` or `studyContext` field.
+- Added packet memory rows to Admin request timelines beside retrieval, model,
+  and tool rows.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- Explicit Prettier check for `ChatPanel` and Packet VV workflow files: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 99 tests.
+- `npm run build`: passed.
+- Headless Chrome CDP QA on `http://127.0.0.1:3100` desktop Study: rendered
+  the Study surface with zero captured console/page errors.
+- Headless Chrome CDP QA on desktop Admin: rendered Admin Center, System
+  Activity, Request timelines, memory/context copy, and local observability copy
+  with zero captured console/page errors.
+- Headless Chrome CDP QA at `390x844`: rendered Study/mobile navigation with
+  zero captured console/page errors.
+- Browser QA screenshots were saved under
+  `.workflow/brain-architecture-implementation-program/results/`.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  882 nodes, 1519 edges, and 58 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `buildBrainContextPacket()`, `brain.context.ts`,
+  `ChatPanel()`, `AdminView()`, `recordBrainContextInjected()`,
+  `MemoryOrchestrator`, `recordMemoryEvent()`, and retrieval events.
+- `graphify path "buildBrainContextPacket()" "AdminView()"` found a three-hop
+  path through `ChatPanel.tsx` and `useStore`.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+- `npm run brain:postchange -- --reason skill-preflight` remained unavailable
+  because current `package.json` has no `brain:postchange` script.
+
+## Remaining Work
+
+- Browser-verify live key-backed provider success paths when provider spending
+  is deliberately in scope.
+- Continue closing the complete local learner-brain runtime against the book
+  until chat mode, voice mode, tools, evidence, memory, retrieval, and Admin
+  tuning are proven end to end.
+- AWS/cloud synchronization remains out of scope until beta testing.

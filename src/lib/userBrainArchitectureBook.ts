@@ -25,6 +25,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 
 - Chat and Study can capture local document context.
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
+- Typed chat and live voice now build one shared brain-context packet from semantic memory, active-book summary, ready document excerpts, and interaction timing state before handing context to the chat stream or voice realtime agent.
 - Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
 - Voice can now call the local \`look_at_current_page\` tool for current-page, visible-diagram, screen, and source-material questions by sending the rendered PDF page image through a local server vision bridge and recording Admin/tool activity.
 - Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
@@ -154,11 +155,11 @@ Implemented Admin surfaces:
 
 | Surface | What it proves locally |
 | --- | --- |
-| System Activity | Request timelines, retrieval injections, and backend event summaries. |
+| System Activity | Request timelines, brain-context injections, retrieval injections, and backend event summaries. |
 | Model Runs | Provider/model selection, fallbacks, token/cost metadata, failures. |
 | Tool Jobs | Tool lifecycle visibility. |
 | Voice Agent Timeline | Local voice websocket lifecycle, Deepgram settings, speaking/listening state, barge-in, transcript turns, current-page vision calls, web-search tool calls, and errors. |
-| Memory/Retrieval Events | Learner-brain writes and context selection. |
+| Memory/Retrieval Events | Learner-brain writes, shared brain-context packet injection, and context selection. |
 | Evidence Ledger | Evidence rows and BKT deltas. |
 | Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and chapter audio guide provenance. |
 | Correction Requests | Non-destructive review and propagation state. |

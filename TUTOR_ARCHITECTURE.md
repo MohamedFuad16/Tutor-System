@@ -103,6 +103,12 @@ checked-in 3-4 minute audio guides, backed by
 `src/lib/chapterAudioOverviews.json` and the Deepgram regeneration script in
 `scripts/generate-user-brain-audio-overviews.mjs`.
 
+`src/memory/brain.context.ts` is the shared local context packet builder for
+typed chat and live voice. It combines semantic memory retrieval, active-book
+summary, ready document excerpts, and interaction timing state, then records a
+`brain_context_injected` memory event with the same request id used by retrieval,
+model, and tool ledgers.
+
 ## 6. Core Views
 
 ### Study View
@@ -116,7 +122,9 @@ documents through the right extraction branch.
 
 `ChatPanel` streams tutor output via SSE, renders Markdown and Mermaid, supports
 source-material-first answering, handles web-search events, and manages TTS and
-voice flows. Live voice uses a dark audio-reactive stage, grouped voice-session
+voice flows. Chat and voice both ask the shared brain-context packet builder for
+local memory, active-book, document, and interaction context before the model or
+voice agent runs. Live voice uses a dark audio-reactive stage, grouped voice-session
 transcripts, typed-turn injection, Deepgram websocket usage events, local
 client-side tools, and a local voice-agent event ledger for Admin. Voice can call
 `look_at_current_page` for current-page, visible-diagram, screen, and reading
@@ -144,8 +152,9 @@ network access. Use the Deepgram provider in
 
 `AdminView` provides:
 
-- System Activity, request timelines, model runs, memory/retrieval events, tool
-  jobs, voice-agent lifecycle events, evidence/mastery ledgers, correction
+- System Activity, request timelines, model runs, brain-context injection
+  memory events, retrieval events, tool jobs, voice-agent lifecycle events,
+  evidence/mastery ledgers, correction
   controls, source artifacts, and beta diagnostics.
 - Source-card local citation checks, generated flashcard provenance checks,
   generated learning-note provenance checks, plus chapter audio-guide manifest

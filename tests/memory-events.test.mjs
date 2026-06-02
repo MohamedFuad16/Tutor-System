@@ -32,6 +32,23 @@ test("memory event ids include event type, source, anchor, and timestamp", () =>
   );
 });
 
+test("memory event records preserve brain context injection type", () => {
+  const record = createMemoryEventRecord(
+    {
+      eventType: "brain_context_injected",
+      source: "brain_context_builder",
+      bookId: "book-1",
+      summary: "Injected local context into chat.",
+      metadata: { requestId: "chat-1", agentLayer: "chat_stream" },
+    },
+    321,
+  );
+
+  assert.equal(record.eventType, "brain_context_injected");
+  assert.equal(record.source, "brain_context_builder");
+  assert.equal(record.metadata.requestId, "chat-1");
+});
+
 test("memory event records compact summaries and preserve metadata", () => {
   const record = createMemoryEventRecord(
     {

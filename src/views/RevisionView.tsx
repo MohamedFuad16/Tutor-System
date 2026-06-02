@@ -2315,7 +2315,12 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Request timelines",
         detail:
-          "Admin groups server events, retrieval injections, model runs, and tool jobs by request id so one tutor turn can be audited as a single story.",
+          "Admin groups brain-context packet injections, server events, retrieval injections, model runs, and tool jobs by request id so one tutor turn can be audited as a single story.",
+      },
+      {
+        title: "Brain context packet",
+        detail:
+          "Typed chat and live voice share one context builder for memory, active-book summary, ready document excerpts, and interaction timing before the foreground agent answers.",
       },
       {
         title: "Voice agent timeline",
