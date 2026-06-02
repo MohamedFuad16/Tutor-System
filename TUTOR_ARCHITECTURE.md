@@ -108,9 +108,10 @@ mastery and durable learner confidence stay gated. Model-summary paths store
 accepted values and gate labels in evidence/memory metadata instead of raising
 those learner-state fields.
 Validated recall attempts now provide the local confidence movement path:
-flashcard reviews tied to real concept ids update BKT mastery and durable
-learner confidence with capped evidence deltas, and the evidence metadata stores
-the previous/next confidence values.
+flashcard reviews and evaluated learner answers tied to real concept ids update
+BKT mastery and durable learner confidence with capped evidence deltas, and the
+evidence metadata stores the previous/next confidence values plus rubric, score,
+and request anchors when present.
 Admin correction propagation protects the same durable state in the other
 direction: mark-wrong, deletion-review, and supersede requests that touch a
 concept quarantine that concept locally by clearing durable confidence, capping
@@ -153,9 +154,10 @@ so Admin can audit them before broader verification exists.
 `RevisionView` renders generated learning books and built-in reference books in
 a paper-style reading surface. It also houses the app design language book with
 wireframes, tokens, interactive previews, and local beta control patterns.
-Built-in chapters include stored 3-4 minute audio guide assets with local
-play/pause, speed, seek, and native fallback controls, so chapter listening does
-not call the live read-aloud route on every play.
+Built-in chapters include stored 3-4 minute audio guide assets with one visible
+local player for play/pause, speed, and seek. The hidden audio element keeps
+retry/fallback playback in the background, so chapter listening does not show a
+second play button or call the live read-aloud route on every play.
 `npm run audio:overview:dry-run` verifies the checked-in MP3 manifest without
 network access. Use the Deepgram provider in
 `scripts/generate-user-brain-audio-overviews.mjs` to regenerate assets when

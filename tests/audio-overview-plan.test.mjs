@@ -21,6 +21,10 @@ const userBrainBookSource = readFileSync(
   `${repoRoot}/src/lib/userBrainArchitectureBook.ts`,
   "utf8",
 );
+const revisionViewSource = readFileSync(
+  `${repoRoot}/src/views/RevisionView.tsx`,
+  "utf8",
+);
 const userBrainChapterTitles = [
   ...userBrainBookSource.matchAll(/title: "([^"]+)"/g),
 ].map((match) => match[1]);
@@ -125,6 +129,18 @@ test("stored audio assets are checked into the local public directory", () => {
     );
     assert.equal(checkedInFiles.has(entry.outputFile), true);
   }
+});
+
+test("stored audio overview exposes one visible player", () => {
+  assert.match(revisionViewSource, /const StoredAudioOverview/);
+  assert.match(revisionViewSource, /className="sr-only"/);
+  assert.match(
+    revisionViewSource,
+    /this same player will retry in the background/,
+  );
+  assert.doesNotMatch(revisionViewSource, /controls=\{showNativeControls\}/);
+  assert.doesNotMatch(revisionViewSource, /Native fallback available/);
+  assert.doesNotMatch(revisionViewSource, /native fallback controls/i);
 });
 
 test("audio overview generator dry-run does not require a Deepgram key", () => {

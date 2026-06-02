@@ -2762,3 +2762,138 @@ keep stale confidence/mastery in the `concepts` table.
 - Continue tightening quiz/evaluated-answer evidence paths so learner answers
   outside flashcards can move durable confidence through audited local evidence.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 49: Evaluated Answer Evidence Contract
+
+## Scope
+
+Phase 49 adds a local evidence contract for evaluated learner answers outside
+flashcards. The slice does not add a quiz UI or live model grading; it creates
+the reusable runtime boundary future quiz, chat, voice, and revision callers can
+use safely.
+
+## Graphify Context
+
+- Graphify routed the slice through `answer.evidence.ts`,
+  `evidence.mastery.ts`, `bkt.engine.ts`, `revision.evidence.ts`,
+  `PersistentConcept`, and the existing evidence tests.
+- `graphify path "recordEvaluatedAnswerEvidence()" "BKTEngine"` found a
+  two-hop path through `answer.evidence.ts`.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Integration Decisions
+
+- Added `src/memory/answer.evidence.ts`.
+- Evaluated answers skip BKT when they have no real concept id.
+- Evaluated answers skip BKT when they have no explicit correct/incorrect
+  outcome and no score/max-score evaluation.
+- Valid evaluated answers call `BKTEngine.updateConceptAttempt()` with
+  recognition, generation, or transfer evidence.
+- Evidence metadata stores the evaluated-answer contract id, question preview,
+  learner-answer preview, score ratio, threshold, rubric, evaluator, request,
+  source, conversation, and book anchors.
+- Admin, README, Tutor System Architecture, User Brain Architecture, Tutor
+  System Architecture Library JSON, and App Design Language copy now describe
+  evaluated answers as validated recall evidence while keeping model summaries
+  observational.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 114 tests after Phase 50.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- In-app Browser QA confirmed desktop Admin Evidence, mobile Admin Evidence,
+  User Brain Architecture, Tutor System Architecture, and App Design Language
+  rendered evaluated-answer copy with no horizontal overflow and zero browser
+  error/warning logs. The mobile Admin screenshot capture timed out, so that
+  mobile pass is DOM evidence only.
+- Screenshots were saved as `AAB-iab-admin-evidence-desktop.png`,
+  `AAB-iab-user-brain-answer-evidence.png`, and
+  `AAB-iab-app-design-answer-evidence.png`.
+- `graphify update . --force`: regenerated code architecture artifacts with 918
+  nodes, 1587 edges, and 54 communities after Phase 50.
+- `npm run graphify:tree`: passed.
+
+## Remaining Work
+
+- Connect the helper to a real quiz/chat/voice answer-evaluation caller once
+  that product slice is selected.
+- Keep confidence calibration risk explicit until real evaluated-answer flows
+  are exercised with provider-key spending.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 50: Audio Overview Single-Player Fallback
+
+## Scope
+
+Phase 50 responds to the updated objective: remove the visible local fallback
+audio player from built-in chapter audio guides while keeping retry/fallback
+playback in the background behind the same visible component.
+
+## Graphify Context
+
+- Graphify routed the slice through `StoredAudioOverview()`,
+  `RevisionView.tsx`, `ChapterAudioOverview`, and
+  `chapterAudioOverviews.ts`.
+- `graphify path "StoredAudioOverview()" "ChapterAudioOverview"` found a
+  two-hop path through `RevisionView.tsx`.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Integration Decisions
+
+- Removed `showNativeControls` state from `StoredAudioOverview()`.
+- The backing `<audio>` element remains present with the stored MP3 source, but
+  no visible native controls and `className="sr-only"`.
+- Playback retry messaging now tells the learner to retry the same player
+  instead of using a native fallback player.
+- Playback status now says `Playback retry available`.
+- Added a regression test that prevents native fallback controls from returning.
+- Tutor System Architecture, User Brain Architecture, Tutor System Architecture
+  Library JSON, and App Design Language copy now describe one visible player
+  with hidden background retry/fallback playback.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 114 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- In-app Browser QA at `1440x1000` confirmed:
+  - one visible `Play` button;
+  - backing `<audio>` element exists;
+  - `audio.controls` is `false`;
+  - `audio.className` is `sr-only`;
+  - stored MP3 source is
+    `/audio-overviews/user-brain-runtime-overview.mp3`;
+  - no visible native media-control text such as `audio time scrubber` or
+    `show more media controls`;
+  - `scrollWidth` is 1440;
+  - zero browser error/warning logs.
+- Screenshot saved as `AAC-iab-audio-single-player.png`.
+- `graphify update . --force`: regenerated code architecture artifacts with 918
+  nodes, 1587 edges, and 54 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `StoredAudioOverview()`, `RevisionView.tsx`,
+  `ChapterAudioOverview`, `chapterAudioOverviews.ts`, `answer.evidence.ts`,
+  `recordEvaluatedAnswerEvidence()`, `evaluatedAnswerOutcome()`, `BKTEngine`,
+  and `recordMasteryDelta()`.
+
+## Remaining Work
+
+- Continue wiring real chat and voice brain flows until foreground answers,
+  background memory, evidence, retrieval, and tool calls all work together under
+  live provider conditions.
+- AWS/cloud synchronization remains out of scope until beta testing.

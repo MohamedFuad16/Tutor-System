@@ -2025,7 +2025,6 @@ const StoredAudioOverview = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState("");
-  const [showNativeControls, setShowNativeControls] = useState(true);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -2039,7 +2038,6 @@ const StoredAudioOverview = ({
     setDuration(0);
     setError("");
     setAudioIssue("");
-    setShowNativeControls(true);
     pendingPlayRef.current = null;
     return () => {
       audioRef.current?.pause();
@@ -2076,9 +2074,8 @@ const StoredAudioOverview = ({
         await pendingPlay;
       } catch {
         setAudioIssue("playback");
-        setShowNativeControls(true);
         setError(
-          "Audio overview could not start from the custom button. Use the native player in this card, or try Play again after interacting with the page.",
+          "Audio overview could not start yet. Interact with the page and press Play again; this same player will retry in the background.",
         );
       }
       return;
@@ -2091,9 +2088,8 @@ const StoredAudioOverview = ({
       await startPlayback();
     } catch {
       setAudioIssue("playback");
-      setShowNativeControls(true);
       setError(
-        "Audio overview could not start from the custom button. Use the native player in this card, or try Play again after interacting with the page.",
+        "Audio overview could not start yet. Interact with the page and press Play again; this same player will retry in the background.",
       );
     }
   };
@@ -2115,7 +2111,7 @@ const StoredAudioOverview = ({
       : 0;
   const playbackStatus = error
     ? audioIssue === "playback"
-      ? "Native fallback available"
+      ? "Playback retry available"
       : "Audio unavailable"
     : duration > 0
       ? "Local playback"
@@ -2188,8 +2184,7 @@ const StoredAudioOverview = ({
           ref={audioRef}
           src={overview.audioSrc}
           preload="auto"
-          controls={showNativeControls}
-          className="mt-3 w-full"
+          className="sr-only"
           onPlay={() => {
             setIsPlaying(true);
             setError("");
@@ -2209,7 +2204,6 @@ const StoredAudioOverview = ({
           }}
           onError={() => {
             setAudioIssue("media");
-            setShowNativeControls(true);
             setError("Audio guide is unavailable in this build.");
           }}
         />
@@ -2330,7 +2324,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Validated confidence meters",
         detail:
-          "Admin and revision evidence should separate model-summary confidence proposals from review attempts that actually moved durable learner confidence through capped BKT-backed recall evidence.",
+          "Admin and revision evidence should separate model-summary confidence proposals from flashcard reviews or evaluated answers that actually moved durable learner confidence through capped BKT-backed recall evidence.",
       },
       {
         title: "Voice agent timeline",
@@ -2375,7 +2369,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Chapter audio guides",
         detail:
-          "Every built-in Library chapter now attaches a 3-4 minute Deepgram-generated guide asset with play, pause, speed, seek, and native fallback controls, keeping Library listening fast without calling live read-aloud each time.",
+          "Every built-in Library chapter now attaches a 3-4 minute Deepgram-generated guide asset with one visible player for play, pause, speed, and seek, while hidden audio retry/fallback keeps Library listening fast without showing a second play button.",
       },
       {
         title: "Audio generation dry-run",

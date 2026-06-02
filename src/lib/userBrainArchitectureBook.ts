@@ -28,7 +28,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Typed chat and live voice now build one shared brain-context packet from semantic memory, active-book summary, ready document excerpts, and interaction timing state before handing context to the chat stream or voice realtime agent.
 - Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
 - Background learner-memory writes now carry the same request metadata, so chat and voice learning-book, interaction, and graph update rows can be grouped with the foreground request in Admin.
-- Validated flashcard reviews linked to real concepts now move BKT mastery and durable learner confidence with capped recall-evidence deltas, while storing the confidence before/after values in evidence metadata.
+- Validated flashcard reviews and evaluated learner answers linked to real concepts now move BKT mastery and durable learner confidence with capped recall-evidence deltas, while storing the confidence before/after values, score/rubric fields, and request anchors in evidence metadata.
 - Voice can now call the local \`look_at_current_page\` tool for current-page, visible-diagram, screen, and source-material questions by sending the rendered PDF page image through a local server vision bridge and recording Admin/tool activity.
 - Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
 - Admin exposes model runs, tool jobs, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
@@ -76,7 +76,7 @@ The local beta rule is intentionally conservative: generated notes, flashcards, 
 ## Current Enforcement
 
 - Model summaries can add evidence rows, but cannot raise mastery or durable learner confidence.
-- Flashcard reviews can write BKT evidence only when a real concept id exists; those validated review attempts can also move durable learner confidence with conservative capped deltas.
+- Flashcard reviews and evaluated learner answers can write BKT evidence only when a real concept id and explicit correct/incorrect evaluation exist; those validated attempts can also move durable learner confidence with conservative capped deltas.
 - Generated learning notes write \`ArtifactRecord\` rows, save source-span preview anchors when document context is present, and immediately run the local generated-note provenance verifier when the entry/book/conversation anchors are coherent.
 - Generated flashcards and built-in chapter audio guide manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states until Admin or another local caller runs their verifier.
 - Admin's local verifier mutates \`source_card\` artifacts, generated flashcard provenance, generated learning-note provenance, and stored audio-guide manifest integrity when the local ledger links are coherent; charts, code, images, and websites remain explicitly unsupported until real verifiers exist.
@@ -96,7 +96,7 @@ Useful teaching states:
 | --- | --- | --- |
 | Explain concept | Give a clear explanation with local context first. | Exposure or interaction row. |
 | Show example | Demonstrate with code, chart, analogy, or page reference. | Artifact row if generated. |
-| Check understanding | Ask a short recall or transfer question. | Possible evidence event. |
+| Check understanding | Ask a short recall or transfer question. | Possible evaluated-answer evidence event. |
 | Detect misconception | Compare answer to known weak spots. | Misconception candidate with source context. |
 | Repair explanation | Re-teach in a different style. | Remediation event. |
 | Schedule recall | Prepare flashcards or review prompts. | Flashcard rows and due dates. |
@@ -136,7 +136,7 @@ Citation states:
 | \`conflicting\` | Saved source fields or claims disagree. |
 | \`unsupported\` | The local verifier cannot assess this artifact kind yet. |
 
-Current local implementation verifies source-card structure without fetching external pages. It checks saved links, URL shape, domain consistency, source ids, and artifact/citation linkage. Generated learning notes have a separate local provenance check for entry id, book/conversation anchors, local-only metadata, no external fetch, saved summary preview, and saved source-span anchors when document context exists; Memory runs that check immediately for newly written learning-entry artifacts. Generated flashcards have their own provenance check for saved card ids, batch/message anchors, local-only metadata, and no external fetch, but they still start \`not_checked\` until Admin or another local caller runs it. Stored chapter audio guides have a local manifest-integrity check for the MP3 path, overview id, book/chapter anchors, transcript length, summary, voice, duration, stored date, and no-external-fetch provenance. Those checks prove local traceability for their scope, not sentence-level source-span truth, flashcard answer correctness, or audio-content transcription accuracy.`,
+Current local implementation verifies source-card structure without fetching external pages. It checks saved links, URL shape, domain consistency, source ids, and artifact/citation linkage. Generated learning notes have a separate local provenance check for entry id, book/conversation anchors, local-only metadata, no external fetch, saved summary preview, and saved source-span anchors when document context exists; Memory runs that check immediately for newly written learning-entry artifacts. Generated flashcards have their own provenance check for saved card ids, batch/message anchors, local-only metadata, and no external fetch, but they still start \`not_checked\` until Admin or another local caller runs it. Stored chapter audio guides have a local manifest-integrity check for the MP3 path, overview id, book/chapter anchors, transcript length, summary, voice, duration, stored date, and no-external-fetch provenance. Evaluated learner answers have a separate local evidence contract that requires a real concept id plus score or explicit correct/incorrect outcome before BKT can move. Those checks prove local traceability for their scope, not sentence-level source-span truth, flashcard answer correctness, evaluated-answer rubric quality, or audio-content transcription accuracy.`,
   },
   {
     title: "Chapter 5: Admin And Runtime Tuning",
@@ -190,7 +190,7 @@ Good voice behavior means:
 - let voice call live web search only for explicit web or freshness questions, while keeping current-page, selected-text, document, and active-book questions source-first;
 - avoid pretending live speech is evidence.
 
-For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a prepared explanation, generated once, stored as an asset, and played from the browser with normal controls. The target is a simple 3-4 minute explanation for each built-in chapter, long enough to teach the idea without turning into a lecture. Those controls now include play, pause, speed, seek, and native fallback playback when the browser blocks scripted play. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
+For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a prepared explanation, generated once, stored as an asset, and played from the browser with one visible player. The target is a simple 3-4 minute explanation for each built-in chapter, long enough to teach the idea without turning into a lecture. The visible controls include play, pause, speed, and seek; the hidden audio element handles retry/fallback playback in the background when the browser blocks scripted play, so learners do not see a second play button. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
 
 This phase extends that long-form stored-asset pattern to every built-in Library chapter: Tutor System Architecture, User Brain Architecture, and App Design Language. \`src/lib/chapterAudioOverviews.json\` holds the chapter scripts, target filenames, provider metadata, and local MP3 manifest. \`npm run audio:overview:dry-run\` verifies which assets are checked in, while \`npm run audio:overview:generate -- --provider deepgram --overwrite\` regenerates them with Deepgram when \`DEEPGRAM_API_KEY\` is available. The reader uses the stored assets directly, so playback is instant and does not depend on a live model call.`,
   },

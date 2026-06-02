@@ -4242,9 +4242,10 @@ export function AdminView() {
                           </h2>
                           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
                             Durable local records for model-summary evidence,
-                            explicit recall attempts, and BKT mastery changes.
-                            Model summaries can explain why a memory exists;
-                            only recall evidence should create mastery deltas.
+                            flashcard reviews, evaluated learner answers, and
+                            BKT mastery changes. Model summaries can explain why
+                            a memory exists; only validated recall evidence
+                            should create mastery deltas.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -4287,7 +4288,8 @@ export function AdminView() {
                               Mastery deltas
                             </h3>
                             <p className="mt-1 text-sm text-zinc-500 font-serif">
-                              Changes created by explicit BKT recall evidence.
+                              Changes created by validated flashcard or
+                              evaluated-answer BKT evidence.
                             </p>
                           </div>
                           <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
@@ -4297,9 +4299,9 @@ export function AdminView() {
 
                         {masteryDeltas.length === 0 ? (
                           <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
-                            No mastery deltas yet. Complete a recall attempt
-                            tied to a concept to create the first audited BKT
-                            update.
+                            No mastery deltas yet. Complete a flashcard review
+                            or evaluated answer tied to a concept to create the
+                            first audited BKT update.
                           </div>
                         ) : (
                           <div className="space-y-3">
@@ -4360,8 +4362,9 @@ export function AdminView() {
                               Evidence events
                             </h3>
                             <p className="mt-1 text-sm text-zinc-500 font-serif">
-                              Model summaries are retained as evidence, but
-                              marked unverified for mastery.
+                              Model summaries are retained as evidence, while
+                              evaluated recall attempts carry the rubric and
+                              score metadata needed for mastery.
                             </p>
                           </div>
                           <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
@@ -4372,8 +4375,8 @@ export function AdminView() {
                         {evidenceEvents.length === 0 ? (
                           <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
                             No durable evidence records yet. Chat graph updates,
-                            learning-book updates, and recall attempts will
-                            appear here.
+                            learning-book updates, flashcard reviews, and
+                            evaluated answers will appear here.
                           </div>
                         ) : (
                           <div className="space-y-3">

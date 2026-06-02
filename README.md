@@ -71,10 +71,11 @@ Background memory updates now keep model-summary mastery and learner-confidence
 proposals observational: accepted values and gate labels are written to local
 evidence/memory metadata, but those learner-state fields do not rise without
 validated evidence.
-Validated flashcard reviews linked to real concepts now supply that local
-evidence path: BKT mastery and durable learner confidence move together with
-capped recall-evidence deltas, and Admin evidence metadata can show the
-confidence before/after values.
+Validated flashcard reviews and evaluated learner answers linked to real
+concepts now supply that local evidence path: BKT mastery and durable learner
+confidence move together with capped recall-evidence deltas, and Admin evidence
+metadata can show the confidence before/after values, score, rubric, and request
+anchors.
 Admin correction requests now protect stale learner state too: mark-wrong,
 deletion-review, or supersede requests that target a concept, or a corrected
 row with a concept id, quarantine the concept score locally by clearing durable
