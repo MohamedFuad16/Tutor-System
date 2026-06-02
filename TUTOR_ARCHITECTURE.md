@@ -188,7 +188,8 @@ network access. Use the Deepgram provider in
 
 - System Activity, request timelines, model runs, brain-context injection
   memory events, retrieval events, tool jobs, local background job retry and
-  dead-letter rows, voice-agent lifecycle events, evidence/mastery ledgers,
+  dead-letter rows for interaction, learning-book, and graph-concept memory
+  workers, voice-agent lifecycle events, evidence/mastery ledgers,
   correction
   controls, source artifacts, and beta diagnostics.
   Brain-context rows surface document counts for added, ready, excerpted,
@@ -200,7 +201,8 @@ network access. Use the Deepgram provider in
   request-correlated chat and voice learner-memory writes with model-observation
   evidence gates before marking the local flow ready.
 - Beta Diagnostics also checks the durable local background-job ledger. A
-  dead-lettered memory job blocks beta readiness until the row is reviewed.
+  dead-lettered memory-worker job blocks beta readiness until the row is
+  reviewed.
 - Beta Diagnostics also includes a deterministic synthetic wiring rehearsal.
   It exercises the shared multi-PDF packet helpers, typed-chat and live-voice
   tool definitions, and the same nine-signal verifier in memory only. It does

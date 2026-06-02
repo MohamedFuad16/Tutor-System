@@ -33,6 +33,23 @@ test("background job ids are stable per request, job, and runtime anchor", () =>
   );
 });
 
+test("background job ids can use explicit scheduler job keys", () => {
+  const input = {
+    requestId: "req_456",
+    jobName: "learning_book_update",
+    metadata: {
+      jobKey: "book-1:thread-1:intro-question",
+      interactionId: "ignored_interaction",
+    },
+  };
+
+  assert.equal(backgroundJobIdFor(input), backgroundJobIdFor(input));
+  assert.match(
+    backgroundJobIdFor(input),
+    /req_456:learning_book_update:book-1:thread-1:intro-question$/,
+  );
+});
+
 test("background job records compact summaries and clamp attempt data", () => {
   const record = createBackgroundJobRecord(
     {

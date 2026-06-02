@@ -790,6 +790,13 @@ export function AdminView() {
   const deadLetterBackgroundJobs = backgroundJobs.filter(
     (job) => job.status === "dead_letter",
   ).length;
+  const backgroundJobsByName = backgroundJobs.reduce<Record<string, number>>(
+    (acc, job) => {
+      acc[job.jobName] = (acc[job.jobName] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
   const completedMemoryEvents = memoryEvents.filter(
     (event) => event.status === "completed",
   ).length;
@@ -4101,10 +4108,11 @@ export function AdminView() {
                             Local retry and dead-letter visibility
                           </h3>
                           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-500 font-serif">
-                            Memory capture now records queued, running,
-                            completed, retry, and dead-letter states in the
-                            browser ledger. Admin can tune beta behavior from
-                            these rows without cloud workers.
+                            Memory workers now record interaction,
+                            learning-book, and graph-concept jobs with queued,
+                            running, completed, retry, and dead-letter states in
+                            the browser ledger. Admin can tune beta behavior
+                            from these rows without cloud workers.
                           </p>
                         </div>
                         <span
@@ -4138,18 +4146,32 @@ export function AdminView() {
                       </div>
 
                       {latestBackgroundJob ? (
-                        <div className="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50/70 px-4 py-3 text-sm text-cyan-800">
-                          Latest: {latestBackgroundJob.jobName} on attempt{" "}
-                          {latestBackgroundJob.attempt}/
-                          {latestBackgroundJob.maxAttempts}
-                          {latestBackgroundJob.error
-                            ? ` - ${latestBackgroundJob.error}`
-                            : ""}
-                        </div>
+                        <>
+                          <div className="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50/70 px-4 py-3 text-sm text-cyan-800">
+                            Latest: {latestBackgroundJob.jobName} on attempt{" "}
+                            {latestBackgroundJob.attempt}/
+                            {latestBackgroundJob.maxAttempts}
+                            {latestBackgroundJob.error
+                              ? ` - ${latestBackgroundJob.error}`
+                              : ""}
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {Object.entries(backgroundJobsByName).map(
+                              ([jobName, count]) => (
+                                <span
+                                  key={jobName}
+                                  className="rounded-full border border-cyan-100 bg-cyan-50 px-2.5 py-1 text-[11px] font-semibold text-cyan-800"
+                                >
+                                  {jobName.replace(/_/g, " ")}: {count}
+                                </span>
+                              ),
+                            )}
+                          </div>
+                        </>
                       ) : (
                         <div className="mt-3 rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-500">
-                          Run a chat or voice turn to populate the local
-                          background memory queue.
+                          Run a chat turn, voice turn, document ingest, or graph
+                          update to populate the local background memory queue.
                         </div>
                       )}
                     </section>

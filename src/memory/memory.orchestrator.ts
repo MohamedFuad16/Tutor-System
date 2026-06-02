@@ -532,6 +532,84 @@ export class MemoryOrchestrator {
     const userMessage = input.userMessage.trim();
     const assistantMessage = input.assistantMessage.trim();
     if (!userMessage && !assistantMessage) return null;
+
+    const traceMetadata = memoryTraceMetadata(input);
+    const backgroundJobInput = {
+      id: backgroundJobIdFor({
+        jobName: "learning_book_update",
+        requestId: input.requestId,
+        source: "memory_orchestrator",
+        queue: "learner_memory",
+        metadata: {
+          ...traceMetadata,
+          bookId: input.activeBookId || undefined,
+          conversationId: input.conversationId,
+          documentId: input.activeDocumentId || undefined,
+          jobKey: [
+            input.activeBookId || "session",
+            input.conversationId || "conversation",
+            compactText(userMessage || assistantMessage).slice(0, 80),
+          ].join(":"),
+        },
+      }),
+      jobName: "learning_book_update",
+      requestId: input.requestId,
+      source: "memory_orchestrator",
+      queue: "learner_memory",
+      maxAttempts: 2,
+      inputSummary: compactText(
+        userMessage || assistantMessage,
+        "Learning book update queued.",
+      ),
+      metadata: {
+        ...traceMetadata,
+        activeProject: input.activeProject || "General Study",
+        bookId: input.activeBookId || undefined,
+        conversationId: input.conversationId,
+        documentCount: input.documentContexts?.length || 0,
+        documentId: input.activeDocumentId || undefined,
+      },
+    };
+
+    const result = await runBackgroundJob(backgroundJobInput, () =>
+      this.writeLearningBookFromConversation({
+        ...input,
+        userMessage,
+        assistantMessage,
+      }),
+    );
+
+    if (result.failed) {
+      await recordMemoryEvent({
+        eventType: "memory_error",
+        status: "failed",
+        source: "memory_orchestrator",
+        sessionId: this.currentSessionId,
+        bookId: input.activeBookId || undefined,
+        conversationId: input.conversationId,
+        documentId: input.activeDocumentId || undefined,
+        summary: "Learning book update reached the dead-letter queue.",
+        retentionPolicy: "local_indexeddb",
+        metadata: {
+          ...traceMetadata,
+          backgroundJobId: result.job.id,
+          deadLetter: true,
+          error: result.job.error,
+        },
+      });
+      return null;
+    }
+
+    return result.output || null;
+  }
+
+  private async writeLearningBookFromConversation(
+    input: LearningBookUpdateInput,
+  ) {
+    await this.initialization;
+    const userMessage = input.userMessage.trim();
+    const assistantMessage = input.assistantMessage.trim();
+    if (!userMessage && !assistantMessage) return null;
     const traceMetadata = memoryTraceMetadata(input);
 
     const apiKey = input.apiKey || getStoredOpenRouterKey();
@@ -933,6 +1011,84 @@ export class MemoryOrchestrator {
     sourcePage?: number,
     context?: MemoryTraceContext,
   ) {
+    await this.initialization;
+    const conceptId = name.toLowerCase().trim();
+    const traceMetadata = memoryTraceMetadata(context);
+    const source = context?.source || "chat_graph_update";
+    const backgroundJobInput = {
+      id: backgroundJobIdFor({
+        jobName: "graph_concept_update",
+        requestId: context?.requestId,
+        source,
+        queue: "learner_memory",
+        metadata: {
+          ...traceMetadata,
+          bookId: context?.bookId || undefined,
+          conceptId,
+          conceptName: name,
+          conversationId: context?.conversationId,
+          documentId: context?.documentId || undefined,
+          jobKey: [conceptId || "concept", context?.conversationId || "local"]
+            .filter(Boolean)
+            .join(":"),
+        },
+      }),
+      jobName: "graph_concept_update",
+      requestId: context?.requestId,
+      source,
+      queue: "learner_memory",
+      maxAttempts: 2,
+      inputSummary: compactText(description, name || "Concept update queued."),
+      metadata: {
+        ...traceMetadata,
+        bookId: context?.bookId || undefined,
+        conceptId,
+        conceptName: name,
+        conversationId: context?.conversationId,
+        documentId: context?.documentId || undefined,
+        sourcePage,
+      },
+    };
+
+    const result = await runBackgroundJob(backgroundJobInput, () =>
+      this.writeGraphConceptUpdate(
+        name,
+        description,
+        understandingDelta,
+        sourcePage,
+        context,
+      ),
+    );
+
+    if (result.failed) {
+      await recordMemoryEvent({
+        eventType: "memory_error",
+        status: "failed",
+        source,
+        bookId: context?.bookId || undefined,
+        conversationId: context?.conversationId,
+        documentId: context?.documentId || undefined,
+        conceptId,
+        summary: "Graph concept update reached the dead-letter queue.",
+        retentionPolicy: "local_indexeddb",
+        metadata: {
+          ...traceMetadata,
+          backgroundJobId: result.job.id,
+          deadLetter: true,
+          error: result.job.error,
+        },
+      });
+    }
+  }
+
+  private async writeGraphConceptUpdate(
+    name: string,
+    description: string,
+    understandingDelta: number,
+    sourcePage?: number,
+    context?: MemoryTraceContext,
+  ) {
+    await this.initialization;
     const id = name.toLowerCase().trim();
     const existing = await db.concepts.get(id);
     let savedConcept: PersistentConcept | null = null;

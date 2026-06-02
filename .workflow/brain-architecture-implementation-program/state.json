@@ -449,10 +449,24 @@
       "owner": "main agent + read-only sidecars Chandrasekhar and Curie",
       "status": "completed",
       "write_scope": "src/memory/evidence.mastery.ts, src/memory/memory.orchestrator.ts, src/memory/beta.diagnostics.ts, src/memory/brain.rehearsal.ts, src/views/AdminView.tsx, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, tests/evidence-mastery.test.mjs, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*"
+    },
+    {
+      "id": "ABL",
+      "name": "Durable background job ledger",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/background.jobs.ts, src/memory/longterm.memory.ts, src/memory/memory.orchestrator.ts, src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, tests/background-jobs.test.mjs, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABM",
+      "name": "Memory worker scheduler coverage",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/memory.orchestrator.ts, src/views/AdminView.tsx, tests/background-jobs.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_57_completed",
+    "status": "phase_58_completed",
     "checks": [
       "graphify path runLocalBrainWiringRehearsal() to AdminView() found a two-hop path through buildBrainFlowCoverageFromLedgers()",
       "Graphify smoke query found runLocalBrainWiringRehearsal(), buildChatAgentToolDefinitions(), chatAgentToolNames(), buildBrainDocumentContext(), buildBrainFlowCoverageFromLedgers(), and AdminView()",
@@ -801,11 +815,32 @@
     "graphify path runBackgroundJob() to AdminView() found a four-hop path through background.jobs.ts, BackgroundJob, and AdminView.tsx",
     "graphify path BackgroundJob to buildBetaDiagnosticsSnapshot() found a two-hop path through beta.diagnostics.ts",
     "Graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
-    "npm run audio:overview:dry-run passed with 25 present and 0 missing stored guide assets"
+    "npm run audio:overview:dry-run passed with 25 present and 0 missing stored guide assets",
+    "Packet ABM selected after Graphify routed broader scheduler coverage through runBackgroundJob(), recordBackgroundJobEvent(), MemoryOrchestrator, AdminView(), and Beta Diagnostics",
+    "MemoryOrchestrator.updateLearningBookFromConversation now runs learning-book writes through a stable learning_book_update background job while preserving awaited caller behavior",
+    "MemoryOrchestrator.addOrUpdateConcept now runs graph concept writes through a stable graph_concept_update background job",
+    "Admin Background Job Ledger now renders job-name mix chips for interaction, learning-book, and graph-concept memory-worker jobs",
+    "README, Tutor System Architecture, User Brain Architecture, Tutor Architecture Library JSON, App Design Language, and workflow docs document the broader local memory-worker queue boundary",
+    "npx tsc --noEmit --pretty false passed",
+    "npm run format passed",
+    "npm run test passed, 139 tests",
+    "npm run format:check passed",
+    "npm run lint passed",
+    "npm run build passed",
+    "In-app Browser QA at 599x822 confirmed Admin Beta rendered the interaction, learning-book, and graph-concept scheduler copy with no horizontal overflow and no browser warning/error logs",
+    "Headless Chrome QA at 1440x1000 and 390x844 confirmed Admin Beta rendered Background Job Ledger copy, empty state, local-only cloud boundary, no horizontal overflow, and no console warning/error logs",
+    "Browser QA screenshots and JSON saved as ABM-admin-beta-desktop.png, ABM-admin-beta-mobile.png, and ABM-admin-beta-browser-qa.json",
+    "graphify update . --force regenerated code architecture artifacts with 1008 nodes, 1805 edges, and 62 communities",
+    "npm run graphify:tree passed for Packet ABM",
+    "Graphify smoke query found runBackgroundJob(), .updateLearningBookFromConversation(), .addOrUpdateConcept(), .writeLearningBookFromConversation(), .writeGraphConceptUpdate(), AdminView(), and buildBetaDiagnosticsSnapshot()",
+    "graphify path writeLearningBookFromConversation() to AdminView() found a four-hop path through generated note artifact records",
+    "graphify path writeGraphConceptUpdate() to runBackgroundJob() found a three-hop path through memory trace/update wrappers",
+    "Packet ABM graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABM npm run audio:overview:dry-run passed with 25 present and 0 missing stored guide assets"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 72,
-    "basis": "Local architecture estimate after Packet ABL: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, and the first durable retry/dead-letter interaction-memory background queue are implemented; live provider-key chat/voice proof, broader scheduler coverage, and broader beta validation remain incomplete.",
-    "updatedAt": "2026-06-03T03:10:00.000+09:00"
+    "estimatePercent": 74,
+    "basis": "Local architecture estimate after Packet ABM: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, and durable retry/dead-letter state for interaction-memory, learning-book, and graph-concept local memory-worker jobs are implemented; live provider-key chat/voice proof, remaining scheduler coverage, and broader beta validation remain incomplete.",
+    "updatedAt": "2026-06-03T03:18:00.000+09:00"
   }
 }

@@ -14,6 +14,70 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 58 report
+
+## Scope
+
+Phase 58 expands the local background-job scheduler coverage from the first
+interaction-memory queue to the broader local memory-worker paths that already
+run after chat, voice, and document work. This remains local-only: no AWS
+workers, cloud queues, hooks, or Graphify watch mode were added.
+
+## Graphify Context
+
+- Graphify routed this slice through `background.jobs.ts`,
+  `runBackgroundJob()`, `recordBackgroundJobEvent()`, `MemoryOrchestrator`,
+  `.updateLearningBookFromConversation()`, `.addOrUpdateConcept()`,
+  `AdminView()`, and `buildBetaDiagnosticsSnapshot()`.
+
+## Integration Decisions
+
+- Wrapped learning-book updates in the durable local `learning_book_update`
+  background job state while preserving the awaited caller behavior.
+- Wrapped graph-concept updates in the durable local `graph_concept_update`
+  background job state.
+- Kept model-summary mastery and confidence rows audit-only through the existing
+  model-observation gate.
+- Added Admin job-name mix chips so beta tuning can distinguish interaction,
+  learning-book, and graph-concept memory-worker jobs.
+- Updated README, Tutor System Architecture, User Brain Architecture, Tutor
+  Library JSON, App Design Language, and workflow records to document the exact
+  local-only boundary.
+
+## Verification Evidence
+
+- `npx tsc --noEmit --pretty false`: passed.
+- `npm run format`: passed.
+- `npm run test`: passed, 139 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser QA at 599x822: Admin Beta rendered scheduler copy, no
+  horizontal overflow, and no warning/error logs.
+- Headless Chrome QA at 1440x1000 and 390x844: Admin Beta rendered scheduler
+  copy, empty state, local-only cloud boundary, no horizontal overflow, and no
+  console warning/error logs.
+- QA screenshots and JSON were saved under
+  `.workflow/brain-architecture-implementation-program/results/`.
+- `graphify update . --force`: passed, 1008 nodes, 1805 edges, 62 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query and path checks found the new scheduler/Admin routes.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+- `npm run audio:overview:dry-run`: passed, 25 present and 0 missing.
+
+## Remaining Work
+
+- Live provider-key typed-chat and voice beta proof still needs a fuller
+  end-to-end run after more scheduler and Admin tuning slices.
+- Remaining background workers still need scheduler coverage before this can be
+  called a complete local worker platform.
+- AWS/cloud deployment remains deferred until local beta behavior is proven.
+
+## Brain Architecture Progress
+
+- Estimate after this slice: 74%.
+
 # brain architecture implementation program: phase 34 report
 
 ## Scope

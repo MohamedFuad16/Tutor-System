@@ -1,0 +1,36 @@
+[
+  {
+    "label": "desktop",
+    "layout": {
+      "url": "http://localhost:3100/",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "hasHorizontalOverflow": false,
+      "hasLedgerCopy": true,
+      "hasEmptyState": true,
+      "hasCloudBoundary": true,
+      "hasBetaDiagnostics": true
+    },
+    "consoleLogs": [],
+    "screenshotPath": ".workflow/brain-architecture-implementation-program/results/ABM-admin-beta-desktop.png"
+  },
+  {
+    "label": "mobile",
+    "layout": {
+      "url": "http://localhost:3100/",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "hasHorizontalOverflow": false,
+      "hasLedgerCopy": true,
+      "hasEmptyState": true,
+      "hasCloudBoundary": true,
+      "hasBetaDiagnostics": true
+    },
+    "consoleLogs": [],
+    "screenshotPath": ".workflow/brain-architecture-implementation-program/results/ABM-admin-beta-mobile.png"
+  }
+]

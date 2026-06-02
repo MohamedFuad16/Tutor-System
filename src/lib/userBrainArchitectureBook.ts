@@ -27,7 +27,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
 - Typed chat and live voice now build one shared brain-context packet from semantic memory, active-book summary, an active-book PDF manifest, balanced excerpts from multiple ready PDFs, and interaction timing state before handing context to the chat stream or voice realtime agent. The packet records added, ready, excerpted, pending/failed, and omitted ready PDF counts so Admin can verify whether chat and voice saw the wider book context, not only the PDF on screen. Voice prioritizes book/document context before long memory when its live prompt is compacted.
 - Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
-- Background learner-memory writes now carry the same request metadata, so chat and voice learning-book, interaction, and graph update rows can be grouped with the foreground request in Admin. Interaction-memory capture also writes a durable local background-job row with queued, running, completed, retry-scheduled, and dead-letter states.
+- Background learner-memory writes now carry the same request metadata, so chat and voice learning-book, interaction, and graph update rows can be grouped with the foreground request in Admin. Interaction-memory capture, learning-book updates, and graph-concept updates also write durable local background-job state with queued, running, completed, retry-scheduled, and dead-letter statuses.
 - Validated flashcard reviews and evaluated learner answers linked to real concepts now move BKT mastery and durable learner confidence with capped recall-evidence deltas, while storing the confidence before/after values, score/rubric fields, and request anchors in evidence metadata.
 - Typed chat and live voice can now call \`evaluate_answer\` for quiz or active-recall turns; when the payload uses a stored learning-book concept id, the browser promotes that concept into the BKT \`concepts\` table before recording, and unresolved ids still stay \`missing_concept\`.
 - Voice can now call the local \`look_at_current_page\` tool for current-page, visible-diagram, screen, and source-material questions by sending the rendered PDF page image through a local server vision bridge and recording Admin/tool activity.
@@ -165,7 +165,7 @@ Implemented Admin surfaces:
 | System Activity | Request timelines, brain-context injections, retrieval injections, and backend event summaries. |
 | Model Runs | Provider/model selection, fallbacks, token/cost metadata, failures. |
 | Tool Jobs | Tool lifecycle visibility. |
-| Background Jobs | Local memory-worker queue state, retry scheduling, and dead-letter review. |
+| Background Jobs | Local interaction, learning-book, and graph-concept memory-worker state, retry scheduling, and dead-letter review. |
 | Voice Agent Timeline | Local voice websocket lifecycle, Deepgram settings, speaking/listening state, barge-in, transcript turns, current-page vision calls, web-search tool calls, and errors. |
 | Memory/Retrieval Events | Learner-brain writes, shared brain-context packet injection, and context selection. |
 | Evidence Ledger | Evidence rows and BKT deltas. |
@@ -235,7 +235,7 @@ Still local beta work:
 - generated-artifact verifiers for charts, code snippets, images, websites, previews, and other unsupported artifact kinds;
 - document-wide grounding and entailment checks for generated learning notes beyond compact saved previews;
 - audio-content transcript matching beyond the current stored-manifest integrity check;
-- broader scheduler controls for multi-job background workers beyond the current interaction-memory queue;
+- broader scheduler controls for remaining background workers beyond the current interaction, learning-book, and graph-concept queue coverage;
 - stronger tests that make mastery writes impossible without validated evidence and audit rows.
 
 Deferred until after beta:

@@ -99,3 +99,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   ledger for interaction-memory capture, record queued/running/completed/
   retry-scheduled/dead-letter states, surface the queue in Admin and Beta
   Diagnostics, and keep broader cloud/worker scheduling out of scope.
+- ABM: Memory worker scheduler coverage. Route learning-book updates and
+  graph-concept updates through the existing local background-job ledger,
+  surface job-name mix in Admin, and document that cloud worker scheduling
+  remains out of scope.
