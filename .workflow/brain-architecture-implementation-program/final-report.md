@@ -2609,3 +2609,78 @@ request-correlated chat and voice memory evidence before calling the flow ready.
 - Continue tightening validated learner evidence paths for recall, corrections,
   and durable confidence movement.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 47: Validated Recall Confidence Movement
+
+## Scope
+
+Phase 47 makes durable learner confidence move from validated local recall
+evidence, while preserving the earlier rule that model-summary confidence
+proposals remain observational.
+
+## Graphify Context
+
+- Graphify routed this slice through `recordFlashcardReviewEvidence()`,
+  `BKTEngine.updateConceptAttempt()`, `masteryFromEvidenceAttempt()`,
+  `confidenceFromUnderstandingDelta()`, `revision.evidence.ts`,
+  `bkt.engine.ts`, and `evidence.mastery.ts`.
+- The refreshed graph artifacts are the code architecture graph for agents, not
+  the user-facing learner brain graph.
+- `graphify path "recordFlashcardReviewEvidence()" "buildBKTConfidenceUpdate()"`
+  found a three-hop path through `revision.evidence.ts` and `bkt.engine.ts`.
+- A graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Integration Decisions
+
+- Added conservative confidence deltas for recognition, generation, and transfer
+  attempts.
+- `BKTEngine.updateConceptAttempt()` now updates durable
+  `PersistentConcept.confidence` alongside `p_learn` and `mastery` when a
+  validated recall attempt is recorded.
+- Evidence metadata now stores confidence before/after values, actual delta,
+  signal delta, and `confidenceSource: "validated_recall_attempt"`.
+- Model-summary confidence remains gated and cannot raise durable learner
+  confidence.
+- README, Tutor System Architecture, User Brain Architecture, Tutor System
+  Architecture Library JSON, and App Design Language copy now document the
+  validated recall confidence path.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 105 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- Headless Chrome CDP QA via
+  `.workflow/brain-architecture-implementation-program/packets/phase47-browser-qa.mjs`:
+  desktop User Brain Architecture rendered validated confidence copy at
+  `1440x1000` with `scrollWidth` 1440 and zero captured browser errors.
+- Headless Chrome CDP QA at `390x844`: mobile User Brain Architecture rendered
+  the same copy with `scrollWidth` 390 and zero captured browser errors.
+- Headless Chrome CDP QA confirmed desktop Tutor System Architecture rendered
+  the validated flashcard confidence copy with `scrollWidth` 1440.
+- Headless Chrome CDP QA confirmed desktop App Design Language rendered the
+  Validated Confidence Meters pattern with `scrollWidth` 1440.
+- Browser QA screenshots were saved as
+  `ZZ-cdp-user-brain-confidence-desktop.png`,
+  `ZZ-cdp-user-brain-confidence-mobile.png`,
+  `ZZ-cdp-tutor-book-confidence.png`, and
+  `ZZ-cdp-app-design-confidence.png`.
+- `graphify update . --force`: regenerated code architecture artifacts with 898
+  nodes, 1550 edges, and 54 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `confidenceFromEvidenceAttempt()`,
+  `buildBKTConfidenceUpdate()`, `confidenceDeltaFromEvidenceAttempt()`,
+  `BKTEngine`, `recordMasteryDelta()`, and `revision.evidence.ts`.
+
+## Remaining Work
+
+- Populate real successful chat and voice flow evidence in the browser with
+  deliberate provider-key spending when that is in scope.
+- Continue tightening correction and quiz evidence paths so more learner actions
+  can move durable confidence through audited local evidence.
+- AWS/cloud synchronization remains out of scope until beta testing.

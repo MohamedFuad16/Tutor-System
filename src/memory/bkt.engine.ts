@@ -1,5 +1,11 @@
 import { db, PersistentConcept } from "./longterm.memory";
-import { masteryFromEvidenceAttempt } from "./evidence.mastery";
+import {
+  clamp01,
+  confidenceDeltaFromEvidenceAttempt,
+  confidenceFromEvidenceAttempt,
+  masteryFromEvidenceAttempt,
+  type MasteryEvidenceType,
+} from "./evidence.mastery";
 import { recordMasteryDelta } from "./evidence.ledger";
 
 type BKTAttemptOptions = {
@@ -14,6 +20,28 @@ const DEFAULT_BKT = {
   p_transit: 0.1, // P(T) - chance to learn at each step
   p_slip: 0.1, // P(S) - chance of making a mistake despite knowing
   p_guess: 0.2, // P(G) - chance of guessing correctly without knowing
+};
+
+export const buildBKTConfidenceUpdate = (
+  currentConfidence: unknown,
+  type: Exclude<MasteryEvidenceType, "model_summary">,
+  isCorrect: boolean,
+) => {
+  const previousConfidence = clamp01(currentConfidence, 0);
+  const confidenceSignal = confidenceDeltaFromEvidenceAttempt(type, isCorrect);
+  const nextConfidence = confidenceFromEvidenceAttempt(
+    previousConfidence,
+    type,
+    isCorrect,
+  );
+
+  return {
+    previousConfidence,
+    nextConfidence,
+    confidenceDelta: nextConfidence - previousConfidence,
+    confidenceSignal,
+    confidenceSource: "validated_recall_attempt",
+  };
 };
 
 export class BKTEngine {
@@ -56,10 +84,16 @@ export class BKTEngine {
     const previousMastery = concept.mastery;
     const previousPLearn = concept.p_learn;
     const posterior = this.calculatePosterior(concept, isCorrect);
+    const confidenceUpdate = buildBKTConfidenceUpdate(
+      concept.confidence,
+      type,
+      isCorrect,
+    );
 
     const cappedPosterior = masteryFromEvidenceAttempt(type, posterior);
     concept.p_learn = cappedPosterior;
     concept.mastery = cappedPosterior;
+    concept.confidence = confidenceUpdate.nextConfidence;
 
     concept.attempt_history.push({
       correct: isCorrect,
@@ -86,6 +120,7 @@ export class BKTEngine {
         posterior,
         cappedPosterior,
         attemptCount: concept.attempt_history.length,
+        ...confidenceUpdate,
       },
     });
     return concept;

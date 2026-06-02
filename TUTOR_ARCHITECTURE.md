@@ -107,6 +107,10 @@ Model summaries can propose concept mastery and confidence, but local learner
 mastery and durable learner confidence stay gated. Model-summary paths store
 accepted values and gate labels in evidence/memory metadata instead of raising
 those learner-state fields.
+Validated recall attempts now provide the local confidence movement path:
+flashcard reviews tied to real concept ids update BKT mastery and durable
+learner confidence with capped evidence deltas, and the evidence metadata stores
+the previous/next confidence values.
 
 `src/memory/brain.context.ts` is the shared local context packet builder for
 typed chat and live voice. It combines semantic memory retrieval, active-book

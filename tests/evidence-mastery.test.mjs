@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  confidenceDeltaFromEvidenceAttempt,
+  confidenceFromEvidenceAttempt,
   confidenceFromModelSummary,
   confidenceFromUnderstandingDelta,
   gateModelSummaryMastery,
@@ -27,6 +29,24 @@ test("model summaries cannot raise learner confidence", () => {
 test("confidence can move separately from evidence-gated mastery", () => {
   assert.ok(Math.abs(confidenceFromUnderstandingDelta(0.4, 0.2) - 0.6) < 0.001);
   assert.equal(confidenceFromUnderstandingDelta(0.1, -0.4), 0);
+});
+
+test("validated recall evidence moves confidence conservatively", () => {
+  assert.equal(confidenceDeltaFromEvidenceAttempt("recognition", true), 0.04);
+  assert.equal(confidenceDeltaFromEvidenceAttempt("generation", true), 0.08);
+  assert.equal(confidenceDeltaFromEvidenceAttempt("transfer", true), 0.12);
+  assert.equal(confidenceDeltaFromEvidenceAttempt("recognition", false), -0.08);
+  assert.equal(confidenceDeltaFromEvidenceAttempt("generation", false), -0.12);
+  assert.equal(confidenceDeltaFromEvidenceAttempt("transfer", false), -0.16);
+  assert.ok(
+    Math.abs(confidenceFromEvidenceAttempt(0.5, "generation", true) - 0.58) <
+      0.001,
+  );
+  assert.ok(
+    Math.abs(confidenceFromEvidenceAttempt(0.5, "transfer", false) - 0.34) <
+      0.001,
+  );
+  assert.equal(confidenceFromEvidenceAttempt(0.98, "transfer", true), 1);
 });
 
 test("only explicit recall evidence can raise mastery through BKT caps", () => {
@@ -79,6 +99,12 @@ test("mastery delta records link explicit evidence to BKT changes", () => {
       nextPLearn: 0.81,
       source: "bkt_attempt",
       summary: "generation recall attempt was correct",
+      metadata: {
+        confidenceSource: "validated_recall_attempt",
+        previousConfidence: 0.3,
+        nextConfidence: 0.38,
+        confidenceDelta: 0.08,
+      },
     },
     456,
   );
@@ -87,4 +113,6 @@ test("mastery delta records link explicit evidence to BKT changes", () => {
   assert.equal(delta.evidenceEventId, event.id);
   assert.equal(delta.evidenceType, "generation");
   assert.ok(Math.abs(delta.delta - 0.61) < 0.001);
+  assert.equal(event.metadata.confidenceSource, "validated_recall_attempt");
+  assert.equal(event.metadata.nextConfidence, 0.38);
 });

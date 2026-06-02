@@ -28,6 +28,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Typed chat and live voice now build one shared brain-context packet from semantic memory, active-book summary, ready document excerpts, and interaction timing state before handing context to the chat stream or voice realtime agent.
 - Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
 - Background learner-memory writes now carry the same request metadata, so chat and voice learning-book, interaction, and graph update rows can be grouped with the foreground request in Admin.
+- Validated flashcard reviews linked to real concepts now move BKT mastery and durable learner confidence with capped recall-evidence deltas, while storing the confidence before/after values in evidence metadata.
 - Voice can now call the local \`look_at_current_page\` tool for current-page, visible-diagram, screen, and source-material questions by sending the rendered PDF page image through a local server vision bridge and recording Admin/tool activity.
 - Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
 - Admin exposes model runs, tool jobs, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
@@ -75,7 +76,7 @@ The local beta rule is intentionally conservative: generated notes, flashcards, 
 ## Current Enforcement
 
 - Model summaries can add evidence rows, but cannot raise mastery or durable learner confidence.
-- Flashcard reviews can write BKT evidence only when a real concept id exists.
+- Flashcard reviews can write BKT evidence only when a real concept id exists; those validated review attempts can also move durable learner confidence with conservative capped deltas.
 - Generated learning notes write \`ArtifactRecord\` rows, save source-span preview anchors when document context is present, and immediately run the local generated-note provenance verifier when the entry/book/conversation anchors are coherent.
 - Generated flashcards and built-in chapter audio guide manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states until Admin or another local caller runs their verifier.
 - Admin's local verifier mutates \`source_card\` artifacts, generated flashcard provenance, generated learning-note provenance, and stored audio-guide manifest integrity when the local ledger links are coherent; charts, code, images, and websites remain explicitly unsupported until real verifiers exist.

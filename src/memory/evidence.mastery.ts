@@ -19,6 +19,24 @@ const TYPE_CAPS: Record<
   transfer: 0.95,
 };
 
+const CONFIDENCE_ATTEMPT_DELTAS: Record<
+  Exclude<MasteryEvidenceType, "model_summary">,
+  { correct: number; incorrect: number }
+> = {
+  recognition: {
+    correct: 0.04,
+    incorrect: -0.08,
+  },
+  generation: {
+    correct: 0.08,
+    incorrect: -0.12,
+  },
+  transfer: {
+    correct: 0.12,
+    incorrect: -0.16,
+  },
+};
+
 export const clamp01 = (value: unknown, fallback = 0) => {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return fallback;
@@ -51,6 +69,24 @@ export const confidenceFromUnderstandingDelta = (
   const delta = Math.max(-0.2, Math.min(0.2, Number(understandingDelta) || 0));
   return Math.max(0, Math.min(1, current + delta));
 };
+
+export const confidenceDeltaFromEvidenceAttempt = (
+  type: Exclude<MasteryEvidenceType, "model_summary">,
+  isCorrect: boolean,
+) => {
+  const deltas = CONFIDENCE_ATTEMPT_DELTAS[type];
+  return isCorrect ? deltas.correct : deltas.incorrect;
+};
+
+export const confidenceFromEvidenceAttempt = (
+  currentConfidence: unknown,
+  type: Exclude<MasteryEvidenceType, "model_summary">,
+  isCorrect: boolean,
+) =>
+  confidenceFromUnderstandingDelta(
+    currentConfidence,
+    confidenceDeltaFromEvidenceAttempt(type, isCorrect),
+  );
 
 export const masteryFromEvidenceAttempt = (
   type: Exclude<MasteryEvidenceType, "model_summary">,

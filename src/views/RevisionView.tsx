@@ -2328,6 +2328,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Beta Diagnostics checks chat context, voice context, request correlation, foreground tools, and request-correlated chat and voice memory rows as one local readiness proof instead of disconnected counters.",
       },
       {
+        title: "Validated confidence meters",
+        detail:
+          "Admin and revision evidence should separate model-summary confidence proposals from review attempts that actually moved durable learner confidence through capped BKT-backed recall evidence.",
+      },
+      {
         title: "Voice agent timeline",
         detail:
           "Live voice mode records local session start, Deepgram settings, speaking/listening transitions, barge-in, transcript turns, and errors so the dark voice UI is debuggable from Admin.",

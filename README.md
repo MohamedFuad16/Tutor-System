@@ -71,6 +71,10 @@ Background memory updates now keep model-summary mastery and learner-confidence
 proposals observational: accepted values and gate labels are written to local
 evidence/memory metadata, but those learner-state fields do not rise without
 validated evidence.
+Validated flashcard reviews linked to real concepts now supply that local
+evidence path: BKT mastery and durable learner confidence move together with
+capped recall-evidence deltas, and Admin evidence metadata can show the
+confidence before/after values.
 
 ## Core Surfaces
 
