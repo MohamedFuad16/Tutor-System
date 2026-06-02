@@ -64,6 +64,9 @@ retrieval, server activity, model runs, and tool jobs in Admin.
 Background learner-memory writes now carry the same request metadata, so Admin
 timelines can group the foreground answer and the MemoryOrchestrator book,
 interaction, and graph rows together.
+The interaction-memory path is also recorded as a durable local background job
+with queued, running, completed, retry-scheduled, and dead-letter states, so
+Admin can show whether behind-the-scenes memory capture actually finished.
 Admin Beta Diagnostics now includes a local brain-flow coverage verifier that
 checks whether chat context injection, voice context injection, request
 correlation, chat and voice foreground tool calls, chat and voice evaluated

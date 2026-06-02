@@ -133,6 +133,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
       retrievalEvents: 3,
       modelRuns: 4,
       toolJobs: 1,
+      backgroundJobs: 2,
       artifactRecords: 2,
       citationStates: 2,
       verifiedCitationStates: 2,
@@ -161,11 +162,37 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
     webSearchPolicy: "source_first",
   });
   assert.equal(snapshot.counts.propagatedCorrectionRows, 2);
+  assert.equal(snapshot.counts.backgroundJobs, 2);
   assert.equal(snapshot.brainFlow.status, "ready");
+  assert.equal(
+    snapshot.items.find((item) => item.id === "background_jobs")?.status,
+    "ready",
+  );
   assert.match(
     snapshot.items.find((item) => item.id === "correction_control")?.summary ||
       "",
     /2 local rows/,
+  );
+});
+
+test("beta diagnostics block when background jobs reach dead-letter", () => {
+  const snapshot = buildBetaDiagnosticsSnapshot(
+    {
+      learningBooks: 1,
+      mappedConcepts: 1,
+      memoryEvents: 1,
+      backgroundJobs: 3,
+      deadLetterBackgroundJobs: 1,
+      brainFlow: completeBrainFlow,
+    },
+    new Date("2026-06-01T00:00:00.000Z"),
+  );
+
+  assert.equal(snapshot.overallStatus, "blocked");
+  assert.equal(snapshot.summary.blocked, 1);
+  assert.equal(
+    snapshot.items.find((item) => item.id === "background_jobs")?.status,
+    "blocked",
   );
 });
 

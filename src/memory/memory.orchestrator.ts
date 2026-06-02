@@ -8,6 +8,11 @@ import { recordModelSummaryEvidence } from "./evidence.ledger";
 import { recordMemoryEvent } from "./memory.events";
 import { recordRetrievalEvent } from "./retrieval.events";
 import {
+  backgroundJobIdFor,
+  recordBackgroundJobEvent,
+  runBackgroundJob,
+} from "./background.jobs";
+import {
   db,
   GENERAL_STUDY_BOOK_ID,
   PersistentConcept,
@@ -391,69 +396,131 @@ export class MemoryOrchestrator {
     // ideally should use AI, but for performance we can extract nouns or use exact match from existing graph
     // We will leave the concept processing to a background task or rely on the AI response parsing.
 
-    // Asynchronous background heavy processing
-    setTimeout(async () => {
-      let embedding: number[] | undefined;
-      try {
-        const combinedText = (userMessage + " " + assistantMessage).slice(
-          0,
-          1500,
-        );
-        embedding = await generateEmbedding(combinedText);
-      } catch (e) {
-        console.warn("Embedding generation failed", e);
-      }
-
-      const interaction: ConversationInteraction = {
-        id: interactionId,
-        sessionId: this.currentSessionId,
+    const backgroundJobInput = {
+      id: backgroundJobIdFor({
+        jobName: "interaction_memory_capture",
+        requestId: context?.requestId,
+        source: "memory_orchestrator",
+        queue: "learner_memory",
+        metadata: {
+          ...memoryTraceMetadata(context),
+          conversationId: context?.conversationId,
+          interactionId,
+          sessionId: this.currentSessionId,
+        },
+      }),
+      jobName: "interaction_memory_capture",
+      requestId: context?.requestId,
+      source: "memory_orchestrator",
+      queue: "learner_memory",
+      maxAttempts: 2,
+      inputSummary: compactText(
+        userMessage || assistantMessage,
+        "Conversation interaction queued.",
+      ),
+      metadata: {
+        ...memoryTraceMetadata(context),
         bookId: context?.bookId || undefined,
         conversationId: context?.conversationId,
         documentId: context?.documentId || undefined,
-        requestId: context?.requestId,
-        mode: context?.mode,
-        agentLayer: context?.agentLayer,
-        timestamp: Date.now(),
-        userMessage,
-        assistantMessage,
-        identifiedConcepts: [], // to be enriched
-        userConfusionDetected:
-          userMessage.toLowerCase().includes("confused") ||
-          userMessage.toLowerCase().includes("dont understand") ||
-          userMessage.toLowerCase().includes("not sure"),
+        interactionId,
         pageNumber,
-        embedding,
-      };
-
-      await db.interactions.add(interaction);
-      await recordMemoryEvent({
-        eventType: "interaction_recorded",
-        status: "completed",
-        source: "memory_orchestrator",
         sessionId: this.currentSessionId,
-        bookId: interaction.bookId,
-        conversationId: interaction.conversationId,
-        documentId: interaction.documentId,
-        summary: compactText(
-          userMessage || assistantMessage,
-          "Conversation interaction recorded.",
-        ),
-        retentionPolicy: "local_indexeddb",
-        metadata: {
-          ...memoryTraceMetadata(context),
-          assistantChars: assistantMessage.length,
-          hasEmbedding: Boolean(embedding?.length),
-          pageNumber,
-          userChars: userMessage.length,
-          userConfusionDetected: interaction.userConfusionDetected,
-        },
-      });
+      },
+    };
 
-      // Log the conversation action to trace backend
-      await this.logTrace("Conversation Interaction", {
-        userMessage,
-        assistantMessageSnippet: assistantMessage.slice(0, 100) + "...",
-        confusionDetected: interaction.userConfusionDetected,
+    await recordBackgroundJobEvent({
+      ...backgroundJobInput,
+      status: "queued",
+    });
+
+    // Asynchronous background heavy processing
+    setTimeout(() => {
+      void runBackgroundJob(backgroundJobInput, async () => {
+        let embedding: number[] | undefined;
+        try {
+          const combinedText = (userMessage + " " + assistantMessage).slice(
+            0,
+            1500,
+          );
+          embedding = await generateEmbedding(combinedText);
+        } catch (e) {
+          console.warn("Embedding generation failed", e);
+        }
+
+        const interaction: ConversationInteraction = {
+          id: interactionId,
+          sessionId: this.currentSessionId,
+          bookId: context?.bookId || undefined,
+          conversationId: context?.conversationId,
+          documentId: context?.documentId || undefined,
+          requestId: context?.requestId,
+          mode: context?.mode,
+          agentLayer: context?.agentLayer,
+          timestamp: Date.now(),
+          userMessage,
+          assistantMessage,
+          identifiedConcepts: [], // to be enriched
+          userConfusionDetected:
+            userMessage.toLowerCase().includes("confused") ||
+            userMessage.toLowerCase().includes("dont understand") ||
+            userMessage.toLowerCase().includes("not sure"),
+          pageNumber,
+          embedding,
+        };
+
+        await db.interactions.put(interaction);
+        await recordMemoryEvent({
+          eventType: "interaction_recorded",
+          status: "completed",
+          source: "memory_orchestrator",
+          sessionId: this.currentSessionId,
+          bookId: interaction.bookId,
+          conversationId: interaction.conversationId,
+          documentId: interaction.documentId,
+          summary: compactText(
+            userMessage || assistantMessage,
+            "Conversation interaction recorded.",
+          ),
+          retentionPolicy: "local_indexeddb",
+          metadata: {
+            ...memoryTraceMetadata(context),
+            assistantChars: assistantMessage.length,
+            backgroundJobId: backgroundJobInput.id,
+            hasEmbedding: Boolean(embedding?.length),
+            pageNumber,
+            userChars: userMessage.length,
+            userConfusionDetected: interaction.userConfusionDetected,
+          },
+        });
+
+        // Log the conversation action to trace backend
+        await this.logTrace("Conversation Interaction", {
+          userMessage,
+          assistantMessageSnippet: assistantMessage.slice(0, 100) + "...",
+          confusionDetected: interaction.userConfusionDetected,
+        });
+
+        return "Conversation interaction recorded in local memory.";
+      }).then((result) => {
+        if (!result.failed) return;
+        void recordMemoryEvent({
+          eventType: "memory_error",
+          status: "failed",
+          source: "memory_orchestrator",
+          sessionId: this.currentSessionId,
+          bookId: context?.bookId || undefined,
+          conversationId: context?.conversationId,
+          documentId: context?.documentId || undefined,
+          summary: "Interaction memory capture reached the dead-letter queue.",
+          retentionPolicy: "local_indexeddb",
+          metadata: {
+            ...memoryTraceMetadata(context),
+            backgroundJobId: result.job.id,
+            deadLetter: true,
+            error: result.job.error,
+          },
+        });
       });
     }, 0);
   }

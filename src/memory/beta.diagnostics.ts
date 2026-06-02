@@ -1,4 +1,5 @@
 import type {
+  BackgroundJob,
   EvidenceEvent,
   MemoryEvent,
   ModelRun,
@@ -31,6 +32,10 @@ export type BetaDiagnosticsInput = {
   blockedOrFailedModelRuns?: number;
   fallbackModelRuns?: number;
   toolJobs?: number;
+  backgroundJobs?: number;
+  runningBackgroundJobs?: number;
+  retryScheduledBackgroundJobs?: number;
+  deadLetterBackgroundJobs?: number;
   artifactRecords?: number;
   citationStates?: number;
   checkingCitationStates?: number;
@@ -99,6 +104,10 @@ export type BetaBrainFlowLedgerInput = {
   >[];
   modelRuns?: Pick<ModelRun, "status" | "requestId" | "source" | "timestamp">[];
   toolJobs?: Pick<ToolJob, "status" | "requestId" | "source" | "timestamp">[];
+  backgroundJobs?: Pick<
+    BackgroundJob,
+    "status" | "requestId" | "source" | "timestamp"
+  >[];
   evidenceEvents?: Pick<
     EvidenceEvent,
     "evidenceType" | "verified" | "metadata" | "timestamp"
@@ -148,6 +157,12 @@ const requiredCounts = (
   blockedOrFailedModelRuns: numberOrZero(input.blockedOrFailedModelRuns),
   fallbackModelRuns: numberOrZero(input.fallbackModelRuns),
   toolJobs: numberOrZero(input.toolJobs),
+  backgroundJobs: numberOrZero(input.backgroundJobs),
+  runningBackgroundJobs: numberOrZero(input.runningBackgroundJobs),
+  retryScheduledBackgroundJobs: numberOrZero(
+    input.retryScheduledBackgroundJobs,
+  ),
+  deadLetterBackgroundJobs: numberOrZero(input.deadLetterBackgroundJobs),
   artifactRecords: numberOrZero(input.artifactRecords),
   citationStates: numberOrZero(input.citationStates),
   checkingCitationStates: numberOrZero(input.checkingCitationStates),
@@ -465,6 +480,7 @@ export const buildBetaDiagnosticsSnapshot = (
     counts.retrievalEvents +
     counts.modelRuns +
     counts.toolJobs +
+    counts.backgroundJobs +
     counts.artifactRecords +
     counts.citationStates +
     counts.correctionEvents +
@@ -539,6 +555,32 @@ export const buildBetaDiagnosticsSnapshot = (
         counts.failedRetrievalEvents > 0
           ? "Inspect failed retrieval rows and active-book filters."
           : "Use retrieval rows to tune context size during beta.",
+    }),
+    item({
+      id: "background_jobs",
+      title: "Background jobs",
+      status:
+        counts.deadLetterBackgroundJobs > 0
+          ? "blocked"
+          : counts.retryScheduledBackgroundJobs > 0 ||
+              counts.runningBackgroundJobs > 0
+            ? "watch"
+            : counts.backgroundJobs > 0
+              ? "ready"
+              : "watch",
+      summary:
+        counts.deadLetterBackgroundJobs > 0
+          ? `${counts.deadLetterBackgroundJobs} local background jobs reached dead-letter.`
+          : counts.backgroundJobs > 0
+            ? `${counts.backgroundJobs} background job rows; ${counts.runningBackgroundJobs} running and ${counts.retryScheduledBackgroundJobs} retry scheduled.`
+            : "No durable background job rows have been observed yet.",
+      count: counts.backgroundJobs,
+      action:
+        counts.deadLetterBackgroundJobs > 0
+          ? "Open Admin activity timelines and inspect the dead-letter job error before beta expansion."
+          : counts.backgroundJobs > 0
+            ? "Use background job rows to confirm memory capture finishes after chat and voice turns."
+            : "Complete a chat or voice turn to create local background memory job evidence.",
     }),
     item({
       id: "source_grounding",

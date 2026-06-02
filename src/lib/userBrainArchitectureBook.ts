@@ -27,12 +27,12 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
 - Typed chat and live voice now build one shared brain-context packet from semantic memory, active-book summary, an active-book PDF manifest, balanced excerpts from multiple ready PDFs, and interaction timing state before handing context to the chat stream or voice realtime agent. The packet records added, ready, excerpted, pending/failed, and omitted ready PDF counts so Admin can verify whether chat and voice saw the wider book context, not only the PDF on screen. Voice prioritizes book/document context before long memory when its live prompt is compacted.
 - Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
-- Background learner-memory writes now carry the same request metadata, so chat and voice learning-book, interaction, and graph update rows can be grouped with the foreground request in Admin.
+- Background learner-memory writes now carry the same request metadata, so chat and voice learning-book, interaction, and graph update rows can be grouped with the foreground request in Admin. Interaction-memory capture also writes a durable local background-job row with queued, running, completed, retry-scheduled, and dead-letter states.
 - Validated flashcard reviews and evaluated learner answers linked to real concepts now move BKT mastery and durable learner confidence with capped recall-evidence deltas, while storing the confidence before/after values, score/rubric fields, and request anchors in evidence metadata.
 - Typed chat and live voice can now call \`evaluate_answer\` for quiz or active-recall turns; when the payload uses a stored learning-book concept id, the browser promotes that concept into the BKT \`concepts\` table before recording, and unresolved ids still stay \`missing_concept\`.
 - Voice can now call the local \`look_at_current_page\` tool for current-page, visible-diagram, screen, and source-material questions by sending the rendered PDF page image through a local server vision bridge and recording Admin/tool activity.
 - Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
-- Admin exposes model runs, tool jobs, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
+- Admin exposes model runs, tool jobs, background job retry/dead-letter rows, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
 - Beta Diagnostics now includes a local brain-flow coverage verifier for chat context injection, voice context injection, request correlation, chat and voice foreground tool calls, chat and voice evaluated mastery evidence, background learner-memory writes, and the model-observation evidence gate on those background writes.
 - Admin Beta Diagnostics can also run a deterministic synthetic wiring rehearsal through the shared multi-PDF context helpers, typed-chat and live-voice tool definitions, and the same nine-signal verifier. It stays in memory only and cannot raise live beta readiness.
 - Generated learning-book notes now run an initial local provenance check when Memory writes them, so coherent note rows move from \`not_checked\` to \`verified\` immediately while remaining limited to ledger traceability. When document text is available, they also carry compact source-span preview anchors and must pass a local summary-preview to source-preview lexical-support check.
@@ -151,6 +151,7 @@ It should answer:
 - What happened during one tutor request?
 - Which model ran, fell back, failed, or was blocked?
 - Which tools were called and with what status?
+- Which background jobs are queued, retrying, completed, or dead-lettered?
 - Which retrieval and memory rows were written?
 - Which evidence or mastery rows changed?
 - Which source artifacts and citation states exist?
@@ -164,13 +165,14 @@ Implemented Admin surfaces:
 | System Activity | Request timelines, brain-context injections, retrieval injections, and backend event summaries. |
 | Model Runs | Provider/model selection, fallbacks, token/cost metadata, failures. |
 | Tool Jobs | Tool lifecycle visibility. |
+| Background Jobs | Local memory-worker queue state, retry scheduling, and dead-letter review. |
 | Voice Agent Timeline | Local voice websocket lifecycle, Deepgram settings, speaking/listening state, barge-in, transcript turns, current-page vision calls, web-search tool calls, and errors. |
 | Memory/Retrieval Events | Learner-brain writes, shared brain-context packet injection, and context selection. |
 | Evidence Ledger | Evidence rows and BKT deltas. |
 | Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and chapter audio guide provenance. |
 | Correction Requests | Non-destructive review and propagation state. |
 | Runtime Tuning | Local knobs for source-vs-web, memory context, tool budget, and refresh cadence. |
-| Beta Diagnostics | Capped local export, readiness gate summary, live brain-flow coverage for chat, voice, both foreground tool layers, retrieval, model, both evaluated mastery layers, background memory evidence, and model-observation gates, plus a clearly separated in-memory synthetic wiring rehearsal that cannot count toward live readiness. |
+| Beta Diagnostics | Capped local export, readiness gate summary, live brain-flow coverage for chat, voice, both foreground tool layers, retrieval, model, both evaluated mastery layers, background memory evidence, model-observation gates, and background job dead-letter blocking, plus a clearly separated in-memory synthetic wiring rehearsal that cannot count toward live readiness. |
 
 The key boundary: Admin reports recorded system state. It must not pretend to know private model internals beyond saved traces, summaries, tool rows, voice lifecycle events, and artifacts.`,
   },
@@ -233,7 +235,7 @@ Still local beta work:
 - generated-artifact verifiers for charts, code snippets, images, websites, previews, and other unsupported artifact kinds;
 - document-wide grounding and entailment checks for generated learning notes beyond compact saved previews;
 - audio-content transcript matching beyond the current stored-manifest integrity check;
-- durable job queue with retries and dead-letter review;
+- broader scheduler controls for multi-job background workers beyond the current interaction-memory queue;
 - stronger tests that make mastery writes impossible without validated evidence and audit rows.
 
 Deferred until after beta:

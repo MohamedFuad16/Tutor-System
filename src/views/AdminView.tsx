@@ -9,6 +9,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import {
   db,
   type ArtifactRecord,
+  type BackgroundJob,
   type CitationState,
   type CorrectionEvent,
   type EvidenceEvent,
@@ -116,6 +117,7 @@ type AdminRequestTimeline = {
   retrievalEvents: RetrievalEvent[];
   modelRuns: ModelRun[];
   toolJobs: ToolJob[];
+  backgroundJobs: BackgroundJob[];
 };
 
 type SystemActivityPayload = {
@@ -225,10 +227,16 @@ const statusTone = (status: string) => {
     status === "verified"
   )
     return "border-green-200 bg-green-50 text-green-700";
-  if (status === "failed" || status === "blocked" || status === "conflicting")
+  if (
+    status === "failed" ||
+    status === "blocked" ||
+    status === "dead_letter" ||
+    status === "conflicting"
+  )
     return "border-red-200 bg-red-50 text-red-700";
   if (
     status === "fallback" ||
+    status === "retry_scheduled" ||
     status === "watch" ||
     status === "needs_review" ||
     status === "unavailable" ||
@@ -244,9 +252,15 @@ const statusTone = (status: string) => {
 };
 
 const statusWeight = (status: string) => {
-  if (status === "blocked" || status === "failed") return 6;
+  if (status === "blocked" || status === "failed" || status === "dead_letter")
+    return 6;
   if (status === "fallback") return 5;
-  if (status === "running" || status === "started" || status === "pending")
+  if (
+    status === "running" ||
+    status === "started" ||
+    status === "pending" ||
+    status === "retry_scheduled"
+  )
     return 4;
   if (status === "completed" || status === "applied" || status === "ready")
     return 3;
@@ -395,6 +409,12 @@ export function AdminView() {
       () => db.toolJobs.orderBy("timestamp").reverse().limit(20).toArray(),
       [],
     ) || [];
+  const backgroundJobs =
+    useLiveQuery(
+      () =>
+        db.backgroundJobs.orderBy("timestamp").reverse().limit(30).toArray(),
+      [],
+    ) || [];
   const modelRuns =
     useLiveQuery(
       () => db.modelRuns.orderBy("timestamp").reverse().limit(30).toArray(),
@@ -484,6 +504,8 @@ export function AdminView() {
   const masteryDeltaCount =
     useLiveQuery(() => db.masteryDeltas.count(), []) || 0;
   const toolJobCount = useLiveQuery(() => db.toolJobs.count(), []) || 0;
+  const backgroundJobCount =
+    useLiveQuery(() => db.backgroundJobs.count(), []) || 0;
   const modelRunCount = useLiveQuery(() => db.modelRuns.count(), []) || 0;
   const memoryEventCount = useLiveQuery(() => db.memoryEvents.count(), []) || 0;
   const retrievalEventCount =
@@ -741,6 +763,7 @@ export function AdminView() {
   const latestEvidence = evidenceEvents[0] as EvidenceEvent | undefined;
   const latestMasteryDelta = masteryDeltas[0] as MasteryDelta | undefined;
   const latestToolJob = toolJobs[0] as ToolJob | undefined;
+  const latestBackgroundJob = backgroundJobs[0] as BackgroundJob | undefined;
   const latestModelRun = modelRuns[0] as ModelRun | undefined;
   const latestMemoryEvent = memoryEvents[0] as MemoryEvent | undefined;
   const latestRetrievalEvent = retrievalEvents[0] as RetrievalEvent | undefined;
@@ -757,6 +780,15 @@ export function AdminView() {
   ).length;
   const fallbackModelRuns = modelRuns.filter(
     (run) => run.status === "fallback",
+  ).length;
+  const runningBackgroundJobs = backgroundJobs.filter(
+    (job) => job.status === "running" || job.status === "queued",
+  ).length;
+  const retryScheduledBackgroundJobs = backgroundJobs.filter(
+    (job) => job.status === "retry_scheduled",
+  ).length;
+  const deadLetterBackgroundJobs = backgroundJobs.filter(
+    (job) => job.status === "dead_letter",
   ).length;
   const completedMemoryEvents = memoryEvents.filter(
     (event) => event.status === "completed",
@@ -880,6 +912,10 @@ export function AdminView() {
     blockedOrFailedModelRuns,
     fallbackModelRuns,
     toolJobs: toolJobCount,
+    backgroundJobs: backgroundJobCount,
+    runningBackgroundJobs,
+    retryScheduledBackgroundJobs,
+    deadLetterBackgroundJobs,
     artifactRecords: artifactRecordCount,
     citationStates: citationStateCount,
     checkingCitationStates,
@@ -932,6 +968,7 @@ export function AdminView() {
           retrievalEvents: [],
           modelRuns: [],
           toolJobs: [],
+          backgroundJobs: [],
         };
         timelines.set(requestId, timeline);
         return timeline;
@@ -1017,6 +1054,19 @@ export function AdminView() {
       timeline.toolJobs.push(job);
     });
 
+    backgroundJobs.forEach((job) => {
+      if (!job.requestId) return;
+      const timeline = ensureTimeline(
+        job.requestId,
+        job.timestamp,
+        job.jobName,
+        job.status,
+        undefined,
+        job.durationMs,
+      );
+      timeline.backgroundJobs.push(job);
+    });
+
     return Array.from(timelines.values())
       .map((timeline) => ({
         ...timeline,
@@ -1033,10 +1083,20 @@ export function AdminView() {
         toolJobs: [...timeline.toolJobs].sort(
           (a, b) => a.timestamp - b.timestamp,
         ),
+        backgroundJobs: [...timeline.backgroundJobs].sort(
+          (a, b) => a.timestamp - b.timestamp,
+        ),
       }))
       .sort((a, b) => b.latestAt - a.latestAt)
       .slice(0, 12);
-  }, [memoryEvents, modelRuns, retrievalEvents, systemEvents, toolJobs]);
+  }, [
+    backgroundJobs,
+    memoryEvents,
+    modelRuns,
+    retrievalEvents,
+    systemEvents,
+    toolJobs,
+  ]);
   const totalChatTokens = chatUsage.inputTokens + chatUsage.outputTokens;
   const totalEstimatedCost = chatUsage.cost + voiceUsage.cost + webUsage.cost;
   const latestVoiceAgentEvent = voiceAgentEvents[0];
@@ -1229,6 +1289,7 @@ export function AdminView() {
         masteryDeltas,
         modelRuns,
         toolJobs,
+        backgroundJobs,
         traceLogs: logs || [],
         systemEvents: recentSystemEvents,
       },
@@ -1310,6 +1371,7 @@ export function AdminView() {
   }, [
     activeTab,
     artifactRecords.length,
+    backgroundJobs.length,
     betaDiagnosticsSnapshot.summary.totalRows,
     citationStates.length,
     correctionEvents.length,
@@ -1684,13 +1746,14 @@ export function AdminView() {
                           <div className="mt-2 text-2xl font-semibold tabular-nums text-zinc-900">
                             {learningEntries.length +
                               memoryEventCount +
+                              backgroundJobCount +
                               artifactRecordCount +
                               citationStateCount +
                               retrievalEventCount +
                               traceCount}
                           </div>
                           <div className="mt-1 text-[10px] font-mono text-zinc-500">
-                            entries + memory + sources + traces
+                            entries + memory + jobs + sources + traces
                           </div>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
@@ -1715,9 +1778,9 @@ export function AdminView() {
                           </h3>
                           <p className="mt-1 text-sm text-zinc-500 font-serif">
                             Groups local server events, retrieval injections,
-                            durable model runs, and durable tool jobs by request
-                            id so one tutor turn can be inspected without
-                            hopping between tabs.
+                            durable model runs, tool jobs, and background jobs
+                            by request id so one tutor turn can be inspected
+                            without hopping between tabs.
                           </p>
                         </div>
                         <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
@@ -1763,7 +1826,7 @@ export function AdminView() {
                                     )}
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 text-center text-[10px] font-mono text-zinc-500 sm:grid-cols-5">
+                                <div className="grid grid-cols-2 gap-2 text-center text-[10px] font-mono text-zinc-500 sm:grid-cols-6">
                                   <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.events.length} events
                                   </span>
@@ -1778,6 +1841,9 @@ export function AdminView() {
                                   </span>
                                   <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
                                     {timeline.toolJobs.length} tools
+                                  </span>
+                                  <span className="rounded-xl border border-zinc-200 bg-white px-2 py-1">
+                                    {timeline.backgroundJobs.length} jobs
                                   </span>
                                 </div>
                               </div>
@@ -2015,6 +2081,26 @@ export function AdminView() {
                                       Tool {job.status}: {job.toolName}
                                     </div>
                                   ))}
+                                  {timeline.backgroundJobs.map((job) => (
+                                    <div
+                                      key={job.id}
+                                      className="rounded-xl border border-cyan-100 bg-cyan-50/70 px-3 py-2 text-[11px] text-cyan-800"
+                                    >
+                                      Background {job.status.replace(/_/g, " ")}
+                                      : {job.jobName}
+                                      <div className="mt-1 flex flex-wrap gap-2 text-[10px] font-mono text-cyan-700/80">
+                                        <span>
+                                          attempt {job.attempt}/
+                                          {job.maxAttempts}
+                                        </span>
+                                        {job.error && (
+                                          <span className="max-w-[18rem] truncate text-red-700">
+                                            {job.error}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
                               </details>
                             </article>
@@ -2154,6 +2240,7 @@ export function AdminView() {
                               ["Evidence events", evidenceEventCount],
                               ["Mastery deltas", masteryDeltaCount],
                               ["Tool jobs", toolJobCount],
+                              ["Background jobs", backgroundJobCount],
                               ["Model runs", modelRunCount],
                               ["Request timelines", requestTimelines.length],
                               ["Memory events", memoryEventCount],
@@ -3850,10 +3937,10 @@ export function AdminView() {
                           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
                             A non-destructive local readiness snapshot across
                             model runs, tool jobs, memory writes, retrieval,
-                            correction requests, source artifacts, citation
-                            states, and mastery evidence. It packages what
-                            exists in the browser now; it does not sync to AWS
-                            or claim cloud-beta readiness.
+                            background jobs, correction requests, source
+                            artifacts, citation states, and mastery evidence. It
+                            packages what exists in the browser now; it does not
+                            sync to AWS or claim cloud-beta readiness.
                           </p>
                         </div>
                         <div className="flex flex-col items-start gap-2 sm:items-end">
@@ -4004,6 +4091,69 @@ export function AdminView() {
                       )}
                     </section>
 
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-600/80">
+                            <Activity size={13} /> Background Job Ledger
+                          </div>
+                          <h3 className="mt-2 text-xl font-serif font-medium text-zinc-900">
+                            Local retry and dead-letter visibility
+                          </h3>
+                          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-500 font-serif">
+                            Memory capture now records queued, running,
+                            completed, retry, and dead-letter states in the
+                            browser ledger. Admin can tune beta behavior from
+                            these rows without cloud workers.
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${statusTone(latestBackgroundJob?.status || "watch")}`}
+                        >
+                          {latestBackgroundJob
+                            ? latestBackgroundJob.status.replace(/_/g, " ")
+                            : "waiting"}
+                        </span>
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-4">
+                        {[
+                          ["Rows", backgroundJobCount],
+                          ["Active", runningBackgroundJobs],
+                          ["Retry scheduled", retryScheduledBackgroundJobs],
+                          ["Dead-letter", deadLetterBackgroundJobs],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
+                          >
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              {label}
+                            </div>
+                            <div className="mt-2 text-lg font-semibold tabular-nums text-zinc-900">
+                              {value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {latestBackgroundJob ? (
+                        <div className="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50/70 px-4 py-3 text-sm text-cyan-800">
+                          Latest: {latestBackgroundJob.jobName} on attempt{" "}
+                          {latestBackgroundJob.attempt}/
+                          {latestBackgroundJob.maxAttempts}
+                          {latestBackgroundJob.error
+                            ? ` - ${latestBackgroundJob.error}`
+                            : ""}
+                        </div>
+                      ) : (
+                        <div className="mt-3 rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-500">
+                          Run a chat or voice turn to populate the local
+                          background memory queue.
+                        </div>
+                      )}
+                    </section>
+
                     <section className="rounded-[28px] border border-blue-200 bg-blue-50/40 p-5 shadow-sm">
                       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                         <div>
@@ -4017,7 +4167,7 @@ export function AdminView() {
                             Runs a deterministic in-memory rehearsal through the
                             shared multi-PDF packet helpers, typed-chat tool
                             definitions, live-voice tool definitions, and the
-                            same eight-signal coverage verifier. It writes no
+                            same nine-signal coverage verifier. It writes no
                             durable rows, calls no providers, and never raises
                             the live coverage meter above.
                           </p>
@@ -4227,6 +4377,7 @@ export function AdminView() {
                               ["Mastery deltas", masteryDeltas.length],
                               ["Model runs", modelRuns.length],
                               ["Tool jobs", toolJobs.length],
+                              ["Background jobs", backgroundJobs.length],
                               ["Trace logs", logs?.length || 0],
                               ["System events", recentSystemEvents.length],
                             ].map(([label, value]) => (

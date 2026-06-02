@@ -95,3 +95,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   Admin request timelines, and extend Beta Diagnostics from the eight-signal
   flow verifier to a nine-signal verifier that also checks model-observation
   gates.
+- ABL: Durable background job ledger. Add a local IndexedDB background-job
+  ledger for interaction-memory capture, record queued/running/completed/
+  retry-scheduled/dead-letter states, surface the queue in Admin and Beta
+  Diagnostics, and keep broader cloud/worker scheduling out of scope.

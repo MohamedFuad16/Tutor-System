@@ -3522,3 +3522,90 @@ about 69%.
   tools, memory, evidence, corrections, Admin, and Revision operate together
   under live beta conditions.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+---
+
+# Phase 59: Durable Background Job Ledger
+
+Phase 59 closes the first local retry/dead-letter gap for behind-the-scenes
+memory work. Interaction-memory capture now records a durable background-job row
+instead of running only as an untracked timer, and Admin can inspect active,
+retry-scheduled, completed, and dead-letter states.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 72%.
+
+## Graphify Context
+
+- `graphify query "background queue retry dead letter MemoryOrchestrator
+  setTimeout learning book update Admin diagnostics memory events background
+  jobs" --budget 6000 --graph graphify-out/graph.json` routed the slice through
+  `MemoryOrchestrator`, `memory.events.ts`, `longterm.memory.ts`, and Admin
+  diagnostics surfaces.
+- `graphify query "longterm.memory Dexie toolJobs modelRuns memoryEvents retry
+  status queued running failed blocked AdminView beta diagnostics" --budget
+  6000 --graph graphify-out/graph.json` identified the existing ledger patterns
+  in `ToolJob`, `ModelRun`, and `AdminView.tsx`.
+- `graphify path "MemoryOrchestrator" "AdminView()" --graph
+  graphify-out/graph.json` confirmed the runtime-to-Admin route through the
+  local memory database.
+- `graphify path "recordMemoryEvent()" "buildBetaDiagnosticsSnapshot()"
+  --graph graphify-out/graph.json` confirmed the diagnostics route through
+  memory events and Admin.
+
+## Integration Decisions
+
+- Added Dexie schema version 14 and a `backgroundJobs` table for local job
+  evidence.
+- Added `src/memory/background.jobs.ts` for compact job rows, status
+  normalization, stable ids, retry routing, and a local async runner.
+- Wrapped `MemoryOrchestrator.trackInteraction()` with a durable job id and
+  queued/running/completed/retry/dead-letter records.
+- Made the interaction write idempotent under retry by writing with the stable
+  interaction id.
+- Added Admin Activity request-timeline rows and meters for background jobs.
+- Added Beta Diagnostics dead-letter blocking plus diagnostic export coverage.
+- Updated README, Tutor System Architecture, User Brain Architecture, Tutor
+  Architecture Library JSON, and App Design Language copy.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 138 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Browser QA on `http://localhost:3100/admin`: Admin Activity showed the
+  Background jobs meter; Admin Beta showed Background Job Ledger, Local retry
+  and dead-letter visibility, Dead-letter, Export contents, Background jobs,
+  and Diagnostic snapshot and export with zero warning/error logs.
+- Browser QA at `390x844`: Admin Beta rendered the same background-job ledger
+  copy with `scrollWidth` 390 and zero warning/error logs.
+- Browser QA screenshots saved as `ABL-iab-admin-beta-desktop.png`,
+  `ABL-iab-admin-beta-mobile.png`, `ABL-iab-admin-beta-fullpage.png`, and
+  `ABL-iab-admin-background-job-card-desktop.png`.
+- `graphify update . --force`: passed, `1006` nodes, `1772` edges, and `59`
+  communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `background.jobs.ts`, `BackgroundJob`,
+  `runBackgroundJob()`, `recordBackgroundJobEvent()`, `MemoryOrchestrator`,
+  `AdminView()`, and `buildBetaDiagnosticsSnapshot()`.
+- `graphify path "runBackgroundJob()" "AdminView()"` found a four-hop path
+  through `background.jobs.ts`, `BackgroundJob`, and `AdminView.tsx`.
+- `graphify path "BackgroundJob" "buildBetaDiagnosticsSnapshot()"` found a
+  two-hop path through `beta.diagnostics.ts`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+- `npm run audio:overview:dry-run`: passed, 25 present and 0 missing stored
+  guide assets.
+
+## Remaining Work
+
+- Run deliberate provider-key typed-chat and real voice turns when spending live
+  provider calls is in scope.
+- Add broader scheduler controls for more background job kinds after the
+  interaction-memory queue proves stable.
+- Continue broader local beta validation until real chat, voice, retrieval,
+  tools, memory, evidence, corrections, Admin, and Revision operate together
+  under live beta conditions.
+- AWS/cloud synchronization remains out of scope until beta testing.

@@ -29,6 +29,7 @@
 - Packet AAI: See `packets/AAI-generated-note-preview-lexical-support.md`.
 - Packet ABJ: See `packets/ABJ-active-book-pdf-manifest-context.md`.
 - Packet ABK: See `packets/ABK-model-observation-evidence-gate.md`.
+- Packet ABL: See `packets/ABL-background-job-ledger.md`.
 
 ## Completion Audit
 

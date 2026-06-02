@@ -779,11 +779,33 @@
     "graphify update . --force regenerated code architecture artifacts with 988 nodes, 1727 edges, and 61 communities",
     "Graphify smoke query found modelObservationGateMetadata(), MemoryOrchestrator, buildBrainFlowCoverageFromLedgers(), AdminView(), and model-observation constants",
     "graphify path modelObservationGateMetadata() to AdminView() found a three-hop path through runLocalBrainWiringRehearsal() and AdminView.tsx",
-    "graphify path modelObservationGateMetadata() to MemoryOrchestrator found a two-hop path through memory.orchestrator.ts"
+    "graphify path modelObservationGateMetadata() to MemoryOrchestrator found a two-hop path through memory.orchestrator.ts",
+    "Packet ABL selected after Graphify routed background retry/dead-letter work through MemoryOrchestrator, longterm.memory.ts, background/memory ledgers, AdminView(), and Beta Diagnostics",
+    "Added BackgroundJob and Dexie schema version 14 for a local backgroundJobs ledger",
+    "Added background.jobs.ts with compact records, status normalization, stable ids, retry routing, and dead-letter handling",
+    "MemoryOrchestrator.trackInteraction now records queued, running, completed, retry-scheduled, and dead-letter rows for interaction-memory capture",
+    "Admin Activity request timelines, meters, Beta Diagnostics, and diagnostics export now include background job evidence",
+    "Beta Diagnostics blocks local beta readiness when background jobs reach dead-letter",
+    "README, Tutor System Architecture, User Brain Architecture, Tutor Architecture Library JSON, and App Design Language copy document the local background-job ledger",
+    "npm run format passed",
+    "npm run test passed, 138 tests",
+    "npm run format:check passed",
+    "npm run lint passed",
+    "npm run build passed",
+    "Browser QA confirmed Admin Activity and Beta Diagnostics at desktop with Background jobs meter, Background Job Ledger, dead-letter copy, export contents, and zero warning/error logs",
+    "Browser QA at 390x844 confirmed Admin Beta rendered the same background-job ledger copy with scrollWidth 390 and zero warning/error logs",
+    "Browser QA screenshots saved as ABL-iab-admin-beta-desktop.png, ABL-iab-admin-beta-mobile.png, ABL-iab-admin-beta-fullpage.png, and ABL-iab-admin-background-job-card-desktop.png",
+    "graphify update . --force regenerated code architecture artifacts with 1006 nodes, 1772 edges, and 59 communities",
+    "npm run graphify:tree passed",
+    "Graphify smoke query found background.jobs.ts, BackgroundJob, runBackgroundJob(), recordBackgroundJobEvent(), MemoryOrchestrator, AdminView(), and buildBetaDiagnosticsSnapshot()",
+    "graphify path runBackgroundJob() to AdminView() found a four-hop path through background.jobs.ts, BackgroundJob, and AdminView.tsx",
+    "graphify path BackgroundJob to buildBetaDiagnosticsSnapshot() found a two-hop path through beta.diagnostics.ts",
+    "Graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "npm run audio:overview:dry-run passed with 25 present and 0 missing stored guide assets"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 69,
-    "basis": "Local architecture estimate after Packet ABK: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, and model-observation gates are implemented and verified; live provider-key chat/voice proof, retry/dead-letter background queue, and broader beta validation remain incomplete.",
-    "updatedAt": "2026-06-02T17:32:50.011Z"
+    "estimatePercent": 72,
+    "basis": "Local architecture estimate after Packet ABL: chat/voice context, multi-PDF injection, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, and the first durable retry/dead-letter interaction-memory background queue are implemented; live provider-key chat/voice proof, broader scheduler coverage, and broader beta validation remain incomplete.",
+    "updatedAt": "2026-06-03T03:10:00.000+09:00"
   }
 }
