@@ -3192,3 +3192,74 @@ represents the active book's ready documents while still marking the active PDF.
   tools, memory, evidence, corrections, Admin, and Revision operate together
   under live beta conditions.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 55: Synthetic Dual-Agent Wiring Rehearsal
+
+## Scope
+
+Phase 55 adds an Admin-only deterministic rehearsal for the local typed-chat and
+live-voice brain contracts. It exercises shared context and tool-definition
+code without letting synthetic evidence masquerade as a learner turn or beta
+traffic.
+
+## Graphify Context
+
+- Graphify routed the slice through `runLocalBrainWiringRehearsal()`,
+  `buildBrainContextPacket()`, `buildBrainDocumentContext()`,
+  `buildBrainFlowCoverageFromLedgers()`, `AdminView()`, `server.ts`,
+  `chatAgentTools.ts`, and `voiceAgentTools.ts`.
+- `graphify path "runLocalBrainWiringRehearsal()" "AdminView()"` found a
+  two-hop path through `buildBrainFlowCoverageFromLedgers()`.
+- The refreshed Graphify artifacts are the code architecture graph for agents,
+  not the user-facing learner brain graph.
+
+## Integration Decisions
+
+- Extracted typed-chat provider tools into `buildChatAgentToolDefinitions()` so
+  the chat server path and rehearsal inspect the same definitions.
+- Added `runLocalBrainWiringRehearsal()` to assemble active plus companion PDF
+  context with shared helpers, create request-correlated chat/voice packet
+  events, compare typed-chat and live-voice tool parity, and feed in-memory rows
+  into the existing eight-signal verifier.
+- Kept the result explicit: `evidenceSource: synthetic_local_rehearsal`,
+  `countsTowardBetaReadiness: false`, `persisted: false`, and
+  `liveCoverageMutated: false`.
+- Added an Admin Beta Diagnostics panel that renders the synthetic result
+  beside the unchanged authoritative live coverage meter.
+- Updated README, Tutor System Architecture, User Brain Architecture, the
+  built-in Tutor Architecture book, and App Design Language control patterns.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 126 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the checkout has no `brain:postchange` script.
+- Browser QA on Admin Beta Diagnostics at `1440x1000`, `768x1024`, and
+  `390x844`: rehearsal showed `synthetic ready` and `100%` synthetic contract,
+  while live coverage stayed `0% watch`, local rows stayed `92`, overflow
+  stayed false, and browser error logs stayed empty.
+- Desktop keyboard QA reran the rehearsal with Enter without changing live
+  coverage or row totals.
+- Reader QA confirmed the new boundary in App Design Language, Tutor System
+  Architecture, and User Brain Architecture. Each rendered with one visible
+  stored-audio player and no browser errors.
+- `graphify update . --force`: passed, `959` nodes, `1677` edges, `56`
+  communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found the rehearsal, shared typed-chat tool builder,
+  shared context helpers, live verifier, tests, and Admin route.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key chat and voice turns when spending live model
+  calls is in scope. Synthetic rehearsal proves wiring contracts, not provider
+  behavior or learner evidence.
+- Continue broader local beta validation until real chat, voice, retrieval,
+  tools, memory, evidence, corrections, Admin, and Revision operate together.
+- AWS/cloud synchronization remains out of scope until beta testing.

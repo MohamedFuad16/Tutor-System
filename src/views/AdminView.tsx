@@ -50,6 +50,10 @@ import {
   buildBetaDiagnosticsSnapshot,
 } from "../memory/beta.diagnostics";
 import {
+  runLocalBrainWiringRehearsal,
+  type BrainWiringRehearsalResult,
+} from "../memory/brain.rehearsal";
+import {
   applyCorrectionPropagation,
   recordAndApplyCorrectionEvent,
   updateCorrectionEventReviewStatus,
@@ -500,6 +504,8 @@ export function AdminView() {
   const [citationVerifierBusyId, setCitationVerifierBusyId] = useState("");
   const [diagnosticsExportFeedback, setDiagnosticsExportFeedback] =
     useState("");
+  const [brainWiringRehearsal, setBrainWiringRehearsal] =
+    useState<BrainWiringRehearsalResult | null>(null);
   const storedAudioOverviewInputs = useMemo(
     () =>
       builtInBookAudioOverviewEntries.map((overview) => ({
@@ -3785,6 +3791,121 @@ export function AdminView() {
                             ", ",
                           )}
                           .
+                        </div>
+                      )}
+                    </section>
+
+                    <section className="rounded-[28px] border border-blue-200 bg-blue-50/40 p-5 shadow-sm">
+                      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-600/80">
+                            <Sparkles size={13} /> Synthetic Wiring Rehearsal
+                          </div>
+                          <h3 className="mt-2 text-xl font-serif font-medium text-zinc-900">
+                            Exercise shared contracts without beta traffic
+                          </h3>
+                          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                            Runs a deterministic in-memory rehearsal through the
+                            shared multi-PDF packet helpers, typed-chat tool
+                            definitions, live-voice tool definitions, and the
+                            same eight-signal coverage verifier. It writes no
+                            durable rows, calls no providers, and never raises
+                            the live coverage meter above.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setBrainWiringRehearsal(
+                              runLocalBrainWiringRehearsal(),
+                            )
+                          }
+                          className="inline-flex shrink-0 items-center gap-2 rounded-full border border-blue-200 bg-white px-4 py-2 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                        >
+                          <RefreshCw size={13} />
+                          {brainWiringRehearsal
+                            ? "Run rehearsal again"
+                            : "Run local rehearsal"}
+                        </button>
+                      </div>
+
+                      {brainWiringRehearsal ? (
+                        <div className="mt-4">
+                          <div className="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-white p-4 md:flex-row md:items-start md:justify-between">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span
+                                  className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(brainWiringRehearsal.status)}`}
+                                >
+                                  synthetic {brainWiringRehearsal.status}
+                                </span>
+                                <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                                  no durable rows
+                                </span>
+                                <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                                  excluded from live coverage
+                                </span>
+                              </div>
+                              <p className="mt-2 text-sm leading-relaxed text-zinc-700 font-serif">
+                                {brainWiringRehearsal.summary}
+                              </p>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <div className="text-2xl font-semibold tabular-nums text-zinc-900">
+                                {brainWiringRehearsal.coverage.coveragePercent}%
+                              </div>
+                              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                synthetic contract
+                              </div>
+                              <div className="mt-1 text-[10px] font-mono text-zinc-500">
+                                live remains{" "}
+                                {
+                                  betaDiagnosticsSnapshot.brainFlow
+                                    .coveragePercent
+                                }
+                                %
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            {brainWiringRehearsal.checks.map((check) => (
+                              <article
+                                key={check.id}
+                                className={`rounded-2xl border p-3 ${
+                                  check.ready
+                                    ? "border-green-200 bg-green-50"
+                                    : "border-red-200 bg-red-50"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-600">
+                                    {check.title}
+                                  </div>
+                                  {check.ready ? (
+                                    <ShieldCheck
+                                      size={14}
+                                      className="shrink-0 text-green-600"
+                                    />
+                                  ) : (
+                                    <AlertTriangle
+                                      size={14}
+                                      className="shrink-0 text-red-600"
+                                    />
+                                  )}
+                                </div>
+                                <p className="mt-2 text-xs leading-relaxed text-zinc-600 font-serif">
+                                  {check.detail}
+                                </p>
+                              </article>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-4 rounded-2xl border border-dashed border-blue-200 bg-white/80 p-4 text-sm leading-relaxed text-zinc-600 font-serif">
+                          The live readiness meter remains authoritative. Run
+                          this only to rehearse local wiring before deliberate
+                          provider-key chat and voice turns.
                         </div>
                       )}
                     </section>

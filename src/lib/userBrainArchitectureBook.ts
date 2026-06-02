@@ -34,6 +34,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
 - Admin exposes model runs, tool jobs, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
 - Beta Diagnostics now includes a local brain-flow coverage verifier for chat context injection, voice context injection, request correlation, chat and voice foreground tool calls, chat and voice evaluated mastery evidence, and background learner-memory writes.
+- Admin Beta Diagnostics can also run a deterministic synthetic wiring rehearsal through the shared multi-PDF context helpers, typed-chat and live-voice tool definitions, and the same eight-signal verifier. It stays in memory only and cannot raise live beta readiness.
 - Generated learning-book notes now run an initial local provenance check when Memory writes them, so coherent note rows move from \`not_checked\` to \`verified\` immediately while remaining limited to ledger traceability. When document text is available, they also carry compact source-span preview anchors.
 - Generated flashcards and stored chapter audio guides still leave explicit \`not_checked\` artifact provenance until a scoped local verifier runs.
 - Admin can locally verify generated flashcard provenance when the batch links back to saved card ids, a message or batch anchor, local-only metadata, and no external fetch.
@@ -169,7 +170,7 @@ Implemented Admin surfaces:
 | Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and chapter audio guide provenance. |
 | Correction Requests | Non-destructive review and propagation state. |
 | Runtime Tuning | Local knobs for source-vs-web, memory context, tool budget, and refresh cadence. |
-| Beta Diagnostics | Capped local export, readiness gate summary, and brain-flow coverage for chat, voice, both foreground tool layers, retrieval, model, both evaluated mastery layers, and background memory evidence. |
+| Beta Diagnostics | Capped local export, readiness gate summary, live brain-flow coverage for chat, voice, both foreground tool layers, retrieval, model, both evaluated mastery layers, and background memory evidence, plus a clearly separated in-memory synthetic wiring rehearsal that cannot count toward live readiness. |
 
 The key boundary: Admin reports recorded system state. It must not pretend to know private model internals beyond saved traces, summaries, tool rows, voice lifecycle events, and artifacts.`,
   },
@@ -220,6 +221,7 @@ Implemented now:
 - local generated learning-note provenance verifier;
 - local stored audio-guide manifest-integrity verifier;
 - capped beta diagnostics export;
+- deterministic in-memory dual-agent wiring rehearsal that cannot count toward live beta readiness;
 - stored audio guide UI for every built-in Library chapter;
 - chapter-by-chapter stored-audio manifest, checked-in MP3 assets, dry-run report, and Deepgram \`aura-2-odysseus-en\` regeneration path.
 - long-form 3-4 minute stored audio explainers for every built-in Library chapter.

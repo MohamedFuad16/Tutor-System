@@ -68,6 +68,11 @@ checks whether chat context injection, voice context injection, request
 correlation, chat and voice foreground tool calls, chat and voice evaluated
 mastery evidence, and background learner-memory writes all have durable local
 evidence before broader beta claims.
+The same Admin panel can run a deterministic synthetic wiring rehearsal through
+the shared multi-PDF context helpers, typed-chat and live-voice tool
+definitions, and the eight-signal verifier. Rehearsal rows stay in memory only:
+they never write Dexie, call providers, enter exports, or raise live beta
+coverage.
 Background memory updates now keep model-summary mastery and learner-confidence
 proposals observational: accepted values and gate labels are written to local
 evidence/memory metadata, but those learner-state fields do not rise without

@@ -421,11 +421,31 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/brain.context.ts, src/components/ChatPanel.tsx, server.ts, src/views/RevisionView.tsx, tests/brain-context.test.mjs, tests/system-activity.test.mjs, tests/audio-overview-plan.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "AAH",
+      "name": "Synthetic dual-agent wiring rehearsal",
+      "owner": "main agent + read-only sidecars Lagrange and Socrates",
+      "status": "completed",
+      "write_scope": "src/lib/chatAgentTools.ts, src/memory/brain.rehearsal.ts, server.ts, src/views/AdminView.tsx, tests/brain-rehearsal.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_54_completed",
+    "status": "phase_55_completed",
     "checks": [
+      "graphify path runLocalBrainWiringRehearsal() to AdminView() found a two-hop path through buildBrainFlowCoverageFromLedgers()",
+      "Graphify smoke query found runLocalBrainWiringRehearsal(), buildChatAgentToolDefinitions(), chatAgentToolNames(), buildBrainDocumentContext(), buildBrainFlowCoverageFromLedgers(), and AdminView()",
+      "graphify update . --force regenerated code architecture artifacts with 959 nodes, 1677 edges, and 56 communities",
+      "In-app Browser reader QA confirmed synthetic rehearsal copy in App Design Language, Tutor System Architecture chapter 8, and User Brain Architecture chapter 1 with one visible audio player and no browser errors",
+      "In-app Browser keyboard QA reran the rehearsal with Enter without changing live coverage or local row totals",
+      "In-app Browser QA confirmed Admin Beta synthetic rehearsal at 1440x1000, 768x1024, and 390x844 with synthetic 100%, live 0% watch, unchanged 92 local rows, no horizontal overflow, and no browser errors",
+      "npm run test passed, 126 tests",
+      "README, Tutor System Architecture, User Brain Architecture, Tutor Architecture Library JSON, and App Design Language copy document the synthetic-vs-live boundary",
+      "Admin Beta Diagnostics renders a clearly separated synthetic rehearsal panel beside the unchanged authoritative live coverage meter",
+      "Synthetic rehearsal reuses balanced multi-PDF context helpers, typed-chat and live-voice tool definitions, and the existing eight-signal coverage verifier without writing Dexie or calling providers",
+      "Added runLocalBrainWiringRehearsal() with explicit synthetic_local_rehearsal evidenceSource, countsTowardBetaReadiness false, persisted false, and liveCoverageMutated false",
+      "Added shared typed-chat tool definitions in src/lib/chatAgentTools.ts and wired server.ts to consume buildChatAgentToolDefinitions()",
+      "Packet AAH selected after Graphify routed the slice through buildBrainFlowCoverageFromLedgers(), AdminView(), buildBrainContextPacket(), server.ts, voiceAgentTools.ts, and focused tests",
       "Packet AAG selected after Graphify routed the slice through ChatPanel.tsx, src/memory/brain.context.ts, server.ts, tests/brain-context.test.mjs, tests/system-activity.test.mjs, README.md, and RevisionView.tsx",
       "buildBrainDocumentContext() now creates a ready-document index, marks the active document, and balances excerpts across up to six ready PDFs",
       "assembleBrainContextSections() prioritizes active-book and document context before long semantic memory for voice packets",
