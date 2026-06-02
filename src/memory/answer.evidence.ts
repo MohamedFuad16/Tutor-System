@@ -1,10 +1,14 @@
 import { bktEngine } from "./bkt.engine";
 import type { MasteryEvidenceType } from "./evidence.mastery";
+import { ensurePersistentConceptForLearningBookConceptId } from "./flashcard.concepts";
 import type { PersistentConcept } from "./longterm.memory";
 
 type AnswerEvidenceType = Exclude<MasteryEvidenceType, "model_summary">;
 
 export type AnswerEvidenceEngine = {
+  ensureConceptForAttempt?: (
+    conceptId: string,
+  ) => Promise<PersistentConcept | null>;
   updateConceptAttempt: (
     conceptId: string,
     isCorrect: boolean,
@@ -65,6 +69,17 @@ export type EvaluatedAnswerEvidenceResult = {
 const DEFAULT_THRESHOLD = 0.7;
 const MAX_METADATA_TEXT = 800;
 const MAX_SUMMARY_TEXT = 160;
+
+type ConceptPromotionStatus =
+  | "not_requested"
+  | "ready"
+  | "unresolved"
+  | "error";
+
+const defaultAnswerEvidenceEngine: AnswerEvidenceEngine = {
+  ensureConceptForAttempt: ensurePersistentConceptForLearningBookConceptId,
+  updateConceptAttempt: (...args) => bktEngine.updateConceptAttempt(...args),
+};
 
 const compact = (value: string) => value.replace(/\s+/g, " ").trim();
 
@@ -265,7 +280,7 @@ export const normalizeEvaluatedAnswerEvidenceInput = (
 
 export const recordEvaluatedAnswerEvidence = async (
   input: EvaluatedAnswerEvidenceInput,
-  engine: AnswerEvidenceEngine = bktEngine,
+  engine: AnswerEvidenceEngine = defaultAnswerEvidenceEngine,
 ): Promise<EvaluatedAnswerEvidenceResult> => {
   const conceptId = evaluatedAnswerConceptId(input);
   const outcome = evaluatedAnswerOutcome(input);
@@ -286,6 +301,19 @@ export const recordEvaluatedAnswerEvidence = async (
     };
   }
 
+  let conceptPromotionStatus: ConceptPromotionStatus = "not_requested";
+  let conceptPromotionError: string | undefined;
+  if (engine.ensureConceptForAttempt) {
+    try {
+      const concept = await engine.ensureConceptForAttempt(conceptId);
+      conceptPromotionStatus = concept ? "ready" : "unresolved";
+    } catch (error) {
+      conceptPromotionStatus = "error";
+      conceptPromotionError =
+        error instanceof Error ? boundedText(error.message, 160) : "unknown";
+    }
+  }
+
   const updatedConcept = await engine.updateConceptAttempt(
     conceptId,
     outcome.correct,
@@ -293,7 +321,11 @@ export const recordEvaluatedAnswerEvidence = async (
     {
       source: input.source || "evaluated_answer",
       summary: evaluatedAnswerSummary(input).slice(0, MAX_SUMMARY_TEXT + 80),
-      metadata: evaluatedAnswerMetadata(input, outcome),
+      metadata: {
+        ...evaluatedAnswerMetadata(input, outcome),
+        conceptPromotionStatus,
+        conceptPromotionError,
+      },
     },
   );
 
@@ -309,7 +341,7 @@ export const recordEvaluatedAnswerEvidence = async (
 export const recordEvaluatedAnswerEvidenceBatch = async (
   payloads: unknown[],
   context: EvaluatedAnswerEvidenceContext = {},
-  engine: AnswerEvidenceEngine = bktEngine,
+  engine: AnswerEvidenceEngine = defaultAnswerEvidenceEngine,
 ): Promise<EvaluatedAnswerEvidenceResult[]> => {
   const results: EvaluatedAnswerEvidenceResult[] = [];
 

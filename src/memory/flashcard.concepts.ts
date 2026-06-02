@@ -130,6 +130,23 @@ export const ensurePersistentConceptForLearningBookConcept = async (
   return persistentConcept;
 };
 
+export const ensurePersistentConceptForLearningBookConceptId = async (
+  conceptId?: string,
+) => {
+  const normalizedConceptId = normalizeGeneratedConceptId(conceptId);
+  if (!normalizedConceptId) return null;
+
+  const existing = await db.concepts.get(normalizedConceptId);
+  if (existing) return existing;
+
+  const learningBookConcept = await db.learningBookConcepts
+    .get(normalizedConceptId)
+    .catch(() => null);
+  return ensurePersistentConceptForLearningBookConcept(
+    learningBookConcept || undefined,
+  );
+};
+
 export const createFlashcardForStorage = async (
   card: GeneratedFlashcardInput,
   context: FlashcardStorageContext,

@@ -80,6 +80,10 @@ anchors.
 Typed chat and live voice now expose an `evaluate_answer` tool that can write
 that evidence from quiz or active-recall turns, while the local recorder still
 skips invented concept ids or unevaluated answers.
+When the tool uses an active learning-book concept id, the browser first
+resolves it from `learningBookConcepts` and promotes it into `concepts`; BKT
+still reports a missing concept instead of faking mastery when no stored concept
+exists.
 Admin correction requests now protect stale learner state too: mark-wrong,
 deletion-review, or supersede requests that target a concept, or a corrected
 row with a concept id, quarantine the concept score locally by clearing durable

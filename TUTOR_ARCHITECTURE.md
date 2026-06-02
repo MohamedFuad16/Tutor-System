@@ -115,6 +115,9 @@ and request anchors when present.
 Chat and live voice can now call `evaluate_answer` for quiz or active-recall
 turns. The browser records the staged evaluation locally only when the payload
 has a real concept id and an explicit score or correct/incorrect outcome.
+Active learning-book concept ids are resolved through `learningBookConcepts`
+and promoted into `concepts` before BKT runs; unresolved ids remain
+`missing_concept` so mastery is not invented.
 Admin correction propagation protects the same durable state in the other
 direction: mark-wrong, deletion-review, and supersede requests that touch a
 concept quarantine that concept locally by clearing durable confidence, capping

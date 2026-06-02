@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   chooseFlashcardConcept,
+  ensurePersistentConceptForLearningBookConceptId,
   normalizeGeneratedConceptId,
   persistentConceptFromLearningBookConcept,
 } from "../.tmp-test/flashcard.concepts.mjs";
@@ -84,4 +85,11 @@ test("learning-book concepts promote into BKT-safe persistent concepts", () => {
   assert.deepEqual(persistent.prerequisites, ["probability"]);
   assert.deepEqual(persistent.relatedConcepts, ["posterior odds"]);
   assert.equal(persistent.firstLearnedAt, 111);
+});
+
+test("learning-book concept id promotion ignores placeholders", async () => {
+  assert.equal(
+    await ensurePersistentConceptForLearningBookConceptId("general"),
+    null,
+  );
 });

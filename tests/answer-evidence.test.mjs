@@ -10,15 +10,26 @@ import {
   recordEvaluatedAnswerEvidence,
 } from "../.tmp-test/answer.evidence.mjs";
 
-const createEngine = (concept = { id: "bayes" }) => {
+const createEngine = (concept = { id: "bayes" }, ensureConcept = undefined) => {
   const calls = [];
-  return {
+  const ensureCalls = [];
+  const engine = {
     calls,
+    ensureCalls,
     async updateConceptAttempt(...args) {
       calls.push(args);
       return concept;
     },
   };
+
+  if (ensureConcept) {
+    engine.ensureConceptForAttempt = async (conceptId) => {
+      ensureCalls.push(conceptId);
+      return ensureConcept(conceptId);
+    };
+  }
+
+  return engine;
 };
 
 test("evaluated answer evidence skips placeholder concept ids", () => {
@@ -195,6 +206,54 @@ test("evaluated answer evidence records scored attempts through BKT", async () =
     "Uses likelihood",
     "Explains posterior",
   ]);
+});
+
+test("evaluated answer evidence promotes learning-book concepts before BKT", async () => {
+  const order = [];
+  const engine = createEngine(
+    { id: "book:bayes:concept:posterior" },
+    async (conceptId) => {
+      order.push(`ensure:${conceptId}`);
+      return { id: conceptId };
+    },
+  );
+  const result = await recordEvaluatedAnswerEvidence(
+    {
+      conceptId: "book:bayes:concept:posterior",
+      question: "Explain posterior probability.",
+      correct: true,
+      source: "chat_tool_evaluate_answer",
+    },
+    engine,
+  );
+
+  order.push(`update:${engine.calls[0][0]}`);
+
+  assert.equal(result.status, "recorded");
+  assert.deepEqual(engine.ensureCalls, ["book:bayes:concept:posterior"]);
+  assert.deepEqual(order, [
+    "ensure:book:bayes:concept:posterior",
+    "update:book:bayes:concept:posterior",
+  ]);
+  assert.equal(engine.calls[0][3].metadata.conceptPromotionStatus, "ready");
+});
+
+test("evaluated answer evidence does not fake mastery when promotion misses", async () => {
+  const engine = createEngine(null, async () => null);
+  const result = await recordEvaluatedAnswerEvidence(
+    {
+      conceptId: "book:bayes:concept:posterior",
+      question: "Explain posterior probability.",
+      correct: true,
+    },
+    engine,
+  );
+
+  assert.equal(result.status, "missing_concept");
+  assert.equal(
+    engine.calls[0][3].metadata.conceptPromotionStatus,
+    "unresolved",
+  );
 });
 
 test("evaluated answer evidence reports missing concepts without faking mastery", async () => {

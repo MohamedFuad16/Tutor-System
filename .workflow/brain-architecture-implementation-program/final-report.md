@@ -2967,3 +2967,80 @@ present.
 - Browser-rendered Admin QA remains pending until the local socket restriction
   is lifted or a non-network UI regression harness is added.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+# Phase 52: Learning-Book Concept Promotion For Evaluated Answers
+
+## Scope
+
+Phase 52 tightens the chat/voice evaluated-answer brain path. The previous
+phase wired `evaluate_answer` into typed chat and live voice, but BKT still
+depended on the active concept already existing in the persistent `concepts`
+table. This phase promotes stored active learning-book concepts into
+BKT-compatible persistent concepts before recording evaluated-answer evidence.
+
+## Graphify Context
+
+- Graphify routed the slice through `recordEvaluatedAnswerEvidence()`,
+  `answer.evidence.ts`, `flashcard.concepts.ts`,
+  `ensurePersistentConceptForLearningBookConcept()`, `LearningBookConcept`, and
+  answer/flashcard evidence tests.
+- `graphify path "recordEvaluatedAnswerEvidence()"
+  "ensurePersistentConceptForLearningBookConceptId()"` found a two-hop
+  import/contains path through `answer.evidence.ts`.
+- The refreshed Graphify artifacts are the code architecture graph for agents,
+  not the user-facing learner brain graph.
+- Graph artifact grep found no `server.mjs` or `.tmp-test` scratch nodes.
+
+## Integration Decisions
+
+- Added `ensurePersistentConceptForLearningBookConceptId()` to resolve existing
+  persistent concepts or promote stored `LearningBookConcept` rows before BKT
+  writes.
+- Updated the default answer-evidence engine so
+  `recordEvaluatedAnswerEvidence()` runs promotion before
+  `BKTEngine.updateConceptAttempt()`.
+- Added `conceptPromotionStatus` and `conceptPromotionError` evidence metadata
+  for Admin/debug inspection.
+- Kept unresolved promotion honest: BKT still reports `missing_concept` instead
+  of fabricating learner mastery.
+- Updated README, Tutor System Architecture, User Brain Architecture, Tutor
+  System Architecture Library JSON, and App Design Language copy to describe
+  the local concept-promotion boundary.
+- AWS/cloud synchronization remains intentionally deferred.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 120 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because the current `package.json` has no `brain:postchange` script.
+- In-app Browser QA on `http://localhost:3100` confirmed User Brain
+  Architecture rendered promotion and `missing_concept` copy, with no horizontal
+  overflow at `563px` client width.
+- In-app Browser QA confirmed App Design Language / Local Beta Control Patterns
+  rendered the `learning-book concept promotion status` copy with no horizontal
+  overflow at `563px` and `390px` client widths.
+- Browser screenshots were captured/displayed in-session. Saving screenshot
+  bytes into workflow results from the browser runtime failed with filesystem
+  `EPERM`, so no AAE screenshot files were written.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  935 nodes, 1624 edges, and 63 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found
+  `ensurePersistentConceptForLearningBookConceptId()`,
+  `recordEvaluatedAnswerEvidence()`, `ConceptPromotionStatus`,
+  `LearningBookConcept`, and related evidence helpers.
+- Temporary local dev server on port `3100` was stopped after Browser QA.
+
+## Remaining Work
+
+- Run deliberate provider-key chat and voice turns when spending live model
+  calls is in scope, so the whole evaluated-answer path is exercised against a
+  real model/tool loop.
+- Continue the broader brain architecture program until chat, voice, context
+  injection, retrieval, tools, background memory, evidence, corrections, and
+  Admin diagnostics all operate together under live beta conditions.
+- AWS/cloud synchronization remains out of scope until beta testing.

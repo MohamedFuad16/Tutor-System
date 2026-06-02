@@ -2324,7 +2324,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Validated confidence meters",
         detail:
-          "Admin and revision evidence should separate model-summary confidence proposals from flashcard reviews or evaluated answers that actually moved durable learner confidence through capped BKT-backed recall evidence.",
+          "Admin and revision evidence should separate model-summary confidence proposals from flashcard reviews or evaluated answers that actually moved durable learner confidence through capped BKT-backed recall evidence, including the learning-book concept promotion status behind the attempt.",
       },
       {
         title: "Voice agent timeline",
