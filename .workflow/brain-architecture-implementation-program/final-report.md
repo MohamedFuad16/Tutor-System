@@ -14,6 +14,67 @@
 
 ## Reusable Follow-up
 
+# brain architecture implementation program: phase 31 report
+
+## Scope
+
+Phase 31 adds generated learning-note source-span anchors. When
+`MemoryOrchestrator.updateLearningBookFromConversation()` receives document
+context with extracted text, generated note artifacts now save compact local
+source-span previews and require those anchors to pass the local generated-note
+provenance check. This moves the runtime closer to source-span matching while
+staying honest: it proves saved local anchors exist, not that every sentence is
+factually entailed by the source.
+
+## Graphify Context
+
+- Graphify routed this slice through `ChatPanel()`, `PdfViewer()`,
+  `StudyView.tsx`, `MemoryOrchestrator`, `recordGeneratedNotesArtifact()`,
+  `src/memory/artifact.records.ts`, `tests/artifact-records.test.mjs`,
+  `AdminView`, `RevisionView`, and the architecture books.
+
+## Integration Decisions
+
+- Added `createGeneratedNoteSourceSpans()` to compact document contexts into
+  stable local span anchors.
+- Extended generated-note artifact/citation metadata with source-span ids,
+  source document ids, preview metadata, source-span counts, and coverage state.
+- Updated the generated-note local verifier so required-but-missing source spans
+  make a note unavailable, while coherent anchors remain locally verified.
+- Wired `MemoryOrchestrator` to pass document-context source spans into
+  generated note artifact creation.
+- Updated Admin and architecture-book copy to say source-span anchors are local
+  previews, not sentence-level truth.
+
+## Verification Evidence
+
+- `npm run test`: passed, 85 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Browser QA with the in-app browser at 1280x900: Admin Source Artifacts rendered
+  saved source-span anchor copy, local-preview boundary copy, and no horizontal
+  overflow.
+- Browser QA with the in-app browser at 390x844: Admin Source Artifacts rendered
+  through the mobile `Sources` tab with saved source-span anchor copy and no
+  horizontal overflow.
+- Browser QA with the in-app browser at 1280x900 and 390x844: User Brain
+  Architecture opened to Chapter 1, rendered source-span preview wording, and
+  had no horizontal overflow.
+- `graphify update . --force`: passed, 854 nodes, 1442 edges, 61 communities.
+- `npm run graphify:tree`: passed.
+- Graphify smoke query found `createGeneratedNoteSourceSpans()`,
+  `buildGeneratedNoteSourceSpans()`, `recordGeneratedNotesArtifact()`, and the
+  `MemoryOrchestrator` path.
+
+## Remaining Work
+
+- Implement actual sentence-level claim matching against saved source spans.
+- Add Admin drill-down/filtering for generated-note source-span coverage once
+  more real beta rows exist.
+- Continue broader local beta learner-brain implementation before any AWS/cloud
+  work.
+
 # brain architecture implementation program: phase 30 report
 
 ## Scope

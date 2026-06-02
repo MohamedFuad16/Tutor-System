@@ -2960,8 +2960,10 @@ export function AdminView() {
                             their citations remain checking or not checked; the
                             local verifier checks saved source-card structure,
                             generated flashcard provenance, generated
-                            learning-note provenance, and stored audio-guide
-                            manifest integrity without fetching external pages.
+                            learning-note provenance with saved source-span
+                            anchors when document text exists, and stored
+                            audio-guide manifest integrity without fetching
+                            external pages.
                           </p>
                         </div>
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
@@ -3490,7 +3492,9 @@ export function AdminView() {
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               Source artifacts describe captured source cards,
                               generated artifacts, and citation state, not
-                              learner concept mastery.
+                              learner concept mastery. Generated note
+                              source-span anchors are local preview references,
+                              not sentence-level proof.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               A checking citation is not a verified citation.
@@ -3498,10 +3502,11 @@ export function AdminView() {
                               source-card structure, citation linkage, URL
                               shape, domain consistency, generated flashcard
                               provenance, generated learning-note provenance,
-                              plus stored audio-guide manifest integrity; it
-                              does not fetch or prove external page content,
-                              flashcard correctness, or audio transcription
-                              accuracy.
+                              saved generated-note source-span anchors when
+                              available, plus stored audio-guide manifest
+                              integrity; it does not fetch or prove external
+                              page content, flashcard correctness, note sentence
+                              truth, or audio transcription accuracy.
                             </div>
                             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                               AWS/cloud synchronization remains deferred until

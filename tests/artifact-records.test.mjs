@@ -6,6 +6,7 @@ const {
   citationStateIdFor,
   createArtifactRecord,
   createCitationStateRecord,
+  createGeneratedNoteSourceSpans,
   createInitialLocalCitationIntegrityRecords,
   createGeneratedFlashcardsArtifactRecords,
   createGeneratedNotesArtifactRecords,
@@ -200,6 +201,88 @@ test("generated learning notes become not-checked artifact records with provenan
   assert.equal(citation.verifier, "generated_learning_entry_provenance");
 });
 
+test("generated note source spans compact document context into local anchors", () => {
+  const sourceText =
+    " Bayesian Knowledge Tracing updates mastery from evidence. ".repeat(20);
+  const spans = createGeneratedNoteSourceSpans([
+    {
+      documentId: "document-1",
+      title: "BKT paper",
+      classification: "native_text",
+      extractionMode: "pymupdf4llm",
+      text: sourceText,
+      source: "learning_book_update_document_context",
+    },
+    {
+      documentId: "document-empty",
+      title: "Empty",
+      text: "",
+    },
+  ]);
+
+  assert.equal(spans.length, 1);
+  assert.match(spans[0].id, /^document-1:source-span:/);
+  assert.equal(spans[0].documentId, "document-1");
+  assert.equal(spans[0].title, "BKT paper");
+  assert.equal(spans[0].classification, "native_text");
+  assert.equal(spans[0].extractionMode, "pymupdf4llm");
+  assert.equal(spans[0].preview.length, 500);
+  assert.equal(spans[0].textLength, sourceText.trim().length);
+  assert.equal(spans[0].source, "learning_book_update_document_context");
+});
+
+test("generated learning notes persist source-span anchors when document context exists", () => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-with-spans",
+      source: "learning_book_update",
+      conversationId: "conversation-with-spans",
+      bookId: "book-with-spans",
+      bookTitle: "Graph learning",
+      chapterId: "chapter-with-spans",
+      chapterTitle: "BKT updates",
+      documentId: "document-1",
+      userName: "Learner",
+      model: "local-session-fallback",
+      confidence: 0.7,
+      conceptIds: ["concept-bkt"],
+      summary:
+        "The learner connected Bayesian Knowledge Tracing to evidence-gated mastery updates.",
+      sourceSpanRequired: true,
+      sourceSpans: [
+        {
+          documentId: "document-1",
+          title: "BKT paper",
+          classification: "native_text",
+          extractionMode: "pymupdf4llm",
+          text: "Bayesian Knowledge Tracing updates mastery from observed evidence.",
+          source: "learning_book_update_document_context",
+        },
+      ],
+      metadata: { generationPath: "memory_orchestrator" },
+    },
+    14000,
+  );
+
+  const spanId = artifact.metadata.sourceSpanIds[0];
+  assert.equal(artifact.verificationState, "not_checked");
+  assert.equal(artifact.metadata.sourceSpanRequired, true);
+  assert.equal(artifact.metadata.sourceSpanCount, 1);
+  assert.deepEqual(artifact.metadata.sourceDocumentIds, ["document-1"]);
+  assert.equal(artifact.metadata.sourceSpanCoverage, "anchored");
+  assert.equal(
+    artifact.metadata.sourceSpanPreviews[0].documentId,
+    "document-1",
+  );
+  assert.equal(
+    artifact.metadata.sourceSpanPreviews[0].preview,
+    "Bayesian Knowledge Tracing updates mastery from observed evidence.",
+  );
+  assert.ok(artifact.sourceIds.includes(spanId));
+  assert.deepEqual(citation.metadata.sourceSpanIds, [spanId]);
+  assert.equal(citation.metadata.sourceSpanCoverage, "anchored");
+});
+
 test("initial local integrity check verifies coherent generated learning-note records", () => {
   const records = createGeneratedNotesArtifactRecords(
     {
@@ -248,6 +331,72 @@ test("initial local integrity check verifies coherent generated learning-note re
   assert.deepEqual(artifact.metadata.localCitationIntegrity.citationStates, [
     { id: citation.id, state: "verified" },
   ]);
+});
+
+test("initial local integrity check verifies generated notes with source-span anchors", () => {
+  const records = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-auto-verified-with-spans",
+      source: "learning_book_update",
+      conversationId: "conversation-auto-spans",
+      bookId: "book-auto-spans",
+      chapterTitle: "Evidence ledgers",
+      documentId: "document-span",
+      summary:
+        "The learner connected generated notes to local source-span anchors.",
+      sourceSpanRequired: true,
+      sourceSpans: [
+        {
+          documentId: "document-span",
+          title: "Evidence notes",
+          classification: "native_text",
+          extractionMode: "pymupdf4llm",
+          text: "Generated notes should preserve inspectable source spans from the uploaded document.",
+        },
+      ],
+    },
+    1300,
+  );
+
+  const { artifact, citation, result } =
+    createInitialLocalCitationIntegrityRecords(records, 1350);
+
+  assert.equal(result.state, "verified");
+  assert.equal(artifact.verificationState, "verified");
+  assert.equal(citation.state, "verified");
+  assert.equal(artifact.metadata.sourceSpanCoverage, "anchored");
+  assert.equal(
+    citation.metadata.localCitationIntegrity.claimCheck,
+    "generated_learning_note_provenance",
+  );
+});
+
+test("local citation verifier keeps generated notes unavailable when required source spans are missing", () => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-missing-spans",
+      conversationId: "conversation-missing-spans",
+      bookId: "book-missing-spans",
+      chapterTitle: "BKT updates",
+      summary: "The learner connected BKT to evidence gates.",
+      sourceSpanRequired: true,
+      metadata: { generationPath: "memory_orchestrator" },
+    },
+    100,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp: 1450,
+  });
+
+  assert.equal(result.state, "unavailable");
+  assert.equal(
+    result.metadata.claimCheck,
+    "generated_learning_note_provenance",
+  );
+  assert.match(result.failureReason || "", /source-span anchors/);
 });
 
 test("stored audio overviews become not-checked artifact records with local provenance", () => {
@@ -500,6 +649,12 @@ test("local citation verifier marks coherent generated learning-note provenance 
     "conversationId",
     "summary",
     "metadata.entryId",
+    "metadata.sourceSpanRequired",
+    "metadata.sourceSpanCount",
+    "metadata.sourceSpanIds",
+    "metadata.sourceDocumentIds",
+    "metadata.sourceSpanPreviews",
+    "metadata.sourceSpanCoverage",
     "metadata.localOnly",
     "metadata.externalContentFetched",
   ]);

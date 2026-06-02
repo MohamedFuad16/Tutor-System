@@ -87,6 +87,7 @@ updates, writes concepts and entries, records generated learning-note artifact
 provenance, runs the initial local generated-note integrity check, announces
 active books, and records trace explanations. Admin can re-run that check for
 learning-entry, book/conversation, local-only, and no-external-fetch provenance
+and inspect saved source-span preview anchors when document text was available,
 without claiming the generated note is factually source-span verified. Built-in
 chapter audio guide manifests seed `audio_overview` artifact rows that Admin can
 locally check
@@ -142,8 +143,9 @@ network access. Use the Deepgram provider in
   generated learning-note provenance checks, plus chapter audio-guide manifest
   integrity checks. Flashcard provenance checks saved card ids and local
   anchors; generated-note checks are run once at write time and can be re-run in
-  Admin. Neither check proves answer correctness or sentence-level source-span
-  truth.
+  Admin. Generated notes now carry compact source-span anchors when document
+  context exists. Neither check proves answer correctness or sentence-level
+  source-span truth.
 - DeepSeek Trace Ledger for persisted learning-book and trace events.
 - Server Console for live backend logs over WebSocket.
 

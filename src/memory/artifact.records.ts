@@ -63,6 +63,27 @@ export type GeneratedFlashcardsArtifactInput = {
   metadata?: Record<string, unknown>;
 };
 
+export type GeneratedNoteSourceSpanInput = {
+  id?: string;
+  documentId?: string;
+  title?: unknown;
+  classification?: unknown;
+  extractionMode?: unknown;
+  text?: unknown;
+  source?: string;
+};
+
+export type GeneratedNoteSourceSpan = {
+  id: string;
+  documentId?: string;
+  title?: string;
+  classification?: string;
+  extractionMode?: string;
+  preview: string;
+  textLength: number;
+  source?: string;
+};
+
 export type GeneratedNotesArtifactInput = {
   entryId: string;
   bookId?: string;
@@ -79,6 +100,8 @@ export type GeneratedNotesArtifactInput = {
   summary?: unknown;
   knowledgeSummary?: unknown;
   assistantSummary?: unknown;
+  sourceSpanRequired?: boolean;
+  sourceSpans?: GeneratedNoteSourceSpanInput[];
   metadata?: Record<string, unknown>;
 };
 
@@ -378,6 +401,39 @@ const isLocalAudioOverviewSource = (value: unknown) => {
   return text.startsWith("/audio-overviews/") && text.endsWith(".mp3");
 };
 
+export const createGeneratedNoteSourceSpans = (
+  inputs: GeneratedNoteSourceSpanInput[] | undefined,
+  limit = 8,
+): GeneratedNoteSourceSpan[] =>
+  (inputs || [])
+    .map((input, index) => {
+      const preview = compact(input.text);
+      if (!preview) return null;
+
+      const documentId = optionalCompact(input.documentId);
+      const id = compact(
+        input.id ||
+          [
+            documentId || "document",
+            "source-span",
+            stableHash(`${documentId || ""}:${preview}:${index}`),
+          ].join(":"),
+      );
+
+      return {
+        id,
+        documentId,
+        title: optionalCompact(input.title),
+        classification: optionalCompact(input.classification),
+        extractionMode: optionalCompact(input.extractionMode),
+        preview,
+        textLength: String(input.text || "").trim().length,
+        source: optionalCompact(input.source),
+      };
+    })
+    .filter(Boolean)
+    .slice(0, limit) as GeneratedNoteSourceSpan[];
+
 export const verifyLocalCitationIntegrity = (input: {
   artifact?: ArtifactRecord | null;
   citation: CitationState;
@@ -438,6 +494,12 @@ export const verifyLocalCitationIntegrity = (input: {
             "conversationId",
             "summary",
             "metadata.entryId",
+            "metadata.sourceSpanRequired",
+            "metadata.sourceSpanCount",
+            "metadata.sourceSpanIds",
+            "metadata.sourceDocumentIds",
+            "metadata.sourceSpanPreviews",
+            "metadata.sourceSpanCoverage",
             "metadata.localOnly",
             "metadata.externalContentFetched",
           ]
@@ -752,6 +814,30 @@ export const verifyLocalCitationIntegrity = (input: {
     const metadataBookId = compact(artifactMetadata.bookId);
     const artifactConversationId = compact(artifact.conversationId);
     const metadataConversationId = compact(artifactMetadata.conversationId);
+    const sourceSpanRequired =
+      artifactMetadata.sourceSpanRequired === true ||
+      citationMetadata.sourceSpanRequired === true;
+    const sourceSpanCount = Number(artifactMetadata.sourceSpanCount);
+    const citationSourceSpanCount = Number(citationMetadata.sourceSpanCount);
+    const sourceSpanIds = cleanList(
+      Array.isArray(artifactMetadata.sourceSpanIds)
+        ? artifactMetadata.sourceSpanIds
+        : [artifactMetadata.sourceSpanIds],
+      32,
+    );
+    const citationSourceSpanIds = cleanList(
+      Array.isArray(citationMetadata.sourceSpanIds)
+        ? citationMetadata.sourceSpanIds
+        : [citationMetadata.sourceSpanIds],
+      32,
+    );
+    const sourceSpanPreviews = cleanList(
+      Array.isArray(artifactMetadata.sourceSpanPreviews)
+        ? artifactMetadata.sourceSpanPreviews
+        : [artifactMetadata.sourceSpanPreviews],
+      8,
+    );
+    const sourceSpanCoverage = compact(artifactMetadata.sourceSpanCoverage);
 
     if (
       artifactMetadata.localOnly !== true ||
@@ -834,6 +920,61 @@ export const verifyLocalCitationIntegrity = (input: {
         "conflicting",
         "Generated note artifact conversationId disagrees with metadata.",
       );
+    }
+
+    if (
+      Number.isFinite(citationSourceSpanCount) &&
+      Number.isFinite(sourceSpanCount) &&
+      citationSourceSpanCount !== sourceSpanCount
+    ) {
+      return result(
+        "conflicting",
+        "Generated note citation source-span count disagrees with the artifact.",
+      );
+    }
+
+    if (
+      citationSourceSpanIds.length > 0 &&
+      citationSourceSpanIds.some((spanId) => !sourceSpanIds.includes(spanId))
+    ) {
+      return result(
+        "conflicting",
+        "Generated note citation source-span ids disagree with the artifact.",
+      );
+    }
+
+    if (sourceSpanIds.some((spanId) => !artifact.sourceIds.includes(spanId))) {
+      return result(
+        "conflicting",
+        "Generated note artifact sourceIds do not include every saved source-span id.",
+      );
+    }
+
+    if (sourceSpanRequired) {
+      if (
+        !Number.isFinite(sourceSpanCount) ||
+        sourceSpanCount <= 0 ||
+        sourceSpanIds.length === 0
+      ) {
+        return result(
+          "unavailable",
+          "Generated note source-span anchors were required but no local source spans were saved.",
+        );
+      }
+
+      if (sourceSpanCoverage !== "anchored") {
+        return result(
+          "unavailable",
+          "Generated note source-span coverage is not marked anchored.",
+        );
+      }
+
+      if (sourceSpanPreviews.length === 0) {
+        return result(
+          "unavailable",
+          "Generated note source-span anchors have no saved preview text.",
+        );
+      }
     }
 
     if (
@@ -1586,6 +1727,23 @@ export const createGeneratedNotesArtifactRecords = (
   const normalizedConfidence = Number.isFinite(confidence)
     ? Math.max(0, Math.min(1, confidence))
     : undefined;
+  const sourceSpans = createGeneratedNoteSourceSpans(input.sourceSpans);
+  const sourceSpanIds = cleanList(
+    sourceSpans.map((span) => span.id),
+    32,
+  );
+  const sourceDocumentIds = cleanList(
+    sourceSpans.map((span) => span.documentId),
+    16,
+  );
+  const sourceSpanRequired = input.sourceSpanRequired === true;
+  const sourceSpanCoverage = sourceSpanRequired
+    ? sourceSpans.length > 0
+      ? "anchored"
+      : "missing"
+    : sourceSpans.length > 0
+      ? "anchored"
+      : "not_required";
 
   const sharedMetadata = {
     ...input.metadata,
@@ -1605,6 +1763,21 @@ export const createGeneratedNotesArtifactRecords = (
     model: input.model,
     confidence: normalizedConfidence,
     conceptIds,
+    sourceSpanRequired,
+    sourceSpanCount: sourceSpans.length,
+    sourceSpanIds,
+    sourceDocumentIds,
+    sourceSpanCoverage,
+    sourceSpanPreviews: sourceSpans.map((span) => ({
+      id: span.id,
+      documentId: span.documentId,
+      title: span.title,
+      classification: span.classification,
+      extractionMode: span.extractionMode,
+      preview: span.preview,
+      textLength: span.textLength,
+      source: span.source,
+    })),
     summaryLength: String(input.summary || "").trim().length,
     knowledgeSummaryLength: String(input.knowledgeSummary || "").trim().length,
     assistantSummaryLength: String(input.assistantSummary || "").trim().length,
@@ -1640,6 +1813,8 @@ export const createGeneratedNotesArtifactRecords = (
           input.chapterId,
           input.documentId,
           ...conceptIds,
+          ...sourceDocumentIds,
+          ...sourceSpanIds,
         ],
         64,
       ),

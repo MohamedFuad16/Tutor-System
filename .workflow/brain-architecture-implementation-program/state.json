@@ -253,21 +253,28 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/artifact.records.ts, tests/artifact-records.test.mjs, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, src/views/RevisionView.tsx, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "JJ",
+      "name": "Generated note source-span anchors",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/artifact.records.ts, src/memory/memory.orchestrator.ts, tests/artifact-records.test.mjs, src/views/AdminView.tsx, src/views/RevisionView.tsx, src/lib/userBrainArchitectureBook.ts, src/lib/tutorBook.json, TUTOR_ARCHITECTURE.md, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
-    "status": "phase_30_complete",
+    "status": "phase_31_complete",
     "checks": [
-      "Graphify routed the phase through MemoryOrchestrator, artifact.records, Admin artifact/citation state, and architecture-book docs",
-      "npm run test passed, 81 tests",
+      "Graphify routed the phase through ChatPanel/PdfViewer -> StudyView -> MemoryOrchestrator -> recordGeneratedNotesArtifact",
+      "npm run test passed, 85 tests",
       "npm run format:check passed",
       "npm run lint passed",
       "npm run build passed",
-      "Browser QA confirmed Admin Source Artifacts at 1280x900 and 390x844 with generated learning-note verifier copy and no horizontal overflow",
-      "Browser QA confirmed User Brain Architecture reader at 1280x900 and 390x844 with the new auto provenance-check wording and no horizontal overflow",
-      "graphify update . --force passed with 848 nodes, 1434 edges, 62 communities",
+      "Browser QA confirmed Admin Source Artifacts at 1280x900 and 390x844 with saved source-span anchor copy and no horizontal overflow",
+      "Browser QA confirmed User Brain Architecture reader at 1280x900 and 390x844 with source-span preview wording and no horizontal overflow",
+      "graphify update . --force passed with 854 nodes, 1442 edges, 61 communities",
       "npm run graphify:tree passed",
-      "Graphify smoke query found createInitialLocalCitationIntegrityRecords, recordGeneratedNotesArtifact, verifyLocalCitationIntegrity, and MemoryOrchestrator path"
+      "Graphify smoke query found createGeneratedNoteSourceSpans, buildGeneratedNoteSourceSpans, recordGeneratedNotesArtifact, and the MemoryOrchestrator path"
     ]
   }
 }

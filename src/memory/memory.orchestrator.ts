@@ -135,6 +135,21 @@ const buildStudyNoteFallback = (
   ].join("\n\n");
 };
 
+const buildGeneratedNoteSourceSpans = (
+  documentContexts: LearningBookUpdateInput["documentContexts"],
+) =>
+  (documentContexts || [])
+    .filter((document) => String(document.extractedText || "").trim())
+    .slice(0, 6)
+    .map((document) => ({
+      documentId: document.id,
+      title: document.title,
+      classification: document.classification,
+      extractionMode: document.extractionMode,
+      text: compactText(document.extractedText, ""),
+      source: "learning_book_update_document_context",
+    }));
+
 const announceActiveLearningBook = (book: LearningBook, force = true) => {
   if (!force) {
     const storedBookId = localStorage.getItem("active_learning_book_id");
@@ -729,6 +744,9 @@ export class MemoryOrchestrator {
       confidence: clamp01(update.confidence, 0.55),
     };
     await db.learningEntries.add(learningEntry);
+    const generatedNoteSourceSpans = buildGeneratedNoteSourceSpans(
+      input.documentContexts,
+    );
     await recordGeneratedNotesArtifact({
       entryId: learningEntryId,
       source: "learning_book_update",
@@ -745,10 +763,16 @@ export class MemoryOrchestrator {
       summary: learningEntry.conversationSummary,
       knowledgeSummary: book.knowledgeSummary,
       assistantSummary: learningEntry.assistantSummary,
+      sourceSpanRequired: generatedNoteSourceSpans.length > 0,
+      sourceSpans: generatedNoteSourceSpans,
       metadata: {
         activeProject: input.activeProject || "General Study",
         fallback: book.agentModel === "local-session-fallback",
         generatedBy: "MemoryOrchestrator.updateLearningBookFromConversation",
+        sourceSpanPolicy:
+          generatedNoteSourceSpans.length > 0
+            ? "document_context_preview_anchors"
+            : "no_document_source_text_available",
         sourceTable: "learningEntries",
       },
     });
