@@ -266,6 +266,83 @@ Admin diagnostics export"`: unavailable because `package.json` has no
 
 ---
 
+# Packet ACN: Source-Ready Beta Proof Gate
+
+## Status
+
+Completed through focused source, test, build, and browser gates.
+
+Current conservative brain-architecture completion estimate after ACN:
+about 99%.
+
+## Graphify Context
+
+- Graphify routed this slice through `src/memory/beta.diagnostics.ts`,
+  `src/views/AdminView.tsx`, `tests/beta-diagnostics.test.mjs`,
+  `buildProviderKeyProofChecklist()`, `buildLiveBetaProofReceipt()`,
+  `buildLiveBetaProofDrillPacket()`, and `AdminView()`.
+- Graphify path `buildLiveBetaProofReceipt` to `AdminView` found the receipt
+  builder connected back to Admin through `buildProviderKeyProofChecklist()` and
+  `AdminView.tsx`.
+- Graphify path `buildCoherentLiveProofFromLedgers` to `AdminView` found the
+  expected direct call route.
+- Clean regenerated graph artifacts contain 1145 nodes, 1998 edges, and 73
+  communities.
+- Graphify smoke query found `ProviderKeyProofChecklist`,
+  `buildProviderKeyProofChecklist()`, `buildLiveBetaProofReceipt()`,
+  `buildLiveBetaProofDrillPacket()`, `buildProviderCapture()`,
+  `buildCoherentLiveProofFromLedgers()`, and connected diagnostics/Admin nodes.
+
+## Integration Decisions
+
+- Added `betaProofReady` and `sourceReadyForBeta` to
+  `ProviderKeyProofChecklist`.
+- Kept `proofComplete` as structural ledger completeness, but checklist
+  `status: "ready"` now requires `betaProofReady`.
+- The runbook and drill packet now treat structurally complete seeded/mixed
+  rows as pending final beta proof, keeping the user pointed toward a real
+  local-live drill.
+- Admin labels the percentage as `Ledger checks` and renders
+  `source proof pending` when the receipt is structurally complete but not
+  source-ready for beta.
+- No provider calls, key display, AWS/cloud sync, or Dexie schema changes were
+  added.
+
+## Verification Evidence
+
+- `npm run format -- src/memory/beta.diagnostics.ts src/views/AdminView.tsx
+tests/beta-diagnostics.test.mjs`: passed.
+- `npm run test -- tests/beta-diagnostics.test.mjs`: initial managed-sandbox
+  run failed only on local server `listen EPERM`; approved rerun passed, 166
+  tests.
+- `node --check .workflow/brain-architecture-implementation-program/packets/phase72-browser-qa.mjs`:
+  passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Headless Chrome QA via `phase72-browser-qa.mjs` confirmed desktop/mobile Admin
+  Beta Diagnostics rendered `Ledger checks 100%`, `source proof pending`,
+  `mixed`, seeded provider capture tags, provider capture count `2`, selected
+  request ids, no horizontal overflow, and zero warning/error logs.
+- `graphify update . --force`: passed, regenerating clean code architecture
+  artifacts with 1145 nodes, 1998 edges, and 73 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`83.7 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch references.
+
+## Remaining Work
+
+- Run the deliberate real provider-key drill with actual OpenRouter and
+  Deepgram provider rows, then confirm the top-level checklist reaches
+  `betaProofReady: true`, receipt source becomes `local_live_ledger`, and
+  `sourceReadyForBeta: true`.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
+---
+
 # Packet ACM: Proof Source Provenance Guard
 
 ## Status

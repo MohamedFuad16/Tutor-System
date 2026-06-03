@@ -645,6 +645,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACN",
+      "name": "Source-ready beta proof gate",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1010,7 +1017,22 @@
       "npm run graphify:tree passed for Packet ACM and wrote GRAPH_TREE.html at 83.7 KB",
       "Graphify smoke query found LiveBetaProofReceipt, buildLiveBetaProofReceipt(), buildProviderCapture(), buildProviderKeyProofChecklist(), buildBetaDiagnosticsSnapshot(), AdminView(), and connected diagnostics/Admin nodes",
       "graphify path buildLiveBetaProofReceipt to AdminView found a connected three-hop route through beta.diagnostics.ts and AdminView.tsx",
-      "Packet ACM graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
+      "Packet ACM graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references",
+      "Packet ACN selected after Graphify routed top-level provider-key readiness through buildProviderKeyProofChecklist(), buildLiveBetaProofReceipt(), buildLiveBetaProofDrillPacket(), AdminView(), beta diagnostics, Admin UI, and focused beta diagnostics tests",
+      "ProviderKeyProofChecklist now exposes betaProofReady and sourceReadyForBeta so structural ledger completeness is separate from final local-live beta proof readiness",
+      "Checklist status ready now requires betaProofReady; seeded, synthetic, or mixed provider-proof sources remain watch even when structural checks are 100%",
+      "Admin Provider-Key Live Proof now labels the percentage as Ledger checks and shows source proof pending for structurally complete non-live evidence",
+      "npm run test -- tests/beta-diagnostics.test.mjs initially failed only on sandbox listen EPERM; approved rerun passed via the project runner, 166 tests",
+      "npm run format:check passed for Packet ACN",
+      "npm run lint passed for Packet ACN",
+      "npm run build passed for Packet ACN",
+      "node --check .workflow/brain-architecture-implementation-program/packets/phase72-browser-qa.mjs passed for Packet ACN",
+      "Headless Chrome QA via phase72-browser-qa.mjs confirmed desktop/mobile Admin shows Ledger checks 100%, source proof pending, mixed source, seeded capture tags, provider capture count 2, selected request ids, no horizontal overflow, and zero warning/error logs",
+      "Clean graphify update . --force regenerated code architecture artifacts with 1145 nodes, 1998 edges, and 73 communities",
+      "npm run graphify:tree passed for Packet ACN and wrote GRAPH_TREE.html at 83.7 KB",
+      "Graphify smoke query found ProviderKeyProofChecklist, buildProviderKeyProofChecklist(), buildLiveBetaProofReceipt(), buildLiveBetaProofDrillPacket(), buildProviderCapture(), buildCoherentLiveProofFromLedgers(), and connected diagnostics/Admin nodes",
+      "graphify path buildProviderKeyProofChecklist to AdminView found a connected two-hop route through AdminView.tsx",
+      "Packet ACN graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
     ]
   },
   "evidence": [
@@ -1624,11 +1646,17 @@
     "Headless Chrome QA via phase72-browser-qa.mjs confirmed desktop/mobile Admin shows QA seeded, not final live beta proof, seeded capture tags, provider capture count 2, selected request ids, no horizontal overflow, and zero warning/error logs",
     "Clean graphify update . --force regenerated code architecture artifacts with 1145 nodes, 1998 edges, and 73 communities",
     "Graphify smoke query and path confirmed the provenance receipt builder remains queryable and connected back to Admin",
-    "Packet ACM graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
+    "Packet ACM graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references",
+    "Packet ACN split structural ledger proofComplete from final betaProofReady/sourceReadyForBeta in ProviderKeyProofChecklist",
+    "Admin Provider-Key Live Proof now shows Ledger checks separately from source proof pending so seeded or mixed proof rows cannot look like final beta readiness",
+    "tests/beta-diagnostics.test.mjs verifies local-live proof reaches betaProofReady while seeded and mixed receipts stay sourceReadyForBeta false",
+    "Headless Chrome QA via phase72-browser-qa.mjs confirmed desktop/mobile Admin renders Ledger checks 100%, source proof pending, mixed source, seeded capture tags, selected request ids, no overflow, and zero console logs",
+    "Clean graphify update . --force regenerated code architecture artifacts with 1145 nodes, 1998 edges, and 73 communities",
+    "Graphify smoke query and path confirmed ProviderKeyProofChecklist remains queryable and connected back to Admin"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACM local gates: Admin and diagnostics export now distinguish structurally complete seeded or synthetic provider-proof receipts from final local-live beta proof. The remaining unproven gap is still the deliberate real OpenRouter plus Deepgram beta drill that records non-seeded live provider rows with sourceKind local_live_ledger and sourceReadyForBeta true, plus broader beta validation; AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-03T17:15:58.436Z"
+    "basis": "Local architecture estimate after Packet ACN local gates: Admin and diagnostics now keep structural ledger completeness separate from final beta readiness, requiring sourceReadyForBeta and betaProofReady before the top-level provider-key proof becomes ready. The remaining unproven gap is still the deliberate real OpenRouter plus Deepgram beta drill that records non-seeded live provider rows with sourceKind local_live_ledger and sourceReadyForBeta true, plus broader beta validation; AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-03T17:27:06.576Z"
   }
 }

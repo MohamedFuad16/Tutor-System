@@ -376,6 +376,8 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   assert.equal(missingVoiceKey.status, "watch");
   assert.equal(missingVoiceKey.canAttemptProviderKeyRun, false);
   assert.equal(missingVoiceKey.proofComplete, false);
+  assert.equal(missingVoiceKey.betaProofReady, false);
+  assert.equal(missingVoiceKey.sourceReadyForBeta, false);
   assert.equal(missingVoiceKey.readyChecks, 15);
   assert.ok(
     missingVoiceKey.missingChecks.includes("Voice realtime provider key"),
@@ -396,6 +398,8 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   assert.equal(readyChecklist.status, "ready");
   assert.equal(readyChecklist.canAttemptProviderKeyRun, true);
   assert.equal(readyChecklist.proofComplete, true);
+  assert.equal(readyChecklist.betaProofReady, true);
+  assert.equal(readyChecklist.sourceReadyForBeta, true);
   assert.equal(readyChecklist.completionPercent, 100);
   assert.equal(readyChecklist.missingChecks.length, 0);
   assert.equal(readyChecklist.liveProofRunbook.status, "ready");
@@ -523,8 +527,13 @@ test("provider-key proof receipt distinguishes seeded QA evidence from real loca
     },
   });
 
-  assert.equal(seededChecklist.status, "ready");
+  assert.equal(seededChecklist.status, "watch");
   assert.equal(seededChecklist.proofComplete, true);
+  assert.equal(seededChecklist.betaProofReady, false);
+  assert.equal(seededChecklist.sourceReadyForBeta, false);
+  assert.equal(seededChecklist.completionPercent, 100);
+  assert.equal(seededChecklist.liveProofRunbook.status, "watch");
+  assert.equal(seededChecklist.liveProofDrillPacket.status, "watch");
   assert.equal(seededChecklist.liveProofReceipt.ready, true);
   assert.equal(seededChecklist.liveProofReceipt.sourceKind, "qa_seeded");
   assert.equal(seededChecklist.liveProofReceipt.sourceReadyForBeta, false);
@@ -582,6 +591,10 @@ test("provider-key proof receipt distinguishes seeded QA evidence from real loca
   });
 
   assert.equal(mixedChecklist.liveProofReceipt.ready, true);
+  assert.equal(mixedChecklist.status, "watch");
+  assert.equal(mixedChecklist.proofComplete, true);
+  assert.equal(mixedChecklist.betaProofReady, false);
+  assert.equal(mixedChecklist.sourceReadyForBeta, false);
   assert.equal(mixedChecklist.liveProofReceipt.sourceKind, "mixed");
   assert.equal(mixedChecklist.liveProofReceipt.sourceReadyForBeta, false);
   assert.ok(mixedChecklist.liveProofReceipt.sourceSummary.includes("mixes"));

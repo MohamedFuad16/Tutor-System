@@ -46,6 +46,7 @@
 - Packet ACK: See `packets/ACK-provider-proof-capture-details.md`.
 - Packet ACL: See `packets/ACL-live-provider-proof-receipt.md`.
 - Packet ACM: See `packets/ACM-proof-source-provenance-guard.md`.
+- Packet ACN: See `packets/ACN-source-ready-beta-proof-gate.md`.
 
 ## Completion Audit
 

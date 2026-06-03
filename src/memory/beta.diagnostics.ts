@@ -217,6 +217,8 @@ export type ProviderKeyProofChecklist = {
   voiceRealtimeKeyConfigured: boolean;
   canAttemptProviderKeyRun: boolean;
   proofComplete: boolean;
+  betaProofReady: boolean;
+  sourceReadyForBeta: boolean;
   coherentLiveProof: CoherentLiveProofBundle;
   liveProofRunbook: LiveBetaProofRunbook;
   liveProofDrillPacket: LiveBetaProofDrillPacket;
@@ -2399,7 +2401,9 @@ export const buildLiveBetaProofReceipt = ({
   const sourceReadyForBeta = ready && sourceKind === "local_live_ledger";
   const sourceSummary =
     sourceKind === "local_live_ledger"
-      ? "Receipt evidence is from local live ledger rows, not a seeded QA fixture."
+      ? ready
+        ? "Receipt evidence is from local live ledger rows, not a seeded QA fixture."
+        : "Receipt source is not proven until both selected provider captures are present in the local live ledger."
       : sourceKind === "qa_seeded"
         ? "Receipt evidence is complete but marked as seeded QA data; it is not final live beta proof until the provider-key drill runs in the real app."
         : sourceKind === "synthetic"
@@ -2594,38 +2598,42 @@ export const buildProviderKeyProofChecklist = ({
     chatModelKeyConfigured && voiceRealtimeKeyConfigured;
   const canAttemptProviderKeyRun = providerKeysReady && !liveBlocked;
   const proofComplete = checks.every((check) => check.ready);
-  const status: Exclude<BetaDiagnosticStatus, "deferred"> = liveBlocked
-    ? "blocked"
-    : proofComplete
-      ? "ready"
-      : "watch";
   const completionPercent =
     totalChecks > 0 ? Math.round((readyChecks / totalChecks) * 100) : 0;
+  const liveProofReceipt = buildLiveBetaProofReceipt({
+    coherentLiveProof,
+    canAttemptProviderKeyRun,
+    proofComplete,
+    missingChecks,
+    failedRows: brainFlow.failedRows,
+  });
+  const sourceReadyForBeta = liveProofReceipt.sourceReadyForBeta;
+  const betaProofReady = proofComplete && sourceReadyForBeta;
+  const status: Exclude<BetaDiagnosticStatus, "deferred"> = liveBlocked
+    ? "blocked"
+    : betaProofReady
+      ? "ready"
+      : "watch";
   const summary = liveBlocked
     ? `${brainFlow.failedRows} failed or blocked live rows must be fixed before provider-key proof.`
     : !providerKeysReady
       ? "Provider-key proof needs both chat model and realtime voice keys before a deliberate live run."
-      : proofComplete
-        ? "Provider-key chat and voice proof is complete in the local ledger."
-        : `${readyChecks}/${totalChecks} provider-key proof checks are ready; run deliberate chat and voice beta turns to fill the remaining live evidence.`;
+      : betaProofReady
+        ? "Provider-key chat and voice proof is complete from real local-live provider rows."
+        : proofComplete
+          ? liveProofReceipt.sourceSummary
+          : `${readyChecks}/${totalChecks} provider-key proof checks are ready; run deliberate chat and voice beta turns to fill the remaining live evidence.`;
   const liveProofRunbook = buildLiveBetaProofRunbook({
     checks,
     canAttemptProviderKeyRun,
-    proofComplete,
+    proofComplete: betaProofReady,
     failedRows: brainFlow.failedRows,
   });
   const liveProofDrillPacket = buildLiveBetaProofDrillPacket({
     liveProofRunbook,
     coherentLiveProof,
     canAttemptProviderKeyRun,
-    proofComplete,
-    failedRows: brainFlow.failedRows,
-  });
-  const liveProofReceipt = buildLiveBetaProofReceipt({
-    coherentLiveProof,
-    canAttemptProviderKeyRun,
-    proofComplete,
-    missingChecks,
+    proofComplete: betaProofReady,
     failedRows: brainFlow.failedRows,
   });
 
@@ -2640,6 +2648,8 @@ export const buildProviderKeyProofChecklist = ({
     voiceRealtimeKeyConfigured,
     canAttemptProviderKeyRun,
     proofComplete,
+    betaProofReady,
+    sourceReadyForBeta,
     coherentLiveProof,
     liveProofRunbook,
     liveProofDrillPacket,

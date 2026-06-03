@@ -4480,7 +4480,7 @@ export function AdminView() {
                         </div>
                         <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-right">
                           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
-                            Proof checks
+                            Ledger checks
                           </div>
                           <div className="mt-1 text-2xl font-semibold tabular-nums text-zinc-900">
                             {providerKeyProofChecklist.completionPercent}%
@@ -4504,11 +4504,13 @@ export function AdminView() {
                               : "keys/setup needed"}
                         </span>
                         <span
-                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.proofComplete ? "border-green-200 bg-green-50 text-green-700" : "border-zinc-200 bg-white text-zinc-500"}`}
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.betaProofReady ? "border-green-200 bg-green-50 text-green-700" : providerKeyProofChecklist.proofComplete ? "border-amber-200 bg-amber-50 text-amber-700" : "border-zinc-200 bg-white text-zinc-500"}`}
                         >
-                          {providerKeyProofChecklist.proofComplete
-                            ? "proof complete"
-                            : "proof pending"}
+                          {providerKeyProofChecklist.betaProofReady
+                            ? "beta proof ready"
+                            : providerKeyProofChecklist.proofComplete
+                              ? "source proof pending"
+                              : "proof pending"}
                         </span>
                         <span
                           className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.chatModelKeyConfigured ? "border-green-200 bg-green-50 text-green-700" : "border-zinc-200 bg-white text-zinc-500"}`}

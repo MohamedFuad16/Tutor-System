@@ -685,9 +685,11 @@ async function adminProofReceiptCheck(label, metrics) {
         scrollWidth: document.documentElement.scrollWidth,
         receiptText,
         hasProviderProof: lower.includes("provider-key live proof"),
+        hasLedgerChecks: lower.includes("ledger checks") && lower.includes("100%"),
         hasReceipt: lower.includes("local proof receipt") && lower.includes("export-ready chat and voice run summary"),
+        hasSourceProofPending: lower.includes("source proof pending"),
         hasReadyReceipt: lower.includes("receipt ready") && lower.includes("not final live beta proof"),
-        hasSeededSource: lower.includes("qa seeded") && lower.includes("seeded qa"),
+        hasMixedSource: lower.includes("mixed") && lower.includes("seeded qa"),
         hasLocalBoundary: lower.includes("local beta receipt only") && lower.includes("not a cloud sync"),
         hasProviderCount: lower.includes("provider captures 2"),
         hasOpenRouterCapture: lower.includes("openrouter") && lower.includes("openai/gpt-4.1-mini") && lower.includes("provider model run"),
@@ -700,9 +702,11 @@ async function adminProofReceiptCheck(label, metrics) {
   );
   if (
     !snapshot.hasProviderProof ||
+    !snapshot.hasLedgerChecks ||
     !snapshot.hasReceipt ||
+    !snapshot.hasSourceProofPending ||
     !snapshot.hasReadyReceipt ||
-    !snapshot.hasSeededSource ||
+    !snapshot.hasMixedSource ||
     !snapshot.hasLocalBoundary ||
     !snapshot.hasProviderCount ||
     !snapshot.hasOpenRouterCapture ||

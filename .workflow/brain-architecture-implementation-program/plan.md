@@ -201,3 +201,6 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   cards with local-live, QA-seeded, synthetic, or mixed source provenance so
   seeded browser fixtures stay useful without being mistaken for final live
   beta proof.
+- ACN: Source-ready beta proof gate. Make top-level Provider-Key Live Proof
+  readiness require `sourceReadyForBeta`, while keeping structural ledger
+  completeness visible as separate `Ledger checks`.
