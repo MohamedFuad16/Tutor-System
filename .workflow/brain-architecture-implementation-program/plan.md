@@ -209,3 +209,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   attempt selected, active learning book selected, at least two ready PDFs in
   that book, and no hard live blockers. It still does not call providers or
   mark seeded/mixed proof as final beta evidence.
+- ACP: Chat/voice proof capture HUD. When an Admin proof attempt is active,
+  expose a local ChatPanel HUD that shows the active attempt, active book, ready
+  PDF count, chat capture, voice capture, and local OpenRouter/Deepgram key
+  states before the real provider drill runs.

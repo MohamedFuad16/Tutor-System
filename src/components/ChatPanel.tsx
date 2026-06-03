@@ -1184,7 +1184,11 @@ const persistBookChatThread = async (
   const persistenceSummary = shouldRecordBookChatThreadSave(existing, thread);
   await db.bookChatThreads.put(thread);
   if (persistenceSummary) {
-    await recordBookChatThreadSaveEvent(thread, persistenceSummary, proofAttemptId);
+    await recordBookChatThreadSaveEvent(
+      thread,
+      persistenceSummary,
+      proofAttemptId,
+    );
   }
   return thread;
 };
@@ -3163,6 +3167,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       a.id === activeDocumentId ? -1 : b.id === activeDocumentId ? 1 : 0,
     );
   }, [activeBookDocuments, activeDocumentId]);
+  const readyProofDocuments = React.useMemo(
+    () =>
+      orderedBookDocuments.filter(
+        (document) =>
+          document.processingStatus === "ready" &&
+          Boolean(document.extractedText?.trim()),
+      ),
+    [orderedBookDocuments],
+  );
   const buildVoiceStudyContext = useCallback(async () => {
     const contextQuery = [
       `Voice tutoring session for ${activeLearningBookTitle || activeProject}.`,
@@ -3272,7 +3285,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       activeLearningBookTitle,
     );
     if (next.length) setChatArchives(next);
-  }, [activeBetaProofAttemptId, activeLearningBookTitle, canonicalActiveBookId]);
+  }, [
+    activeBetaProofAttemptId,
+    activeLearningBookTitle,
+    canonicalActiveBookId,
+  ]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -4081,7 +4098,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   query,
                   reason: payload.error || "Voice web search unavailable.",
                   source: "voice_web_search",
-                  metadata: { toolCallId, voiceSessionId: sessionId, proofAttemptId },
+                  metadata: {
+                    toolCallId,
+                    voiceSessionId: sessionId,
+                    proofAttemptId,
+                  },
                 });
                 throw new Error(
                   payload.error || "Voice web search unavailable.",
@@ -4128,7 +4149,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   query,
                   reason: "No web sources returned.",
                   source: "voice_web_search",
-                  metadata: { toolCallId, voiceSessionId: sessionId, proofAttemptId },
+                  metadata: {
+                    toolCallId,
+                    voiceSessionId: sessionId,
+                    proofAttemptId,
+                  },
                 });
               }
               result = {
@@ -4482,8 +4507,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               proofAttemptId,
               documentIds: voiceContextPayload?.documentIds || [],
               readyDocumentIds: voiceContextPayload?.readyDocumentIds || [],
-              contextDocumentIds:
-                voiceContextPayload?.contextDocumentIds || [],
+              contextDocumentIds: voiceContextPayload?.contextDocumentIds || [],
               readyDocumentCount: voiceContextPayload?.readyDocumentCount || 0,
               unreadyDocumentCount:
                 voiceContextPayload?.unreadyDocumentCount || 0,
@@ -6127,6 +6151,83 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
       {/* Input Area */}
       <div className="absolute bottom-0 w-full p-4 shrink-0 bg-gradient-to-t from-[#fdfdfd] via-[#fdfdfd]/90 to-transparent z-40">
+        <AnimatePresence>
+          {activeBetaProofAttemptId && (
+            <gsapMotion.div
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 420, damping: 30 }}
+              className="w-full max-w-3xl mx-auto mb-2"
+            >
+              <div className="rounded-2xl border border-cyan-300/25 bg-[#101014]/95 px-3 py-2.5 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-xl">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-300">
+                      <Brain size={12} />
+                      Live proof capture
+                    </div>
+                    <p className="mt-1 truncate text-[11px] leading-relaxed text-zinc-300">
+                      Chat and voice rows will save under attempt{" "}
+                      <span className="font-mono text-zinc-100">
+                        {activeBetaProofAttemptId}
+                      </span>{" "}
+                      for {activeLearningBookTitle || activeProject}.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                        readyProofDocuments.length >= 2
+                          ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
+                          : "border-amber-300/30 bg-amber-400/10 text-amber-200"
+                      }`}
+                    >
+                      Ready PDFs {readyProofDocuments.length}
+                    </span>
+                    <span className="rounded-full border border-blue-300/25 bg-blue-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue-200">
+                      Chat capture on
+                    </span>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                        voiceState !== "idle"
+                          ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
+                          : "border-violet-300/25 bg-violet-400/10 text-violet-200"
+                      }`}
+                    >
+                      {voiceState !== "idle"
+                        ? "Voice live"
+                        : "Voice capture ready"}
+                    </span>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                        apiKey.trim()
+                          ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
+                          : "border-amber-300/30 bg-amber-400/10 text-amber-200"
+                      }`}
+                    >
+                      {apiKey.trim()
+                        ? "OpenRouter key set"
+                        : "OpenRouter key missing"}
+                    </span>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                        deepgramApiKey.trim()
+                          ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
+                          : "border-amber-300/30 bg-amber-400/10 text-amber-200"
+                      }`}
+                    >
+                      {deepgramApiKey.trim()
+                        ? "Deepgram key set"
+                        : "Deepgram key missing"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </gsapMotion.div>
+          )}
+        </AnimatePresence>
+
         {/* Selected Text Context Chip */}
         <AnimatePresence>
           {selectedTextContext && (

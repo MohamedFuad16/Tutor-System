@@ -87,3 +87,18 @@ test("ChatPanel keeps typed chat proof attempts scoped to chat requests", () => 
   );
   assert.doesNotMatch(sendMessageSource, /getVoiceProofAttemptId\(\)/);
 });
+
+test("ChatPanel proof capture HUD is gated by the active proof attempt", () => {
+  const hudSource = sourceSlice(
+    "{activeBetaProofAttemptId && (",
+    "        {/* Selected Text Context Chip */}",
+  );
+
+  assert.match(hudSource, /Live proof capture/);
+  assert.match(hudSource, /Ready PDFs \{readyProofDocuments\.length\}/);
+  assert.match(hudSource, /Chat capture on/);
+  assert.match(hudSource, /Voice capture ready/);
+  assert.match(hudSource, /OpenRouter key set/);
+  assert.match(hudSource, /Deepgram key set/);
+  assert.match(hudSource, /activeBetaProofAttemptId/);
+});

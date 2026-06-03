@@ -14,6 +14,86 @@
 
 ## Reusable Follow-up
 
+# Packet ACP: Chat/Voice Proof Capture HUD
+
+## Status
+
+Completed through focused source, test, build, desktop/mobile browser QA, and
+Graphify regeneration/smoke checks.
+
+Current conservative brain-architecture completion estimate after ACP:
+about 99%.
+
+## Graphify Context
+
+- The repo-local Graphify CLI routed this slice through
+  `src/components/ChatPanel.tsx`, `src/store/index.ts`,
+  `src/memory/beta.diagnostics.ts`, `server.ts`, `src/views/AdminView.tsx`,
+  `tests/voice-proof-attempt-latch.test.mjs`, and live proof/provider-key
+  diagnostics nodes.
+- The Graphify MCP remained stale for this repo and returned unrelated
+  ani-cliii symbols, so source navigation stayed with
+  `graphify-out/graph.json` as required by AGENTS.md.
+- Graphify paths connected Admin/provider diagnostics to `ChatPanel` through
+  store state and connected server/model rows through voice/tool activity
+  writers.
+
+## Integration Decisions
+
+- Added `readyProofDocuments` in `ChatPanel` so the active book's ready,
+  extracted PDFs are visible in the proof run surface.
+- Added a `Live proof capture` HUD that renders only when
+  `activeBetaProofAttemptId` is set.
+- The HUD displays the active proof attempt, active book/project, ready PDF
+  count, chat capture state, voice capture state, local OpenRouter key state,
+  and local Deepgram key state.
+- The HUD is a local visibility bridge only: it does not call providers, reveal
+  keys, mutate Dexie schema, or mark final beta proof complete.
+- Added static source coverage and a CDP browser QA packet for desktop/mobile
+  ChatPanel proof capture.
+
+## Verification Evidence
+
+- `npm run format -- src/components/ChatPanel.tsx
+tests/voice-proof-attempt-latch.test.mjs`: passed.
+- `npm run test -- tests/voice-proof-attempt-latch.test.mjs`: passed through
+  the project runner, 168 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run test`: passed, 168 tests.
+- Headless Chrome CDP QA via `phase73-chat-proof-hud-qa.mjs` confirmed desktop
+  and mobile ChatPanel rendered `Live proof capture`, the active attempt, active
+  book, ready PDFs, chat capture, voice capture, OpenRouter key state, Deepgram
+  key state, no horizontal overflow, and zero console logs.
+- Browser screenshots were saved as `ACP-chat-proof-hud-desktop.png` and
+  `ACP-chat-proof-hud-mobile.png`; JSON evidence was saved as
+  `phase73-chat-proof-hud-qa.json`.
+- `graphify update . --force`: passed, regenerating clean code architecture
+  artifacts with 1152 nodes, 2008 edges, and 72 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`84.1 KB`).
+- Graphify smoke query found `ChatPanel()`, `ChatPanel.tsx`, `AdminView.tsx`,
+  `index.ts`, `beta-diagnostics.test.mjs`, and connected proof/store/Admin
+  nodes.
+- Graphify path `ChatPanel()` to `recordModelRunEvent()` found a connected
+  two-hop route through `ChatPanel.tsx`.
+- Graphify path `ChatPanel()` to `buildBrainContextPacket()` found a connected
+  two-hop route through `ChatPanel.tsx`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch references.
+
+## Remaining Work
+
+- Run the real provider-key typed-chat and live-voice drill against OpenRouter
+  and Deepgram from the app, then verify `sourceKind: local_live_ledger`,
+  `sourceReadyForBeta: true`, and `betaProofReady: true`.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
+---
+
 # Packet ACO: Live Provider Drill Preflight
 
 ## Status
