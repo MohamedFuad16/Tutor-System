@@ -2345,7 +2345,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Brain-flow coverage",
         detail:
-          "Beta Diagnostics checks chat context, voice context, chat and voice multi-PDF context, request correlation, foreground tools, evaluated mastery evidence, transcript saves, request-correlated memory rows, and model-observation gates as one local readiness proof. Admin can start a local proof attempt before the manual chat and voice run; coherent provider-key proof requires that shared attempt id plus book, thread, and context-PDF anchors.",
+          "Beta Diagnostics checks chat context, voice context, chat and voice multi-PDF context, request correlation, foreground tools, evaluated mastery evidence, transcript saves, request-correlated memory rows, and model-observation gates as one local readiness proof. Admin can start a local proof attempt before the manual chat and voice run; coherent provider-key proof requires that start row, shared attempt id, book, thread, and context-PDF anchors.",
       },
       {
         title: "Synthetic wiring rehearsal",

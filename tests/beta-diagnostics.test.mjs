@@ -69,6 +69,18 @@ const timestampedCompleteLedgers = ({
 const completeBrainFlowLedgers = {
   memoryEvents: [
     {
+      id: "proof-attempt-started-1",
+      eventType: "beta_proof_attempt_started",
+      status: "completed",
+      source: "admin_beta_diagnostics",
+      sessionId: PROOF_ATTEMPT_ID,
+      timestamp: 0,
+      metadata: {
+        proofAttemptId: PROOF_ATTEMPT_ID,
+        mode: "admin",
+      },
+    },
+    {
       eventType: "brain_context_injected",
       status: "completed",
       timestamp: 1,
@@ -219,7 +231,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
       learningBooks: 2,
       mappedConcepts: 8,
       bookChatThreads: 1,
-      memoryEvents: 7,
+      memoryEvents: 8,
       retrievalEvents: 3,
       modelRuns: 4,
       toolJobs: 1,
@@ -546,9 +558,18 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.deepEqual(completeCoherentLiveProof.sharedProofAttemptIds, [
     PROOF_ATTEMPT_ID,
   ]);
+  assert.deepEqual(completeCoherentLiveProof.proofAttemptLifecycleEventIds, [
+    "proof-attempt-started-1",
+  ]);
   assert.equal(
     completeCoherentLiveProof.checks.find(
       (check) => check.id === "shared_proof_attempt",
+    )?.ready,
+    true,
+  );
+  assert.equal(
+    completeCoherentLiveProof.checks.find(
+      (check) => check.id === "proof_attempt_lifecycle",
     )?.ready,
     true,
   );
@@ -607,6 +628,26 @@ test("coherent live proof requires a shared deliberate proof attempt id", () => 
   assert.ok(proof.missingChecks.includes("Shared deliberate proof attempt"));
   assert.equal(
     proof.checks.find((check) => check.id === "shared_proof_attempt")?.ready,
+    false,
+  );
+});
+
+test("coherent live proof requires a durable proof attempt lifecycle row", () => {
+  const ledgersWithoutLifecycle = {
+    ...completeBrainFlowLedgers,
+    memoryEvents: completeBrainFlowLedgers.memoryEvents.filter(
+      (row) => row.eventType !== "beta_proof_attempt_started",
+    ),
+  };
+  const proof = buildCoherentLiveProofFromLedgers(ledgersWithoutLifecycle);
+
+  assert.equal(proof.status, "watch");
+  assert.equal(proof.ready, false);
+  assert.deepEqual(proof.sharedProofAttemptIds, [PROOF_ATTEMPT_ID]);
+  assert.deepEqual(proof.proofAttemptLifecycleEventIds, []);
+  assert.ok(proof.missingChecks.includes("Proof attempt lifecycle recorded"));
+  assert.equal(
+    proof.checks.find((check) => check.id === "proof_attempt_lifecycle")?.ready,
     false,
   );
 });

@@ -241,6 +241,8 @@ export interface MemoryEvent {
     | "interaction_recorded"
     | "brain_context_injected"
     | "book_chat_thread_saved"
+    | "beta_proof_attempt_started"
+    | "beta_proof_attempt_cleared"
     | "learning_book_updated"
     | "learning_concept_updated"
     | "graph_concept_updated"

@@ -164,6 +164,19 @@ async function seedFreshProof(cdp) {
         });
         const memoryEvents = [
           {
+            id: "qa-attempt-started",
+            timestamp,
+            eventType: "beta_proof_attempt_started",
+            status: "completed",
+            source: "admin_beta_diagnostics",
+            sessionId: proofAttemptId,
+            summary: "QA proof attempt lifecycle start",
+            metadata: {
+              proofAttemptId,
+              mode: "admin",
+            }
+          },
+          {
             id: "qa-attempt-memory-context-chat",
             timestamp: timestamp + 1,
             eventType: "brain_context_injected",

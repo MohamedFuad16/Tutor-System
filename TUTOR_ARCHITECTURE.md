@@ -205,9 +205,10 @@ duration seconds without network access. Use the Deepgram provider in
   signal surfaces compact live request/source/timestamp/PDF anchors when proof
   exists.
 - Admin can start a local proof attempt before the manual provider-key chat and
-  voice run. Chat/voice context, retrieval, transcript, model/tool, evidence,
-  and learner-memory metadata carry that attempt id, and coherent proof requires
-  a shared attempt id plus shared book, thread, and multi-PDF anchors.
+  voice run. The start action writes a local memory-event lifecycle row,
+  chat/voice context, retrieval, transcript, model/tool, evidence, and
+  learner-memory metadata carry that attempt id, and coherent proof requires a
+  shared attempt id plus shared book, thread, and multi-PDF anchors.
 - Beta Diagnostics also checks the durable local background-job ledger. A
   dead-lettered memory-worker job blocks beta readiness until the row is
   reviewed.

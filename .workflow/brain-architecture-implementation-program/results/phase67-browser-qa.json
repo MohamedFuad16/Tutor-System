@@ -1,0 +1,70 @@
+{
+  "generatedAt": "2026-06-03T12:16:30.348Z",
+  "appUrl": "http://127.0.0.1:3100",
+  "results": [
+    {
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "activeAttemptId": "beta-mpy167u8-ceaeef0d",
+      "hasChecklist": true,
+      "hasStartControl": true,
+      "activeAttemptCleared": true,
+      "startedRows": {
+        "started": 1,
+        "cleared": 0,
+        "sources": [
+          "admin_beta_diagnostics"
+        ],
+        "summaries": [
+          "Admin started proof attempt beta-mpy167u8-ceaeef0d."
+        ]
+      },
+      "clearedRows": {
+        "started": 1,
+        "cleared": 1,
+        "sources": [
+          "admin_beta_diagnostics",
+          "admin_beta_diagnostics"
+        ],
+        "summaries": [
+          "Admin cleared proof attempt beta-mpy167u8-ceaeef0d.",
+          "Admin started proof attempt beta-mpy167u8-ceaeef0d."
+        ]
+      },
+      "consoleLogs": []
+    },
+    {
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "activeAttemptId": "beta-mpy1690q-342da1bb",
+      "hasChecklist": true,
+      "hasStartControl": true,
+      "activeAttemptCleared": true,
+      "startedRows": {
+        "started": 1,
+        "cleared": 0,
+        "sources": [
+          "admin_beta_diagnostics"
+        ],
+        "summaries": [
+          "Admin started proof attempt beta-mpy1690q-342da1bb."
+        ]
+      },
+      "clearedRows": {
+        "started": 1,
+        "cleared": 1,
+        "sources": [
+          "admin_beta_diagnostics",
+          "admin_beta_diagnostics"
+        ],
+        "summaries": [
+          "Admin cleared proof attempt beta-mpy1690q-342da1bb.",
+          "Admin started proof attempt beta-mpy1690q-342da1bb."
+        ]
+      },
+      "consoleLogs": []
+    }
+  ]
+}

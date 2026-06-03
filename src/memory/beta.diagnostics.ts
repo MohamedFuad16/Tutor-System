@@ -225,6 +225,7 @@ export type CoherentLiveProofBundle = {
   sharedConversationIds: string[];
   sharedDocumentIds: string[];
   sharedProofAttemptIds: string[];
+  proofAttemptLifecycleEventIds: string[];
   latestTimestamp?: number;
   proofWindowMs?: number;
   proofAgeMs?: number;
@@ -234,16 +235,19 @@ export type CoherentLiveProofBundle = {
   checks: CoherentLiveProofCheck[];
 };
 
+type BetaMemoryEventLedgerRow = Pick<
+  MemoryEvent,
+  | "eventType"
+  | "status"
+  | "bookId"
+  | "conversationId"
+  | "metadata"
+  | "timestamp"
+> &
+  Partial<Pick<MemoryEvent, "id">>;
+
 export type BetaBrainFlowLedgerInput = {
-  memoryEvents?: Pick<
-    MemoryEvent,
-    | "eventType"
-    | "status"
-    | "bookId"
-    | "conversationId"
-    | "metadata"
-    | "timestamp"
-  >[];
+  memoryEvents?: BetaMemoryEventLedgerRow[];
   retrievalEvents?: Pick<
     RetrievalEvent,
     "status" | "requestId" | "timestamp" | "metadata"
@@ -1140,6 +1144,12 @@ export const buildCoherentLiveProofFromLedgers = (
   const voiceThreadRows = requestCorrelatedThreadRows.filter((event) =>
     isVoiceThreadPersistence(event.metadata),
   );
+  const proofAttemptStartedRows = memoryEvents.filter(
+    (event) =>
+      event.eventType === "beta_proof_attempt_started" &&
+      event.status === "completed" &&
+      Boolean(metadataProofAttemptId(event.metadata)),
+  );
   const backgroundRows = memoryEvents.filter(
     (event) =>
       event.status === "completed" &&
@@ -1362,9 +1372,27 @@ export const buildCoherentLiveProofFromLedgers = (
   const sharedConversationIds = selectedPair?.sharedConversationIds || [];
   const sharedDocumentIds = selectedPair?.sharedDocumentIds || [];
   const sharedProofAttemptIds = selectedPair?.sharedProofAttemptIds || [];
+  const sharedProofAttemptLifecycleRows = proofAttemptStartedRows.filter(
+    (event) => {
+      const proofAttemptId = metadataProofAttemptId(event.metadata);
+      return Boolean(
+        proofAttemptId && sharedProofAttemptIds.includes(proofAttemptId),
+      );
+    },
+  );
+  const proofAttemptLifecycleEventIds = compactUnique(
+    sharedProofAttemptLifecycleRows.map((event) => event.id),
+    8,
+  );
   const allAnchors = [
     ...(selectedChat?.anchors || []),
     ...(selectedVoice?.anchors || []),
+    ...sharedProofAttemptLifecycleRows.map((event) => ({
+      metadata: event.metadata,
+      proofAttemptId: metadataProofAttemptId(event.metadata),
+      source: event.eventType,
+      timestamp: event.timestamp,
+    })),
   ];
   const proofTimestamps = timestampsFromAnchors(allAnchors);
   const latestTimestamp =
@@ -1435,6 +1463,26 @@ export const buildCoherentLiveProofFromLedgers = (
           4,
         ),
         sources: ["proof_attempt_id"],
+        documentIds: [],
+        proofAttemptIds: sharedProofAttemptIds,
+        ...(latestTimestamp ? { latestTimestamp } : {}),
+      },
+    },
+    {
+      id: "proof_attempt_lifecycle",
+      title: "Proof attempt lifecycle recorded",
+      ready: proofAttemptLifecycleEventIds.length > 0,
+      status: proofAttemptLifecycleEventIds.length > 0 ? "ready" : "watch",
+      summary:
+        proofAttemptLifecycleEventIds.length > 0
+          ? "A local Admin start event anchors the selected proof attempt in the memory ledger."
+          : "Start the proof attempt from Admin so the shared attempt id has a durable local lifecycle row.",
+      evidence: {
+        requestIds: compactUnique(
+          [selectedChat?.requestId, selectedVoice?.requestId],
+          4,
+        ),
+        sources: ["beta_proof_attempt_started"],
         documentIds: [],
         proofAttemptIds: sharedProofAttemptIds,
         ...(latestTimestamp ? { latestTimestamp } : {}),
@@ -1535,12 +1583,13 @@ export const buildCoherentLiveProofFromLedgers = (
     sharedConversationIds,
     sharedDocumentIds,
     sharedProofAttemptIds,
+    proofAttemptLifecycleEventIds,
     ...(latestTimestamp ? { latestTimestamp } : {}),
     ...(proofWindowMs !== undefined ? { proofWindowMs } : {}),
     ...(proofAgeMs !== undefined ? { proofAgeMs } : {}),
     summary:
       status === "ready"
-        ? "One typed-chat request and one live-voice request form a coherent local beta proof bundle with one deliberate attempt id plus shared book, thread, and multi-PDF context anchors."
+        ? "One typed-chat request and one live-voice request form a coherent local beta proof bundle with an Admin-started attempt id plus shared book, thread, and multi-PDF context anchors."
         : status === "blocked"
           ? `${failedRows} failed or blocked rows prevent a coherent chat+voice proof bundle.`
           : `Missing coherent live proof for ${missingChecks.join(", ")}.`,
@@ -1902,6 +1951,7 @@ export const buildLiveBetaProofRunbook = ({
         "Use the coherent bundle panel to compare attempt id and request ids, then export the diagnostics JSON for beta review.",
       evidenceNeeded: [
         "shared proof attempt id",
+        "proof attempt start memory event",
         "chat request id",
         "voice request id",
         "shared book id",

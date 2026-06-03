@@ -34,7 +34,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
 - Admin exposes model runs, tool jobs, background job retry/dead-letter rows, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
 - Beta Diagnostics now includes a local brain-flow coverage verifier for chat context injection, voice context injection, chat and voice multi-PDF context evidence, request correlation, chat and voice foreground tool calls, chat and voice evaluated mastery evidence, chat and voice transcript persistence, background learner-memory writes, and the model-observation evidence gate on those background writes. Each signal now surfaces compact live request anchors, row sources, latest timestamps, and context PDF ids when the live ledger has proof.
-- Admin can start a local proof attempt before the manual provider-key chat and voice run. Chat and voice context, retrieval, transcript, model/tool, evidence, and background-memory metadata carry that attempt id, and coherent proof requires a shared attempt id plus shared book, thread, and multi-PDF anchors.
+- Admin can start a local proof attempt before the manual provider-key chat and voice run. That start action writes a local lifecycle memory event, chat and voice context, retrieval, transcript, model/tool, evidence, and background-memory metadata carry the same attempt id, and coherent proof requires the durable start row plus shared book, thread, and multi-PDF anchors.
 - Admin Beta Diagnostics can also run a deterministic synthetic wiring rehearsal through the shared multi-PDF context helpers, typed-chat and live-voice tool definitions, matching shared tool schemas, and the same thirteen-signal verifier. It stays in memory only and cannot raise live beta readiness.
 - Generated learning-book notes now run an initial local provenance check when Memory writes them, so coherent note rows move from \`not_checked\` to \`verified\` immediately while remaining limited to ledger traceability. When document text is available, they also carry compact source-span preview anchors and must pass a local summary-preview to source-preview lexical-support check.
 - Generated flashcards and stored chapter audio guides still leave explicit \`not_checked\` artifact provenance until a scoped local verifier runs.
@@ -225,7 +225,7 @@ Implemented now:
 - local generated learning-note provenance verifier;
 - local stored audio-guide manifest-integrity verifier;
 - capped beta diagnostics export;
-- Admin-started local proof attempt ids for provider-key chat+voice beta proof;
+- Admin-started local proof attempt ids and lifecycle memory rows for provider-key chat+voice beta proof;
 - deterministic in-memory dual-agent wiring rehearsal that cannot count toward live beta readiness;
 - stored audio guide UI for every built-in Library chapter;
 - chapter-by-chapter stored-audio manifest, checked-in MP3 assets, dry-run report, and Deepgram \`aura-2-odysseus-en\` regeneration path.

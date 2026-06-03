@@ -49,6 +49,27 @@ test("memory event records preserve brain context injection type", () => {
   assert.equal(record.metadata.requestId, "chat-1");
 });
 
+test("memory event records preserve beta proof attempt lifecycle types", () => {
+  const record = createMemoryEventRecord(
+    {
+      eventType: "beta_proof_attempt_started",
+      source: "admin_beta_diagnostics",
+      sessionId: "beta-attempt-1",
+      summary: "Admin started proof attempt beta-attempt-1.",
+      metadata: {
+        proofAttemptId: "beta-attempt-1",
+        mode: "admin",
+      },
+    },
+    333,
+  );
+
+  assert.equal(record.eventType, "beta_proof_attempt_started");
+  assert.equal(record.source, "admin_beta_diagnostics");
+  assert.equal(record.sessionId, "beta-attempt-1");
+  assert.equal(record.metadata.proofAttemptId, "beta-attempt-1");
+});
+
 test("memory event records compact summaries and preserve metadata", () => {
   const record = createMemoryEventRecord(
     {

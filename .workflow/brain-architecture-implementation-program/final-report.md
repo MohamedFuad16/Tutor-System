@@ -4811,6 +4811,82 @@ diagnostics AdminView" --budget 12000 --graph graphify-out/graph.json` routed
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+# Phase 69: Proof Attempt Lifecycle Ledger
+
+Packet ACE makes proof-attempt identity durable. Packet ACD propagated the
+attempt id through chat and voice rows; this phase records the Admin start/clear
+lifecycle in the local memory ledger and requires a matching start row before
+coherent provider-key proof can pass.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 97%.
+
+## Graphify Context
+
+- `graphify query "beta_proof_attempt_started proofAttemptLifecycleEventIds
+proof_attempt_lifecycle AdminView recordMemoryEvent
+buildCoherentLiveProofFromLedgers" --budget 6000 --graph
+graphify-out/graph.json` routed the slice through `AdminView()`,
+  `recordMemoryEvent()`, `memory.events.ts`,
+  `buildCoherentLiveProofFromLedgers()`, `buildBetaDiagnosticsSnapshot()`,
+  `buildBrainFlowCoverageFromLedgers()`, `AdminView.tsx`,
+  `beta.diagnostics.ts`, and `longterm.memory.ts`.
+- `graphify path "AdminView()" "recordMemoryEvent()" --graph
+graphify-out/graph.json` found the expected route through `AdminView.tsx`.
+- `graphify path "buildCoherentLiveProofFromLedgers()" "AdminView()" --graph
+graphify-out/graph.json` found a direct call route.
+
+## Integration Decisions
+
+- Added durable local memory-event types for `beta_proof_attempt_started` and
+  `beta_proof_attempt_cleared`.
+- Admin Beta Diagnostics now records lifecycle rows whenever the user starts,
+  restarts, or clears a proof attempt.
+- Coherent live proof now requires a matching `beta_proof_attempt_started` row
+  for the selected shared attempt id.
+- Admin Provider-Key Live Proof now renders an `attempt start recorded/missing`
+  chip beside the active/shared attempt chips.
+- README, Tutor System Architecture, User Brain Architecture, and App Design
+  Language copy now describe proof attempts as durable lifecycle rows plus
+  propagated chat/voice metadata.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test -- tests/beta-diagnostics.test.mjs tests/memory-events.test.mjs`:
+  passed via the project test runner, 158 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- `node .workflow/brain-architecture-implementation-program/packets/phase67-browser-qa.mjs`:
+  passed with local Chrome CDP approval. Desktop and mobile Admin Beta
+  Diagnostics clicked Start proof attempt and Clear attempt, verified matching
+  `beta_proof_attempt_started` and `beta_proof_attempt_cleared` IndexedDB
+  memory rows for the active id, rendered the checklist without horizontal
+  overflow, and emitted zero console logs.
+- Browser screenshots saved as `ACE-admin-proof-lifecycle-desktop.png` and
+  `ACE-admin-proof-lifecycle-mobile.png`; JSON evidence saved as
+  `phase67-browser-qa.json`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1105 nodes, 1943 edges, and 58 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`81.3 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the durable start row, shared proof-attempt id,
+  freshness window, and coherent bundle to confirm the complete local beta flow.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Phase 68: Live Proof Attempt Identity
 
 Packet ACD makes the local beta proof corridor more deliberate. The previous

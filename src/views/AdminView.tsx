@@ -20,6 +20,7 @@ import {
   type RetrievalEvent,
   type ToolJob,
 } from "../memory/longterm.memory";
+import { recordMemoryEvent } from "../memory/memory.events";
 import {
   Terminal,
   Activity,
@@ -1034,8 +1035,51 @@ export function AdminView() {
     ],
   );
   const liveProofRunbook = providerKeyProofChecklist.liveProofRunbook;
+  const recordProofAttemptLifecycle = (
+    eventType: "beta_proof_attempt_started" | "beta_proof_attempt_cleared",
+    proofAttemptId: string,
+    metadata: Record<string, unknown> = {},
+  ) => {
+    void recordMemoryEvent({
+      eventType,
+      status: "completed",
+      source: "admin_beta_diagnostics",
+      sessionId: proofAttemptId,
+      bookId: activeLearningBookId || undefined,
+      summary:
+        eventType === "beta_proof_attempt_started"
+          ? `Admin started proof attempt ${proofAttemptId}.`
+          : `Admin cleared proof attempt ${proofAttemptId}.`,
+      retentionPolicy: "local_indexeddb",
+      metadata: {
+        proofAttemptId,
+        mode: "admin",
+        activeLearningBookId: activeLearningBookId || undefined,
+        activeProject,
+        ...metadata,
+      },
+    });
+  };
+
   const startLiveProofAttempt = () => {
-    setActiveBetaProofAttemptId(createBetaProofAttemptId());
+    const previousProofAttemptId = activeBetaProofAttemptId || undefined;
+    const nextProofAttemptId = createBetaProofAttemptId();
+    setActiveBetaProofAttemptId(nextProofAttemptId);
+    recordProofAttemptLifecycle(
+      "beta_proof_attempt_started",
+      nextProofAttemptId,
+      {
+        previousProofAttemptId,
+        restarted: Boolean(previousProofAttemptId),
+      },
+    );
+  };
+  const clearLiveProofAttempt = () => {
+    const proofAttemptId = activeBetaProofAttemptId;
+    clearActiveBetaProofAttempt();
+    if (proofAttemptId) {
+      recordProofAttemptLifecycle("beta_proof_attempt_cleared", proofAttemptId);
+    }
   };
   const brainWiringRehearsalGap = useMemo(
     () =>
@@ -4420,7 +4464,7 @@ export function AdminView() {
                             {activeBetaProofAttemptId && (
                               <button
                                 type="button"
-                                onClick={clearActiveBetaProofAttempt}
+                                onClick={clearLiveProofAttempt}
                                 className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-600 transition hover:border-zinc-300 hover:bg-zinc-50"
                               >
                                 <Trash2 size={13} />
@@ -4498,6 +4542,15 @@ export function AdminView() {
                           shared attempt{" "}
                           {providerKeyProofChecklist.coherentLiveProof
                             .sharedProofAttemptIds[0] || "missing"}
+                        </span>
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.coherentLiveProof.proofAttemptLifecycleEventIds.length > 0 ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                        >
+                          attempt start{" "}
+                          {providerKeyProofChecklist.coherentLiveProof
+                            .proofAttemptLifecycleEventIds.length > 0
+                            ? "recorded"
+                            : "missing"}
                         </span>
                         <span
                           className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.coherentLiveProof.proofFresh ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}

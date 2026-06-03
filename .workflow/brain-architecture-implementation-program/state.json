@@ -582,6 +582,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/store/index.ts, src/memory/brain.context.ts, src/memory/memory.orchestrator.ts, src/components/ChatPanel.tsx, src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, tests/brain-context.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACE",
+      "name": "Proof attempt lifecycle ledger",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/longterm.memory.ts, src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, tests/memory-events.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1302,11 +1309,33 @@
     "graphify path buildCoherentLiveProofFromLedgers() to AdminView() found a direct call route",
     "graphify path buildBrainContextPacket() to ChatPanel() found the expected two-hop route through ChatPanel.tsx",
     "graphify path brainOrchestrator to ChatPanel() found the expected two-hop route through ChatPanel.tsx",
-    "Packet ACD graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ACD graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ACE selected after Graphify routed proof-attempt lifecycle observability through AdminView(), recordMemoryEvent(), buildCoherentLiveProofFromLedgers(), memory.events.ts, beta.diagnostics.ts, and longterm.memory.ts",
+    "Added beta_proof_attempt_started and beta_proof_attempt_cleared local memory-event types without Dexie schema churn",
+    "Admin Beta Diagnostics now writes a durable proof-attempt lifecycle row when the user starts, restarts, or clears a local proof attempt",
+    "Coherent live proof now requires a matching beta_proof_attempt_started row for the selected shared proof-attempt id",
+    "Admin Provider-Key Live Proof now renders an attempt start recorded/missing chip beside active/shared attempt chips",
+    "Focused memory event tests now preserve beta proof attempt lifecycle event types",
+    "Focused beta diagnostics tests now reject otherwise matching chat/voice proof rows when no durable proof-attempt lifecycle row exists",
+    "npm run format passed for Packet ACE",
+    "npm run test -- tests/beta-diagnostics.test.mjs tests/memory-events.test.mjs passed via the project test runner, 158 tests",
+    "npm run format:check passed for Packet ACE",
+    "npm run lint passed for Packet ACE",
+    "npm run build passed for Packet ACE",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run brain:ui-regression remained unavailable because current package.json has no brain:ui-regression script",
+    "Headless Chrome CDP QA via phase67-browser-qa.mjs confirmed desktop and mobile Admin Beta Diagnostics clicked Start proof attempt and Clear attempt, verified matching beta_proof_attempt_started and beta_proof_attempt_cleared IndexedDB memory rows, rendered without horizontal overflow, and emitted zero console logs",
+    "Browser QA screenshots saved as ACE-admin-proof-lifecycle-desktop.png and ACE-admin-proof-lifecycle-mobile.png; JSON evidence saved as phase67-browser-qa.json",
+    "graphify update . --force regenerated code architecture artifacts with 1105 nodes, 1943 edges, and 58 communities",
+    "npm run graphify:tree passed for Packet ACE and wrote GRAPH_TREE.html at 81.3 KB",
+    "Graphify smoke query found AdminView(), recordMemoryEvent(), memory.events.ts, buildCoherentLiveProofFromLedgers(), buildBetaDiagnosticsSnapshot(), buildBrainFlowCoverageFromLedgers(), AdminView.tsx, beta.diagnostics.ts, and longterm.memory.ts",
+    "graphify path AdminView() to recordMemoryEvent() found the expected route through AdminView.tsx",
+    "graphify path buildCoherentLiveProofFromLedgers() to AdminView() found a direct call route",
+    "Packet ACE graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 96,
-    "basis": "Local architecture estimate after Packet ACD final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, Beta Diagnostics provider-meter freshness, a provider-key fallback guard, selected coherent request-row detail, phase-aware durable model-run ids for started/fallback/completed rows, a fresh local proof-window gate, and shared deliberate proof-attempt identity across typed chat and live voice are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T21:05:00.000+09:00"
+    "estimatePercent": 97,
+    "basis": "Local architecture estimate after Packet ACE final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, Beta Diagnostics provider-meter freshness, a provider-key fallback guard, selected coherent request-row detail, phase-aware durable model-run ids for started/fallback/completed rows, a fresh local proof-window gate, shared deliberate proof-attempt identity across typed chat and live voice, and durable Admin proof-attempt lifecycle memory rows are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T21:20:00.000+09:00"
   }
 }
