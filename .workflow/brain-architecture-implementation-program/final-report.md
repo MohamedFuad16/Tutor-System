@@ -14,6 +14,79 @@
 
 ## Reusable Follow-up
 
+# Phase 69: Beta Diagnostics Provider-Meter Freshness
+
+Packet ABY keeps Admin Beta Diagnostics connected to live local
+system-activity/provider meters instead of relying on whatever Activity-tab
+payload happened to be loaded earlier. The provider-key proof checklist keeps
+the same semantics, but the user can now see whether the local provider meters
+are live, loading, or offline beside the chat/voice key chips.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 91%.
+
+## Graphify Context
+
+- Graphify routed the slice through `AdminView()`, `AdminView.tsx`,
+  `buildBetaDiagnosticsSnapshot()`, `buildBrainFlowCoverageFromLedgers()`,
+  `buildCoherentLiveProofFromLedgers()`, `providerKeyProofSignalChecks`, and
+  `beta.diagnostics.ts`.
+- Graphify path `AdminView()` to `buildProviderKeyProofChecklist()` found a
+  two-hop route through `AdminView.tsx`.
+- Graphify path `AdminView()` to `SystemActivityPayload` found a two-hop route
+  through `AdminView.tsx`.
+
+## Integration Decisions
+
+- Added `shouldLoadActivityPayload` so the system-activity fetch loop remains
+  active on both Activity and Beta Diagnostics.
+- Kept the provider-key proof logic local-only and unchanged; provider meters
+  only help identify configured local keys, not completed live beta proof.
+- Added a compact Provider-Key Live Proof chip showing provider-meter freshness.
+- Added `phase61-browser-qa.mjs` to verify that system-activity requests keep
+  firing after switching into Beta Diagnostics.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 151 tests.
+- `npm run format:check`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser QA on `http://127.0.0.1:3100` confirmed Admin Beta Diagnostics
+  rendered the live beta runbook, Provider-Key Live Proof, provider-meter chip,
+  manual/setup status, no horizontal overflow, and zero console warnings/errors.
+- `node .workflow/brain-architecture-implementation-program/packets/phase61-browser-qa.mjs`:
+  passed with local Chrome CDP approval. Desktop and mobile Admin both showed
+  the provider-meter chip, runbook, local-only copy, `betaRequests: 1`, no
+  horizontal overflow, and zero console logs.
+- Browser screenshots saved as `ABY-admin-provider-meters-desktop.png` and
+  `ABY-admin-provider-meters-mobile.png`; JSON evidence saved as
+  `phase61-browser-qa.json`.
+- A first Graphify pass exposed accidental `server.mjs` build-artifact indexing
+  from the temporary dev server. The generated artifact and `.tmp-test` were
+  removed, the old generated graph directory was moved to `/private/tmp`, and
+  Graphify was regenerated cleanly.
+- Clean `graphify update . --force`: passed, regenerating code architecture
+  artifacts with 1075 nodes, 1899 edges, and 55 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`79.6 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes after the clean regeneration.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the runbook and coherent proof bundle to confirm
+  real request-correlated rows satisfy the complete local beta flow.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # brain architecture implementation program: phase 58 report
 
 ## Scope

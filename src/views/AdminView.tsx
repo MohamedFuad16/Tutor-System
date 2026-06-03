@@ -574,6 +574,8 @@ export function AdminView() {
   const consoleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<AdminTab>("activity");
+  const shouldLoadActivityPayload =
+    activeTab === "activity" || activeTab === "diagnostics";
   const [correctionAction, setCorrectionAction] =
     useState<CorrectionEvent["action"]>("mark_wrong");
   const [correctionTargetType, setCorrectionTargetType] =
@@ -626,7 +628,7 @@ export function AdminView() {
   }, [serverLogs]);
 
   useEffect(() => {
-    if (activeTab !== "activity") return;
+    if (!shouldLoadActivityPayload) return;
 
     let cancelled = false;
     let inFlight = false;
@@ -678,7 +680,11 @@ export function AdminView() {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [activeTab, activityRefreshKey, brainRuntimeSettings.activityRefreshMs]);
+  }, [
+    shouldLoadActivityPayload,
+    activityRefreshKey,
+    brainRuntimeSettings.activityRefreshMs,
+  ]);
 
   useEffect(() => {
     if (activeTab !== "console") {
@@ -4417,6 +4423,11 @@ export function AdminView() {
                           {providerKeyProofChecklist.voiceRealtimeKeyConfigured
                             ? "seen"
                             : "missing"}
+                        </span>
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${activityTone}`}
+                        >
+                          provider meters {activityLabel.toLowerCase()}
                         </span>
                         <span className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
                           live coverage{" "}

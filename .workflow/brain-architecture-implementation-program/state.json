@@ -540,6 +540,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABY",
+      "name": "Beta diagnostics provider-meter freshness",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/views/AdminView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1136,11 +1143,32 @@
     "Graphify smoke query found buildLiveBetaProofRunbook(), LiveBetaProofRunbook, ProviderKeyProofChecklist, buildProviderKeyProofChecklist(), beta.diagnostics.ts, and AdminView.tsx",
     "graphify path buildLiveBetaProofRunbook() to AdminView() found a connected route through beta.diagnostics.ts and Admin beta diagnostics calls",
     "graphify path buildLiveBetaProofRunbook() to buildProviderKeyProofChecklist() found the expected one-hop connection",
-    "Packet ABX graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABX graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABY selected after Graphify routed Admin Beta Diagnostics through AdminView(), AdminView.tsx, buildBetaDiagnosticsSnapshot(), buildBrainFlowCoverageFromLedgers(), buildCoherentLiveProofFromLedgers(), providerKeyProofSignalChecks, and beta.diagnostics.ts",
+    "Admin now keeps the local system-activity payload warm while either Activity or Beta Diagnostics is active",
+    "Provider-Key Live Proof now renders provider-meter freshness beside the chat and voice key chips without changing provider-key proof semantics",
+    "Added phase61-browser-qa.mjs to verify desktop and mobile Admin continue polling /api/debug/system-activity after entering Beta Diagnostics",
+    "npm run format passed for Packet ABY",
+    "npm run test passed, 151 tests",
+    "npm run format:check passed for Packet ABY",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run brain:ui-regression remained unavailable because current package.json has no brain:ui-regression script",
+    "npm run lint passed for Packet ABY",
+    "npm run build passed for Packet ABY",
+    "In-app Browser QA on localhost:3100 confirmed Admin Beta Diagnostics rendered Local Beta Readiness, Live beta runbook, Provider-Key Live Proof, provider-meter chip, manual/setup status, no horizontal overflow, and zero console warnings/errors",
+    "Headless Chrome CDP QA via phase61-browser-qa.mjs confirmed desktop and mobile Admin had requestCount 3, betaRequests 1, provider-meter chip, runbook, local-only copy, no horizontal overflow, and zero console logs",
+    "Browser QA screenshots saved as ABY-admin-provider-meters-desktop.png and ABY-admin-provider-meters-mobile.png; JSON evidence saved as phase61-browser-qa.json",
+    "First Packet ABY Graphify pass caught accidental server.mjs build-artifact indexing from the temporary dev server; generated server.mjs and .tmp-test were removed and old graphify-out was moved to /private/tmp before clean regeneration",
+    "Clean graphify update . --force regenerated code architecture artifacts with 1075 nodes, 1899 edges, and 55 communities",
+    "npm run graphify:tree passed for Packet ABY and wrote GRAPH_TREE.html at 79.6 KB",
+    "Graphify smoke query found AdminView(), AdminView.tsx, buildBetaDiagnosticsSnapshot(), buildBrainFlowCoverageFromLedgers(), buildCoherentLiveProofFromLedgers(), providerKeyProofSignalChecks, beta.diagnostics.ts, and connected Admin nodes",
+    "graphify path AdminView() to buildProviderKeyProofChecklist() found a two-hop route through AdminView.tsx",
+    "graphify path AdminView() to SystemActivityPayload found a two-hop route through AdminView.tsx",
+    "Packet ABY graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 90,
-    "basis": "Local architecture estimate after Packet ABX final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, and an Admin live beta proof runbook are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T16:44:00.000+09:00"
+    "estimatePercent": 91,
+    "basis": "Local architecture estimate after Packet ABY final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, and Beta Diagnostics provider-meter freshness are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T18:48:00.000+09:00"
   }
 }

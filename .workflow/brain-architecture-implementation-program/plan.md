@@ -149,3 +149,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   provider-key proof checklist, render next-step blockers/evidence in Admin,
   include it in the local diagnostics export metadata, and verify desktop/mobile
   Admin Beta Diagnostics without running provider traffic.
+- ABY: Beta diagnostics provider-meter freshness. Keep local system-activity
+  provider meters warm while Beta Diagnostics is active, render provider-meter
+  freshness beside the Provider-Key Live Proof chips, and verify desktop/mobile
+  Admin continues polling the local debug endpoint after entering Diagnostics.
