@@ -210,6 +210,20 @@ export type CoherentLiveProofCheck = {
   evidence: BetaBrainFlowSignalEvidence;
 };
 
+export type CoherentLiveProofProviderCapture = {
+  layer: "chat" | "voice";
+  title: string;
+  source: "provider_model_run" | "voice_provider_ready";
+  provider: string;
+  requestId?: string;
+  requestedModel?: string;
+  usedModel?: string;
+  phase?: string;
+  timestamp?: number;
+  proofAttemptIds: string[];
+  evidence: BetaBrainFlowSignalEvidence;
+};
+
 export type CoherentLiveProofRequestBundle = {
   layer: "chat" | "voice";
   title: string;
@@ -230,6 +244,7 @@ export type CoherentLiveProofRequestBundle = {
   proofAttemptIds: string[];
   latestTimestamp?: number;
   missingRows: string[];
+  providerCaptures: CoherentLiveProofProviderCapture[];
   evidence: BetaBrainFlowSignalEvidence;
 };
 
@@ -1042,12 +1057,70 @@ const coherentBundleRowLabels = [
   },
 ] as const;
 
+const buildProviderCapture = (
+  layer: "chat" | "voice",
+  row: CoherentModelRunRow | BetaSystemActivityLedgerRow,
+  fallbackRequestId: string,
+): CoherentLiveProofProviderCapture => {
+  const modelRow = row as Partial<CoherentModelRunRow>;
+  const activityRow = row as Partial<BetaSystemActivityLedgerRow>;
+  const source =
+    layer === "chat" ? "provider_model_run" : "voice_provider_ready";
+  const provider =
+    layer === "chat"
+      ? requestIdValue(modelRow.provider) || "openrouter"
+      : "deepgram";
+  const requestedModel = requestIdValue(modelRow.requestedModel);
+  const usedModel = requestIdValue(modelRow.usedModel);
+  const requestId = requestIdValue(row.requestId) || fallbackRequestId;
+  const proofAttemptIds = compactUnique(
+    [metadataProofAttemptId(row.metadata)],
+    5,
+  );
+  const timestamp =
+    typeof row.timestamp === "number" && Number.isFinite(row.timestamp)
+      ? row.timestamp
+      : undefined;
+  const phase = requestIdValue(activityRow.phase);
+  const title =
+    layer === "chat"
+      ? `${provider} ${usedModel || requestedModel || "model"} completed`
+      : "Deepgram voice provider ready";
+
+  return {
+    layer,
+    title,
+    source,
+    provider,
+    ...(requestId ? { requestId } : {}),
+    ...(requestedModel ? { requestedModel } : {}),
+    ...(usedModel ? { usedModel } : {}),
+    ...(phase ? { phase } : {}),
+    ...(typeof timestamp === "number" ? { timestamp } : {}),
+    proofAttemptIds,
+    evidence: buildSignalEvidence([
+      {
+        metadata: row.metadata,
+        proofAttemptId: proofAttemptIds[0],
+        requestId,
+        source,
+        timestamp,
+      },
+    ]),
+  };
+};
+
 const buildCoherentRequestBundle = (
   layer: "chat" | "voice",
   facts?: CoherentRequestFacts,
 ): CoherentLiveProofRequestBundle => {
   const anchors = facts?.anchors || [];
   const latestTimestamp = latestTimestampFromAnchors(anchors);
+  const providerCaptures = facts
+    ? facts.providerRows
+        .map((row) => buildProviderCapture(layer, row, facts.requestId))
+        .slice(0, 6)
+    : [];
   const rowCount = (key: (typeof coherentBundleRowLabels)[number]["key"]) =>
     facts?.[key].length || 0;
   const missingRows = coherentBundleRowLabels
@@ -1075,6 +1148,7 @@ const buildCoherentRequestBundle = (
     proofAttemptIds: facts?.proofAttemptIds || [],
     ...(latestTimestamp ? { latestTimestamp } : {}),
     missingRows,
+    providerCaptures,
     evidence: facts ? mergeAnchors(anchors) : emptySignalEvidence(),
   };
 };

@@ -43,6 +43,7 @@
 - Packet ABW: See `packets/ABW-active-book-pdf-retrieval-hint.md`.
 - Packet ACI: See `packets/ACI-voice-proof-attempt-latch.md`.
 - Packet ACJ: See `packets/ACJ-live-provider-row-proof.md`.
+- Packet ACK: See `packets/ACK-provider-proof-capture-details.md`.
 
 ## Completion Audit
 

@@ -180,6 +180,11 @@ const completeBrainFlowLedgers = {
       requestedModel: "openai/gpt-4.1-mini",
       usedModel: "openai/gpt-4.1-mini",
       timestamp: 7,
+      metadata: {
+        proofAttemptId: PROOF_ATTEMPT_ID,
+        mode: "chat",
+        agentLayer: "chat_stream",
+      },
     },
     {
       status: "completed",
@@ -670,6 +675,18 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.equal(chatBundle?.backgroundRows, 1);
   assert.deepEqual(chatBundle?.proofAttemptIds, [PROOF_ATTEMPT_ID]);
   assert.deepEqual(chatBundle?.missingRows, []);
+  assert.equal(chatBundle?.providerCaptures.length, 1);
+  assert.equal(chatBundle?.providerCaptures[0]?.provider, "openrouter");
+  assert.equal(
+    chatBundle?.providerCaptures[0]?.usedModel,
+    "openai/gpt-4.1-mini",
+  );
+  assert.deepEqual(chatBundle?.providerCaptures[0]?.proofAttemptIds, [
+    PROOF_ATTEMPT_ID,
+  ]);
+  assert.deepEqual(chatBundle?.providerCaptures[0]?.evidence.sources, [
+    "provider_model_run",
+  ]);
   assert.equal(voiceBundle?.requestId, "voice-req-1");
   assert.equal(voiceBundle?.completedModelRows, 1);
   assert.equal(voiceBundle?.providerRows, 1);
@@ -677,21 +694,39 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.equal(voiceBundle?.backgroundRows, 1);
   assert.deepEqual(voiceBundle?.proofAttemptIds, [PROOF_ATTEMPT_ID]);
   assert.deepEqual(voiceBundle?.missingRows, []);
+  assert.equal(voiceBundle?.providerCaptures.length, 1);
+  assert.equal(voiceBundle?.providerCaptures[0]?.provider, "deepgram");
+  assert.equal(voiceBundle?.providerCaptures[0]?.phase, "settings");
+  assert.deepEqual(voiceBundle?.providerCaptures[0]?.proofAttemptIds, [
+    PROOF_ATTEMPT_ID,
+  ]);
+  assert.deepEqual(voiceBundle?.providerCaptures[0]?.evidence.sources, [
+    "voice_provider_ready",
+  ]);
 });
 
 test("coherent live proof requires a shared deliberate proof attempt id", () => {
+  const withoutProofAttemptMetadata = (row) => ({
+    ...row,
+    metadata: row.metadata
+      ? Object.fromEntries(
+          Object.entries(row.metadata).filter(
+            ([key]) => key !== "proofAttemptId",
+          ),
+        )
+      : row.metadata,
+  });
   const ledgersWithoutAttempt = {
     ...completeBrainFlowLedgers,
-    memoryEvents: completeBrainFlowLedgers.memoryEvents.map((row) => ({
-      ...row,
-      metadata: row.metadata
-        ? Object.fromEntries(
-            Object.entries(row.metadata).filter(
-              ([key]) => key !== "proofAttemptId",
-            ),
-          )
-        : row.metadata,
-    })),
+    memoryEvents: completeBrainFlowLedgers.memoryEvents.map(
+      withoutProofAttemptMetadata,
+    ),
+    modelRuns: completeBrainFlowLedgers.modelRuns.map(
+      withoutProofAttemptMetadata,
+    ),
+    systemActivityEvents: completeBrainFlowLedgers.systemActivityEvents.map(
+      withoutProofAttemptMetadata,
+    ),
   };
   const proof = buildCoherentLiveProofFromLedgers(ledgersWithoutAttempt);
 
@@ -993,11 +1028,13 @@ test("coherent live proof rejects fallback model rows for provider-key proof", (
   assert.equal(fallbackChatBundle?.requestId, "chat-req-1");
   assert.equal(fallbackChatBundle?.completedModelRows, 0);
   assert.equal(fallbackChatBundle?.providerRows, 0);
+  assert.equal(fallbackChatBundle?.providerCaptures.length, 0);
   assert.ok(fallbackChatBundle?.missingRows.includes("Provider-ready row"));
   assert.ok(fallbackChatBundle?.missingRows.includes("Completed model row"));
   assert.equal(fallbackVoiceBundle?.requestId, "voice-req-1");
   assert.equal(fallbackVoiceBundle?.completedModelRows, 0);
   assert.equal(fallbackVoiceBundle?.providerRows, 1);
+  assert.equal(fallbackVoiceBundle?.providerCaptures.length, 1);
   assert.ok(fallbackVoiceBundle?.missingRows.includes("Completed model row"));
   assert.equal(checklist.status, "watch");
   assert.equal(checklist.canAttemptProviderKeyRun, true);
@@ -1035,6 +1072,7 @@ test("coherent live proof requires real voice provider readiness, not mock voice
   );
   assert.equal(voiceBundle?.requestId, "voice-req-1");
   assert.equal(voiceBundle?.providerRows, 0);
+  assert.equal(voiceBundle?.providerCaptures.length, 0);
   assert.ok(voiceBundle?.missingRows.includes("Provider-ready row"));
 });
 

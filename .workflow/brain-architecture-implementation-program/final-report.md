@@ -172,6 +172,87 @@ tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+---
+
+# Packet ACK: Provider Proof Capture Details
+
+## Status
+
+Completed through local verification gates.
+
+Current conservative brain-architecture completion estimate after ACK:
+about 99%.
+
+## Graphify Context
+
+- Graphify CLI routed this slice through `src/memory/beta.diagnostics.ts`,
+  `src/views/AdminView.tsx`, `src/components/ChatPanel.tsx`,
+  `src/memory/model.runs.ts`, `server.ts`, and
+  `tests/beta-diagnostics.test.mjs`.
+- Clean regenerated graph artifacts contain 1132 nodes, 1975 edges, and 68
+  communities.
+- Graphify smoke query found `CoherentLiveProofProviderCapture`,
+  `buildProviderCapture()`, `buildCoherentRequestBundle()`,
+  `buildCoherentLiveProofFromLedgers()`, `AdminView()`, and connected
+  diagnostics/Admin nodes.
+- Graphify path `buildProviderCapture` to `AdminView` found a three-hop route
+  through `beta.diagnostics.ts` and `buildCoherentLiveProofFromLedgers()`.
+- Graphify path `buildCoherentLiveProofFromLedgers` to `AdminView` found the
+  expected one-hop call route.
+
+## Integration Decisions
+
+- Added `CoherentLiveProofProviderCapture` and `providerCaptures` to coherent
+  proof request bundles.
+- Provider captures summarize the selected OpenRouter model row or Deepgram
+  `Voice provider ready` row with provider, model or phase, request id,
+  timestamp, proof-attempt ids, and compact signal evidence.
+- Admin Beta Diagnostics now renders provider capture cards inside selected
+  typed-chat and live-voice request bundles.
+- The proof gate remains strict: fallback chat rows and mock voice provider rows
+  still do not satisfy provider-key proof.
+- No provider calls, key display, AWS/cloud work, or Dexie schema changes were
+  added.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test -- tests/beta-diagnostics.test.mjs`: passed via the project
+  test runner, 165 tests.
+- `npm run test`: passed, 165 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `node --check .workflow/brain-architecture-implementation-program/packets/phase71-browser-qa.mjs`:
+  passed.
+- In-app Browser desktop Admin QA confirmed the Provider-Key Live Proof section,
+  Provider rows, Missing rows, Real voice provider ready copy, no horizontal
+  overflow at 1280px, and zero warning/error logs.
+- Headless Chrome CDP QA via `phase71-browser-qa.mjs` seeded a local-only
+  provider proof dataset and confirmed desktop/mobile Admin rendered OpenRouter
+  and Deepgram provider captures, selected request ids, proof attempt id, ready
+  100% bundle state, no horizontal overflow, and zero warning/error logs.
+- Browser QA screenshots saved as `ACK-admin-provider-captures-desktop.png` and
+  `ACK-admin-provider-captures-mobile.png`; JSON evidence saved as
+  `phase71-browser-qa.json`.
+- Tutor debug brain scripts remained unavailable:
+  `brain:postchange`, `brain:retrieve`, and `brain:impact` are not defined in
+  `package.json`.
+- `graphify update . --force`: passed after generated scratch files were
+  removed and stale `graphify-out` was moved aside for a clean rebuild.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`82.9 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch references after the clean rebuild.
+
+## Remaining Work
+
+- Run the deliberate live provider-key beta drill with real OpenRouter and
+  Deepgram traffic to record non-seeded provider rows.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after local beta proof.
+
 # Phase 71: Live Provider Row Proof
 
 Packet ACJ tightens the final local provider-key proof gate. The coherent proof

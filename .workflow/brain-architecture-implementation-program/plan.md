@@ -189,3 +189,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   completed OpenRouter-backed row, live voice requires the server-side Deepgram
   `Voice provider ready` row, and local mock voice provider rows stay visible
   without satisfying provider-key proof.
+- ACK: Provider proof capture details. Add compact selected-provider capture
+  details to coherent proof bundles and Admin Beta Diagnostics so local beta
+  export/review can see the exact OpenRouter or Deepgram evidence row without
+  showing keys, auto-calling providers, or counting fallback/mock rows.

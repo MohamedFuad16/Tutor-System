@@ -5101,6 +5101,81 @@ export function AdminView() {
                                     ))}
                                   </div>
 
+                                  {bundle.providerCaptures.length > 0 && (
+                                    <div className="mt-3 grid gap-2">
+                                      {bundle.providerCaptures.map(
+                                        (capture, index) => {
+                                          const modelLabel =
+                                            capture.usedModel ||
+                                            capture.requestedModel ||
+                                            "";
+                                          return (
+                                            <div
+                                              key={`${bundle.layer}-provider-${capture.source}-${capture.requestId || index}-${capture.timestamp || index}`}
+                                              className="rounded-xl border border-blue-100 bg-white px-3 py-2"
+                                            >
+                                              <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                                                <div className="min-w-0">
+                                                  <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-blue-500">
+                                                    Provider capture
+                                                  </div>
+                                                  <div className="mt-1 truncate text-xs font-semibold text-zinc-900">
+                                                    {capture.title}
+                                                  </div>
+                                                </div>
+                                                <span className="w-fit rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue-700">
+                                                  {capture.provider}
+                                                </span>
+                                              </div>
+                                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                                {modelLabel && (
+                                                  <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                                    model {modelLabel}
+                                                  </span>
+                                                )}
+                                                {capture.phase && (
+                                                  <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                                    phase {capture.phase}
+                                                  </span>
+                                                )}
+                                                {capture.requestId && (
+                                                  <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700">
+                                                    req {capture.requestId}
+                                                  </span>
+                                                )}
+                                                {typeof capture.timestamp ===
+                                                  "number" && (
+                                                  <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                                    latest{" "}
+                                                    {formatTime(
+                                                      capture.timestamp,
+                                                    )}
+                                                  </span>
+                                                )}
+                                                {capture.proofAttemptIds.map(
+                                                  (attemptId) => (
+                                                    <span
+                                                      key={`${bundle.layer}-provider-attempt-${attemptId}`}
+                                                      className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700"
+                                                    >
+                                                      attempt {attemptId}
+                                                    </span>
+                                                  ),
+                                                )}
+                                                <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                                  {capture.source.replace(
+                                                    /_/g,
+                                                    " ",
+                                                  )}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          );
+                                        },
+                                      )}
+                                    </div>
+                                  )}
+
                                   <div className="mt-3 flex flex-wrap gap-1.5">
                                     {bundle.proofAttemptIds.map((attemptId) => (
                                       <span
