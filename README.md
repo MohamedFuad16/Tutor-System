@@ -80,6 +80,11 @@ Admin can start a local proof attempt before the manual chat and voice run; that
 attempt writes a local memory-event lifecycle row, the id is carried through
 chat/voice metadata, and coherent provider-key proof now requires the selected
 rows to share it in addition to book, thread, and multi-PDF anchors.
+The provider-key panel also exposes a local live-proof drill packet: setup
+checklist, ordered run sequence, exact typed-chat and live-voice prompts,
+expected ledger rows, blockers, and export instructions. It helps beta operators
+run the proof deliberately without the Admin screen auto-calling providers or
+starting cloud/AWS work.
 The same Admin panel can run a deterministic synthetic wiring rehearsal through
 the shared multi-PDF context helpers, typed-chat and live-voice tool
 definitions, matching shared tool schemas, and the thirteen-signal verifier.

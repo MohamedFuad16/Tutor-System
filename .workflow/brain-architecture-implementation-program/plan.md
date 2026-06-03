@@ -169,3 +169,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   to fit one local proof window and stay fresh relative to the Admin diagnostics
   snapshot, so old local ledger history cannot pass as a current provider-key
   run.
+- ACG: Provider-key live proof drill packet. Convert the provider-key runbook
+  into exact local typed-chat and live-voice proof prompts, expected ledger rows,
+  blockers, setup/run/export instructions, Admin UI, diagnostics export
+  metadata, browser QA, and regenerated Graphify artifacts without auto-calling
+  providers or starting AWS/cloud work.

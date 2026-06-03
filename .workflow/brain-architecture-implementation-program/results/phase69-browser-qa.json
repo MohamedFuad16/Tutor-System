@@ -1,0 +1,60 @@
+{
+  "status": "passed",
+  "appUrl": "http://127.0.0.1:3100",
+  "port": 9342,
+  "results": [
+    {
+      "surface": "admin",
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "hasDrillPacket": true,
+      "hasPromptHeading": true,
+      "hasChatPrompt": true,
+      "hasVoiceScript": true,
+      "hasExpectedRows": true,
+      "hasManualBoundary": true,
+      "hasExportInstructions": true,
+      "consoleLogs": []
+    },
+    {
+      "surface": "revision",
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "hasAppDesign": true,
+      "hasControlPatterns": true,
+      "hasDrillPattern": true,
+      "hasPromptCopy": true,
+      "hasManualBoundary": true,
+      "consoleLogs": []
+    },
+    {
+      "surface": "admin",
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "hasDrillPacket": true,
+      "hasPromptHeading": true,
+      "hasChatPrompt": true,
+      "hasVoiceScript": true,
+      "hasExpectedRows": true,
+      "hasManualBoundary": true,
+      "hasExportInstructions": true,
+      "consoleLogs": []
+    },
+    {
+      "surface": "revision",
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "hasAppDesign": true,
+      "hasControlPatterns": true,
+      "hasDrillPattern": true,
+      "hasPromptCopy": true,
+      "hasManualBoundary": true,
+      "consoleLogs": []
+    }
+  ],
+  "generatedAt": "2026-06-03T13:39:53.652Z"
+}

@@ -152,6 +152,30 @@ export type LiveBetaProofRunbook = {
   steps: LiveBetaProofRunbookStep[];
 };
 
+export type LiveBetaProofDrillPrompt = {
+  id: string;
+  layer: "chat" | "voice";
+  title: string;
+  prompt: string;
+  expectedRows: string[];
+  toolExpectation: string;
+  evidenceGoal: string;
+};
+
+export type LiveBetaProofDrillPacket = {
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  canRun: boolean;
+  localOnly: true;
+  activeAttemptRequired: boolean;
+  activeMultiPdfBookRequired: boolean;
+  summary: string;
+  setupChecklist: string[];
+  runSequence: string[];
+  blockingChecks: string[];
+  exportInstructions: string[];
+  prompts: LiveBetaProofDrillPrompt[];
+};
+
 export type ProviderKeyProofChecklist = {
   status: Exclude<BetaDiagnosticStatus, "deferred">;
   completionPercent: number;
@@ -165,6 +189,7 @@ export type ProviderKeyProofChecklist = {
   proofComplete: boolean;
   coherentLiveProof: CoherentLiveProofBundle;
   liveProofRunbook: LiveBetaProofRunbook;
+  liveProofDrillPacket: LiveBetaProofDrillPacket;
   summary: string;
   missingChecks: string[];
   checks: ProviderKeyProofCheck[];
@@ -1987,6 +2012,115 @@ export const buildLiveBetaProofRunbook = ({
   };
 };
 
+export const buildLiveBetaProofDrillPacket = ({
+  liveProofRunbook,
+  coherentLiveProof,
+  canAttemptProviderKeyRun,
+  proofComplete,
+  failedRows,
+}: {
+  liveProofRunbook: LiveBetaProofRunbook;
+  coherentLiveProof: CoherentLiveProofBundle;
+  canAttemptProviderKeyRun: boolean;
+  proofComplete: boolean;
+  failedRows: number;
+}): LiveBetaProofDrillPacket => {
+  const blockingChecks = compactUnique(
+    liveProofRunbook.steps.flatMap((step) => step.blockingChecks),
+    16,
+  );
+  const selectedRequestIds = compactUnique(
+    [coherentLiveProof.chatRequestId, coherentLiveProof.voiceRequestId],
+    2,
+  );
+  const status: Exclude<BetaDiagnosticStatus, "deferred"> =
+    failedRows > 0 || liveProofRunbook.status === "blocked"
+      ? "blocked"
+      : proofComplete
+        ? "ready"
+        : "watch";
+  const canRun = canAttemptProviderKeyRun && status !== "blocked";
+
+  return {
+    status,
+    canRun,
+    localOnly: true,
+    activeAttemptRequired: true,
+    activeMultiPdfBookRequired: true,
+    summary:
+      status === "ready"
+        ? "The local chat and voice drill has enough coherent ledger rows. Export diagnostics instead of rerunning unless you want a fresh beta proof."
+        : canRun
+          ? "Use this local-only drill to produce one typed-chat request and one live-voice request against the same active multi-PDF book."
+          : "Complete provider-key setup and clear blocked ledger rows before running the local chat and voice drill.",
+    setupChecklist: [
+      "Open one learning book with at least two ready PDFs.",
+      "Start or restart one Admin provider-key proof attempt.",
+      "Keep the same book, thread, and proof attempt active for typed chat and live voice.",
+      "Confirm chat model and realtime voice provider-key meters are visible before running the drill.",
+      "Do not start cloud/AWS deployment work for this beta proof.",
+    ],
+    runSequence: [
+      "Run the typed-chat proof prompt in the active book chat.",
+      "Run the live-voice proof script in the same active book and proof attempt.",
+      "End the voice session so the transcript can save locally.",
+      "Wait for local background memory workers to finish.",
+      "Return to Admin Diagnostics and confirm the coherent bundle selects one chat request and one voice request.",
+    ],
+    blockingChecks,
+    exportInstructions: [
+      selectedRequestIds.length === 2
+        ? `Confirm selected request ids ${selectedRequestIds.join(" and ")} remain in the coherent bundle.`
+        : "Confirm the coherent bundle has one selected chat request id and one selected voice request id.",
+      "Confirm shared proof attempt, shared book, shared thread, and more than one shared PDF id.",
+      "Use Export diagnostics only after the packet status is ready or after you intentionally want to inspect remaining gaps.",
+      "Keep the exported JSON local; it is a beta diagnostics artifact, not a cloud sync artifact.",
+    ],
+    prompts: [
+      {
+        id: "typed_chat_provider_key_prompt",
+        layer: "chat",
+        title: "Typed-chat proof prompt",
+        prompt:
+          'Provider-key proof turn. Use the active learning book and all ready PDFs, not only the visible page. Compare one concept that appears across at least two PDFs, cite the source/page anchors you used, run a visible tutor tool if available, and evaluate this supplied answer for mastery: "The concept connects the two readings through shared evidence; correct me if that is wrong." Keep the response short and make the tool/evidence step visible.',
+        expectedRows: [
+          "chat brain_context_injected",
+          "chat retrieval row",
+          "chat completed model run",
+          "chat foreground tool job",
+          "chat evaluated mastery evidence",
+          "chat book_chat_thread_saved",
+          "chat request-correlated background memory row",
+        ],
+        toolExpectation:
+          "A typed-chat foreground tool row should complete with the same request id as the context, model, mastery, and transcript rows.",
+        evidenceGoal:
+          "Typed chat proves multi-PDF context, provider model execution, visible tool use, non-model mastery evidence, transcript persistence, and background memory.",
+      },
+      {
+        id: "live_voice_provider_key_script",
+        layer: "voice",
+        title: "Live-voice proof script",
+        prompt:
+          "Provider-key voice proof turn. On this same active book and proof attempt, use all ready PDFs in context. Ask me one short active-recall question that connects two PDFs, then evaluate my spoken answer and use a visible voice tool/source lookup if available. End the session after the evaluation so the transcript saves locally.",
+        expectedRows: [
+          "voice brain_context_injected",
+          "voice retrieval row",
+          "voice completed model run",
+          "voice-agent tool job",
+          "voice evaluated mastery evidence",
+          "voice book_chat_thread_saved",
+          "voice request-correlated background memory row",
+        ],
+        toolExpectation:
+          "A voice-agent tool row should complete with the same realtime request id as the voice context, model, mastery, and transcript rows.",
+        evidenceGoal:
+          "Live voice proves the realtime agent layer receives the same multi-PDF book context and stores tool, mastery, transcript, and memory evidence locally.",
+      },
+    ],
+  };
+};
+
 export const buildProviderKeyProofChecklist = ({
   brainFlow,
   coherentLiveProof = buildCoherentLiveProofFromLedgers(),
@@ -2117,6 +2251,13 @@ export const buildProviderKeyProofChecklist = ({
     proofComplete,
     failedRows: brainFlow.failedRows,
   });
+  const liveProofDrillPacket = buildLiveBetaProofDrillPacket({
+    liveProofRunbook,
+    coherentLiveProof,
+    canAttemptProviderKeyRun,
+    proofComplete,
+    failedRows: brainFlow.failedRows,
+  });
 
   return {
     status,
@@ -2131,6 +2272,7 @@ export const buildProviderKeyProofChecklist = ({
     proofComplete,
     coherentLiveProof,
     liveProofRunbook,
+    liveProofDrillPacket,
     summary,
     missingChecks,
     checks,

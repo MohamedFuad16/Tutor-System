@@ -1035,6 +1035,7 @@ export function AdminView() {
     ],
   );
   const liveProofRunbook = providerKeyProofChecklist.liveProofRunbook;
+  const liveProofDrillPacket = providerKeyProofChecklist.liveProofDrillPacket;
   const recordProofAttemptLifecycle = (
     eventType: "beta_proof_attempt_started" | "beta_proof_attempt_cleared",
     proofAttemptId: string,
@@ -1441,6 +1442,7 @@ export function AdminView() {
           proofComplete: providerKeyProofChecklist.proofComplete,
           missingChecks: providerKeyProofChecklist.missingChecks,
           liveProofRunbook,
+          liveProofDrillPacket,
           activeProofAttemptId: activeBetaProofAttemptId || undefined,
         },
       },
@@ -4749,6 +4751,155 @@ export function AdminView() {
                               </article>
                             );
                           })}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 rounded-2xl border border-cyan-100 bg-cyan-50/40 p-4">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-600">
+                              Live proof drill packet
+                            </div>
+                            <h4 className="mt-1 text-base font-semibold text-zinc-900">
+                              Exact local prompts for chat and voice
+                            </h4>
+                            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                              {liveProofDrillPacket.summary}
+                            </p>
+                          </div>
+                          <div className="shrink-0 rounded-2xl border border-cyan-100 bg-white px-4 py-3 text-right">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              Drill
+                            </div>
+                            <span
+                              className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(liveProofDrillPacket.status)}`}
+                            >
+                              {liveProofDrillPacket.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <span
+                            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${liveProofDrillPacket.canRun ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                          >
+                            {liveProofDrillPacket.canRun
+                              ? "ready to run"
+                              : "not runnable yet"}
+                          </span>
+                          <span className="rounded-full border border-cyan-100 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-cyan-700">
+                            local only
+                          </span>
+                          {liveProofDrillPacket.activeAttemptRequired && (
+                            <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-blue-700">
+                              active attempt required
+                            </span>
+                          )}
+                          {liveProofDrillPacket.activeMultiPdfBookRequired && (
+                            <span className="rounded-full border border-violet-100 bg-violet-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-violet-700">
+                              multi-PDF book required
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                          {[
+                            [
+                              "Setup checklist",
+                              liveProofDrillPacket.setupChecklist,
+                            ],
+                            ["Run sequence", liveProofDrillPacket.runSequence],
+                          ].map(([title, entries]) => (
+                            <div
+                              key={title as string}
+                              className="rounded-2xl border border-white bg-white/85 p-3"
+                            >
+                              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                {title as string}
+                              </div>
+                              <ol className="mt-2 space-y-1.5 text-xs leading-relaxed text-zinc-600 font-serif">
+                                {(entries as string[]).map((entry, index) => (
+                                  <li
+                                    key={`${title}-${entry}`}
+                                    className="grid grid-cols-[1.35rem_minmax(0,1fr)] gap-2"
+                                  >
+                                    <span className="font-mono text-[10px] text-zinc-400">
+                                      {index + 1}
+                                    </span>
+                                    <span>{entry}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                          {liveProofDrillPacket.prompts.map((prompt) => (
+                            <article
+                              key={prompt.id}
+                              className="rounded-2xl border border-white bg-white/90 p-3"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                    {prompt.layer} agent layer
+                                  </div>
+                                  <h5 className="mt-1 text-sm font-semibold text-zinc-900">
+                                    {prompt.title}
+                                  </h5>
+                                </div>
+                                <span className="rounded-full border border-cyan-100 bg-cyan-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-cyan-700">
+                                  exact prompt
+                                </span>
+                              </div>
+                              <p className="mt-3 rounded-xl border border-cyan-100 bg-cyan-50/60 px-3 py-2 text-xs leading-relaxed text-zinc-700 font-serif">
+                                {prompt.prompt}
+                              </p>
+                              <p className="mt-3 text-[11px] leading-relaxed text-zinc-500 font-serif">
+                                {prompt.toolExpectation}
+                              </p>
+                              <p className="mt-2 text-[11px] leading-relaxed text-zinc-500 font-serif">
+                                {prompt.evidenceGoal}
+                              </p>
+                              <div className="mt-3 flex flex-wrap gap-1.5">
+                                {prompt.expectedRows.map((row) => (
+                                  <span
+                                    key={`${prompt.id}-${row}`}
+                                    className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-zinc-600"
+                                  >
+                                    {row}
+                                  </span>
+                                ))}
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+
+                        {liveProofDrillPacket.blockingChecks.length > 0 && (
+                          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800 font-serif">
+                            Blocking checks:{" "}
+                            {liveProofDrillPacket.blockingChecks.join(", ")}.
+                          </div>
+                        )}
+
+                        <div className="mt-4 rounded-2xl border border-white bg-white/85 p-3">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                            Export instructions
+                          </div>
+                          <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-zinc-600 font-serif">
+                            {liveProofDrillPacket.exportInstructions.map(
+                              (instruction) => (
+                                <li
+                                  key={instruction}
+                                  className="grid grid-cols-[0.75rem_minmax(0,1fr)] gap-2"
+                                >
+                                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                                  <span>{instruction}</span>
+                                </li>
+                              ),
+                            )}
+                          </ul>
                         </div>
                       </div>
 

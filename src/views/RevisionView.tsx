@@ -2348,6 +2348,11 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Beta Diagnostics checks chat context, voice context, chat and voice multi-PDF context, request correlation, foreground tools, evaluated mastery evidence, transcript saves, request-correlated memory rows, and model-observation gates as one local readiness proof. Admin can start a local proof attempt before the manual chat and voice run; coherent provider-key proof requires that start row, shared attempt id, book, thread, and context-PDF anchors.",
       },
       {
+        title: "Provider-key drill packet",
+        detail:
+          "The provider-key panel should turn the checklist into a runnable local drill: setup checklist, exact typed-chat and live-voice prompts, expected ledger rows, blockers, and export instructions. It guides beta proof without auto-starting provider calls or cloud work.",
+      },
+      {
         title: "Synthetic wiring rehearsal",
         detail:
           "Admin can exercise the shared multi-PDF packet helpers, typed-chat and live-voice tool definitions, matching shared tool schemas, and the same thirteen-signal verifier in memory only. The rehearsal is labeled synthetic and cannot raise live beta coverage.",

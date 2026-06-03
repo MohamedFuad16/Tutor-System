@@ -172,6 +172,94 @@ about 98%.
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+# Packet ACG: Provider-Key Live Proof Drill Packet
+
+Date: 2026-06-03T22:30:24+0900
+
+## Summary
+
+Converted the Provider-Key Live Proof runbook into an executable local drill
+packet without auto-calling providers or starting AWS/cloud work.
+
+Current conservative brain-architecture completion estimate after this slice:
+about 99% for local architecture wiring. The remaining gap is still a deliberate
+provider-key typed-chat plus live-voice beta run with real provider rows and
+broader beta validation.
+
+## Graphify Context
+
+- `graphify query "provider-key live proof drill packet AdminView beta diagnostics runbook chat voice prompt expected rows" --budget 5000 --graph graphify-out/graph.json`
+  routed the slice to `src/memory/beta.diagnostics.ts`,
+  `src/views/AdminView.tsx`, and `tests/beta-diagnostics.test.mjs`.
+- `graphify query "provider key live proof drill packet documentation README
+  TUTOR_ARCHITECTURE userBrainArchitectureBook RevisionView App Design Language
+  Admin beta diagnostics" --budget 5000 --graph graphify-out/graph.json`
+  routed the documentation/design update to `AdminView.tsx`,
+  `RevisionView.tsx`, and `src/lib/userBrainArchitectureBook.ts`.
+
+## Integration Decisions
+
+- Added `LiveBetaProofDrillPacket` and `LiveBetaProofDrillPrompt` to
+  `src/memory/beta.diagnostics.ts`.
+- `buildProviderKeyProofChecklist()` now returns `liveProofDrillPacket`, derived
+  from the same live checks and coherent bundle data as the runbook.
+- The packet includes local setup checklist, run sequence, blockers, export
+  instructions, and exact typed-chat plus live-voice proof prompts.
+- Admin Beta Diagnostics now renders the drill packet between the ordered
+  runbook and coherent proof bundle.
+- Diagnostics export metadata includes the drill packet so local beta evidence
+  reviewers can see the exact prompts and expected rows used for the run.
+- README, Tutor System Architecture, User Brain Architecture, and App Design
+  Language now document the drill packet as a manual local proof aid, not an
+  automated provider/cloud action.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 161 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- `node .workflow/brain-architecture-implementation-program/packets/phase69-browser-qa.mjs`:
+  passed with local Chrome CDP approval after the sandboxed attempt could not
+  connect to `127.0.0.1:9342`. Desktop and mobile Admin rendered the drill
+  packet, exact chat/voice prompts, expected rows, local-only/cloud boundary,
+  and export instructions with no horizontal overflow and zero warning/error
+  logs. Desktop and mobile App Design Language rendered the new provider-key
+  drill packet control pattern with no horizontal overflow and zero warning/error
+  logs.
+- Browser QA screenshots saved as `ACG-admin-drill-packet-desktop.png`,
+  `ACG-admin-drill-packet-mobile.png`,
+  `ACG-app-design-drill-packet-desktop.png`, and
+  `ACG-app-design-drill-packet-mobile.png`; JSON evidence saved as
+  `phase69-browser-qa.json`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1114 nodes, 1953 edges, and 66 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`81.8 KB`).
+- Graphify smoke query found `LiveBetaProofDrillPacket`,
+  `buildLiveBetaProofDrillPacket()`, `buildProviderKeyProofChecklist()`,
+  `AdminView()`, and connected diagnostics nodes.
+- Graphify path `buildLiveBetaProofDrillPacket()` to `AdminView()` found a
+  three-hop route through `buildProviderKeyProofChecklist()` and
+  `AdminView.tsx`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the drill packet, provider-key checklist, and
+  coherent proof bundle to confirm real rows satisfy the complete local beta
+  flow.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Phase 72: Model Run Phase Ledger IDs
 
 Packet ACB makes model-run identity phase-aware. Started, fallback, completed,

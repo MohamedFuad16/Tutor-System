@@ -596,6 +596,13 @@
       "owner": "main agent with two read-only sidecar explorers closed after timeout",
       "status": "completed",
       "write_scope": "src/views/StudyView.tsx, tests/study-view-upload.test.mjs, src/views/AdminView.tsx, src/views/RevisionView.tsx, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, .workflow/brain-architecture-implementation-program/packets/phase68-browser-qa.mjs, .workflow/brain-architecture-implementation-program/results/*, graphify-out/*"
+    },
+    {
+      "id": "ACG",
+      "name": "Provider-key live proof drill packet",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1377,11 +1384,32 @@
     "Graphify smoke query found StudyView(), ChatPanel(), buildBrainContextPacket(), buildBrainDocumentRetrievalHint(), buildBrainRetrievalQuery(), brain.context.ts, and connected Study/Admin/Revision nodes",
     "graphify path StudyView() to buildBrainContextPacket() found a three-hop route through StudyView.tsx, ChatPanel.tsx, and brain.context.ts",
     "graphify path StudyView() to ChatPanel() found the expected shared-store route",
-    "Packet ACF graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ACF graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ACG selected after Graphify routed provider-key proof drill work through buildProviderKeyProofChecklist(), buildLiveBetaProofRunbook(), buildCoherentLiveProofFromLedgers(), AdminView(), and tests/beta-diagnostics.test.mjs",
+    "Added LiveBetaProofDrillPacket and LiveBetaProofDrillPrompt to beta diagnostics",
+    "Provider-key checklist now returns liveProofDrillPacket with local setup checklist, run sequence, blockers, export instructions, and exact typed-chat/live-voice proof prompts",
+    "Admin Beta Diagnostics now renders the live proof drill packet between the runbook and coherent proof bundle",
+    "Diagnostics export metadata now includes the drill packet so local beta reviewers can see the prompts and expected rows used for the run",
+    "README, Tutor System Architecture, User Brain Architecture, and App Design Language copy document the manual local drill packet boundary",
+    "npm run format passed for Packet ACG",
+    "npm run test passed, 161 tests",
+    "npm run format:check passed for Packet ACG",
+    "npm run lint passed for Packet ACG",
+    "npm run build passed for Packet ACG",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run brain:ui-regression remained unavailable because current package.json has no brain:ui-regression script",
+    "Headless Chrome CDP QA via phase69-browser-qa.mjs confirmed desktop and mobile Admin rendered the drill packet, exact chat/voice prompts, expected rows, local-only/cloud boundary, export instructions, no horizontal overflow, and zero console logs",
+    "Headless Chrome CDP QA via phase69-browser-qa.mjs confirmed desktop and mobile App Design Language rendered the provider-key drill packet control pattern with no horizontal overflow and zero console logs",
+    "Browser QA screenshots saved as ACG-admin-drill-packet-desktop.png, ACG-admin-drill-packet-mobile.png, ACG-app-design-drill-packet-desktop.png, and ACG-app-design-drill-packet-mobile.png; JSON evidence saved as phase69-browser-qa.json",
+    "graphify update . --force regenerated code architecture artifacts with 1114 nodes, 1953 edges, and 66 communities",
+    "npm run graphify:tree passed for Packet ACG and wrote GRAPH_TREE.html at 81.8 KB",
+    "Graphify smoke query found LiveBetaProofDrillPacket, buildLiveBetaProofDrillPacket(), buildProviderKeyProofChecklist(), AdminView(), and connected diagnostics nodes",
+    "graphify path buildLiveBetaProofDrillPacket() to AdminView() found a three-hop route through buildProviderKeyProofChecklist() and AdminView.tsx",
+    "Packet ACG graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 98,
-    "basis": "Local architecture estimate after Packet ACF final gates: multi-file PDF intake now matches the shared chat/voice active-book context path, existing multi-PDF context injection, retrieval hints, Admin diagnostics, tool-call/evidence ledgers, voice/chat proof-attempt lifecycle, stored audio, and Graphify artifacts are implemented and browser-verified. The largest remaining unproven gap is deliberate provider-key typed-chat plus live-voice beta traffic with real provider rows; broader beta validation and AWS/cloud synchronization remain incomplete/out of scope.",
-    "updatedAt": "2026-06-03T22:20:00.000+09:00"
+    "estimatePercent": 99,
+    "basis": "Local architecture estimate after Packet ACG final gates: Admin now turns the provider-key live beta runbook into an exact local drill packet with setup, typed-chat prompt, live-voice script, expected ledger rows, blockers, and export instructions. The shared chat/voice context path, multi-PDF intake/context, retrieval hints, Admin diagnostics, tool-call/evidence ledgers, voice/chat proof-attempt lifecycle, stored audio, docs, browser QA, and Graphify artifacts are implemented and verified. The remaining unproven gap is deliberate provider-key typed-chat plus live-voice beta traffic with real provider rows; broader beta validation and AWS/cloud synchronization remain incomplete/out of scope.",
+    "updatedAt": "2026-06-03T22:30:24.000+09:00"
   }
 }
