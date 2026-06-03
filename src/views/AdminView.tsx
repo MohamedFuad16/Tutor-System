@@ -4618,6 +4618,11 @@ export function AdminView() {
                             provider captures{" "}
                             {liveProofReceipt.providerCaptureCount}
                           </span>
+                          <span
+                            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${liveProofReceipt.sourceReadyForBeta ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                          >
+                            {liveProofReceipt.sourceKind.replace(/_/g, " ")}
+                          </span>
                           {liveProofReceipt.selectedRequestIds.map(
                             (requestId) => (
                               <span
@@ -4660,6 +4665,12 @@ export function AdminView() {
                           </span>
                         </div>
 
+                        <div
+                          className={`mt-3 rounded-xl border px-3 py-2 text-[11px] leading-relaxed font-serif ${liveProofReceipt.sourceReadyForBeta ? "border-emerald-100 bg-white text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}
+                        >
+                          {liveProofReceipt.sourceSummary}
+                        </div>
+
                         {liveProofReceipt.providerCaptures.length > 0 && (
                           <div className="mt-3 grid gap-2 md:grid-cols-2">
                             {liveProofReceipt.providerCaptures.map(
@@ -4699,6 +4710,21 @@ export function AdminView() {
                                       <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
                                         {capture.source.replace(/_/g, " ")}
                                       </span>
+                                      {capture.runSource && (
+                                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-mono text-amber-700">
+                                          {capture.runSource.replace(/_/g, " ")}
+                                        </span>
+                                      )}
+                                      {capture.seeded && (
+                                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-amber-700">
+                                          seeded QA
+                                        </span>
+                                      )}
+                                      {capture.synthetic && (
+                                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-amber-700">
+                                          synthetic
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                 );

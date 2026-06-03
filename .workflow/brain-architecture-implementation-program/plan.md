@@ -197,3 +197,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   provider-key proof into a local Admin/export receipt with selected request
   ids, proof attempt ids, provider capture details, freshness/window state, and
   local-only warnings, without calling providers or starting AWS/cloud work.
+- ACM: Proof source provenance guard. Mark provider-proof receipts and capture
+  cards with local-live, QA-seeded, synthetic, or mixed source provenance so
+  seeded browser fixtures stay useful without being mistaken for final live
+  beta proof.

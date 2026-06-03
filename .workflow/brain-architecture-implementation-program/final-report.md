@@ -266,6 +266,90 @@ Admin diagnostics export"`: unavailable because `package.json` has no
 
 ---
 
+# Packet ACM: Proof Source Provenance Guard
+
+## Status
+
+Completed through local source, test, build, and browser gates.
+
+Current conservative brain-architecture completion estimate after ACM:
+about 99%.
+
+## Graphify Context
+
+- Graphify routed this slice through `src/memory/beta.diagnostics.ts`,
+  `src/views/AdminView.tsx`, `tests/beta-diagnostics.test.mjs`,
+  `buildLiveBetaProofReceipt()`, `buildProviderKeyProofChecklist()`, and
+  `AdminView()`.
+- Clean regenerated graph artifacts contain 1145 nodes, 1998 edges, and 73
+  communities.
+- Graphify smoke query found `LiveBetaProofReceipt`,
+  `buildLiveBetaProofReceipt()`, `buildProviderCapture()`,
+  `buildProviderKeyProofChecklist()`, `buildBetaDiagnosticsSnapshot()`,
+  `AdminView()`, and connected diagnostics/Admin nodes.
+- Graphify path `buildLiveBetaProofReceipt` to `AdminView` confirmed the
+  receipt builder reaches Admin through `buildProviderKeyProofChecklist()` and
+  `AdminView.tsx`.
+- Direct source inspection stayed scoped to diagnostics, Admin, tests, and the
+  connected browser QA workflow artifact.
+
+## Integration Decisions
+
+- Added `sourceKind`, `sourceReadyForBeta`, and `sourceSummary` to
+  `LiveBetaProofReceipt`.
+- Added `runSource`, `seeded`, and `synthetic` markers to
+  `CoherentLiveProofProviderCapture`.
+- Provider captures now derive source markers from metadata fields such as
+  `proofSource`, `evidenceSource`, `runSource`, `fixtureSource`,
+  `sourceKind`, `qaSeeded`, `seeded`, and `synthetic`.
+- Structurally complete seeded proof rows can still make a receipt `ready`, but
+  they set `sourceReadyForBeta` to `false` and produce a not-final-live-beta
+  summary.
+- Admin Beta Diagnostics now renders the proof source chip, source summary, and
+  seeded/synthetic capture tags.
+- The seeded browser QA fixture now marks provider rows as `local_qa_seed` and
+  asserts Admin shows the proof as QA-seeded rather than final live beta proof.
+- No provider calls, key display, AWS/cloud sync, or Dexie schema changes were
+  added.
+
+## Verification Evidence
+
+- `npm run test -- tests/beta-diagnostics.test.mjs`: passed via the project
+  runner, 166 tests, including local-live, QA-seeded, and mixed provenance
+  receipt states.
+- `npm run format`: passed.
+- `node --check .workflow/brain-architecture-implementation-program/packets/phase72-browser-qa.mjs`:
+  passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run test`: passed, 166 tests.
+- Headless Chrome QA via `phase72-browser-qa.mjs` confirmed desktop/mobile Admin
+  Beta Diagnostics rendered the ready receipt as `QA seeded`, displayed the
+  "not final live beta proof" boundary, showed seeded provider capture tags,
+  retained selected request ids and provider capture count `2`, had no
+  horizontal overflow, and captured zero warning/error logs.
+- Browser QA screenshots updated as `ACL-admin-proof-receipt-desktop.png` and
+  `ACL-admin-proof-receipt-mobile.png`; JSON evidence updated as
+  `phase72-browser-qa.json`.
+- `graphify update . --force`: passed, regenerating clean code architecture
+  artifacts with 1145 nodes, 1998 edges, and 73 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`83.7 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch references.
+
+## Remaining Work
+
+- Run the deliberate real provider-key drill with actual OpenRouter and
+  Deepgram provider rows, then confirm the receipt source becomes
+  `local_live_ledger` with `sourceReadyForBeta: true`.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
+---
+
 # Packet ACK: Provider Proof Capture Details
 
 ## Status

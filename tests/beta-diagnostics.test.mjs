@@ -411,6 +411,8 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   );
   assert.equal(readyChecklist.liveProofReceipt.status, "ready");
   assert.equal(readyChecklist.liveProofReceipt.ready, true);
+  assert.equal(readyChecklist.liveProofReceipt.sourceKind, "local_live_ledger");
+  assert.equal(readyChecklist.liveProofReceipt.sourceReadyForBeta, true);
   assert.equal(readyChecklist.liveProofReceipt.proofComplete, true);
   assert.equal(readyChecklist.liveProofReceipt.providerCaptureCount, 2);
   assert.deepEqual(readyChecklist.liveProofReceipt.selectedRequestIds, [
@@ -479,6 +481,110 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
       instruction.includes("chat-req-1 and voice-req-1"),
     ),
   );
+});
+
+test("provider-key proof receipt distinguishes seeded QA evidence from real local drill proof", () => {
+  const seededLedgers = {
+    ...completeBrainFlowLedgers,
+    modelRuns: completeBrainFlowLedgers.modelRuns.map((row) =>
+      row.requestId === "chat-req-1"
+        ? {
+            ...row,
+            metadata: {
+              ...row.metadata,
+              proofSource: "local_qa_seed",
+              qaSeeded: true,
+            },
+          }
+        : row,
+    ),
+    systemActivityEvents: completeBrainFlowLedgers.systemActivityEvents.map(
+      (row) =>
+        row.requestId === "voice-req-1"
+          ? {
+              ...row,
+              metadata: {
+                ...row.metadata,
+                proofSource: "local_qa_seed",
+                qaSeeded: true,
+              },
+            }
+          : row,
+    ),
+  };
+  const seededBrainFlow = buildBrainFlowCoverageFromLedgers(seededLedgers);
+  const seededCoherentProof = buildCoherentLiveProofFromLedgers(seededLedgers);
+  const seededChecklist = buildProviderKeyProofChecklist({
+    brainFlow: seededBrainFlow,
+    coherentLiveProof: seededCoherentProof,
+    providerKeys: {
+      chatModelKeyConfigured: true,
+      voiceRealtimeKeyConfigured: true,
+    },
+  });
+
+  assert.equal(seededChecklist.status, "ready");
+  assert.equal(seededChecklist.proofComplete, true);
+  assert.equal(seededChecklist.liveProofReceipt.ready, true);
+  assert.equal(seededChecklist.liveProofReceipt.sourceKind, "qa_seeded");
+  assert.equal(seededChecklist.liveProofReceipt.sourceReadyForBeta, false);
+  assert.equal(seededChecklist.liveProofReceipt.providerCaptureCount, 2);
+  assert.deepEqual(
+    seededChecklist.liveProofReceipt.providerCaptures.map(
+      (capture) => capture.runSource,
+    ),
+    ["local_qa_seed", "local_qa_seed"],
+  );
+  assert.deepEqual(
+    seededChecklist.liveProofReceipt.providerCaptures.map(
+      (capture) => capture.seeded,
+    ),
+    [true, true],
+  );
+  assert.ok(
+    seededChecklist.liveProofReceipt.sourceSummary.includes("seeded QA data"),
+  );
+  assert.ok(
+    seededChecklist.liveProofReceipt.summary.includes(
+      "not final live beta proof",
+    ),
+  );
+  assert.ok(
+    seededChecklist.liveProofReceipt.warnings.some((warning) =>
+      warning.includes("not a real local live drill"),
+    ),
+  );
+
+  const mixedLedgers = {
+    ...completeBrainFlowLedgers,
+    modelRuns: completeBrainFlowLedgers.modelRuns.map((row) =>
+      row.requestId === "chat-req-1"
+        ? {
+            ...row,
+            metadata: {
+              ...row.metadata,
+              proofSource: "local_qa_seed",
+              qaSeeded: true,
+            },
+          }
+        : row,
+    ),
+  };
+  const mixedBrainFlow = buildBrainFlowCoverageFromLedgers(mixedLedgers);
+  const mixedCoherentProof = buildCoherentLiveProofFromLedgers(mixedLedgers);
+  const mixedChecklist = buildProviderKeyProofChecklist({
+    brainFlow: mixedBrainFlow,
+    coherentLiveProof: mixedCoherentProof,
+    providerKeys: {
+      chatModelKeyConfigured: true,
+      voiceRealtimeKeyConfigured: true,
+    },
+  });
+
+  assert.equal(mixedChecklist.liveProofReceipt.ready, true);
+  assert.equal(mixedChecklist.liveProofReceipt.sourceKind, "mixed");
+  assert.equal(mixedChecklist.liveProofReceipt.sourceReadyForBeta, false);
+  assert.ok(mixedChecklist.liveProofReceipt.sourceSummary.includes("mixes"));
 });
 
 test("provider-key proof checklist blocks live runs when ledger rows fail", () => {

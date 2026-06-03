@@ -209,6 +209,8 @@ const systemActivityPayload = () => ({
         proofAttemptId: PROOF_ATTEMPT_ID,
         mode: "voice",
         agentLayer: "voice_realtime",
+        proofSource: "local_qa_seed",
+        qaSeeded: true,
       },
     },
   ],
@@ -446,6 +448,8 @@ async function seedProviderRows(cdp) {
           proofAttemptId: PROOF_ATTEMPT_ID,
           mode: "chat",
           agentLayer: "chat_stream",
+          proofSource: "local_qa_seed",
+          qaSeeded: true,
         },
       },
       {
@@ -682,7 +686,8 @@ async function adminProofReceiptCheck(label, metrics) {
         receiptText,
         hasProviderProof: lower.includes("provider-key live proof"),
         hasReceipt: lower.includes("local proof receipt") && lower.includes("export-ready chat and voice run summary"),
-        hasReadyReceipt: lower.includes("receipt ready") && lower.includes("receipt is ready"),
+        hasReadyReceipt: lower.includes("receipt ready") && lower.includes("not final live beta proof"),
+        hasSeededSource: lower.includes("qa seeded") && lower.includes("seeded qa"),
         hasLocalBoundary: lower.includes("local beta receipt only") && lower.includes("not a cloud sync"),
         hasProviderCount: lower.includes("provider captures 2"),
         hasOpenRouterCapture: lower.includes("openrouter") && lower.includes("openai/gpt-4.1-mini") && lower.includes("provider model run"),
@@ -697,6 +702,7 @@ async function adminProofReceiptCheck(label, metrics) {
     !snapshot.hasProviderProof ||
     !snapshot.hasReceipt ||
     !snapshot.hasReadyReceipt ||
+    !snapshot.hasSeededSource ||
     !snapshot.hasLocalBoundary ||
     !snapshot.hasProviderCount ||
     !snapshot.hasOpenRouterCapture ||

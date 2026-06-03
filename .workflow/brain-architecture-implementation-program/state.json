@@ -638,6 +638,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACM",
+      "name": "Proof source provenance guard",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -986,7 +993,24 @@
       "Graphify smoke query found LiveBetaProofReceipt, buildLiveBetaProofReceipt(), buildProviderKeyProofChecklist(), buildBetaDiagnosticsSnapshot(), AdminView(), formatTime(), formatDurationMinutes(), and connected diagnostics/Admin nodes",
       "graphify path buildLiveBetaProofReceipt to AdminView found a connected three-hop route through buildProviderKeyProofChecklist() and AdminView.tsx",
       "graphify path buildProviderKeyProofChecklist to AdminView found the expected two-hop route through AdminView.tsx",
-      "Packet ACL graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
+      "Packet ACL graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references",
+      "Packet ACM selected after Graphify routed proof-source provenance through buildLiveBetaProofReceipt(), buildProviderKeyProofChecklist(), AdminView(), src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, and tests/beta-diagnostics.test.mjs",
+      "LiveBetaProofReceipt now reports sourceKind, sourceReadyForBeta, and sourceSummary so structurally complete seeded fixtures cannot be mistaken for final live beta proof",
+      "Provider captures now expose runSource, seeded, and synthetic markers derived from local metadata fields without showing keys or calling providers",
+      "Admin Beta Diagnostics now renders a proof source chip, source summary, and seeded or synthetic capture tags in the Local proof receipt card",
+      "npm run test -- tests/beta-diagnostics.test.mjs passed via the project runner, 166 tests",
+      "npm run format passed for Packet ACM",
+      "node --check .workflow/brain-architecture-implementation-program/packets/phase72-browser-qa.mjs passed for Packet ACM",
+      "npm run format:check passed for Packet ACM",
+      "npm run lint passed for Packet ACM",
+      "npm run build passed for Packet ACM",
+      "npm run test passed for Packet ACM, 166 tests",
+      "Headless Chrome QA via phase72-browser-qa.mjs confirmed desktop and mobile Admin rendered the ready receipt as QA seeded, displayed the not-final-live-beta boundary, showed seeded provider capture tags, retained selected request ids and provider capture count 2, had no horizontal overflow, and captured zero warning/error logs",
+      "Clean graphify update . --force regenerated code architecture artifacts with 1145 nodes, 1998 edges, and 73 communities",
+      "npm run graphify:tree passed for Packet ACM and wrote GRAPH_TREE.html at 83.7 KB",
+      "Graphify smoke query found LiveBetaProofReceipt, buildLiveBetaProofReceipt(), buildProviderCapture(), buildProviderKeyProofChecklist(), buildBetaDiagnosticsSnapshot(), AdminView(), and connected diagnostics/Admin nodes",
+      "graphify path buildLiveBetaProofReceipt to AdminView found a connected three-hop route through beta.diagnostics.ts and AdminView.tsx",
+      "Packet ACM graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
     ]
   },
   "evidence": [
@@ -1592,11 +1616,19 @@
     "Graphify smoke query found LiveBetaProofReceipt, buildLiveBetaProofReceipt(), buildProviderKeyProofChecklist(), buildBetaDiagnosticsSnapshot(), AdminView(), formatTime(), formatDurationMinutes(), and connected diagnostics/Admin nodes",
     "graphify path buildLiveBetaProofReceipt to AdminView found a connected three-hop route through buildProviderKeyProofChecklist() and AdminView.tsx",
     "graphify path buildProviderKeyProofChecklist to AdminView found the expected two-hop route through AdminView.tsx",
-    "Packet ACL graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
+    "Packet ACL graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references",
+    "Packet ACM selected after Graphify routed proof-source provenance through buildLiveBetaProofReceipt(), buildProviderKeyProofChecklist(), AdminView(), beta diagnostics, Admin UI, and focused beta diagnostics tests",
+    "Live proof receipts now distinguish local_live_ledger, qa_seeded, synthetic, and mixed proof sources and keep sourceReadyForBeta false for seeded or synthetic evidence even when the selected rows are structurally complete",
+    "Admin Local proof receipt renders source provenance, source summary, and seeded/synthetic provider capture tags so seeded browser QA evidence stays useful without becoming final beta proof",
+    "tests/beta-diagnostics.test.mjs now verifies ready local-live, complete-but-QA-seeded, and mixed-provenance receipts as separate states",
+    "Headless Chrome QA via phase72-browser-qa.mjs confirmed desktop/mobile Admin shows QA seeded, not final live beta proof, seeded capture tags, provider capture count 2, selected request ids, no horizontal overflow, and zero warning/error logs",
+    "Clean graphify update . --force regenerated code architecture artifacts with 1145 nodes, 1998 edges, and 73 communities",
+    "Graphify smoke query and path confirmed the provenance receipt builder remains queryable and connected back to Admin",
+    "Packet ACM graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACL final gates: Admin and diagnostics export now carry a local proof receipt for the selected coherent provider-key chat+voice proof, including provider captures, request ids, proof attempt anchors, freshness/window state, and local-only warnings. The remaining unproven gap is still the deliberate real OpenRouter plus Deepgram beta drill that records non-seeded live provider rows and exports the receipt from real local ledger evidence, plus broader beta validation; AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-03T16:56:50.405Z"
+    "basis": "Local architecture estimate after Packet ACM local gates: Admin and diagnostics export now distinguish structurally complete seeded or synthetic provider-proof receipts from final local-live beta proof. The remaining unproven gap is still the deliberate real OpenRouter plus Deepgram beta drill that records non-seeded live provider rows with sourceKind local_live_ledger and sourceReadyForBeta true, plus broader beta validation; AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-03T17:15:58.436Z"
   }
 }

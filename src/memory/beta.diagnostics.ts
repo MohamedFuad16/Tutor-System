@@ -180,6 +180,9 @@ export type LiveBetaProofReceipt = {
   schema: "tutor.live-provider-proof-receipt.v1";
   status: Exclude<BetaDiagnosticStatus, "deferred">;
   ready: boolean;
+  sourceKind: "local_live_ledger" | "qa_seeded" | "synthetic" | "mixed";
+  sourceReadyForBeta: boolean;
+  sourceSummary: string;
   localOnly: true;
   proofComplete: boolean;
   canAttemptProviderKeyRun: boolean;
@@ -243,6 +246,9 @@ export type CoherentLiveProofProviderCapture = {
   title: string;
   source: "provider_model_run" | "voice_provider_ready";
   provider: string;
+  runSource?: string;
+  seeded?: boolean;
+  synthetic?: boolean;
   requestId?: string;
   requestedModel?: string;
   usedModel?: string;
@@ -528,6 +534,38 @@ const metadataProofAttemptId = (
   metadataString(metadata, "proofAttemptId") ||
   metadataString(metadata, "betaProofAttemptId") ||
   metadataString(metadata, "liveProofAttemptId");
+
+const metadataRunSource = (metadata: Record<string, unknown> | undefined) =>
+  metadataString(metadata, "proofSource") ||
+  metadataString(metadata, "evidenceSource") ||
+  metadataString(metadata, "runSource") ||
+  metadataString(metadata, "fixtureSource") ||
+  metadataString(metadata, "sourceKind");
+
+const isSeededEvidenceSource = (
+  metadata: Record<string, unknown> | undefined,
+) => {
+  const source = metadataRunSource(metadata).toLowerCase();
+  return (
+    metadataBoolean(metadata, "seeded") === true ||
+    metadataBoolean(metadata, "qaSeeded") === true ||
+    metadataBoolean(metadata, "fixture") === true ||
+    source.includes("seed") ||
+    source.includes("fixture") ||
+    source.includes("qa")
+  );
+};
+
+const isSyntheticEvidenceSource = (
+  metadata: Record<string, unknown> | undefined,
+) => {
+  const source = metadataRunSource(metadata).toLowerCase();
+  return (
+    metadataBoolean(metadata, "synthetic") === true ||
+    source.includes("synthetic") ||
+    source.includes("rehearsal")
+  );
+};
 
 const buildSignalEvidence = (
   anchors: SignalEvidenceAnchor[],
@@ -1101,6 +1139,9 @@ const buildProviderCapture = (
   const requestedModel = requestIdValue(modelRow.requestedModel);
   const usedModel = requestIdValue(modelRow.usedModel);
   const requestId = requestIdValue(row.requestId) || fallbackRequestId;
+  const runSource = metadataRunSource(row.metadata);
+  const seeded = isSeededEvidenceSource(row.metadata);
+  const synthetic = isSyntheticEvidenceSource(row.metadata);
   const proofAttemptIds = compactUnique(
     [metadataProofAttemptId(row.metadata)],
     5,
@@ -1120,6 +1161,9 @@ const buildProviderCapture = (
     title,
     source,
     provider,
+    ...(runSource ? { runSource } : {}),
+    ...(seeded ? { seeded: true } : {}),
+    ...(synthetic ? { synthetic: true } : {}),
     ...(requestId ? { requestId } : {}),
     ...(requestedModel ? { requestedModel } : {}),
     ...(usedModel ? { usedModel } : {}),
@@ -2324,6 +2368,43 @@ export const buildLiveBetaProofReceipt = ({
     coherentLiveProof.ready &&
     providerCaptures.length >= 2 &&
     hasBothSelectedRequests;
+  const seededProviderCaptures = providerCaptures.filter(
+    (capture) => capture.seeded,
+  );
+  const syntheticProviderCaptures = providerCaptures.filter(
+    (capture) => capture.synthetic,
+  );
+  const providerCaptureSourceKinds = new Set<
+    LiveBetaProofReceipt["sourceKind"]
+  >(
+    providerCaptures.map((capture) =>
+      capture.seeded && capture.synthetic
+        ? "mixed"
+        : capture.synthetic
+          ? "synthetic"
+          : capture.seeded
+            ? "qa_seeded"
+            : "local_live_ledger",
+    ),
+  );
+  const sourceKind: LiveBetaProofReceipt["sourceKind"] =
+    providerCaptureSourceKinds.has("mixed") ||
+    providerCaptureSourceKinds.size > 1
+      ? "mixed"
+      : syntheticProviderCaptures.length > 0
+        ? "synthetic"
+        : seededProviderCaptures.length > 0
+          ? "qa_seeded"
+          : "local_live_ledger";
+  const sourceReadyForBeta = ready && sourceKind === "local_live_ledger";
+  const sourceSummary =
+    sourceKind === "local_live_ledger"
+      ? "Receipt evidence is from local live ledger rows, not a seeded QA fixture."
+      : sourceKind === "qa_seeded"
+        ? "Receipt evidence is complete but marked as seeded QA data; it is not final live beta proof until the provider-key drill runs in the real app."
+        : sourceKind === "synthetic"
+          ? "Receipt evidence is synthetic rehearsal data; it cannot prove the live provider beta flow."
+          : "Receipt evidence mixes seeded/synthetic markers, so it is not final live beta proof.";
   const status: Exclude<BetaDiagnosticStatus, "deferred"> =
     failedRows > 0 || coherentLiveProof.status === "blocked"
       ? "blocked"
@@ -2333,6 +2414,11 @@ export const buildLiveBetaProofReceipt = ({
   const warnings = [
     "Local beta receipt only; not a cloud sync or production deployment artifact.",
     "Fallback chat rows and mock voice provider rows do not satisfy provider-key proof.",
+    ...(!sourceReadyForBeta && ready
+      ? [
+          "Receipt rows are complete, but the proof source is not a real local live drill yet.",
+        ]
+      : []),
     ...(!ready && canAttemptProviderKeyRun
       ? [
           "Provider keys are present, but the selected chat and voice run is not receipt-ready yet.",
@@ -2354,14 +2440,19 @@ export const buildLiveBetaProofReceipt = ({
     schema: "tutor.live-provider-proof-receipt.v1",
     status,
     ready,
+    sourceKind,
+    sourceReadyForBeta,
+    sourceSummary,
     localOnly: true,
     proofComplete,
     canAttemptProviderKeyRun,
-    summary: ready
+    summary: sourceReadyForBeta
       ? "Receipt is ready: the selected chat and voice requests share one local proof attempt, book/thread, multi-PDF context, and real provider capture evidence."
-      : status === "blocked"
-        ? `${failedRows} failed or blocked live rows prevent a provider-key proof receipt.`
-        : "Receipt is not ready until the selected chat and voice requests include shared proof anchors plus both provider captures.",
+      : ready
+        ? `${sourceSummary} The selected chat and voice requests still share one local proof attempt, book/thread, multi-PDF context, and provider capture evidence.`
+        : status === "blocked"
+          ? `${failedRows} failed or blocked live rows prevent a provider-key proof receipt.`
+          : "Receipt is not ready until the selected chat and voice requests include shared proof anchors plus both provider captures.",
     selectedRequestIds,
     providerCaptureCount: providerCaptures.length,
     providerCaptures,
