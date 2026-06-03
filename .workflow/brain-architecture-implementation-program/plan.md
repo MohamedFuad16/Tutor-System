@@ -137,3 +137,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
 - ABU: Stored audio duration evidence. Store measured audio guide seconds in the
   manifest, dry-run output, artifact provenance, local verifier, tests, and
   architecture books so the 3-4 minute guide promise is locally checkable.
+- ABV: Coherent live proof bundle. Require provider-key proof to show one
+  complete typed-chat request and one complete live-voice request sharing the
+  same local book/thread and multi-PDF context, so scattered green rows cannot
+  masquerade as one working beta flow.

@@ -519,6 +519,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/lib/chapterAudioOverviews.json, src/lib/chapterAudioOverviews.ts, scripts/user-brain-audio-overview-plan.mjs, scripts/generate-user-brain-audio-overviews.mjs, src/memory/artifact.records.ts, src/views/AdminView.tsx, src/views/RevisionView.tsx, tests/audio-overview-plan.test.mjs, tests/artifact-records.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABV",
+      "name": "Coherent live proof bundle",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1052,11 +1059,31 @@
     "Graphify smoke query found ChapterAudioOverview, chapterAudioOverviews.ts, builtInBookAudioOverviews, StoredAudioOverview(), RevisionView(), AdminView(), and connected reader/source-artifact nodes",
     "graphify path chapterAudioOverviews to RevisionView() found a two-hop route through RevisionView.tsx",
     "graphify path createStoredAudioOverviewArtifactRecords() to AdminView() found a three-hop route through artifact.records.ts and AdminView.tsx",
-    "Packet ABU graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABU graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABV selected after Graphify routed live provider proof gaps through ProviderKeyProofChecklist, beta.diagnostics.ts, AdminView.tsx, and beta-diagnostics.test.mjs",
+    "Added buildCoherentLiveProofFromLedgers() to require one complete typed-chat request and one complete live-voice request instead of scattered aggregate rows",
+    "Coherent proof now requires shared multi-PDF context ids and a shared saved local book/thread anchor across selected chat and voice requests",
+    "ProviderKeyProofChecklist now includes Coherent chat + voice beta bundle as a required live-ledger check",
+    "Admin Beta Diagnostics now renders coherent bundle percent, status, request ids, shared book/thread/PDF chips, and per-check summaries",
+    "Focused tests prove a coherent passing case and a scattered-row failure case where aggregate brain-flow coverage is 100% but coherent proof remains watch",
+    "npm run format passed",
+    "npm run test passed, 150 tests",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run format:check passed",
+    "npm run lint passed",
+    "npm run build passed",
+    "In-app Browser QA at desktop width confirmed Admin Beta Diagnostics rendered coherent live proof bundle, same-book/thread copy, missing coherent proof state, no-single-chat-request state, no console errors, and no horizontal overflow",
+    "In-app Browser QA at 390x844 confirmed the coherent proof panel and missing-proof state rendered with no console errors and no horizontal overflow",
+    "graphify update . --force regenerated code architecture artifacts with 1067 nodes, 1886 edges, and 67 communities",
+    "npm run graphify:tree passed for Packet ABV and wrote GRAPH_TREE.html at 79.1 KB",
+    "Graphify smoke query found buildCoherentLiveProofFromLedgers(), CoherentLiveProofBundle, ProviderKeyProofChecklist, AdminView(), buildBetaDiagnosticsSnapshot(), and buildProviderKeyProofChecklist()",
+    "graphify path buildCoherentLiveProofFromLedgers() to AdminView() found a one-hop route through AdminView()",
+    "Graphify path from buildCoherentLiveProofFromLedgers() to buildProviderKeyProofChecklist() found a connected route through shared beta diagnostics helpers",
+    "Packet ABV graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 87,
-    "basis": "Local architecture estimate after Packet ABU final gates: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, and measured stored-audio duration evidence are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T15:30:27.000+09:00"
+    "estimatePercent": 88,
+    "basis": "Local architecture estimate after Packet ABV final gates: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, and a coherent chat+voice live proof bundle are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T15:43:17.000+09:00"
   }
 }

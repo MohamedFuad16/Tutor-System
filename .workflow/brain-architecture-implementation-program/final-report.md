@@ -4364,3 +4364,86 @@ graphify-out/graph.json` found the direct reader path.
 - Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
+
+---
+
+# Phase 66: Coherent Live Proof Bundle
+
+Packet ABV strengthens provider-key live proof so aggregate green rows are no
+longer enough. Provider-key proof now requires a coherent bundle: one complete
+typed-chat request and one complete live-voice request that share the same
+multi-PDF context ids and saved local book/thread anchors.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 88%.
+
+## Graphify Context
+
+- `graphify query "next brain architecture live provider proof gap chat voice
+stored injected tool calling request ledger Admin beta diagnostics missing
+evidence source completed checklist" --budget 10000 --graph
+graphify-out/graph.json` routed the slice to `ProviderKeyProofChecklist`,
+`beta.diagnostics.ts`, and `beta-diagnostics.test.mjs`.
+- `graphify query "ProviderKeyProofChecklist live proof request correlated chat
+voice ledger rows missing proof source Admin beta diagnostics manual live run
+evidence export" --budget 10000 --graph graphify-out/graph.json` confirmed the
+Admin/Beta Diagnostics corridor.
+- `graphify query "voice mode chat mode properly stored injected tool calling
+both agent layers live beta proof ChatPanel voiceAgentTools chatAgentTools beta
+diagnostics AdminView" --budget 12000 --graph graphify-out/graph.json` routed
+the downstream display path through `AdminView()`,
+`buildBrainFlowCoverageFromLedgers()`, and `buildBetaDiagnosticsSnapshot()`.
+
+## Integration Decisions
+
+- Added `buildCoherentLiveProofFromLedgers()` to select the best chat/voice
+  request pair from local ledgers.
+- A typed-chat request is complete only when that single request has context,
+  retrieval, model-run, foreground tool, evaluated mastery, saved transcript,
+  and background-memory rows.
+- A live-voice request must satisfy the same local row set.
+- The selected chat and voice requests must share more than one context PDF id
+  and share a saved local book/thread anchor.
+- `ProviderKeyProofChecklist` now includes `Coherent chat + voice beta bundle`
+  as the final required live-ledger check.
+- Admin Beta Diagnostics renders the coherent bundle percent, status, selected
+  request ids, shared book/thread/PDF chips, and per-check summaries.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 150 tests.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser QA at desktop width confirmed Admin Beta Diagnostics renders
+  the coherent live proof bundle, same-book/thread copy, missing coherent proof
+  state, no-single-chat-request state, no console errors, and no horizontal
+  overflow.
+- In-app Browser QA at `390x844` confirmed the same coherent proof panel and
+  missing-proof state render with no console errors and no horizontal overflow.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1067 nodes, 1886 edges, and 67 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`79.1 KB`).
+- Graphify smoke query found `buildCoherentLiveProofFromLedgers()`,
+  `CoherentLiveProofBundle`, `ProviderKeyProofChecklist`, `AdminView()`,
+  `buildBetaDiagnosticsSnapshot()`, and `buildProviderKeyProofChecklist()`.
+- Graphify path `buildCoherentLiveProofFromLedgers()` to `AdminView()` found a
+  one-hop route through `AdminView()`.
+- Graphify path from `buildCoherentLiveProofFromLedgers()` to
+  `buildProviderKeyProofChecklist()` found a connected route through shared beta
+  diagnostics helpers.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the provider-key checklist and coherent proof
+  bundle to confirm real rows satisfy the complete local beta flow.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.

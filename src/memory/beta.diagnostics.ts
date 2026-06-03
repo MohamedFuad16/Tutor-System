@@ -54,6 +54,7 @@ export type BetaDiagnosticsInput = {
   traceEvents?: number;
   webSearches?: number;
   brainFlow?: BetaBrainFlowCoverage;
+  coherentLiveProof?: CoherentLiveProofBundle;
   runtimeSettings?: unknown;
   generatedAt?: string;
 };
@@ -137,6 +138,7 @@ export type ProviderKeyProofChecklist = {
   voiceRealtimeKeyConfigured: boolean;
   canAttemptProviderKeyRun: boolean;
   proofComplete: boolean;
+  coherentLiveProof: CoherentLiveProofBundle;
   summary: string;
   missingChecks: string[];
   checks: ProviderKeyProofCheck[];
@@ -144,7 +146,35 @@ export type ProviderKeyProofChecklist = {
 
 export type ProviderKeyProofInput = {
   brainFlow: BetaBrainFlowCoverage;
+  coherentLiveProof?: CoherentLiveProofBundle;
   providerKeys?: ProviderKeyProofProviderState;
+};
+
+export type CoherentLiveProofCheck = {
+  id: string;
+  title: string;
+  ready: boolean;
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  summary: string;
+  evidence: BetaBrainFlowSignalEvidence;
+};
+
+export type CoherentLiveProofBundle = {
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  ready: boolean;
+  completionPercent: number;
+  readyChecks: number;
+  totalChecks: number;
+  failedRows: number;
+  chatRequestId?: string;
+  voiceRequestId?: string;
+  sharedBookIds: string[];
+  sharedConversationIds: string[];
+  sharedDocumentIds: string[];
+  latestTimestamp?: number;
+  summary: string;
+  missingChecks: string[];
+  checks: CoherentLiveProofCheck[];
 };
 
 export type BetaBrainFlowLedgerInput = {
@@ -185,9 +215,13 @@ export type BetaDiagnosticsSnapshot = {
     deferred: number;
   };
   counts: Required<
-    Omit<BetaDiagnosticsInput, "brainFlow" | "runtimeSettings" | "generatedAt">
+    Omit<
+      BetaDiagnosticsInput,
+      "brainFlow" | "coherentLiveProof" | "runtimeSettings" | "generatedAt"
+    >
   >;
   brainFlow: BetaBrainFlowCoverage;
+  coherentLiveProof: CoherentLiveProofBundle;
   runtimeSettings?: unknown;
   items: BetaDiagnosticItem[];
   outOfScope: string[];
@@ -306,8 +340,21 @@ const compactUnique = (values: unknown[], limit = 5) => {
   return unique.slice(0, limit);
 };
 
+const sharedStrings = (left: string[], right: string[], limit = 5) => {
+  const rightSet = new Set(right);
+  return compactUnique(
+    left.filter((value) => rightSet.has(value)),
+    limit,
+  );
+};
+
 const hasRequestId = (requestId: unknown) =>
   typeof requestId === "string" && requestId.trim().length > 0;
+
+const requestIdValue = (requestId: unknown) =>
+  typeof requestId === "string" && requestId.trim().length > 0
+    ? requestId.trim()
+    : "";
 
 type SignalEvidenceAnchor = {
   metadata?: Record<string, unknown>;
@@ -340,6 +387,10 @@ const buildSignalEvidence = (
     ...(latestTimestamp ? { latestTimestamp } : {}),
   };
 };
+
+const mergeAnchors = (
+  anchors: SignalEvidenceAnchor[],
+): BetaBrainFlowSignalEvidence => buildSignalEvidence(anchors);
 
 const isChatLayer = (metadata: Record<string, unknown> | undefined) => {
   const agentLayer = metadataString(metadata, "agentLayer");
@@ -790,6 +841,432 @@ export const buildBrainFlowCoverageFromLedgers = ({
   };
 };
 
+type CoherentRequestFacts = {
+  requestId: string;
+  contextRows: Pick<MemoryEvent, "metadata" | "timestamp" | "bookId">[];
+  retrievalRows: Pick<RetrievalEvent, "status" | "requestId" | "timestamp">[];
+  modelRows: Pick<ModelRun, "status" | "requestId" | "source" | "timestamp">[];
+  toolRows: Pick<ToolJob, "status" | "requestId" | "source" | "timestamp">[];
+  evidenceRows: Pick<
+    EvidenceEvent,
+    "evidenceType" | "verified" | "metadata" | "timestamp"
+  >[];
+  threadRows: Pick<
+    MemoryEvent,
+    "metadata" | "timestamp" | "bookId" | "conversationId"
+  >[];
+  backgroundRows: Pick<
+    MemoryEvent,
+    "eventType" | "metadata" | "timestamp" | "bookId" | "conversationId"
+  >[];
+  documentIds: string[];
+  bookIds: string[];
+  conversationIds: string[];
+  anchors: SignalEvidenceAnchor[];
+  complete: boolean;
+};
+
+const memoryEventBookId = (event: Pick<MemoryEvent, "bookId" | "metadata">) =>
+  requestIdValue(event.bookId) ||
+  metadataString(event.metadata, "bookId") ||
+  metadataString(event.metadata, "activeBookId") ||
+  metadataString(event.metadata, "activeLearningBookId");
+
+const memoryEventConversationId = (
+  event: Pick<MemoryEvent, "conversationId" | "metadata">,
+) =>
+  requestIdValue(event.conversationId) ||
+  metadataString(event.metadata, "conversationId") ||
+  metadataString(event.metadata, "threadId");
+
+const latestTimestampFromAnchors = (anchors: SignalEvidenceAnchor[]) => {
+  const timestamps = anchors
+    .map((anchor) => anchor.timestamp)
+    .filter(
+      (timestamp): timestamp is number =>
+        typeof timestamp === "number" && Number.isFinite(timestamp),
+    );
+  return timestamps.length > 0 ? Math.max(...timestamps) : undefined;
+};
+
+export const buildCoherentLiveProofFromLedgers = ({
+  memoryEvents = [],
+  retrievalEvents = [],
+  modelRuns = [],
+  toolJobs = [],
+  evidenceEvents = [],
+}: BetaBrainFlowLedgerInput = {}): CoherentLiveProofBundle => {
+  const completedContextEvents = memoryEvents.filter(
+    (event) =>
+      event.eventType === "brain_context_injected" &&
+      event.status === "completed",
+  );
+  const chatMultiPdfContextRows = completedContextEvents
+    .filter((event) => isChatLayer(event.metadata))
+    .filter((event) => isMultiPdfContextInjection(event.metadata));
+  const voiceMultiPdfContextRows = completedContextEvents
+    .filter((event) => isVoiceLayer(event.metadata))
+    .filter((event) => isMultiPdfContextInjection(event.metadata));
+  const requestCorrelatedRetrievalRows = retrievalEvents.filter(
+    (event) => event.status === "completed" && hasRequestId(event.requestId),
+  );
+  const requestCorrelatedModelRows = modelRuns.filter(
+    (run) =>
+      (run.status === "completed" || run.status === "fallback") &&
+      hasRequestId(run.requestId),
+  );
+  const foregroundToolJobRows = toolJobs.filter(
+    (job) =>
+      job.status === "completed" &&
+      hasRequestId(job.requestId) &&
+      ["chat_stream", "voice_agent"].includes(job.source || ""),
+  );
+  const requestCorrelatedMasteryEvidenceRows = evidenceEvents.filter(
+    (event) =>
+      event.verified &&
+      event.evidenceType !== "model_summary" &&
+      hasRequestId(event.metadata?.requestId),
+  );
+  const requestCorrelatedThreadRows = memoryEvents.filter(
+    (event) =>
+      event.eventType === "book_chat_thread_saved" &&
+      event.status === "completed" &&
+      hasRequestId(event.bookId) &&
+      hasRequestId(event.conversationId) &&
+      hasRequestId(event.metadata?.requestId),
+  );
+  const chatThreadRows = requestCorrelatedThreadRows.filter((event) =>
+    isChatThreadPersistence(event.metadata),
+  );
+  const voiceThreadRows = requestCorrelatedThreadRows.filter((event) =>
+    isVoiceThreadPersistence(event.metadata),
+  );
+  const backgroundRows = memoryEvents.filter(
+    (event) =>
+      event.status === "completed" &&
+      [
+        "interaction_recorded",
+        "learning_book_updated",
+        "learning_concept_updated",
+        "graph_concept_updated",
+      ].includes(event.eventType) &&
+      hasRequestId(event.metadata?.requestId),
+  );
+  const chatBackgroundRows = backgroundRows.filter((event) =>
+    isChatLayer(event.metadata),
+  );
+  const voiceBackgroundRows = backgroundRows.filter((event) =>
+    isVoiceLayer(event.metadata),
+  );
+  const failedRows =
+    memoryEvents.filter((event) => event.status === "failed").length +
+    retrievalEvents.filter((event) => event.status === "failed").length +
+    modelRuns.filter((run) => ["blocked", "failed"].includes(run.status))
+      .length +
+    toolJobs.filter((job) => ["blocked", "failed"].includes(job.status)).length;
+
+  const buildFacts = (
+    requestId: string,
+    layer: "chat" | "voice",
+  ): CoherentRequestFacts => {
+    const contextRows =
+      layer === "chat" ? chatMultiPdfContextRows : voiceMultiPdfContextRows;
+    const threadRows = layer === "chat" ? chatThreadRows : voiceThreadRows;
+    const toolRows =
+      layer === "chat"
+        ? foregroundToolJobRows.filter((job) => job.source === "chat_stream")
+        : foregroundToolJobRows.filter((job) => job.source === "voice_agent");
+    const evidenceRows = requestCorrelatedMasteryEvidenceRows.filter((event) =>
+      layer === "chat"
+        ? isChatLayer(event.metadata)
+        : isVoiceLayer(event.metadata),
+    );
+    const backgroundRowsForLayer =
+      layer === "chat" ? chatBackgroundRows : voiceBackgroundRows;
+
+    const matchingContextRows = contextRows.filter(
+      (event) => metadataString(event.metadata, "requestId") === requestId,
+    );
+    const matchingThreadRows = threadRows.filter(
+      (event) => metadataString(event.metadata, "requestId") === requestId,
+    );
+    const matchingBackgroundRows = backgroundRowsForLayer.filter(
+      (event) => metadataString(event.metadata, "requestId") === requestId,
+    );
+    const matchingRetrievalRows = requestCorrelatedRetrievalRows.filter(
+      (event) => event.requestId === requestId,
+    );
+    const matchingModelRows = requestCorrelatedModelRows.filter(
+      (run) => run.requestId === requestId,
+    );
+    const matchingToolRows = toolRows.filter(
+      (job) => job.requestId === requestId,
+    );
+    const matchingEvidenceRows = evidenceRows.filter(
+      (event) => metadataString(event.metadata, "requestId") === requestId,
+    );
+    const anchors: SignalEvidenceAnchor[] = [
+      ...matchingContextRows.map((event) => ({
+        metadata: event.metadata,
+        requestId,
+        source: "brain_context_injected",
+        timestamp: event.timestamp,
+      })),
+      ...matchingRetrievalRows.map((event) => ({
+        requestId,
+        source: "retrieval_event",
+        timestamp: event.timestamp,
+      })),
+      ...matchingModelRows.map((run) => ({
+        requestId,
+        source: run.source || "model_run",
+        timestamp: run.timestamp,
+      })),
+      ...matchingToolRows.map((job) => ({
+        requestId,
+        source: job.source || "tool_job",
+        timestamp: job.timestamp,
+      })),
+      ...matchingEvidenceRows.map((event) => ({
+        metadata: event.metadata,
+        requestId,
+        source: event.evidenceType,
+        timestamp: event.timestamp,
+      })),
+      ...matchingThreadRows.map((event) => ({
+        metadata: event.metadata,
+        requestId,
+        source: "book_chat_thread_saved",
+        timestamp: event.timestamp,
+      })),
+      ...matchingBackgroundRows.map((event) => ({
+        metadata: event.metadata,
+        requestId,
+        source: event.eventType,
+        timestamp: event.timestamp,
+      })),
+    ];
+
+    const documentIds = compactUnique(
+      matchingContextRows.flatMap((event) =>
+        metadataStringArray(event.metadata, "contextDocumentIds"),
+      ),
+      8,
+    );
+    const bookIds = compactUnique(
+      [
+        ...matchingContextRows.map(memoryEventBookId),
+        ...matchingThreadRows.map(memoryEventBookId),
+        ...matchingBackgroundRows.map(memoryEventBookId),
+      ],
+      5,
+    );
+    const conversationIds = compactUnique(
+      [
+        ...matchingThreadRows.map(memoryEventConversationId),
+        ...matchingBackgroundRows.map(memoryEventConversationId),
+      ],
+      5,
+    );
+
+    return {
+      requestId,
+      contextRows: matchingContextRows,
+      retrievalRows: matchingRetrievalRows,
+      modelRows: matchingModelRows,
+      toolRows: matchingToolRows,
+      evidenceRows: matchingEvidenceRows,
+      threadRows: matchingThreadRows,
+      backgroundRows: matchingBackgroundRows,
+      documentIds,
+      bookIds,
+      conversationIds,
+      anchors,
+      complete:
+        matchingContextRows.length > 0 &&
+        matchingRetrievalRows.length > 0 &&
+        matchingModelRows.length > 0 &&
+        matchingToolRows.length > 0 &&
+        matchingEvidenceRows.length > 0 &&
+        matchingThreadRows.length > 0 &&
+        matchingBackgroundRows.length > 0,
+    };
+  };
+
+  const chatRequestIds = compactUnique(
+    chatMultiPdfContextRows.map((event) =>
+      metadataString(event.metadata, "requestId"),
+    ),
+    12,
+  );
+  const voiceRequestIds = compactUnique(
+    voiceMultiPdfContextRows.map((event) =>
+      metadataString(event.metadata, "requestId"),
+    ),
+    12,
+  );
+  const chatFacts = chatRequestIds.map((requestId) =>
+    buildFacts(requestId, "chat"),
+  );
+  const voiceFacts = voiceRequestIds.map((requestId) =>
+    buildFacts(requestId, "voice"),
+  );
+  const candidatePairs = chatFacts.flatMap((chat) =>
+    voiceFacts.map((voice) => {
+      const sharedDocumentIds = sharedStrings(
+        chat.documentIds,
+        voice.documentIds,
+        8,
+      );
+      const sharedBookIds = sharedStrings(chat.bookIds, voice.bookIds);
+      const sharedConversationIds = sharedStrings(
+        chat.conversationIds,
+        voice.conversationIds,
+      );
+      const score =
+        (chat.complete ? 1 : 0) +
+        (voice.complete ? 1 : 0) +
+        (sharedDocumentIds.length > 1 ? 1 : 0) +
+        (sharedBookIds.length > 0 && sharedConversationIds.length > 0 ? 1 : 0) +
+        (failedRows === 0 ? 1 : 0);
+      return {
+        chat,
+        voice,
+        sharedBookIds,
+        sharedConversationIds,
+        sharedDocumentIds,
+        score,
+      };
+    }),
+  );
+  const selectedPair = candidatePairs.sort((a, b) => b.score - a.score)[0];
+  const selectedChat = selectedPair?.chat;
+  const selectedVoice = selectedPair?.voice;
+  const sharedBookIds = selectedPair?.sharedBookIds || [];
+  const sharedConversationIds = selectedPair?.sharedConversationIds || [];
+  const sharedDocumentIds = selectedPair?.sharedDocumentIds || [];
+  const allAnchors = [
+    ...(selectedChat?.anchors || []),
+    ...(selectedVoice?.anchors || []),
+  ];
+  const latestTimestamp = latestTimestampFromAnchors(allAnchors);
+  const sharedEvidence = mergeAnchors(allAnchors);
+
+  const checks: CoherentLiveProofCheck[] = [
+    {
+      id: "typed_chat_request_bundle",
+      title: "Typed chat request bundle",
+      ready: selectedChat?.complete === true,
+      status: selectedChat?.complete === true ? "ready" : "watch",
+      summary:
+        selectedChat?.complete === true
+          ? "One typed-chat request contains context, retrieval, model, tool, evaluated mastery, transcript, and background-memory evidence."
+          : "No single typed-chat request contains every required live proof row yet.",
+      evidence: selectedChat
+        ? mergeAnchors(selectedChat.anchors)
+        : emptySignalEvidence(),
+    },
+    {
+      id: "live_voice_request_bundle",
+      title: "Live voice request bundle",
+      ready: selectedVoice?.complete === true,
+      status: selectedVoice?.complete === true ? "ready" : "watch",
+      summary:
+        selectedVoice?.complete === true
+          ? "One live-voice request contains context, retrieval, model, tool, evaluated mastery, transcript, and background-memory evidence."
+          : "No single live-voice request contains every required live proof row yet.",
+      evidence: selectedVoice
+        ? mergeAnchors(selectedVoice.anchors)
+        : emptySignalEvidence(),
+    },
+    {
+      id: "shared_multi_pdf_context",
+      title: "Shared multi-PDF context",
+      ready: sharedDocumentIds.length > 1,
+      status: sharedDocumentIds.length > 1 ? "ready" : "watch",
+      summary:
+        sharedDocumentIds.length > 1
+          ? "The selected chat and voice requests share the same multi-PDF context evidence."
+          : "The selected chat and voice requests do not yet share more than one PDF context id.",
+      evidence: {
+        requestIds: compactUnique(
+          [selectedChat?.requestId, selectedVoice?.requestId],
+          4,
+        ),
+        sources: ["brain_context_injected"],
+        documentIds: sharedDocumentIds,
+        ...(latestTimestamp ? { latestTimestamp } : {}),
+      },
+    },
+    {
+      id: "shared_book_thread",
+      title: "Shared local book thread",
+      ready: sharedBookIds.length > 0 && sharedConversationIds.length > 0,
+      status:
+        sharedBookIds.length > 0 && sharedConversationIds.length > 0
+          ? "ready"
+          : "watch",
+      summary:
+        sharedBookIds.length > 0 && sharedConversationIds.length > 0
+          ? "The selected chat and voice requests save into the same local book thread."
+          : "The selected chat and voice requests do not yet share a saved local book/thread anchor.",
+      evidence: {
+        requestIds: compactUnique(
+          [selectedChat?.requestId, selectedVoice?.requestId],
+          4,
+        ),
+        sources: ["book_chat_thread_saved"],
+        documentIds: [],
+        ...(latestTimestamp ? { latestTimestamp } : {}),
+      },
+    },
+    {
+      id: "no_failed_live_rows",
+      title: "No failed live rows",
+      ready: failedRows === 0,
+      status: failedRows === 0 ? "ready" : "blocked",
+      summary:
+        failedRows === 0
+          ? "No failed or blocked local brain-flow rows are present in the proof window."
+          : `${failedRows} failed or blocked rows must be resolved before the coherent proof can pass.`,
+      evidence: sharedEvidence,
+    },
+  ];
+  const readyChecks = checks.filter((check) => check.ready).length;
+  const totalChecks = checks.length;
+  const missingChecks = checks
+    .filter((check) => !check.ready)
+    .map((check) => check.title);
+  const ready = readyChecks === totalChecks;
+  const status: Exclude<BetaDiagnosticStatus, "deferred"> =
+    failedRows > 0 ? "blocked" : ready ? "ready" : "watch";
+  const completionPercent =
+    totalChecks > 0 ? Math.round((readyChecks / totalChecks) * 100) : 0;
+
+  return {
+    status,
+    ready,
+    completionPercent,
+    readyChecks,
+    totalChecks,
+    failedRows,
+    ...(selectedChat ? { chatRequestId: selectedChat.requestId } : {}),
+    ...(selectedVoice ? { voiceRequestId: selectedVoice.requestId } : {}),
+    sharedBookIds,
+    sharedConversationIds,
+    sharedDocumentIds,
+    ...(latestTimestamp ? { latestTimestamp } : {}),
+    summary:
+      status === "ready"
+        ? "One typed-chat request and one live-voice request form a coherent local beta proof bundle with shared book, thread, and multi-PDF context anchors."
+        : status === "blocked"
+          ? `${failedRows} failed or blocked rows prevent a coherent chat+voice proof bundle.`
+          : `Missing coherent live proof for ${missingChecks.join(", ")}.`,
+    missingChecks,
+    checks,
+  };
+};
+
 const emptySignalEvidence = (): BetaBrainFlowSignalEvidence => ({
   requestIds: [],
   sources: [],
@@ -945,6 +1422,7 @@ const providerKeyProofSignalChecks = [
 
 export const buildProviderKeyProofChecklist = ({
   brainFlow,
+  coherentLiveProof = buildCoherentLiveProofFromLedgers(),
   providerKeys = {},
 }: ProviderKeyProofInput): ProviderKeyProofChecklist => {
   const chatModelKeyConfigured = providerKeys.chatModelKeyConfigured === true;
@@ -1015,7 +1493,33 @@ export const buildProviderKeyProofChecklist = ({
     },
   );
 
-  const checks = [...keyChecks, ...liveChecks];
+  const coherentLiveCheck: ProviderKeyProofCheck = {
+    id: "coherent_chat_voice_beta_bundle",
+    title: "Coherent chat + voice beta bundle",
+    scope: "live_ledger",
+    ready: coherentLiveProof.ready,
+    status: coherentLiveProof.status,
+    count: coherentLiveProof.readyChecks,
+    signalIds: [],
+    summary: coherentLiveProof.ready
+      ? coherentLiveProof.summary
+      : `Missing coherent live proof for ${coherentLiveProof.missingChecks.join(", ")}.`,
+    action:
+      "Run typed chat and live voice against the same active book with multiple ready PDFs, then verify both request ids share the saved local book thread.",
+    evidence: {
+      requestIds: compactUnique(
+        [coherentLiveProof.chatRequestId, coherentLiveProof.voiceRequestId],
+        4,
+      ),
+      sources: ["coherent_live_proof"],
+      documentIds: coherentLiveProof.sharedDocumentIds,
+      ...(coherentLiveProof.latestTimestamp
+        ? { latestTimestamp: coherentLiveProof.latestTimestamp }
+        : {}),
+    },
+  };
+
+  const checks = [...keyChecks, ...liveChecks, coherentLiveCheck];
   const readyChecks = checks.filter((check) => check.ready).length;
   const totalChecks = checks.length;
   const missingChecks = checks
@@ -1051,6 +1555,7 @@ export const buildProviderKeyProofChecklist = ({
     voiceRealtimeKeyConfigured,
     canAttemptProviderKeyRun,
     proofComplete,
+    coherentLiveProof,
     summary,
     missingChecks,
     checks,
@@ -1064,6 +1569,8 @@ export const buildBetaDiagnosticsSnapshot = (
   const counts = requiredCounts(input);
   const brainFlow =
     input.brainFlow || buildBrainFlowCoverageFromLedgers({ memoryEvents: [] });
+  const coherentLiveProof =
+    input.coherentLiveProof || buildCoherentLiveProofFromLedgers();
   const totalRows =
     counts.learningBooks +
     counts.mappedConcepts +
@@ -1257,6 +1764,20 @@ export const buildBetaDiagnosticsSnapshot = (
             : "Run one typed chat turn, one voice turn, one tool action, and one learning-book update to complete local flow evidence.",
     }),
     item({
+      id: "coherent_live_proof",
+      title: "Coherent live proof bundle",
+      status: coherentLiveProof.status,
+      summary: `${coherentLiveProof.completionPercent}% coherent proof: ${coherentLiveProof.summary}`,
+      detail: coherentLiveProof.missingChecks.join(", "),
+      count: coherentLiveProof.readyChecks,
+      action:
+        coherentLiveProof.status === "ready"
+          ? "Use this bundle as the local beta proof that chat and voice share one book/thread/multi-PDF context."
+          : coherentLiveProof.status === "blocked"
+            ? "Fix failed live rows before treating chat and voice as one coherent beta proof."
+            : "Run typed chat and live voice against the same multi-PDF active book, then inspect the shared request bundle.",
+    }),
+    item({
       id: "diagnostic_export",
       title: "Diagnostic export",
       status: totalRows > 0 ? "ready" : "watch",
@@ -1293,6 +1814,7 @@ export const buildBetaDiagnosticsSnapshot = (
     },
     counts,
     brainFlow,
+    coherentLiveProof,
     runtimeSettings: input.runtimeSettings,
     items,
     outOfScope: [

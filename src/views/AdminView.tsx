@@ -50,6 +50,7 @@ import {
   buildBrainFlowCoverageFromLedgers,
   buildBetaDiagnosticsExport,
   buildBetaDiagnosticsSnapshot,
+  buildCoherentLiveProofFromLedgers,
   buildProviderKeyProofChecklist,
 } from "../memory/beta.diagnostics";
 import {
@@ -934,6 +935,13 @@ export function AdminView() {
     toolJobs,
     evidenceEvents,
   });
+  const coherentLiveProof = buildCoherentLiveProofFromLedgers({
+    memoryEvents,
+    retrievalEvents,
+    modelRuns,
+    toolJobs,
+    evidenceEvents,
+  });
   const betaDiagnosticsSnapshot = buildBetaDiagnosticsSnapshot({
     generatedAt: activityPayload?.generatedAt,
     learningBooks: learningBooks.length,
@@ -967,12 +975,14 @@ export function AdminView() {
     traceEvents: traceCount,
     webSearches: webUsage.requests,
     brainFlow: brainFlowCoverage,
+    coherentLiveProof,
     runtimeSettings: brainRuntimeSettings,
   });
   const providerKeyProofChecklist = useMemo(
     () =>
       buildProviderKeyProofChecklist({
         brainFlow: betaDiagnosticsSnapshot.brainFlow,
+        coherentLiveProof: betaDiagnosticsSnapshot.coherentLiveProof,
         providerKeys: {
           chatModelKeyConfigured:
             Boolean(apiKey.trim()) ||
@@ -987,6 +997,7 @@ export function AdminView() {
       activityPayload?.meters.providers.openRouter,
       apiKey,
       betaDiagnosticsSnapshot.brainFlow,
+      betaDiagnosticsSnapshot.coherentLiveProof,
       deepgramApiKey,
     ],
   );
@@ -4405,6 +4416,145 @@ export function AdminView() {
 
                       <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-600 font-serif">
                         {providerKeyProofChecklist.summary}
+                      </div>
+
+                      <div className="mt-4 rounded-2xl border border-blue-100 bg-white p-4">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-blue-500">
+                              Coherent live proof bundle
+                            </div>
+                            <h4 className="mt-1 text-base font-semibold text-zinc-900">
+                              Same book, same thread, both agent layers
+                            </h4>
+                            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                              {
+                                providerKeyProofChecklist.coherentLiveProof
+                                  .summary
+                              }
+                            </p>
+                          </div>
+                          <div className="shrink-0 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              Bundle
+                            </div>
+                            <div className="mt-1 text-xl font-semibold tabular-nums text-zinc-900">
+                              {
+                                providerKeyProofChecklist.coherentLiveProof
+                                  .completionPercent
+                              }
+                              %
+                            </div>
+                            <span
+                              className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(providerKeyProofChecklist.coherentLiveProof.status)}`}
+                            >
+                              {
+                                providerKeyProofChecklist.coherentLiveProof
+                                  .status
+                              }
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {providerKeyProofChecklist.coherentLiveProof
+                            .chatRequestId && (
+                            <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700">
+                              chat req{" "}
+                              {
+                                providerKeyProofChecklist.coherentLiveProof
+                                  .chatRequestId
+                              }
+                            </span>
+                          )}
+                          {providerKeyProofChecklist.coherentLiveProof
+                            .voiceRequestId && (
+                            <span className="rounded-full border border-cyan-100 bg-cyan-50 px-2 py-0.5 text-[10px] font-mono text-cyan-700">
+                              voice req{" "}
+                              {
+                                providerKeyProofChecklist.coherentLiveProof
+                                  .voiceRequestId
+                              }
+                            </span>
+                          )}
+                          {providerKeyProofChecklist.coherentLiveProof.sharedBookIds.map(
+                            (bookId) => (
+                              <span
+                                key={`coherent-book-${bookId}`}
+                                className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600"
+                              >
+                                book {bookId}
+                              </span>
+                            ),
+                          )}
+                          {providerKeyProofChecklist.coherentLiveProof.sharedConversationIds.map(
+                            (conversationId) => (
+                              <span
+                                key={`coherent-thread-${conversationId}`}
+                                className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600"
+                              >
+                                thread {conversationId}
+                              </span>
+                            ),
+                          )}
+                          {providerKeyProofChecklist.coherentLiveProof.sharedDocumentIds.map(
+                            (documentId) => (
+                              <span
+                                key={`coherent-pdf-${documentId}`}
+                                className="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[10px] font-mono text-violet-700"
+                              >
+                                pdf {documentId}
+                              </span>
+                            ),
+                          )}
+                          {typeof providerKeyProofChecklist.coherentLiveProof
+                            .latestTimestamp === "number" && (
+                            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                              latest{" "}
+                              {formatTime(
+                                providerKeyProofChecklist.coherentLiveProof
+                                  .latestTimestamp,
+                              )}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+                          {providerKeyProofChecklist.coherentLiveProof.checks.map(
+                            (check) => (
+                              <div
+                                key={check.id}
+                                className={`rounded-xl border px-3 py-2 ${
+                                  check.ready
+                                    ? "border-green-200 bg-green-50"
+                                    : check.status === "blocked"
+                                      ? "border-red-200 bg-red-50"
+                                      : "border-zinc-200 bg-zinc-50"
+                                }`}
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                    {check.title}
+                                  </div>
+                                  {check.ready ? (
+                                    <ShieldCheck
+                                      size={13}
+                                      className="shrink-0 text-green-600"
+                                    />
+                                  ) : (
+                                    <Clock
+                                      size={13}
+                                      className="shrink-0 text-zinc-400"
+                                    />
+                                  )}
+                                </div>
+                                <p className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-zinc-600 font-serif">
+                                  {check.summary}
+                                </p>
+                              </div>
+                            ),
+                          )}
+                        </div>
                       </div>
 
                       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">

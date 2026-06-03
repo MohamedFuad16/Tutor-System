@@ -39,6 +39,7 @@
 - Packet ABS: See `packets/ABS-dual-agent-tool-contract-playback-clarity.md`.
 - Packet ABT: See `packets/ABT-provider-key-live-proof-checklist.md`.
 - Packet ABU: See `packets/ABU-stored-audio-duration-evidence.md`.
+- Packet ABV: See `packets/ABV-coherent-live-proof-bundle.md`.
 
 ## Completion Audit
 

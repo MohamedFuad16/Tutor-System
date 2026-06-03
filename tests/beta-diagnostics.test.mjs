@@ -5,6 +5,7 @@ const {
   buildBetaDiagnosticsExport,
   buildBetaDiagnosticsSnapshot,
   buildBrainFlowCoverageFromLedgers,
+  buildCoherentLiveProofFromLedgers,
   buildProviderKeyProofChecklist,
 } = await import("../.tmp-test/beta.diagnostics.mjs");
 const { modelObservationGateMetadata } =
@@ -20,7 +21,7 @@ const multiPdfContextMetadata = (agentLayer, requestId) => ({
   contextDocumentIds: ["doc-active", "doc-companion"],
 });
 
-const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
+const completeBrainFlowLedgers = {
   memoryEvents: [
     {
       eventType: "brain_context_injected",
@@ -159,7 +160,13 @@ const completeBrainFlow = buildBrainFlowCoverageFromLedgers({
       },
     },
   ],
-});
+};
+const completeBrainFlow = buildBrainFlowCoverageFromLedgers(
+  completeBrainFlowLedgers,
+);
+const completeCoherentLiveProof = buildCoherentLiveProofFromLedgers(
+  completeBrainFlowLedgers,
+);
 
 test("beta diagnostics mark clean local ledgers as export-ready while cloud stays deferred", () => {
   const snapshot = buildBetaDiagnosticsSnapshot(
@@ -182,6 +189,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
       masteryDeltas: 1,
       traceEvents: 2,
       brainFlow: completeBrainFlow,
+      coherentLiveProof: completeCoherentLiveProof,
       runtimeSettings: { webSearchPolicy: "source_first" },
     },
     new Date("2026-06-01T00:00:00.000Z"),
@@ -203,6 +211,11 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
   assert.equal(snapshot.counts.backgroundJobs, 2);
   assert.equal(snapshot.counts.bookChatThreads, 1);
   assert.equal(snapshot.brainFlow.status, "ready");
+  assert.equal(snapshot.coherentLiveProof.status, "ready");
+  assert.equal(
+    snapshot.items.find((item) => item.id === "coherent_live_proof")?.status,
+    "ready",
+  );
   assert.equal(
     snapshot.items.find((item) => item.id === "background_jobs")?.status,
     "ready",
@@ -228,7 +241,7 @@ test("provider-key proof checklist separates key readiness from live proof", () 
   assert.equal(checklist.canAttemptProviderKeyRun, false);
   assert.equal(checklist.proofComplete, false);
   assert.equal(checklist.readyChecks, 0);
-  assert.equal(checklist.totalChecks, 15);
+  assert.equal(checklist.totalChecks, 16);
   assert.equal(checklist.completionPercent, 0);
   assert.equal(checklist.chatModelKeyConfigured, false);
   assert.equal(checklist.voiceRealtimeKeyConfigured, false);
@@ -239,6 +252,7 @@ test("provider-key proof checklist separates key readiness from live proof", () 
 test("provider-key proof checklist requires keys and complete live ledger anchors", () => {
   const missingVoiceKey = buildProviderKeyProofChecklist({
     brainFlow: completeBrainFlow,
+    coherentLiveProof: completeCoherentLiveProof,
     providerKeys: {
       chatModelKeyConfigured: true,
       voiceRealtimeKeyConfigured: false,
@@ -248,13 +262,14 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   assert.equal(missingVoiceKey.status, "watch");
   assert.equal(missingVoiceKey.canAttemptProviderKeyRun, false);
   assert.equal(missingVoiceKey.proofComplete, false);
-  assert.equal(missingVoiceKey.readyChecks, 14);
+  assert.equal(missingVoiceKey.readyChecks, 15);
   assert.ok(
     missingVoiceKey.missingChecks.includes("Voice realtime provider key"),
   );
 
   const readyChecklist = buildProviderKeyProofChecklist({
     brainFlow: completeBrainFlow,
+    coherentLiveProof: completeCoherentLiveProof,
     providerKeys: {
       chatModelKeyConfigured: true,
       voiceRealtimeKeyConfigured: true,
@@ -269,6 +284,21 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   assert.equal(readyChecklist.proofComplete, true);
   assert.equal(readyChecklist.completionPercent, 100);
   assert.equal(readyChecklist.missingChecks.length, 0);
+  assert.equal(readyChecklist.coherentLiveProof.status, "ready");
+  assert.deepEqual(readyChecklist.coherentLiveProof.sharedDocumentIds, [
+    "doc-active",
+    "doc-companion",
+  ]);
+  assert.deepEqual(readyChecklist.coherentLiveProof.sharedBookIds, ["book-1"]);
+  assert.deepEqual(readyChecklist.coherentLiveProof.sharedConversationIds, [
+    "thread:book-1",
+  ]);
+  assert.equal(
+    readyChecklist.checks.find(
+      (check) => check.id === "coherent_chat_voice_beta_bundle",
+    )?.ready,
+    true,
+  );
   assert.deepEqual(typedChatMultiPdfProof?.evidence.requestIds, ["chat-req-1"]);
   assert.deepEqual(typedChatMultiPdfProof?.evidence.documentIds, [
     "doc-active",
@@ -428,6 +458,181 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
     "book_chat_thread_saved",
   ]);
   assert.equal(requestCorrelationSignal?.evidence.latestTimestamp, 8);
+});
+
+test("coherent live proof requires one complete chat request and one complete voice request sharing book and multi-PDF context", () => {
+  assert.equal(completeCoherentLiveProof.status, "ready");
+  assert.equal(completeCoherentLiveProof.ready, true);
+  assert.equal(completeCoherentLiveProof.completionPercent, 100);
+  assert.equal(completeCoherentLiveProof.chatRequestId, "chat-req-1");
+  assert.equal(completeCoherentLiveProof.voiceRequestId, "voice-req-1");
+  assert.deepEqual(completeCoherentLiveProof.sharedDocumentIds, [
+    "doc-active",
+    "doc-companion",
+  ]);
+  assert.deepEqual(completeCoherentLiveProof.sharedBookIds, ["book-1"]);
+  assert.deepEqual(completeCoherentLiveProof.sharedConversationIds, [
+    "thread:book-1",
+  ]);
+  assert.equal(
+    completeCoherentLiveProof.checks.find(
+      (check) => check.id === "typed_chat_request_bundle",
+    )?.ready,
+    true,
+  );
+  assert.equal(
+    completeCoherentLiveProof.checks.find(
+      (check) => check.id === "live_voice_request_bundle",
+    )?.ready,
+    true,
+  );
+});
+
+test("coherent live proof rejects scattered rows even when aggregate brain-flow signals pass", () => {
+  const scatteredLedgers = {
+    memoryEvents: [
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 1,
+        bookId: "book-1",
+        metadata: multiPdfContextMetadata("chat_stream", "chat-context"),
+      },
+      {
+        eventType: "brain_context_injected",
+        status: "completed",
+        timestamp: 2,
+        bookId: "book-1",
+        metadata: multiPdfContextMetadata("voice_realtime", "voice-context"),
+      },
+      {
+        eventType: "learning_book_updated",
+        status: "completed",
+        timestamp: 3,
+        bookId: "book-1",
+        metadata: modelObservationGateMetadata({
+          requestId: "chat-background",
+          mode: "chat",
+          agentLayer: "chat_stream",
+        }),
+      },
+      {
+        eventType: "learning_book_updated",
+        status: "completed",
+        timestamp: 4,
+        bookId: "book-1",
+        metadata: modelObservationGateMetadata({
+          requestId: "voice-background",
+          mode: "voice",
+          agentLayer: "voice_realtime",
+        }),
+      },
+      {
+        eventType: "book_chat_thread_saved",
+        status: "completed",
+        timestamp: 5,
+        bookId: "book-1",
+        conversationId: "thread:book-1",
+        metadata: {
+          mode: "chat",
+          requestId: "chat-thread",
+          hasTypedChat: true,
+        },
+      },
+      {
+        eventType: "book_chat_thread_saved",
+        status: "completed",
+        timestamp: 6,
+        bookId: "book-1",
+        conversationId: "thread:book-1",
+        metadata: {
+          mode: "voice",
+          requestId: "voice-thread",
+          hasVoiceSession: true,
+          voiceSessionCount: 1,
+          voiceTurnCount: 2,
+        },
+      },
+    ],
+    retrievalEvents: [
+      { status: "completed", requestId: "chat-retrieval", timestamp: 7 },
+      { status: "completed", requestId: "voice-retrieval", timestamp: 8 },
+    ],
+    modelRuns: [
+      {
+        status: "completed",
+        source: "chat_stream",
+        requestId: "chat-model",
+        timestamp: 9,
+      },
+      {
+        status: "completed",
+        source: "voice_agent",
+        requestId: "voice-model",
+        timestamp: 10,
+      },
+    ],
+    toolJobs: [
+      {
+        status: "completed",
+        source: "chat_stream",
+        requestId: "chat-tool",
+        timestamp: 11,
+      },
+      {
+        status: "completed",
+        source: "voice_agent",
+        requestId: "voice-tool",
+        timestamp: 12,
+      },
+    ],
+    evidenceEvents: [
+      {
+        evidenceType: "generation",
+        verified: true,
+        timestamp: 13,
+        metadata: {
+          requestId: "chat-evidence",
+          evidenceContract: "evaluated_answer_v1",
+          agentLayer: "chat_stream",
+          mode: "chat",
+        },
+      },
+      {
+        evidenceType: "generation",
+        verified: true,
+        timestamp: 14,
+        metadata: {
+          requestId: "voice-evidence",
+          evidenceContract: "evaluated_answer_v1",
+          agentLayer: "voice_realtime",
+          mode: "voice",
+        },
+      },
+    ],
+  };
+  const aggregateFlow = buildBrainFlowCoverageFromLedgers(scatteredLedgers);
+  const coherentProof = buildCoherentLiveProofFromLedgers(scatteredLedgers);
+  const checklist = buildProviderKeyProofChecklist({
+    brainFlow: aggregateFlow,
+    coherentLiveProof: coherentProof,
+    providerKeys: {
+      chatModelKeyConfigured: true,
+      voiceRealtimeKeyConfigured: true,
+    },
+  });
+
+  assert.equal(aggregateFlow.status, "ready");
+  assert.equal(aggregateFlow.coveragePercent, 100);
+  assert.equal(coherentProof.status, "watch");
+  assert.equal(coherentProof.ready, false);
+  assert.ok(coherentProof.missingChecks.includes("Typed chat request bundle"));
+  assert.ok(coherentProof.missingChecks.includes("Live voice request bundle"));
+  assert.equal(checklist.status, "watch");
+  assert.equal(checklist.proofComplete, false);
+  assert.ok(
+    checklist.missingChecks.includes("Coherent chat + voice beta bundle"),
+  );
 });
 
 test("brain flow coverage requires chat and voice multi-PDF context evidence", () => {
