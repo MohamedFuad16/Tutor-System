@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-06-03T10:34:28.918Z",
+  "appUrl": "http://127.0.0.1:3100",
+  "results": [
+    {
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "hasModelLedger": true,
+      "hasPhaseCopy": true,
+      "hasStartedRow": true,
+      "hasFallbackRow": true,
+      "hasCompletedRow": true,
+      "qaRequestMentions": 3,
+      "modelMentions": 5,
+      "consoleLogs": []
+    },
+    {
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "hasModelLedger": true,
+      "hasPhaseCopy": true,
+      "hasStartedRow": true,
+      "hasFallbackRow": true,
+      "hasCompletedRow": true,
+      "qaRequestMentions": 3,
+      "modelMentions": 5,
+      "consoleLogs": []
+    }
+  ]
+}

@@ -49,6 +49,12 @@ const nonNegativeNumber = (value: unknown) => {
   return Number.isFinite(numberValue) ? Math.max(0, numberValue) : undefined;
 };
 
+const idPart = (value: unknown, fallback = "") =>
+  compact(value, fallback)
+    .replace(/[^a-zA-Z0-9_.-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 100);
+
 export const normalizeModelRunStatus = (
   status: ModelRunStatusInput | undefined,
 ): ModelRun["status"] => {
@@ -68,9 +74,13 @@ export const normalizeModelRunStatus = (
 };
 
 export const modelRunIdFor = (input: ModelRunEventInput) => {
-  const requestId = compact(input.requestId, "local");
-  const source = compact(input.source, "chat_stream");
-  return ["model-run", source, requestId].filter(Boolean).join(":");
+  const requestId = idPart(input.requestId, "local");
+  const source = idPart(input.source, "chat_stream");
+  const status = normalizeModelRunStatus(input.status);
+  const model = idPart(input.usedModel || input.requestedModel);
+  return ["model-run", source, requestId, status, model]
+    .filter(Boolean)
+    .join(":");
 };
 
 export const createModelRunRecord = (

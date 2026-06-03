@@ -1862,8 +1862,23 @@ CRITICAL RULES:
       runtimeSettings?: Record<string, string | number>;
       metadata?: Record<string, unknown>;
     }) => {
+      const modelIdPart = (value: unknown) =>
+        String(value || "")
+          .replace(/\s+/g, " ")
+          .trim()
+          .replace(/[^a-zA-Z0-9_.-]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 100);
       sendEvent("model_run", {
-        id: `model-run:chat_stream:${requestId}`,
+        id: [
+          "model-run",
+          "chat_stream",
+          modelIdPart(requestId) || "local",
+          data.status,
+          modelIdPart(data.usedModel || data.requestedModel),
+        ]
+          .filter(Boolean)
+          .join(":"),
         timestamp: Date.now(),
         provider: "openrouter",
         source: "chat_stream",

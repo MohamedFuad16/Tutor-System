@@ -561,6 +561,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACB",
+      "name": "Model run phase ledger IDs",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/model.runs.ts, server.ts, tests/model-runs.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1219,11 +1226,30 @@
     "Graphify smoke query found CoherentLiveProofRequestBundle, buildCoherentRequestBundle(), buildCoherentLiveProofFromLedgers(), AdminView(), and connected beta diagnostics nodes",
     "graphify path buildCoherentRequestBundle() to AdminView() found a two-hop route through buildCoherentLiveProofFromLedgers()",
     "graphify path CoherentLiveProofRequestBundle to buildCoherentLiveProofFromLedgers() found a two-hop route through beta.diagnostics.ts",
-    "Packet ACA graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ACA graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ACB selected after Graphify routed phase-aware model-run identity through modelRunIdFor(), recordModelRunEvent(), idPart(), model.runs.ts, ChatPanel.tsx, AdminView(), and longterm.memory.ts",
+    "Added phase-aware durable model-run ids so started, fallback, completed, blocked, and failed rows for one request/model remain separate",
+    "Server chat-stream model_run events now emit ids using request id, phase/status, and used/requested model identity",
+    "Focused model-run tests now assert stable completed ids and separate fallback plus completed ids for one request",
+    "npm run format passed for Packet ACB",
+    "npm run test passed, 153 tests",
+    "npm run format:check passed for Packet ACB",
+    "npm run lint passed for Packet ACB",
+    "npm run build passed for Packet ACB",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run brain:ui-regression remained unavailable because current package.json has no brain:ui-regression script",
+    "Headless Chrome CDP QA via phase64-browser-qa.mjs confirmed desktop and mobile Admin Model Runs rendered one QA request with started, fallback, and completed rows, no horizontal overflow, and zero console logs",
+    "Browser QA screenshots saved as ACB-admin-model-runs-desktop.png and ACB-admin-model-runs-mobile.png; JSON evidence saved as phase64-browser-qa.json",
+    "graphify update . --force regenerated code architecture artifacts with 1087 nodes, 1918 edges, and 59 communities",
+    "npm run graphify:tree passed for Packet ACB and wrote GRAPH_TREE.html at 80.2 KB",
+    "Graphify smoke query found modelRunIdFor(), recordModelRunEvent(), idPart(), normalizeModelRunStatus(), createModelRunRecord(), and connected memory/Admin nodes",
+    "graphify path modelRunIdFor() to AdminView() found a four-hop route through model.runs.ts, ChatPanel.tsx, and useStore",
+    "graphify path modelRunIdFor() to recordModelRunEvent() found a two-hop route through model.runs.ts",
+    "Packet ACB graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 93,
-    "basis": "Local architecture estimate after Packet ACA final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, Beta Diagnostics provider-meter freshness, a provider-key fallback guard, and selected coherent request-row detail are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T19:19:08.000+09:00"
+    "estimatePercent": 94,
+    "basis": "Local architecture estimate after Packet ACB final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, Beta Diagnostics provider-meter freshness, a provider-key fallback guard, selected coherent request-row detail, and phase-aware durable model-run ids for started/fallback/completed rows are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T19:34:28.000+09:00"
   }
 }

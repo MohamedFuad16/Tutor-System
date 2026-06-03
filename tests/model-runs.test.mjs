@@ -20,10 +20,30 @@ test("model run ids are stable per stream source and request", () => {
   const input = {
     requestId: "req_123",
     source: "chat_stream",
+    status: "completed",
+    usedModel: "google/gemini-2.5-flash",
   };
 
   assert.equal(modelRunIdFor(input), modelRunIdFor(input));
-  assert.match(modelRunIdFor(input), /chat_stream:req_123$/);
+  assert.match(
+    modelRunIdFor(input),
+    /chat_stream:req_123:completed:google-gemini-2.5-flash$/,
+  );
+});
+
+test("model run ids preserve fallback and completed phases for one request", () => {
+  const base = {
+    requestId: "req_123",
+    source: "chat_stream",
+    requestedModel: "deepseek/deepseek-v4-flash",
+    usedModel: "google/gemini-2.5-flash",
+  };
+  const fallbackId = modelRunIdFor({ ...base, status: "fallback" });
+  const completedId = modelRunIdFor({ ...base, status: "completed" });
+
+  assert.notEqual(fallbackId, completedId);
+  assert.match(fallbackId, /:fallback:google-gemini-2.5-flash$/);
+  assert.match(completedId, /:completed:google-gemini-2.5-flash$/);
 });
 
 test("model run records compact errors and preserve tuning metadata", () => {

@@ -14,6 +14,77 @@
 
 ## Reusable Follow-up
 
+# Phase 72: Model Run Phase Ledger IDs
+
+Packet ACB makes model-run identity phase-aware. Started, fallback, completed,
+blocked, and failed rows for one request/model now remain separate durable rows,
+so Admin Model Runs and coherent proof diagnostics can show provider fallback
+behavior without losing a later completed row.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 94%.
+
+## Graphify Context
+
+- Graphify routed the slice through `modelRunIdFor()`,
+  `recordModelRunEvent()`, `idPart()`, `model.runs.ts`, `ChatPanel.tsx`,
+  `AdminView()`, and `longterm.memory.ts`.
+- Graphify path `modelRunIdFor()` to `AdminView()` found a four-hop route
+  through `model.runs.ts`, `ChatPanel.tsx`, and `useStore`.
+- Graphify path `modelRunIdFor()` to `recordModelRunEvent()` found a two-hop
+  route through `model.runs.ts`.
+
+## Integration Decisions
+
+- Added compact id sanitization for model-run id parts.
+- Updated durable model-run ids to include normalized status and used/requested
+  model identity.
+- Updated server chat-stream model_run event ids to include the same
+  phase/model identity.
+- Kept coherent provider-key proof semantics unchanged: completed rows satisfy
+  proof; fallback rows remain diagnostic.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 153 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- Headless Chrome CDP QA via `phase64-browser-qa.mjs` confirmed desktop and
+  mobile Admin Model Runs rendered one QA request with started, fallback, and
+  completed rows, model run phase copy, no horizontal overflow, and zero console
+  logs.
+- Browser screenshots saved as `ACB-admin-model-runs-desktop.png` and
+  `ACB-admin-model-runs-mobile.png`; JSON evidence saved as
+  `phase64-browser-qa.json`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1087 nodes, 1918 edges, and 59 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`80.2 KB`).
+- Graphify smoke query found `modelRunIdFor()`, `recordModelRunEvent()`,
+  `idPart()`, `normalizeModelRunStatus()`, `createModelRunRecord()`, and
+  connected memory/Admin nodes.
+- Graphify path `modelRunIdFor()` to `AdminView()` found a four-hop route
+  through `model.runs.ts`, `ChatPanel.tsx`, and `useStore`.
+- Graphify path `modelRunIdFor()` to `recordModelRunEvent()` found a two-hop
+  route through `model.runs.ts`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes after regeneration.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then verify completed model rows appear beside any
+  fallback rows for the same request.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Phase 71: Coherent Request Bundle Row Detail
 
 Packet ACA makes the coherent provider-key proof inspectable at the row level.
@@ -4512,15 +4583,15 @@ about 87%.
 - `graphify query "chapterAudioOverviews userBrainArchitectureBook audio
 overview duration transcript 3 4 minutes stored audio guide generator plan tests
 source files" --budget 10000 --graph graphify-out/graph.json` routed the slice
-through `chapterAudioOverviews`, `RevisionView.tsx`,
-`audio-overview-plan.test.mjs`, `README.md`, and
-`userBrainArchitectureBook.ts`.
+  through `chapterAudioOverviews`, `RevisionView.tsx`,
+  `audio-overview-plan.test.mjs`, `README.md`, and
+  `userBrainArchitectureBook.ts`.
 - `graphify path "chapterAudioOverviews" "RevisionView()" --graph
 graphify-out/graph.json` found the direct reader path.
 - Follow-up graph queries routed stored audio manifest integrity through
-`artifact.records.ts`, `artifact-records.test.mjs`,
-`generate-user-brain-audio-overviews.mjs`, and
-`user-brain-audio-overview-plan.mjs`.
+  `artifact.records.ts`, `artifact-records.test.mjs`,
+  `generate-user-brain-audio-overviews.mjs`, and
+  `user-brain-audio-overview-plan.mjs`.
 
 ## Integration Decisions
 
@@ -4600,16 +4671,16 @@ about 88%.
 stored injected tool calling request ledger Admin beta diagnostics missing
 evidence source completed checklist" --budget 10000 --graph
 graphify-out/graph.json` routed the slice to `ProviderKeyProofChecklist`,
-`beta.diagnostics.ts`, and `beta-diagnostics.test.mjs`.
+  `beta.diagnostics.ts`, and `beta-diagnostics.test.mjs`.
 - `graphify query "ProviderKeyProofChecklist live proof request correlated chat
 voice ledger rows missing proof source Admin beta diagnostics manual live run
 evidence export" --budget 10000 --graph graphify-out/graph.json` confirmed the
-Admin/Beta Diagnostics corridor.
+  Admin/Beta Diagnostics corridor.
 - `graphify query "voice mode chat mode properly stored injected tool calling
 both agent layers live beta proof ChatPanel voiceAgentTools chatAgentTools beta
 diagnostics AdminView" --budget 12000 --graph graphify-out/graph.json` routed
-the downstream display path through `AdminView()`,
-`buildBrainFlowCoverageFromLedgers()`, and `buildBetaDiagnosticsSnapshot()`.
+  the downstream display path through `AdminView()`,
+  `buildBrainFlowCoverageFromLedgers()`, and `buildBetaDiagnosticsSnapshot()`.
 
 ## Integration Decisions
 
@@ -4678,7 +4749,7 @@ about 90%.
 ## Graphify Context
 
 - `graphify query "AdminView beta diagnostics user brain architecture" --budget
-  4000 --graph graphify-out/graph.json` routed the slice to `AdminView.tsx`,
+4000 --graph graphify-out/graph.json` routed the slice to `AdminView.tsx`,
   `beta.diagnostics.ts`, `buildCoherentLiveProofFromLedgers()`,
   `buildBetaDiagnosticsSnapshot()`, and
   `buildBrainFlowCoverageFromLedgers()`.
@@ -4766,15 +4837,15 @@ pdfs not only current screen" --budget 12000 --graph graphify-out/graph.json`
   `index.ts`, and `tests/brain-context.test.mjs`.
 - `graphify path "ChatPanel()" "buildBrainDocumentContext()" --graph
 graphify-out/graph.json` found the route through `ChatPanel.tsx` and
-`brain.context.ts`.
+  `brain.context.ts`.
 - `graphify path "ChatPanel()" "voiceAgentToolNames" --graph
 graphify-out/graph.json` confirmed the live-voice tool layer remains connected
-through `voiceAgentTools.ts`.
+  through `voiceAgentTools.ts`.
 - `graphify query "audio overview local fallback second play button UI
 component background fallback voice overview book 3 4 minutes content
 architecture book app design book" --budget 12000 --graph
 graphify-out/graph.json` routed the audio/book work to `RevisionView.tsx`,
-`chapterAudioOverviews.ts`, `userBrainArchitectureBook.ts`, and `README.md`.
+  `chapterAudioOverviews.ts`, `userBrainArchitectureBook.ts`, and `README.md`.
 
 ## Integration Decisions
 

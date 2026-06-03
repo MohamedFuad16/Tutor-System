@@ -161,3 +161,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   live-voice request row counts for context, retrieval, completed model, tool,
   mastery, transcript, and background memory evidence so the live beta run can
   reveal the exact missing stage.
+- ACB: Model run phase ledger IDs. Preserve started, fallback, completed,
+  blocked, and failed model-run rows separately for one request/model so Admin
+  proof detail can diagnose provider fallbacks without overwriting completed
+  rows.
