@@ -4447,3 +4447,90 @@ the downstream display path through `AdminView()`,
 - Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
+
+# Phase 67: Active-Book PDF Retrieval Hint
+
+Packet ABW tightens the multi-PDF context path at the retrieval layer. The
+shared chat/voice brain-context builder already injected an active-book PDF
+manifest and balanced excerpts; this phase also gives semantic retrieval a
+compact hint that names the active PDF on screen plus companion PDFs in the
+same local book.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 89%.
+
+## Graphify Context
+
+- `graphify query "multi PDF uploaded documents context injection chatbot voice
+live agent tools active book source context ChatPanel voiceAgentTools multiple
+pdfs not only current screen" --budget 12000 --graph graphify-out/graph.json`
+  routed the slice to `ChatPanel.tsx`, `brain.context.ts`, `StudyView.tsx`,
+  `index.ts`, and `tests/brain-context.test.mjs`.
+- `graphify path "ChatPanel()" "buildBrainDocumentContext()" --graph
+graphify-out/graph.json` found the route through `ChatPanel.tsx` and
+`brain.context.ts`.
+- `graphify path "ChatPanel()" "voiceAgentToolNames" --graph
+graphify-out/graph.json` confirmed the live-voice tool layer remains connected
+through `voiceAgentTools.ts`.
+- `graphify query "audio overview local fallback second play button UI
+component background fallback voice overview book 3 4 minutes content
+architecture book app design book" --budget 12000 --graph
+graphify-out/graph.json` routed the audio/book work to `RevisionView.tsx`,
+`chapterAudioOverviews.ts`, `userBrainArchitectureBook.ts`, and `README.md`.
+
+## Integration Decisions
+
+- Added `buildBrainDocumentRetrievalHint()` and `buildBrainRetrievalQuery()`.
+- `buildBrainContextPacket()` now sends retrieval the original query plus
+  active-book PDF hint text before assembling the final context packet.
+- Because typed chat and live voice both call `buildBrainContextPacket()`, both
+  agent layers now use the same active-plus-companion PDF retrieval hint.
+- Simplified the Admin Center preface to a shorter plain-language sentence.
+- Left the stored chapter audio guide as one visible custom player with hidden
+  retry behavior inside the same `audio.sr-only` element; no visible fallback or
+  second play control was added.
+- Updated the User Brain Architecture, Tutor System Architecture, and App
+  Design Language book copy to describe the retrieval-hint contract without
+  rearranging chapter indices or desynchronizing stored audio assets.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 151 tests.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `node .workflow/brain-architecture-implementation-program/packets/phase59-browser-qa.mjs`:
+  passed with local Chrome CDP approval. Desktop and mobile Admin rendered the
+  simplified preface with no horizontal overflow and zero console logs. Desktop
+  and mobile Revision rendered App Design Language audio with exactly one
+  visible Play button, no visible fallback/retry/native controls, one hidden
+  audio element, the retrieval-hint copy, no horizontal overflow, and zero
+  console logs.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1071 nodes, 1893 edges, and 63 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`79.3 KB`).
+- Graphify smoke query found `buildBrainDocumentRetrievalHint()`,
+  `buildBrainRetrievalQuery()`, `buildBrainContextPacket()`, `ChatPanel()`,
+  `brain.context.ts`, and connected Study/Admin/Revision nodes.
+- Graphify path `buildBrainRetrievalQuery()` to `ChatPanel()` found a
+  three-hop route through `brain.context.ts` and `ChatPanel.tsx`.
+- Graphify path `buildBrainDocumentRetrievalHint()` to
+  `buildBrainContextPacket()` found the expected helper route through
+  `buildBrainRetrievalQuery()`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the provider-key checklist and coherent proof
+  bundle to confirm real rows satisfy the complete local beta flow.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.

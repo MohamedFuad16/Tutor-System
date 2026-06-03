@@ -141,3 +141,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   complete typed-chat request and one complete live-voice request sharing the
   same local book/thread and multi-PDF context, so scattered green rows cannot
   masquerade as one working beta flow.
+- ABW: Active-book PDF retrieval hint. Make the shared chat/voice brain-context
+  path add active and companion PDF hints to semantic retrieval, simplify Admin
+  preface copy, and lock stored audio overview fallback inside one visible
+  player with browser QA evidence.

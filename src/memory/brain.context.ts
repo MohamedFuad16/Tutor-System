@@ -100,6 +100,73 @@ const compact = (value: unknown, maxLength = 500) =>
     .trim()
     .slice(0, maxLength);
 
+export const buildBrainDocumentRetrievalHint = (
+  documents: LearningDocument[] = [],
+  activeDocumentId?: string | null,
+  maxDocuments = 8,
+) => {
+  if (!documents.length) return "";
+  const activeId = activeDocumentId || "";
+  const orderedDocuments = [...documents].sort((a, b) =>
+    a.id === activeId ? -1 : b.id === activeId ? 1 : 0,
+  );
+  const hintDocuments = orderedDocuments.slice(0, maxDocuments);
+  const omittedDocumentCount = Math.max(
+    0,
+    orderedDocuments.length - hintDocuments.length,
+  );
+  const readyCount = documents.filter(
+    (document) =>
+      document.processingStatus === "ready" &&
+      document.extractedText &&
+      document.extractedText.trim(),
+  ).length;
+  const activeDocument = orderedDocuments.find(
+    (document) => document.id === activeId,
+  );
+
+  return [
+    "### Active Book PDF Retrieval Hint",
+    `Active book PDFs: ${documents.length}`,
+    `Ready extracted PDFs: ${readyCount}`,
+    activeDocument
+      ? `Active PDF on screen: ${compact(activeDocument.title, 140)} (${activeDocument.id})`
+      : "",
+    ...hintDocuments.map((document, index) =>
+      [
+        `PDF ${index + 1}: ${compact(document.title, 140)}`,
+        `Document ID: ${document.id}`,
+        document.id === activeId ? "Role: active PDF" : "Role: companion PDF",
+        `Status: ${document.processingStatus || "processing"}`,
+        document.classification
+          ? `Classification: ${document.classification}`
+          : "",
+        document.extractionMode ? `Extraction: ${document.extractionMode}` : "",
+      ]
+        .filter(Boolean)
+        .join(" | "),
+    ),
+    omittedDocumentCount
+      ? `Additional PDFs omitted from retrieval hint: ${omittedDocumentCount}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+};
+
+export const buildBrainRetrievalQuery = (
+  query: string,
+  documents: LearningDocument[] = [],
+  activeDocumentId?: string | null,
+) => {
+  const baseQuery = String(query || "").trim();
+  const documentHint = buildBrainDocumentRetrievalHint(
+    documents,
+    activeDocumentId,
+  );
+  return [baseQuery, documentHint].filter(Boolean).join("\n\n");
+};
+
 export const compactBrainContext = (
   context: string,
   maxLength?: number,
@@ -369,8 +436,13 @@ export const buildBrainContextPacket = async (
   const activeBookId = input.activeBookId || undefined;
   const activeDocumentId = input.activeDocumentId || undefined;
   const documents = input.documents || [];
-  const relatedMemoryContext = await input.getRelevantContext(
+  const retrievalQuery = buildBrainRetrievalQuery(
     input.query,
+    documents,
+    activeDocumentId,
+  );
+  const relatedMemoryContext = await input.getRelevantContext(
+    retrievalQuery,
     undefined,
     activeBookId,
     {

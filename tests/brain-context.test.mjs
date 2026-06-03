@@ -6,6 +6,7 @@ import {
   buildActiveBookContext,
   buildBrainDocumentContext,
   buildBrainDocumentContextReport,
+  buildBrainRetrievalQuery,
   compactBrainContext,
   createBrainContextMemoryEventInput,
 } from "../.tmp-test/brain.context.mjs";
@@ -227,6 +228,72 @@ test("voice context assembly keeps multi-document context ahead of long memory",
   assert.match(compacted, /Document ID: doc-voice-2/);
   assert.match(compacted, /voice-one/);
   assert.match(compacted, /voice-two/);
+});
+
+test("brain retrieval query carries active and companion PDFs for chat and voice", () => {
+  const documents = [
+    {
+      id: "doc-background",
+      title: "Background Theory",
+      bookId: "book-1",
+      mimeType: "application/pdf",
+      size: 10,
+      processingStatus: "ready",
+      extractedText: "background ".repeat(40),
+      classification: "native_text_pdf",
+      extractionMode: "pymupdf4llm",
+      createdAt: 1,
+      updatedAt: 2,
+    },
+    {
+      id: "doc-active",
+      title: "Visible Experiment",
+      bookId: "book-1",
+      mimeType: "application/pdf",
+      size: 10,
+      processingStatus: "ready",
+      extractedText: "active ".repeat(40),
+      classification: "mixed_pdf",
+      extractionMode: "hybrid",
+      createdAt: 1,
+      updatedAt: 3,
+    },
+    {
+      id: "doc-pending",
+      title: "Pending Appendix",
+      bookId: "book-1",
+      mimeType: "application/pdf",
+      size: 10,
+      processingStatus: "processing",
+      createdAt: 1,
+      updatedAt: 4,
+    },
+  ];
+
+  const chatQuery = buildBrainRetrievalQuery(
+    "Explain this result",
+    documents,
+    "doc-active",
+  );
+  const voiceQuery = buildBrainRetrievalQuery(
+    "Voice tutoring session for Experiment Book.",
+    documents,
+    "doc-active",
+  );
+
+  for (const query of [chatQuery, voiceQuery]) {
+    assert.match(query, /Active Book PDF Retrieval Hint/);
+    assert.match(query, /Active book PDFs: 3/);
+    assert.match(query, /Ready extracted PDFs: 2/);
+    assert.match(query, /Active PDF on screen: Visible Experiment/);
+    assert.match(query, /PDF 1: Visible Experiment/);
+    assert.match(query, /Document ID: doc-active/);
+    assert.match(query, /Role: active PDF/);
+    assert.match(query, /PDF 2: Background Theory/);
+    assert.match(query, /Document ID: doc-background/);
+    assert.match(query, /Role: companion PDF/);
+    assert.match(query, /Pending Appendix/);
+  }
 });
 
 test("brain context memory event records request and agent-layer metadata", () => {

@@ -1,0 +1,48 @@
+[
+  {
+    "label": "desktop",
+    "surface": "admin",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "simplifiedAdminPreface": true,
+    "consoleLogs": []
+  },
+  {
+    "label": "mobile",
+    "surface": "admin",
+    "width": 390,
+    "scrollWidth": 390,
+    "simplifiedAdminPreface": true,
+    "consoleLogs": []
+  },
+  {
+    "label": "desktop",
+    "surface": "revision",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "visiblePlayButtons": [
+      "Play"
+    ],
+    "visibleFallbackButtons": [],
+    "audioCount": 1,
+    "nativeControlsVisible": 0,
+    "hiddenAudioCount": 1,
+    "hasRetrievalHintCopy": true,
+    "consoleLogs": []
+  },
+  {
+    "label": "mobile",
+    "surface": "revision",
+    "width": 390,
+    "scrollWidth": 390,
+    "visiblePlayButtons": [
+      "Play"
+    ],
+    "visibleFallbackButtons": [],
+    "audioCount": 1,
+    "nativeControlsVisible": 0,
+    "hiddenAudioCount": 1,
+    "hasRetrievalHintCopy": true,
+    "consoleLogs": []
+  }
+]

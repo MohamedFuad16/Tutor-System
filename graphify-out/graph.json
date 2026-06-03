@@ -396,7 +396,7 @@
       "source_file": "server.ts",
       "source_location": "L384",
       "id": "learningai_server_stripwebsearchsystemprefix",
-      "community": 58,
+      "community": 2,
       "norm_label": "stripwebsearchsystemprefix()"
     },
     {
@@ -405,7 +405,7 @@
       "source_file": "server.ts",
       "source_location": "L392",
       "id": "learningai_server_searchdetectionforexplicitrequest",
-      "community": 58,
+      "community": 2,
       "norm_label": "searchdetectionforexplicitrequest()"
     },
     {
@@ -1258,7 +1258,7 @@
       "label": "context",
       "file_type": "code",
       "source_file": "tests/brain-context.test.mjs",
-      "source_location": "L14",
+      "source_location": "L15",
       "id": "tests_brain_context_test_context",
       "community": 31,
       "norm_label": "context"
@@ -1267,7 +1267,7 @@
       "label": "compacted",
       "file_type": "code",
       "source_file": "tests/brain-context.test.mjs",
-      "source_location": "L21",
+      "source_location": "L22",
       "id": "tests_brain_context_test_compacted",
       "community": 31,
       "norm_label": "compacted"
@@ -1276,7 +1276,7 @@
       "label": "documents",
       "file_type": "code",
       "source_file": "tests/brain-context.test.mjs",
-      "source_location": "L141",
+      "source_location": "L142",
       "id": "tests_brain_context_test_documents",
       "community": 31,
       "norm_label": "documents"
@@ -1285,7 +1285,7 @@
       "label": "report",
       "file_type": "code",
       "source_file": "tests/brain-context.test.mjs",
-      "source_location": "L165",
+      "source_location": "L166",
       "id": "tests_brain_context_test_report",
       "community": 31,
       "norm_label": "report"
@@ -1294,7 +1294,7 @@
       "label": "documentContext",
       "file_type": "code",
       "source_file": "tests/brain-context.test.mjs",
-      "source_location": "L210",
+      "source_location": "L211",
       "id": "tests_brain_context_test_documentcontext",
       "community": 31,
       "norm_label": "documentcontext"
@@ -1303,16 +1303,34 @@
       "label": "rawContext",
       "file_type": "code",
       "source_file": "tests/brain-context.test.mjs",
-      "source_location": "L217",
+      "source_location": "L218",
       "id": "tests_brain_context_test_rawcontext",
       "community": 31,
       "norm_label": "rawcontext"
     },
     {
+      "label": "chatQuery",
+      "file_type": "code",
+      "source_file": "tests/brain-context.test.mjs",
+      "source_location": "L273",
+      "id": "tests_brain_context_test_chatquery",
+      "community": 31,
+      "norm_label": "chatquery"
+    },
+    {
+      "label": "voiceQuery",
+      "file_type": "code",
+      "source_file": "tests/brain-context.test.mjs",
+      "source_location": "L278",
+      "id": "tests_brain_context_test_voicequery",
+      "community": 31,
+      "norm_label": "voicequery"
+    },
+    {
       "label": "event",
       "file_type": "code",
       "source_file": "tests/brain-context.test.mjs",
-      "source_location": "L233",
+      "source_location": "L300",
       "id": "tests_brain_context_test_event",
       "community": 31,
       "norm_label": "event"
@@ -1908,7 +1926,7 @@
       "source_file": "server/web-search.ts",
       "source_location": "L116",
       "id": "server_web_search_detectfreshnesssearch",
-      "community": 58,
+      "community": 2,
       "norm_label": "detectfreshnesssearch()"
     },
     {
@@ -1935,7 +1953,7 @@
       "source_file": "server/vercel-handler.ts",
       "source_location": "L1",
       "id": "server_vercel_handler_ts",
-      "community": 12,
+      "community": 58,
       "norm_label": "vercel-handler.ts"
     },
     {
@@ -1944,7 +1962,7 @@
       "source_file": "server/vercel-handler.ts",
       "source_location": "L7",
       "id": "server_vercel_handler_gettutorapp",
-      "community": 12,
+      "community": 58,
       "norm_label": "gettutorapp()"
     },
     {
@@ -1953,7 +1971,7 @@
       "source_file": "server/vercel-handler.ts",
       "source_location": "L12",
       "id": "server_vercel_handler_normalizevercelcatchallurl",
-      "community": 12,
+      "community": 58,
       "norm_label": "normalizevercelcatchallurl()"
     },
     {
@@ -1962,7 +1980,7 @@
       "source_file": "server/vercel-handler.ts",
       "source_location": "L29",
       "id": "server_vercel_handler_vercelhandler",
-      "community": 12,
+      "community": 58,
       "norm_label": "vercelhandler()"
     },
     {
@@ -1971,7 +1989,7 @@
       "source_file": "server/vercel-handler.ts",
       "source_location": "L35",
       "id": "server_vercel_handler_config",
-      "community": 12,
+      "community": 58,
       "norm_label": "config"
     },
     {
@@ -2331,7 +2349,7 @@
       "source_file": "api/[...path].ts",
       "source_location": "L1",
       "id": "api_path_ts",
-      "community": 12,
+      "community": 58,
       "norm_label": "[...path].ts"
     },
     {
@@ -2340,7 +2358,7 @@
       "source_file": "api/index.ts",
       "source_location": "L1",
       "id": "api_index_ts",
-      "community": 12,
+      "community": 58,
       "norm_label": "index.ts"
     },
     {
@@ -2412,7 +2430,7 @@
       "source_file": "src/App.tsx",
       "source_location": "L85",
       "id": "src_app_app",
-      "community": 12,
+      "community": 23,
       "norm_label": "app()"
     },
     {
@@ -2484,7 +2502,7 @@
       "source_file": "src/memory/misconception.graph.ts",
       "source_location": "L1",
       "id": "src_memory_misconception_graph_ts",
-      "community": 1,
+      "community": 60,
       "norm_label": "misconception.graph.ts"
     },
     {
@@ -2493,7 +2511,7 @@
       "source_file": "src/memory/misconception.graph.ts",
       "source_location": "L4",
       "id": "memory_misconception_graph_misconceptiongraph",
-      "community": 64,
+      "community": 60,
       "norm_label": "misconceptiongraph"
     },
     {
@@ -2502,7 +2520,7 @@
       "source_file": "src/memory/misconception.graph.ts",
       "source_location": "L5",
       "id": "memory_misconception_graph_misconceptiongraph_addmisconception",
-      "community": 64,
+      "community": 60,
       "norm_label": ".addmisconception()"
     },
     {
@@ -2511,7 +2529,7 @@
       "source_file": "src/memory/misconception.graph.ts",
       "source_location": "L24",
       "id": "memory_misconception_graph_misconceptiongraph_getactivemisconceptions",
-      "community": 64,
+      "community": 60,
       "norm_label": ".getactivemisconceptions()"
     },
     {
@@ -2520,7 +2538,7 @@
       "source_file": "src/memory/misconception.graph.ts",
       "source_location": "L28",
       "id": "memory_misconception_graph_misconceptiongraph_getforconcept",
-      "community": 64,
+      "community": 60,
       "norm_label": ".getforconcept()"
     },
     {
@@ -2529,7 +2547,7 @@
       "source_file": "src/memory/misconception.graph.ts",
       "source_location": "L35",
       "id": "memory_misconception_graph_misconceptiongraph_resolvemisconception",
-      "community": 64,
+      "community": 60,
       "norm_label": ".resolvemisconception()"
     },
     {
@@ -2538,7 +2556,7 @@
       "source_file": "src/memory/misconception.graph.ts",
       "source_location": "L44",
       "id": "memory_misconception_graph_misconceptiongraph_incrementattempts",
-      "community": 64,
+      "community": 60,
       "norm_label": ".incrementattempts()"
     },
     {
@@ -2713,10 +2731,28 @@
       "norm_label": "compact()"
     },
     {
-      "label": "compactBrainContext()",
+      "label": "buildBrainDocumentRetrievalHint()",
       "file_type": "code",
       "source_file": "src/memory/brain.context.ts",
       "source_location": "L103",
+      "id": "memory_brain_context_buildbraindocumentretrievalhint",
+      "community": 8,
+      "norm_label": "buildbraindocumentretrievalhint()"
+    },
+    {
+      "label": "buildBrainRetrievalQuery()",
+      "file_type": "code",
+      "source_file": "src/memory/brain.context.ts",
+      "source_location": "L157",
+      "id": "memory_brain_context_buildbrainretrievalquery",
+      "community": 8,
+      "norm_label": "buildbrainretrievalquery()"
+    },
+    {
+      "label": "compactBrainContext()",
+      "file_type": "code",
+      "source_file": "src/memory/brain.context.ts",
+      "source_location": "L170",
       "id": "memory_brain_context_compactbraincontext",
       "community": 8,
       "norm_label": "compactbraincontext()"
@@ -2725,7 +2761,7 @@
       "label": "buildBrainDocumentContext()",
       "file_type": "code",
       "source_file": "src/memory/brain.context.ts",
-      "source_location": "L117",
+      "source_location": "L184",
       "id": "memory_brain_context_buildbraindocumentcontext",
       "community": 8,
       "norm_label": "buildbraindocumentcontext()"
@@ -2734,7 +2770,7 @@
       "label": "buildBrainDocumentContextReport()",
       "file_type": "code",
       "source_file": "src/memory/brain.context.ts",
-      "source_location": "L122",
+      "source_location": "L189",
       "id": "memory_brain_context_buildbraindocumentcontextreport",
       "community": 8,
       "norm_label": "buildbraindocumentcontextreport()"
@@ -2743,7 +2779,7 @@
       "label": "assembleBrainContextSections()",
       "file_type": "code",
       "source_file": "src/memory/brain.context.ts",
-      "source_location": "L278",
+      "source_location": "L345",
       "id": "memory_brain_context_assemblebraincontextsections",
       "community": 8,
       "norm_label": "assemblebraincontextsections()"
@@ -2752,7 +2788,7 @@
       "label": "buildActiveBookContext()",
       "file_type": "code",
       "source_file": "src/memory/brain.context.ts",
-      "source_location": "L308",
+      "source_location": "L375",
       "id": "memory_brain_context_buildactivebookcontext",
       "community": 8,
       "norm_label": "buildactivebookcontext()"
@@ -2761,7 +2797,7 @@
       "label": "createBrainContextMemoryEventInput()",
       "file_type": "code",
       "source_file": "src/memory/brain.context.ts",
-      "source_location": "L330",
+      "source_location": "L397",
       "id": "memory_brain_context_createbraincontextmemoryeventinput",
       "community": 8,
       "norm_label": "createbraincontextmemoryeventinput()"
@@ -2770,7 +2806,7 @@
       "label": "recordBrainContextInjected()",
       "file_type": "code",
       "source_file": "src/memory/brain.context.ts",
-      "source_location": "L363",
+      "source_location": "L430",
       "id": "memory_brain_context_recordbraincontextinjected",
       "community": 8,
       "norm_label": "recordbraincontextinjected()"
@@ -2779,7 +2815,7 @@
       "label": "buildBrainContextPacket()",
       "file_type": "code",
       "source_file": "src/memory/brain.context.ts",
-      "source_location": "L366",
+      "source_location": "L433",
       "id": "memory_brain_context_buildbraincontextpacket",
       "community": 8,
       "norm_label": "buildbraincontextpacket()"
@@ -2790,7 +2826,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L1",
       "id": "src_memory_memory_events_ts",
-      "community": 19,
+      "community": 4,
       "norm_label": "memory.events.ts"
     },
     {
@@ -2799,7 +2835,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L3",
       "id": "memory_memory_events_memoryeventstatusinput",
-      "community": 19,
+      "community": 4,
       "norm_label": "memoryeventstatusinput"
     },
     {
@@ -2808,7 +2844,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L11",
       "id": "memory_memory_events_memoryeventinput",
-      "community": 19,
+      "community": 8,
       "norm_label": "memoryeventinput"
     },
     {
@@ -2817,7 +2853,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L30",
       "id": "memory_memory_events_compact",
-      "community": 19,
+      "community": 4,
       "norm_label": "compact()"
     },
     {
@@ -2826,7 +2862,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L40",
       "id": "memory_memory_events_optionalcompact",
-      "community": 19,
+      "community": 4,
       "norm_label": "optionalcompact()"
     },
     {
@@ -2835,7 +2871,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L45",
       "id": "memory_memory_events_clamp01",
-      "community": 19,
+      "community": 4,
       "norm_label": "clamp01()"
     },
     {
@@ -2844,7 +2880,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L51",
       "id": "memory_memory_events_cleansourceids",
-      "community": 19,
+      "community": 4,
       "norm_label": "cleansourceids()"
     },
     {
@@ -2853,7 +2889,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L56",
       "id": "memory_memory_events_normalizememoryeventstatus",
-      "community": 19,
+      "community": 4,
       "norm_label": "normalizememoryeventstatus()"
     },
     {
@@ -2862,7 +2898,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L73",
       "id": "memory_memory_events_memoryeventidfor",
-      "community": 19,
+      "community": 4,
       "norm_label": "memoryeventidfor()"
     },
     {
@@ -2871,7 +2907,7 @@
       "source_file": "src/memory/memory.events.ts",
       "source_location": "L92",
       "id": "memory_memory_events_creatememoryeventrecord",
-      "community": 19,
+      "community": 4,
       "norm_label": "creatememoryeventrecord()"
     },
     {
@@ -3726,7 +3762,7 @@
       "source_file": "src/memory/memory.embeddings.ts",
       "source_location": "L1",
       "id": "src_memory_memory_embeddings_ts",
-      "community": 4,
+      "community": 1,
       "norm_label": "memory.embeddings.ts"
     },
     {
@@ -3735,7 +3771,7 @@
       "source_file": "src/memory/memory.embeddings.ts",
       "source_location": "L2",
       "id": "memory_memory_embeddings_token_stopwords",
-      "community": 4,
+      "community": 1,
       "norm_label": "token_stopwords"
     },
     {
@@ -3744,7 +3780,7 @@
       "source_file": "src/memory/memory.embeddings.ts",
       "source_location": "L19",
       "id": "memory_memory_embeddings_tokenize",
-      "community": 4,
+      "community": 1,
       "norm_label": "tokenize()"
     },
     {
@@ -3753,7 +3789,7 @@
       "source_file": "src/memory/memory.embeddings.ts",
       "source_location": "L26",
       "id": "memory_memory_embeddings_fnv1a",
-      "community": 4,
+      "community": 1,
       "norm_label": "fnv1a()"
     },
     {
@@ -3762,7 +3798,7 @@
       "source_file": "src/memory/memory.embeddings.ts",
       "source_location": "L35",
       "id": "memory_memory_embeddings_normalize",
-      "community": 4,
+      "community": 1,
       "norm_label": "normalize()"
     },
     {
@@ -3771,7 +3807,7 @@
       "source_file": "src/memory/memory.embeddings.ts",
       "source_location": "L43",
       "id": "memory_memory_embeddings_initembeddings",
-      "community": 4,
+      "community": 1,
       "norm_label": "initembeddings()"
     },
     {
@@ -3780,7 +3816,7 @@
       "source_file": "src/memory/memory.embeddings.ts",
       "source_location": "L47",
       "id": "memory_memory_embeddings_generateembedding",
-      "community": 4,
+      "community": 1,
       "norm_label": "generateembedding()"
     },
     {
@@ -3789,7 +3825,7 @@
       "source_file": "src/memory/memory.embeddings.ts",
       "source_location": "L69",
       "id": "memory_memory_embeddings_cosinesimilarity",
-      "community": 4,
+      "community": 1,
       "norm_label": "cosinesimilarity()"
     },
     {
@@ -4113,7 +4149,7 @@
       "source_file": "src/memory/revision.evidence.ts",
       "source_location": "L1",
       "id": "src_memory_revision_evidence_ts",
-      "community": 7,
+      "community": 6,
       "norm_label": "revision.evidence.ts"
     },
     {
@@ -4122,7 +4158,7 @@
       "source_file": "src/memory/revision.evidence.ts",
       "source_location": "L4",
       "id": "memory_revision_evidence_revisionevidenceengine",
-      "community": 7,
+      "community": 6,
       "norm_label": "revisionevidenceengine"
     },
     {
@@ -4131,7 +4167,7 @@
       "source_file": "src/memory/revision.evidence.ts",
       "source_location": "L17",
       "id": "memory_revision_evidence_flashcardreviewevidenceresult",
-      "community": 7,
+      "community": 6,
       "norm_label": "flashcardreviewevidenceresult"
     },
     {
@@ -4140,7 +4176,7 @@
       "source_file": "src/memory/revision.evidence.ts",
       "source_location": "L24",
       "id": "memory_revision_evidence_compact",
-      "community": 7,
+      "community": 6,
       "norm_label": "compact()"
     },
     {
@@ -4149,7 +4185,7 @@
       "source_file": "src/memory/revision.evidence.ts",
       "source_location": "L26",
       "id": "memory_revision_evidence_flashcardevidenceconceptid",
-      "community": 7,
+      "community": 6,
       "norm_label": "flashcardevidenceconceptid()"
     },
     {
@@ -4158,7 +4194,7 @@
       "source_file": "src/memory/revision.evidence.ts",
       "source_location": "L34",
       "id": "memory_revision_evidence_flashcardreviewoutcome",
-      "community": 7,
+      "community": 6,
       "norm_label": "flashcardreviewoutcome()"
     },
     {
@@ -4167,7 +4203,7 @@
       "source_file": "src/memory/revision.evidence.ts",
       "source_location": "L39",
       "id": "memory_revision_evidence_flashcardreviewsummary",
-      "community": 7,
+      "community": 6,
       "norm_label": "flashcardreviewsummary()"
     },
     {
@@ -4176,7 +4212,7 @@
       "source_file": "src/memory/revision.evidence.ts",
       "source_location": "L47",
       "id": "memory_revision_evidence_recordflashcardreviewevidence",
-      "community": 7,
+      "community": 6,
       "norm_label": "recordflashcardreviewevidence()"
     },
     {
@@ -4185,7 +4221,7 @@
       "source_file": "src/memory/productive.failure.ts",
       "source_location": "L1",
       "id": "src_memory_productive_failure_ts",
-      "community": 59,
+      "community": 60,
       "norm_label": "productive.failure.ts"
     },
     {
@@ -4194,7 +4230,7 @@
       "source_file": "src/memory/productive.failure.ts",
       "source_location": "L3",
       "id": "memory_productive_failure_strugglestate",
-      "community": 59,
+      "community": 60,
       "norm_label": "strugglestate"
     },
     {
@@ -4203,7 +4239,7 @@
       "source_file": "src/memory/productive.failure.ts",
       "source_location": "L9",
       "id": "memory_productive_failure_productivefailureengine",
-      "community": 59,
+      "community": 60,
       "norm_label": "productivefailureengine"
     },
     {
@@ -4212,7 +4248,7 @@
       "source_file": "src/memory/productive.failure.ts",
       "source_location": "L10",
       "id": "memory_productive_failure_productivefailureengine_determinestate",
-      "community": 59,
+      "community": 60,
       "norm_label": ".determinestate()"
     },
     {
@@ -4374,7 +4410,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L236",
       "id": "memory_beta_diagnostics_numberorzero",
-      "community": 0,
+      "community": 28,
       "norm_label": "numberorzero()"
     },
     {
@@ -4383,7 +4419,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L241",
       "id": "memory_beta_diagnostics_requiredcounts",
-      "community": 0,
+      "community": 28,
       "norm_label": "requiredcounts()"
     },
     {
@@ -4410,7 +4446,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L285",
       "id": "memory_beta_diagnostics_metadatastring",
-      "community": 35,
+      "community": 0,
       "norm_label": "metadatastring()"
     },
     {
@@ -4419,7 +4455,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L293",
       "id": "memory_beta_diagnostics_metadataboolean",
-      "community": 35,
+      "community": 0,
       "norm_label": "metadataboolean()"
     },
     {
@@ -4428,7 +4464,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L301",
       "id": "memory_beta_diagnostics_metadatanumber",
-      "community": 35,
+      "community": 0,
       "norm_label": "metadatanumber()"
     },
     {
@@ -4482,7 +4518,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L354",
       "id": "memory_beta_diagnostics_requestidvalue",
-      "community": 35,
+      "community": 0,
       "norm_label": "requestidvalue()"
     },
     {
@@ -4518,7 +4554,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L395",
       "id": "memory_beta_diagnostics_ischatlayer",
-      "community": 35,
+      "community": 0,
       "norm_label": "ischatlayer()"
     },
     {
@@ -4527,7 +4563,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L401",
       "id": "memory_beta_diagnostics_isvoicelayer",
-      "community": 35,
+      "community": 0,
       "norm_label": "isvoicelayer()"
     },
     {
@@ -4545,7 +4581,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L414",
       "id": "memory_beta_diagnostics_ischatthreadpersistence",
-      "community": 35,
+      "community": 0,
       "norm_label": "ischatthreadpersistence()"
     },
     {
@@ -4554,7 +4590,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L425",
       "id": "memory_beta_diagnostics_isvoicethreadpersistence",
-      "community": 35,
+      "community": 0,
       "norm_label": "isvoicethreadpersistence()"
     },
     {
@@ -4572,7 +4608,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L444",
       "id": "memory_beta_diagnostics_hasmodelobservationgate",
-      "community": 35,
+      "community": 0,
       "norm_label": "hasmodelobservationgate()"
     },
     {
@@ -4599,7 +4635,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L869",
       "id": "memory_beta_diagnostics_memoryeventbookid",
-      "community": 35,
+      "community": 0,
       "norm_label": "memoryeventbookid()"
     },
     {
@@ -4608,7 +4644,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L875",
       "id": "memory_beta_diagnostics_memoryeventconversationid",
-      "community": 35,
+      "community": 0,
       "norm_label": "memoryeventconversationid()"
     },
     {
@@ -4689,7 +4725,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L1840",
       "id": "memory_beta_diagnostics_buildcorrectionoverlay",
-      "community": 0,
+      "community": 59,
       "norm_label": "buildcorrectionoverlay()"
     },
     {
@@ -4698,7 +4734,7 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L1850",
       "id": "memory_beta_diagnostics_buildbetadiagnosticsexport",
-      "community": 0,
+      "community": 59,
       "norm_label": "buildbetadiagnosticsexport()"
     },
     {
@@ -4707,7 +4743,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L1",
       "id": "src_memory_retrieval_events_ts",
-      "community": 4,
+      "community": 1,
       "norm_label": "retrieval.events.ts"
     },
     {
@@ -4716,7 +4752,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L3",
       "id": "memory_retrieval_events_retrievaleventstatusinput",
-      "community": 4,
+      "community": 1,
       "norm_label": "retrievaleventstatusinput"
     },
     {
@@ -4725,7 +4761,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L9",
       "id": "memory_retrieval_events_retrievaleventinput",
-      "community": 4,
+      "community": 1,
       "norm_label": "retrievaleventinput"
     },
     {
@@ -4734,7 +4770,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L32",
       "id": "memory_retrieval_events_compact",
-      "community": 4,
+      "community": 1,
       "norm_label": "compact()"
     },
     {
@@ -4743,7 +4779,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L42",
       "id": "memory_retrieval_events_optionalcompact",
-      "community": 4,
+      "community": 1,
       "norm_label": "optionalcompact()"
     },
     {
@@ -4752,7 +4788,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L47",
       "id": "memory_retrieval_events_cleanlist",
-      "community": 4,
+      "community": 1,
       "norm_label": "cleanlist()"
     },
     {
@@ -4761,7 +4797,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L52",
       "id": "memory_retrieval_events_nonnegativeinteger",
-      "community": 4,
+      "community": 1,
       "norm_label": "nonnegativeinteger()"
     },
     {
@@ -4770,7 +4806,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L57",
       "id": "memory_retrieval_events_optionalnonnegativeinteger",
-      "community": 4,
+      "community": 1,
       "norm_label": "optionalnonnegativeinteger()"
     },
     {
@@ -4779,7 +4815,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L64",
       "id": "memory_retrieval_events_boundedscore",
-      "community": 4,
+      "community": 1,
       "norm_label": "boundedscore()"
     },
     {
@@ -4788,7 +4824,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L70",
       "id": "memory_retrieval_events_normalizeretrievaleventstatus",
-      "community": 4,
+      "community": 1,
       "norm_label": "normalizeretrievaleventstatus()"
     },
     {
@@ -4797,7 +4833,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L81",
       "id": "memory_retrieval_events_retrievaleventidfor",
-      "community": 4,
+      "community": 1,
       "norm_label": "retrievaleventidfor()"
     },
     {
@@ -4806,7 +4842,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L93",
       "id": "memory_retrieval_events_createretrievaleventrecord",
-      "community": 4,
+      "community": 1,
       "norm_label": "createretrievaleventrecord()"
     },
     {
@@ -4815,7 +4851,7 @@
       "source_file": "src/memory/retrieval.events.ts",
       "source_location": "L127",
       "id": "memory_retrieval_events_recordretrievalevent",
-      "community": 4,
+      "community": 1,
       "norm_label": "recordretrievalevent()"
     },
     {
@@ -5112,7 +5148,7 @@
       "source_file": "src/memory/memory.orchestrator.ts",
       "source_location": "L1222",
       "id": "memory_memory_orchestrator_memoryorchestrator_getrelevantcontext",
-      "community": 4,
+      "community": 1,
       "norm_label": ".getrelevantcontext()"
     },
     {
@@ -5130,7 +5166,7 @@
       "source_file": "src/memory/memory.orchestrator.ts",
       "source_location": "L1391",
       "id": "memory_memory_orchestrator_brainorchestrator",
-      "community": 23,
+      "community": 19,
       "norm_label": "brainorchestrator"
     },
     {
@@ -5265,7 +5301,7 @@
       "source_file": "src/memory/model.runs.ts",
       "source_location": "L1",
       "id": "src_memory_model_runs_ts",
-      "community": 62,
+      "community": 60,
       "norm_label": "model.runs.ts"
     },
     {
@@ -5274,7 +5310,7 @@
       "source_file": "src/memory/model.runs.ts",
       "source_location": "L3",
       "id": "memory_model_runs_modelrunstatusinput",
-      "community": 62,
+      "community": 60,
       "norm_label": "modelrunstatusinput"
     },
     {
@@ -5283,7 +5319,7 @@
       "source_file": "src/memory/model.runs.ts",
       "source_location": "L11",
       "id": "memory_model_runs_modelruneventinput",
-      "community": 62,
+      "community": 60,
       "norm_label": "modelruneventinput"
     },
     {
@@ -5292,7 +5328,7 @@
       "source_file": "src/memory/model.runs.ts",
       "source_location": "L37",
       "id": "memory_model_runs_compact",
-      "community": 62,
+      "community": 60,
       "norm_label": "compact()"
     },
     {
@@ -5301,7 +5337,7 @@
       "source_file": "src/memory/model.runs.ts",
       "source_location": "L47",
       "id": "memory_model_runs_nonnegativenumber",
-      "community": 62,
+      "community": 60,
       "norm_label": "nonnegativenumber()"
     },
     {
@@ -5310,7 +5346,7 @@
       "source_file": "src/memory/model.runs.ts",
       "source_location": "L52",
       "id": "memory_model_runs_normalizemodelrunstatus",
-      "community": 62,
+      "community": 60,
       "norm_label": "normalizemodelrunstatus()"
     },
     {
@@ -5319,7 +5355,7 @@
       "source_file": "src/memory/model.runs.ts",
       "source_location": "L70",
       "id": "memory_model_runs_modelrunidfor",
-      "community": 62,
+      "community": 60,
       "norm_label": "modelrunidfor()"
     },
     {
@@ -5328,7 +5364,7 @@
       "source_file": "src/memory/model.runs.ts",
       "source_location": "L76",
       "id": "memory_model_runs_createmodelrunrecord",
-      "community": 62,
+      "community": 60,
       "norm_label": "createmodelrunrecord()"
     },
     {
@@ -5337,7 +5373,7 @@
       "source_file": "src/memory/model.runs.ts",
       "source_location": "L114",
       "id": "memory_model_runs_recordmodelrunevent",
-      "community": 62,
+      "community": 60,
       "norm_label": "recordmodelrunevent()"
     },
     {
@@ -5346,7 +5382,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L1",
       "id": "src_memory_longterm_memory_ts",
-      "community": 1,
+      "community": 60,
       "norm_label": "longterm.memory.ts"
     },
     {
@@ -5355,7 +5391,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L6",
       "id": "memory_longterm_memory_persistentconcept",
-      "community": 59,
+      "community": 60,
       "norm_label": "persistentconcept"
     },
     {
@@ -5364,7 +5400,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L55",
       "id": "memory_longterm_memory_misconception",
-      "community": 1,
+      "community": 60,
       "norm_label": "misconception"
     },
     {
@@ -5373,7 +5409,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L67",
       "id": "memory_longterm_memory_sessionmemoryrecord",
-      "community": 1,
+      "community": 60,
       "norm_label": "sessionmemoryrecord"
     },
     {
@@ -5391,7 +5427,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L97",
       "id": "memory_longterm_memory_flashcard",
-      "community": 11,
+      "community": 6,
       "norm_label": "flashcard"
     },
     {
@@ -5400,7 +5436,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L107",
       "id": "memory_longterm_memory_tracelog",
-      "community": 1,
+      "community": 60,
       "norm_label": "tracelog"
     },
     {
@@ -5418,7 +5454,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L135",
       "id": "memory_longterm_memory_learningchapter",
-      "community": 1,
+      "community": 60,
       "norm_label": "learningchapter"
     },
     {
@@ -5427,7 +5463,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L145",
       "id": "memory_longterm_memory_learningbookconcept",
-      "community": 11,
+      "community": 8,
       "norm_label": "learningbookconcept"
     },
     {
@@ -5436,7 +5472,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L159",
       "id": "memory_longterm_memory_learningentry",
-      "community": 1,
+      "community": 60,
       "norm_label": "learningentry"
     },
     {
@@ -5454,7 +5490,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L194",
       "id": "memory_longterm_memory_bookchatthread",
-      "community": 1,
+      "community": 60,
       "norm_label": "bookchatthread"
     },
     {
@@ -5481,7 +5517,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L236",
       "id": "memory_longterm_memory_memoryevent",
-      "community": 19,
+      "community": 4,
       "norm_label": "memoryevent"
     },
     {
@@ -5490,7 +5526,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L263",
       "id": "memory_longterm_memory_retrievalevent",
-      "community": 4,
+      "community": 1,
       "norm_label": "retrievalevent"
     },
     {
@@ -5508,7 +5544,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L316",
       "id": "memory_longterm_memory_artifactrecord",
-      "community": 1,
+      "community": 9,
       "norm_label": "artifactrecord"
     },
     {
@@ -5517,7 +5553,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L353",
       "id": "memory_longterm_memory_citationstate",
-      "community": 9,
+      "community": 60,
       "norm_label": "citationstate"
     },
     {
@@ -5526,7 +5562,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L375",
       "id": "memory_longterm_memory_tooljob",
-      "community": 63,
+      "community": 60,
       "norm_label": "tooljob"
     },
     {
@@ -5535,7 +5571,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L390",
       "id": "memory_longterm_memory_backgroundjob",
-      "community": 1,
+      "community": 60,
       "norm_label": "backgroundjob"
     },
     {
@@ -5544,7 +5580,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L416",
       "id": "memory_longterm_memory_modelrun",
-      "community": 62,
+      "community": 60,
       "norm_label": "modelrun"
     },
     {
@@ -5553,7 +5589,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L442",
       "id": "memory_longterm_memory_braindatabase",
-      "community": 1,
+      "community": 60,
       "norm_label": "braindatabase"
     },
     {
@@ -5562,7 +5598,7 @@
       "source_file": "src/memory/longterm.memory.ts",
       "source_location": "L465",
       "id": "memory_longterm_memory_braindatabase_constructor",
-      "community": 1,
+      "community": 60,
       "norm_label": ".constructor()"
     },
     {
@@ -5589,7 +5625,7 @@
       "source_file": "src/memory/learner.model.ts",
       "source_location": "L10",
       "id": "memory_learner_model_learnermodel",
-      "community": 66,
+      "community": 60,
       "norm_label": "learnermodel"
     },
     {
@@ -5598,7 +5634,7 @@
       "source_file": "src/memory/learner.model.ts",
       "source_location": "L11",
       "id": "memory_learner_model_learnermodel_getlearnersnapshot",
-      "community": 66,
+      "community": 60,
       "norm_label": ".getlearnersnapshot()"
     },
     {
@@ -5607,7 +5643,7 @@
       "source_file": "src/memory/learner.model.ts",
       "source_location": "L86",
       "id": "memory_learner_model_learnermodel_gettutorinstructions",
-      "community": 66,
+      "community": 60,
       "norm_label": ".gettutorinstructions()"
     },
     {
@@ -5796,7 +5832,7 @@
       "source_file": "src/memory/evidence.mastery.ts",
       "source_location": "L82",
       "id": "memory_evidence_mastery_confidencefrommodelsummary",
-      "community": 4,
+      "community": 7,
       "norm_label": "confidencefrommodelsummary()"
     },
     {
@@ -5841,7 +5877,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L1",
       "id": "src_memory_flashcard_concepts_ts",
-      "community": 11,
+      "community": 7,
       "norm_label": "flashcard.concepts.ts"
     },
     {
@@ -5850,7 +5886,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L9",
       "id": "memory_flashcard_concepts_generatedflashcardinput",
-      "community": 11,
+      "community": 7,
       "norm_label": "generatedflashcardinput"
     },
     {
@@ -5859,7 +5895,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L15",
       "id": "memory_flashcard_concepts_flashcardstoragecontext",
-      "community": 11,
+      "community": 7,
       "norm_label": "flashcardstoragecontext"
     },
     {
@@ -5868,7 +5904,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L23",
       "id": "memory_flashcard_concepts_flashcardconceptresolution",
-      "community": 11,
+      "community": 7,
       "norm_label": "flashcardconceptresolution"
     },
     {
@@ -5877,7 +5913,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L33",
       "id": "memory_flashcard_concepts_placeholder_concept_ids",
-      "community": 11,
+      "community": 7,
       "norm_label": "placeholder_concept_ids"
     },
     {
@@ -5886,7 +5922,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L35",
       "id": "memory_flashcard_concepts_compact",
-      "community": 11,
+      "community": 7,
       "norm_label": "compact()"
     },
     {
@@ -5895,7 +5931,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L40",
       "id": "memory_flashcard_concepts_normalizeformatch",
-      "community": 11,
+      "community": 7,
       "norm_label": "normalizeformatch()"
     },
     {
@@ -5904,7 +5940,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L47",
       "id": "memory_flashcard_concepts_containsconceptphrase",
-      "community": 11,
+      "community": 7,
       "norm_label": "containsconceptphrase()"
     },
     {
@@ -5913,7 +5949,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L53",
       "id": "memory_flashcard_concepts_normalizegeneratedconceptid",
-      "community": 11,
+      "community": 7,
       "norm_label": "normalizegeneratedconceptid()"
     },
     {
@@ -5922,7 +5958,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L60",
       "id": "memory_flashcard_concepts_chooseflashcardconcept",
-      "community": 11,
+      "community": 7,
       "norm_label": "chooseflashcardconcept()"
     },
     {
@@ -5931,7 +5967,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L97",
       "id": "memory_flashcard_concepts_persistentconceptfromlearningbookconcept",
-      "community": 11,
+      "community": 7,
       "norm_label": "persistentconceptfromlearningbookconcept()"
     },
     {
@@ -5940,7 +5976,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L121",
       "id": "memory_flashcard_concepts_ensurepersistentconceptforlearningbookconcept",
-      "community": 11,
+      "community": 7,
       "norm_label": "ensurepersistentconceptforlearningbookconcept()"
     },
     {
@@ -5949,7 +5985,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L133",
       "id": "memory_flashcard_concepts_ensurepersistentconceptforlearningbookconceptid",
-      "community": 11,
+      "community": 7,
       "norm_label": "ensurepersistentconceptforlearningbookconceptid()"
     },
     {
@@ -5958,7 +5994,7 @@
       "source_file": "src/memory/flashcard.concepts.ts",
       "source_location": "L150",
       "id": "memory_flashcard_concepts_createflashcardforstorage",
-      "community": 11,
+      "community": 7,
       "norm_label": "createflashcardforstorage()"
     },
     {
@@ -5967,7 +6003,7 @@
       "source_file": "src/memory/tool.jobs.ts",
       "source_location": "L1",
       "id": "src_memory_tool_jobs_ts",
-      "community": 63,
+      "community": 60,
       "norm_label": "tool.jobs.ts"
     },
     {
@@ -5976,7 +6012,7 @@
       "source_file": "src/memory/tool.jobs.ts",
       "source_location": "L3",
       "id": "memory_tool_jobs_tooljobstatusinput",
-      "community": 63,
+      "community": 60,
       "norm_label": "tooljobstatusinput"
     },
     {
@@ -5985,7 +6021,7 @@
       "source_file": "src/memory/tool.jobs.ts",
       "source_location": "L10",
       "id": "memory_tool_jobs_tooljobeventinput",
-      "community": 63,
+      "community": 60,
       "norm_label": "tooljobeventinput"
     },
     {
@@ -5994,7 +6030,7 @@
       "source_file": "src/memory/tool.jobs.ts",
       "source_location": "L25",
       "id": "memory_tool_jobs_compact",
-      "community": 63,
+      "community": 60,
       "norm_label": "compact()"
     },
     {
@@ -6003,7 +6039,7 @@
       "source_file": "src/memory/tool.jobs.ts",
       "source_location": "L35",
       "id": "memory_tool_jobs_normalizetooljobstatus",
-      "community": 63,
+      "community": 60,
       "norm_label": "normalizetooljobstatus()"
     },
     {
@@ -6012,7 +6048,7 @@
       "source_file": "src/memory/tool.jobs.ts",
       "source_location": "L53",
       "id": "memory_tool_jobs_tooljobidfor",
-      "community": 63,
+      "community": 60,
       "norm_label": "tooljobidfor()"
     },
     {
@@ -6021,7 +6057,7 @@
       "source_file": "src/memory/tool.jobs.ts",
       "source_location": "L62",
       "id": "memory_tool_jobs_createtooljobrecord",
-      "community": 63,
+      "community": 60,
       "norm_label": "createtooljobrecord()"
     },
     {
@@ -6030,7 +6066,7 @@
       "source_file": "src/memory/tool.jobs.ts",
       "source_location": "L85",
       "id": "memory_tool_jobs_recordtooljobevent",
-      "community": 63,
+      "community": 60,
       "norm_label": "recordtooljobevent()"
     },
     {
@@ -6039,7 +6075,7 @@
       "source_file": "src/memory/scaffolding.engine.ts",
       "source_location": "L1",
       "id": "src_memory_scaffolding_engine_ts",
-      "community": 59,
+      "community": 60,
       "norm_label": "scaffolding.engine.ts"
     },
     {
@@ -6048,7 +6084,7 @@
       "source_file": "src/memory/scaffolding.engine.ts",
       "source_location": "L3",
       "id": "memory_scaffolding_engine_scaffoldingengine",
-      "community": 59,
+      "community": 60,
       "norm_label": "scaffoldingengine"
     },
     {
@@ -6057,7 +6093,7 @@
       "source_file": "src/memory/scaffolding.engine.ts",
       "source_location": "L13",
       "id": "memory_scaffolding_engine_scaffoldingengine_calculatescaffoldlevel",
-      "community": 59,
+      "community": 60,
       "norm_label": ".calculatescaffoldlevel()"
     },
     {
@@ -6156,7 +6192,7 @@
       "source_file": "src/memory/revision.memory.ts",
       "source_location": "L1",
       "id": "src_memory_revision_memory_ts",
-      "community": 59,
+      "community": 60,
       "norm_label": "revision.memory.ts"
     },
     {
@@ -6165,7 +6201,7 @@
       "source_file": "src/memory/revision.memory.ts",
       "source_location": "L4",
       "id": "memory_revision_memory_computenextrevision",
-      "community": 59,
+      "community": 60,
       "norm_label": "computenextrevision()"
     },
     {
@@ -6174,7 +6210,7 @@
       "source_file": "src/memory/revision.memory.ts",
       "source_location": "L40",
       "id": "memory_revision_memory_geturgentrevisions",
-      "community": 59,
+      "community": 60,
       "norm_label": "geturgentrevisions()"
     },
     {
@@ -6345,7 +6381,7 @@
       "source_file": "src/components/PatternSVGs.tsx",
       "source_location": "L1",
       "id": "src_components_patternsvgs_tsx",
-      "community": 6,
+      "community": 35,
       "norm_label": "patternsvgs.tsx"
     },
     {
@@ -6354,7 +6390,7 @@
       "source_file": "src/components/PatternSVGs.tsx",
       "source_location": "L3",
       "id": "components_patternsvgs_svgdark",
-      "community": 6,
+      "community": 35,
       "norm_label": "svgdark()"
     },
     {
@@ -6363,7 +6399,7 @@
       "source_file": "src/components/PatternSVGs.tsx",
       "source_location": "L11",
       "id": "components_patternsvgs_svgorange",
-      "community": 6,
+      "community": 35,
       "norm_label": "svgorange()"
     },
     {
@@ -6372,7 +6408,7 @@
       "source_file": "src/components/PatternSVGs.tsx",
       "source_location": "L19",
       "id": "components_patternsvgs_svgbeige",
-      "community": 6,
+      "community": 35,
       "norm_label": "svgbeige()"
     },
     {
@@ -6516,7 +6552,7 @@
       "source_file": "src/components/PdfViewer.tsx",
       "source_location": "L1",
       "id": "src_components_pdfviewer_tsx",
-      "community": 23,
+      "community": 19,
       "norm_label": "pdfviewer.tsx"
     },
     {
@@ -6525,7 +6561,7 @@
       "source_file": "src/components/PdfViewer.tsx",
       "source_location": "L28",
       "id": "components_pdfviewer_pdfviewer",
-      "community": 23,
+      "community": 19,
       "norm_label": "pdfviewer()"
     },
     {
@@ -7317,7 +7353,7 @@
       "source_file": "src/components/PatternCard.tsx",
       "source_location": "L1",
       "id": "src_components_patterncard_tsx",
-      "community": 6,
+      "community": 35,
       "norm_label": "patterncard.tsx"
     },
     {
@@ -7326,7 +7362,7 @@
       "source_file": "src/components/PatternCard.tsx",
       "source_location": "L6",
       "id": "components_patterncard_themes",
-      "community": 6,
+      "community": 35,
       "norm_label": "themes"
     },
     {
@@ -7335,7 +7371,7 @@
       "source_file": "src/components/PatternCard.tsx",
       "source_location": "L30",
       "id": "components_patterncard_pressdots",
-      "community": 6,
+      "community": 35,
       "norm_label": "pressdots"
     },
     {
@@ -7344,7 +7380,7 @@
       "source_file": "src/components/PatternCard.tsx",
       "source_location": "L49",
       "id": "components_patterncard_patterncard",
-      "community": 6,
+      "community": 35,
       "norm_label": "patterncard()"
     },
     {
@@ -7821,7 +7857,7 @@
       "source_file": "src/lib/translations.ts",
       "source_location": "L1",
       "id": "src_lib_translations_ts",
-      "community": 23,
+      "community": 19,
       "norm_label": "translations.ts"
     },
     {
@@ -7830,7 +7866,7 @@
       "source_file": "src/lib/translations.ts",
       "source_location": "L3",
       "id": "lib_translations_language",
-      "community": 23,
+      "community": 19,
       "norm_label": "language"
     },
     {
@@ -7839,7 +7875,7 @@
       "source_file": "src/lib/translations.ts",
       "source_location": "L5",
       "id": "lib_translations_translations",
-      "community": 23,
+      "community": 19,
       "norm_label": "translations"
     },
     {
@@ -8082,7 +8118,7 @@
       "source_file": "src/views/StudyView.tsx",
       "source_location": "L1",
       "id": "src_views_studyview_tsx",
-      "community": 23,
+      "community": 19,
       "norm_label": "studyview.tsx"
     },
     {
@@ -8091,7 +8127,7 @@
       "source_file": "src/views/StudyView.tsx",
       "source_location": "L32",
       "id": "views_studyview_splitcardtitle",
-      "community": 23,
+      "community": 19,
       "norm_label": "splitcardtitle()"
     },
     {
@@ -8100,7 +8136,7 @@
       "source_file": "src/views/StudyView.tsx",
       "source_location": "L44",
       "id": "views_studyview_documentobjecturlcache",
-      "community": 23,
+      "community": 19,
       "norm_label": "documentobjecturlcache"
     },
     {
@@ -8109,7 +8145,7 @@
       "source_file": "src/views/StudyView.tsx",
       "source_location": "L46",
       "id": "views_studyview_getcacheddocumentobjecturl",
-      "community": 23,
+      "community": 19,
       "norm_label": "getcacheddocumentobjecturl()"
     },
     {
@@ -8118,7 +8154,7 @@
       "source_file": "src/views/StudyView.tsx",
       "source_location": "L56",
       "id": "views_studyview_revokecacheddocumentobjecturl",
-      "community": 23,
+      "community": 19,
       "norm_label": "revokecacheddocumentobjecturl()"
     },
     {
@@ -8127,7 +8163,7 @@
       "source_file": "src/views/StudyView.tsx",
       "source_location": "L63",
       "id": "views_studyview_animatedheadlinewords",
-      "community": 23,
+      "community": 19,
       "norm_label": "animatedheadlinewords()"
     },
     {
@@ -8136,7 +8172,7 @@
       "source_file": "src/views/StudyView.tsx",
       "source_location": "L149",
       "id": "views_studyview_studyintrosplashprops",
-      "community": 23,
+      "community": 19,
       "norm_label": "studyintrosplashprops"
     },
     {
@@ -8145,7 +8181,7 @@
       "source_file": "src/views/StudyView.tsx",
       "source_location": "L165",
       "id": "views_studyview_cardtarget",
-      "community": 23,
+      "community": 19,
       "norm_label": "cardtarget"
     },
     {
@@ -8154,7 +8190,7 @@
       "source_file": "src/views/StudyView.tsx",
       "source_location": "L174",
       "id": "views_studyview_studyintrosplash",
-      "community": 23,
+      "community": 19,
       "norm_label": "studyintrosplash()"
     },
     {
@@ -8244,7 +8280,7 @@
       "source_file": "src/views/RevisionView.tsx",
       "source_location": "L210",
       "id": "views_revisionview_interactionruntimediagram",
-      "community": 25,
+      "community": 6,
       "norm_label": "interactionruntimediagram()"
     },
     {
@@ -8343,7 +8379,7 @@
       "source_file": "src/views/RevisionView.tsx",
       "source_location": "L1560",
       "id": "views_revisionview_livecomponentpreview",
-      "community": 25,
+      "community": 6,
       "norm_label": "livecomponentpreview()"
     },
     {
@@ -8793,7 +8829,7 @@
       "source_file": "src/store/index.ts",
       "source_location": "L22",
       "id": "store_index_annotation",
-      "community": 15,
+      "community": 19,
       "norm_label": "annotation"
     },
     {
@@ -10962,9 +10998,9 @@
       "source_file": "tests/beta-diagnostics.test.mjs",
       "source_location": "L24",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_beta_diagnostics_test_mjs",
-      "target": "tests_beta_diagnostics_test_completebrainflowledgers",
-      "confidence_score": 1.0
+      "target": "tests_beta_diagnostics_test_completebrainflowledgers"
     },
     {
       "relation": "contains",
@@ -10982,9 +11018,9 @@
       "source_file": "tests/beta-diagnostics.test.mjs",
       "source_location": "L167",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_beta_diagnostics_test_mjs",
-      "target": "tests_beta_diagnostics_test_completecoherentliveproof",
-      "confidence_score": 1.0
+      "target": "tests_beta_diagnostics_test_completecoherentliveproof"
     },
     {
       "relation": "contains",
@@ -11082,9 +11118,9 @@
       "source_file": "tests/beta-diagnostics.test.mjs",
       "source_location": "L492",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_beta_diagnostics_test_mjs",
-      "target": "tests_beta_diagnostics_test_scatteredledgers",
-      "confidence_score": 1.0
+      "target": "tests_beta_diagnostics_test_scatteredledgers"
     },
     {
       "relation": "contains",
@@ -11092,9 +11128,9 @@
       "source_file": "tests/beta-diagnostics.test.mjs",
       "source_location": "L614",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_beta_diagnostics_test_mjs",
-      "target": "tests_beta_diagnostics_test_aggregateflow",
-      "confidence_score": 1.0
+      "target": "tests_beta_diagnostics_test_aggregateflow"
     },
     {
       "relation": "contains",
@@ -11102,9 +11138,9 @@
       "source_file": "tests/beta-diagnostics.test.mjs",
       "source_location": "L615",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_beta_diagnostics_test_mjs",
-      "target": "tests_beta_diagnostics_test_coherentproof",
-      "confidence_score": 1.0
+      "target": "tests_beta_diagnostics_test_coherentproof"
     },
     {
       "relation": "contains",
@@ -11436,6 +11472,26 @@
       "confidence_score": 1.0,
       "source": "tests_brain_context_test_mjs",
       "target": "tests_brain_context_test_rawcontext"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/brain-context.test.mjs",
+      "source_location": "L273",
+      "weight": 1.0,
+      "source": "tests_brain_context_test_mjs",
+      "target": "tests_brain_context_test_chatquery",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/brain-context.test.mjs",
+      "source_location": "L278",
+      "weight": 1.0,
+      "source": "tests_brain_context_test_mjs",
+      "target": "tests_brain_context_test_voicequery",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -13729,6 +13785,26 @@
       "source_file": "src/memory/brain.context.ts",
       "source_location": "L103",
       "weight": 1.0,
+      "source": "src_memory_brain_context_ts",
+      "target": "memory_brain_context_buildbraindocumentretrievalhint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/memory/brain.context.ts",
+      "source_location": "L157",
+      "weight": 1.0,
+      "source": "src_memory_brain_context_ts",
+      "target": "memory_brain_context_buildbrainretrievalquery",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/memory/brain.context.ts",
+      "source_location": "L103",
+      "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_memory_brain_context_ts",
       "target": "memory_brain_context_compactbraincontext"
@@ -13863,11 +13939,44 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/memory/brain.context.ts",
+      "source_location": "L133",
+      "weight": 1.0,
+      "source": "memory_brain_context_buildbraindocumentretrievalhint",
+      "target": "memory_brain_context_compact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/memory/brain.context.ts",
       "source_location": "L429",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "memory_brain_context_buildbraincontextpacket",
       "target": "memory_brain_context_compact"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/memory/brain.context.ts",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "memory_brain_context_buildbrainretrievalquery",
+      "target": "memory_brain_context_buildbraindocumentretrievalhint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/memory/brain.context.ts",
+      "source_location": "L439",
+      "weight": 1.0,
+      "source": "memory_brain_context_buildbraincontextpacket",
+      "target": "memory_brain_context_buildbrainretrievalquery",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18367,9 +18476,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L153",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_coherentliveproofcheck",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_coherentliveproofcheck"
     },
     {
       "relation": "contains",
@@ -18377,9 +18486,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L162",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_coherentliveproofbundle",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_coherentliveproofbundle"
     },
     {
       "relation": "contains",
@@ -18517,9 +18626,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L343",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_sharedstrings",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_sharedstrings"
     },
     {
       "relation": "contains",
@@ -18537,9 +18646,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L354",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_requestidvalue",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_requestidvalue"
     },
     {
       "relation": "contains",
@@ -18567,9 +18676,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L391",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_mergeanchors",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_mergeanchors"
     },
     {
       "relation": "contains",
@@ -18657,9 +18766,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L844",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_coherentrequestfacts",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_coherentrequestfacts"
     },
     {
       "relation": "contains",
@@ -18667,9 +18776,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L869",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_memoryeventbookid",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_memoryeventbookid"
     },
     {
       "relation": "contains",
@@ -18677,9 +18786,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L875",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_memoryeventconversationid",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_memoryeventconversationid"
     },
     {
       "relation": "contains",
@@ -18687,9 +18796,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L882",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_latesttimestampfromanchors",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_latesttimestampfromanchors"
     },
     {
       "relation": "contains",
@@ -18697,9 +18806,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L892",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_buildcoherentliveprooffromledgers",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_buildcoherentliveprooffromledgers"
     },
     {
       "relation": "contains",
@@ -18920,9 +19029,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L871",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_memoryeventbookid",
-      "target": "memory_beta_diagnostics_metadatastring",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_metadatastring"
     },
     {
       "relation": "calls",
@@ -18931,9 +19040,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L879",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_memoryeventconversationid",
-      "target": "memory_beta_diagnostics_metadatastring",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_metadatastring"
     },
     {
       "relation": "calls",
@@ -19008,9 +19117,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L345",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_sharedstrings",
-      "target": "memory_beta_diagnostics_compactunique",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_compactunique"
     },
     {
       "relation": "calls",
@@ -19030,9 +19139,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L1096",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_buildcoherentliveprooffromledgers",
-      "target": "memory_beta_diagnostics_compactunique",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_compactunique"
     },
     {
       "relation": "calls",
@@ -19052,9 +19161,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L1510",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_buildproviderkeyproofchecklist",
-      "target": "memory_beta_diagnostics_compactunique",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_compactunique"
     },
     {
       "relation": "calls",
@@ -19074,9 +19183,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L870",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_memoryeventbookid",
-      "target": "memory_beta_diagnostics_requestidvalue",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_requestidvalue"
     },
     {
       "relation": "calls",
@@ -19085,9 +19194,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L878",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_memoryeventconversationid",
-      "target": "memory_beta_diagnostics_requestidvalue",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_requestidvalue"
     },
     {
       "relation": "calls",
@@ -19096,9 +19205,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L393",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_mergeanchors",
-      "target": "memory_beta_diagnostics_buildsignalevidence",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_buildsignalevidence"
     },
     {
       "relation": "calls",
@@ -19118,9 +19227,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L1153",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_buildcoherentliveprooffromledgers",
-      "target": "memory_beta_diagnostics_mergeanchors",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_mergeanchors"
     },
     {
       "relation": "calls",
@@ -19184,9 +19293,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L1152",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_buildcoherentliveprooffromledgers",
-      "target": "memory_beta_diagnostics_latesttimestampfromanchors",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_latesttimestampfromanchors"
     },
     {
       "relation": "calls",
@@ -19195,9 +19304,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L1167",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_buildcoherentliveprooffromledgers",
-      "target": "memory_beta_diagnostics_emptysignalevidence",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_emptysignalevidence"
     },
     {
       "relation": "calls",
@@ -19206,9 +19315,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L1573",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_buildbetadiagnosticssnapshot",
-      "target": "memory_beta_diagnostics_buildcoherentliveprooffromledgers",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_buildcoherentliveprooffromledgers"
     },
     {
       "relation": "imports",
@@ -19217,9 +19326,9 @@
       "source_file": "src/views/AdminView.tsx",
       "source_location": "L49",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_views_adminview_tsx",
-      "target": "memory_beta_diagnostics_buildcoherentliveprooffromledgers",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_buildcoherentliveprooffromledgers"
     },
     {
       "relation": "calls",
@@ -29383,5 +29492,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "24270ced68202e9490aa01310bc7919df4b4bbbf"
+  "built_at_commit": "ced27de6713a65c801a23c2e873ad203ff8eb5e6"
 }

@@ -1079,11 +1079,31 @@
     "Graphify smoke query found buildCoherentLiveProofFromLedgers(), CoherentLiveProofBundle, ProviderKeyProofChecklist, AdminView(), buildBetaDiagnosticsSnapshot(), and buildProviderKeyProofChecklist()",
     "graphify path buildCoherentLiveProofFromLedgers() to AdminView() found a one-hop route through AdminView()",
     "Graphify path from buildCoherentLiveProofFromLedgers() to buildProviderKeyProofChecklist() found a connected route through shared beta diagnostics helpers",
-    "Packet ABV graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABV graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABW selected after Graphify routed multi-PDF chat/voice context through ChatPanel.tsx, brain.context.ts, StudyView.tsx, voiceAgentTools.ts, and tests/brain-context.test.mjs",
+    "Added buildBrainDocumentRetrievalHint() and buildBrainRetrievalQuery() so shared chat/voice brain-context packets add active and companion PDF hints before semantic retrieval runs",
+    "Admin Center preface simplified to one plain sentence",
+    "User Brain Architecture, Tutor System Architecture, and App Design Language books now document the active-plus-companion PDF retrieval hint without changing chapter/audio indices",
+    "Focused test added for chat and voice retrieval queries carrying active and companion PDFs",
+    "npm run format passed for Packet ABW",
+    "npm run test passed, 151 tests",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run brain:ui-regression remained unavailable because current package.json has no brain:ui-regression script",
+    "npm run format:check passed for Packet ABW",
+    "npm run lint passed for Packet ABW",
+    "npm run build passed for Packet ABW",
+    "Headless Chrome CDP QA via phase59-browser-qa.mjs confirmed desktop and mobile Admin rendered the simplified preface with no horizontal overflow and zero console logs",
+    "Headless Chrome CDP QA via phase59-browser-qa.mjs confirmed desktop and mobile Revision rendered App Design Language audio with one visible Play button, no visible fallback/retry/native controls, one hidden audio element, retrieval-hint copy, no horizontal overflow, and zero console logs",
+    "graphify update . --force regenerated code architecture artifacts with 1071 nodes, 1893 edges, and 63 communities",
+    "npm run graphify:tree passed for Packet ABW and wrote GRAPH_TREE.html at 79.3 KB",
+    "Graphify smoke query found buildBrainDocumentRetrievalHint(), buildBrainRetrievalQuery(), buildBrainContextPacket(), ChatPanel(), brain.context.ts, and connected Study/Admin/Revision nodes",
+    "graphify path buildBrainRetrievalQuery() to ChatPanel() found a three-hop route through brain.context.ts and ChatPanel.tsx",
+    "graphify path buildBrainDocumentRetrievalHint() to buildBrainContextPacket() found the expected helper route through buildBrainRetrievalQuery()",
+    "Packet ABW graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 88,
-    "basis": "Local architecture estimate after Packet ABV final gates: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, and a coherent chat+voice live proof bundle are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T15:43:17.000+09:00"
+    "estimatePercent": 89,
+    "basis": "Local architecture estimate after Packet ABW final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, and single-player stored audio behavior are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T16:01:20.000+09:00"
   }
 }
