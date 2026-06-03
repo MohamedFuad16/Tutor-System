@@ -181,6 +181,27 @@ export type CoherentLiveProofCheck = {
   evidence: BetaBrainFlowSignalEvidence;
 };
 
+export type CoherentLiveProofRequestBundle = {
+  layer: "chat" | "voice";
+  title: string;
+  requestId?: string;
+  complete: boolean;
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  contextRows: number;
+  retrievalRows: number;
+  completedModelRows: number;
+  toolRows: number;
+  evidenceRows: number;
+  transcriptRows: number;
+  backgroundRows: number;
+  documentIds: string[];
+  bookIds: string[];
+  conversationIds: string[];
+  latestTimestamp?: number;
+  missingRows: string[];
+  evidence: BetaBrainFlowSignalEvidence;
+};
+
 export type CoherentLiveProofBundle = {
   status: Exclude<BetaDiagnosticStatus, "deferred">;
   ready: boolean;
@@ -196,6 +217,7 @@ export type CoherentLiveProofBundle = {
   latestTimestamp?: number;
   summary: string;
   missingChecks: string[];
+  requestBundles: CoherentLiveProofRequestBundle[];
   checks: CoherentLiveProofCheck[];
 };
 
@@ -888,6 +910,72 @@ type CoherentRequestFacts = {
   complete: boolean;
 };
 
+const coherentBundleRowLabels = [
+  {
+    key: "contextRows",
+    label: "Multi-PDF context",
+  },
+  {
+    key: "retrievalRows",
+    label: "Retrieval row",
+  },
+  {
+    key: "modelRows",
+    label: "Completed model row",
+  },
+  {
+    key: "toolRows",
+    label: "Foreground tool job",
+  },
+  {
+    key: "evidenceRows",
+    label: "Evaluated mastery evidence",
+  },
+  {
+    key: "threadRows",
+    label: "Saved transcript",
+  },
+  {
+    key: "backgroundRows",
+    label: "Background memory row",
+  },
+] as const;
+
+const buildCoherentRequestBundle = (
+  layer: "chat" | "voice",
+  facts?: CoherentRequestFacts,
+): CoherentLiveProofRequestBundle => {
+  const anchors = facts?.anchors || [];
+  const latestTimestamp = latestTimestampFromAnchors(anchors);
+  const rowCount = (key: (typeof coherentBundleRowLabels)[number]["key"]) =>
+    facts?.[key].length || 0;
+  const missingRows = coherentBundleRowLabels
+    .filter((entry) => rowCount(entry.key) === 0)
+    .map((entry) => entry.label);
+  const title = layer === "chat" ? "Typed chat bundle" : "Live voice bundle";
+
+  return {
+    layer,
+    title,
+    ...(facts?.requestId ? { requestId: facts.requestId } : {}),
+    complete: facts?.complete === true,
+    status: facts?.complete === true ? "ready" : "watch",
+    contextRows: rowCount("contextRows"),
+    retrievalRows: rowCount("retrievalRows"),
+    completedModelRows: rowCount("modelRows"),
+    toolRows: rowCount("toolRows"),
+    evidenceRows: rowCount("evidenceRows"),
+    transcriptRows: rowCount("threadRows"),
+    backgroundRows: rowCount("backgroundRows"),
+    documentIds: facts?.documentIds || [],
+    bookIds: facts?.bookIds || [],
+    conversationIds: facts?.conversationIds || [],
+    ...(latestTimestamp ? { latestTimestamp } : {}),
+    missingRows,
+    evidence: facts ? mergeAnchors(anchors) : emptySignalEvidence(),
+  };
+};
+
 const memoryEventBookId = (event: Pick<MemoryEvent, "bookId" | "metadata">) =>
   requestIdValue(event.bookId) ||
   metadataString(event.metadata, "bookId") ||
@@ -1171,6 +1259,10 @@ export const buildCoherentLiveProofFromLedgers = ({
   ];
   const latestTimestamp = latestTimestampFromAnchors(allAnchors);
   const sharedEvidence = mergeAnchors(allAnchors);
+  const requestBundles = [
+    buildCoherentRequestBundle("chat", selectedChat),
+    buildCoherentRequestBundle("voice", selectedVoice),
+  ];
 
   const checks: CoherentLiveProofCheck[] = [
     {
@@ -1283,6 +1375,7 @@ export const buildCoherentLiveProofFromLedgers = ({
           ? `${failedRows} failed or blocked rows prevent a coherent chat+voice proof bundle.`
           : `Missing coherent live proof for ${missingChecks.join(", ")}.`,
     missingChecks,
+    requestBundles,
     checks,
   };
 };

@@ -14,6 +14,75 @@
 
 ## Reusable Follow-up
 
+# Phase 71: Coherent Request Bundle Row Detail
+
+Packet ACA makes the coherent provider-key proof inspectable at the row level.
+Admin now shows the selected typed-chat and live-voice request bundles side by
+side, with counts for context, retrieval, completed model, tool, evaluated
+mastery, transcript, and background memory rows. This keeps proof semantics the
+same while making a live beta run much easier to debug.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 93%.
+
+## Graphify Context
+
+- Graphify routed the slice through `CoherentLiveProofRequestBundle`,
+  `buildCoherentRequestBundle()`, `buildCoherentLiveProofFromLedgers()`,
+  `AdminView()`, `buildBetaDiagnosticsSnapshot()`, and `beta.diagnostics.ts`.
+- Graphify path `buildCoherentRequestBundle()` to `AdminView()` found a two-hop
+  route through `buildCoherentLiveProofFromLedgers()`.
+- Graphify path `CoherentLiveProofRequestBundle` to
+  `buildCoherentLiveProofFromLedgers()` found a two-hop route through
+  `beta.diagnostics.ts`.
+
+## Integration Decisions
+
+- Added compact selected-request bundle summaries to coherent live proof output
+  instead of changing the existing checklist semantics.
+- Rendered typed-chat and live-voice row detail cards inside the existing
+  Coherent Live Proof Bundle panel.
+- Kept fallback/offline model rows visible in aggregate diagnostics but absent
+  from the `completedModelRows` proof count.
+- Added regression assertions for complete, scattered, and fallback-model
+  coherent proof cases.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 152 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- Headless Chrome CDP QA via `phase63-browser-qa.mjs` confirmed desktop and
+  mobile Admin Beta Diagnostics rendered two selected request-row cards, typed
+  chat and live voice bundle labels, completed-model, transcript, and background
+  metrics, missing-row copy, no horizontal overflow, and zero console logs.
+- Browser screenshots saved as `ACA-admin-bundle-rows-desktop.png` and
+  `ACA-admin-bundle-rows-mobile.png`; JSON evidence saved as
+  `phase63-browser-qa.json`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1083 nodes, 1911 edges, and 57 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`80.0 KB`).
+- Graphify smoke query/path checks found the new request-bundle summary route to
+  Admin Beta Diagnostics.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes after regeneration.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the selected request-row cards to diagnose any
+  missing completed-model, tool, transcript, or background rows.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Phase 70: Provider-Key Fallback Guard
 
 Packet ABZ tightens the provider-key proof path so fallback/offline model rows

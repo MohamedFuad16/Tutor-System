@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-06-03T10:19:08.278Z",
+  "appUrl": "http://127.0.0.1:3100",
+  "results": [
+    {
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "selectedRowsCount": 2,
+      "hasCoherentPanel": true,
+      "hasTypedChatBundle": true,
+      "hasLiveVoiceBundle": true,
+      "hasCompletedModelMetric": true,
+      "hasTranscriptMetric": true,
+      "hasBackgroundMetric": true,
+      "hasNoRequestCopy": true,
+      "hasMissingRowsCopy": true,
+      "consoleLogs": []
+    },
+    {
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "selectedRowsCount": 2,
+      "hasCoherentPanel": true,
+      "hasTypedChatBundle": true,
+      "hasLiveVoiceBundle": true,
+      "hasCompletedModelMetric": true,
+      "hasTranscriptMetric": true,
+      "hasBackgroundMetric": true,
+      "hasNoRequestCopy": true,
+      "hasMissingRowsCopy": true,
+      "consoleLogs": []
+    }
+  ]
+}

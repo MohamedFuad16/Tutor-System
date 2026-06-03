@@ -157,3 +157,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   rows, for the coherent provider-key chat/voice proof bundle while preserving
   fallback rows in aggregate local diagnostics and verifying the Admin proof
   warning on desktop/mobile.
+- ACA: Coherent request bundle row detail. Expose selected typed-chat and
+  live-voice request row counts for context, retrieval, completed model, tool,
+  mastery, transcript, and background memory evidence so the live beta run can
+  reveal the exact missing stage.

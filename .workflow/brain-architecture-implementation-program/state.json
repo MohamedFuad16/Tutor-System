@@ -554,6 +554,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACA",
+      "name": "Coherent request bundle row detail",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1193,11 +1200,30 @@
     "Graphify smoke query found ProviderKeyProofChecklist, CoherentLiveProofBundle, AdminView(), buildCoherentLiveProofFromLedgers(), buildBetaDiagnosticsSnapshot(), buildBrainFlowCoverageFromLedgers(), and beta.diagnostics.ts",
     "graphify path buildCoherentLiveProofFromLedgers() to buildProviderKeyProofChecklist() found a two-hop route through beta.diagnostics.ts",
     "graphify path buildCoherentLiveProofFromLedgers() to AdminView() found a direct call route through AdminView()",
-    "Packet ABZ graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABZ graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ACA selected after Graphify routed coherent live proof inspectability through CoherentLiveProofRequestBundle, buildCoherentRequestBundle(), buildCoherentLiveProofFromLedgers(), AdminView(), and beta.diagnostics.ts",
+    "Coherent live proof now exposes selected typed-chat and live-voice request bundle row counts for context, retrieval, completed model, tool, evaluated mastery, transcript, and background memory evidence",
+    "Admin Beta Diagnostics now renders selected request-row cards inside the Coherent Live Proof Bundle panel, including request id, status, row metrics, PDF/book/thread chips, timestamps, and missing-row labels",
+    "Focused beta diagnostics tests now assert complete selected bundle counts, scattered missing rows, and fallback-model missing completed-model rows",
+    "npm run format passed for Packet ACA",
+    "npm run test passed, 152 tests",
+    "npm run format:check passed for Packet ACA",
+    "npm run lint passed for Packet ACA",
+    "npm run build passed for Packet ACA",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run brain:ui-regression remained unavailable because current package.json has no brain:ui-regression script",
+    "Headless Chrome CDP QA via phase63-browser-qa.mjs confirmed desktop and mobile Admin Beta Diagnostics rendered two selected request-row cards, typed-chat and live-voice bundle labels, completed-model, transcript, and background metrics, missing-row copy, no horizontal overflow, and zero console logs",
+    "Browser QA screenshots saved as ACA-admin-bundle-rows-desktop.png and ACA-admin-bundle-rows-mobile.png; JSON evidence saved as phase63-browser-qa.json",
+    "graphify update . --force regenerated code architecture artifacts with 1083 nodes, 1911 edges, and 57 communities",
+    "npm run graphify:tree passed for Packet ACA and wrote GRAPH_TREE.html at 80.0 KB",
+    "Graphify smoke query found CoherentLiveProofRequestBundle, buildCoherentRequestBundle(), buildCoherentLiveProofFromLedgers(), AdminView(), and connected beta diagnostics nodes",
+    "graphify path buildCoherentRequestBundle() to AdminView() found a two-hop route through buildCoherentLiveProofFromLedgers()",
+    "graphify path CoherentLiveProofRequestBundle to buildCoherentLiveProofFromLedgers() found a two-hop route through beta.diagnostics.ts",
+    "Packet ACA graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 92,
-    "basis": "Local architecture estimate after Packet ABZ final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, Beta Diagnostics provider-meter freshness, and a provider-key fallback guard are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T19:08:58.000+09:00"
+    "estimatePercent": 93,
+    "basis": "Local architecture estimate after Packet ACA final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, Beta Diagnostics provider-meter freshness, a provider-key fallback guard, and selected coherent request-row detail are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T19:19:08.000+09:00"
   }
 }

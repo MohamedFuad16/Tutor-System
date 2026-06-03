@@ -505,6 +505,23 @@ test("coherent live proof requires one complete chat request and one complete vo
     )?.ready,
     true,
   );
+  assert.equal(completeCoherentLiveProof.requestBundles.length, 2);
+  const chatBundle = completeCoherentLiveProof.requestBundles.find(
+    (bundle) => bundle.layer === "chat",
+  );
+  const voiceBundle = completeCoherentLiveProof.requestBundles.find(
+    (bundle) => bundle.layer === "voice",
+  );
+  assert.equal(chatBundle?.requestId, "chat-req-1");
+  assert.equal(chatBundle?.completedModelRows, 1);
+  assert.equal(chatBundle?.transcriptRows, 1);
+  assert.equal(chatBundle?.backgroundRows, 1);
+  assert.deepEqual(chatBundle?.missingRows, []);
+  assert.equal(voiceBundle?.requestId, "voice-req-1");
+  assert.equal(voiceBundle?.completedModelRows, 1);
+  assert.equal(voiceBundle?.transcriptRows, 1);
+  assert.equal(voiceBundle?.backgroundRows, 1);
+  assert.deepEqual(voiceBundle?.missingRows, []);
 });
 
 test("coherent live proof rejects scattered rows even when aggregate brain-flow signals pass", () => {
@@ -647,6 +664,18 @@ test("coherent live proof rejects scattered rows even when aggregate brain-flow 
   assert.equal(coherentProof.ready, false);
   assert.ok(coherentProof.missingChecks.includes("Typed chat request bundle"));
   assert.ok(coherentProof.missingChecks.includes("Live voice request bundle"));
+  assert.deepEqual(
+    coherentProof.requestBundles.find((bundle) => bundle.layer === "chat")
+      ?.missingRows,
+    [
+      "Retrieval row",
+      "Completed model row",
+      "Foreground tool job",
+      "Evaluated mastery evidence",
+      "Saved transcript",
+      "Background memory row",
+    ],
+  );
   assert.equal(checklist.status, "watch");
   assert.equal(checklist.proofComplete, false);
   assert.ok(
@@ -694,6 +723,18 @@ test("coherent live proof rejects fallback model rows for provider-key proof", (
   assert.equal(coherentProof.ready, false);
   assert.ok(coherentProof.missingChecks.includes("Typed chat request bundle"));
   assert.ok(coherentProof.missingChecks.includes("Live voice request bundle"));
+  const fallbackChatBundle = coherentProof.requestBundles.find(
+    (bundle) => bundle.layer === "chat",
+  );
+  const fallbackVoiceBundle = coherentProof.requestBundles.find(
+    (bundle) => bundle.layer === "voice",
+  );
+  assert.equal(fallbackChatBundle?.requestId, "chat-req-1");
+  assert.equal(fallbackChatBundle?.completedModelRows, 0);
+  assert.ok(fallbackChatBundle?.missingRows.includes("Completed model row"));
+  assert.equal(fallbackVoiceBundle?.requestId, "voice-req-1");
+  assert.equal(fallbackVoiceBundle?.completedModelRows, 0);
+  assert.ok(fallbackVoiceBundle?.missingRows.includes("Completed model row"));
   assert.equal(checklist.status, "watch");
   assert.equal(checklist.canAttemptProviderKeyRun, true);
   assert.equal(checklist.proofComplete, false);

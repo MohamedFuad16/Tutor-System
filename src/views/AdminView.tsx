@@ -4704,6 +4704,112 @@ export function AdminView() {
                           )}
                         </div>
 
+                        <div className="mt-4 grid gap-3 md:grid-cols-2">
+                          {providerKeyProofChecklist.coherentLiveProof.requestBundles.map(
+                            (bundle) => {
+                              const rowMetrics = [
+                                ["Context", bundle.contextRows],
+                                ["Retrieval", bundle.retrievalRows],
+                                ["Completed model", bundle.completedModelRows],
+                                ["Tool", bundle.toolRows],
+                                ["Mastery", bundle.evidenceRows],
+                                ["Transcript", bundle.transcriptRows],
+                                ["Background", bundle.backgroundRows],
+                              ] as const;
+                              return (
+                                <article
+                                  key={bundle.layer}
+                                  className={`rounded-2xl border p-3 ${
+                                    bundle.complete
+                                      ? "border-green-200 bg-green-50"
+                                      : "border-zinc-200 bg-zinc-50"
+                                  }`}
+                                >
+                                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="min-w-0">
+                                      <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                        Selected request rows
+                                      </div>
+                                      <h5 className="mt-1 text-sm font-semibold text-zinc-900">
+                                        {bundle.title}
+                                      </h5>
+                                      <div className="mt-1 max-w-full truncate text-[10px] font-mono text-zinc-500">
+                                        {bundle.requestId
+                                          ? `req ${bundle.requestId}`
+                                          : "no request selected yet"}
+                                      </div>
+                                    </div>
+                                    <span
+                                      className={`w-fit rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(bundle.status)}`}
+                                    >
+                                      {bundle.status}
+                                    </span>
+                                  </div>
+
+                                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
+                                    {rowMetrics.map(([label, value]) => (
+                                      <div
+                                        key={`${bundle.layer}-${label}`}
+                                        className="min-w-0 rounded-xl border border-white/80 bg-white/80 px-2 py-1.5"
+                                      >
+                                        <div className="truncate text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                                          {label}
+                                        </div>
+                                        <div className="mt-1 text-sm font-semibold tabular-nums text-zinc-900">
+                                          {value}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  <div className="mt-3 flex flex-wrap gap-1.5">
+                                    {bundle.documentIds.map((documentId) => (
+                                      <span
+                                        key={`${bundle.layer}-pdf-${documentId}`}
+                                        className="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[10px] font-mono text-violet-700"
+                                      >
+                                        pdf {documentId}
+                                      </span>
+                                    ))}
+                                    {bundle.bookIds.map((bookId) => (
+                                      <span
+                                        key={`${bundle.layer}-book-${bookId}`}
+                                        className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-mono text-zinc-600"
+                                      >
+                                        book {bookId}
+                                      </span>
+                                    ))}
+                                    {bundle.conversationIds.map(
+                                      (conversationId) => (
+                                        <span
+                                          key={`${bundle.layer}-thread-${conversationId}`}
+                                          className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-mono text-zinc-600"
+                                        >
+                                          thread {conversationId}
+                                        </span>
+                                      ),
+                                    )}
+                                    {typeof bundle.latestTimestamp ===
+                                      "number" && (
+                                      <span className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                        latest{" "}
+                                        {formatTime(bundle.latestTimestamp)}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {bundle.missingRows.length > 0 && (
+                                    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800 font-serif">
+                                      Missing rows:{" "}
+                                      {bundle.missingRows.join(", ")}.
+                                    </div>
+                                  )}
+                                </article>
+                              );
+                            },
+                          )}
+                        </div>
+
                         <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
                           {providerKeyProofChecklist.coherentLiveProof.checks.map(
                             (check) => (
