@@ -343,6 +343,10 @@ test("provider-key proof checklist separates key readiness from live proof", () 
   assert.equal(checklist.liveProofDrillPacket.status, "watch");
   assert.equal(checklist.liveProofDrillPacket.canRun, false);
   assert.equal(checklist.liveProofDrillPacket.localOnly, true);
+  assert.equal(checklist.liveProofReceipt.status, "watch");
+  assert.equal(checklist.liveProofReceipt.ready, false);
+  assert.equal(checklist.liveProofReceipt.localOnly, true);
+  assert.equal(checklist.liveProofReceipt.providerCaptureCount, 0);
   assert.ok(
     checklist.liveProofDrillPacket.blockingChecks.includes(
       "Chat model provider key",
@@ -401,6 +405,32 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   assert.equal(readyChecklist.liveProofDrillPacket.status, "ready");
   assert.equal(readyChecklist.liveProofDrillPacket.canRun, true);
   assert.equal(readyChecklist.liveProofDrillPacket.prompts.length, 2);
+  assert.equal(
+    readyChecklist.liveProofReceipt.schema,
+    "tutor.live-provider-proof-receipt.v1",
+  );
+  assert.equal(readyChecklist.liveProofReceipt.status, "ready");
+  assert.equal(readyChecklist.liveProofReceipt.ready, true);
+  assert.equal(readyChecklist.liveProofReceipt.proofComplete, true);
+  assert.equal(readyChecklist.liveProofReceipt.providerCaptureCount, 2);
+  assert.deepEqual(readyChecklist.liveProofReceipt.selectedRequestIds, [
+    "chat-req-1",
+    "voice-req-1",
+  ]);
+  assert.deepEqual(readyChecklist.liveProofReceipt.sharedProofAttemptIds, [
+    PROOF_ATTEMPT_ID,
+  ]);
+  assert.deepEqual(
+    readyChecklist.liveProofReceipt.providerCaptures.map(
+      (capture) => capture.provider,
+    ),
+    ["openrouter", "deepgram"],
+  );
+  assert.ok(
+    readyChecklist.liveProofReceipt.warnings.some((warning) =>
+      warning.includes("not a cloud sync"),
+    ),
+  );
   assert.equal(
     readyChecklist.liveProofRunbook.steps.find(
       (step) => step.id === "coherent_bundle_export",

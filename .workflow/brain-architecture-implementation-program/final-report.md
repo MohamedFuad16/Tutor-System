@@ -174,6 +174,98 @@ tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
 
 ---
 
+# Packet ACL: Live Provider Proof Receipt
+
+## Status
+
+Completed through local verification gates.
+
+Current conservative brain-architecture completion estimate after ACL:
+about 99%.
+
+## Graphify Context
+
+- Graphify CLI routed this slice through `src/memory/beta.diagnostics.ts`,
+  `src/views/AdminView.tsx`, `tests/beta-diagnostics.test.mjs`,
+  `buildProviderKeyProofChecklist()`, and `AdminView()`.
+- Clean regenerated graph artifacts contain 1134 nodes, 1979 edges, and 73
+  communities.
+- Graphify smoke query found `LiveBetaProofReceipt`,
+  `buildLiveBetaProofReceipt()`, `buildProviderKeyProofChecklist()`,
+  `buildBetaDiagnosticsSnapshot()`, `AdminView()`, `formatTime()`,
+  `formatDurationMinutes()`, and connected diagnostics/Admin nodes.
+- Graphify path `buildLiveBetaProofReceipt` to `AdminView` found a connected
+  three-hop route through `buildProviderKeyProofChecklist()` and
+  `AdminView.tsx`.
+- Graphify path `buildProviderKeyProofChecklist` to `AdminView` found the
+  expected two-hop route through `AdminView.tsx`.
+
+## Integration Decisions
+
+- Added `LiveBetaProofReceipt` and `buildLiveBetaProofReceipt()`.
+- `ProviderKeyProofChecklist` now returns `liveProofReceipt` beside the live
+  proof runbook and drill packet.
+- The receipt summarizes status, selected chat/voice request ids, provider
+  capture count, provider capture details, shared proof attempt/book/thread/PDF
+  anchors, proof freshness/window state, missing checks, and local-only
+  warnings.
+- Admin Beta Diagnostics now renders a `Local proof receipt` card and includes
+  `liveProofReceipt` in diagnostics export metadata.
+- Browser QA fixture was updated to seed fresh rows and the strict
+  `model_observation_v1` gate fields, matching the live checklist instead of an
+  older background-memory metadata shape.
+- No provider calls, key display, AWS/cloud sync, or Dexie schema changes were
+  added.
+
+## Verification Evidence
+
+- `npm run test -- tests/beta-diagnostics.test.mjs`: passed via the project
+  runner, 165 tests.
+- `npm run format`: passed.
+- `node --check .workflow/brain-architecture-implementation-program/packets/phase72-browser-qa.mjs`:
+  passed.
+- `npm run test`: passed, 165 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason skill-preflight`: unavailable because
+  `package.json` has no `brain:postchange` script.
+- `npm run brain:retrieve -- "live provider proof receipt provider captures
+Admin diagnostics export"`: unavailable because `package.json` has no
+  `brain:retrieve` script.
+- `npm run brain:impact -- src/memory/beta.diagnostics.ts`: unavailable because
+  `package.json` has no `brain:impact` script.
+- The first browser QA attempt could not launch system Chrome under the managed
+  sandbox. The same local QA command passed after browser-launch approval.
+- Headless Chrome QA via `phase72-browser-qa.mjs` seeded a local-only provider
+  proof dataset and confirmed desktop/mobile Admin Beta Diagnostics rendered the
+  ready proof receipt, provider capture count `2`, selected chat and voice
+  request ids, proof attempt id, OpenRouter and Deepgram provider capture cards,
+  fresh proof/window chips, local-only cloud warning, no horizontal overflow,
+  and zero warning/error logs.
+- Browser screenshots saved as `ACL-admin-proof-receipt-desktop.png` and
+  `ACL-admin-proof-receipt-mobile.png`; JSON evidence saved as
+  `phase72-browser-qa.json`.
+- `graphify update . --force`: first failed inside the managed sandbox after
+  moving old graph output aside; rerun with Graphify rebuild approval passed,
+  regenerating clean code architecture artifacts with 1134 nodes, 1979 edges,
+  and 73 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`83.1 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch references.
+
+## Remaining Work
+
+- Run the deliberate live provider-key beta drill with real OpenRouter and
+  Deepgram traffic to record non-seeded provider rows and export the ready
+  receipt from the real local ledger.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
+---
+
 # Packet ACK: Provider Proof Capture Details
 
 ## Status
@@ -266,17 +358,17 @@ about 99%.
 ## Graphify Context
 
 - `graphify query "remaining provider-key live beta proof real provider rows
-  chat voice stored injected tool calling transcript background memory Admin
-  blockers complete flow next implementation slice" --budget 9000 --graph
-  graphify-out/graph.json` routed the slice to `beta.diagnostics.ts`,
+chat voice stored injected tool calling transcript background memory Admin
+blockers complete flow next implementation slice" --budget 9000 --graph
+graphify-out/graph.json` routed the slice to `beta.diagnostics.ts`,
   `AdminView.tsx`, provider-key diagnostics tests, and proof runbook surfaces.
 - `graphify query "Admin Beta Diagnostics provider-key proof blockers proof
-  attempt live voice typed chat complete proof missing evidence export runbook
-  coherent bundle" --budget 8000 --graph graphify-out/graph.json` confirmed the
+attempt live voice typed chat complete proof missing evidence export runbook
+coherent bundle" --budget 8000 --graph graphify-out/graph.json` confirmed the
   Admin coherent bundle surface.
 - `graphify query "ModelRun provider estimated fallback completed provider key
-  source metadata chat_stream voice_agent recordModelRunEvent server ChatPanel"
-  --budget 8000 --graph graphify-out/graph.json` routed the model-row contract.
+source metadata chat_stream voice_agent recordModelRunEvent server ChatPanel"
+--budget 8000 --graph graphify-out/graph.json` routed the model-row contract.
 - After regeneration, CLI Graphify smoke query found
   `isRealVoiceProviderReadyEvent()`, `isProviderBackedChatModelRun()`,
   `buildCoherentLiveProofFromLedgers()`, `buildCoherentRequestBundle()`, and
@@ -313,7 +405,7 @@ about 99%.
 - `npm run brain:postchange -- --reason skill-preflight`: unavailable because
   `package.json` has no `brain:postchange` script.
 - `npm run brain:retrieve -- remaining provider-key live beta proof real
-  provider rows chat voice stored injected tool calling both agent layers`:
+provider rows chat voice stored injected tool calling both agent layers`:
   unavailable because `package.json` has no `brain:retrieve` script.
 - `npm run brain:impact -- src/memory/beta.diagnostics.ts`: unavailable because
   `package.json` has no `brain:impact` script.

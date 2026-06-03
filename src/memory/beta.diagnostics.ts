@@ -176,6 +176,33 @@ export type LiveBetaProofDrillPacket = {
   prompts: LiveBetaProofDrillPrompt[];
 };
 
+export type LiveBetaProofReceipt = {
+  schema: "tutor.live-provider-proof-receipt.v1";
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  ready: boolean;
+  localOnly: true;
+  proofComplete: boolean;
+  canAttemptProviderKeyRun: boolean;
+  summary: string;
+  selectedRequestIds: string[];
+  providerCaptureCount: number;
+  providerCaptures: CoherentLiveProofProviderCapture[];
+  chatRequestId?: string;
+  voiceRequestId?: string;
+  sharedBookIds: string[];
+  sharedConversationIds: string[];
+  sharedDocumentIds: string[];
+  sharedProofAttemptIds: string[];
+  proofAttemptLifecycleEventIds: string[];
+  proofWindowReady: boolean;
+  proofFresh: boolean;
+  proofWindowMs?: number;
+  proofAgeMs?: number;
+  latestTimestamp?: number;
+  missingChecks: string[];
+  warnings: string[];
+};
+
 export type ProviderKeyProofChecklist = {
   status: Exclude<BetaDiagnosticStatus, "deferred">;
   completionPercent: number;
@@ -190,6 +217,7 @@ export type ProviderKeyProofChecklist = {
   coherentLiveProof: CoherentLiveProofBundle;
   liveProofRunbook: LiveBetaProofRunbook;
   liveProofDrillPacket: LiveBetaProofDrillPacket;
+  liveProofReceipt: LiveBetaProofReceipt;
   summary: string;
   missingChecks: string[];
   checks: ProviderKeyProofCheck[];
@@ -2270,6 +2298,101 @@ export const buildLiveBetaProofDrillPacket = ({
   };
 };
 
+export const buildLiveBetaProofReceipt = ({
+  coherentLiveProof,
+  canAttemptProviderKeyRun,
+  proofComplete,
+  missingChecks,
+  failedRows,
+}: {
+  coherentLiveProof: CoherentLiveProofBundle;
+  canAttemptProviderKeyRun: boolean;
+  proofComplete: boolean;
+  missingChecks: string[];
+  failedRows: number;
+}): LiveBetaProofReceipt => {
+  const providerCaptures = coherentLiveProof.requestBundles.flatMap(
+    (bundle) => bundle.providerCaptures,
+  );
+  const selectedRequestIds = compactUnique(
+    [coherentLiveProof.chatRequestId, coherentLiveProof.voiceRequestId],
+    2,
+  );
+  const hasBothSelectedRequests = selectedRequestIds.length === 2;
+  const ready =
+    proofComplete &&
+    coherentLiveProof.ready &&
+    providerCaptures.length >= 2 &&
+    hasBothSelectedRequests;
+  const status: Exclude<BetaDiagnosticStatus, "deferred"> =
+    failedRows > 0 || coherentLiveProof.status === "blocked"
+      ? "blocked"
+      : ready
+        ? "ready"
+        : "watch";
+  const warnings = [
+    "Local beta receipt only; not a cloud sync or production deployment artifact.",
+    "Fallback chat rows and mock voice provider rows do not satisfy provider-key proof.",
+    ...(!ready && canAttemptProviderKeyRun
+      ? [
+          "Provider keys are present, but the selected chat and voice run is not receipt-ready yet.",
+        ]
+      : []),
+    ...(!hasBothSelectedRequests
+      ? [
+          "Receipt needs one selected typed-chat request id and one live-voice request id.",
+        ]
+      : []),
+    ...(providerCaptures.length < 2
+      ? [
+          "Receipt needs both OpenRouter and Deepgram provider capture evidence.",
+        ]
+      : []),
+  ];
+
+  return {
+    schema: "tutor.live-provider-proof-receipt.v1",
+    status,
+    ready,
+    localOnly: true,
+    proofComplete,
+    canAttemptProviderKeyRun,
+    summary: ready
+      ? "Receipt is ready: the selected chat and voice requests share one local proof attempt, book/thread, multi-PDF context, and real provider capture evidence."
+      : status === "blocked"
+        ? `${failedRows} failed or blocked live rows prevent a provider-key proof receipt.`
+        : "Receipt is not ready until the selected chat and voice requests include shared proof anchors plus both provider captures.",
+    selectedRequestIds,
+    providerCaptureCount: providerCaptures.length,
+    providerCaptures,
+    ...(coherentLiveProof.chatRequestId
+      ? { chatRequestId: coherentLiveProof.chatRequestId }
+      : {}),
+    ...(coherentLiveProof.voiceRequestId
+      ? { voiceRequestId: coherentLiveProof.voiceRequestId }
+      : {}),
+    sharedBookIds: coherentLiveProof.sharedBookIds,
+    sharedConversationIds: coherentLiveProof.sharedConversationIds,
+    sharedDocumentIds: coherentLiveProof.sharedDocumentIds,
+    sharedProofAttemptIds: coherentLiveProof.sharedProofAttemptIds,
+    proofAttemptLifecycleEventIds:
+      coherentLiveProof.proofAttemptLifecycleEventIds,
+    proofWindowReady: coherentLiveProof.proofWindowReady,
+    proofFresh: coherentLiveProof.proofFresh,
+    ...(coherentLiveProof.proofWindowMs !== undefined
+      ? { proofWindowMs: coherentLiveProof.proofWindowMs }
+      : {}),
+    ...(coherentLiveProof.proofAgeMs !== undefined
+      ? { proofAgeMs: coherentLiveProof.proofAgeMs }
+      : {}),
+    ...(coherentLiveProof.latestTimestamp !== undefined
+      ? { latestTimestamp: coherentLiveProof.latestTimestamp }
+      : {}),
+    missingChecks,
+    warnings,
+  };
+};
+
 export const buildProviderKeyProofChecklist = ({
   brainFlow,
   coherentLiveProof = buildCoherentLiveProofFromLedgers(),
@@ -2407,6 +2530,13 @@ export const buildProviderKeyProofChecklist = ({
     proofComplete,
     failedRows: brainFlow.failedRows,
   });
+  const liveProofReceipt = buildLiveBetaProofReceipt({
+    coherentLiveProof,
+    canAttemptProviderKeyRun,
+    proofComplete,
+    missingChecks,
+    failedRows: brainFlow.failedRows,
+  });
 
   return {
     status,
@@ -2422,6 +2552,7 @@ export const buildProviderKeyProofChecklist = ({
     coherentLiveProof,
     liveProofRunbook,
     liveProofDrillPacket,
+    liveProofReceipt,
     summary,
     missingChecks,
     checks,

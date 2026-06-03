@@ -193,3 +193,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   details to coherent proof bundles and Admin Beta Diagnostics so local beta
   export/review can see the exact OpenRouter or Deepgram evidence row without
   showing keys, auto-calling providers, or counting fallback/mock rows.
+- ACL: Live provider proof receipt. Package the coherent chat+voice
+  provider-key proof into a local Admin/export receipt with selected request
+  ids, proof attempt ids, provider capture details, freshness/window state, and
+  local-only warnings, without calling providers or starting AWS/cloud work.

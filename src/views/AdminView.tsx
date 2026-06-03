@@ -1037,6 +1037,7 @@ export function AdminView() {
   );
   const liveProofRunbook = providerKeyProofChecklist.liveProofRunbook;
   const liveProofDrillPacket = providerKeyProofChecklist.liveProofDrillPacket;
+  const liveProofReceipt = providerKeyProofChecklist.liveProofReceipt;
   const recordProofAttemptLifecycle = (
     eventType: "beta_proof_attempt_started" | "beta_proof_attempt_cleared",
     proofAttemptId: string,
@@ -1444,6 +1445,7 @@ export function AdminView() {
           missingChecks: providerKeyProofChecklist.missingChecks,
           liveProofRunbook,
           liveProofDrillPacket,
+          liveProofReceipt,
           activeProofAttemptId: activeBetaProofAttemptId || undefined,
         },
       },
@@ -4577,6 +4579,139 @@ export function AdminView() {
 
                       <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-600 font-serif">
                         {providerKeyProofChecklist.summary}
+                      </div>
+
+                      <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-600">
+                              Local proof receipt
+                            </div>
+                            <h4 className="mt-1 text-base font-semibold text-zinc-900">
+                              Export-ready chat and voice run summary
+                            </h4>
+                            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                              {liveProofReceipt.summary}
+                            </p>
+                          </div>
+                          <div className="shrink-0 rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-right">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              Receipt
+                            </div>
+                            <span
+                              className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(liveProofReceipt.status)}`}
+                            >
+                              {liveProofReceipt.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <span
+                            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${liveProofReceipt.ready ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                          >
+                            {liveProofReceipt.ready
+                              ? "receipt ready"
+                              : "receipt pending"}
+                          </span>
+                          <span className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                            provider captures{" "}
+                            {liveProofReceipt.providerCaptureCount}
+                          </span>
+                          {liveProofReceipt.selectedRequestIds.map(
+                            (requestId) => (
+                              <span
+                                key={`receipt-request-${requestId}`}
+                                className="max-w-full truncate rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-mono text-blue-700"
+                              >
+                                req {requestId}
+                              </span>
+                            ),
+                          )}
+                          {liveProofReceipt.sharedProofAttemptIds.map(
+                            (attemptId) => (
+                              <span
+                                key={`receipt-attempt-${attemptId}`}
+                                className="max-w-full truncate rounded-full border border-emerald-100 bg-white px-2.5 py-1 text-[11px] font-mono text-emerald-700"
+                              >
+                                attempt {attemptId}
+                              </span>
+                            ),
+                          )}
+                          {typeof liveProofReceipt.latestTimestamp ===
+                            "number" && (
+                            <span className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-mono text-zinc-600">
+                              latest{" "}
+                              {formatTime(liveProofReceipt.latestTimestamp)}
+                            </span>
+                          )}
+                          <span
+                            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${liveProofReceipt.proofFresh ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                          >
+                            {liveProofReceipt.proofFresh ? "fresh" : "stale"}
+                          </span>
+                          <span
+                            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${liveProofReceipt.proofWindowReady ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                          >
+                            window{" "}
+                            {formatDurationMinutes(
+                              liveProofReceipt.proofWindowMs,
+                            )}
+                          </span>
+                        </div>
+
+                        {liveProofReceipt.providerCaptures.length > 0 && (
+                          <div className="mt-3 grid gap-2 md:grid-cols-2">
+                            {liveProofReceipt.providerCaptures.map(
+                              (capture, index) => {
+                                const modelLabel =
+                                  capture.usedModel ||
+                                  capture.requestedModel ||
+                                  capture.phase ||
+                                  capture.source.replace(/_/g, " ");
+                                return (
+                                  <div
+                                    key={`receipt-provider-${capture.layer}-${capture.requestId || index}-${capture.timestamp || index}`}
+                                    className="rounded-xl border border-emerald-100 bg-white px-3 py-2"
+                                  >
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-600">
+                                        {capture.layer} provider
+                                      </span>
+                                      <span className="rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700">
+                                        {capture.provider}
+                                      </span>
+                                    </div>
+                                    <div className="mt-1 truncate text-xs font-semibold text-zinc-900">
+                                      {capture.title}
+                                    </div>
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                      {modelLabel && (
+                                        <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                          {modelLabel}
+                                        </span>
+                                      )}
+                                      {capture.requestId && (
+                                        <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700">
+                                          req {capture.requestId}
+                                        </span>
+                                      )}
+                                      <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                        {capture.source.replace(/_/g, " ")}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              },
+                            )}
+                          </div>
+                        )}
+
+                        {liveProofReceipt.warnings.length > 0 && (
+                          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800 font-serif">
+                            {liveProofReceipt.warnings.join(" ")}
+                          </div>
+                        )}
                       </div>
 
                       <div className="mt-4 rounded-2xl border border-blue-100 bg-white p-4">

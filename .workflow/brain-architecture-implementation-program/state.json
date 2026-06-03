@@ -631,6 +631,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACL",
+      "name": "Live provider proof receipt",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -957,7 +964,29 @@
       "npm run graphify:tree passed for Packet ACI and wrote GRAPH_TREE.html at 82.3 KB",
       "Graphify smoke query found voice-proof-attempt-latch.test.mjs, ChatPanel.tsx, ChatPanel(), sourceSlice(), startVoiceSource, voiceToolSource, sendMessageSource, and connected beta diagnostics/Admin/Revision nodes",
       "Graphify did not extract getVoiceProofAttemptId() as a standalone path node, so helper-level path smoke used the regenerated source-contract test and ChatPanel graph nodes instead",
-      "Packet ACI top-level graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
+      "Packet ACI top-level graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references",
+      "Packet ACL selected after Graphify CLI routed provider proof receipt work through beta.diagnostics.ts, AdminView.tsx, tests/beta-diagnostics.test.mjs, buildProviderKeyProofChecklist(), and AdminView()",
+      "Added LiveBetaProofReceipt and buildLiveBetaProofReceipt to derive a compact local receipt from coherent chat/voice proof, provider captures, selected request ids, proof attempt anchors, freshness/window state, missing checks, and local-only warnings",
+      "ProviderKeyProofChecklist now returns liveProofReceipt beside the runbook and drill packet",
+      "Admin Beta Diagnostics now renders a Local proof receipt card and includes liveProofReceipt in diagnostics export metadata",
+      "tests/beta-diagnostics.test.mjs now verifies watch and ready receipt states, provider capture count, selected request ids, shared proof attempt ids, proof-complete state, provider list, and local-only warning",
+      "npm run test -- tests/beta-diagnostics.test.mjs passed via the project test runner, 165 tests",
+      "npm run format passed for Packet ACL",
+      "node --check .workflow/brain-architecture-implementation-program/packets/phase72-browser-qa.mjs passed",
+      "npm run test passed for Packet ACL, 165 tests",
+      "npm run format:check passed for Packet ACL",
+      "npm run lint passed for Packet ACL",
+      "npm run build passed for Packet ACL",
+      "npm run brain:retrieve -- live provider proof receipt provider captures Admin diagnostics export remained unavailable because current package.json has no brain:retrieve script",
+      "Headless Chrome QA via phase72-browser-qa.mjs confirmed desktop and mobile Admin rendered the ready local proof receipt, provider capture count 2, OpenRouter and Deepgram capture cards, selected chat/voice request ids, proof attempt id, fresh/window chips, local-only warning, no horizontal overflow, and zero warning/error logs",
+      "Browser QA screenshots saved as ACL-admin-proof-receipt-desktop.png and ACL-admin-proof-receipt-mobile.png; JSON evidence saved as phase72-browser-qa.json",
+      "Graphify update initially failed in the managed sandbox after moving old graph output aside; rerun with Graphify rebuild approval passed",
+      "Clean graphify update . --force regenerated code architecture artifacts with 1134 nodes, 1979 edges, and 73 communities",
+      "npm run graphify:tree passed for Packet ACL and wrote GRAPH_TREE.html at 83.1 KB",
+      "Graphify smoke query found LiveBetaProofReceipt, buildLiveBetaProofReceipt(), buildProviderKeyProofChecklist(), buildBetaDiagnosticsSnapshot(), AdminView(), formatTime(), formatDurationMinutes(), and connected diagnostics/Admin nodes",
+      "graphify path buildLiveBetaProofReceipt to AdminView found a connected three-hop route through buildProviderKeyProofChecklist() and AdminView.tsx",
+      "graphify path buildProviderKeyProofChecklist to AdminView found the expected two-hop route through AdminView.tsx",
+      "Packet ACL graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
     ]
   },
   "evidence": [
@@ -1542,11 +1571,32 @@
     "Graphify smoke query found CoherentLiveProofProviderCapture, buildProviderCapture(), buildCoherentRequestBundle(), buildCoherentLiveProofFromLedgers(), AdminView(), and connected diagnostics/Admin nodes",
     "graphify path buildProviderCapture to AdminView found a three-hop route through beta.diagnostics.ts and buildCoherentLiveProofFromLedgers()",
     "graphify path buildCoherentLiveProofFromLedgers to AdminView found the expected one-hop call route",
-    "Packet ACK graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references after the clean rebuild"
+    "Packet ACK graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references after the clean rebuild",
+    "Packet ACL selected after Graphify CLI routed provider proof receipt work through beta.diagnostics.ts, AdminView.tsx, tests/beta-diagnostics.test.mjs, buildProviderKeyProofChecklist(), and AdminView()",
+    "Added LiveBetaProofReceipt and buildLiveBetaProofReceipt to derive a compact local receipt from coherent chat/voice proof, provider captures, selected request ids, proof attempt anchors, freshness/window state, missing checks, and local-only warnings",
+    "ProviderKeyProofChecklist now returns liveProofReceipt beside the runbook and drill packet",
+    "Admin Beta Diagnostics now renders a Local proof receipt card and includes liveProofReceipt in diagnostics export metadata",
+    "tests/beta-diagnostics.test.mjs now verifies watch and ready receipt states, provider capture count, selected request ids, shared proof attempt ids, proof-complete state, provider list, and local-only warning",
+    "npm run format passed for Packet ACL",
+    "node --check .workflow/brain-architecture-implementation-program/packets/phase72-browser-qa.mjs passed",
+    "npm run test passed for Packet ACL, 165 tests",
+    "npm run format:check passed for Packet ACL",
+    "npm run lint passed for Packet ACL",
+    "npm run build passed for Packet ACL",
+    "npm run brain:retrieve -- live provider proof receipt provider captures Admin diagnostics export remained unavailable because current package.json has no brain:retrieve script",
+    "Headless Chrome QA via phase72-browser-qa.mjs confirmed desktop and mobile Admin rendered the ready local proof receipt, provider capture count 2, OpenRouter and Deepgram capture cards, selected chat/voice request ids, proof attempt id, fresh/window chips, local-only warning, no horizontal overflow, and zero warning/error logs",
+    "Browser QA screenshots saved as ACL-admin-proof-receipt-desktop.png and ACL-admin-proof-receipt-mobile.png; JSON evidence saved as phase72-browser-qa.json",
+    "Graphify update initially failed in the managed sandbox after moving old graph output aside; rerun with Graphify rebuild approval passed",
+    "Clean graphify update . --force regenerated code architecture artifacts with 1134 nodes, 1979 edges, and 73 communities",
+    "npm run graphify:tree passed for Packet ACL and wrote GRAPH_TREE.html at 83.1 KB",
+    "Graphify smoke query found LiveBetaProofReceipt, buildLiveBetaProofReceipt(), buildProviderKeyProofChecklist(), buildBetaDiagnosticsSnapshot(), AdminView(), formatTime(), formatDurationMinutes(), and connected diagnostics/Admin nodes",
+    "graphify path buildLiveBetaProofReceipt to AdminView found a connected three-hop route through buildProviderKeyProofChecklist() and AdminView.tsx",
+    "graphify path buildProviderKeyProofChecklist to AdminView found the expected two-hop route through AdminView.tsx",
+    "Packet ACL graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACK final gates: coherent provider-key proof still requires real OpenRouter and Deepgram provider rows, and Admin now exposes the exact selected provider captures for beta review/export without showing key values or counting fallback/mock rows. The shared chat/voice context path, multi-PDF intake/context, retrieval hints, Admin diagnostics, tool-call/evidence ledgers, proof-attempt lifecycle, provider capture UI, stored audio, browser QA, and clean Graphify artifacts are implemented and verified. The remaining unproven gap is the deliberate provider-key typed-chat plus live-voice beta run that actually records non-seeded real provider rows, plus broader beta validation; AWS/cloud synchronization remains incomplete/out of scope.",
-    "updatedAt": "2026-06-04T00:46:52.000+09:00"
+    "basis": "Local architecture estimate after Packet ACL final gates: Admin and diagnostics export now carry a local proof receipt for the selected coherent provider-key chat+voice proof, including provider captures, request ids, proof attempt anchors, freshness/window state, and local-only warnings. The remaining unproven gap is still the deliberate real OpenRouter plus Deepgram beta drill that records non-seeded live provider rows and exports the receipt from real local ledger evidence, plus broader beta validation; AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-03T16:56:50.405Z"
   }
 }
