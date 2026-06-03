@@ -301,8 +301,11 @@ const printReport = () => {
     `Assets: ${report.present} present, ${report.missing} missing, ${report.total} planned`,
   );
   for (const row of report.rows) {
+    const duration = Number.isFinite(row.durationSeconds)
+      ? `, ${row.durationSeconds}s`
+      : "";
     console.log(
-      `- ${row.bookId} chapter ${row.chapterIndex + 1}: ${row.fileStatus} ${row.outputFile} (${row.transcriptLength} chars)`,
+      `- ${row.bookId} chapter ${row.chapterIndex + 1}: ${row.fileStatus} ${row.outputFile} (${row.transcriptLength} chars${duration})`,
     );
   }
 };

@@ -99,7 +99,7 @@ Built-in
 chapter audio guide manifests seed `audio_overview` artifact rows that Admin can
 locally check
 for manifest integrity: local MP3 path, overview id, book/chapter anchors,
-transcript length, summary, voice, duration, stored date, and no-external-fetch
+transcript length, summary, voice, measured 3-4 minute duration seconds, stored date, and no-external-fetch
 provenance. That check is local traceability only; it does not claim
 audio-content transcription accuracy. Every built-in Library book now has
 checked-in 3-4 minute audio guides, backed by
@@ -178,8 +178,8 @@ local player for play/pause, speed, and seek. The hidden audio element keeps
 bounded retry playback inside that same player, so chapter listening does not
 show fallback controls, show a second play button, or call the live read-aloud
 route on every play.
-`npm run audio:overview:dry-run` verifies the checked-in MP3 manifest without
-network access. Use the Deepgram provider in
+`npm run audio:overview:dry-run` verifies the checked-in MP3 manifest and prints
+duration seconds without network access. Use the Deepgram provider in
 `scripts/generate-user-brain-audio-overviews.mjs` to regenerate assets when
 `DEEPGRAM_API_KEY` is available.
 

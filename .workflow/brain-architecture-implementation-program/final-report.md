@@ -4275,3 +4275,92 @@ graphify-out/graph.json` routed the slice through `ChatPanel.tsx`,
 - Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
+
+---
+
+# Phase 65: Stored Audio Duration Evidence
+
+Packet ABU makes the 3-4 minute built-in audio-guide requirement locally
+checkable instead of relying on prose. The checked-in audio overview manifest now
+stores measured `durationSeconds` for every built-in guide, the dry-run prints
+those seconds, Admin stored-audio artifact inputs carry the metadata, and the
+local verifier rejects stored audio guide records outside the 180-245 second
+window.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 87%.
+
+## Graphify Context
+
+- `graphify query "chapterAudioOverviews userBrainArchitectureBook audio
+overview duration transcript 3 4 minutes stored audio guide generator plan tests
+source files" --budget 10000 --graph graphify-out/graph.json` routed the slice
+through `chapterAudioOverviews`, `RevisionView.tsx`,
+`audio-overview-plan.test.mjs`, `README.md`, and
+`userBrainArchitectureBook.ts`.
+- `graphify path "chapterAudioOverviews" "RevisionView()" --graph
+graphify-out/graph.json` found the direct reader path.
+- Follow-up graph queries routed stored audio manifest integrity through
+`artifact.records.ts`, `artifact-records.test.mjs`,
+`generate-user-brain-audio-overviews.mjs`, and
+`user-brain-audio-overview-plan.mjs`.
+
+## Integration Decisions
+
+- Added manifest `durationSeconds` for all 25 built-in guide MP3s using local
+  `ffprobe` measurements.
+- Kept the accepted duration window at 180-245 seconds, matching the current
+  3-4 minute-ish beta requirement while allowing short metadata rounding.
+- Updated dry-run data and console output so a local operator can see seconds
+  before regenerating or reviewing assets.
+- Added duration metadata to stored audio artifact records and local integrity
+  checked fields.
+- Updated the audio overview tests to compare checked-in MP3 duration against
+  the manifest when `ffprobe` or `afinfo` is available.
+- Preserved the single visible Revision player: retry/fallback behavior remains
+  hidden in the component and no fallback copy is shown to learners.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 148 tests.
+- `npm run audio:overview:dry-run`: passed, 25 present, 0 missing, 25 planned,
+  with duration seconds printed for every guide.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- In-app Browser QA confirmed Admin Source Artifacts renders 25 stored
+  audio-guide artifact rows and no console errors.
+- In-app Browser QA confirmed Revision > User Brain Architecture renders one
+  visible Play button, one hidden audio element, three speed controls, measured
+  3-4 minute duration copy, no fallback copy, and no console errors.
+- Mobile Browser QA at `390x844` confirmed Revision has one visible Play button,
+  measured duration copy, no fallback copy, and no horizontal overflow.
+- Mobile Browser QA confirmed Admin Center renders the simplified paragraph with
+  no horizontal overflow and no console errors.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1052 nodes, 1857 edges, and 62 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`78.1 KB`).
+- Graphify smoke query found `ChapterAudioOverview`,
+  `chapterAudioOverviews.ts`, `builtInBookAudioOverviews`,
+  `StoredAudioOverview()`, `RevisionView()`, `AdminView()`, and connected
+  reader/source-artifact nodes.
+- Graphify path `chapterAudioOverviews` to `RevisionView()` found a two-hop
+  route through `RevisionView.tsx`.
+- Graphify path `createStoredAudioOverviewArtifactRecords()` to `AdminView()`
+  found a three-hop route through `artifact.records.ts` and `AdminView.tsx`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key chat and voice turns when live provider traffic is
+  in scope, then use the provider-key checklist to confirm real ledger rows
+  satisfy all chat, voice, tool, mastery, transcript, background-memory, and
+  evidence-gate proof checks.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.

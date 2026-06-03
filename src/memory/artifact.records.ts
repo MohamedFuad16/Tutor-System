@@ -144,6 +144,7 @@ export type StoredAudioOverviewArtifactInput = {
   transcript?: unknown;
   audioSrc: string;
   durationLabel?: string;
+  durationSeconds?: number;
   generatedBy?: string;
   voice?: string;
   storedAt?: string;
@@ -706,6 +707,7 @@ export const verifyLocalCitationIntegrity = (input: {
         "metadata.chapterIndex",
         "metadata.chapterTitle",
         "metadata.durationLabel",
+        "metadata.durationSeconds",
         "metadata.generatedBy",
         "metadata.voice",
         "metadata.storedAt",
@@ -1295,6 +1297,7 @@ export const verifyLocalCitationIntegrity = (input: {
     const citationBookId = compact(citationMetadata.bookId);
     const chapterTitle = compact(artifactMetadata.chapterTitle);
     const durationLabel = compact(artifactMetadata.durationLabel);
+    const durationSeconds = Number(artifactMetadata.durationSeconds);
     const generatedBy = compact(artifactMetadata.generatedBy);
     const voice = compact(artifactMetadata.voice);
     const storedAt = compact(artifactMetadata.storedAt);
@@ -1426,6 +1429,17 @@ export const verifyLocalCitationIntegrity = (input: {
       return result(
         "unavailable",
         "Stored audio guide has no saved transcript length to inspect locally.",
+      );
+    }
+
+    if (
+      !Number.isFinite(durationSeconds) ||
+      durationSeconds < 180 ||
+      durationSeconds > 245
+    ) {
+      return result(
+        "unavailable",
+        "Stored audio guide duration is outside the required 3-4 minute local beta window.",
       );
     }
 
@@ -2183,6 +2197,7 @@ export const createStoredAudioOverviewArtifactRecords = (
     chapterTitle,
     audioSrc: sourceRef,
     durationLabel: input.durationLabel,
+    durationSeconds: input.durationSeconds,
     generatedBy: input.generatedBy,
     voice: input.voice,
     storedAt,

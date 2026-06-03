@@ -28,6 +28,39 @@ const revisionViewSource = readFileSync(
 const userBrainChapterTitles = [
   ...userBrainBookSource.matchAll(/title: "([^"]+)"/g),
 ].map((match) => match[1]);
+const ffprobeAvailable =
+  spawnSync("which", ["ffprobe"], { encoding: "utf8" }).status === 0;
+const afinfoAvailable =
+  spawnSync("which", ["afinfo"], { encoding: "utf8" }).status === 0;
+
+const measuredAudioDurationSeconds = (filePath) => {
+  if (ffprobeAvailable) {
+    const result = spawnSync(
+      "ffprobe",
+      [
+        "-v",
+        "error",
+        "-show_entries",
+        "format=duration",
+        "-of",
+        "default=nw=1:nk=1",
+        filePath,
+      ],
+      { encoding: "utf8" },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    return Math.round(Number(result.stdout.trim()));
+  }
+
+  const result = spawnSync("afinfo", [filePath], { encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  const durationMatch = result.stdout.match(/estimated duration:\s*([0-9.]+)/i);
+  assert.ok(
+    durationMatch,
+    `Could not read duration from afinfo for ${filePath}`,
+  );
+  return Math.round(Number(durationMatch[1]));
+};
 
 const tutorBook = JSON.parse(
   readFileSync(`${repoRoot}/src/lib/tutorBook.json`, "utf8"),
@@ -86,8 +119,17 @@ test("audio overview plan covers every built-in book chapter", () => {
       assert.match(entry.outputFile, /^[a-z0-9-]+\.mp3$/);
       assert.equal(entry.assetStatus, "stored");
       assert.equal(entry.transcript.includes("```"), false);
-      assert.ok(buildAudioOverviewSpeechInput(entry).length > 620);
+      assert.ok(buildAudioOverviewSpeechInput(entry).length >= 2800);
+      assert.ok(
+        buildAudioOverviewSpeechInput(entry).split(/\s+/).filter(Boolean)
+          .length >= 450,
+      );
       assert.ok((entry.transcript.match(/[.!?]/g) || []).length >= 7);
+      assert.ok(
+        entry.durationSeconds >= 180 && entry.durationSeconds <= 245,
+        `${entry.outputFile} should stay inside the 3-4 minute audio window`,
+      );
+      assert.match(entry.durationLabel, /about (3|4) min/);
       assert.match(
         audioOverviewPublicSrcFor(entry),
         /^\/audio-overviews\/.+\.mp3$/,
@@ -112,6 +154,7 @@ test("audio overview dry run report distinguishes stored and missing assets", ()
   const presentRows = report.rows.filter((row) => row.fileStatus === "present");
   assert.equal(presentRows.length, 1);
   assert.equal(presentRows[0].assetStatus, "stored");
+  assert.equal(presentRows[0].durationSeconds, 207);
 
   const missingRows = report.rows.filter((row) => row.fileStatus === "missing");
   assert.ok(missingRows.every((row) => row.assetStatus === "stored"));
@@ -130,6 +173,29 @@ test("stored audio assets are checked into the local public directory", () => {
     assert.equal(checkedInFiles.has(entry.outputFile), true);
   }
 });
+
+test(
+  "stored audio assets match their 3-4 minute manifest durations",
+  { skip: !ffprobeAvailable && !afinfoAvailable },
+  () => {
+    const audioDir = `${repoRoot}/public/audio-overviews`;
+
+    for (const entry of builtInBookAudioOverviewPlan) {
+      const measuredSeconds = measuredAudioDurationSeconds(
+        `${audioDir}/${entry.outputFile}`,
+      );
+      assert.ok(
+        measuredSeconds >= 180 && measuredSeconds <= 245,
+        `${entry.outputFile} measured ${measuredSeconds}s`,
+      );
+      assert.equal(
+        measuredSeconds,
+        entry.durationSeconds,
+        `${entry.outputFile} manifest duration should match the checked-in MP3`,
+      );
+    }
+  },
+);
 
 test("stored audio overview exposes one visible player", () => {
   assert.match(revisionViewSource, /const StoredAudioOverview/);
@@ -167,6 +233,7 @@ test("audio overview generator dry-run does not require a Deepgram key", () => {
       `${builtInBookAudioOverviewPlan.length} present, 0 missing, ${builtInBookAudioOverviewPlan.length} planned`,
     ),
   );
+  assert.match(result.stdout, /user-brain-runtime-overview\.mp3 .*207s/);
 });
 
 test("audio overview generator dry-run can filter by book", () => {

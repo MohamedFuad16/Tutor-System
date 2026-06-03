@@ -292,7 +292,8 @@ npm run dev
 ### 5. Generate Stored Chapter Audio
 
 Built-in Library books use checked-in 3-4 minute MP3 assets for every chapter
-guide, so playback is local and does not call the live read-aloud route.
+guide, with measured duration seconds in the manifest, so playback is local and
+does not call the live read-aloud route.
 
 ```bash
 npm run audio:overview:dry-run

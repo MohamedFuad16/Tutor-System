@@ -61,6 +61,9 @@ export const buildAudioOverviewDryRunReport = ({
       assetStatus: entry.assetStatus,
       fileStatus: present ? "present" : "missing",
       durationLabel: entry.durationLabel,
+      durationSeconds: Number.isFinite(Number(entry.durationSeconds))
+        ? Number(entry.durationSeconds)
+        : undefined,
       transcriptLength: buildAudioOverviewSpeechInput(entry).length,
     };
   });

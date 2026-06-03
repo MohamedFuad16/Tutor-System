@@ -601,6 +601,7 @@ export function AdminView() {
         transcript: overview.transcript,
         audioSrc: overview.audioSrc,
         durationLabel: overview.durationLabel,
+        durationSeconds: overview.durationSeconds,
         generatedBy: overview.generatedBy,
         voice: overview.voice,
         storedAt: overview.storedAt,

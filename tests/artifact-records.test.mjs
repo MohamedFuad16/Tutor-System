@@ -537,7 +537,8 @@ test("stored audio overviews become not-checked artifact records with local prov
       transcript:
         "LearningAI is a foreground tutor with a local learner brain ledger.",
       audioSrc: "/audio-overviews/user-brain-runtime-overview.mp3",
-      durationLabel: "about 45 sec",
+      durationLabel: "about 3 min 25 sec",
+      durationSeconds: 207,
       generatedBy: "GPT-authored chapter guide",
       voice: "Deepgram Aura Odysseus",
       storedAt: "2026-06-02",
@@ -569,6 +570,7 @@ test("stored audio overviews become not-checked artifact records with local prov
     artifact.metadata.audioSrc,
     "/audio-overviews/user-brain-runtime-overview.mp3",
   );
+  assert.equal(artifact.metadata.durationSeconds, 207);
   assert.equal(citation.timestamp, 112233);
   assert.equal(citation.state, "not_checked");
   assert.equal(citation.artifactId, artifact.id);
@@ -799,7 +801,8 @@ test("local citation verifier marks coherent stored audio guide provenance verif
       transcript:
         "LearningAI is a foreground tutor with a local learner brain ledger.",
       audioSrc: "/audio-overviews/user-brain-runtime-overview.mp3",
-      durationLabel: "0:32",
+      durationLabel: "about 3 min 25 sec",
+      durationSeconds: 207,
       generatedBy: "GPT-authored chapter guide",
       voice: "Deepgram Aura Odysseus",
       storedAt: "2026-06-02",
@@ -833,6 +836,7 @@ test("local citation verifier marks coherent stored audio guide provenance verif
     "metadata.chapterIndex",
     "metadata.chapterTitle",
     "metadata.durationLabel",
+    "metadata.durationSeconds",
     "metadata.generatedBy",
     "metadata.voice",
     "metadata.storedAt",
@@ -923,7 +927,8 @@ test("local citation verifier catches conflicting stored audio guide source refs
       transcript:
         "LearningAI is a foreground tutor with a local learner brain ledger.",
       audioSrc: "/audio-overviews/user-brain-runtime-overview.mp3",
-      durationLabel: "0:32",
+      durationLabel: "about 3 min 25 sec",
+      durationSeconds: 207,
       generatedBy: "GPT-authored chapter guide",
       voice: "Deepgram Aura Odysseus",
       storedAt: "2026-06-02",
@@ -962,7 +967,8 @@ test("local citation verifier keeps incomplete stored audio guides unavailable",
       summary: "Energetic architecture overview.",
       transcript: "",
       audioSrc: "/audio-overviews/user-brain-runtime-overview.mp3",
-      durationLabel: "0:32",
+      durationLabel: "about 3 min 25 sec",
+      durationSeconds: 207,
       generatedBy: "GPT-authored chapter guide",
       voice: "Deepgram Aura Odysseus",
       storedAt: "2026-06-02",
@@ -980,6 +986,40 @@ test("local citation verifier keeps incomplete stored audio guides unavailable",
   assert.equal(result.state, "unavailable");
   assert.equal(result.metadata.claimCheck, "stored_audio_overview_integrity");
   assert.match(result.failureReason || "", /failed/);
+});
+
+test("local citation verifier rejects stored audio guides outside the 3-4 minute window", () => {
+  const { artifact, citation } = createStoredAudioOverviewArtifactRecords(
+    {
+      overviewId: "user-brain-architecture:chapter-0:stored-audio-overview",
+      bookId: "user-brain-architecture",
+      bookTitle: "User Brain Architecture",
+      chapterIndex: 0,
+      chapterTitle: "The Whole Shape",
+      title: "Quick tour of the learner brain",
+      summary: "Energetic architecture overview.",
+      transcript:
+        "LearningAI is a foreground tutor with a local learner brain ledger.",
+      audioSrc: "/audio-overviews/user-brain-runtime-overview.mp3",
+      durationLabel: "about 45 sec",
+      durationSeconds: 45,
+      generatedBy: "GPT-authored chapter guide",
+      voice: "Deepgram Aura Odysseus",
+      storedAt: "2026-06-02",
+      metadata: { assetKind: "built_in_book_chapter_audio" },
+    },
+    100,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp: 700,
+  });
+
+  assert.equal(result.state, "unavailable");
+  assert.equal(result.metadata.claimCheck, "stored_audio_overview_integrity");
+  assert.match(result.failureReason || "", /3-4 minute/);
 });
 
 test("local citation verifier catches conflicting generated note entry refs", () => {

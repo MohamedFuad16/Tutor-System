@@ -10,6 +10,7 @@ export type ChapterAudioOverview = {
   transcript: string;
   audioSrc: string;
   durationLabel: string;
+  durationSeconds?: number;
   generatedBy?: string;
   voice?: string;
   storedAt?: string;

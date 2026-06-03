@@ -2400,12 +2400,12 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Chapter audio guides",
         detail:
-          "Every built-in Library chapter now attaches a 3-4 minute Deepgram-generated guide asset with one visible player for play, pause, speed, and seek. Bounded retry stays hidden inside that player, so the learner never sees a separate retry control.",
+          "Every built-in Library chapter now attaches a Deepgram-generated guide asset with measured 3-4 minute duration metadata, one visible player for play, pause, speed, and seek. Bounded retry stays hidden inside that player, so the learner never sees a separate retry control.",
       },
       {
         title: "Audio generation dry-run",
         detail:
-          "The generation plan lists every built-in book chapter, verifies checked-in MP3s locally, and regenerates assets through Deepgram Aura when a key is available.",
+          "The generation plan lists every built-in book chapter, verifies checked-in MP3s locally, reports duration seconds, and regenerates assets through Deepgram Aura when a key is available.",
       },
       {
         title: "Diagnostics export",

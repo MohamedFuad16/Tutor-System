@@ -512,6 +512,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABU",
+      "name": "Stored audio duration evidence",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/lib/chapterAudioOverviews.json, src/lib/chapterAudioOverviews.ts, scripts/user-brain-audio-overview-plan.mjs, scripts/generate-user-brain-audio-overviews.mjs, src/memory/artifact.records.ts, src/views/AdminView.tsx, src/views/RevisionView.tsx, tests/audio-overview-plan.test.mjs, tests/artifact-records.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1022,11 +1029,34 @@
     "npm run graphify:tree passed for Packet ABT and wrote GRAPH_TREE.html at 78.0 KB",
     "Graphify smoke query found buildProviderKeyProofChecklist(), ProviderKeyProofChecklist, beta.diagnostics.ts, AdminView.tsx, and beta-diagnostics.test.mjs",
     "graphify path buildProviderKeyProofChecklist() to AdminView() found a two-hop route through AdminView.tsx",
-    "Packet ABT graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABT graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABU selected after Graphify routed built-in audio duration evidence through chapterAudioOverviews, RevisionView.tsx, artifact.records.ts, audio overview scripts, and focused tests",
+    "All 25 built-in audio overview manifest entries now store measured durationSeconds from local MP3 assets",
+    "Audio overview dry-run report rows and console output now include duration seconds",
+    "Stored audio artifact records now preserve durationSeconds metadata and the verifier rejects durations outside the 180-245 second beta window",
+    "Admin seeded stored-audio artifact inputs now pass durationSeconds into local provenance rows",
+    "README, Tutor System Architecture, User Brain Architecture, Tutor Architecture Library JSON, and Revision copy now document measured stored-audio duration seconds",
+    "npm run format passed",
+    "npm run test passed, 148 tests",
+    "npm run audio:overview:dry-run passed with 25 present, 0 missing, 25 planned, and seconds printed for every guide",
+    "npm run format:check passed",
+    "npm run lint passed",
+    "npm run build passed",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "In-app Browser QA confirmed Admin Source Artifacts renders 25 stored audio-guide artifact rows and no console errors",
+    "In-app Browser QA confirmed Revision User Brain Architecture renders one visible Play button, one hidden audio element, three speed controls, measured duration copy, no fallback copy, and no console errors",
+    "In-app Browser mobile QA at 390x844 confirmed Revision has one visible Play button, measured duration copy, no fallback copy, and no horizontal overflow",
+    "In-app Browser mobile QA confirmed Admin Center renders the simplified paragraph with no horizontal overflow and no console errors",
+    "graphify update . --force regenerated code architecture artifacts with 1052 nodes, 1857 edges, and 62 communities",
+    "npm run graphify:tree passed for Packet ABU and wrote GRAPH_TREE.html at 78.1 KB",
+    "Graphify smoke query found ChapterAudioOverview, chapterAudioOverviews.ts, builtInBookAudioOverviews, StoredAudioOverview(), RevisionView(), AdminView(), and connected reader/source-artifact nodes",
+    "graphify path chapterAudioOverviews to RevisionView() found a two-hop route through RevisionView.tsx",
+    "graphify path createStoredAudioOverviewArtifactRecords() to AdminView() found a three-hop route through artifact.records.ts and AdminView.tsx",
+    "Packet ABU graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 86,
-    "basis": "Local architecture estimate after Packet ABT final gates: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, and a provider-key live proof checklist are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T15:11:32.000+09:00"
+    "estimatePercent": 87,
+    "basis": "Local architecture estimate after Packet ABU final gates: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, and measured stored-audio duration evidence are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T15:30:27.000+09:00"
   }
 }

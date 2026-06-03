@@ -134,3 +134,6 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   separates provider-key setup, live-run availability, and complete
   request-correlated chat/voice ledger proof without calling providers or
   treating synthetic rehearsal rows as beta evidence.
+- ABU: Stored audio duration evidence. Store measured audio guide seconds in the
+  manifest, dry-run output, artifact provenance, local verifier, tests, and
+  architecture books so the 3-4 minute guide promise is locally checkable.
