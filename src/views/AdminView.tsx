@@ -224,6 +224,11 @@ const formatTime = (timestamp?: number | null) =>
       })
     : "waiting";
 
+const formatDurationMinutes = (durationMs?: number) =>
+  typeof durationMs === "number" && Number.isFinite(durationMs)
+    ? `${Math.max(0, Math.round(durationMs / 60000))}m`
+    : "waiting";
+
 const statusTone = (status: string) => {
   if (
     status === "completed" ||
@@ -941,13 +946,24 @@ export function AdminView() {
     toolJobs,
     evidenceEvents,
   });
-  const coherentLiveProof = buildCoherentLiveProofFromLedgers({
-    memoryEvents,
-    retrievalEvents,
-    modelRuns,
-    toolJobs,
-    evidenceEvents,
-  });
+  const diagnosticGeneratedAtMs = (() => {
+    const parsed = activityPayload?.generatedAt
+      ? Date.parse(activityPayload.generatedAt)
+      : NaN;
+    return Number.isFinite(parsed) ? parsed : Date.now();
+  })();
+  const coherentLiveProof = buildCoherentLiveProofFromLedgers(
+    {
+      memoryEvents,
+      retrievalEvents,
+      modelRuns,
+      toolJobs,
+      evidenceEvents,
+    },
+    {
+      nowMs: diagnosticGeneratedAtMs,
+    },
+  );
   const betaDiagnosticsSnapshot = buildBetaDiagnosticsSnapshot({
     generatedAt: activityPayload?.generatedAt,
     learningBooks: learningBooks.length,
@@ -4433,6 +4449,24 @@ export function AdminView() {
                           live coverage{" "}
                           {providerKeyProofChecklist.liveCoveragePercent}%
                         </span>
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.coherentLiveProof.proofFresh ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                        >
+                          proof{" "}
+                          {providerKeyProofChecklist.coherentLiveProof
+                            .proofFresh
+                            ? "fresh"
+                            : "stale"}
+                        </span>
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.coherentLiveProof.proofWindowReady ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                        >
+                          proof window{" "}
+                          {formatDurationMinutes(
+                            providerKeyProofChecklist.coherentLiveProof
+                              .proofWindowMs,
+                          )}
+                        </span>
                       </div>
 
                       <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-600 font-serif">
@@ -4702,6 +4736,33 @@ export function AdminView() {
                               )}
                             </span>
                           )}
+                          {typeof providerKeyProofChecklist.coherentLiveProof
+                            .oldestTimestamp === "number" && (
+                            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                              first{" "}
+                              {formatTime(
+                                providerKeyProofChecklist.coherentLiveProof
+                                  .oldestTimestamp,
+                              )}
+                            </span>
+                          )}
+                          <span
+                            className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.coherentLiveProof.proofWindowReady ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                          >
+                            window{" "}
+                            {formatDurationMinutes(
+                              providerKeyProofChecklist.coherentLiveProof
+                                .proofWindowMs,
+                            )}
+                          </span>
+                          <span
+                            className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.coherentLiveProof.proofFresh ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                          >
+                            {providerKeyProofChecklist.coherentLiveProof
+                              .proofFresh
+                              ? "fresh proof"
+                              : "stale proof"}
+                          </span>
                         </div>
 
                         <div className="mt-4 grid gap-3 md:grid-cols-2">

@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-06-03T10:57:36.756Z",
+  "appUrl": "http://127.0.0.1:3100",
+  "results": [
+    {
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "hasProviderProof": true,
+      "hasFreshnessCheck": true,
+      "hasStaleProof": true,
+      "hasStaleSummary": true,
+      "hasQaChat": true,
+      "hasQaVoice": true,
+      "hasWindowChip": true,
+      "consoleLogs": []
+    },
+    {
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "hasProviderProof": true,
+      "hasFreshnessCheck": true,
+      "hasStaleProof": true,
+      "hasStaleSummary": true,
+      "hasQaChat": true,
+      "hasQaVoice": true,
+      "hasWindowChip": true,
+      "consoleLogs": []
+    }
+  ]
+}

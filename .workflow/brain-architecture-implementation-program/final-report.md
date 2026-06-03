@@ -14,6 +14,81 @@
 
 ## Reusable Follow-up
 
+# Phase 73: Live Proof Freshness Window
+
+Packet ACC prevents old or time-spread local ledger rows from masquerading as a
+current provider-key chat+voice beta proof. The coherent live proof bundle now
+has a fresh-window check, and Admin shows proof fresh/stale plus proof-window
+chips beside the deliberate beta-run checklist.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 95%.
+
+## Graphify Context
+
+- Graphify routed the slice through `buildCoherentLiveProofFromLedgers()`,
+  `timestampsFromAnchors()`, `proofWindowSummary()`, `AdminView()`,
+  `buildProviderKeyProofChecklist()`, and `beta.diagnostics.ts`.
+- Graphify path `proofWindowSummary()` to `AdminView()` found a two-hop route
+  through `buildCoherentLiveProofFromLedgers()`.
+- Graphify path `buildCoherentLiveProofFromLedgers()` to `AdminView()` found a
+  direct call route.
+
+## Integration Decisions
+
+- Added local constants for coherent proof max age and max chat/voice proof
+  window.
+- Added `proofWindowReady`, `proofFresh`, `proofWindowMs`, `proofAgeMs`,
+  oldest timestamp, and latest timestamp to coherent live proof output.
+- Added `Fresh live proof window` as a coherent proof check, so stale or
+  time-spread selected rows leave provider-key proof on watch.
+- Passed the Admin diagnostics timestamp into coherent proof generation and
+  surfaced the result as proof fresh/stale and proof-window chips.
+- Kept provider traffic manual and did not add storage schema churn.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 155 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- Headless Chrome CDP QA via `phase65-browser-qa.mjs` confirmed desktop and
+  mobile Admin Beta Diagnostics rendered the deliberate beta-run checklist,
+  Fresh live proof window check, stale proof state, stale proof summary, QA
+  chat/voice request ids, proof-window chip, no horizontal overflow, and zero
+  console logs.
+- Browser screenshots saved as `ACC-admin-proof-freshness-desktop.png` and
+  `ACC-admin-proof-freshness-mobile.png`; JSON evidence saved as
+  `phase65-browser-qa.json`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1099 nodes, 1934 edges, and 57 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`80.9 KB`).
+- Graphify smoke query found `buildCoherentLiveProofFromLedgers()`,
+  `timestampsFromAnchors()`, `proofWindowSummary()`,
+  `formatDurationMinutes()`, `buildProviderKeyProofChecklist()`, and
+  `AdminView()`.
+- Graphify path `proofWindowSummary()` to `AdminView()` found a two-hop route
+  through `buildCoherentLiveProofFromLedgers()`.
+- Graphify path `buildCoherentLiveProofFromLedgers()` to `AdminView()` found a
+  direct call route.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes after regeneration.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then verify the rows are fresh and inside the same local
+  proof window.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Phase 72: Model Run Phase Ledger IDs
 
 Packet ACB makes model-run identity phase-aware. Started, fallback, completed,

@@ -165,3 +165,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   blocked, and failed model-run rows separately for one request/model so Admin
   proof detail can diagnose provider fallbacks without overwriting completed
   rows.
+- ACC: Live proof freshness window. Require coherent chat+voice beta proof rows
+  to fit one local proof window and stay fresh relative to the Admin diagnostics
+  snapshot, so old local ledger history cannot pass as a current provider-key
+  run.

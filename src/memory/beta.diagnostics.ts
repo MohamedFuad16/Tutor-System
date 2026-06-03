@@ -114,6 +114,9 @@ export type ProviderKeyProofProviderState = {
   voiceRealtimeKeyConfigured?: boolean;
 };
 
+export const COHERENT_LIVE_PROOF_MAX_WINDOW_MS = 30 * 60 * 1000;
+export const COHERENT_LIVE_PROOF_MAX_AGE_MS = 2 * 60 * 60 * 1000;
+
 export type ProviderKeyProofCheck = {
   id: string;
   title: string;
@@ -209,12 +212,19 @@ export type CoherentLiveProofBundle = {
   readyChecks: number;
   totalChecks: number;
   failedRows: number;
+  maxProofWindowMs: number;
+  maxProofAgeMs: number;
+  proofWindowReady: boolean;
+  proofFresh: boolean;
+  oldestTimestamp?: number;
   chatRequestId?: string;
   voiceRequestId?: string;
   sharedBookIds: string[];
   sharedConversationIds: string[];
   sharedDocumentIds: string[];
   latestTimestamp?: number;
+  proofWindowMs?: number;
+  proofAgeMs?: number;
   summary: string;
   missingChecks: string[];
   requestBundles: CoherentLiveProofRequestBundle[];
@@ -245,6 +255,12 @@ export type BetaBrainFlowLedgerInput = {
     EvidenceEvent,
     "evidenceType" | "verified" | "metadata" | "timestamp"
   >[];
+};
+
+type CoherentLiveProofOptions = {
+  nowMs?: number;
+  maxProofWindowMs?: number;
+  maxProofAgeMs?: number;
 };
 
 export type BetaDiagnosticsSnapshot = {
@@ -989,23 +1005,62 @@ const memoryEventConversationId = (
   metadataString(event.metadata, "conversationId") ||
   metadataString(event.metadata, "threadId");
 
-const latestTimestampFromAnchors = (anchors: SignalEvidenceAnchor[]) => {
-  const timestamps = anchors
+const timestampsFromAnchors = (anchors: SignalEvidenceAnchor[]) =>
+  anchors
     .map((anchor) => anchor.timestamp)
     .filter(
       (timestamp): timestamp is number =>
         typeof timestamp === "number" && Number.isFinite(timestamp),
     );
+
+const latestTimestampFromAnchors = (anchors: SignalEvidenceAnchor[]) => {
+  const timestamps = timestampsFromAnchors(anchors);
   return timestamps.length > 0 ? Math.max(...timestamps) : undefined;
 };
 
-export const buildCoherentLiveProofFromLedgers = ({
-  memoryEvents = [],
-  retrievalEvents = [],
-  modelRuns = [],
-  toolJobs = [],
-  evidenceEvents = [],
-}: BetaBrainFlowLedgerInput = {}): CoherentLiveProofBundle => {
+const proofWindowSummary = ({
+  proofWindowMs,
+  maxProofWindowMs,
+  proofAgeMs,
+  maxProofAgeMs,
+}: {
+  proofWindowMs?: number;
+  maxProofWindowMs: number;
+  proofAgeMs?: number;
+  maxProofAgeMs: number;
+}) => {
+  const maxWindowMinutes = Math.round(maxProofWindowMs / 60000);
+  const maxAgeMinutes = Math.round(maxProofAgeMs / 60000);
+
+  if (typeof proofWindowMs !== "number") {
+    return "No selected live proof timestamps are available yet.";
+  }
+
+  if (proofWindowMs > maxProofWindowMs) {
+    return `Selected chat and voice rows span ${Math.round(proofWindowMs / 60000)} minutes; the local proof window is ${maxWindowMinutes} minutes.`;
+  }
+
+  if (typeof proofAgeMs === "number" && proofAgeMs > maxProofAgeMs) {
+    return `Latest selected proof row is ${Math.round(proofAgeMs / 60000)} minutes old; rerun chat and voice within ${maxAgeMinutes} minutes of export.`;
+  }
+
+  return `Selected chat and voice rows fit the ${maxWindowMinutes}-minute proof window and the latest row is fresh.`;
+};
+
+export const buildCoherentLiveProofFromLedgers = (
+  {
+    memoryEvents = [],
+    retrievalEvents = [],
+    modelRuns = [],
+    toolJobs = [],
+    evidenceEvents = [],
+  }: BetaBrainFlowLedgerInput = {},
+  {
+    nowMs,
+    maxProofWindowMs = COHERENT_LIVE_PROOF_MAX_WINDOW_MS,
+    maxProofAgeMs = COHERENT_LIVE_PROOF_MAX_AGE_MS,
+  }: CoherentLiveProofOptions = {},
+): CoherentLiveProofBundle => {
   const completedContextEvents = memoryEvents.filter(
     (event) =>
       event.eventType === "brain_context_injected" &&
@@ -1257,7 +1312,27 @@ export const buildCoherentLiveProofFromLedgers = ({
     ...(selectedChat?.anchors || []),
     ...(selectedVoice?.anchors || []),
   ];
-  const latestTimestamp = latestTimestampFromAnchors(allAnchors);
+  const proofTimestamps = timestampsFromAnchors(allAnchors);
+  const latestTimestamp =
+    proofTimestamps.length > 0 ? Math.max(...proofTimestamps) : undefined;
+  const oldestTimestamp =
+    proofTimestamps.length > 0 ? Math.min(...proofTimestamps) : undefined;
+  const proofWindowMs =
+    typeof latestTimestamp === "number" && typeof oldestTimestamp === "number"
+      ? Math.max(0, latestTimestamp - oldestTimestamp)
+      : undefined;
+  const proofAgeMs =
+    typeof nowMs === "number" &&
+    Number.isFinite(nowMs) &&
+    typeof latestTimestamp === "number"
+      ? Math.max(0, nowMs - latestTimestamp)
+      : undefined;
+  const proofWindowReady =
+    typeof proofWindowMs === "number" && proofWindowMs <= maxProofWindowMs;
+  const proofFresh =
+    typeof proofAgeMs === "number"
+      ? proofAgeMs <= maxProofAgeMs
+      : typeof latestTimestamp === "number";
   const sharedEvidence = mergeAnchors(allAnchors);
   const requestBundles = [
     buildCoherentRequestBundle("chat", selectedChat),
@@ -1343,6 +1418,19 @@ export const buildCoherentLiveProofFromLedgers = ({
           : `${failedRows} failed or blocked rows must be resolved before the coherent proof can pass.`,
       evidence: sharedEvidence,
     },
+    {
+      id: "fresh_live_proof_window",
+      title: "Fresh live proof window",
+      ready: proofWindowReady && proofFresh,
+      status: proofWindowReady && proofFresh ? "ready" : "watch",
+      summary: proofWindowSummary({
+        proofWindowMs,
+        maxProofWindowMs,
+        proofAgeMs,
+        maxProofAgeMs,
+      }),
+      evidence: sharedEvidence,
+    },
   ];
   const readyChecks = checks.filter((check) => check.ready).length;
   const totalChecks = checks.length;
@@ -1362,12 +1450,19 @@ export const buildCoherentLiveProofFromLedgers = ({
     readyChecks,
     totalChecks,
     failedRows,
+    maxProofWindowMs,
+    maxProofAgeMs,
+    proofWindowReady,
+    proofFresh,
+    ...(oldestTimestamp ? { oldestTimestamp } : {}),
     ...(selectedChat ? { chatRequestId: selectedChat.requestId } : {}),
     ...(selectedVoice ? { voiceRequestId: selectedVoice.requestId } : {}),
     sharedBookIds,
     sharedConversationIds,
     sharedDocumentIds,
     ...(latestTimestamp ? { latestTimestamp } : {}),
+    ...(proofWindowMs !== undefined ? { proofWindowMs } : {}),
+    ...(proofAgeMs !== undefined ? { proofAgeMs } : {}),
     summary:
       status === "ready"
         ? "One typed-chat request and one live-voice request form a coherent local beta proof bundle with shared book, thread, and multi-PDF context anchors."

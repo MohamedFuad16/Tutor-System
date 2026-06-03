@@ -21,6 +21,48 @@ const multiPdfContextMetadata = (agentLayer, requestId) => ({
   contextDocumentIds: ["doc-active", "doc-companion"],
 });
 
+const PROOF_BASE_TS = Date.parse("2026-06-01T00:00:00.000Z");
+
+const timestampedCompleteLedgers = ({
+  chatOffsetMs = 0,
+  voiceOffsetMs = 0,
+} = {}) => {
+  const requestOffset = (requestId) =>
+    requestId === "voice-req-1" ? voiceOffsetMs : chatOffsetMs;
+  const metadataRequestId = (row) => row.metadata?.requestId;
+  const timestampFor = (row, index) =>
+    PROOF_BASE_TS +
+    requestOffset(metadataRequestId(row) || row.requestId) +
+    index;
+
+  return {
+    memoryEvents: completeBrainFlowLedgers.memoryEvents.map((row, index) => ({
+      ...row,
+      timestamp: timestampFor(row, index),
+    })),
+    retrievalEvents: completeBrainFlowLedgers.retrievalEvents.map(
+      (row, index) => ({
+        ...row,
+        timestamp: timestampFor(row, index),
+      }),
+    ),
+    modelRuns: completeBrainFlowLedgers.modelRuns.map((row, index) => ({
+      ...row,
+      timestamp: timestampFor(row, index),
+    })),
+    toolJobs: completeBrainFlowLedgers.toolJobs.map((row, index) => ({
+      ...row,
+      timestamp: timestampFor(row, index),
+    })),
+    evidenceEvents: completeBrainFlowLedgers.evidenceEvents.map(
+      (row, index) => ({
+        ...row,
+        timestamp: timestampFor(row, index),
+      }),
+    ),
+  };
+};
+
 const completeBrainFlowLedgers = {
   memoryEvents: [
     {
@@ -483,6 +525,8 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.equal(completeCoherentLiveProof.status, "ready");
   assert.equal(completeCoherentLiveProof.ready, true);
   assert.equal(completeCoherentLiveProof.completionPercent, 100);
+  assert.equal(completeCoherentLiveProof.proofWindowReady, true);
+  assert.equal(completeCoherentLiveProof.proofFresh, true);
   assert.equal(completeCoherentLiveProof.chatRequestId, "chat-req-1");
   assert.equal(completeCoherentLiveProof.voiceRequestId, "voice-req-1");
   assert.deepEqual(completeCoherentLiveProof.sharedDocumentIds, [
@@ -522,6 +566,65 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.equal(voiceBundle?.transcriptRows, 1);
   assert.equal(voiceBundle?.backgroundRows, 1);
   assert.deepEqual(voiceBundle?.missingRows, []);
+});
+
+test("coherent live proof rejects stale selected rows when diagnostic time is provided", () => {
+  const freshLedgers = timestampedCompleteLedgers();
+  const freshProof = buildCoherentLiveProofFromLedgers(freshLedgers, {
+    nowMs: PROOF_BASE_TS + 60 * 1000,
+  });
+  const staleProof = buildCoherentLiveProofFromLedgers(freshLedgers, {
+    nowMs: PROOF_BASE_TS + 3 * 60 * 60 * 1000,
+  });
+  const staleChecklist = buildProviderKeyProofChecklist({
+    brainFlow: buildBrainFlowCoverageFromLedgers(freshLedgers),
+    coherentLiveProof: staleProof,
+    providerKeys: {
+      chatModelKeyConfigured: true,
+      voiceRealtimeKeyConfigured: true,
+    },
+  });
+
+  assert.equal(freshProof.status, "ready");
+  assert.equal(freshProof.proofFresh, true);
+  assert.equal(freshProof.proofWindowReady, true);
+  assert.equal(staleProof.status, "watch");
+  assert.equal(staleProof.ready, false);
+  assert.equal(staleProof.proofFresh, false);
+  assert.equal(staleProof.proofWindowReady, true);
+  assert.ok(staleProof.proofAgeMs > staleProof.maxProofAgeMs);
+  assert.ok(staleProof.missingChecks.includes("Fresh live proof window"));
+  assert.equal(
+    staleProof.checks.find((check) => check.id === "fresh_live_proof_window")
+      ?.ready,
+    false,
+  );
+  assert.equal(staleChecklist.status, "watch");
+  assert.equal(staleChecklist.proofComplete, false);
+  assert.ok(
+    staleChecklist.missingChecks.includes("Coherent chat + voice beta bundle"),
+  );
+});
+
+test("coherent live proof rejects chat and voice evidence outside one local proof window", () => {
+  const wideLedgers = timestampedCompleteLedgers({
+    voiceOffsetMs: 45 * 60 * 1000,
+  });
+  const wideProof = buildCoherentLiveProofFromLedgers(wideLedgers, {
+    nowMs: PROOF_BASE_TS + 46 * 60 * 1000,
+  });
+
+  assert.equal(wideProof.status, "watch");
+  assert.equal(wideProof.ready, false);
+  assert.equal(wideProof.proofFresh, true);
+  assert.equal(wideProof.proofWindowReady, false);
+  assert.ok(wideProof.proofWindowMs > wideProof.maxProofWindowMs);
+  assert.ok(wideProof.missingChecks.includes("Fresh live proof window"));
+  assert.equal(
+    wideProof.checks.find((check) => check.id === "fresh_live_proof_window")
+      ?.status,
+    "watch",
+  );
 });
 
 test("coherent live proof rejects scattered rows even when aggregate brain-flow signals pass", () => {

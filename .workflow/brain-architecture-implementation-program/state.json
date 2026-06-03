@@ -568,6 +568,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/model.runs.ts, server.ts, tests/model-runs.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACC",
+      "name": "Live proof freshness window",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1245,11 +1252,31 @@
     "Graphify smoke query found modelRunIdFor(), recordModelRunEvent(), idPart(), normalizeModelRunStatus(), createModelRunRecord(), and connected memory/Admin nodes",
     "graphify path modelRunIdFor() to AdminView() found a four-hop route through model.runs.ts, ChatPanel.tsx, and useStore",
     "graphify path modelRunIdFor() to recordModelRunEvent() found a two-hop route through model.runs.ts",
-    "Packet ACB graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ACB graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ACC selected after Graphify routed proof freshness through buildCoherentLiveProofFromLedgers(), timestampsFromAnchors(), proofWindowSummary(), AdminView(), buildProviderKeyProofChecklist(), and beta.diagnostics.ts",
+    "Coherent live proof now reports proofWindowReady, proofFresh, proofWindowMs, proofAgeMs, oldestTimestamp, and latestTimestamp for selected chat/voice proof rows",
+    "Fresh live proof window is now a coherent proof check, so stale local rows or rows spread outside one local run leave provider-key proof on watch",
+    "Admin Beta Diagnostics now passes the diagnostics timestamp into coherent proof and renders proof fresh/stale plus proof-window chips",
+    "Focused beta diagnostics tests now cover fresh proof rows, stale proof rows, and chat/voice proof rows outside the local proof window",
+    "npm run format passed for Packet ACC",
+    "npm run test passed, 155 tests",
+    "npm run format:check passed for Packet ACC",
+    "npm run lint passed for Packet ACC",
+    "npm run build passed for Packet ACC",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run brain:ui-regression remained unavailable because current package.json has no brain:ui-regression script",
+    "Headless Chrome CDP QA via phase65-browser-qa.mjs confirmed desktop and mobile Admin Beta Diagnostics rendered Fresh live proof window, stale proof state, stale summary, QA chat/voice request ids, no horizontal overflow, and zero console logs",
+    "Browser QA screenshots saved as ACC-admin-proof-freshness-desktop.png and ACC-admin-proof-freshness-mobile.png; JSON evidence saved as phase65-browser-qa.json",
+    "graphify update . --force regenerated code architecture artifacts with 1099 nodes, 1934 edges, and 57 communities",
+    "npm run graphify:tree passed for Packet ACC and wrote GRAPH_TREE.html at 80.9 KB",
+    "Graphify smoke query found buildCoherentLiveProofFromLedgers(), timestampsFromAnchors(), proofWindowSummary(), formatDurationMinutes(), buildProviderKeyProofChecklist(), and AdminView()",
+    "graphify path proofWindowSummary() to AdminView() found a two-hop route through buildCoherentLiveProofFromLedgers()",
+    "graphify path buildCoherentLiveProofFromLedgers() to AdminView() found a direct call route",
+    "Packet ACC graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 94,
-    "basis": "Local architecture estimate after Packet ACB final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, Beta Diagnostics provider-meter freshness, a provider-key fallback guard, selected coherent request-row detail, and phase-aware durable model-run ids for started/fallback/completed rows are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T19:34:28.000+09:00"
+    "estimatePercent": 95,
+    "basis": "Local architecture estimate after Packet ACC final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, Beta Diagnostics provider-meter freshness, a provider-key fallback guard, selected coherent request-row detail, phase-aware durable model-run ids for started/fallback/completed rows, and a fresh local proof-window gate are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T20:00:00.000+09:00"
   }
 }
