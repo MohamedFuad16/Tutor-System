@@ -52,6 +52,7 @@ import {
   buildBetaDiagnosticsExport,
   buildBetaDiagnosticsSnapshot,
   buildCoherentLiveProofFromLedgers,
+  buildLiveBetaProofPreflight,
   buildProviderKeyProofChecklist,
 } from "../memory/beta.diagnostics";
 import {
@@ -403,6 +404,11 @@ export function AdminView() {
   const learningBooks =
     useLiveQuery(
       () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
+      [],
+    ) || [];
+  const learningDocuments =
+    useLiveQuery(
+      () => db.learningDocuments.orderBy("updatedAt").reverse().toArray(),
       [],
     ) || [];
   const learningBookConcepts =
@@ -1035,6 +1041,21 @@ export function AdminView() {
       deepgramApiKey,
     ],
   );
+  const liveProofPreflight = useMemo(
+    () =>
+      buildLiveBetaProofPreflight({
+        providerKeyProof: providerKeyProofChecklist,
+        activeLearningBookId,
+        activeBetaProofAttemptId,
+        documents: learningDocuments,
+      }),
+    [
+      activeBetaProofAttemptId,
+      activeLearningBookId,
+      learningDocuments,
+      providerKeyProofChecklist,
+    ],
+  );
   const liveProofRunbook = providerKeyProofChecklist.liveProofRunbook;
   const liveProofDrillPacket = providerKeyProofChecklist.liveProofDrillPacket;
   const liveProofReceipt = providerKeyProofChecklist.liveProofReceipt;
@@ -1442,7 +1463,10 @@ export function AdminView() {
           canAttemptProviderKeyRun:
             providerKeyProofChecklist.canAttemptProviderKeyRun,
           proofComplete: providerKeyProofChecklist.proofComplete,
+          betaProofReady: providerKeyProofChecklist.betaProofReady,
+          sourceReadyForBeta: providerKeyProofChecklist.sourceReadyForBeta,
           missingChecks: providerKeyProofChecklist.missingChecks,
+          liveProofPreflight,
           liveProofRunbook,
           liveProofDrillPacket,
           liveProofReceipt,
@@ -1451,6 +1475,7 @@ export function AdminView() {
       },
       ledgers: {
         learningBooks,
+        learningDocuments,
         learningBookConcepts,
         learningEntries,
         bookChatThreads,
@@ -4963,6 +4988,76 @@ export function AdminView() {
                             <span className="rounded-full border border-violet-100 bg-violet-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-violet-700">
                               multi-PDF book required
                             </span>
+                          )}
+                        </div>
+
+                        <div className="mt-4 rounded-2xl border border-white bg-white/85 p-3">
+                          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                            <div>
+                              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-600">
+                                Live drill preflight
+                              </div>
+                              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-zinc-600 font-serif">
+                                {liveProofPreflight.summary}
+                              </p>
+                            </div>
+                            <div className="shrink-0 rounded-xl border border-cyan-100 bg-cyan-50 px-3 py-2 text-right">
+                              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                Preflight
+                              </div>
+                              <div className="mt-1 text-lg font-semibold tabular-nums text-zinc-900">
+                                {liveProofPreflight.readyChecks}/
+                                {liveProofPreflight.totalChecks}
+                              </div>
+                              <span
+                                className={`mt-1 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(liveProofPreflight.status)}`}
+                              >
+                                {liveProofPreflight.status}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            <span
+                              className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${liveProofPreflight.canRun ? "border-green-200 bg-green-50 text-green-700" : liveProofPreflight.needsProviderTraffic ? "border-amber-200 bg-amber-50 text-amber-700" : "border-blue-100 bg-blue-50 text-blue-700"}`}
+                            >
+                              {liveProofPreflight.canRun
+                                ? "ready to call providers"
+                                : liveProofPreflight.needsProviderTraffic
+                                  ? "provider traffic gated"
+                                  : "proof already ready"}
+                            </span>
+                            <span className="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-violet-700">
+                              ready PDFs {liveProofPreflight.readyDocumentCount}
+                            </span>
+                            {liveProofPreflight.activeBookId && (
+                              <span className="max-w-full truncate rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                book {liveProofPreflight.activeBookId}
+                              </span>
+                            )}
+                            {liveProofPreflight.activeProofAttemptId && (
+                              <span className="max-w-full truncate rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700">
+                                attempt{" "}
+                                {liveProofPreflight.activeProofAttemptId}
+                              </span>
+                            )}
+                            {liveProofPreflight.readyDocumentIds.map(
+                              (documentId) => (
+                                <span
+                                  key={`preflight-document-${documentId}`}
+                                  className="max-w-full truncate rounded-full border border-violet-100 bg-white px-2 py-0.5 text-[10px] font-mono text-violet-700"
+                                >
+                                  pdf {documentId}
+                                </span>
+                              ),
+                            )}
+                          </div>
+
+                          {liveProofPreflight.missingChecks.length > 0 && (
+                            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800 font-serif">
+                              Preflight needs{" "}
+                              {liveProofPreflight.missingChecks.join(", ")}.
+                            </div>
                           )}
                         </div>
 

@@ -6,6 +6,7 @@ const {
   buildBetaDiagnosticsSnapshot,
   buildBrainFlowCoverageFromLedgers,
   buildCoherentLiveProofFromLedgers,
+  buildLiveBetaProofPreflight,
   buildProviderKeyProofChecklist,
 } = await import("../.tmp-test/beta.diagnostics.mjs");
 const { modelObservationGateMetadata } =
@@ -483,6 +484,115 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   assert.ok(
     readyChecklist.liveProofDrillPacket.exportInstructions.some((instruction) =>
       instruction.includes("chat-req-1 and voice-req-1"),
+    ),
+  );
+});
+
+test("live beta proof preflight requires active attempt and multiple ready PDFs before provider traffic", () => {
+  const seededLedgers = {
+    ...completeBrainFlowLedgers,
+    modelRuns: completeBrainFlowLedgers.modelRuns.map((row) =>
+      row.requestId === "chat-req-1"
+        ? {
+            ...row,
+            metadata: {
+              ...row.metadata,
+              proofSource: "local_qa_seed",
+              qaSeeded: true,
+            },
+          }
+        : row,
+    ),
+  };
+  const seededChecklist = buildProviderKeyProofChecklist({
+    brainFlow: buildBrainFlowCoverageFromLedgers(seededLedgers),
+    coherentLiveProof: buildCoherentLiveProofFromLedgers(seededLedgers),
+    providerKeys: {
+      chatModelKeyConfigured: true,
+      voiceRealtimeKeyConfigured: true,
+    },
+  });
+
+  assert.equal(seededChecklist.proofComplete, true);
+  assert.equal(seededChecklist.betaProofReady, false);
+
+  const readyPreflight = buildLiveBetaProofPreflight({
+    providerKeyProof: seededChecklist,
+    activeLearningBookId: "book-1",
+    activeBetaProofAttemptId: PROOF_ATTEMPT_ID,
+    documents: [
+      {
+        id: "doc-active",
+        bookId: "book-1",
+        title: "Active PDF",
+        mimeType: "application/pdf",
+        size: 1024,
+        extractedText: "Active source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+      {
+        id: "doc-companion",
+        bookId: "book-1",
+        title: "Companion PDF",
+        mimeType: "application/pdf",
+        size: 2048,
+        extractedText: "Companion source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+    ],
+  });
+
+  assert.equal(readyPreflight.status, "ready");
+  assert.equal(readyPreflight.canRun, true);
+  assert.equal(readyPreflight.needsProviderTraffic, true);
+  assert.equal(readyPreflight.readyChecks, readyPreflight.totalChecks);
+  assert.equal(readyPreflight.readyDocumentCount, 2);
+  assert.deepEqual(readyPreflight.readyDocumentIds, [
+    "doc-active",
+    "doc-companion",
+  ]);
+  assert.match(readyPreflight.summary, /run the real provider-key/);
+
+  const blockedPreflight = buildLiveBetaProofPreflight({
+    providerKeyProof: seededChecklist,
+    activeLearningBookId: "book-1",
+    activeBetaProofAttemptId: PROOF_ATTEMPT_ID,
+    documents: [
+      {
+        id: "doc-active",
+        bookId: "book-1",
+        title: "Active PDF",
+        mimeType: "application/pdf",
+        size: 1024,
+        extractedText: "Active source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+      {
+        id: "doc-processing",
+        bookId: "book-1",
+        title: "Processing PDF",
+        mimeType: "application/pdf",
+        size: 2048,
+        extractedText: "",
+        processingStatus: "processing",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+    ],
+  });
+
+  assert.equal(blockedPreflight.status, "watch");
+  assert.equal(blockedPreflight.canRun, false);
+  assert.equal(blockedPreflight.readyDocumentCount, 1);
+  assert.ok(
+    blockedPreflight.missingChecks.includes(
+      "Active book has multiple ready PDFs",
     ),
   );
 });

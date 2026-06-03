@@ -204,3 +204,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
 - ACN: Source-ready beta proof gate. Make top-level Provider-Key Live Proof
   readiness require `sourceReadyForBeta`, while keeping structural ledger
   completeness visible as separate `Ledger checks`.
+- ACO: Live provider drill preflight. Add a local-only preflight that proves the
+  real provider-key drill can be run now: provider meters present, active proof
+  attempt selected, active learning book selected, at least two ready PDFs in
+  that book, and no hard live blockers. It still does not call providers or
+  mark seeded/mixed proof as final beta evidence.

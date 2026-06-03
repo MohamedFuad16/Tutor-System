@@ -223,6 +223,8 @@ const injectedSetupScript = () => `
       activeView: "admin",
       accessMode: "admin",
       activeProject: "General Study",
+      activeLearningBookId: ${JSON.stringify(BOOK_ID)},
+      activeBetaProofAttemptId: ${JSON.stringify(PROOF_ATTEMPT_ID)},
       language: "en"
     },
     version: 0
@@ -686,6 +688,8 @@ async function adminProofReceiptCheck(label, metrics) {
         receiptText,
         hasProviderProof: lower.includes("provider-key live proof"),
         hasLedgerChecks: lower.includes("ledger checks") && lower.includes("100%"),
+        hasLivePreflight: lower.includes("live drill preflight") && lower.includes("ready to call providers"),
+        hasPreflightAnchors: lower.includes("ready pdfs 2") && lower.includes(${JSON.stringify(BOOK_ID)}) && lower.includes(${JSON.stringify(PROOF_ATTEMPT_ID)}),
         hasReceipt: lower.includes("local proof receipt") && lower.includes("export-ready chat and voice run summary"),
         hasSourceProofPending: lower.includes("source proof pending"),
         hasReadyReceipt: lower.includes("receipt ready") && lower.includes("not final live beta proof"),
@@ -703,6 +707,8 @@ async function adminProofReceiptCheck(label, metrics) {
   if (
     !snapshot.hasProviderProof ||
     !snapshot.hasLedgerChecks ||
+    !snapshot.hasLivePreflight ||
+    !snapshot.hasPreflightAnchors ||
     !snapshot.hasReceipt ||
     !snapshot.hasSourceProofPending ||
     !snapshot.hasReadyReceipt ||

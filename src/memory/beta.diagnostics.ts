@@ -1,6 +1,7 @@
 import type {
   BackgroundJob,
   EvidenceEvent,
+  LearningDocument,
   MemoryEvent,
   ModelRun,
   RetrievalEvent,
@@ -176,6 +177,31 @@ export type LiveBetaProofDrillPacket = {
   prompts: LiveBetaProofDrillPrompt[];
 };
 
+export type LiveBetaProofPreflightCheck = {
+  id: string;
+  title: string;
+  ready: boolean;
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  count: number;
+  summary: string;
+  action: string;
+};
+
+export type LiveBetaProofPreflight = {
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  canRun: boolean;
+  needsProviderTraffic: boolean;
+  readyChecks: number;
+  totalChecks: number;
+  activeBookId?: string;
+  activeProofAttemptId?: string;
+  readyDocumentCount: number;
+  readyDocumentIds: string[];
+  missingChecks: string[];
+  summary: string;
+  checks: LiveBetaProofPreflightCheck[];
+};
+
 export type LiveBetaProofReceipt = {
   schema: "tutor.live-provider-proof-receipt.v1";
   status: Exclude<BetaDiagnosticStatus, "deferred">;
@@ -232,6 +258,14 @@ export type ProviderKeyProofInput = {
   brainFlow: BetaBrainFlowCoverage;
   coherentLiveProof?: CoherentLiveProofBundle;
   providerKeys?: ProviderKeyProofProviderState;
+};
+
+export type LiveBetaProofPreflightInput = {
+  providerKeyProof: ProviderKeyProofChecklist;
+  activeLearningBookId?: string | null;
+  activeBetaProofAttemptId?: string | null;
+  documents?: LearningDocument[];
+  minReadyDocuments?: number;
 };
 
 export type CoherentLiveProofCheck = {
@@ -2656,6 +2690,155 @@ export const buildProviderKeyProofChecklist = ({
     liveProofReceipt,
     summary,
     missingChecks,
+    checks,
+  };
+};
+
+export const buildLiveBetaProofPreflight = ({
+  providerKeyProof,
+  activeLearningBookId,
+  activeBetaProofAttemptId,
+  documents = [],
+  minReadyDocuments = 2,
+}: LiveBetaProofPreflightInput): LiveBetaProofPreflight => {
+  const activeBookId = activeLearningBookId || "";
+  const activeProofAttemptId = activeBetaProofAttemptId || "";
+  const activeBookDocuments = activeBookId
+    ? documents.filter((document) => document.bookId === activeBookId)
+    : [];
+  const readyDocuments = activeBookDocuments.filter(
+    (document) =>
+      document.processingStatus === "ready" &&
+      Boolean(document.extractedText?.trim()),
+  );
+  const readyDocumentIds = compactUnique(
+    readyDocuments.map((document) => document.id),
+    12,
+  );
+  const providerKeysReady = providerKeyProof.canAttemptProviderKeyRun;
+  const proofAttemptReady = Boolean(activeProofAttemptId);
+  const activeBookReady = Boolean(activeBookId);
+  const multiPdfReady = readyDocuments.length >= minReadyDocuments;
+  const liveBlockersClear =
+    providerKeyProof.failedRows === 0 && providerKeyProof.status !== "blocked";
+
+  const check = ({
+    id,
+    title,
+    ready,
+    count,
+    readySummary,
+    pendingSummary,
+    action,
+    blocked = false,
+  }: {
+    id: string;
+    title: string;
+    ready: boolean;
+    count: number;
+    readySummary: string;
+    pendingSummary: string;
+    action: string;
+    blocked?: boolean;
+  }): LiveBetaProofPreflightCheck => ({
+    id,
+    title,
+    ready,
+    status: ready ? "ready" : blocked ? "blocked" : "watch",
+    count,
+    summary: ready ? readySummary : pendingSummary,
+    action,
+  });
+
+  const checks = [
+    check({
+      id: "provider_keys_ready",
+      title: "Provider keys ready",
+      ready: providerKeysReady,
+      count: providerKeysReady ? 2 : 0,
+      readySummary:
+        "Chat model and realtime voice provider-key meters are visible.",
+      pendingSummary:
+        "Both OpenRouter and Deepgram provider-key meters must be visible before the live drill.",
+      action:
+        "Configure provider keys locally or confirm server fallback meters before starting provider traffic.",
+    }),
+    check({
+      id: "active_proof_attempt_ready",
+      title: "Active proof attempt ready",
+      ready: proofAttemptReady,
+      count: proofAttemptReady ? 1 : 0,
+      readySummary: `Active proof attempt ${activeProofAttemptId} is selected.`,
+      pendingSummary:
+        "Start one Admin proof attempt before running chat/voice.",
+      action:
+        "Use Start proof attempt in Admin and keep the same attempt active through typed chat and live voice.",
+    }),
+    check({
+      id: "active_book_selected",
+      title: "Active learning book selected",
+      ready: activeBookReady,
+      count: activeBookReady ? 1 : 0,
+      readySummary: `Active learning book ${activeBookId} is selected.`,
+      pendingSummary: "No active learning book is selected for the drill.",
+      action:
+        "Open the study book that should receive the live proof rows before starting the drill.",
+    }),
+    check({
+      id: "active_book_multi_pdf_ready",
+      title: "Active book has multiple ready PDFs",
+      ready: multiPdfReady,
+      count: readyDocuments.length,
+      readySummary: `${readyDocuments.length} ready extracted PDFs are available in the active book.`,
+      pendingSummary: `${readyDocuments.length}/${minReadyDocuments} ready extracted PDFs are available in the active book.`,
+      action:
+        "Add or finish extracting at least two PDFs in the active book so chat and voice can both prove multi-PDF context.",
+    }),
+    check({
+      id: "live_blockers_clear",
+      title: "Live blockers clear",
+      ready: liveBlockersClear,
+      count: providerKeyProof.failedRows,
+      readySummary: "No failed or blocked live rows are preventing a drill.",
+      pendingSummary:
+        "Failed or blocked live rows must be cleared before the provider-key drill.",
+      action:
+        "Inspect Admin request timelines and retry or correct blocked local rows before provider traffic.",
+      blocked: !liveBlockersClear,
+    }),
+  ];
+  const readyChecks = checks.filter((entry) => entry.ready).length;
+  const missingChecks = checks
+    .filter((entry) => !entry.ready)
+    .map((entry) => entry.title);
+  const needsProviderTraffic = !providerKeyProof.betaProofReady;
+  const preflightReady = missingChecks.length === 0;
+  const canRun = preflightReady && needsProviderTraffic;
+  const blocked = checks.some((entry) => entry.status === "blocked");
+  const status: Exclude<BetaDiagnosticStatus, "deferred"> = blocked
+    ? "blocked"
+    : providerKeyProof.betaProofReady || canRun
+      ? "ready"
+      : "watch";
+
+  return {
+    status,
+    canRun,
+    needsProviderTraffic,
+    readyChecks,
+    totalChecks: checks.length,
+    ...(activeBookId ? { activeBookId } : {}),
+    ...(activeProofAttemptId ? { activeProofAttemptId } : {}),
+    readyDocumentCount: readyDocuments.length,
+    readyDocumentIds,
+    missingChecks,
+    summary: providerKeyProof.betaProofReady
+      ? "Final provider-key beta proof is already ready from local-live ledger rows."
+      : canRun
+        ? "Preflight is ready: you can run the real provider-key chat and voice drill now."
+        : blocked
+          ? "Preflight is blocked by failed or blocked local live rows."
+          : `Preflight needs ${missingChecks.join(", ")} before provider traffic.`,
     checks,
   };
 };

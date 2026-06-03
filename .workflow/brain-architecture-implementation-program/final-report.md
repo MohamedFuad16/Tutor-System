@@ -14,6 +14,91 @@
 
 ## Reusable Follow-up
 
+# Packet ACO: Live Provider Drill Preflight
+
+## Status
+
+Completed through focused source, test, build, desktop/mobile browser QA, and
+Graphify regeneration/smoke checks.
+
+Current conservative brain-architecture completion estimate after ACO:
+about 99%.
+
+## Graphify Context
+
+- The repo-local Graphify CLI routed this slice through
+  `src/memory/beta.diagnostics.ts`, `src/views/AdminView.tsx`,
+  `tests/beta-diagnostics.test.mjs`, `buildLiveBetaProofDrillPacket()`,
+  `buildProviderKeyProofChecklist()`, and the phase 72 browser QA packet.
+- The Graphify MCP remained stale for this repo and returned unrelated
+  ani-cliii symbols, so source navigation stayed with
+  `graphify-out/graph.json` as required by AGENTS.md.
+- Graphify path `buildLiveBetaProofDrillPacket` to `AdminView` connected the
+  drill packet builder to Admin through the provider-key checklist/Admin route.
+
+## Integration Decisions
+
+- Added `LiveBetaProofPreflight` and `buildLiveBetaProofPreflight()`.
+- The preflight requires provider proof setup, an active proof attempt, an
+  active learning book, at least two ready extracted PDFs in that book, and no
+  hard live blockers before Admin shows `ready to call providers`.
+- `canRun` only becomes true when preflight setup is ready and final
+  `betaProofReady` is still false, preserving the live-provider proof gap.
+- Admin Beta Diagnostics now renders a `Live drill preflight` panel with ready
+  check count, active book/proof attempt IDs, ready PDF count, ready document
+  IDs, and missing checks.
+- Diagnostics export metadata includes `betaProofReady`,
+  `sourceReadyForBeta`, and `liveProofPreflight`; export ledgers include
+  `learningDocuments` so the preflight is locally auditable.
+- No provider calls, key display, AWS/cloud sync, or Dexie schema changes were
+  added.
+
+## Verification Evidence
+
+- `npm run format -- src/memory/beta.diagnostics.ts src/views/AdminView.tsx
+tests/beta-diagnostics.test.mjs`: passed.
+- `node --check
+.workflow/brain-architecture-implementation-program/packets/phase72-browser-qa.mjs`:
+  passed.
+- `npm run test -- tests/beta-diagnostics.test.mjs`: passed through the project
+  runner, 167 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run test`: passed, 167 tests.
+- Headless Chrome QA via `phase72-browser-qa.mjs` confirmed desktop/mobile Admin
+  Beta Diagnostics rendered `Live drill preflight`, `ready to call providers`,
+  ready PDFs `2`, active book and proof attempt anchors, source proof pending,
+  provider capture details, no horizontal overflow, and zero console logs.
+- Browser screenshots were saved as `ACL-admin-proof-receipt-desktop.png` and
+  `ACL-admin-proof-receipt-mobile.png`; JSON evidence was saved as
+  `phase72-browser-qa.json`.
+- In-app Browser `iab` was unavailable in this desktop session, so this packet's
+  browser evidence is the local headless browser QA script and saved
+  screenshots.
+- `graphify update . --force`: passed, regenerating clean code architecture
+  artifacts with 1151 nodes, 2007 edges, and 74 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`84.1 KB`).
+- Graphify smoke query found `LiveBetaProofPreflight`,
+  `buildLiveBetaProofPreflight()`, `ProviderKeyProofChecklist`, `AdminView()`,
+  `buildLiveBetaProofDrillPacket()`, and connected diagnostics/Admin nodes.
+- Graphify path `buildLiveBetaProofPreflight` to `AdminView` found a connected
+  two-hop route through `AdminView.tsx`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch references.
+
+## Remaining Work
+
+- Run the real provider-key typed-chat and live-voice drill against OpenRouter
+  and Deepgram from the app, then verify `sourceKind: local_live_ledger`,
+  `sourceReadyForBeta: true`, and `betaProofReady: true`.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
+---
+
 # Phase 73: Live Proof Freshness Window
 
 Packet ACC prevents old or time-spread local ledger rows from masquerading as a
