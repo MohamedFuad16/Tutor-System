@@ -933,9 +933,7 @@ export const buildCoherentLiveProofFromLedgers = ({
     (event) => event.status === "completed" && hasRequestId(event.requestId),
   );
   const requestCorrelatedModelRows = modelRuns.filter(
-    (run) =>
-      (run.status === "completed" || run.status === "fallback") &&
-      hasRequestId(run.requestId),
+    (run) => run.status === "completed" && hasRequestId(run.requestId),
   );
   const foregroundToolJobRows = toolJobs.filter(
     (job) =>
@@ -1182,8 +1180,8 @@ export const buildCoherentLiveProofFromLedgers = ({
       status: selectedChat?.complete === true ? "ready" : "watch",
       summary:
         selectedChat?.complete === true
-          ? "One typed-chat request contains context, retrieval, model, tool, evaluated mastery, transcript, and background-memory evidence."
-          : "No single typed-chat request contains every required live proof row yet.",
+          ? "One typed-chat request contains context, retrieval, completed model, tool, evaluated mastery, transcript, and background-memory evidence."
+          : "No single typed-chat request contains every required live proof row yet; fallback model rows do not count for provider-key proof.",
       evidence: selectedChat
         ? mergeAnchors(selectedChat.anchors)
         : emptySignalEvidence(),
@@ -1195,8 +1193,8 @@ export const buildCoherentLiveProofFromLedgers = ({
       status: selectedVoice?.complete === true ? "ready" : "watch",
       summary:
         selectedVoice?.complete === true
-          ? "One live-voice request contains context, retrieval, model, tool, evaluated mastery, transcript, and background-memory evidence."
-          : "No single live-voice request contains every required live proof row yet.",
+          ? "One live-voice request contains context, retrieval, completed model, tool, evaluated mastery, transcript, and background-memory evidence."
+          : "No single live-voice request contains every required live proof row yet; fallback model rows do not count for provider-key proof.",
       evidence: selectedVoice
         ? mergeAnchors(selectedVoice.anchors)
         : emptySignalEvidence(),
@@ -1576,7 +1574,7 @@ export const buildLiveBetaProofRunbook = ({
       evidenceNeeded: [
         "brain_context_injected",
         "retrieval row",
-        "model run",
+        "completed model run",
         "foreground tool job",
         "evaluated mastery evidence",
         "book_chat_thread_saved",

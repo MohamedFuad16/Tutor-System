@@ -153,3 +153,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   provider meters warm while Beta Diagnostics is active, render provider-meter
   freshness beside the Provider-Key Live Proof chips, and verify desktop/mobile
   Admin continues polling the local debug endpoint after entering Diagnostics.
+- ABZ: Provider-key fallback guard. Require completed model rows, not fallback
+  rows, for the coherent provider-key chat/voice proof bundle while preserving
+  fallback rows in aggregate local diagnostics and verifying the Admin proof
+  warning on desktop/mobile.

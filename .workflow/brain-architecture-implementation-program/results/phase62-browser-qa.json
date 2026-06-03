@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-06-03T10:06:25.577Z",
+  "appUrl": "http://127.0.0.1:3100",
+  "results": [
+    {
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "hasLocalBetaReadiness": true,
+      "hasProviderKeyPanel": true,
+      "hasCoherentPanel": true,
+      "hasFallbackWarning": true,
+      "hasTypedChatBundle": true,
+      "hasVoiceBundle": true,
+      "consoleLogs": []
+    },
+    {
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "hasLocalBetaReadiness": true,
+      "hasProviderKeyPanel": true,
+      "hasCoherentPanel": true,
+      "hasFallbackWarning": true,
+      "hasTypedChatBundle": true,
+      "hasVoiceBundle": true,
+      "consoleLogs": []
+    }
+  ]
+}

@@ -669,6 +669,41 @@ test("coherent live proof rejects scattered rows even when aggregate brain-flow 
   assert.equal(checklist.liveProofRunbook.nextStepId, "coherent_bundle_export");
 });
 
+test("coherent live proof rejects fallback model rows for provider-key proof", () => {
+  const fallbackModelLedgers = {
+    ...completeBrainFlowLedgers,
+    modelRuns: completeBrainFlowLedgers.modelRuns.map((run) => ({
+      ...run,
+      status: "fallback",
+    })),
+  };
+  const aggregateFlow = buildBrainFlowCoverageFromLedgers(fallbackModelLedgers);
+  const coherentProof = buildCoherentLiveProofFromLedgers(fallbackModelLedgers);
+  const checklist = buildProviderKeyProofChecklist({
+    brainFlow: aggregateFlow,
+    coherentLiveProof: coherentProof,
+    providerKeys: {
+      chatModelKeyConfigured: true,
+      voiceRealtimeKeyConfigured: true,
+    },
+  });
+
+  assert.equal(aggregateFlow.status, "ready");
+  assert.equal(aggregateFlow.coveragePercent, 100);
+  assert.equal(coherentProof.status, "watch");
+  assert.equal(coherentProof.ready, false);
+  assert.ok(coherentProof.missingChecks.includes("Typed chat request bundle"));
+  assert.ok(coherentProof.missingChecks.includes("Live voice request bundle"));
+  assert.equal(checklist.status, "watch");
+  assert.equal(checklist.canAttemptProviderKeyRun, true);
+  assert.equal(checklist.proofComplete, false);
+  assert.ok(
+    checklist.missingChecks.includes("Coherent chat + voice beta bundle"),
+  );
+  assert.equal(checklist.liveProofRunbook.status, "watch");
+  assert.equal(checklist.liveProofRunbook.nextStepId, "coherent_bundle_export");
+});
+
 test("brain flow coverage requires chat and voice multi-PDF context evidence", () => {
   const singlePdfContextFlow = buildBrainFlowCoverageFromLedgers({
     memoryEvents: [

@@ -547,6 +547,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/views/AdminView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABZ",
+      "name": "Provider-key fallback guard",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1164,11 +1171,33 @@
     "Graphify smoke query found AdminView(), AdminView.tsx, buildBetaDiagnosticsSnapshot(), buildBrainFlowCoverageFromLedgers(), buildCoherentLiveProofFromLedgers(), providerKeyProofSignalChecks, beta.diagnostics.ts, and connected Admin nodes",
     "graphify path AdminView() to buildProviderKeyProofChecklist() found a two-hop route through AdminView.tsx",
     "graphify path AdminView() to SystemActivityPayload found a two-hop route through AdminView.tsx",
-    "Packet ABY graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABY graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABZ selected after Graphify routed provider-key proof integrity through ProviderKeyProofChecklist, CoherentLiveProofBundle, buildCoherentLiveProofFromLedgers(), AdminView(), buildBetaDiagnosticsSnapshot(), buildBrainFlowCoverageFromLedgers(), and beta.diagnostics.ts",
+    "buildCoherentLiveProofFromLedgers() now requires completed request-correlated model rows for coherent typed-chat and live-voice provider-key proof bundles",
+    "buildBrainFlowCoverageFromLedgers() still accepts fallback model rows for aggregate local diagnostics so fallback behavior remains visible without passing provider-key proof",
+    "Coherent live proof summaries and live beta runbook copy now say completed model rows are required and fallback rows do not count for provider-key proof",
+    "Added beta diagnostics regression coverage proving fallback model rows can leave aggregate brain-flow ready while coherent/provider-key proof remains watch",
+    "npm run format passed for Packet ABZ after implementation",
+    "First Packet ABZ npm run test failed because aggregate brain-flow coverage had been tightened accidentally; the patch was corrected so only coherent provider-key proof excludes fallback rows",
+    "npm run format passed for Packet ABZ after correction",
+    "npm run test passed, 152 tests",
+    "npm run format:check passed for Packet ABZ",
+    "npm run lint passed for Packet ABZ",
+    "npm run build passed for Packet ABZ",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run brain:ui-regression remained unavailable because current package.json has no brain:ui-regression script",
+    "Headless Chrome CDP QA via phase62-browser-qa.mjs confirmed desktop and mobile Admin Beta Diagnostics rendered Local Beta Readiness, Provider-Key Live Proof, Coherent Live Proof Bundle, typed-chat and voice bundle labels, fallback warning, no horizontal overflow, and zero console logs",
+    "Browser QA screenshots saved as ABZ-admin-fallback-proof-desktop.png and ABZ-admin-fallback-proof-mobile.png; JSON evidence saved as phase62-browser-qa.json",
+    "graphify update . --force regenerated code architecture artifacts with 1076 nodes, 1900 edges, and 70 communities",
+    "npm run graphify:tree passed for Packet ABZ and wrote GRAPH_TREE.html at 79.6 KB",
+    "Graphify smoke query found ProviderKeyProofChecklist, CoherentLiveProofBundle, AdminView(), buildCoherentLiveProofFromLedgers(), buildBetaDiagnosticsSnapshot(), buildBrainFlowCoverageFromLedgers(), and beta.diagnostics.ts",
+    "graphify path buildCoherentLiveProofFromLedgers() to buildProviderKeyProofChecklist() found a two-hop route through beta.diagnostics.ts",
+    "graphify path buildCoherentLiveProofFromLedgers() to AdminView() found a direct call route through AdminView()",
+    "Packet ABZ graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 91,
-    "basis": "Local architecture estimate after Packet ABY final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, and Beta Diagnostics provider-meter freshness are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T18:48:00.000+09:00"
+    "estimatePercent": 92,
+    "basis": "Local architecture estimate after Packet ABZ final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, Beta Diagnostics provider-meter freshness, and a provider-key fallback guard are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T19:08:58.000+09:00"
   }
 }

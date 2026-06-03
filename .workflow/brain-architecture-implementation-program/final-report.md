@@ -14,6 +14,81 @@
 
 ## Reusable Follow-up
 
+# Phase 70: Provider-Key Fallback Guard
+
+Packet ABZ tightens the provider-key proof path so fallback/offline model rows
+cannot make a coherent typed-chat + live-voice beta bundle look complete. The
+aggregate brain-flow meter still surfaces fallback rows for local observability,
+but the provider-key checklist now requires completed model rows before a live
+proof can pass.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 92%.
+
+## Graphify Context
+
+- Graphify routed the slice through `ProviderKeyProofChecklist`,
+  `CoherentLiveProofBundle`, `AdminView()`, `buildCoherentLiveProofFromLedgers()`,
+  `buildBetaDiagnosticsSnapshot()`, `buildBrainFlowCoverageFromLedgers()`, and
+  `beta.diagnostics.ts`.
+- Graphify path `buildCoherentLiveProofFromLedgers()` to
+  `buildProviderKeyProofChecklist()` found a two-hop route through
+  `beta.diagnostics.ts`.
+- Graphify path `buildCoherentLiveProofFromLedgers()` to `AdminView()` found a
+  direct call route through `AdminView()`.
+
+## Integration Decisions
+
+- Changed coherent live proof to count only completed request-correlated model
+  rows.
+- Preserved fallback model rows in aggregate brain-flow coverage, so fallback
+  behavior stays visible without satisfying provider-key proof.
+- Updated coherent proof and runbook copy to say completed model rows are
+  required.
+- Added a regression test for fallback model rows: aggregate brain-flow remains
+  ready, but coherent/provider-key proof remains on watch.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- First `npm run test`: failed because the aggregate coverage helper had been
+  tightened accidentally; the patch was corrected so only coherent proof
+  excludes fallback rows.
+- `npm run format`: passed after correction.
+- `npm run test`: passed, 152 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- Headless Chrome CDP QA via `phase62-browser-qa.mjs` confirmed desktop and
+  mobile Admin Beta Diagnostics rendered Local Beta Readiness, Provider-Key Live
+  Proof, Coherent Live Proof Bundle, typed-chat and voice bundle labels, the
+  fallback warning, no horizontal overflow, and zero console logs.
+- Browser screenshots saved as `ABZ-admin-fallback-proof-desktop.png` and
+  `ABZ-admin-fallback-proof-mobile.png`; JSON evidence saved as
+  `phase62-browser-qa.json`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1076 nodes, 1900 edges, and 70 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`79.6 KB`).
+- Graphify smoke query/path checks found the new coherent proof guard route to
+  Provider-Key Live Proof and Admin Beta Diagnostics.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes after regeneration.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the runbook and coherent proof bundle to confirm
+  real request-correlated completed model rows satisfy the complete local beta
+  flow.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Phase 69: Beta Diagnostics Provider-Meter Freshness
 
 Packet ABY keeps Admin Beta Diagnostics connected to live local
