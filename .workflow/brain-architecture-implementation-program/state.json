@@ -505,6 +505,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/brain.rehearsal.ts, src/views/AdminView.tsx, src/views/RevisionView.tsx, tests/brain-rehearsal.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, .workflow/brain-architecture-implementation-program/*"
+    },
+    {
+      "id": "ABT",
+      "name": "Provider-key live proof checklist",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -997,11 +1004,29 @@
     "npm run graphify:tree passed for Packet ABS",
     "Graphify smoke query found BrainWiringToolContract, buildToolContracts(), runLocalBrainWiringRehearsal(), buildChatAgentToolDefinitions(), VOICE_AGENT_TOOL_DEFINITIONS, AdminView(), and connected rehearsal nodes",
     "graphify path buildToolContracts() to AdminView() found a three-hop route through runLocalBrainWiringRehearsal() and buildBrainFlowCoverageFromLedgers()",
-    "Packet ABS graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABS graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABT selected after Graphify routed the provider-key live proof corridor through ChatPanel.tsx, server.ts, AdminView.tsx, brain.rehearsal.ts, beta.diagnostics.ts, chatAgentTools.ts, voiceAgentTools.ts, and focused diagnostics tests",
+    "buildProviderKeyProofChecklist() now separates provider-key setup, live-run availability, and complete request-correlated chat/voice ledger proof without exposing key values or calling providers",
+    "ProviderKeyProofChecklist derives two key setup checks and thirteen live ledger checks from the existing brain-flow coverage signals",
+    "Admin Beta Diagnostics now renders Provider-Key Live Proof with proof percent, key/setup badges, live coverage percent, per-check actions, and a missing proof list",
+    "Synthetic rehearsal live-gap copy now says preflight ready instead of provider-key ready so synthetic proof does not imply live traffic",
+    "npm run format passed",
+    "npm run test passed, 146 tests",
+    "npm run format:check passed",
+    "npm run lint passed",
+    "npm run build passed",
+    "In-app Browser QA at 1440x1000 confirmed Provider-Key Live Proof, deliberate beta-run checklist copy, no-provider-call copy, keys/setup status, typed-chat multi-PDF proof, live-voice transcript proof, missing proof list, and scrollWidth 1440",
+    "In-app Browser QA at 390x844 confirmed the same Provider-Key Live Proof panel and missing-proof checklist with scrollWidth 390",
+    "Browser QA screenshots saved as ABT-iab-admin-provider-key-desktop.png and ABT-iab-admin-provider-key-mobile.png",
+    "graphify update . --force regenerated code architecture artifacts with 1050 nodes, 1855 edges, and 59 communities",
+    "npm run graphify:tree passed for Packet ABT and wrote GRAPH_TREE.html at 78.0 KB",
+    "Graphify smoke query found buildProviderKeyProofChecklist(), ProviderKeyProofChecklist, beta.diagnostics.ts, AdminView.tsx, and beta-diagnostics.test.mjs",
+    "graphify path buildProviderKeyProofChecklist() to AdminView() found a two-hop route through AdminView.tsx",
+    "Packet ABT graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 84,
-    "basis": "Local architecture estimate after Packet ABS final gates: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, and shared chat/voice tool-schema preflight checks are implemented and browser-verified; deliberate provider-key chat/voice proof, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T09:36:20.000+09:00"
+    "estimatePercent": 86,
+    "basis": "Local architecture estimate after Packet ABT final gates: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, and a provider-key live proof checklist are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T15:11:32.000+09:00"
   }
 }

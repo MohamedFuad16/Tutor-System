@@ -5,6 +5,7 @@ const {
   buildBetaDiagnosticsExport,
   buildBetaDiagnosticsSnapshot,
   buildBrainFlowCoverageFromLedgers,
+  buildProviderKeyProofChecklist,
 } = await import("../.tmp-test/beta.diagnostics.mjs");
 const { modelObservationGateMetadata } =
   await import("../.tmp-test/evidence.mastery.mjs");
@@ -211,6 +212,97 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
       "",
     /2 local rows/,
   );
+});
+
+test("provider-key proof checklist separates key readiness from live proof", () => {
+  const emptyFlow = buildBrainFlowCoverageFromLedgers();
+  const checklist = buildProviderKeyProofChecklist({
+    brainFlow: emptyFlow,
+    providerKeys: {
+      chatModelKeyConfigured: false,
+      voiceRealtimeKeyConfigured: false,
+    },
+  });
+
+  assert.equal(checklist.status, "watch");
+  assert.equal(checklist.canAttemptProviderKeyRun, false);
+  assert.equal(checklist.proofComplete, false);
+  assert.equal(checklist.readyChecks, 0);
+  assert.equal(checklist.totalChecks, 15);
+  assert.equal(checklist.completionPercent, 0);
+  assert.equal(checklist.chatModelKeyConfigured, false);
+  assert.equal(checklist.voiceRealtimeKeyConfigured, false);
+  assert.ok(checklist.missingChecks.includes("Chat model provider key"));
+  assert.ok(checklist.missingChecks.includes("Typed chat context proof"));
+});
+
+test("provider-key proof checklist requires keys and complete live ledger anchors", () => {
+  const missingVoiceKey = buildProviderKeyProofChecklist({
+    brainFlow: completeBrainFlow,
+    providerKeys: {
+      chatModelKeyConfigured: true,
+      voiceRealtimeKeyConfigured: false,
+    },
+  });
+
+  assert.equal(missingVoiceKey.status, "watch");
+  assert.equal(missingVoiceKey.canAttemptProviderKeyRun, false);
+  assert.equal(missingVoiceKey.proofComplete, false);
+  assert.equal(missingVoiceKey.readyChecks, 14);
+  assert.ok(
+    missingVoiceKey.missingChecks.includes("Voice realtime provider key"),
+  );
+
+  const readyChecklist = buildProviderKeyProofChecklist({
+    brainFlow: completeBrainFlow,
+    providerKeys: {
+      chatModelKeyConfigured: true,
+      voiceRealtimeKeyConfigured: true,
+    },
+  });
+  const typedChatMultiPdfProof = readyChecklist.checks.find(
+    (check) => check.id === "typed_chat_multi_pdf_proof",
+  );
+
+  assert.equal(readyChecklist.status, "ready");
+  assert.equal(readyChecklist.canAttemptProviderKeyRun, true);
+  assert.equal(readyChecklist.proofComplete, true);
+  assert.equal(readyChecklist.completionPercent, 100);
+  assert.equal(readyChecklist.missingChecks.length, 0);
+  assert.deepEqual(typedChatMultiPdfProof?.evidence.requestIds, ["chat-req-1"]);
+  assert.deepEqual(typedChatMultiPdfProof?.evidence.documentIds, [
+    "doc-active",
+    "doc-companion",
+  ]);
+});
+
+test("provider-key proof checklist blocks live runs when ledger rows fail", () => {
+  const blockedFlow = buildBrainFlowCoverageFromLedgers({
+    memoryEvents: [
+      {
+        eventType: "brain_context_injected",
+        status: "failed",
+        timestamp: 1,
+        metadata: {
+          agentLayer: "chat_stream",
+          requestId: "chat-req-1",
+        },
+      },
+    ],
+  });
+  const checklist = buildProviderKeyProofChecklist({
+    brainFlow: blockedFlow,
+    providerKeys: {
+      chatModelKeyConfigured: true,
+      voiceRealtimeKeyConfigured: true,
+    },
+  });
+
+  assert.equal(checklist.status, "blocked");
+  assert.equal(checklist.canAttemptProviderKeyRun, false);
+  assert.equal(checklist.proofComplete, false);
+  assert.equal(checklist.failedRows, 1);
+  assert.match(checklist.summary, /failed or blocked live rows/);
 });
 
 test("beta diagnostics block when background jobs reach dead-letter", () => {

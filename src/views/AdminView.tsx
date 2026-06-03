@@ -50,6 +50,7 @@ import {
   buildBrainFlowCoverageFromLedgers,
   buildBetaDiagnosticsExport,
   buildBetaDiagnosticsSnapshot,
+  buildProviderKeyProofChecklist,
 } from "../memory/beta.diagnostics";
 import {
   runLocalBrainWiringRehearsal,
@@ -362,6 +363,8 @@ export function AdminView() {
     webUsage,
     aiModel,
     systemPrompt,
+    apiKey,
+    deepgramApiKey,
     activeLearningBookId,
     activeProject,
     pricing,
@@ -965,6 +968,27 @@ export function AdminView() {
     brainFlow: brainFlowCoverage,
     runtimeSettings: brainRuntimeSettings,
   });
+  const providerKeyProofChecklist = useMemo(
+    () =>
+      buildProviderKeyProofChecklist({
+        brainFlow: betaDiagnosticsSnapshot.brainFlow,
+        providerKeys: {
+          chatModelKeyConfigured:
+            Boolean(apiKey.trim()) ||
+            Boolean(activityPayload?.meters.providers.openRouter),
+          voiceRealtimeKeyConfigured:
+            Boolean(deepgramApiKey.trim()) ||
+            Boolean(activityPayload?.meters.providers.deepgram),
+        },
+      }),
+    [
+      activityPayload?.meters.providers.deepgram,
+      activityPayload?.meters.providers.openRouter,
+      apiKey,
+      betaDiagnosticsSnapshot.brainFlow,
+      deepgramApiKey,
+    ],
+  );
   const brainWiringRehearsalGap = useMemo(
     () =>
       brainWiringRehearsal
@@ -4307,6 +4331,196 @@ export function AdminView() {
                       )}
                     </section>
 
+                    <section className="rounded-[28px] border border-blue-200 bg-blue-50/40 p-5 shadow-sm">
+                      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-600/80">
+                            <Flag size={13} /> Provider-Key Live Proof
+                          </div>
+                          <h3 className="mt-2 text-xl font-serif font-medium text-zinc-900">
+                            Deliberate beta-run checklist
+                          </h3>
+                          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-500 font-serif">
+                            This checklist combines local provider-key presence
+                            with live ledger anchors. Keys make a live run
+                            possible; only request-correlated chat and voice
+                            rows make proof complete. No key values are shown
+                            and this panel does not call providers.
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-right">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                            Proof checks
+                          </div>
+                          <div className="mt-1 text-2xl font-semibold tabular-nums text-zinc-900">
+                            {providerKeyProofChecklist.completionPercent}%
+                          </div>
+                          <span
+                            className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(providerKeyProofChecklist.status)}`}
+                          >
+                            {providerKeyProofChecklist.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mb-4 flex flex-wrap gap-2">
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.canAttemptProviderKeyRun ? "border-green-200 bg-green-50 text-green-700" : providerKeyProofChecklist.status === "blocked" ? "border-red-200 bg-red-50 text-red-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                        >
+                          {providerKeyProofChecklist.canAttemptProviderKeyRun
+                            ? "live run available"
+                            : providerKeyProofChecklist.status === "blocked"
+                              ? "live blockers"
+                              : "keys/setup needed"}
+                        </span>
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.proofComplete ? "border-green-200 bg-green-50 text-green-700" : "border-zinc-200 bg-white text-zinc-500"}`}
+                        >
+                          {providerKeyProofChecklist.proofComplete
+                            ? "proof complete"
+                            : "proof pending"}
+                        </span>
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.chatModelKeyConfigured ? "border-green-200 bg-green-50 text-green-700" : "border-zinc-200 bg-white text-zinc-500"}`}
+                        >
+                          chat key{" "}
+                          {providerKeyProofChecklist.chatModelKeyConfigured
+                            ? "seen"
+                            : "missing"}
+                        </span>
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.voiceRealtimeKeyConfigured ? "border-green-200 bg-green-50 text-green-700" : "border-zinc-200 bg-white text-zinc-500"}`}
+                        >
+                          voice key{" "}
+                          {providerKeyProofChecklist.voiceRealtimeKeyConfigured
+                            ? "seen"
+                            : "missing"}
+                        </span>
+                        <span className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                          live coverage{" "}
+                          {providerKeyProofChecklist.liveCoveragePercent}%
+                        </span>
+                      </div>
+
+                      <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-600 font-serif">
+                        {providerKeyProofChecklist.summary}
+                      </div>
+
+                      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                        {providerKeyProofChecklist.checks.map((check) => {
+                          const CheckIcon = check.ready
+                            ? ShieldCheck
+                            : check.status === "blocked"
+                              ? AlertTriangle
+                              : Clock;
+                          const hasCheckEvidence =
+                            check.evidence.requestIds.length > 0 ||
+                            check.evidence.sources.length > 0 ||
+                            check.evidence.documentIds.length > 0 ||
+                            typeof check.evidence.latestTimestamp === "number";
+                          return (
+                            <article
+                              key={check.id}
+                              className={`rounded-2xl border p-3 ${
+                                check.ready
+                                  ? "border-green-200 bg-green-50"
+                                  : check.status === "blocked"
+                                    ? "border-red-200 bg-red-50"
+                                    : "border-zinc-200 bg-white"
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                    {check.title}
+                                  </div>
+                                  <span className="mt-1 inline-flex rounded-full border border-white/70 bg-white/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                    {check.scope === "provider_key"
+                                      ? "key setup"
+                                      : "live ledger"}
+                                  </span>
+                                </div>
+                                <CheckIcon
+                                  size={14}
+                                  className={`shrink-0 ${
+                                    check.ready
+                                      ? "text-green-600"
+                                      : check.status === "blocked"
+                                        ? "text-red-600"
+                                        : "text-zinc-400"
+                                  }`}
+                                />
+                              </div>
+                              <div className="mt-2 flex items-center justify-between gap-3">
+                                <span
+                                  className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(check.status)}`}
+                                >
+                                  {check.status}
+                                </span>
+                                <span className="text-[10px] font-mono text-zinc-500">
+                                  rows {check.count}
+                                </span>
+                              </div>
+                              <p className="mt-2 text-xs leading-relaxed text-zinc-600 font-serif">
+                                {check.summary}
+                              </p>
+                              <p className="mt-2 text-[11px] leading-relaxed text-zinc-500 font-serif">
+                                {check.action}
+                              </p>
+                              {hasCheckEvidence && (
+                                <div className="mt-3 flex flex-wrap gap-1.5">
+                                  {typeof check.evidence.latestTimestamp ===
+                                    "number" && (
+                                    <span className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                      latest{" "}
+                                      {formatTime(
+                                        check.evidence.latestTimestamp,
+                                      )}
+                                    </span>
+                                  )}
+                                  {check.evidence.requestIds.map(
+                                    (requestId) => (
+                                      <span
+                                        key={`proof-request-${check.id}-${requestId}`}
+                                        className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700"
+                                      >
+                                        req {requestId}
+                                      </span>
+                                    ),
+                                  )}
+                                  {check.evidence.documentIds.map(
+                                    (documentId) => (
+                                      <span
+                                        key={`proof-document-${check.id}-${documentId}`}
+                                        className="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[10px] font-mono text-violet-700"
+                                      >
+                                        pdf {documentId}
+                                      </span>
+                                    ),
+                                  )}
+                                  {check.evidence.sources.map((source) => (
+                                    <span
+                                      key={`proof-source-${check.id}-${source}`}
+                                      className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-mono text-zinc-600"
+                                    >
+                                      {source.replace(/_/g, " ")}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </article>
+                          );
+                        })}
+                      </div>
+
+                      {providerKeyProofChecklist.missingChecks.length > 0 && (
+                        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                          Missing provider-key proof:{" "}
+                          {providerKeyProofChecklist.missingChecks.join(", ")}.
+                        </div>
+                      )}
+                    </section>
+
                     <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
                       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                         <div>
@@ -4476,7 +4690,7 @@ export function AdminView() {
                                     className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${brainWiringRehearsalGap.readyForProviderKeyRun ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
                                   >
                                     {brainWiringRehearsalGap.readyForProviderKeyRun
-                                      ? "provider-key ready"
+                                      ? "preflight ready"
                                       : "fix live blockers"}
                                   </span>
                                 </div>

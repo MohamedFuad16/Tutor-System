@@ -37,6 +37,7 @@
 - Packet ABQ: See `packets/ABQ-live-multi-pdf-beta-proof-gate.md`.
 - Packet ABR: See `packets/ABR-live-brain-flow-signal-anchors.md`.
 - Packet ABS: See `packets/ABS-dual-agent-tool-contract-playback-clarity.md`.
+- Packet ABT: See `packets/ABT-provider-key-live-proof-checklist.md`.
 
 ## Completion Audit
 

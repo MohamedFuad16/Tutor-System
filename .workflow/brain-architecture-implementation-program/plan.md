@@ -130,3 +130,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   parity, expose the result in Admin, simplify the Admin activity paragraph,
   and keep audio overview retry/fallback behavior hidden inside the single
   visible player.
+- ABT: Provider-key live proof checklist. Add a local Admin checklist that
+  separates provider-key setup, live-run availability, and complete
+  request-correlated chat/voice ledger proof without calling providers or
+  treating synthetic rehearsal rows as beta evidence.

@@ -108,6 +108,45 @@ export type BetaBrainFlowCoverage = {
   signals: BetaBrainFlowSignal[];
 };
 
+export type ProviderKeyProofProviderState = {
+  chatModelKeyConfigured?: boolean;
+  voiceRealtimeKeyConfigured?: boolean;
+};
+
+export type ProviderKeyProofCheck = {
+  id: string;
+  title: string;
+  scope: "provider_key" | "live_ledger";
+  ready: boolean;
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  count: number;
+  signalIds: string[];
+  summary: string;
+  action: string;
+  evidence: BetaBrainFlowSignalEvidence;
+};
+
+export type ProviderKeyProofChecklist = {
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  completionPercent: number;
+  liveCoveragePercent: number;
+  readyChecks: number;
+  totalChecks: number;
+  failedRows: number;
+  chatModelKeyConfigured: boolean;
+  voiceRealtimeKeyConfigured: boolean;
+  canAttemptProviderKeyRun: boolean;
+  proofComplete: boolean;
+  summary: string;
+  missingChecks: string[];
+  checks: ProviderKeyProofCheck[];
+};
+
+export type ProviderKeyProofInput = {
+  brainFlow: BetaBrainFlowCoverage;
+  providerKeys?: ProviderKeyProofProviderState;
+};
+
 export type BetaBrainFlowLedgerInput = {
   memoryEvents?: Pick<
     MemoryEvent,
@@ -748,6 +787,273 @@ export const buildBrainFlowCoverageFromLedgers = ({
           : `Missing local evidence for ${missingSignals.join(", ")}.`,
     missingSignals,
     signals,
+  };
+};
+
+const emptySignalEvidence = (): BetaBrainFlowSignalEvidence => ({
+  requestIds: [],
+  sources: [],
+  documentIds: [],
+});
+
+const mergeSignalEvidence = (
+  signals: BetaBrainFlowSignal[],
+): BetaBrainFlowSignalEvidence => {
+  const latestTimestamps = signals
+    .map((signal) => signal.evidence.latestTimestamp)
+    .filter(
+      (timestamp): timestamp is number =>
+        typeof timestamp === "number" && Number.isFinite(timestamp),
+    );
+  const latestTimestamp =
+    latestTimestamps.length > 0 ? Math.max(...latestTimestamps) : undefined;
+
+  return {
+    requestIds: compactUnique(
+      signals.flatMap((signal) => signal.evidence.requestIds),
+      8,
+    ),
+    sources: compactUnique(
+      signals.flatMap((signal) => signal.evidence.sources),
+      8,
+    ),
+    documentIds: compactUnique(
+      signals.flatMap((signal) => signal.evidence.documentIds),
+      8,
+    ),
+    ...(latestTimestamp ? { latestTimestamp } : {}),
+  };
+};
+
+const providerKeyProofSignalChecks = [
+  {
+    id: "typed_chat_context_proof",
+    title: "Typed chat context proof",
+    signalIds: ["chat_context"],
+    summary:
+      "A provider-key typed chat turn injected a brain context packet into the local ledger.",
+    action:
+      "Run one typed chat turn with an active learning book and inspect its request timeline.",
+  },
+  {
+    id: "live_voice_context_proof",
+    title: "Live voice context proof",
+    signalIds: ["voice_context"],
+    summary:
+      "A provider-key voice turn injected the same brain context packet boundary into the local ledger.",
+    action:
+      "Run one live voice turn and confirm the voice realtime request id appears in Admin.",
+  },
+  {
+    id: "typed_chat_multi_pdf_proof",
+    title: "Typed chat multi-PDF proof",
+    signalIds: ["chat_multi_pdf_context"],
+    summary:
+      "Typed chat context included excerpts from more than one ready PDF in the active book.",
+    action:
+      "Select a book with multiple ready PDFs before the provider-key typed chat turn.",
+  },
+  {
+    id: "live_voice_multi_pdf_proof",
+    title: "Live voice multi-PDF proof",
+    signalIds: ["voice_multi_pdf_context"],
+    summary:
+      "Live voice context included excerpts from more than one ready PDF in the active book.",
+    action:
+      "Use the same multi-PDF active book during the provider-key voice turn.",
+  },
+  {
+    id: "request_timeline_proof",
+    title: "Request timeline proof",
+    signalIds: ["request_correlation"],
+    summary:
+      "Context, retrieval, model-run, and transcript rows share request ids for Admin timelines.",
+    action:
+      "Open the request timeline and confirm chat and voice rows stay request-correlated.",
+  },
+  {
+    id: "typed_chat_tool_proof",
+    title: "Typed chat tool proof",
+    signalIds: ["chat_foreground_tools"],
+    summary: "Typed chat completed a foreground tool job with a request id.",
+    action:
+      "Ask typed chat to use a visible tool such as flashcards, answer evaluation, current-page lookup, or web search.",
+  },
+  {
+    id: "live_voice_tool_proof",
+    title: "Live voice tool proof",
+    signalIds: ["voice_foreground_tools"],
+    summary: "Live voice completed a foreground tool job with a request id.",
+    action:
+      "Ask voice to use a visible tool and confirm the voice-agent tool row completes.",
+  },
+  {
+    id: "typed_chat_mastery_proof",
+    title: "Typed chat mastery proof",
+    signalIds: ["chat_evaluated_mastery"],
+    summary:
+      "Typed chat produced verified non-model mastery evidence tied to a request id.",
+    action:
+      "Run an answer-evaluation turn through typed chat and inspect evaluated mastery evidence.",
+  },
+  {
+    id: "live_voice_mastery_proof",
+    title: "Live voice mastery proof",
+    signalIds: ["voice_evaluated_mastery"],
+    summary:
+      "Live voice produced verified non-model mastery evidence tied to a request id.",
+    action:
+      "Run an answer-evaluation turn by voice and inspect evaluated mastery evidence.",
+  },
+  {
+    id: "typed_chat_transcript_proof",
+    title: "Typed chat transcript proof",
+    signalIds: ["chat_thread_persistence"],
+    summary:
+      "Typed chat saved a durable book thread row tied to the provider-key request.",
+    action:
+      "Reload the book thread after the typed chat turn and inspect the saved transcript row.",
+  },
+  {
+    id: "live_voice_transcript_proof",
+    title: "Live voice transcript proof",
+    signalIds: ["voice_thread_persistence"],
+    summary:
+      "Live voice saved a durable book thread row with voice transcript evidence.",
+    action:
+      "End the voice session and confirm the voice transcript appears in the saved book thread.",
+  },
+  {
+    id: "background_memory_proof",
+    title: "Background memory proof",
+    signalIds: ["background_memory"],
+    summary:
+      "Chat and voice both produced request-correlated background learner-memory rows.",
+    action:
+      "Wait for local memory workers to finish after chat and voice turns, then inspect background rows.",
+  },
+  {
+    id: "model_observation_gate_proof",
+    title: "Model observation gate proof",
+    signalIds: ["evidence_gate_contract"],
+    summary:
+      "Model-derived memory rows are marked as unverified observations that cannot mutate mastery or confidence.",
+    action:
+      "Inspect learning-book or graph-concept rows and confirm the model-observation evidence contract is present.",
+  },
+] as const;
+
+export const buildProviderKeyProofChecklist = ({
+  brainFlow,
+  providerKeys = {},
+}: ProviderKeyProofInput): ProviderKeyProofChecklist => {
+  const chatModelKeyConfigured = providerKeys.chatModelKeyConfigured === true;
+  const voiceRealtimeKeyConfigured =
+    providerKeys.voiceRealtimeKeyConfigured === true;
+  const signalById = new Map(
+    brainFlow.signals.map((signal) => [signal.id, signal]),
+  );
+  const liveBlocked = brainFlow.status === "blocked";
+
+  const keyChecks: ProviderKeyProofCheck[] = [
+    {
+      id: "chat_model_provider_key",
+      title: "Chat model provider key",
+      scope: "provider_key",
+      ready: chatModelKeyConfigured,
+      status: chatModelKeyConfigured ? "ready" : "watch",
+      count: chatModelKeyConfigured ? 1 : 0,
+      signalIds: [],
+      summary: chatModelKeyConfigured
+        ? "A chat model provider key is available through browser settings or local server fallback."
+        : "No chat model provider key is visible in browser settings or the local server meter.",
+      action:
+        "Configure an OpenRouter key in settings or expose a local server fallback before the provider-key run.",
+      evidence: emptySignalEvidence(),
+    },
+    {
+      id: "voice_realtime_provider_key",
+      title: "Voice realtime provider key",
+      scope: "provider_key",
+      ready: voiceRealtimeKeyConfigured,
+      status: voiceRealtimeKeyConfigured ? "ready" : "watch",
+      count: voiceRealtimeKeyConfigured ? 1 : 0,
+      signalIds: [],
+      summary: voiceRealtimeKeyConfigured
+        ? "A realtime voice provider key is available through browser settings or local server fallback."
+        : "No realtime voice provider key is visible in browser settings or the local server meter.",
+      action:
+        "Configure a Deepgram key in settings or expose a local server fallback before the provider-key run.",
+      evidence: emptySignalEvidence(),
+    },
+  ];
+
+  const liveChecks: ProviderKeyProofCheck[] = providerKeyProofSignalChecks.map(
+    (definition) => {
+      const signals = definition.signalIds
+        .map((signalId) => signalById.get(signalId))
+        .filter((signal): signal is BetaBrainFlowSignal => Boolean(signal));
+      const ready =
+        definition.signalIds.length > 0 &&
+        definition.signalIds.every(
+          (signalId) => signalById.get(signalId)?.ready === true,
+        );
+      return {
+        id: definition.id,
+        title: definition.title,
+        scope: "live_ledger",
+        ready,
+        status: ready ? "ready" : liveBlocked ? "blocked" : "watch",
+        count: signals.reduce((sum, signal) => sum + signal.count, 0),
+        signalIds: [...definition.signalIds],
+        summary: ready
+          ? definition.summary
+          : `Missing live evidence for ${definition.title.toLowerCase()}.`,
+        action: definition.action,
+        evidence: mergeSignalEvidence(signals),
+      };
+    },
+  );
+
+  const checks = [...keyChecks, ...liveChecks];
+  const readyChecks = checks.filter((check) => check.ready).length;
+  const totalChecks = checks.length;
+  const missingChecks = checks
+    .filter((check) => !check.ready)
+    .map((check) => check.title);
+  const providerKeysReady =
+    chatModelKeyConfigured && voiceRealtimeKeyConfigured;
+  const canAttemptProviderKeyRun = providerKeysReady && !liveBlocked;
+  const proofComplete = checks.every((check) => check.ready);
+  const status: Exclude<BetaDiagnosticStatus, "deferred"> = liveBlocked
+    ? "blocked"
+    : proofComplete
+      ? "ready"
+      : "watch";
+  const completionPercent =
+    totalChecks > 0 ? Math.round((readyChecks / totalChecks) * 100) : 0;
+  const summary = liveBlocked
+    ? `${brainFlow.failedRows} failed or blocked live rows must be fixed before provider-key proof.`
+    : !providerKeysReady
+      ? "Provider-key proof needs both chat model and realtime voice keys before a deliberate live run."
+      : proofComplete
+        ? "Provider-key chat and voice proof is complete in the local ledger."
+        : `${readyChecks}/${totalChecks} provider-key proof checks are ready; run deliberate chat and voice beta turns to fill the remaining live evidence.`;
+
+  return {
+    status,
+    completionPercent,
+    liveCoveragePercent: brainFlow.coveragePercent,
+    readyChecks,
+    totalChecks,
+    failedRows: brainFlow.failedRows,
+    chatModelKeyConfigured,
+    voiceRealtimeKeyConfigured,
+    canAttemptProviderKeyRun,
+    proofComplete,
+    summary,
+    missingChecks,
+    checks,
   };
 };
 

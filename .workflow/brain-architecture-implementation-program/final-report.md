@@ -4195,3 +4195,83 @@ context`, and thirteen-signal copy with only normal Vite/React dev logs.
 - Continue broader local beta validation across real Study, Chat, Voice, Admin,
   Revision, corrections, retrieval, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until beta testing.
+
+---
+
+# Phase 64: Provider-Key Live Proof Checklist
+
+Packet ABT makes the next live beta run inspectable without making any provider
+calls by default. Admin Beta Diagnostics now has a provider-key proof checklist
+that separates key setup, live-run availability, and complete
+request-correlated chat/voice ledger proof.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 86%.
+
+## Graphify Context
+
+- `graphify query "provider-key live proof chat voice beta diagnostics real
+traffic chat mode voice mode stored injected tool calling both agent layers
+Admin evidence checklist current implementation gaps" --budget 10000 --graph
+graphify-out/graph.json` routed the slice through `ChatPanel.tsx`,
+  `AdminView.tsx`, `server.ts`, `longterm.memory.ts`,
+  `beta.diagnostics.ts`, `brain.rehearsal.ts`, `brain.context.ts`,
+  `evidence.mastery.ts`, `voiceAgentTools.ts`, `chatAgentTools.ts`, and
+  focused tests.
+- Follow-up graph queries confirmed the same live-proof corridor through Admin
+  provider status, chat/voice keys, and Beta Diagnostics.
+
+## Integration Decisions
+
+- Added `ProviderKeyProofChecklist` and
+  `buildProviderKeyProofChecklist()` in `beta.diagnostics.ts`.
+- The checklist contains two provider-key setup checks and thirteen live ledger
+  checks mapped to the existing brain-flow signals.
+- `canAttemptProviderKeyRun` is distinct from `proofComplete`: key presence can
+  make a live run available, but only request-correlated chat/voice ledger rows
+  complete proof.
+- Admin Beta Diagnostics now renders provider-key proof percent, key/setup
+  badges, live coverage percent, per-check action text, and missing proof rows.
+- Provider keys are represented only as booleans from browser settings or the
+  local server meter; no key values are displayed.
+- Synthetic rehearsal copy now says `preflight ready` instead of
+  `provider-key ready` so synthetic proof cannot be mistaken for live beta
+  traffic.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test`: passed, 146 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser QA at `1440x1000` confirmed Provider-Key Live Proof,
+  deliberate beta-run checklist copy, no-provider-call copy, key/setup status,
+  typed-chat multi-PDF proof, live-voice transcript proof, missing proof list,
+  and `scrollWidth: 1440`.
+- In-app Browser QA at `390x844` confirmed the same provider-key proof panel and
+  missing-proof checklist with `scrollWidth: 390`.
+- Browser QA screenshots saved:
+  - `results/ABT-iab-admin-provider-key-desktop.png`
+  - `results/ABT-iab-admin-provider-key-mobile.png`
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with `1050` nodes, `1855` edges, and `59` communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`78.0 KB`).
+- Graphify smoke query found `buildProviderKeyProofChecklist()`,
+  `ProviderKeyProofChecklist`, `beta.diagnostics.ts`, `AdminView.tsx`, and
+  `beta-diagnostics.test.mjs`.
+- Graphify path `buildProviderKeyProofChecklist()` to `AdminView()` found a
+  two-hop route through `AdminView.tsx`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key chat and voice turns when live provider traffic is
+  in scope, then use the new checklist to confirm real ledger rows satisfy all
+  chat, voice, tool, mastery, transcript, background-memory, and evidence-gate
+  proof checks.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
