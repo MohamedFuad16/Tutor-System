@@ -2348,7 +2348,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Brain-flow coverage",
         detail:
-          "Beta Diagnostics checks chat context, voice context, chat and voice multi-PDF context, request correlation, foreground tools, evaluated mastery evidence, transcript saves, request-correlated memory rows, and model-observation gates as one local readiness proof instead of disconnected counters.",
+          "Beta Diagnostics checks chat context, voice context, chat and voice multi-PDF context, request correlation, foreground tools, evaluated mastery evidence, transcript saves, request-correlated memory rows, and model-observation gates as one local readiness proof. Each signal can show the compact live request, row-source, timestamp, and context-PDF anchors behind the count.",
       },
       {
         title: "Synthetic wiring rehearsal",

@@ -4201,39 +4201,98 @@ export function AdminView() {
 
                       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                         {betaDiagnosticsSnapshot.brainFlow.signals.map(
-                          (signal) => (
-                            <article
-                              key={signal.id}
-                              className={`rounded-2xl border p-3 ${
-                                signal.ready
-                                  ? "border-green-200 bg-green-50"
-                                  : "border-zinc-200 bg-zinc-50"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
-                                  {signal.title}
+                          (signal) => {
+                            const hasSignalEvidence =
+                              signal.evidence.requestIds.length > 0 ||
+                              signal.evidence.sources.length > 0 ||
+                              signal.evidence.documentIds.length > 0 ||
+                              typeof signal.evidence.latestTimestamp ===
+                                "number";
+                            return (
+                              <article
+                                key={signal.id}
+                                className={`rounded-2xl border p-3 ${
+                                  signal.ready
+                                    ? "border-green-200 bg-green-50"
+                                    : "border-zinc-200 bg-zinc-50"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                    {signal.title}
+                                  </div>
+                                  {signal.ready ? (
+                                    <ShieldCheck
+                                      size={14}
+                                      className="shrink-0 text-green-600"
+                                    />
+                                  ) : (
+                                    <Clock
+                                      size={14}
+                                      className="shrink-0 text-zinc-400"
+                                    />
+                                  )}
                                 </div>
-                                {signal.ready ? (
-                                  <ShieldCheck
-                                    size={14}
-                                    className="shrink-0 text-green-600"
-                                  />
-                                ) : (
-                                  <Clock
-                                    size={14}
-                                    className="shrink-0 text-zinc-400"
-                                  />
-                                )}
-                              </div>
-                              <div className="mt-2 text-xl font-semibold tabular-nums text-zinc-900">
-                                {signal.count}
-                              </div>
-                              <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-zinc-600 font-serif">
-                                {signal.detail}
-                              </p>
-                            </article>
-                          ),
+                                <div className="mt-2 text-xl font-semibold tabular-nums text-zinc-900">
+                                  {signal.count}
+                                </div>
+                                <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-zinc-600 font-serif">
+                                  {signal.detail}
+                                </p>
+                                <div className="mt-3 rounded-xl border border-white/70 bg-white/70 px-3 py-2">
+                                  <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+                                    Live anchors
+                                  </div>
+                                  {hasSignalEvidence ? (
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                      {typeof signal.evidence
+                                        .latestTimestamp === "number" && (
+                                        <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                          latest{" "}
+                                          {formatTime(
+                                            signal.evidence.latestTimestamp,
+                                          )}
+                                        </span>
+                                      )}
+                                      {signal.evidence.requestIds.map(
+                                        (requestId) => (
+                                          <span
+                                            key={`request-${signal.id}-${requestId}`}
+                                            className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700"
+                                          >
+                                            req {requestId}
+                                          </span>
+                                        ),
+                                      )}
+                                      {signal.evidence.documentIds.map(
+                                        (documentId) => (
+                                          <span
+                                            key={`document-${signal.id}-${documentId}`}
+                                            className="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[10px] font-mono text-violet-700"
+                                          >
+                                            pdf {documentId}
+                                          </span>
+                                        ),
+                                      )}
+                                      {signal.evidence.sources.map((source) => (
+                                        <span
+                                          key={`source-${signal.id}-${source}`}
+                                          className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-mono text-zinc-600"
+                                        >
+                                          {source.replace(/_/g, " ")}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="mt-2 text-[11px] leading-relaxed text-zinc-400 font-serif">
+                                      No live request anchor has satisfied this
+                                      signal yet.
+                                    </p>
+                                  )}
+                                </div>
+                              </article>
+                            );
+                          },
                         )}
                       </div>
 

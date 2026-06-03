@@ -70,14 +70,16 @@ completed, retry-scheduled, and dead-letter statuses, so Admin can show whether
 behind-the-scenes memory capture, note generation, and graph updates actually
 finished.
 Admin Beta Diagnostics now includes a local brain-flow coverage verifier that
-checks whether chat context injection, voice context injection, request
-correlation, chat and voice foreground tool calls, chat and voice evaluated
-mastery evidence, background learner-memory writes, and model-observation
-evidence gates all have durable local evidence before broader beta claims.
+checks whether chat context injection, voice context injection, chat and voice
+multi-PDF context evidence, request correlation, chat and voice foreground tool
+calls, chat and voice evaluated mastery evidence, transcript persistence,
+background learner-memory writes, and model-observation evidence gates all have
+durable local evidence before broader beta claims. Each signal can show compact
+live request/source/timestamp/PDF anchors when proof exists.
 The same Admin panel can run a deterministic synthetic wiring rehearsal through
 the shared multi-PDF context helpers, typed-chat and live-voice tool
-definitions, and the nine-signal verifier. Rehearsal rows stay in memory only:
-they never write Dexie, call providers, enter exports, or raise live beta
+definitions, and the thirteen-signal verifier. Rehearsal rows stay in memory
+only: they never write Dexie, call providers, enter exports, or raise live beta
 coverage.
 Background memory updates now keep model-summary mastery and learner-confidence
 proposals observational: accepted values, `model_observation_v1`, non-verified

@@ -308,6 +308,34 @@ test("brain flow coverage requires chat, voice, request ids, tools, mastery evid
     )?.ready,
     true,
   );
+  const chatMultiPdfSignal = completeBrainFlow.signals.find(
+    (signal) => signal.id === "chat_multi_pdf_context",
+  );
+  assert.deepEqual(chatMultiPdfSignal?.evidence.requestIds, ["chat-req-1"]);
+  assert.deepEqual(chatMultiPdfSignal?.evidence.documentIds, [
+    "doc-active",
+    "doc-companion",
+  ]);
+  assert.deepEqual(chatMultiPdfSignal?.evidence.sources, [
+    "brain_context_injected",
+  ]);
+  assert.equal(chatMultiPdfSignal?.evidence.latestTimestamp, 1);
+
+  const requestCorrelationSignal = completeBrainFlow.signals.find(
+    (signal) => signal.id === "request_correlation",
+  );
+  assert.deepEqual(requestCorrelationSignal?.evidence.requestIds, [
+    "chat-req-1",
+    "voice-req-1",
+  ]);
+  assert.deepEqual(requestCorrelationSignal?.evidence.sources, [
+    "brain_context_injected",
+    "retrieval_event",
+    "chat_stream",
+    "voice_agent",
+    "book_chat_thread_saved",
+  ]);
+  assert.equal(requestCorrelationSignal?.evidence.latestTimestamp, 8);
 });
 
 test("brain flow coverage requires chat and voice multi-PDF context evidence", () => {

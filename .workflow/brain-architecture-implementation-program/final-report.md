@@ -785,6 +785,88 @@ Phase 2 implements the first local evidence-gating slice for mastery. It keeps m
 - Wire active recall/revision submissions into explicit BKT evidence paths where the UI does not already do so.
 - AWS/cloud synchronization remains out of scope until beta testing.
 
+---
+
+# Phase 64: Live Brain-Flow Signal Anchors
+
+Packet ABR turns Brain Flow Coverage from aggregate gate counts into compact
+live proof cards. The thirteen readiness rules stay unchanged, but each signal
+now carries inspectable request ids, row sources, latest timestamps, and context
+PDF ids when the live ledger contains proof.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 83%.
+
+## Graphify Context
+
+- `graphify query "remaining brain architecture gaps after ABQ live
+provider-key chat voice end-to-end proof stored injected tool calling both agent
+layers Admin Beta Diagnostics multi-PDF context transcript memory tool jobs
+model runs current source files" --budget 10000 --graph graphify-out/graph.json`
+  routed the slice through `beta.diagnostics.ts`, `AdminView.tsx`,
+  `tool.jobs.ts`, `longterm.memory.ts`, `memory.orchestrator.ts`,
+  `ChatPanel.tsx`, `brain.context.ts`, and focused tests.
+- `graphify query "Admin Beta Diagnostics live anchors request ids signal
+evidence User Brain Architecture Tutor System Architecture App Design Language
+source files" --budget 7000 --graph graphify-out/graph.json` confirmed the
+  directly connected Admin/design/doc surfaces.
+
+## Integration Decisions
+
+- Added `BetaBrainFlowSignalEvidence` so every signal can carry compact live
+  anchors.
+- Kept raw prompt context, transcript text, and private model internals out of
+  the diagnostics payload.
+- Rendered request, source, context-PDF, and latest-time chips in Admin Brain
+  Flow cards.
+- Updated User Brain Architecture, Tutor System Architecture, the in-app Tutor
+  Architecture book, App Design Language, and README wording.
+
+## Verification Evidence
+
+- `npm run brain:postchange -- --reason skill-preflight`: unavailable because
+  current `package.json` has no `brain:postchange` script.
+- Focused beta diagnostics bundle: passed, 12 tests.
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 143 tests.
+- `npm run build`: passed.
+- In-app Browser QA at `1440x1000` confirmed Admin Beta Diagnostics renders
+  all 13 `Live anchors` blocks, all 13 empty-live-ledger messages, and the
+  chat/voice multi-PDF context signals.
+- In-app Browser QA at `390x844` confirmed the same 13 anchor blocks and
+  empty-live-ledger messages with `scrollWidth: 390`, `bodyScrollWidth: 390`,
+  and no horizontal overflow.
+- In-app Browser QA opened Revision > App Design Language > Local Beta Control
+  Patterns and confirmed the live request, row-source, timestamp, and
+  context-PDF anchor copy with no mobile overflow.
+- In-app Browser QA opened Revision > Tutor System Architecture > Analytics
+  And Admin and confirmed the live request id, context PDF id, and beta-signal
+  proof question copy with no mobile overflow.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because current `package.json` has no `brain:postchange` script.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with `1032` nodes, `1829` edges, and `67` communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`76.9 KB`).
+- Graphify smoke query found `BetaBrainFlowSignalEvidence`,
+  `buildSignalEvidence()`, `buildBrainFlowCoverageFromLedgers()`,
+  `AdminView()`, and connected Beta Diagnostics nodes.
+- Graphify path `buildSignalEvidence()` to `AdminView()` found a two-hop route
+  through `buildBrainFlowCoverageFromLedgers()`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key chat and voice turns when live traffic is in
+  scope, then use the request-anchor chips to confirm real ledger rows fill the
+  thirteen signals together.
+- Continue broader local beta validation across real Study, Chat, Voice, Admin,
+  Revision, corrections, retrieval, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until beta testing.
+
 # brain architecture implementation program: phase 3 report
 
 ## Scope

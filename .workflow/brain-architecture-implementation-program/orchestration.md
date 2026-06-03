@@ -35,6 +35,7 @@
 - Packet ABO: See `packets/ABO-request-correlated-thread-persistence.md`.
 - Packet ABP: See `packets/ABP-rehearsal-live-gap-proof-surface.md`.
 - Packet ABQ: See `packets/ABQ-live-multi-pdf-beta-proof-gate.md`.
+- Packet ABR: See `packets/ABR-live-brain-flow-signal-anchors.md`.
 
 ## Completion Audit
 

@@ -121,3 +121,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   prompt context included excerpts from more than one ready PDF, update Admin
   and architecture/design copy to the thirteen-signal contract, and keep
   provider-key traffic out of scope.
+- ABR: Live brain-flow signal anchors. Make each Beta Diagnostics brain-flow
+  signal expose compact live request ids, row sources, latest timestamps, and
+  context PDF ids so Admin can prove which ledger rows satisfied each gate
+  without exposing raw prompt context.

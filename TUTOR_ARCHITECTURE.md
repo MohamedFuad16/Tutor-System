@@ -195,17 +195,20 @@ network access. Use the Deepgram provider in
   Brain-context rows surface document counts for added, ready, excerpted,
   pending/failed, and omitted PDFs.
 - Beta Diagnostics includes a brain-flow coverage verifier. It checks local
-  ledgers for chat context injection, voice context injection, request-id
-  correlation across context/retrieval/model rows, chat and voice foreground
-  tool jobs, chat and voice request-correlated evaluated mastery evidence, and
-  request-correlated chat and voice learner-memory writes with model-observation
-  evidence gates before marking the local flow ready.
+  ledgers for chat context injection, voice context injection, chat and voice
+  multi-PDF context evidence, request-id correlation across
+  context/retrieval/model/transcript rows, chat and voice foreground tool jobs,
+  chat and voice request-correlated evaluated mastery evidence, transcript
+  persistence, and request-correlated chat and voice learner-memory writes with
+  model-observation evidence gates before marking the local flow ready. Each
+  signal surfaces compact live request/source/timestamp/PDF anchors when proof
+  exists.
 - Beta Diagnostics also checks the durable local background-job ledger. A
   dead-lettered memory-worker job blocks beta readiness until the row is
   reviewed.
 - Beta Diagnostics also includes a deterministic synthetic wiring rehearsal.
   It exercises the shared multi-PDF packet helpers, typed-chat and live-voice
-  tool definitions, and the same nine-signal verifier in memory only. It does
+  tool definitions, and the same thirteen-signal verifier in memory only. It does
   not write Dexie, call providers, enter exports, or count toward live beta
   readiness.
 - Source-card local citation checks, generated flashcard provenance checks,

@@ -64,6 +64,14 @@ export type BetaBrainFlowSignal = {
   ready: boolean;
   count: number;
   detail: string;
+  evidence: BetaBrainFlowSignalEvidence;
+};
+
+export type BetaBrainFlowSignalEvidence = {
+  requestIds: string[];
+  sources: string[];
+  documentIds: string[];
+  latestTimestamp?: number;
 };
 
 export type BetaBrainFlowCoverage = {
@@ -233,8 +241,66 @@ const metadataArrayLength = (
   return Array.isArray(value) ? value.length : 0;
 };
 
+const metadataStringArray = (
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+) => {
+  const value = metadata?.[key];
+  return Array.isArray(value)
+    ? value.filter(
+        (entry): entry is string =>
+          typeof entry === "string" && entry.trim().length > 0,
+      )
+    : [];
+};
+
+const compactUnique = (values: unknown[], limit = 5) => {
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  values.forEach((value) => {
+    if (typeof value !== "string") return;
+    const trimmed = value.trim();
+    if (!trimmed || seen.has(trimmed)) return;
+    seen.add(trimmed);
+    unique.push(trimmed);
+  });
+  return unique.slice(0, limit);
+};
+
 const hasRequestId = (requestId: unknown) =>
   typeof requestId === "string" && requestId.trim().length > 0;
+
+type SignalEvidenceAnchor = {
+  metadata?: Record<string, unknown>;
+  requestId?: unknown;
+  source?: unknown;
+  timestamp?: number;
+};
+
+const buildSignalEvidence = (
+  anchors: SignalEvidenceAnchor[],
+): BetaBrainFlowSignalEvidence => {
+  const timestamps = anchors
+    .map((anchor) => anchor.timestamp)
+    .filter(
+      (timestamp): timestamp is number =>
+        typeof timestamp === "number" && Number.isFinite(timestamp),
+    );
+  const latestTimestamp =
+    timestamps.length > 0 ? Math.max(...timestamps) : undefined;
+  return {
+    requestIds: compactUnique(
+      anchors.map((anchor) => anchor.requestId ?? anchor.metadata?.requestId),
+    ),
+    sources: compactUnique(anchors.map((anchor) => anchor.source)),
+    documentIds: compactUnique(
+      anchors.flatMap((anchor) =>
+        metadataStringArray(anchor.metadata, "contextDocumentIds"),
+      ),
+    ),
+    ...(latestTimestamp ? { latestTimestamp } : {}),
+  };
+};
 
 const isChatLayer = (metadata: Record<string, unknown> | undefined) => {
   const agentLayer = metadataString(metadata, "agentLayer");
@@ -308,50 +374,41 @@ export const buildBrainFlowCoverageFromLedgers = ({
       event.eventType === "brain_context_injected" &&
       event.status === "completed",
   );
-  const chatContextInjections = completedContextEvents.filter((event) =>
+  const chatContextRows = completedContextEvents.filter((event) =>
     isChatLayer(event.metadata),
-  ).length;
-  const voiceContextInjections = completedContextEvents.filter((event) =>
+  );
+  const voiceContextRows = completedContextEvents.filter((event) =>
     isVoiceLayer(event.metadata),
-  ).length;
-  const chatMultiPdfContextInjections = completedContextEvents.filter(
-    (event) =>
-      isChatLayer(event.metadata) && isMultiPdfContextInjection(event.metadata),
-  ).length;
-  const voiceMultiPdfContextInjections = completedContextEvents.filter(
-    (event) =>
-      isVoiceLayer(event.metadata) &&
-      isMultiPdfContextInjection(event.metadata),
-  ).length;
-  const requestCorrelatedContextInjections = completedContextEvents.filter(
-    (event) => hasRequestId(event.metadata?.requestId),
-  ).length;
-  const requestCorrelatedRetrievalEvents = retrievalEvents.filter(
+  );
+  const chatMultiPdfContextRows = chatContextRows.filter((event) =>
+    isMultiPdfContextInjection(event.metadata),
+  );
+  const voiceMultiPdfContextRows = voiceContextRows.filter((event) =>
+    isMultiPdfContextInjection(event.metadata),
+  );
+  const requestCorrelatedContextRows = completedContextEvents.filter((event) =>
+    hasRequestId(event.metadata?.requestId),
+  );
+  const requestCorrelatedRetrievalRows = retrievalEvents.filter(
     (event) => event.status === "completed" && hasRequestId(event.requestId),
-  ).length;
-  const requestCorrelatedModelRuns = modelRuns.filter(
+  );
+  const requestCorrelatedModelRows = modelRuns.filter(
     (run) =>
       (run.status === "completed" || run.status === "fallback") &&
       hasRequestId(run.requestId),
-  ).length;
-  const foregroundToolJobs = toolJobs.filter(
+  );
+  const foregroundToolJobRows = toolJobs.filter(
     (job) =>
       job.status === "completed" &&
       hasRequestId(job.requestId) &&
       ["chat_stream", "voice_agent"].includes(job.source || ""),
-  ).length;
-  const chatForegroundToolJobs = toolJobs.filter(
-    (job) =>
-      job.status === "completed" &&
-      hasRequestId(job.requestId) &&
-      job.source === "chat_stream",
-  ).length;
-  const voiceForegroundToolJobs = toolJobs.filter(
-    (job) =>
-      job.status === "completed" &&
-      hasRequestId(job.requestId) &&
-      job.source === "voice_agent",
-  ).length;
+  );
+  const chatForegroundToolJobRows = foregroundToolJobRows.filter(
+    (job) => job.source === "chat_stream",
+  );
+  const voiceForegroundToolJobRows = foregroundToolJobRows.filter(
+    (job) => job.source === "voice_agent",
+  );
   const requestCorrelatedMasteryEvidenceRows = evidenceEvents.filter(
     (event) =>
       event.verified &&
@@ -360,14 +417,14 @@ export const buildBrainFlowCoverageFromLedgers = ({
   );
   const requestCorrelatedMasteryEvidenceEvents =
     requestCorrelatedMasteryEvidenceRows.length;
-  const chatRequestCorrelatedMasteryEvidenceEvents =
+  const chatRequestCorrelatedMasteryEvidenceRows =
     requestCorrelatedMasteryEvidenceRows.filter((event) =>
       isChatLayer(event.metadata),
-    ).length;
-  const voiceRequestCorrelatedMasteryEvidenceEvents =
+    );
+  const voiceRequestCorrelatedMasteryEvidenceRows =
     requestCorrelatedMasteryEvidenceRows.filter((event) =>
       isVoiceLayer(event.metadata),
-    ).length;
+    );
   const completedThreadPersistenceEvents = memoryEvents.filter(
     (event) =>
       event.eventType === "book_chat_thread_saved" &&
@@ -379,14 +436,14 @@ export const buildBrainFlowCoverageFromLedgers = ({
     completedThreadPersistenceEvents.filter((event) =>
       hasRequestId(event.metadata?.requestId),
     );
-  const chatThreadPersistenceEvents =
+  const chatThreadPersistenceRows =
     requestCorrelatedThreadPersistenceRows.filter((event) =>
       isChatThreadPersistence(event.metadata),
-    ).length;
-  const voiceThreadPersistenceEvents =
+    );
+  const voiceThreadPersistenceRows =
     requestCorrelatedThreadPersistenceRows.filter((event) =>
       isVoiceThreadPersistence(event.metadata),
-    ).length;
+    );
   const backgroundMemoryEvents = memoryEvents.filter(
     (event) =>
       event.status === "completed" &&
@@ -400,30 +457,93 @@ export const buildBrainFlowCoverageFromLedgers = ({
   const modelObservationBackgroundRows = backgroundMemoryEvents.filter(
     (event) => MODEL_OBSERVATION_MEMORY_EVENTS.has(event.eventType),
   );
-  const modelObservedBackgroundMemoryEvents =
-    modelObservationBackgroundRows.filter((event) =>
-      hasModelObservationGate(event.metadata),
-    ).length;
-  const ungatedBackgroundMemoryEvents = modelObservationBackgroundRows.filter(
+  const modelObservedBackgroundRows = modelObservationBackgroundRows.filter(
+    (event) => hasModelObservationGate(event.metadata),
+  );
+  const ungatedBackgroundRows = modelObservationBackgroundRows.filter(
     (event) => !hasModelObservationGate(event.metadata),
-  ).length;
+  );
   const requestCorrelatedBackgroundMemoryEvents = backgroundMemoryEvents.filter(
     (event) => hasRequestId(event.metadata?.requestId),
   );
-  const chatBackgroundMemoryEvents =
+  const chatBackgroundMemoryRows =
     requestCorrelatedBackgroundMemoryEvents.filter((event) => {
       return isChatLayer(event.metadata);
-    }).length;
-  const voiceBackgroundMemoryEvents =
+    });
+  const voiceBackgroundMemoryRows =
     requestCorrelatedBackgroundMemoryEvents.filter((event) => {
       return isVoiceLayer(event.metadata);
-    }).length;
+    });
   const failedRows =
     memoryEvents.filter((event) => event.status === "failed").length +
     retrievalEvents.filter((event) => event.status === "failed").length +
     modelRuns.filter((run) => ["blocked", "failed"].includes(run.status))
       .length +
     toolJobs.filter((job) => ["blocked", "failed"].includes(job.status)).length;
+
+  const chatContextInjections = chatContextRows.length;
+  const voiceContextInjections = voiceContextRows.length;
+  const chatMultiPdfContextInjections = chatMultiPdfContextRows.length;
+  const voiceMultiPdfContextInjections = voiceMultiPdfContextRows.length;
+  const requestCorrelatedContextInjections =
+    requestCorrelatedContextRows.length;
+  const requestCorrelatedRetrievalEvents =
+    requestCorrelatedRetrievalRows.length;
+  const requestCorrelatedModelRuns = requestCorrelatedModelRows.length;
+  const foregroundToolJobs = foregroundToolJobRows.length;
+  const chatForegroundToolJobs = chatForegroundToolJobRows.length;
+  const voiceForegroundToolJobs = voiceForegroundToolJobRows.length;
+  const chatRequestCorrelatedMasteryEvidenceEvents =
+    chatRequestCorrelatedMasteryEvidenceRows.length;
+  const voiceRequestCorrelatedMasteryEvidenceEvents =
+    voiceRequestCorrelatedMasteryEvidenceRows.length;
+  const chatThreadPersistenceEvents = chatThreadPersistenceRows.length;
+  const voiceThreadPersistenceEvents = voiceThreadPersistenceRows.length;
+  const chatBackgroundMemoryEvents = chatBackgroundMemoryRows.length;
+  const voiceBackgroundMemoryEvents = voiceBackgroundMemoryRows.length;
+
+  const memoryEventAnchors = (
+    events: typeof completedContextEvents,
+  ): SignalEvidenceAnchor[] =>
+    events.map((event) => ({
+      metadata: event.metadata,
+      requestId: event.metadata?.requestId,
+      source: event.eventType,
+      timestamp: event.timestamp,
+    }));
+  const retrievalAnchors = (
+    events: typeof requestCorrelatedRetrievalRows,
+  ): SignalEvidenceAnchor[] =>
+    events.map((event) => ({
+      requestId: event.requestId,
+      source: "retrieval_event",
+      timestamp: event.timestamp,
+    }));
+  const modelRunAnchors = (
+    events: typeof requestCorrelatedModelRows,
+  ): SignalEvidenceAnchor[] =>
+    events.map((run) => ({
+      requestId: run.requestId,
+      source: run.source || "model_run",
+      timestamp: run.timestamp,
+    }));
+  const toolJobAnchors = (
+    jobs: typeof foregroundToolJobRows,
+  ): SignalEvidenceAnchor[] =>
+    jobs.map((job) => ({
+      requestId: job.requestId,
+      source: job.source || "tool_job",
+      timestamp: job.timestamp,
+    }));
+  const evidenceAnchors = (
+    events: typeof requestCorrelatedMasteryEvidenceRows,
+  ): SignalEvidenceAnchor[] =>
+    events.map((event) => ({
+      metadata: event.metadata,
+      requestId: event.metadata?.requestId,
+      source: event.evidenceType,
+      timestamp: event.timestamp,
+    }));
 
   const signals: BetaBrainFlowSignal[] = [
     {
@@ -433,6 +553,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: chatContextInjections,
       detail:
         "Typed chat has at least one durable brain_context_injected row from the shared context packet builder.",
+      evidence: buildSignalEvidence(memoryEventAnchors(chatContextRows)),
     },
     {
       id: "voice_context",
@@ -441,6 +562,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: voiceContextInjections,
       detail:
         "Live voice has at least one durable brain_context_injected row from the same packet boundary.",
+      evidence: buildSignalEvidence(memoryEventAnchors(voiceContextRows)),
     },
     {
       id: "chat_multi_pdf_context",
@@ -449,6 +571,9 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: chatMultiPdfContextInjections,
       detail:
         "Typed chat has a request-correlated context row whose prompt included excerpts from more than one ready PDF in the active book.",
+      evidence: buildSignalEvidence(
+        memoryEventAnchors(chatMultiPdfContextRows),
+      ),
     },
     {
       id: "voice_multi_pdf_context",
@@ -457,6 +582,9 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: voiceMultiPdfContextInjections,
       detail:
         "Live voice has a request-correlated context row whose prompt included excerpts from more than one ready PDF in the active book.",
+      evidence: buildSignalEvidence(
+        memoryEventAnchors(voiceMultiPdfContextRows),
+      ),
     },
     {
       id: "request_correlation",
@@ -472,6 +600,12 @@ export const buildBrainFlowCoverageFromLedgers = ({
         requestCorrelatedThreadPersistenceRows.length,
       detail:
         "Context injection, retrieval, model-run, and transcript-save rows share request ids for Admin request timelines.",
+      evidence: buildSignalEvidence([
+        ...memoryEventAnchors(requestCorrelatedContextRows),
+        ...retrievalAnchors(requestCorrelatedRetrievalRows),
+        ...modelRunAnchors(requestCorrelatedModelRows),
+        ...memoryEventAnchors(requestCorrelatedThreadPersistenceRows),
+      ]),
     },
     {
       id: "chat_foreground_tools",
@@ -480,6 +614,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: chatForegroundToolJobs,
       detail:
         "Typed chat has completed at least one request-correlated foreground tool job.",
+      evidence: buildSignalEvidence(toolJobAnchors(chatForegroundToolJobRows)),
     },
     {
       id: "voice_foreground_tools",
@@ -488,6 +623,7 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: voiceForegroundToolJobs,
       detail:
         "Live voice has completed at least one request-correlated foreground tool job.",
+      evidence: buildSignalEvidence(toolJobAnchors(voiceForegroundToolJobRows)),
     },
     {
       id: "chat_evaluated_mastery",
@@ -496,6 +632,9 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: chatRequestCorrelatedMasteryEvidenceEvents,
       detail:
         "Typed chat has verified non-model mastery evidence with a request id.",
+      evidence: buildSignalEvidence(
+        evidenceAnchors(chatRequestCorrelatedMasteryEvidenceRows),
+      ),
     },
     {
       id: "voice_evaluated_mastery",
@@ -504,6 +643,9 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: voiceRequestCorrelatedMasteryEvidenceEvents,
       detail:
         "Live voice has verified non-model mastery evidence with a request id.",
+      evidence: buildSignalEvidence(
+        evidenceAnchors(voiceRequestCorrelatedMasteryEvidenceRows),
+      ),
     },
     {
       id: "chat_thread_persistence",
@@ -512,6 +654,9 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: chatThreadPersistenceEvents,
       detail:
         "Typed chat has a durable book_chat_thread_saved row tied to a local book thread and request id.",
+      evidence: buildSignalEvidence(
+        memoryEventAnchors(chatThreadPersistenceRows),
+      ),
     },
     {
       id: "voice_thread_persistence",
@@ -520,6 +665,9 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: voiceThreadPersistenceEvents,
       detail:
         "Live voice has a durable book_chat_thread_saved row with voice-session transcript evidence and a request id.",
+      evidence: buildSignalEvidence(
+        memoryEventAnchors(voiceThreadPersistenceRows),
+      ),
     },
     {
       id: "background_memory",
@@ -528,16 +676,25 @@ export const buildBrainFlowCoverageFromLedgers = ({
       count: requestCorrelatedBackgroundMemoryEvents.length,
       detail:
         "Typed chat and live voice both have request-correlated background learner-memory rows.",
+      evidence: buildSignalEvidence(
+        memoryEventAnchors([
+          ...chatBackgroundMemoryRows,
+          ...voiceBackgroundMemoryRows,
+        ]),
+      ),
     },
     {
       id: "evidence_gate_contract",
       title: "Evidence gate contract",
       ready:
-        modelObservedBackgroundMemoryEvents > 0 &&
-        ungatedBackgroundMemoryEvents === 0,
-      count: modelObservedBackgroundMemoryEvents,
+        modelObservedBackgroundRows.length > 0 &&
+        ungatedBackgroundRows.length === 0,
+      count: modelObservedBackgroundRows.length,
       detail:
         "Model-derived learner-memory rows declare they are non-verified observations and cannot mutate mastery or confidence.",
+      evidence: buildSignalEvidence(
+        memoryEventAnchors(modelObservedBackgroundRows),
+      ),
     },
   ];
   const readySignals = signals.filter((signal) => signal.ready).length;
@@ -581,8 +738,8 @@ export const buildBrainFlowCoverageFromLedgers = ({
     voiceBackgroundMemoryEvents,
     requestCorrelatedBackgroundMemoryEvents:
       requestCorrelatedBackgroundMemoryEvents.length,
-    modelObservedBackgroundMemoryEvents,
-    ungatedBackgroundMemoryEvents,
+    modelObservedBackgroundMemoryEvents: modelObservedBackgroundRows.length,
+    ungatedBackgroundMemoryEvents: ungatedBackgroundRows.length,
     summary:
       status === "ready"
         ? "Chat, voice, multi-PDF context, retrieval, model, both foreground tool layers, both evaluated mastery layers, transcript persistence, background memory, and model-observation gates all have local evidence."

@@ -931,11 +931,32 @@
     "npm run graphify:tree passed for Packet ABQ",
     "Graphify smoke query found buildBrainFlowCoverageFromLedgers(), buildBetaDiagnosticsSnapshot(), AdminView(), runLocalBrainWiringRehearsal(), ChatPanel.tsx, RevisionView.tsx, and brain-context.test.mjs",
     "graphify path buildBrainFlowCoverageFromLedgers() to AdminView() found a one-hop route through AdminView()",
-    "Packet ABQ graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABQ graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABR selected after Graphify routed live brain-flow signal anchors through beta.diagnostics.ts, AdminView.tsx, tool.jobs.ts, longterm.memory.ts, memory.orchestrator.ts, ChatPanel.tsx, and brain.context.ts",
+    "BetaBrainFlowSignal now carries compact live evidence anchors for request ids, row sources, context PDF ids, and latest timestamps",
+    "Admin Beta Diagnostics Brain Flow cards now render request/source/PDF/latest-time chips and explicitly say when a signal has no live request anchor yet",
+    "User Brain Architecture, Tutor System Architecture, Tutor Architecture Library JSON, App Design Language, and README copy now document live request anchors behind brain-flow signals",
+    "npm run brain:postchange -- --reason skill-preflight remained unavailable because current package.json has no brain:postchange script",
+    "Focused beta diagnostics bundle passed, 12 tests",
+    "npm run format passed",
+    "npm run format:check passed",
+    "npm run lint passed",
+    "npm run test passed, 143 tests",
+    "npm run build passed",
+    "In-app Browser QA at 1440x1000 confirmed Admin Beta Diagnostics rendered all 13 Live anchors blocks, all 13 empty-live-ledger messages, and chat/voice multi-PDF context signals",
+    "In-app Browser QA at 390x844 confirmed the same 13 anchor blocks and empty-live-ledger messages with scrollWidth 390, bodyScrollWidth 390, and no horizontal overflow",
+    "In-app Browser QA confirmed Revision App Design Language Local Beta Control Patterns rendered live request, row-source, timestamp, and context-PDF anchor copy with no mobile overflow",
+    "In-app Browser QA confirmed Revision Tutor System Architecture Analytics And Admin rendered live request id, context PDF id, and beta-signal proof question copy with no mobile overflow",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "graphify update . --force regenerated code architecture artifacts with 1032 nodes, 1829 edges, and 67 communities",
+    "npm run graphify:tree passed for Packet ABR",
+    "Graphify smoke query found BetaBrainFlowSignalEvidence, buildSignalEvidence(), buildBrainFlowCoverageFromLedgers(), AdminView(), and connected Beta Diagnostics nodes",
+    "graphify path buildSignalEvidence() to AdminView() found a two-hop route through buildBrainFlowCoverageFromLedgers()",
+    "Packet ABR graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 82,
-    "basis": "Local architecture estimate after Packet ABQ: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, and an Admin live-vs-synthetic brain-flow gap surface are implemented; deliberate provider-key chat/voice proof, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T08:49:46.000+09:00"
+    "estimatePercent": 83,
+    "basis": "Local architecture estimate after Packet ABR final gates: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, and compact live signal anchors are implemented and browser-verified; deliberate provider-key chat/voice proof, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T09:11:15.000+09:00"
   }
 }
