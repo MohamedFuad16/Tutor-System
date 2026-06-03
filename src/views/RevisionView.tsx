@@ -2098,9 +2098,7 @@ const StoredAudioOverview = ({
         await pendingPlay;
       } catch {
         setAudioIssue("playback");
-        setError(
-          "Audio overview could not start yet. This same player is retrying in the background.",
-        );
+        setError("");
         schedulePlaybackRetry();
       }
       return;
@@ -2113,9 +2111,7 @@ const StoredAudioOverview = ({
       await startPlayback();
     } catch {
       setAudioIssue("playback");
-      setError(
-        "Audio overview could not start yet. This same player is retrying in the background.",
-      );
+      setError("");
       schedulePlaybackRetry();
     }
   };
@@ -2135,15 +2131,16 @@ const StoredAudioOverview = ({
     duration > 0
       ? Math.min(100, Math.max(0, (currentTime / duration) * 100))
       : 0;
-  const playbackStatus = error
-    ? audioIssue === "playback"
-      ? "Retrying through this player"
-      : "Audio unavailable"
-    : isPlaying
-      ? "Playing audio guide"
-      : duration > 0
-        ? "Ready audio guide"
-        : "Loading audio metadata";
+  const playbackStatus =
+    audioIssue === "playback"
+      ? "Preparing audio guide"
+      : error
+        ? "Audio unavailable"
+        : isPlaying
+          ? "Playing audio guide"
+          : duration > 0
+            ? "Ready audio guide"
+            : "Loading audio metadata";
 
   return (
     <div className="mb-10 rounded-[30px] border border-zinc-200 bg-white/80 p-4 font-sans shadow-[0_20px_54px_rgba(46,36,22,0.08)] sm:p-5">
@@ -2237,7 +2234,7 @@ const StoredAudioOverview = ({
           }}
         />
       </div>
-      {error && (
+      {error && audioIssue === "media" && (
         <div className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </div>
@@ -2353,7 +2350,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Synthetic wiring rehearsal",
         detail:
-          "Admin can exercise the shared multi-PDF packet helpers, typed-chat and live-voice tool definitions, and the same thirteen-signal verifier in memory only. The rehearsal is labeled synthetic and cannot raise live beta coverage.",
+          "Admin can exercise the shared multi-PDF packet helpers, typed-chat and live-voice tool definitions, matching shared tool schemas, and the same thirteen-signal verifier in memory only. The rehearsal is labeled synthetic and cannot raise live beta coverage.",
       },
       {
         title: "Validated confidence meters",
@@ -2403,7 +2400,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Chapter audio guides",
         detail:
-          "Every built-in Library chapter now attaches a 3-4 minute Deepgram-generated guide asset with one visible player for play, pause, speed, and seek, while bounded hidden retry keeps Library listening inside the same player without showing a second play button.",
+          "Every built-in Library chapter now attaches a 3-4 minute Deepgram-generated guide asset with one visible player for play, pause, speed, and seek. Bounded retry stays hidden inside that player, so the learner never sees a separate retry control.",
       },
       {
         title: "Audio generation dry-run",

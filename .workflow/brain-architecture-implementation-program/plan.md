@@ -125,3 +125,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   signal expose compact live request ids, row sources, latest timestamps, and
   context PDF ids so Admin can prove which ledger rows satisfied each gate
   without exposing raw prompt context.
+- ABS: Dual-agent tool contract and playback clarity. Strengthen the synthetic
+  brain wiring rehearsal from shared tool-name parity to shared required-schema
+  parity, expose the result in Admin, simplify the Admin activity paragraph,
+  and keep audio overview retry/fallback behavior hidden inside the single
+  visible player.

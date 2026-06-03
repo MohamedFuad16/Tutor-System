@@ -33,6 +33,10 @@ test("local brain wiring rehearsal proves shared contracts without persisting be
   ]);
   assert.equal(rehearsal.chatRequestId, "rehearsal-chat-request");
   assert.equal(rehearsal.voiceRequestId, "rehearsal-voice-request");
+  assert.equal(
+    rehearsal.toolContracts.every((contract) => contract.ready),
+    true,
+  );
 });
 
 test("synthetic rehearsal cannot raise an empty live beta snapshot", () => {
@@ -62,6 +66,23 @@ test("local brain wiring rehearsal checks the shared typed-chat and voice tool c
   assert.equal(
     rehearsal.checks.find((check) => check.id === "dual_agent_tools")?.ready,
     true,
+  );
+  assert.equal(
+    rehearsal.checks.find((check) => check.id === "tool_schema_contracts")
+      ?.ready,
+    true,
+  );
+  assert.deepEqual(
+    rehearsal.toolContracts.find(
+      (contract) => contract.toolName === "update_graph",
+    )?.sharedRequiredParameters,
+    ["description", "name", "understandingDelta"],
+  );
+  assert.deepEqual(
+    rehearsal.toolContracts.find(
+      (contract) => contract.toolName === "evaluate_answer",
+    )?.sharedRequiredParameters,
+    ["conceptId", "learnerAnswer", "question"],
   );
 });
 

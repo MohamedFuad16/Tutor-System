@@ -1,5 +1,11 @@
-import { chatAgentToolNames } from "../lib/chatAgentTools";
-import { voiceAgentToolNames } from "../lib/voiceAgentTools";
+import {
+  buildChatAgentToolDefinitions,
+  chatAgentToolNames,
+} from "../lib/chatAgentTools";
+import {
+  VOICE_AGENT_TOOL_DEFINITIONS,
+  voiceAgentToolNames,
+} from "../lib/voiceAgentTools";
 import {
   assembleBrainContextSections,
   buildBrainDocumentContext,
@@ -37,8 +43,19 @@ export type BrainWiringRehearsalResult = {
   documentIds: string[];
   chatToolNames: string[];
   voiceToolNames: string[];
+  toolContracts: BrainWiringToolContract[];
   coverage: BetaBrainFlowCoverage;
   checks: BrainWiringRehearsalCheck[];
+};
+
+export type BrainWiringToolContract = {
+  toolName: string;
+  ready: boolean;
+  chatReady: boolean;
+  voiceReady: boolean;
+  sharedRequiredParameters: string[];
+  chatRequiredParameters: string[];
+  voiceRequiredParameters: string[];
 };
 
 export type BrainWiringRehearsalGap = {
@@ -59,6 +76,59 @@ const REQUIRED_DUAL_AGENT_TOOL_NAMES = [
   "look_at_current_page",
   "web_search",
 ] as const;
+
+const stringArray = (value: unknown) =>
+  Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+
+const requiredParametersFromSchema = (schema: unknown) => {
+  if (!schema || typeof schema !== "object") return [];
+  return stringArray((schema as { required?: unknown }).required).sort();
+};
+
+const buildToolContracts = (): BrainWiringToolContract[] => {
+  const chatDefinitions = new Map(
+    buildChatAgentToolDefinitions({ includeCurrentPage: true }).map((tool) => [
+      tool.function.name,
+      tool.function,
+    ]),
+  );
+  const voiceDefinitions = new Map(
+    VOICE_AGENT_TOOL_DEFINITIONS.map((tool) => [tool.name, tool]),
+  );
+
+  return REQUIRED_DUAL_AGENT_TOOL_NAMES.map((toolName) => {
+    const chatDefinition = chatDefinitions.get(toolName);
+    const voiceDefinition = voiceDefinitions.get(toolName);
+    const chatRequiredParameters = requiredParametersFromSchema(
+      chatDefinition?.parameters,
+    );
+    const voiceRequiredParameters = requiredParametersFromSchema(
+      voiceDefinition?.parameters,
+    );
+    const sharedRequiredParameters = chatRequiredParameters.filter(
+      (parameter) => voiceRequiredParameters.includes(parameter),
+    );
+    const ready =
+      Boolean(chatDefinition) &&
+      Boolean(voiceDefinition) &&
+      chatRequiredParameters.length === voiceRequiredParameters.length &&
+      chatRequiredParameters.every(
+        (parameter, index) => parameter === voiceRequiredParameters[index],
+      );
+
+    return {
+      toolName,
+      ready,
+      chatReady: Boolean(chatDefinition),
+      voiceReady: Boolean(voiceDefinition),
+      sharedRequiredParameters,
+      chatRequiredParameters,
+      voiceRequiredParameters,
+    };
+  });
+};
 
 const rehearsalDocuments: LearningDocument[] = [
   {
@@ -184,9 +254,11 @@ export const runLocalBrainWiringRehearsal = (
   });
   const chatTools = chatAgentToolNames({ includeCurrentPage: true });
   const voiceTools = [...voiceAgentToolNames];
+  const toolContracts = buildToolContracts();
   const sharedToolsReady = REQUIRED_DUAL_AGENT_TOOL_NAMES.every(
     (toolName) => chatTools.includes(toolName) && voiceTools.includes(toolName),
   );
+  const toolContractsReady = toolContracts.every((contract) => contract.ready);
   const coverage = buildBrainFlowCoverageFromLedgers({
     memoryEvents: [
       contextEventFor(chatPacket, 1),
@@ -348,9 +420,16 @@ export const runLocalBrainWiringRehearsal = (
     {
       id: "dual_agent_tools",
       title: "Dual-agent tool parity",
-      ready: sharedToolsReady,
+      ready: sharedToolsReady && toolContractsReady,
       detail:
-        "Typed chat and live voice both expose graph update, flashcard, evaluated-answer, current-page vision, and web-search contracts.",
+        "Typed chat and live voice both expose graph update, flashcard, evaluated-answer, current-page vision, and web-search contracts with matching required parameter schemas.",
+    },
+    {
+      id: "tool_schema_contracts",
+      title: "Shared tool schemas",
+      ready: toolContractsReady,
+      detail:
+        "The rehearsal compares chat and voice tool definitions before provider traffic so missing or drifted required fields are caught locally.",
     },
     {
       id: "synthetic_isolation",
@@ -386,6 +465,7 @@ export const runLocalBrainWiringRehearsal = (
     documentIds: rehearsalDocuments.map((document) => document.id),
     chatToolNames: chatTools,
     voiceToolNames: voiceTools,
+    toolContracts,
     coverage,
     checks,
   };

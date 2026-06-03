@@ -484,6 +484,27 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/brain.rehearsal.ts, src/views/AdminView.tsx, tests/brain-rehearsal.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABQ",
+      "name": "Live multi-PDF beta proof gate",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/memory/brain.rehearsal.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, tests/brain-context.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABR",
+      "name": "Live brain-flow signal anchors",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ABS",
+      "name": "Dual-agent tool contract and playback clarity",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/brain.rehearsal.ts, src/views/AdminView.tsx, src/views/RevisionView.tsx, tests/brain-rehearsal.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, .workflow/brain-architecture-implementation-program/*"
     }
   ],
   "verification": {
@@ -952,11 +973,35 @@
     "npm run graphify:tree passed for Packet ABR",
     "Graphify smoke query found BetaBrainFlowSignalEvidence, buildSignalEvidence(), buildBrainFlowCoverageFromLedgers(), AdminView(), and connected Beta Diagnostics nodes",
     "graphify path buildSignalEvidence() to AdminView() found a two-hop route through buildBrainFlowCoverageFromLedgers()",
-    "Packet ABR graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ABR graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ABS selected after Graphify routed the slice through brain.rehearsal.ts, chatAgentTools.ts, voiceAgentTools.ts, AdminView.tsx, RevisionView.tsx, and focused rehearsal/audio tests",
+    "BrainWiringToolContract now compares shared required parameters for update_graph, generate_flashcards, evaluate_answer, look_at_current_page, and web_search across typed chat and live voice",
+    "Admin synthetic wiring rehearsal now renders Shared schema checks and a Shared tool schemas proof card while keeping rehearsal rows synthetic and excluded from live beta readiness",
+    "Admin Activity copy was simplified to plain local logs language",
+    "Revision audio overview playback retry now stays hidden inside the single visible player without old retry/fallback wording",
+    "Focused brain rehearsal tests passed, 4 tests",
+    "Focused audio overview tests passed, 6 tests",
+    "npm run format passed",
+    "npm run format:check passed",
+    "npm run audio:overview:dry-run passed with 25 present and 0 missing stored guide assets",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run lint passed",
+    "npm run test passed, 143 tests",
+    "npm run build passed",
+    "In-app Browser QA confirmed Admin desktop rendered simplified activity copy, synthetic ready, provider-key ready, shared schema checks, no old retry/fallback wording, and no horizontal overflow",
+    "In-app Browser QA confirmed Admin mobile at 390x844 rendered shared schema checks, shared tool schemas, synthetic ready, provider-key ready, no old retry/fallback wording, and no horizontal overflow",
+    "In-app Browser QA confirmed Revision mobile at 390x844 rendered one visible audio Play button, one hidden audio element, three speed controls, no old retry/fallback wording, and no horizontal overflow",
+    "In-app Browser QA confirmed Revision desktop at 1440x1000 rendered one visible audio Play button, one hidden audio element, three speed controls, no old retry/fallback wording, and no horizontal overflow",
+    "Final desktop Browser warning/error logs were empty",
+    "graphify update . --force regenerated code architecture artifacts with 1036 nodes, 1838 edges, and 66 communities",
+    "npm run graphify:tree passed for Packet ABS",
+    "Graphify smoke query found BrainWiringToolContract, buildToolContracts(), runLocalBrainWiringRehearsal(), buildChatAgentToolDefinitions(), VOICE_AGENT_TOOL_DEFINITIONS, AdminView(), and connected rehearsal nodes",
+    "graphify path buildToolContracts() to AdminView() found a three-hop route through runLocalBrainWiringRehearsal() and buildBrainFlowCoverageFromLedgers()",
+    "Packet ABS graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 83,
-    "basis": "Local architecture estimate after Packet ABR final gates: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, and compact live signal anchors are implemented and browser-verified; deliberate provider-key chat/voice proof, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T09:11:15.000+09:00"
+    "estimatePercent": 84,
+    "basis": "Local architecture estimate after Packet ABS final gates: chat/voice context, request-correlated multi-PDF injection proof, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, and shared chat/voice tool-schema preflight checks are implemented and browser-verified; deliberate provider-key chat/voice proof, broader beta validation, and AWS/cloud synchronization remain incomplete.",
+    "updatedAt": "2026-06-03T09:36:20.000+09:00"
   }
 }

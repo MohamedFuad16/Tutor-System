@@ -176,7 +176,8 @@ wireframes, tokens, interactive previews, and local beta control patterns.
 Built-in chapters include stored 3-4 minute audio guide assets with one visible
 local player for play/pause, speed, and seek. The hidden audio element keeps
 bounded retry playback inside that same player, so chapter listening does not
-show a second play button or call the live read-aloud route on every play.
+show fallback controls, show a second play button, or call the live read-aloud
+route on every play.
 `npm run audio:overview:dry-run` verifies the checked-in MP3 manifest without
 network access. Use the Deepgram provider in
 `scripts/generate-user-brain-audio-overviews.mjs` to regenerate assets when

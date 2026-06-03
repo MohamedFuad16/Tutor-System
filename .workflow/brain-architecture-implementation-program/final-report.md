@@ -867,6 +867,105 @@ source files" --budget 7000 --graph graphify-out/graph.json` confirmed the
   Revision, corrections, retrieval, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until beta testing.
 
+---
+
+# Phase 65: Dual-Agent Tool Contract And Playback Clarity
+
+Packet ABS strengthens the local synthetic rehearsal so it proves the shared
+typed-chat/live-voice tool layer by required schema, not only by tool name. It
+also simplifies the Admin activity explanation and keeps audio overview retry
+behavior hidden inside the single visible player.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 84%.
+
+## Graphify Context
+
+- `graphify query "chat voice both agent layers tool calling stored injected
+request id provider key live proof source files ChatPanel voice agent tool jobs
+memory orchestrator Beta Diagnostics" --budget 9000 --graph
+graphify-out/graph.json` routed the slice through `brain.rehearsal.ts`,
+  `chatAgentTools.ts`, `voiceAgentTools.ts`, `AdminView.tsx`,
+  `brain.context.ts`, and focused rehearsal tests.
+- `graphify query "audio overview local fallback visible play button fallback
+background same ui component source files Audio Overview voice RevisionView
+AdminView" --budget 9000 --graph graphify-out/graph.json` routed the playback
+  clarity work through `RevisionView.tsx`, `chapterAudioOverviews.ts`, and
+  book/design copy.
+- `graphify path "runLocalBrainWiringRehearsal()" "AdminView()" --graph
+graphify-out/graph.json` found a two-hop route through
+  `buildBrainFlowCoverageFromLedgers()`.
+- `graphify path "buildBrainContextPacket()" "ChatPanel()" --graph
+graphify-out/graph.json` found a two-hop route through `ChatPanel.tsx`.
+
+## Integration Decisions
+
+- Added `BrainWiringToolContract` rows to compare the shared required
+  parameters for `update_graph`, `generate_flashcards`, `evaluate_answer`,
+  `look_at_current_page`, and `web_search` across chat and voice.
+- Added a `Shared tool schemas` rehearsal check and Admin schema-check chips.
+- Kept the synthetic rehearsal in memory only; it still writes no Dexie rows,
+  calls no providers, enters no exports, and cannot raise live beta readiness.
+- Simplified the Admin Activity introduction so it is readable before the user
+  reaches meters and timelines.
+- Kept audio overview retry behavior inside the existing player and removed
+  visible playback-retry fallback wording; true media-unavailable errors still
+  render as an error state.
+- Updated User Brain Architecture, Tutor Architecture Library JSON, README,
+  Tutor System Architecture, and App Design Language copy.
+
+## Verification Evidence
+
+- Focused rehearsal bundle passed: `node --test tests/brain-rehearsal.test.mjs`
+  reported 4/4 tests passing.
+- Focused audio overview test passed: `node --test
+tests/audio-overview-plan.test.mjs` reported 6/6 tests passing.
+- `npm run format`: passed.
+- `npm run format:check`: passed.
+- `npm run audio:overview:dry-run`: passed with 25 present and 0 missing
+  stored guide assets.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because current `package.json` has no `brain:postchange` script.
+- `npm run lint`: passed.
+- `npm run test`: passed, 143 tests.
+- `npm run build`: passed.
+- In-app Browser QA on Admin desktop confirmed the simplified activity
+  paragraph, synthetic ready state, provider-key ready state, shared schema
+  checks for the five shared tools, no old retry/fallback text, and no
+  horizontal overflow at `1280px`.
+- In-app Browser QA on Admin mobile at `390x844` confirmed shared schema
+  checks, shared tool schema card, synthetic ready, provider-key ready, no old
+  retry/fallback text, and no horizontal overflow.
+- In-app Browser QA on Revision mobile at `390x844` confirmed the User Brain
+  Architecture audio guide surface has exactly one visible Play button, one
+  hidden `audio.sr-only` element, three speed controls, no old retry/fallback
+  wording, and no horizontal overflow.
+- In-app Browser QA on Revision desktop at `1440x1000` confirmed the same
+  single-player audio surface with one Play button, one hidden audio element,
+  three speed controls, no old retry/fallback wording, and no horizontal
+  overflow.
+- Browser console warning/error logs were empty for the final desktop audio
+  pass.
+- `graphify update . --force`: passed, regenerating code architecture
+  artifacts with `1036` nodes, `1838` edges, and `66` communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`77.2 KB`).
+- Graphify smoke query found `BrainWiringToolContract`,
+  `buildToolContracts()`, `runLocalBrainWiringRehearsal()`,
+  `buildChatAgentToolDefinitions()`, `VOICE_AGENT_TOOL_DEFINITIONS`,
+  `AdminView()`, and connected rehearsal nodes.
+- Graphify path `buildToolContracts()` to `AdminView()` found a three-hop
+  route through `runLocalBrainWiringRehearsal()` and
+  `buildBrainFlowCoverageFromLedgers()`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Commit and push Packet ABS.
+- Continue toward live provider-key chat/voice proof after this local contract
+  slice passes.
+
 # brain architecture implementation program: phase 3 report
 
 ## Scope

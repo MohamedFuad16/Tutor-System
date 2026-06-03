@@ -1726,11 +1726,10 @@ export function AdminView() {
                             Behind-the-scenes activity
                           </h2>
                           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
-                            A local in-memory ledger for model calls, tool
-                            execution, web retrieval, learning-book updates,
-                            fallbacks, and errors. It is separate from the
-                            learner brain graph and from Graphify's code
-                            architecture graph.
+                            Local logs for model calls, tools, retrieval, voice,
+                            memory writes, jobs, and errors. Use this to see
+                            what happened; Graphify still maps code, not the
+                            learner brain.
                           </p>
                         </div>
                         <button
@@ -4399,9 +4398,11 @@ export function AdminView() {
                             Runs a deterministic in-memory rehearsal through the
                             shared multi-PDF packet helpers, typed-chat tool
                             definitions, live-voice tool definitions, and the
-                            same thirteen-signal coverage verifier. It writes no
-                            durable rows, calls no providers, and never raises
-                            the live coverage meter above.
+                            same thirteen-signal coverage verifier. It also
+                            compares shared tool schemas before live provider
+                            turns. It writes no durable rows, calls no
+                            providers, and never raises the live coverage meter
+                            above.
                           </p>
                         </div>
                         <button
@@ -4595,6 +4596,28 @@ export function AdminView() {
                                       </div>
                                     </div>
                                   ))}
+                                </div>
+                                <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2">
+                                  <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                    Shared schema checks
+                                  </div>
+                                  <div className="mt-2 flex flex-wrap gap-1">
+                                    {brainWiringRehearsal.toolContracts.map(
+                                      (contract) => (
+                                        <span
+                                          key={contract.toolName}
+                                          title={`Required: ${contract.sharedRequiredParameters.join(", ") || "none"}`}
+                                          className={`rounded-full border px-2 py-0.5 text-[10px] font-mono ${
+                                            contract.ready
+                                              ? "border-green-100 bg-green-50 text-green-700"
+                                              : "border-red-100 bg-red-50 text-red-700"
+                                          }`}
+                                        >
+                                          {contract.toolName.replace(/_/g, " ")}
+                                        </span>
+                                      ),
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>

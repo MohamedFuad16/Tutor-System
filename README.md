@@ -78,9 +78,9 @@ durable local evidence before broader beta claims. Each signal can show compact
 live request/source/timestamp/PDF anchors when proof exists.
 The same Admin panel can run a deterministic synthetic wiring rehearsal through
 the shared multi-PDF context helpers, typed-chat and live-voice tool
-definitions, and the thirteen-signal verifier. Rehearsal rows stay in memory
-only: they never write Dexie, call providers, enter exports, or raise live beta
-coverage.
+definitions, matching shared tool schemas, and the thirteen-signal verifier.
+Rehearsal rows stay in memory only: they never write Dexie, call providers,
+enter exports, or raise live beta coverage.
 Background memory updates now keep model-summary mastery and learner-confidence
 proposals observational: accepted values, `model_observation_v1`, non-verified
 status, and no-mutation gates are written to local evidence/memory metadata,

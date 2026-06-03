@@ -134,14 +134,16 @@ test("stored audio assets are checked into the local public directory", () => {
 test("stored audio overview exposes one visible player", () => {
   assert.match(revisionViewSource, /const StoredAudioOverview/);
   assert.match(revisionViewSource, /className="sr-only"/);
-  assert.match(
+  assert.match(revisionViewSource, /Preparing audio guide/);
+  assert.doesNotMatch(
     revisionViewSource,
     /This same player is retrying in the background/,
   );
-  assert.match(revisionViewSource, /Retrying through this player/);
+  assert.doesNotMatch(revisionViewSource, /Retrying through this player/);
   assert.doesNotMatch(revisionViewSource, /controls=\{showNativeControls\}/);
   assert.doesNotMatch(revisionViewSource, /Native fallback available/);
   assert.doesNotMatch(revisionViewSource, /native fallback controls/i);
+  assert.doesNotMatch(revisionViewSource, /fallback play/i);
 });
 
 test("audio overview generator dry-run does not require a Deepgram key", () => {
