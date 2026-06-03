@@ -76,6 +76,10 @@ calls, chat and voice evaluated mastery evidence, transcript persistence,
 background learner-memory writes, and model-observation evidence gates all have
 durable local evidence before broader beta claims. Each signal can show compact
 live request/source/timestamp/PDF anchors when proof exists.
+Admin can start a local proof attempt before the manual chat and voice run; that
+attempt id is written into local chat/voice metadata and coherent provider-key
+proof now requires the selected rows to share it in addition to book, thread,
+and multi-PDF anchors.
 The same Admin panel can run a deterministic synthetic wiring rehearsal through
 the shared multi-PDF context helpers, typed-chat and live-voice tool
 definitions, matching shared tool schemas, and the thirteen-signal verifier.

@@ -28,6 +28,7 @@ export type BrainContextInteractionInput = {
 
 export type BrainContextPacketInput = {
   requestId?: string;
+  proofAttemptId?: string;
   mode: BrainContextMode;
   agentLayer: BrainAgentLayer;
   query: string;
@@ -37,6 +38,7 @@ export type BrainContextPacketInput = {
     activeBookId?: string | null,
     options?: {
       requestId?: string;
+      proofAttemptId?: string;
       mode?: "chat" | "voice" | "revision" | "admin";
       activeDocumentId?: string | null;
       documentCount?: number;
@@ -54,6 +56,7 @@ export type BrainContextPacketInput = {
 
 export type BrainContextPacket = {
   requestId?: string;
+  proofAttemptId?: string;
   mode: BrainContextMode;
   agentLayer: BrainAgentLayer;
   querySummary: string;
@@ -407,6 +410,7 @@ export const createBrainContextMemoryEventInput = (
   retentionPolicy: "local_indexeddb",
   metadata: {
     requestId: packet.requestId,
+    proofAttemptId: packet.proofAttemptId,
     mode: packet.mode,
     agentLayer: packet.agentLayer,
     activeBookTitle: packet.activeBookTitle,
@@ -447,6 +451,7 @@ export const buildBrainContextPacket = async (
     activeBookId,
     {
       requestId: input.requestId,
+      proofAttemptId: input.proofAttemptId,
       mode: input.mode,
       activeDocumentId,
       documentCount: documents.length,
@@ -496,6 +501,7 @@ export const buildBrainContextPacket = async (
   );
   const packet: BrainContextPacket = {
     requestId: input.requestId,
+    proofAttemptId: input.proofAttemptId,
     mode: input.mode,
     agentLayer: input.agentLayer,
     querySummary: compact(input.query),

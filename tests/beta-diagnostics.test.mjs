@@ -11,9 +11,12 @@ const {
 const { modelObservationGateMetadata } =
   await import("../.tmp-test/evidence.mastery.mjs");
 
+const PROOF_ATTEMPT_ID = "beta-proof-attempt-1";
+
 const multiPdfContextMetadata = (agentLayer, requestId) => ({
   agentLayer,
   requestId,
+  proofAttemptId: PROOF_ATTEMPT_ID,
   documentCount: 2,
   readyDocumentCount: 2,
   documentIds: ["doc-active", "doc-companion"],
@@ -354,6 +357,9 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   assert.deepEqual(readyChecklist.coherentLiveProof.sharedConversationIds, [
     "thread:book-1",
   ]);
+  assert.deepEqual(readyChecklist.coherentLiveProof.sharedProofAttemptIds, [
+    PROOF_ATTEMPT_ID,
+  ]);
   assert.equal(
     readyChecklist.checks.find(
       (check) => check.id === "coherent_chat_voice_beta_bundle",
@@ -537,6 +543,15 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.deepEqual(completeCoherentLiveProof.sharedConversationIds, [
     "thread:book-1",
   ]);
+  assert.deepEqual(completeCoherentLiveProof.sharedProofAttemptIds, [
+    PROOF_ATTEMPT_ID,
+  ]);
+  assert.equal(
+    completeCoherentLiveProof.checks.find(
+      (check) => check.id === "shared_proof_attempt",
+    )?.ready,
+    true,
+  );
   assert.equal(
     completeCoherentLiveProof.checks.find(
       (check) => check.id === "typed_chat_request_bundle",
@@ -560,12 +575,40 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.equal(chatBundle?.completedModelRows, 1);
   assert.equal(chatBundle?.transcriptRows, 1);
   assert.equal(chatBundle?.backgroundRows, 1);
+  assert.deepEqual(chatBundle?.proofAttemptIds, [PROOF_ATTEMPT_ID]);
   assert.deepEqual(chatBundle?.missingRows, []);
   assert.equal(voiceBundle?.requestId, "voice-req-1");
   assert.equal(voiceBundle?.completedModelRows, 1);
   assert.equal(voiceBundle?.transcriptRows, 1);
   assert.equal(voiceBundle?.backgroundRows, 1);
+  assert.deepEqual(voiceBundle?.proofAttemptIds, [PROOF_ATTEMPT_ID]);
   assert.deepEqual(voiceBundle?.missingRows, []);
+});
+
+test("coherent live proof requires a shared deliberate proof attempt id", () => {
+  const ledgersWithoutAttempt = {
+    ...completeBrainFlowLedgers,
+    memoryEvents: completeBrainFlowLedgers.memoryEvents.map((row) => ({
+      ...row,
+      metadata: row.metadata
+        ? Object.fromEntries(
+            Object.entries(row.metadata).filter(
+              ([key]) => key !== "proofAttemptId",
+            ),
+          )
+        : row.metadata,
+    })),
+  };
+  const proof = buildCoherentLiveProofFromLedgers(ledgersWithoutAttempt);
+
+  assert.equal(proof.status, "watch");
+  assert.equal(proof.ready, false);
+  assert.deepEqual(proof.sharedProofAttemptIds, []);
+  assert.ok(proof.missingChecks.includes("Shared deliberate proof attempt"));
+  assert.equal(
+    proof.checks.find((check) => check.id === "shared_proof_attempt")?.ready,
+    false,
+  );
 });
 
 test("coherent live proof rejects stale selected rows when diagnostic time is provided", () => {

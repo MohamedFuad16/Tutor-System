@@ -346,6 +346,7 @@ type VoiceSessionTurn = {
 };
 type VoiceStudyContextPayload = {
   requestId?: string;
+  proofAttemptId?: string;
   studyContext: string;
   studyContextChars: number;
   rawContextChars: number;
@@ -1127,6 +1128,7 @@ const shouldRecordBookChatThreadSave = (
 const recordBookChatThreadSaveEvent = async (
   thread: BookChatThread,
   summary: NonNullable<ReturnType<typeof shouldRecordBookChatThreadSave>>,
+  proofAttemptId?: string,
 ) => {
   await recordMemoryEvent({
     eventType: "book_chat_thread_saved",
@@ -1141,6 +1143,7 @@ const recordBookChatThreadSaveEvent = async (
     metadata: {
       mode: summary.mode,
       requestId: summary.lastRequestId || undefined,
+      proofAttemptId,
       requestIds: summary.requestIds,
       requestCorrelated: summary.requestCorrelated,
       hasTypedChat: summary.hasTypedChat,
@@ -1163,6 +1166,7 @@ const persistBookChatThread = async (
   bookId: string | null | undefined,
   bookTitle: string,
   items: Message[],
+  proofAttemptId?: string,
 ) => {
   if (!bookId) return null;
   const now = Date.now();
@@ -1180,7 +1184,7 @@ const persistBookChatThread = async (
   const persistenceSummary = shouldRecordBookChatThreadSave(existing, thread);
   await db.bookChatThreads.put(thread);
   if (persistenceSummary) {
-    await recordBookChatThreadSaveEvent(thread, persistenceSummary);
+    await recordBookChatThreadSaveEvent(thread, persistenceSummary, proofAttemptId);
   }
   return thread;
 };
@@ -2942,6 +2946,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const setActiveLearningBookId = useStore(
     (state) => state.setActiveLearningBookId,
   );
+  const activeBetaProofAttemptId = useStore(
+    (state) => state.activeBetaProofAttemptId,
+  );
   const activeDocumentId = useStore((state) => state.activeDocumentId);
   const ttsVoice = useStore((state) => state.ttsVoice);
   const setActiveView = useStore((state) => state.setActiveView);
@@ -3161,6 +3168,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     const voiceRequestId = voiceSessionIdRef.current || undefined;
     const packet = await buildBrainContextPacket({
       requestId: voiceRequestId,
+      proofAttemptId: activeBetaProofAttemptId || undefined,
       mode: "voice",
       agentLayer: "voice_realtime",
       query: contextQuery,
@@ -3186,6 +3194,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     });
     return {
       requestId: packet.requestId,
+      proofAttemptId: packet.proofAttemptId,
       studyContext: packet.context,
       studyContextChars: packet.contextChars,
       rawContextChars: packet.rawContextChars,
@@ -3203,6 +3212,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     };
   }, [
     activeDocumentId,
+    activeBetaProofAttemptId,
     activeLearningBookTitle,
     activeProject,
     brainRuntimeSettings,
@@ -3242,6 +3252,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       useStore.getState().activeLearningBookId || canonicalActiveBookId,
       activeLearningBookTitle,
       currentMessages,
+      activeBetaProofAttemptId || undefined,
     ).catch((error) =>
       console.warn("[ChatPanel] Book chat archive failed:", error),
     );
@@ -3251,7 +3262,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       activeLearningBookTitle,
     );
     if (next.length) setChatArchives(next);
-  }, [activeLearningBookTitle, canonicalActiveBookId]);
+  }, [activeBetaProofAttemptId, activeLearningBookTitle, canonicalActiveBookId]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -3314,6 +3325,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         previousBookId,
         latestBookTitleRef.current,
         latestMessagesRef.current,
+        activeBetaProofAttemptId || undefined,
       ).catch((error) =>
         console.warn("[ChatPanel] Previous book chat save failed:", error),
       );
@@ -3344,6 +3356,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       cancelled = true;
     };
   }, [
+    activeBetaProofAttemptId,
     canonicalActiveBookId,
     clearStreamingAssistant,
     forceScrollToBottom,
@@ -3357,6 +3370,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         canonicalActiveBookId,
         activeLearningBookTitle,
         messages,
+        activeBetaProofAttemptId || undefined,
       ).catch((error) =>
         console.warn("[ChatPanel] Book chat save failed:", error),
       );
@@ -3364,6 +3378,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     return () => window.clearTimeout(timeout);
   }, [
     activeLearningBookTitle,
+    activeBetaProofAttemptId,
     canonicalActiveBookId,
     isThreadLoading,
     messages,
@@ -3557,6 +3572,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         activeBookId: canonicalActiveBookId || undefined,
         activeBookTitle: activeLearningBookTitle || activeProject,
         activeDocumentId: activeDocumentId || undefined,
+        proofAttemptId: activeBetaProofAttemptId || undefined,
         channel: "websocket",
         documentCount: context?.documentCount,
         memoryContextChars: context?.memoryContextChars,
@@ -3734,7 +3750,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             status: "completed",
             sessionId,
             summary: `Voice tool handled by provider: ${toolName}`,
-            metadata: { toolCallId, clientSide: false },
+            metadata: {
+              toolCallId,
+              clientSide: false,
+              proofAttemptId: activeBetaProofAttemptId || undefined,
+            },
           });
           continue;
         }
@@ -3744,7 +3764,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           status: "running",
           sessionId,
           summary: `Voice tool requested: ${toolName}`,
-          metadata: { toolCallId, inputSummary },
+          metadata: {
+            toolCallId,
+            inputSummary,
+            proofAttemptId: activeBetaProofAttemptId || undefined,
+          },
         });
         await recordToolJobEvent({
           toolName,
@@ -3752,7 +3776,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           requestId: sessionId,
           source: "voice_agent",
           inputSummary,
-          metadata: { toolCallId, voiceSessionId: sessionId },
+          metadata: {
+            toolCallId,
+            voiceSessionId: sessionId,
+            proofAttemptId: activeBetaProofAttemptId || undefined,
+          },
         });
 
         try {
@@ -3791,6 +3819,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               undefined,
               {
                 requestId: sessionId,
+                proofAttemptId: activeBetaProofAttemptId || undefined,
                 mode: "voice",
                 agentLayer: "voice_realtime",
                 bookId: canonicalActiveBookId,
@@ -3846,6 +3875,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 generationPath: "voice_agent_function_call",
                 toolCallId,
                 voiceSessionId: sessionId,
+                proofAttemptId: activeBetaProofAttemptId || undefined,
               },
             });
             setMessages((prev) =>
@@ -3876,6 +3906,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 voiceSessionId: sessionId,
                 agentLayer: "voice_realtime",
                 mode: "voice",
+                proofAttemptId: activeBetaProofAttemptId || undefined,
               },
             });
             const recordedCount = results.filter(
@@ -4109,7 +4140,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             status: "completed",
             sessionId,
             summary: `Voice tool ${toolCompletionStatus}: ${toolName}`,
-            metadata: { toolCallId, result },
+            metadata: {
+              toolCallId,
+              result,
+              proofAttemptId: activeBetaProofAttemptId || undefined,
+            },
           });
           await recordToolJobEvent({
             toolName,
@@ -4122,7 +4157,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 ? String(result.status)
                 : "Voice tool completed.",
             durationMs: Date.now() - startedAt,
-            metadata: { toolCallId, voiceSessionId: sessionId, result },
+            metadata: {
+              toolCallId,
+              voiceSessionId: sessionId,
+              proofAttemptId: activeBetaProofAttemptId || undefined,
+              result,
+            },
           });
         } catch (error) {
           const message =
@@ -4140,7 +4180,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             status: "failed",
             sessionId,
             summary: `Voice tool failed: ${toolName}`,
-            metadata: { toolCallId, error: message },
+            metadata: {
+              toolCallId,
+              error: message,
+              proofAttemptId: activeBetaProofAttemptId || undefined,
+            },
           });
           await recordToolJobEvent({
             toolName,
@@ -4150,13 +4194,18 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             inputSummary,
             error: message,
             durationMs: Date.now() - startedAt,
-            metadata: { toolCallId, voiceSessionId: sessionId },
+            metadata: {
+              toolCallId,
+              voiceSessionId: sessionId,
+              proofAttemptId: activeBetaProofAttemptId || undefined,
+            },
           });
         }
       }
     },
     [
       activeDocumentId,
+      activeBetaProofAttemptId,
       activeLearningBookTitle,
       activeProject,
       apiKey,
@@ -4388,6 +4437,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             type: "voice_auth",
             voiceSessionId: sessionId,
             requestId: sessionId,
+            proofAttemptId:
+              voiceContextPayload?.proofAttemptId ||
+              activeBetaProofAttemptId ||
+              undefined,
             openRouterKey: apiKey,
             deepgramKey: deepgramApiKey,
             language,
@@ -4408,6 +4461,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             studyContextMetadata: {
               mode: "voice",
               agentLayer: "voice_realtime",
+              proofAttemptId:
+                voiceContextPayload?.proofAttemptId ||
+                activeBetaProofAttemptId ||
+                undefined,
               documentIds: voiceContextPayload?.documentIds || [],
               readyDocumentIds: voiceContextPayload?.readyDocumentIds || [],
               contextDocumentIds:
@@ -4509,6 +4566,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                         : undefined,
                       documentId: activeDocumentId,
                       requestId: voiceSessionIdRef.current || undefined,
+                      proofAttemptId: activeBetaProofAttemptId || undefined,
                       mode: "voice",
                       agentLayer: "voice_realtime",
                     },
@@ -4520,6 +4578,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       activeBookId: canonicalActiveBookId,
                       activeDocumentId,
                       requestId: voiceSessionIdRef.current || undefined,
+                      proofAttemptId: activeBetaProofAttemptId || undefined,
                       mode: "voice",
                       agentLayer: "voice_realtime",
                       conversationId: canonicalActiveBookId
@@ -4878,6 +4937,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
       const brainContextPacket = await buildBrainContextPacket({
         requestId: chatRequestId,
+        proofAttemptId: activeBetaProofAttemptId || undefined,
         mode: "chat",
         agentLayer: "chat_stream",
         query: userMsgContent,
@@ -4930,6 +4990,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           currentPageImage,
           memoryContext: requestMemoryContext,
           brainContextMetadata: {
+            proofAttemptId: brainContextPacket.proofAttemptId,
             documentIds: brainContextPacket.documentIds,
             readyDocumentIds: brainContextPacket.readyDocumentIds,
             contextDocumentIds: brainContextPacket.contextDocumentIds,
@@ -5314,7 +5375,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 outputSummary: data.outputSummary,
                 error: data.error,
                 durationMs: data.durationMs,
-                metadata: data.metadata,
+                metadata: {
+                  ...(data.metadata || {}),
+                  proofAttemptId: activeBetaProofAttemptId || undefined,
+                },
               });
             } else if (data.type === "model_run") {
               void recordModelRunEvent({
@@ -5340,7 +5404,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 iterations: data.iterations,
                 error: data.error,
                 runtimeSettings: data.runtimeSettings,
-                metadata: data.metadata,
+                metadata: {
+                  ...(data.metadata || {}),
+                  proofAttemptId: activeBetaProofAttemptId || undefined,
+                },
               });
             } else if (data.type === "done") {
               setSendState("success");
@@ -5463,6 +5530,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     : undefined,
                   documentId: activeDocumentId,
                   requestId: chatRequestId,
+                  proofAttemptId: activeBetaProofAttemptId || undefined,
                   mode: "chat",
                   agentLayer: "chat_stream",
                 },
@@ -5474,6 +5542,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   activeBookId: canonicalActiveBookId,
                   activeDocumentId,
                   requestId: chatRequestId,
+                  proofAttemptId: activeBetaProofAttemptId || undefined,
                   mode: "chat",
                   agentLayer: "chat_stream",
                   conversationId: canonicalActiveBookId
@@ -5507,6 +5576,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     undefined,
                     {
                       requestId: chatRequestId,
+                      proofAttemptId: activeBetaProofAttemptId || undefined,
                       mode: "chat",
                       agentLayer: "chat_stream",
                       bookId: canonicalActiveBookId,
@@ -5536,6 +5606,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     metadata: {
                       agentLayer: "chat_stream",
                       mode: "chat",
+                      proofAttemptId: activeBetaProofAttemptId || undefined,
                       activeDocumentId: activeDocumentId || undefined,
                       sourceUserMessage: userMsgContent.slice(0, 240),
                     },

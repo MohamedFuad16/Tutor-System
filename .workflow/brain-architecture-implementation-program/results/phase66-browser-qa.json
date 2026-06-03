@@ -1,0 +1,52 @@
+{
+  "generatedAt": "2026-06-03T11:57:48.223Z",
+  "appUrl": "http://127.0.0.1:3100",
+  "results": [
+    {
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "hasProviderProof": true,
+      "hasStartControl": true,
+      "hasSharedAttempt": true,
+      "hasAttemptCheck": true,
+      "hasFreshProof": true,
+      "hasQaChat": true,
+      "hasQaVoice": true,
+      "activeAttemptCleared": true,
+      "activeAttemptId": "beta-mpy0i4rf-06f99d2f",
+      "seeded": {
+        "proofAttemptId": "qa-proof-attempt",
+        "memoryEvents": 6,
+        "retrievalEvents": 2,
+        "modelRuns": 2,
+        "toolJobs": 2,
+        "evidenceEvents": 2
+      },
+      "consoleLogs": []
+    },
+    {
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "hasProviderProof": true,
+      "hasStartControl": true,
+      "hasSharedAttempt": true,
+      "hasAttemptCheck": true,
+      "hasFreshProof": true,
+      "hasQaChat": true,
+      "hasQaVoice": true,
+      "activeAttemptCleared": true,
+      "activeAttemptId": "beta-mpy0i6vk-29c50644",
+      "seeded": {
+        "proofAttemptId": "qa-proof-attempt",
+        "memoryEvents": 6,
+        "retrievalEvents": 2,
+        "modelRuns": 2,
+        "toolJobs": 2,
+        "evidenceEvents": 2
+      },
+      "consoleLogs": []
+    }
+  ]
+}

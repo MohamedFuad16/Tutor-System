@@ -72,6 +72,7 @@ export type BetaBrainFlowSignalEvidence = {
   requestIds: string[];
   sources: string[];
   documentIds: string[];
+  proofAttemptIds?: string[];
   latestTimestamp?: number;
 };
 
@@ -200,6 +201,7 @@ export type CoherentLiveProofRequestBundle = {
   documentIds: string[];
   bookIds: string[];
   conversationIds: string[];
+  proofAttemptIds: string[];
   latestTimestamp?: number;
   missingRows: string[];
   evidence: BetaBrainFlowSignalEvidence;
@@ -222,6 +224,7 @@ export type CoherentLiveProofBundle = {
   sharedBookIds: string[];
   sharedConversationIds: string[];
   sharedDocumentIds: string[];
+  sharedProofAttemptIds: string[];
   latestTimestamp?: number;
   proofWindowMs?: number;
   proofAgeMs?: number;
@@ -243,13 +246,19 @@ export type BetaBrainFlowLedgerInput = {
   >[];
   retrievalEvents?: Pick<
     RetrievalEvent,
-    "status" | "requestId" | "timestamp"
+    "status" | "requestId" | "timestamp" | "metadata"
   >[];
-  modelRuns?: Pick<ModelRun, "status" | "requestId" | "source" | "timestamp">[];
-  toolJobs?: Pick<ToolJob, "status" | "requestId" | "source" | "timestamp">[];
+  modelRuns?: Pick<
+    ModelRun,
+    "status" | "requestId" | "source" | "timestamp" | "metadata"
+  >[];
+  toolJobs?: Pick<
+    ToolJob,
+    "status" | "requestId" | "source" | "timestamp" | "metadata"
+  >[];
   backgroundJobs?: Pick<
     BackgroundJob,
-    "status" | "requestId" | "source" | "timestamp"
+    "status" | "requestId" | "source" | "timestamp" | "metadata"
   >[];
   evidenceEvents?: Pick<
     EvidenceEvent,
@@ -418,10 +427,18 @@ const requestIdValue = (requestId: unknown) =>
 
 type SignalEvidenceAnchor = {
   metadata?: Record<string, unknown>;
+  proofAttemptId?: unknown;
   requestId?: unknown;
   source?: unknown;
   timestamp?: number;
 };
+
+const metadataProofAttemptId = (
+  metadata: Record<string, unknown> | undefined,
+) =>
+  metadataString(metadata, "proofAttemptId") ||
+  metadataString(metadata, "betaProofAttemptId") ||
+  metadataString(metadata, "liveProofAttemptId");
 
 const buildSignalEvidence = (
   anchors: SignalEvidenceAnchor[],
@@ -434,6 +451,13 @@ const buildSignalEvidence = (
     );
   const latestTimestamp =
     timestamps.length > 0 ? Math.max(...timestamps) : undefined;
+  const proofAttemptIds = compactUnique(
+    anchors.map(
+      (anchor) =>
+        anchor.proofAttemptId ?? metadataProofAttemptId(anchor.metadata),
+    ),
+    8,
+  );
   return {
     requestIds: compactUnique(
       anchors.map((anchor) => anchor.requestId ?? anchor.metadata?.requestId),
@@ -444,6 +468,7 @@ const buildSignalEvidence = (
         metadataStringArray(anchor.metadata, "contextDocumentIds"),
       ),
     ),
+    ...(proofAttemptIds.length > 0 ? { proofAttemptIds } : {}),
     ...(latestTimestamp ? { latestTimestamp } : {}),
   };
 };
@@ -904,9 +929,18 @@ export const buildBrainFlowCoverageFromLedgers = ({
 type CoherentRequestFacts = {
   requestId: string;
   contextRows: Pick<MemoryEvent, "metadata" | "timestamp" | "bookId">[];
-  retrievalRows: Pick<RetrievalEvent, "status" | "requestId" | "timestamp">[];
-  modelRows: Pick<ModelRun, "status" | "requestId" | "source" | "timestamp">[];
-  toolRows: Pick<ToolJob, "status" | "requestId" | "source" | "timestamp">[];
+  retrievalRows: Pick<
+    RetrievalEvent,
+    "status" | "requestId" | "timestamp" | "metadata"
+  >[];
+  modelRows: Pick<
+    ModelRun,
+    "status" | "requestId" | "source" | "timestamp" | "metadata"
+  >[];
+  toolRows: Pick<
+    ToolJob,
+    "status" | "requestId" | "source" | "timestamp" | "metadata"
+  >[];
   evidenceRows: Pick<
     EvidenceEvent,
     "evidenceType" | "verified" | "metadata" | "timestamp"
@@ -922,6 +956,7 @@ type CoherentRequestFacts = {
   documentIds: string[];
   bookIds: string[];
   conversationIds: string[];
+  proofAttemptIds: string[];
   anchors: SignalEvidenceAnchor[];
   complete: boolean;
 };
@@ -986,6 +1021,7 @@ const buildCoherentRequestBundle = (
     documentIds: facts?.documentIds || [],
     bookIds: facts?.bookIds || [],
     conversationIds: facts?.conversationIds || [],
+    proofAttemptIds: facts?.proofAttemptIds || [],
     ...(latestTimestamp ? { latestTimestamp } : {}),
     missingRows,
     evidence: facts ? mergeAnchors(anchors) : emptySignalEvidence(),
@@ -1176,16 +1212,19 @@ export const buildCoherentLiveProofFromLedgers = (
         timestamp: event.timestamp,
       })),
       ...matchingRetrievalRows.map((event) => ({
+        metadata: event.metadata,
         requestId,
         source: "retrieval_event",
         timestamp: event.timestamp,
       })),
       ...matchingModelRows.map((run) => ({
+        metadata: run.metadata,
         requestId,
         source: run.source || "model_run",
         timestamp: run.timestamp,
       })),
       ...matchingToolRows.map((job) => ({
+        metadata: job.metadata,
         requestId,
         source: job.source || "tool_job",
         timestamp: job.timestamp,
@@ -1231,6 +1270,13 @@ export const buildCoherentLiveProofFromLedgers = (
       ],
       5,
     );
+    const proofAttemptIds = compactUnique(
+      anchors.map(
+        (anchor) =>
+          anchor.proofAttemptId ?? metadataProofAttemptId(anchor.metadata),
+      ),
+      5,
+    );
 
     return {
       requestId,
@@ -1244,6 +1290,7 @@ export const buildCoherentLiveProofFromLedgers = (
       documentIds,
       bookIds,
       conversationIds,
+      proofAttemptIds,
       anchors,
       complete:
         matchingContextRows.length > 0 &&
@@ -1286,9 +1333,14 @@ export const buildCoherentLiveProofFromLedgers = (
         chat.conversationIds,
         voice.conversationIds,
       );
+      const sharedProofAttemptIds = sharedStrings(
+        chat.proofAttemptIds,
+        voice.proofAttemptIds,
+      );
       const score =
         (chat.complete ? 1 : 0) +
         (voice.complete ? 1 : 0) +
+        (sharedProofAttemptIds.length > 0 ? 1 : 0) +
         (sharedDocumentIds.length > 1 ? 1 : 0) +
         (sharedBookIds.length > 0 && sharedConversationIds.length > 0 ? 1 : 0) +
         (failedRows === 0 ? 1 : 0);
@@ -1298,6 +1350,7 @@ export const buildCoherentLiveProofFromLedgers = (
         sharedBookIds,
         sharedConversationIds,
         sharedDocumentIds,
+        sharedProofAttemptIds,
         score,
       };
     }),
@@ -1308,6 +1361,7 @@ export const buildCoherentLiveProofFromLedgers = (
   const sharedBookIds = selectedPair?.sharedBookIds || [];
   const sharedConversationIds = selectedPair?.sharedConversationIds || [];
   const sharedDocumentIds = selectedPair?.sharedDocumentIds || [];
+  const sharedProofAttemptIds = selectedPair?.sharedProofAttemptIds || [];
   const allAnchors = [
     ...(selectedChat?.anchors || []),
     ...(selectedVoice?.anchors || []),
@@ -1365,6 +1419,26 @@ export const buildCoherentLiveProofFromLedgers = (
       evidence: selectedVoice
         ? mergeAnchors(selectedVoice.anchors)
         : emptySignalEvidence(),
+    },
+    {
+      id: "shared_proof_attempt",
+      title: "Shared deliberate proof attempt",
+      ready: sharedProofAttemptIds.length > 0,
+      status: sharedProofAttemptIds.length > 0 ? "ready" : "watch",
+      summary:
+        sharedProofAttemptIds.length > 0
+          ? "The selected chat and voice rows carry the same Admin-started proof attempt id."
+          : "Start a live proof attempt in Admin before running chat and voice so both rows share a deliberate run id.",
+      evidence: {
+        requestIds: compactUnique(
+          [selectedChat?.requestId, selectedVoice?.requestId],
+          4,
+        ),
+        sources: ["proof_attempt_id"],
+        documentIds: [],
+        proofAttemptIds: sharedProofAttemptIds,
+        ...(latestTimestamp ? { latestTimestamp } : {}),
+      },
     },
     {
       id: "shared_multi_pdf_context",
@@ -1460,12 +1534,13 @@ export const buildCoherentLiveProofFromLedgers = (
     sharedBookIds,
     sharedConversationIds,
     sharedDocumentIds,
+    sharedProofAttemptIds,
     ...(latestTimestamp ? { latestTimestamp } : {}),
     ...(proofWindowMs !== undefined ? { proofWindowMs } : {}),
     ...(proofAgeMs !== undefined ? { proofAgeMs } : {}),
     summary:
       status === "ready"
-        ? "One typed-chat request and one live-voice request form a coherent local beta proof bundle with shared book, thread, and multi-PDF context anchors."
+        ? "One typed-chat request and one live-voice request form a coherent local beta proof bundle with one deliberate attempt id plus shared book, thread, and multi-PDF context anchors."
         : status === "blocked"
           ? `${failedRows} failed or blocked rows prevent a coherent chat+voice proof bundle.`
           : `Missing coherent live proof for ${missingChecks.join(", ")}.`,
@@ -1479,6 +1554,7 @@ const emptySignalEvidence = (): BetaBrainFlowSignalEvidence => ({
   requestIds: [],
   sources: [],
   documentIds: [],
+  proofAttemptIds: [],
 });
 
 const mergeSignalEvidence = (
@@ -1504,6 +1580,10 @@ const mergeSignalEvidence = (
     ),
     documentIds: compactUnique(
       signals.flatMap((signal) => signal.evidence.documentIds),
+      8,
+    ),
+    proofAttemptIds: compactUnique(
+      signals.flatMap((signal) => signal.evidence.proofAttemptIds || []),
       8,
     ),
     ...(latestTimestamp ? { latestTimestamp } : {}),
@@ -1533,6 +1613,10 @@ const mergeCheckEvidence = (
     ),
     documentIds: compactUnique(
       checks.flatMap((check) => check.evidence.documentIds),
+      8,
+    ),
+    proofAttemptIds: compactUnique(
+      checks.flatMap((check) => check.evidence.proofAttemptIds || []),
       8,
     ),
     ...(latestTimestamp ? { latestTimestamp } : {}),
@@ -1758,7 +1842,7 @@ export const buildLiveBetaProofRunbook = ({
       pendingSummary:
         "Typed chat still needs a request-correlated turn with tool, mastery, and saved transcript rows.",
       action:
-        "Ask typed chat a source-grounded active-recall question that uses a visible tool, then check the request timeline.",
+        "Start or keep one Admin proof attempt active, ask typed chat a source-grounded active-recall question that uses a visible tool, then check the request timeline.",
       evidenceNeeded: [
         "brain_context_injected",
         "retrieval row",
@@ -1782,7 +1866,7 @@ export const buildLiveBetaProofRunbook = ({
       pendingSummary:
         "Live voice still needs request-correlated context, tool, mastery, and transcript rows.",
       action:
-        "Start a voice session on the same book, ask for an evaluated answer/tool action, then end the session so the transcript saves.",
+        "Keep the same Admin proof attempt active, start a voice session on the same book, ask for an evaluated answer/tool action, then end the session so the transcript saves.",
       evidenceNeeded: [
         "voice brain_context_injected",
         "voice-agent tool job",
@@ -1811,12 +1895,13 @@ export const buildLiveBetaProofRunbook = ({
       title: "Confirm coherent bundle and export",
       checkIds: ["coherent_chat_voice_beta_bundle"],
       readySummary:
-        "The selected chat and voice request ids share one book, one thread, and multi-PDF context anchors.",
+        "The selected chat and voice request ids share one deliberate attempt, one book, one thread, and multi-PDF context anchors.",
       pendingSummary:
-        "The proof rows exist only when chat and voice form one shared local book/thread bundle.",
+        "The proof rows exist only when chat and voice form one shared local attempt plus book/thread bundle.",
       action:
-        "Use the coherent bundle panel to compare request ids, then export the diagnostics JSON for beta review.",
+        "Use the coherent bundle panel to compare attempt id and request ids, then export the diagnostics JSON for beta review.",
       evidenceNeeded: [
+        "shared proof attempt id",
         "chat request id",
         "voice request id",
         "shared book id",
@@ -1937,7 +2022,7 @@ export const buildProviderKeyProofChecklist = ({
       ? coherentLiveProof.summary
       : `Missing coherent live proof for ${coherentLiveProof.missingChecks.join(", ")}.`,
     action:
-      "Run typed chat and live voice against the same active book with multiple ready PDFs, then verify both request ids share the saved local book thread.",
+      "Start a live proof attempt in Admin, run typed chat and live voice against the same active book with multiple ready PDFs, then verify both request ids share the saved local book thread.",
     evidence: {
       requestIds: compactUnique(
         [coherentLiveProof.chatRequestId, coherentLiveProof.voiceRequestId],
@@ -1945,6 +2030,7 @@ export const buildProviderKeyProofChecklist = ({
       ),
       sources: ["coherent_live_proof"],
       documentIds: coherentLiveProof.sharedDocumentIds,
+      proofAttemptIds: coherentLiveProof.sharedProofAttemptIds,
       ...(coherentLiveProof.latestTimestamp
         ? { latestTimestamp: coherentLiveProof.latestTimestamp }
         : {}),

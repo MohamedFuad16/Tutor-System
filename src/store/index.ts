@@ -10,6 +10,8 @@ import {
 
 export type ViewState = "study" | "analytics" | "revision" | "admin";
 
+const ACTIVE_BETA_PROOF_ATTEMPT_STORAGE_KEY = "active_beta_proof_attempt_id";
+
 export interface Concept {
   id: string;
   name: string;
@@ -319,6 +321,9 @@ interface AppState {
   brainRuntimeSettings: BrainRuntimeSettings;
   setBrainRuntimeSettings: (settings: Partial<BrainRuntimeSettings>) => void;
   resetBrainRuntimeSettings: () => void;
+  activeBetaProofAttemptId: string | null;
+  setActiveBetaProofAttemptId: (attemptId: string | null) => void;
+  clearActiveBetaProofAttempt: () => void;
 
   totalTokens: number;
   estimatedCost: number;
@@ -496,6 +501,24 @@ export const useStore = create<AppState>()(
       resetBrainRuntimeSettings: () => {
         persistBrainRuntimeSettings(DEFAULT_BRAIN_RUNTIME_SETTINGS);
         set({ brainRuntimeSettings: DEFAULT_BRAIN_RUNTIME_SETTINGS });
+      },
+      activeBetaProofAttemptId:
+        localStorage.getItem(ACTIVE_BETA_PROOF_ATTEMPT_STORAGE_KEY) || null,
+      setActiveBetaProofAttemptId: (attemptId) => {
+        const cleanAttemptId = attemptId?.trim() || null;
+        if (cleanAttemptId) {
+          localStorage.setItem(
+            ACTIVE_BETA_PROOF_ATTEMPT_STORAGE_KEY,
+            cleanAttemptId,
+          );
+        } else {
+          localStorage.removeItem(ACTIVE_BETA_PROOF_ATTEMPT_STORAGE_KEY);
+        }
+        set({ activeBetaProofAttemptId: cleanAttemptId });
+      },
+      clearActiveBetaProofAttempt: () => {
+        localStorage.removeItem(ACTIVE_BETA_PROOF_ATTEMPT_STORAGE_KEY);
+        set({ activeBetaProofAttemptId: null });
       },
 
       totalTokens:
@@ -720,6 +743,7 @@ What would you like to learn today?`,
         activeProject: state.activeProject,
         activeLearningBookId: state.activeLearningBookId,
         activeDocumentId: state.activeDocumentId,
+        activeBetaProofAttemptId: state.activeBetaProofAttemptId,
         activeView: state.activeView,
         language: state.language,
       }),

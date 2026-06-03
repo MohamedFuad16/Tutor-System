@@ -79,6 +79,7 @@ export interface LearningBookUpdateInput {
   activeDocumentId?: string | null;
   conversationId?: string;
   requestId?: string;
+  proofAttemptId?: string;
   mode?: "chat" | "voice" | "revision" | "admin";
   agentLayer?: "chat_stream" | "voice_realtime";
   documentContexts?: Pick<
@@ -92,6 +93,7 @@ export interface LearningBookUpdateInput {
 
 type RelevantContextOptions = {
   requestId?: string;
+  proofAttemptId?: string;
   mode?: "chat" | "voice" | "revision" | "admin";
   activeDocumentId?: string | null;
   documentCount?: number;
@@ -99,6 +101,7 @@ type RelevantContextOptions = {
 
 type MemoryTraceContext = {
   requestId?: string;
+  proofAttemptId?: string;
   mode?: "chat" | "voice" | "revision" | "admin";
   agentLayer?: "chat_stream" | "voice_realtime";
   bookId?: string | null;
@@ -128,6 +131,9 @@ const compactText = (value: unknown, fallback = "") => {
 
 const memoryTraceMetadata = (context?: MemoryTraceContext) => ({
   ...(context?.requestId ? { requestId: context.requestId } : {}),
+  ...(context?.proofAttemptId
+    ? { proofAttemptId: context.proofAttemptId }
+    : {}),
   ...(context?.mode ? { mode: context.mode } : {}),
   ...(context?.agentLayer ? { agentLayer: context.agentLayer } : {}),
   ...(context?.toolCallId ? { toolCallId: context.toolCallId } : {}),
@@ -385,6 +391,7 @@ export class MemoryOrchestrator {
       conversationId?: string;
       documentId?: string | null;
       requestId?: string;
+      proofAttemptId?: string;
       mode?: "chat" | "voice" | "revision" | "admin";
       agentLayer?: "chat_stream" | "voice_realtime";
     },
@@ -1318,6 +1325,7 @@ export class MemoryOrchestrator {
         metadata: {
           mode: options.mode,
           requestId: options.requestId,
+          proofAttemptId: options.proofAttemptId,
           activeDocumentId: options.activeDocumentId || undefined,
           documentCount: options.documentCount,
           activeBookFiltered: Boolean(activeBookId),
@@ -1343,6 +1351,7 @@ export class MemoryOrchestrator {
         metadata: {
           mode: options.mode,
           requestId: options.requestId,
+          proofAttemptId: options.proofAttemptId,
           activeDocumentId: options.activeDocumentId || undefined,
           documentCount: options.documentCount,
         },

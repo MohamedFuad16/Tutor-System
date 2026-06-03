@@ -360,6 +360,13 @@ const kindIcon = (kind: string) => {
   return Activity;
 };
 
+const createBetaProofAttemptId = () => {
+  const randomPart =
+    globalThis.crypto?.randomUUID?.().slice(0, 8) ||
+    Math.random().toString(36).slice(2, 10);
+  return `beta-${Date.now().toString(36)}-${randomPart}`;
+};
+
 export function AdminView() {
   const {
     setActiveView,
@@ -380,6 +387,9 @@ export function AdminView() {
     brainRuntimeSettings,
     setBrainRuntimeSettings,
     resetBrainRuntimeSettings,
+    activeBetaProofAttemptId,
+    setActiveBetaProofAttemptId,
+    clearActiveBetaProofAttempt,
   } = useStore();
   const motionEnabled = useMotionPreference();
   const [traceLimit, setTraceLimit] = useState(TRACE_PAGE_SIZE);
@@ -1024,6 +1034,9 @@ export function AdminView() {
     ],
   );
   const liveProofRunbook = providerKeyProofChecklist.liveProofRunbook;
+  const startLiveProofAttempt = () => {
+    setActiveBetaProofAttemptId(createBetaProofAttemptId());
+  };
   const brainWiringRehearsalGap = useMemo(
     () =>
       brainWiringRehearsal
@@ -1371,6 +1384,7 @@ export function AdminView() {
       snapshot: betaDiagnosticsSnapshot,
       metadata: {
         activeLearningBookId,
+        activeBetaProofAttemptId: activeBetaProofAttemptId || undefined,
         activeProject,
         aiModel,
         exportedFrom: "AdminView",
@@ -1383,6 +1397,7 @@ export function AdminView() {
           proofComplete: providerKeyProofChecklist.proofComplete,
           missingChecks: providerKeyProofChecklist.missingChecks,
           liveProofRunbook,
+          activeProofAttemptId: activeBetaProofAttemptId || undefined,
         },
       },
       ledgers: {
@@ -4391,6 +4406,28 @@ export function AdminView() {
                             rows make proof complete. No key values are shown
                             and this panel does not call providers.
                           </p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={startLiveProofAttempt}
+                              className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
+                            >
+                              <Flag size={13} />
+                              {activeBetaProofAttemptId
+                                ? "Restart proof attempt"
+                                : "Start proof attempt"}
+                            </button>
+                            {activeBetaProofAttemptId && (
+                              <button
+                                type="button"
+                                onClick={clearActiveBetaProofAttempt}
+                                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-600 transition hover:border-zinc-300 hover:bg-zinc-50"
+                              >
+                                <Trash2 size={13} />
+                                Clear attempt
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-right">
                           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
@@ -4448,6 +4485,19 @@ export function AdminView() {
                         <span className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
                           live coverage{" "}
                           {providerKeyProofChecklist.liveCoveragePercent}%
+                        </span>
+                        <span
+                          className={`max-w-full truncate rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${activeBetaProofAttemptId ? "border-blue-200 bg-blue-50 text-blue-700" : "border-zinc-200 bg-white text-zinc-500"}`}
+                        >
+                          active attempt{" "}
+                          {activeBetaProofAttemptId || "not started"}
+                        </span>
+                        <span
+                          className={`max-w-full truncate rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.coherentLiveProof.sharedProofAttemptIds.length > 0 ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                        >
+                          shared attempt{" "}
+                          {providerKeyProofChecklist.coherentLiveProof
+                            .sharedProofAttemptIds[0] || "missing"}
                         </span>
                         <span
                           className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.coherentLiveProof.proofFresh ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
@@ -4532,6 +4582,8 @@ export function AdminView() {
                             const hasStepEvidence =
                               runbookStep.evidence.requestIds.length > 0 ||
                               runbookStep.evidence.documentIds.length > 0 ||
+                              (runbookStep.evidence.proofAttemptIds || [])
+                                .length > 0 ||
                               typeof runbookStep.evidence.latestTimestamp ===
                                 "number";
                             return (
@@ -4619,6 +4671,16 @@ export function AdminView() {
                                         </span>
                                       ),
                                     )}
+                                    {(
+                                      runbookStep.evidence.proofAttemptIds || []
+                                    ).map((attemptId) => (
+                                      <span
+                                        key={`runbook-attempt-${runbookStep.id}-${attemptId}`}
+                                        className="rounded-full border border-blue-100 bg-white px-2 py-0.5 text-[10px] font-mono text-blue-700"
+                                      >
+                                        attempt {attemptId}
+                                      </span>
+                                    ))}
                                     {runbookStep.evidence.documentIds.map(
                                       (documentId) => (
                                         <span
@@ -4695,6 +4757,16 @@ export function AdminView() {
                                   .voiceRequestId
                               }
                             </span>
+                          )}
+                          {providerKeyProofChecklist.coherentLiveProof.sharedProofAttemptIds.map(
+                            (attemptId) => (
+                              <span
+                                key={`coherent-attempt-${attemptId}`}
+                                className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700"
+                              >
+                                attempt {attemptId}
+                              </span>
+                            ),
                           )}
                           {providerKeyProofChecklist.coherentLiveProof.sharedBookIds.map(
                             (bookId) => (
@@ -4824,6 +4896,14 @@ export function AdminView() {
                                   </div>
 
                                   <div className="mt-3 flex flex-wrap gap-1.5">
+                                    {bundle.proofAttemptIds.map((attemptId) => (
+                                      <span
+                                        key={`${bundle.layer}-attempt-${attemptId}`}
+                                        className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700"
+                                      >
+                                        attempt {attemptId}
+                                      </span>
+                                    ))}
                                     {bundle.documentIds.map((documentId) => (
                                       <span
                                         key={`${bundle.layer}-pdf-${documentId}`}
@@ -4920,6 +5000,7 @@ export function AdminView() {
                             check.evidence.requestIds.length > 0 ||
                             check.evidence.sources.length > 0 ||
                             check.evidence.documentIds.length > 0 ||
+                            (check.evidence.proofAttemptIds || []).length > 0 ||
                             typeof check.evidence.latestTimestamp === "number";
                           return (
                             <article
@@ -4988,6 +5069,16 @@ export function AdminView() {
                                         className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700"
                                       >
                                         req {requestId}
+                                      </span>
+                                    ),
+                                  )}
+                                  {(check.evidence.proofAttemptIds || []).map(
+                                    (attemptId) => (
+                                      <span
+                                        key={`proof-attempt-${check.id}-${attemptId}`}
+                                        className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700"
+                                      >
+                                        attempt {attemptId}
                                       </span>
                                     ),
                                   )}

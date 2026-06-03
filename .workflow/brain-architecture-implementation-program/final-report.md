@@ -4811,6 +4811,86 @@ diagnostics AdminView" --budget 12000 --graph graphify-out/graph.json` routed
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+# Phase 68: Live Proof Attempt Identity
+
+Packet ACD makes the local beta proof corridor more deliberate. The previous
+freshness window prevented old rows from passing provider-key proof; this phase
+also requires the selected typed-chat and live-voice rows to share one explicit
+Admin-started proof attempt id.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 96%.
+
+## Graphify Context
+
+- `graphify query "proofAttemptId shared_proof_attempt
+buildCoherentLiveProofFromLedgers AdminView ChatPanel buildBrainContextPacket
+MemoryOrchestrator" --budget 4000 --graph graphify-out/graph.json` routed the
+  slice through `AdminView()`, `ChatPanel()`,
+  `buildCoherentLiveProofFromLedgers()`, `buildCoherentRequestBundle()`,
+  `buildBrainFlowCoverageFromLedgers()`, `buildBetaDiagnosticsSnapshot()`,
+  `brainOrchestrator`, `beta.diagnostics.ts`, `ChatPanel.tsx`, and
+  `AdminView.tsx`.
+- `graphify path "buildCoherentLiveProofFromLedgers()" "AdminView()" --graph
+graphify-out/graph.json` found a direct call route.
+- `graphify path "buildBrainContextPacket()" "ChatPanel()" --graph
+graphify-out/graph.json` found the expected route through `ChatPanel.tsx`.
+- `graphify path "brainOrchestrator" "ChatPanel()" --graph
+graphify-out/graph.json` found the expected route through `ChatPanel.tsx`.
+
+## Integration Decisions
+
+- Added `activeBetaProofAttemptId` to the local store and persisted it to
+  `active_beta_proof_attempt_id`.
+- Admin Beta Diagnostics now exposes Start/Restart/Clear proof-attempt controls
+  and renders active/shared attempt chips in the provider-key proof panel,
+  runbook, selected request bundles, and export metadata.
+- Typed chat and live voice now propagate `proofAttemptId` through shared brain
+  context, memory events, retrieval metadata, model rows, tool jobs, transcript
+  saves, evaluated-answer evidence, flashcard artifacts, graph updates, and
+  learning-book update metadata.
+- `buildCoherentLiveProofFromLedgers()` now selects shared proof-attempt ids and
+  adds a required `Shared deliberate proof attempt` check.
+- Otherwise complete chat/voice proof rows no longer pass coherent
+  provider-key proof when they come from different deliberate attempts.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test -- tests/beta-diagnostics.test.mjs tests/brain-context.test.mjs`:
+  passed via the project test runner, 156 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- `node .workflow/brain-architecture-implementation-program/packets/phase66-browser-qa.mjs`:
+  passed with local Chrome CDP approval. Desktop and mobile Admin Beta
+  Diagnostics rendered the deliberate beta-run checklist, Start proof attempt
+  control, shared attempt chip, Shared deliberate proof attempt check, fresh
+  proof state, QA chat/voice request ids, no horizontal overflow, and zero
+  console logs.
+- Browser screenshots saved as `ACD-admin-proof-attempt-desktop.png` and
+  `ACD-admin-proof-attempt-mobile.png`; JSON evidence saved as
+  `phase66-browser-qa.json`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1103 nodes, 1939 edges, and 64 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`81.2 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the shared proof-attempt id, freshness window,
+  and coherent bundle to confirm the complete local beta flow.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Phase 68: Live Beta Proof Runbook
 
 Packet ABX turns the Provider-Key Live Proof panel into an ordered manual
