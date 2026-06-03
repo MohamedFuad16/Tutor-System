@@ -2365,7 +2365,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Voice agent timeline",
         detail:
-          "Live voice mode records local session start, Deepgram settings, speaking/listening transitions, barge-in, transcript turns, and errors so the dark voice UI is debuggable from Admin.",
+          "Live voice mode records local session start, proof-attempt id, voice-realtime agent layer, Deepgram settings, speaking/listening transitions, barge-in, tool requests, tool completions, transcript turns, and errors so the dark voice UI is debuggable from Admin.",
       },
       {
         title: "Voice current-page vision",

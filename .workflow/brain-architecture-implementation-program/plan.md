@@ -174,3 +174,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   blockers, setup/run/export instructions, Admin UI, diagnostics export
   metadata, browser QA, and regenerated Graphify artifacts without auto-calling
   providers or starting AWS/cloud work.
+- ACH: Voice proof-attempt system activity. Preserve the deliberate
+  provider-key proof attempt id in server-side voice websocket system-activity
+  rows for auth, context injection, provider readiness, tool requests, tool
+  completions, and close events so Admin can correlate the voice proof timeline
+  without provider/cloud automation.

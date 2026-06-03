@@ -3051,6 +3051,13 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       let lastUsageDeepgramOutputBytes = 0;
       const voiceAgentSpeakModel = "aura-asteria-en";
       let voiceRequestId = `voice_${voiceStartedAt}`;
+      let voiceProofAttemptId = "";
+
+      const voiceProofActivityMetadata = () => ({
+        proofAttemptId: voiceProofAttemptId || undefined,
+        mode: "voice",
+        agentLayer: "voice_realtime",
+      });
 
       const sendVoiceUsage = (sessions = 0) => {
         if (ws.readyState !== ws.OPEN) return;
@@ -3123,6 +3130,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             clientSideCount: functions.filter(
               (fn: any) => fn?.client_side !== false,
             ).length,
+            ...voiceProofActivityMetadata(),
           },
         });
       };
@@ -3141,6 +3149,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             toolCallId: payload.id,
             contentChars:
               typeof payload.content === "string" ? payload.content.length : 0,
+            ...voiceProofActivityMetadata(),
           },
         });
       };
@@ -3155,6 +3164,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             "Local mock voice provider is simulating a Deepgram tool-call loop.",
           requestId: voiceRequestId,
           phase: "settings",
+          metadata: voiceProofActivityMetadata(),
         });
         ws.send(JSON.stringify({ type: "SettingsApplied" }));
         const mockToolArguments: Record<string, Record<string, unknown>> = {
@@ -3248,6 +3258,9 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
         language = normalizeVoiceLanguage(selectedLanguage);
         const compactStudyContext = compactVoiceStudyContext(studyContext);
+        voiceProofAttemptId =
+          normalizeClientRequestId(studyContextMetadata.proofAttemptId) ||
+          voiceProofAttemptId;
         isVoiceSessionStarted = true;
         usageInterval = setInterval(() => sendVoiceUsage(0), 1000);
         recordSystemActivity({
@@ -3268,6 +3281,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             speakModel: voiceAgentSpeakModel,
             studyContextChars: compactStudyContext.length,
             ...studyContextMetadata,
+            ...voiceProofActivityMetadata(),
           },
         });
         if (compactStudyContext) {
@@ -3282,6 +3296,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             metadata: {
               studyContextChars: compactStudyContext.length,
               ...studyContextMetadata,
+              ...voiceProofActivityMetadata(),
             },
           });
         }
@@ -3474,6 +3489,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                       phase: "settings",
                       metadata: {
                         bufferedFrames: messageBuffer.length,
+                        ...voiceProofActivityMetadata(),
                       },
                     });
                     messageBuffer.forEach((msg) => {
@@ -3521,6 +3537,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 metadata: {
                   inputBytes: clientInputBytes,
                   outputBytes: deepgramOutputBytes,
+                  ...voiceProofActivityMetadata(),
                 },
               });
               ws.close();
@@ -3608,6 +3625,12 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             const studyContextMetadata = objectMetadata(
               authPayload.studyContextMetadata,
             );
+            const proofAttemptId =
+              normalizeClientRequestId(authPayload.proofAttemptId) ||
+              normalizeClientRequestId(studyContextMetadata.proofAttemptId);
+            if (proofAttemptId) {
+              voiceProofAttemptId = proofAttemptId;
+            }
             startVoiceSession(
               sanitizeApiKey(authPayload.openRouterKey),
               authPayload.language || language,
@@ -3626,6 +3649,9 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                   typeof authPayload.activeDocumentId === "string"
                     ? authPayload.activeDocumentId
                     : "",
+                proofAttemptId: proofAttemptId || undefined,
+                mode: "voice",
+                agentLayer: "voice_realtime",
                 documentIds: Array.isArray(authPayload.documentIds)
                   ? authPayload.documentIds
                       .filter(
@@ -3703,6 +3729,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             inputBytes: clientInputBytes,
             outputBytes: deepgramOutputBytes,
             ready: isDeepgramReady,
+            ...voiceProofActivityMetadata(),
           },
         });
         if (dgWs && dgWs.readyState === dgWs.OPEN) {

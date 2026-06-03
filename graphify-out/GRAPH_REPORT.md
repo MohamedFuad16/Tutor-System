@@ -1,16 +1,16 @@
 # Graph Report - LearningAI  (2026-06-03)
 
 ## Corpus Check
-- 96 files · ~173,548 words
+- 96 files · ~173,764 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1114 nodes · 1953 edges · 66 communities (55 shown, 11 thin omitted)
+- 1115 nodes · 1954 edges · 66 communities (55 shown, 11 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `77799544`
+- Built from commit: `2db684e1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -159,7 +159,7 @@ Cohesion: 0.05
 Nodes (41): aggregateFlow, blockedFlow, chatBundle, chatMultiPdfSignal, chatOnlyMemoryFlow, chatPrompt, checklist, coherentProof (+33 more)
 
 ### Community 13 - "Community 13"
-Cohesion: 0.12
+Cohesion: 0.11
 Nodes (17): createTutorServerApp(), startServer(), config, getTutorApp(), normalizeVercelCatchAllUrl(), vercelHandler(), form, startApp() (+9 more)
 
 ### Community 14 - "Community 14"
@@ -327,11 +327,11 @@ Nodes (7): buildLiveBetaProofDrillPacket(), buildLiveBetaProofRunbook(), buildPr
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `db` connect `Community 2` to `Community 0`, `Community 1`, `Community 33`, `Community 3`, `Community 5`, `Community 7`, `Community 8`, `Community 9`, `Community 10`, `Community 19`, `Community 25`, `Community 61`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+  _High betweenness centrality (0.045) - this node is a cross-community bridge._
 - **Why does `createTutorServerApp()` connect `Community 13` to `Community 4`?**
   _High betweenness centrality (0.025) - this node is a cross-community bridge._
 - **Why does `useStore` connect `Community 19` to `Community 33`, `Community 3`, `Community 7`, `Community 15`, `Community 20`, `Community 22`, `Community 24`, `Community 30`?**
-  _High betweenness centrality (0.015) - this node is a cross-community bridge._
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **What connects `deferredPreloadChunks`, `DEEPGRAM_PRICING`, `OpenRouterPricing` to the rest of the system?**
   _409 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**

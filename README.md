@@ -80,6 +80,9 @@ Admin can start a local proof attempt before the manual chat and voice run; that
 attempt writes a local memory-event lifecycle row, the id is carried through
 chat/voice metadata, and coherent provider-key proof now requires the selected
 rows to share it in addition to book, thread, and multi-PDF anchors.
+Voice websocket system-activity rows also preserve that proof attempt id with
+voice-mode and voice-realtime agent-layer metadata across auth, context, tool,
+provider, and close events.
 The provider-key panel also exposes a local live-proof drill packet: setup
 checklist, ordered run sequence, exact typed-chat and live-voice prompts,
 expected ledger rows, blockers, and export instructions. It helps beta operators

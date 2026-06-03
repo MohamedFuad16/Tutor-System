@@ -210,6 +210,9 @@ duration seconds without network access. Use the Deepgram provider in
   chat/voice context, retrieval, transcript, model/tool, evidence, and
   learner-memory metadata carry that attempt id, and coherent proof requires a
   shared attempt id plus shared book, thread, and multi-PDF anchors.
+- Voice websocket activity also preserves that proof attempt id with `voice`
+  mode and `voice_realtime` agent-layer metadata across auth, context,
+  provider-ready, tool-request, tool-completion, and close rows.
 - The provider-key panel derives a local live-proof drill packet from that same
   checklist. It renders setup steps, exact typed-chat and live-voice prompts,
   expected context/retrieval/model/tool/mastery/transcript/background rows,

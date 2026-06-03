@@ -172,6 +172,85 @@ about 98%.
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+# Packet ACH: Voice Proof-Attempt System Activity
+
+Packet ACH keeps the server-side live voice timeline aligned with the deliberate
+provider-key proof attempt. Earlier slices propagated `proofAttemptId` through
+client-side chat and voice ledgers; this slice adds the same local correlation
+to voice websocket system-activity rows so Admin can inspect voice auth,
+context, provider, tool, and close events during a manual proof run.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 99%. The remaining unproven gap is still deliberate provider-key
+typed-chat plus live-voice beta traffic with real provider rows.
+
+## Graphify Context
+
+- `graphify query "server voice websocket proofAttemptId
+  recordVoiceToolRequest startVoiceSession recordSystemActivity" --budget 4000
+  --graph graphify-out/graph.json` routed the slice to `server.ts`,
+  `ChatPanel.tsx`, `voiceAgentTools.ts`, `brain.context.ts`,
+  `beta.diagnostics.ts`, `AdminView.tsx`, and connected tests.
+- `graphify query "voice proofAttemptId system activity Admin architecture book
+  app design userBrainArchitectureBook TUTOR_ARCHITECTURE RevisionView"
+  --budget 5000 --graph graphify-out/graph.json` routed the doc sync to
+  `src/lib/userBrainArchitectureBook.ts`, `TUTOR_ARCHITECTURE.md`,
+  `README.md`, and `src/views/RevisionView.tsx`.
+
+## Integration Decisions
+
+- The voice websocket now normalizes the proof attempt id from `voice_auth`
+  payloads or `studyContextMetadata`.
+- Voice auth, injected context, mock/live provider readiness, tool-request,
+  tool-completion, provider-close, and client-close system-activity rows now
+  include canonical `proofAttemptId`, `mode: "voice"`, and
+  `agentLayer: "voice_realtime"` metadata.
+- The mock voice websocket regression now proves the shared attempt id survives
+  auth, context injection, provider ready, tool request, and client tool
+  completion rows.
+- README, Tutor System Architecture, the User Brain Architecture book, and App
+  Design Language copy now describe the server-side voice proof metadata.
+
+## Verification Evidence
+
+- `npm run test -- tests/system-activity.test.mjs
+  tests/voice-agent-tools.test.mjs tests/beta-diagnostics.test.mjs`: passed
+  through the project test runner, 161 tests.
+- `npm run format`: passed.
+- `npm run test`: passed, 161 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- In-app Browser QA on `http://localhost:3100` confirmed desktop and mobile App
+  Design Language / Local Beta Control Patterns rendered the Voice agent
+  timeline text with proof-attempt id, `voice_realtime` agent layer, tool
+  requests, and tool completions; both viewports had no horizontal overflow and
+  zero warning/error logs.
+- `graphify update . --force`: regenerated code architecture artifacts with
+  1115 nodes, 1954 edges, and 66 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html` at
+  81.9 KB.
+- Graphify smoke query found `hasVoiceProofMetadata()`,
+  `system-activity.test.mjs`, `startVoiceApp()`, `server.ts`, `ChatPanel.tsx`,
+  `voiceAgentTools.ts`, `brain.context.ts`, `beta.diagnostics.ts`, and
+  `AdminView.tsx`.
+- Graphify path `hasVoiceProofMetadata()` to `startVoiceApp()` found a two-hop
+  route through `system-activity.test.mjs`.
+- Top-level Graphify artifacts `graph.json`, `GRAPH_REPORT.md`,
+  `GRAPH_TREE.html`, and `manifest.json` had no `server.mjs`, `.tmp-test`, or
+  `/private/tmp` scratch references.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the drill packet and coherent proof bundle to
+  confirm real rows satisfy the complete local beta flow.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Packet ACG: Provider-Key Live Proof Drill Packet
 
 Date: 2026-06-03T22:30:24+0900

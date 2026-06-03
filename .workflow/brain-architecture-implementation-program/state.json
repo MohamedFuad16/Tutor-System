@@ -603,6 +603,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACH",
+      "name": "Voice proof-attempt system activity",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "server.ts, tests/system-activity.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1405,11 +1412,29 @@
     "npm run graphify:tree passed for Packet ACG and wrote GRAPH_TREE.html at 81.8 KB",
     "Graphify smoke query found LiveBetaProofDrillPacket, buildLiveBetaProofDrillPacket(), buildProviderKeyProofChecklist(), AdminView(), and connected diagnostics nodes",
     "graphify path buildLiveBetaProofDrillPacket() to AdminView() found a three-hop route through buildProviderKeyProofChecklist() and AdminView.tsx",
-    "Packet ACG graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ACG graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ACH selected after Graphify routed voice proof metadata through server.ts, ChatPanel.tsx, voiceAgentTools.ts, brain.context.ts, beta.diagnostics.ts, AdminView.tsx, system-activity.test.mjs, userBrainArchitectureBook.ts, TUTOR_ARCHITECTURE.md, README.md, and RevisionView.tsx",
+    "Voice websocket system-activity rows now preserve canonical proofAttemptId, mode voice, and agentLayer voice_realtime metadata across auth, context injection, provider readiness, tool requests, tool completions, provider close, and client close",
+    "Mock voice websocket regression now asserts the shared beta proof attempt id survives voice auth, context injection, mock provider ready, voice tool requested, and voice client tool completed rows",
+    "README, Tutor System Architecture, User Brain Architecture, and App Design Language copy document the server-side voice proof metadata",
+    "npm run format passed for Packet ACH",
+    "npm run test -- tests/system-activity.test.mjs tests/voice-agent-tools.test.mjs tests/beta-diagnostics.test.mjs passed via the project test runner, 161 tests",
+    "npm run test passed for Packet ACH, 161 tests",
+    "npm run format:check passed for Packet ACH",
+    "npm run lint passed for Packet ACH",
+    "npm run build passed for Packet ACH",
+    "npm run brain:postchange -- --reason debug-skill-change remained unavailable because current package.json has no brain:postchange script",
+    "npm run brain:ui-regression remained unavailable because current package.json has no brain:ui-regression script",
+    "In-app Browser QA confirmed desktop and mobile App Design Language Local Beta Control Patterns rendered the Voice agent timeline proof-attempt text with no horizontal overflow and zero warning/error logs",
+    "graphify update . --force regenerated code architecture artifacts with 1115 nodes, 1954 edges, and 66 communities",
+    "npm run graphify:tree passed for Packet ACH and wrote GRAPH_TREE.html at 81.9 KB",
+    "Graphify smoke query found hasVoiceProofMetadata(), system-activity.test.mjs, startVoiceApp(), server.ts, ChatPanel.tsx, voiceAgentTools.ts, brain.context.ts, beta.diagnostics.ts, and AdminView.tsx",
+    "graphify path hasVoiceProofMetadata() to startVoiceApp() found a two-hop route through system-activity.test.mjs",
+    "Packet ACH top-level graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACG final gates: Admin now turns the provider-key live beta runbook into an exact local drill packet with setup, typed-chat prompt, live-voice script, expected ledger rows, blockers, and export instructions. The shared chat/voice context path, multi-PDF intake/context, retrieval hints, Admin diagnostics, tool-call/evidence ledgers, voice/chat proof-attempt lifecycle, stored audio, docs, browser QA, and Graphify artifacts are implemented and verified. The remaining unproven gap is deliberate provider-key typed-chat plus live-voice beta traffic with real provider rows; broader beta validation and AWS/cloud synchronization remain incomplete/out of scope.",
-    "updatedAt": "2026-06-03T22:30:24.000+09:00"
+    "basis": "Local architecture estimate after Packet ACH final gates: voice websocket system-activity rows now carry the same deliberate proofAttemptId, voice mode, and voice_realtime agent-layer metadata as the client ledgers, so Admin can correlate auth, context injection, provider readiness, tool requests, tool completions, and close events during a manual provider-key voice proof. The shared chat/voice context path, multi-PDF intake/context, retrieval hints, Admin diagnostics, tool-call/evidence ledgers, proof-attempt lifecycle, stored audio, docs, browser QA, and Graphify artifacts are implemented and verified. The remaining unproven gap is deliberate provider-key typed-chat plus live-voice beta traffic with real provider rows; broader beta validation and AWS/cloud synchronization remain incomplete/out of scope.",
+    "updatedAt": "2026-06-03T22:57:57.000+09:00"
   }
 }

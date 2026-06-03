@@ -457,7 +457,7 @@
       "label": "startServer()",
       "file_type": "code",
       "source_file": "server.ts",
-      "source_location": "L3718",
+      "source_location": "L3745",
       "id": "learningai_server_startserver",
       "community": 13,
       "norm_label": "startserver()"
@@ -1417,10 +1417,19 @@
       "norm_label": "waitforactivity()"
     },
     {
-      "label": "ws",
+      "label": "hasVoiceProofMetadata()",
       "file_type": "code",
       "source_file": "tests/system-activity.test.mjs",
       "source_location": "L101",
+      "id": "tests_system_activity_test_hasvoiceproofmetadata",
+      "community": 13,
+      "norm_label": "hasvoiceproofmetadata()"
+    },
+    {
+      "label": "ws",
+      "file_type": "code",
+      "source_file": "tests/system-activity.test.mjs",
+      "source_location": "L106",
       "id": "tests_system_activity_test_ws",
       "community": 13,
       "norm_label": "ws"
@@ -1429,7 +1438,7 @@
       "label": "functionRequest",
       "file_type": "code",
       "source_file": "tests/system-activity.test.mjs",
-      "source_location": "L107",
+      "source_location": "L112",
       "id": "tests_system_activity_test_functionrequest",
       "community": 13,
       "norm_label": "functionrequest"
@@ -1438,7 +1447,7 @@
       "label": "toolNames",
       "file_type": "code",
       "source_file": "tests/system-activity.test.mjs",
-      "source_location": "L149",
+      "source_location": "L158",
       "id": "tests_system_activity_test_toolnames",
       "community": 13,
       "norm_label": "toolnames"
@@ -9538,7 +9547,7 @@
       "label": "Core Surfaces",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L115",
+      "source_location": "L118",
       "id": "learningai_readme_core_surfaces",
       "community": 14,
       "norm_label": "core surfaces"
@@ -9547,7 +9556,7 @@
       "label": "System Architecture",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L153",
+      "source_location": "L156",
       "id": "learningai_readme_system_architecture",
       "community": 14,
       "norm_label": "system architecture"
@@ -9556,7 +9565,7 @@
       "label": "code:text (Upload)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L158",
+      "source_location": "L161",
       "id": "learningai_readme_codeblock_1",
       "community": 14,
       "norm_label": "code:text (upload)"
@@ -9565,7 +9574,7 @@
       "label": "code:mermaid (graph TD)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L166",
+      "source_location": "L169",
       "id": "learningai_readme_codeblock_2",
       "community": 14,
       "norm_label": "code:mermaid (graph td)"
@@ -9574,7 +9583,7 @@
       "label": "Book-Scoped Study Workflow",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L188",
+      "source_location": "L191",
       "id": "learningai_readme_book_scoped_study_workflow",
       "community": 14,
       "norm_label": "book-scoped study workflow"
@@ -9583,7 +9592,7 @@
       "label": "Multi-PDF Books",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L205",
+      "source_location": "L208",
       "id": "learningai_readme_multi_pdf_books",
       "community": 14,
       "norm_label": "multi-pdf books"
@@ -9592,7 +9601,7 @@
       "label": "Graphify Architecture Layer",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L237",
+      "source_location": "L240",
       "id": "learningai_readme_graphify_architecture_layer",
       "community": 14,
       "norm_label": "graphify architecture layer"
@@ -9601,7 +9610,7 @@
       "label": "code:bash (npm run graphify:query -- \"how does chat streaming work?\")",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L244",
+      "source_location": "L247",
       "id": "learningai_readme_codeblock_3",
       "community": 14,
       "norm_label": "code:bash (npm run graphify:query -- \"how does chat streaming work?\")"
@@ -9610,7 +9619,7 @@
       "label": "Getting Started",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L261",
+      "source_location": "L264",
       "id": "learningai_readme_getting_started",
       "community": 14,
       "norm_label": "getting started"
@@ -9619,7 +9628,7 @@
       "label": "1. Prerequisites",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L263",
+      "source_location": "L266",
       "id": "learningai_readme_1_prerequisites",
       "community": 14,
       "norm_label": "1. prerequisites"
@@ -9628,7 +9637,7 @@
       "label": "2. Install",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L272",
+      "source_location": "L275",
       "id": "learningai_readme_2_install",
       "community": 14,
       "norm_label": "2. install"
@@ -9637,7 +9646,7 @@
       "label": "code:bash (git clone https://github.com/MohamedFuad16/Tutor-System-Arch)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L274",
+      "source_location": "L277",
       "id": "learningai_readme_codeblock_4",
       "community": 14,
       "norm_label": "code:bash (git clone https://github.com/mohamedfuad16/tutor-system-arch)"
@@ -9646,7 +9655,7 @@
       "label": "3. Configure Environment",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L280",
+      "source_location": "L283",
       "id": "learningai_readme_3_configure_environment",
       "community": 14,
       "norm_label": "3. configure environment"
@@ -9655,7 +9664,7 @@
       "label": "code:ini (OPENROUTER_API_KEY=your_openrouter_key_here)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L284",
+      "source_location": "L287",
       "id": "learningai_readme_codeblock_5",
       "community": 14,
       "norm_label": "code:ini (openrouter_api_key=your_openrouter_key_here)"
@@ -9664,7 +9673,7 @@
       "label": "4. Run",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L295",
+      "source_location": "L298",
       "id": "learningai_readme_4_run",
       "community": 14,
       "norm_label": "4. run"
@@ -9673,7 +9682,7 @@
       "label": "code:bash (npm run dev)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L297",
+      "source_location": "L300",
       "id": "learningai_readme_codeblock_6",
       "community": 14,
       "norm_label": "code:bash (npm run dev)"
@@ -9682,7 +9691,7 @@
       "label": "5. Generate Stored Chapter Audio",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L301",
+      "source_location": "L304",
       "id": "learningai_readme_5_generate_stored_chapter_audio",
       "community": 14,
       "norm_label": "5. generate stored chapter audio"
@@ -9691,7 +9700,7 @@
       "label": "code:bash (npm run audio:overview:dry-run)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L307",
+      "source_location": "L310",
       "id": "learningai_readme_codeblock_7",
       "community": 14,
       "norm_label": "code:bash (npm run audio:overview:dry-run)"
@@ -9700,7 +9709,7 @@
       "label": "Design System",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L318",
+      "source_location": "L321",
       "id": "learningai_readme_design_system",
       "community": 14,
       "norm_label": "design system"
@@ -9709,7 +9718,7 @@
       "label": "Contributing",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L327",
+      "source_location": "L330",
       "id": "learningai_readme_contributing",
       "community": 14,
       "norm_label": "contributing"
@@ -9718,7 +9727,7 @@
       "label": "License",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L333",
+      "source_location": "L336",
       "id": "learningai_readme_license",
       "community": 14,
       "norm_label": "license"
@@ -9997,7 +10006,7 @@
       "label": "7. Graphify Architecture Layer",
       "file_type": "document",
       "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L240",
+      "source_location": "L243",
       "id": "learningai_tutor_architecture_7_graphify_architecture_layer",
       "community": 18,
       "norm_label": "7. graphify architecture layer"
@@ -10006,7 +10015,7 @@
       "label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)",
       "file_type": "document",
       "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L252",
+      "source_location": "L255",
       "id": "learningai_tutor_architecture_codeblock_1",
       "community": 18,
       "norm_label": "code:bash (graphify query \"your question\" --budget 2000 --graph graphif)"
@@ -10015,7 +10024,7 @@
       "label": "8. Maintenance Boundaries",
       "file_type": "document",
       "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L272",
+      "source_location": "L275",
       "id": "learningai_tutor_architecture_8_maintenance_boundaries",
       "community": 18,
       "norm_label": "8. maintenance boundaries"
@@ -10024,7 +10033,7 @@
       "label": "code:bash (npm run lint)",
       "file_type": "document",
       "source_file": "TUTOR_ARCHITECTURE.md",
-      "source_location": "L286",
+      "source_location": "L289",
       "id": "learningai_tutor_architecture_codeblock_2",
       "community": 18,
       "norm_label": "code:bash (npm run lint)"
@@ -11555,9 +11564,9 @@
       "source_file": "tests/beta-diagnostics.test.mjs",
       "source_location": "L401",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_beta_diagnostics_test_mjs",
-      "target": "tests_beta_diagnostics_test_chatprompt",
-      "confidence_score": 1.0
+      "target": "tests_beta_diagnostics_test_chatprompt"
     },
     {
       "relation": "contains",
@@ -11565,9 +11574,9 @@
       "source_file": "tests/beta-diagnostics.test.mjs",
       "source_location": "L404",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_beta_diagnostics_test_mjs",
-      "target": "tests_beta_diagnostics_test_voiceprompt",
-      "confidence_score": 1.0
+      "target": "tests_beta_diagnostics_test_voiceprompt"
     },
     {
       "relation": "contains",
@@ -11978,6 +11987,16 @@
       "confidence_score": 1.0,
       "source": "tests_system_activity_test_mjs",
       "target": "tests_system_activity_test_waitforactivity"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/system-activity.test.mjs",
+      "source_location": "L101",
+      "weight": 1.0,
+      "source": "tests_system_activity_test_mjs",
+      "target": "tests_system_activity_test_hasvoiceproofmetadata",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -19125,9 +19144,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L155",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_livebetaproofdrillprompt",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_livebetaproofdrillprompt"
     },
     {
       "relation": "contains",
@@ -19135,9 +19154,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L165",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_livebetaproofdrillpacket",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_livebetaproofdrillpacket"
     },
     {
       "relation": "contains",
@@ -19635,9 +19654,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L2015",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_memory_beta_diagnostics_ts",
-      "target": "memory_beta_diagnostics_buildlivebetaproofdrillpacket",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_buildlivebetaproofdrillpacket"
     },
     {
       "relation": "contains",
@@ -19982,9 +20001,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L2028",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_buildlivebetaproofdrillpacket",
-      "target": "memory_beta_diagnostics_compactunique",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_compactunique"
     },
     {
       "relation": "calls",
@@ -20279,9 +20298,9 @@
       "source_file": "src/memory/beta.diagnostics.ts",
       "source_location": "L2254",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "memory_beta_diagnostics_buildproviderkeyproofchecklist",
-      "target": "memory_beta_diagnostics_buildlivebetaproofdrillpacket",
-      "confidence_score": 1.0
+      "target": "memory_beta_diagnostics_buildlivebetaproofdrillpacket"
     },
     {
       "relation": "imports",
@@ -30497,5 +30516,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "7779954410f626df18e93e3bed929e719c00ad94"
+  "built_at_commit": "2db684e16bd265d69b40247bff6da47167f073a9"
 }

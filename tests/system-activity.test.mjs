@@ -97,6 +97,11 @@ test("blocked chat requests are recorded without live model calls", async (t) =>
 test("mock voice websocket records a local tool-call loop", async (t) => {
   const { server, baseUrl, wsUrl } = await startVoiceApp();
   t.after(() => server.close());
+  const proofAttemptId = "beta-proof-voice-test";
+  const hasVoiceProofMetadata = (event) =>
+    event.metadata?.proofAttemptId === proofAttemptId &&
+    event.metadata?.mode === "voice" &&
+    event.metadata?.agentLayer === "voice_realtime";
 
   const ws = new WebSocket(wsUrl);
   t.after(() => {
@@ -123,6 +128,7 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
       type: "voice_auth",
       voiceSessionId: "voice-test-session-1",
       requestId: "voice-test-session-1",
+      proofAttemptId,
       studyContext: "Local websocket test study context.",
       activeBookId: "book:voice-test",
       activeBookTitle: "Voice Tool Test",
@@ -136,6 +142,9 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
       omittedReadyDocumentCount: 0,
       studyContextChars: 35,
       studyContextMetadata: {
+        proofAttemptId,
+        mode: "voice",
+        agentLayer: "voice_realtime",
         rawContextChars: 120,
         memoryContextChars: 20,
         activeBookContextChars: 30,
@@ -182,7 +191,8 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         event.kind === "tool" &&
         event.status === "started" &&
         event.title === "Voice tool call requested" &&
-        event.requestId === "voice-test-session-1",
+        event.requestId === "voice-test-session-1" &&
+        hasVoiceProofMetadata(event),
     ),
   );
   assert.ok(
@@ -191,7 +201,19 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         event.kind === "tool" &&
         event.status === "completed" &&
         event.title === "Voice client tool completed" &&
-        event.requestId === "voice-test-session-1",
+        event.requestId === "voice-test-session-1" &&
+        hasVoiceProofMetadata(event),
+    ),
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "voice" &&
+        event.status === "started" &&
+        event.title === "Voice session accepted" &&
+        event.requestId === "voice-test-session-1" &&
+        event.metadata?.studyContextChars === 35 &&
+        hasVoiceProofMetadata(event),
     ),
   );
   assert.ok(
@@ -200,7 +222,8 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         event.kind === "voice" &&
         event.status === "completed" &&
         event.title === "Mock voice provider ready" &&
-        event.requestId === "voice-test-session-1",
+        event.requestId === "voice-test-session-1" &&
+        hasVoiceProofMetadata(event),
     ),
   );
   assert.ok(
@@ -214,7 +237,8 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         event.metadata?.readyDocumentCount === 1 &&
         event.metadata?.unreadyDocumentCount === 1 &&
         event.metadata?.contextDocumentIds?.includes("doc:voice-test") &&
-        event.metadata?.documentIds?.includes("doc:voice-supplement"),
+        event.metadata?.documentIds?.includes("doc:voice-supplement") &&
+        hasVoiceProofMetadata(event),
     ),
   );
 });
