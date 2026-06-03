@@ -2345,7 +2345,12 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "Brain-flow coverage",
         detail:
-          "Beta Diagnostics checks chat context, voice context, chat and voice multi-PDF context, request correlation, foreground tools, evaluated mastery evidence, transcript saves, request-correlated memory rows, and model-observation gates as one local readiness proof. Admin can start a local proof attempt before the manual chat and voice run; coherent provider-key proof requires that start row, shared attempt id, book, thread, and context-PDF anchors.",
+          "Beta Diagnostics checks chat context, voice context, chat and voice multi-PDF context, request correlation, foreground tools, evaluated mastery evidence, transcript saves, request-correlated memory rows, and model-observation gates as one local readiness proof. Admin can start a local proof attempt before the manual chat and voice run; coherent provider-key proof requires that start row, shared attempt id, book, thread, context-PDF anchors, and real provider-ready rows.",
+      },
+      {
+        title: "Provider-ready proof",
+        detail:
+          "Provider-key proof treats completed model rows and provider-ready rows as separate evidence. Typed chat needs a completed OpenRouter-backed row for the selected request; live voice needs the server-side Deepgram Voice provider ready row, and the local mock voice provider row never counts.",
       },
       {
         title: "Provider-key drill packet",

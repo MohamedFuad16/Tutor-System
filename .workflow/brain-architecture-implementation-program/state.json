@@ -617,6 +617,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/components/ChatPanel.tsx, tests/voice-proof-attempt-latch.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACJ",
+      "name": "Live provider row proof",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1477,11 +1484,37 @@
     "npm run graphify:tree passed for Packet ACI and wrote GRAPH_TREE.html at 82.3 KB",
     "Graphify smoke query found voice-proof-attempt-latch.test.mjs, ChatPanel.tsx, ChatPanel(), sourceSlice(), startVoiceSource, voiceToolSource, sendMessageSource, and connected beta diagnostics/Admin/Revision nodes",
     "Graphify did not extract getVoiceProofAttemptId() as a standalone path node, so helper-level path smoke used the regenerated source-contract test and ChatPanel graph nodes instead",
-    "Packet ACI top-level graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
+    "Packet ACI top-level graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references",
+    "Packet ACJ selected after Graphify routed coherent provider-key proof through beta.diagnostics.ts, AdminView.tsx, model.runs.ts, ChatPanel.tsx, README.md, TUTOR_ARCHITECTURE.md, userBrainArchitectureBook.ts, and RevisionView.tsx",
+    "Coherent provider-key request bundles now include providerRows and require provider-ready evidence separately from completed model rows",
+    "Typed-chat provider proof now requires a completed OpenRouter-backed chat_stream model row with a real requested or used model name for the selected request",
+    "Live-voice provider proof now requires the server-side Deepgram Voice provider ready system-activity row for the selected voice request",
+    "Local Mock voice provider ready rows remain visible in Admin system activity but do not satisfy provider-key proof",
+    "Admin Beta Diagnostics now feeds system activity into buildCoherentLiveProofFromLedgers and renders Provider row counts in coherent bundle details",
+    "tests/beta-diagnostics.test.mjs now covers providerRows, fallback model rows, and mock voice provider readiness rejection",
+    "README, Tutor System Architecture, User Brain Architecture, and App Design Language copy document the real provider-ready proof boundary",
+    "npm run format passed for Packet ACJ",
+    "npm run test -- tests/beta-diagnostics.test.mjs passed via the project test runner, 165 tests",
+    "npm run test passed for Packet ACJ, 165 tests",
+    "npm run format:check passed for Packet ACJ",
+    "npm run lint passed for Packet ACJ",
+    "npm run build passed for Packet ACJ",
+    "npm run brain:postchange -- --reason skill-preflight remained unavailable because current package.json has no brain:postchange script",
+    "npm run brain:retrieve -- remaining provider-key live beta proof real provider rows chat voice stored injected tool calling both agent layers remained unavailable because current package.json has no brain:retrieve script",
+    "npm run brain:impact -- src/memory/beta.diagnostics.ts remained unavailable because current package.json has no brain:impact script",
+    "In-app Browser desktop Admin Beta Diagnostics QA confirmed Provider bundle metrics, Provider-ready row missing detail, Real voice provider ready copy, no horizontal overflow, and zero warning/error logs",
+    "In-app Browser mobile Admin Beta Diagnostics QA at 390px confirmed the same provider-proof copy, no horizontal overflow, and zero warning/error logs",
+    "In-app Browser App Design Language QA at 390px and 1280px confirmed the Provider-ready proof card rendered in Local Beta Control Patterns with no horizontal overflow and zero warning/error logs",
+    "Browser screenshot capture timed out in this session, so Packet ACJ browser evidence is DOM/copy/overflow/log based rather than screenshot-file based",
+    "graphify update . --force regenerated code architecture artifacts with 1129 nodes, 1970 edges, and 63 communities",
+    "npm run graphify:tree passed for Packet ACJ and wrote GRAPH_TREE.html at 82.7 KB",
+    "Graphify smoke query found isRealVoiceProviderReadyEvent(), isProviderBackedChatModelRun(), buildCoherentLiveProofFromLedgers(), buildCoherentRequestBundle(), AdminView(), and connected Admin/Revision nodes",
+    "graphify path buildCoherentLiveProofFromLedgers() to AdminView() found the expected one-hop call edge",
+    "Packet ACJ top-level graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACI final gates: live voice now latches the deliberate provider-key proofAttemptId at session start and carries it through voice context, websocket auth, model/tool rows, transcript events, and background learner-memory writes, matching the server-side voice websocket proof metadata from Packet ACH. The shared chat/voice context path, multi-PDF intake/context, retrieval hints, Admin diagnostics, tool-call/evidence ledgers, proof-attempt lifecycle, stored audio, docs, browser QA, and Graphify artifacts are implemented and verified. The remaining unproven gap is deliberate provider-key typed-chat plus live-voice beta traffic with real provider rows; broader beta validation and AWS/cloud synchronization remain incomplete/out of scope.",
-    "updatedAt": "2026-06-03T23:31:16.000+09:00"
+    "basis": "Local architecture estimate after Packet ACJ final gates: coherent provider-key proof now distinguishes completed model rows from real provider-ready evidence. Typed chat needs a completed OpenRouter-backed row for the selected request, and live voice needs the server-side Deepgram Voice provider ready row; local mock voice provider readiness remains visible but cannot pass provider-key proof. The shared chat/voice context path, multi-PDF intake/context, retrieval hints, Admin diagnostics, tool-call/evidence ledgers, proof-attempt lifecycle, stored audio, docs, browser QA, and Graphify artifacts are implemented and verified. The remaining unproven gap is the deliberate provider-key typed-chat plus live-voice beta run that actually records those real provider rows, plus broader beta validation; AWS/cloud synchronization remains incomplete/out of scope.",
+    "updatedAt": "2026-06-03T23:55:54.000+09:00"
   }
 }

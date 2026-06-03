@@ -210,6 +210,10 @@ duration seconds without network access. Use the Deepgram provider in
   chat/voice context, retrieval, transcript, model/tool, evidence, and
   learner-memory metadata carry that attempt id, and coherent proof requires a
   shared attempt id plus shared book, thread, and multi-PDF anchors.
+- Coherent provider-key proof distinguishes completed model rows from real
+  provider-ready rows. Typed chat needs a completed OpenRouter-backed model row
+  for the selected request, and live voice needs the server-side Deepgram
+  `Voice provider ready` system-activity row. The local `Mock voice provider ready` row remains debuggable but never satisfies provider-key proof.
 - Voice websocket activity also preserves that proof attempt id with `voice`
   mode and `voice_realtime` agent-layer metadata across auth, context,
   provider-ready, tool-request, tool-completion, and close rows.

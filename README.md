@@ -80,6 +80,11 @@ Admin can start a local proof attempt before the manual chat and voice run; that
 attempt writes a local memory-event lifecycle row, the id is carried through
 chat/voice metadata, and coherent provider-key proof now requires the selected
 rows to share it in addition to book, thread, and multi-PDF anchors.
+The same coherent proof now separates completed model rows from provider-ready
+rows: typed chat must have a completed OpenRouter-backed row for the selected
+request, and live voice must have the server-side `Voice provider ready`
+Deepgram row. The local mock voice provider row is visible for debugging but
+does not count as provider-key proof.
 Voice websocket system-activity rows also preserve that proof attempt id with
 voice-mode and voice-realtime agent-layer metadata across auth, context, tool,
 provider, and close events.

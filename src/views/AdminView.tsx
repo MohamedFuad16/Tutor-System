@@ -970,6 +970,7 @@ export function AdminView() {
       modelRuns,
       toolJobs,
       evidenceEvents,
+      systemActivityEvents: activityPayload?.events || [],
     },
     {
       nowMs: diagnosticGeneratedAtMs,
@@ -5048,6 +5049,7 @@ export function AdminView() {
                                 ["Context", bundle.contextRows],
                                 ["Retrieval", bundle.retrievalRows],
                                 ["Completed model", bundle.completedModelRows],
+                                ["Provider", bundle.providerRows],
                                 ["Tool", bundle.toolRows],
                                 ["Mastery", bundle.evidenceRows],
                                 ["Transcript", bundle.transcriptRows],

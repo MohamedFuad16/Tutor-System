@@ -219,6 +219,7 @@ export type CoherentLiveProofRequestBundle = {
   contextRows: number;
   retrievalRows: number;
   completedModelRows: number;
+  providerRows: number;
   toolRows: number;
   evidenceRows: number;
   transcriptRows: number;
@@ -271,16 +272,31 @@ type BetaMemoryEventLedgerRow = Pick<
 > &
   Partial<Pick<MemoryEvent, "id">>;
 
+type BetaModelRunLedgerRow = Pick<
+  ModelRun,
+  "status" | "requestId" | "source" | "timestamp" | "metadata"
+> &
+  Partial<
+    Pick<ModelRun, "provider" | "requestedModel" | "usedModel" | "estimated">
+  >;
+
+type BetaSystemActivityLedgerRow = {
+  kind?: string;
+  status?: string;
+  title?: string;
+  requestId?: string;
+  phase?: string;
+  timestamp?: number;
+  metadata?: Record<string, unknown>;
+};
+
 export type BetaBrainFlowLedgerInput = {
   memoryEvents?: BetaMemoryEventLedgerRow[];
   retrievalEvents?: Pick<
     RetrievalEvent,
     "status" | "requestId" | "timestamp" | "metadata"
   >[];
-  modelRuns?: Pick<
-    ModelRun,
-    "status" | "requestId" | "source" | "timestamp" | "metadata"
-  >[];
+  modelRuns?: BetaModelRunLedgerRow[];
   toolJobs?: Pick<
     ToolJob,
     "status" | "requestId" | "source" | "timestamp" | "metadata"
@@ -293,6 +309,7 @@ export type BetaBrainFlowLedgerInput = {
     EvidenceEvent,
     "evidenceType" | "verified" | "metadata" | "timestamp"
   >[];
+  systemActivityEvents?: BetaSystemActivityLedgerRow[];
 };
 
 type CoherentLiveProofOptions = {
@@ -955,6 +972,8 @@ export const buildBrainFlowCoverageFromLedgers = ({
   };
 };
 
+type CoherentModelRunRow = BetaModelRunLedgerRow;
+
 type CoherentRequestFacts = {
   requestId: string;
   contextRows: Pick<MemoryEvent, "metadata" | "timestamp" | "bookId">[];
@@ -962,10 +981,8 @@ type CoherentRequestFacts = {
     RetrievalEvent,
     "status" | "requestId" | "timestamp" | "metadata"
   >[];
-  modelRows: Pick<
-    ModelRun,
-    "status" | "requestId" | "source" | "timestamp" | "metadata"
-  >[];
+  modelRows: CoherentModelRunRow[];
+  providerRows: Array<CoherentModelRunRow | BetaSystemActivityLedgerRow>;
   toolRows: Pick<
     ToolJob,
     "status" | "requestId" | "source" | "timestamp" | "metadata"
@@ -1002,6 +1019,10 @@ const coherentBundleRowLabels = [
   {
     key: "modelRows",
     label: "Completed model row",
+  },
+  {
+    key: "providerRows",
+    label: "Provider-ready row",
   },
   {
     key: "toolRows",
@@ -1043,6 +1064,7 @@ const buildCoherentRequestBundle = (
     contextRows: rowCount("contextRows"),
     retrievalRows: rowCount("retrievalRows"),
     completedModelRows: rowCount("modelRows"),
+    providerRows: rowCount("providerRows"),
     toolRows: rowCount("toolRows"),
     evidenceRows: rowCount("evidenceRows"),
     transcriptRows: rowCount("threadRows"),
@@ -1069,6 +1091,22 @@ const memoryEventConversationId = (
   requestIdValue(event.conversationId) ||
   metadataString(event.metadata, "conversationId") ||
   metadataString(event.metadata, "threadId");
+
+const normalizedText = (value: unknown) =>
+  typeof value === "string" ? value.trim().toLowerCase() : "";
+
+const isProviderBackedChatModelRun = (run: CoherentModelRunRow) =>
+  run.status === "completed" &&
+  run.source === "chat_stream" &&
+  normalizedText(run.provider) === "openrouter" &&
+  Boolean(requestIdValue(run.usedModel) || requestIdValue(run.requestedModel));
+
+const isRealVoiceProviderReadyEvent = (event: BetaSystemActivityLedgerRow) =>
+  normalizedText(event.kind) === "voice" &&
+  normalizedText(event.status) === "completed" &&
+  normalizedText(event.phase) === "settings" &&
+  normalizedText(event.title) === "voice provider ready" &&
+  !normalizedText(event.title).includes("mock");
 
 const timestampsFromAnchors = (anchors: SignalEvidenceAnchor[]) =>
   anchors
@@ -1119,6 +1157,7 @@ export const buildCoherentLiveProofFromLedgers = (
     modelRuns = [],
     toolJobs = [],
     evidenceEvents = [],
+    systemActivityEvents = [],
   }: BetaBrainFlowLedgerInput = {},
   {
     nowMs,
@@ -1142,6 +1181,10 @@ export const buildCoherentLiveProofFromLedgers = (
   );
   const requestCorrelatedModelRows = modelRuns.filter(
     (run) => run.status === "completed" && hasRequestId(run.requestId),
+  );
+  const realVoiceProviderReadyRows = systemActivityEvents.filter(
+    (event) =>
+      isRealVoiceProviderReadyEvent(event) && hasRequestId(event.requestId),
   );
   const foregroundToolJobRows = toolJobs.filter(
     (job) =>
@@ -1233,6 +1276,12 @@ export const buildCoherentLiveProofFromLedgers = (
     const matchingModelRows = requestCorrelatedModelRows.filter(
       (run) => run.requestId === requestId,
     );
+    const matchingProviderRows =
+      layer === "chat"
+        ? matchingModelRows.filter(isProviderBackedChatModelRun)
+        : realVoiceProviderReadyRows.filter(
+            (event) => event.requestId === requestId,
+          );
     const matchingToolRows = toolRows.filter(
       (job) => job.requestId === requestId,
     );
@@ -1257,6 +1306,13 @@ export const buildCoherentLiveProofFromLedgers = (
         requestId,
         source: run.source || "model_run",
         timestamp: run.timestamp,
+      })),
+      ...matchingProviderRows.map((row) => ({
+        metadata: row.metadata,
+        requestId,
+        source:
+          layer === "chat" ? "provider_model_run" : "voice_provider_ready",
+        timestamp: row.timestamp,
       })),
       ...matchingToolRows.map((job) => ({
         metadata: job.metadata,
@@ -1318,6 +1374,7 @@ export const buildCoherentLiveProofFromLedgers = (
       contextRows: matchingContextRows,
       retrievalRows: matchingRetrievalRows,
       modelRows: matchingModelRows,
+      providerRows: matchingProviderRows,
       toolRows: matchingToolRows,
       evidenceRows: matchingEvidenceRows,
       threadRows: matchingThreadRows,
@@ -1331,6 +1388,7 @@ export const buildCoherentLiveProofFromLedgers = (
         matchingContextRows.length > 0 &&
         matchingRetrievalRows.length > 0 &&
         matchingModelRows.length > 0 &&
+        matchingProviderRows.length > 0 &&
         matchingToolRows.length > 0 &&
         matchingEvidenceRows.length > 0 &&
         matchingThreadRows.length > 0 &&
@@ -1564,6 +1622,23 @@ export const buildCoherentLiveProofFromLedgers = (
           ? "No failed or blocked local brain-flow rows are present in the proof window."
           : `${failedRows} failed or blocked rows must be resolved before the coherent proof can pass.`,
       evidence: sharedEvidence,
+    },
+    {
+      id: "real_voice_provider_ready",
+      title: "Real voice provider ready",
+      ready: (selectedVoice?.providerRows.length || 0) > 0,
+      status: (selectedVoice?.providerRows.length || 0) > 0 ? "ready" : "watch",
+      summary:
+        (selectedVoice?.providerRows.length || 0) > 0
+          ? "The selected voice request includes a server-side Deepgram provider-ready row; local mock provider rows do not count."
+          : "Run live voice with a real Deepgram provider connection until the server records Voice provider ready; mock voice provider rows do not count for provider-key proof.",
+      evidence: selectedVoice
+        ? mergeAnchors(
+            selectedVoice.anchors.filter(
+              (anchor) => anchor.source === "voice_provider_ready",
+            ),
+          )
+        : emptySignalEvidence(),
     },
     {
       id: "fresh_live_proof_window",

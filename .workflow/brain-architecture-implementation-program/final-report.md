@@ -172,6 +172,96 @@ tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+# Phase 71: Live Provider Row Proof
+
+Packet ACJ tightens the final local provider-key proof gate. The coherent proof
+bundle no longer treats a completed model row or local mock voice readiness as
+enough provider evidence. It now requires a separate provider-ready row for the
+selected typed-chat and live-voice requests.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 99%.
+
+## Graphify Context
+
+- `graphify query "remaining provider-key live beta proof real provider rows
+  chat voice stored injected tool calling transcript background memory Admin
+  blockers complete flow next implementation slice" --budget 9000 --graph
+  graphify-out/graph.json` routed the slice to `beta.diagnostics.ts`,
+  `AdminView.tsx`, provider-key diagnostics tests, and proof runbook surfaces.
+- `graphify query "Admin Beta Diagnostics provider-key proof blockers proof
+  attempt live voice typed chat complete proof missing evidence export runbook
+  coherent bundle" --budget 8000 --graph graphify-out/graph.json` confirmed the
+  Admin coherent bundle surface.
+- `graphify query "ModelRun provider estimated fallback completed provider key
+  source metadata chat_stream voice_agent recordModelRunEvent server ChatPanel"
+  --budget 8000 --graph graphify-out/graph.json` routed the model-row contract.
+- After regeneration, CLI Graphify smoke query found
+  `isRealVoiceProviderReadyEvent()`, `isProviderBackedChatModelRun()`,
+  `buildCoherentLiveProofFromLedgers()`, `buildCoherentRequestBundle()`, and
+  `AdminView()`.
+- Graphify path `buildCoherentLiveProofFromLedgers()` to `AdminView()` found a
+  one-hop call edge.
+
+## Integration Decisions
+
+- Added `providerRows` to coherent live proof request bundles.
+- Provider-backed typed chat now requires a completed `chat_stream` model row
+  from OpenRouter with a real requested or used model name.
+- Real live-voice provider proof now comes from the server-side Deepgram
+  `Voice provider ready` system-activity row for the selected voice request.
+- `Mock voice provider ready` rows remain visible in Admin system activity but
+  do not satisfy provider-key proof.
+- Admin feeds recent system-activity events into the coherent proof builder and
+  renders a Provider row count in bundle detail.
+- The coherent proof checklist now includes a `Real voice provider ready` check
+  with explicit mock-row boundary copy.
+- The ledger input type keeps provider fields optional so synthetic rehearsal or
+  older rows do not need pretend provider names; the provider-ready check only
+  passes when real matching provider evidence exists.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test -- tests/beta-diagnostics.test.mjs`: passed via the project
+  test runner, 165 tests.
+- `npm run test`: passed, 165 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason skill-preflight`: unavailable because
+  `package.json` has no `brain:postchange` script.
+- `npm run brain:retrieve -- remaining provider-key live beta proof real
+  provider rows chat voice stored injected tool calling both agent layers`:
+  unavailable because `package.json` has no `brain:retrieve` script.
+- `npm run brain:impact -- src/memory/beta.diagnostics.ts`: unavailable because
+  `package.json` has no `brain:impact` script.
+- In-app Browser desktop Admin Beta Diagnostics QA confirmed Provider row
+  metrics, `Provider-ready row` missing details, `Real voice provider ready`
+  copy, no horizontal overflow, and zero warning/error logs.
+- In-app Browser mobile Admin Beta Diagnostics QA at 390px confirmed the same
+  provider-proof copy, no horizontal overflow, and zero warning/error logs.
+- In-app Browser App Design Language QA at 390px and 1280px confirmed the
+  `Provider-ready proof` Local Beta Control Patterns card, no horizontal
+  overflow, and zero warning/error logs.
+- Browser screenshot capture timed out in this session, so ACJ browser evidence
+  is DOM/copy/overflow/log based rather than screenshot-file based.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1129 nodes, 1970 edges, and 63 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`82.7 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch references.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns with real provider
+  keys, then confirm the selected coherent bundle records real provider-ready
+  rows for both layers.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Packet ACI: Latched Voice Proof-Attempt Metadata
 
 Packet ACI keeps the client-side live voice session aligned with the deliberate

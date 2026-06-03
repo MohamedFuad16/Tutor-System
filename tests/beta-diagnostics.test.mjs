@@ -63,6 +63,12 @@ const timestampedCompleteLedgers = ({
         timestamp: timestampFor(row, index),
       }),
     ),
+    systemActivityEvents: completeBrainFlowLedgers.systemActivityEvents.map(
+      (row, index) => ({
+        ...row,
+        timestamp: timestampFor(row, index),
+      }),
+    ),
   };
 };
 
@@ -168,14 +174,20 @@ const completeBrainFlowLedgers = {
   modelRuns: [
     {
       status: "completed",
+      provider: "openrouter",
       source: "chat_stream",
       requestId: "chat-req-1",
+      requestedModel: "openai/gpt-4.1-mini",
+      usedModel: "openai/gpt-4.1-mini",
       timestamp: 7,
     },
     {
       status: "completed",
+      provider: "deepgram",
       source: "voice_agent",
       requestId: "voice-req-1",
+      requestedModel: "Deepgram Voice Agent",
+      usedModel: "Deepgram Voice Agent",
       timestamp: 8,
     },
   ],
@@ -214,6 +226,21 @@ const completeBrainFlowLedgers = {
         evidenceContract: "evaluated_answer_v1",
         agentLayer: "voice_realtime",
         mode: "voice",
+      },
+    },
+  ],
+  systemActivityEvents: [
+    {
+      kind: "voice",
+      status: "completed",
+      title: "Voice provider ready",
+      requestId: "voice-req-1",
+      phase: "settings",
+      timestamp: 13,
+      metadata: {
+        proofAttemptId: PROOF_ATTEMPT_ID,
+        mode: "voice",
+        agentLayer: "voice_realtime",
       },
     },
   ],
@@ -579,6 +606,8 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.equal(completeCoherentLiveProof.status, "ready");
   assert.equal(completeCoherentLiveProof.ready, true);
   assert.equal(completeCoherentLiveProof.completionPercent, 100);
+  assert.equal(completeCoherentLiveProof.readyChecks, 9);
+  assert.equal(completeCoherentLiveProof.totalChecks, 9);
   assert.equal(completeCoherentLiveProof.proofWindowReady, true);
   assert.equal(completeCoherentLiveProof.proofFresh, true);
   assert.equal(completeCoherentLiveProof.chatRequestId, "chat-req-1");
@@ -621,6 +650,12 @@ test("coherent live proof requires one complete chat request and one complete vo
     )?.ready,
     true,
   );
+  assert.equal(
+    completeCoherentLiveProof.checks.find(
+      (check) => check.id === "real_voice_provider_ready",
+    )?.ready,
+    true,
+  );
   assert.equal(completeCoherentLiveProof.requestBundles.length, 2);
   const chatBundle = completeCoherentLiveProof.requestBundles.find(
     (bundle) => bundle.layer === "chat",
@@ -630,12 +665,14 @@ test("coherent live proof requires one complete chat request and one complete vo
   );
   assert.equal(chatBundle?.requestId, "chat-req-1");
   assert.equal(chatBundle?.completedModelRows, 1);
+  assert.equal(chatBundle?.providerRows, 1);
   assert.equal(chatBundle?.transcriptRows, 1);
   assert.equal(chatBundle?.backgroundRows, 1);
   assert.deepEqual(chatBundle?.proofAttemptIds, [PROOF_ATTEMPT_ID]);
   assert.deepEqual(chatBundle?.missingRows, []);
   assert.equal(voiceBundle?.requestId, "voice-req-1");
   assert.equal(voiceBundle?.completedModelRows, 1);
+  assert.equal(voiceBundle?.providerRows, 1);
   assert.equal(voiceBundle?.transcriptRows, 1);
   assert.equal(voiceBundle?.backgroundRows, 1);
   assert.deepEqual(voiceBundle?.proofAttemptIds, [PROOF_ATTEMPT_ID]);
@@ -893,6 +930,7 @@ test("coherent live proof rejects scattered rows even when aggregate brain-flow 
     [
       "Retrieval row",
       "Completed model row",
+      "Provider-ready row",
       "Foreground tool job",
       "Evaluated mastery evidence",
       "Saved transcript",
@@ -954,9 +992,12 @@ test("coherent live proof rejects fallback model rows for provider-key proof", (
   );
   assert.equal(fallbackChatBundle?.requestId, "chat-req-1");
   assert.equal(fallbackChatBundle?.completedModelRows, 0);
+  assert.equal(fallbackChatBundle?.providerRows, 0);
+  assert.ok(fallbackChatBundle?.missingRows.includes("Provider-ready row"));
   assert.ok(fallbackChatBundle?.missingRows.includes("Completed model row"));
   assert.equal(fallbackVoiceBundle?.requestId, "voice-req-1");
   assert.equal(fallbackVoiceBundle?.completedModelRows, 0);
+  assert.equal(fallbackVoiceBundle?.providerRows, 1);
   assert.ok(fallbackVoiceBundle?.missingRows.includes("Completed model row"));
   assert.equal(checklist.status, "watch");
   assert.equal(checklist.canAttemptProviderKeyRun, true);
@@ -966,6 +1007,35 @@ test("coherent live proof rejects fallback model rows for provider-key proof", (
   );
   assert.equal(checklist.liveProofRunbook.status, "watch");
   assert.equal(checklist.liveProofRunbook.nextStepId, "coherent_bundle_export");
+});
+
+test("coherent live proof requires real voice provider readiness, not mock voice readiness", () => {
+  const mockProviderLedgers = {
+    ...completeBrainFlowLedgers,
+    systemActivityEvents: [
+      {
+        ...completeBrainFlowLedgers.systemActivityEvents[0],
+        title: "Mock voice provider ready",
+      },
+    ],
+  };
+  const proof = buildCoherentLiveProofFromLedgers(mockProviderLedgers);
+  const voiceBundle = proof.requestBundles.find(
+    (bundle) => bundle.layer === "voice",
+  );
+
+  assert.equal(proof.status, "watch");
+  assert.equal(proof.ready, false);
+  assert.ok(proof.missingChecks.includes("Live voice request bundle"));
+  assert.ok(proof.missingChecks.includes("Real voice provider ready"));
+  assert.equal(
+    proof.checks.find((check) => check.id === "real_voice_provider_ready")
+      ?.ready,
+    false,
+  );
+  assert.equal(voiceBundle?.requestId, "voice-req-1");
+  assert.equal(voiceBundle?.providerRows, 0);
+  assert.ok(voiceBundle?.missingRows.includes("Provider-ready row"));
 });
 
 test("brain flow coverage requires chat and voice multi-PDF context evidence", () => {

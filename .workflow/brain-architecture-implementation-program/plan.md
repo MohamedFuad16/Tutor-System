@@ -184,3 +184,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   voice context, websocket auth, model rows, tool rows, transcript turns, and
   background learner-memory writes so a mid-session Admin selection change
   cannot split the coherent voice proof bundle.
+- ACJ: Live provider row proof. Make coherent provider-key proof distinguish
+  completed model rows from real provider-ready evidence: typed chat requires a
+  completed OpenRouter-backed row, live voice requires the server-side Deepgram
+  `Voice provider ready` row, and local mock voice provider rows stay visible
+  without satisfying provider-key proof.
