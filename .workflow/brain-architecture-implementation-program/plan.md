@@ -179,3 +179,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   rows for auth, context injection, provider readiness, tool requests, tool
   completions, and close events so Admin can correlate the voice proof timeline
   without provider/cloud automation.
+- ACI: Latched voice proof-attempt metadata. Latch the selected provider-key
+  proof attempt id when live voice starts, then reuse that session identity for
+  voice context, websocket auth, model rows, tool rows, transcript turns, and
+  background learner-memory writes so a mid-session Admin selection change
+  cannot split the coherent voice proof bundle.

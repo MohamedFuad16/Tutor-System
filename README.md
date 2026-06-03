@@ -83,6 +83,9 @@ rows to share it in addition to book, thread, and multi-PDF anchors.
 Voice websocket system-activity rows also preserve that proof attempt id with
 voice-mode and voice-realtime agent-layer metadata across auth, context, tool,
 provider, and close events.
+Live voice also latches the selected proof attempt when the session starts, so
+context, model, tool, transcript, and background-memory rows remain tied to one
+attempt even if Admin selection changes mid-session.
 The provider-key panel also exposes a local live-proof drill packet: setup
 checklist, ordered run sequence, exact typed-chat and live-voice prompts,
 expected ledger rows, blockers, and export instructions. It helps beta operators

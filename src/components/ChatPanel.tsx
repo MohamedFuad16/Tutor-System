@@ -3076,6 +3076,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const voiceSessionErrorRef = useRef<string | null>(null);
   const voiceTurnsRef = useRef<VoiceSessionTurn[]>([]);
   const voiceStudyContextRef = useRef<VoiceStudyContextPayload | null>(null);
+  const voiceProofAttemptIdRef = useRef<string | null>(null);
+  const getVoiceProofAttemptId = useCallback(() => {
+    return (
+      voiceStudyContextRef.current?.proofAttemptId ||
+      voiceProofAttemptIdRef.current ||
+      activeBetaProofAttemptId ||
+      undefined
+    );
+  }, [activeBetaProofAttemptId]);
 
   const forceScrollToBottom = useCallback(
     (behavior: ScrollBehavior = "smooth") => {
@@ -3168,7 +3177,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     const voiceRequestId = voiceSessionIdRef.current || undefined;
     const packet = await buildBrainContextPacket({
       requestId: voiceRequestId,
-      proofAttemptId: activeBetaProofAttemptId || undefined,
+      proofAttemptId:
+        voiceProofAttemptIdRef.current || activeBetaProofAttemptId || undefined,
       mode: "voice",
       agentLayer: "voice_realtime",
       query: contextQuery,
@@ -3572,7 +3582,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         activeBookId: canonicalActiveBookId || undefined,
         activeBookTitle: activeLearningBookTitle || activeProject,
         activeDocumentId: activeDocumentId || undefined,
-        proofAttemptId: activeBetaProofAttemptId || undefined,
+        proofAttemptId: getVoiceProofAttemptId(),
         channel: "websocket",
         documentCount: context?.documentCount,
         memoryContextChars: context?.memoryContextChars,
@@ -3639,6 +3649,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         metadata: {
           durationSeconds,
           turnCount: turns.length,
+          proofAttemptId: getVoiceProofAttemptId(),
           error: voiceSessionErrorRef.current || undefined,
         },
       });
@@ -3691,6 +3702,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     }
     voiceStartedAtRef.current = null;
     voiceStudyContextRef.current = null;
+    voiceProofAttemptIdRef.current = null;
     voiceSessionCountedRef.current = false;
     voiceSessionErrorRef.current = null;
     voiceTurnsRef.current = [];
@@ -3712,6 +3724,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       metadata: {
         source: "typed",
         characterCount: trimmed.length,
+        proofAttemptId: getVoiceProofAttemptId(),
       },
     });
     if (!endingRef.current && detectEndIntent(trimmed)) {
@@ -3733,6 +3746,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     async (msg: { functions?: VoiceAgentFunctionCall[] }, ws: WebSocket) => {
       const functionCalls = Array.isArray(msg.functions) ? msg.functions : [];
       const sessionId = voiceSessionIdRef.current || `voice-${Date.now()}`;
+      const proofAttemptId = getVoiceProofAttemptId();
 
       for (const call of functionCalls) {
         const toolName = call.name || "unknown_tool";
@@ -3753,7 +3767,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             metadata: {
               toolCallId,
               clientSide: false,
-              proofAttemptId: activeBetaProofAttemptId || undefined,
+              proofAttemptId,
             },
           });
           continue;
@@ -3767,7 +3781,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           metadata: {
             toolCallId,
             inputSummary,
-            proofAttemptId: activeBetaProofAttemptId || undefined,
+            proofAttemptId,
           },
         });
         await recordToolJobEvent({
@@ -3779,7 +3793,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           metadata: {
             toolCallId,
             voiceSessionId: sessionId,
-            proofAttemptId: activeBetaProofAttemptId || undefined,
+            proofAttemptId,
           },
         });
 
@@ -3819,7 +3833,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               undefined,
               {
                 requestId: sessionId,
-                proofAttemptId: activeBetaProofAttemptId || undefined,
+                proofAttemptId,
                 mode: "voice",
                 agentLayer: "voice_realtime",
                 bookId: canonicalActiveBookId,
@@ -3875,7 +3889,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 generationPath: "voice_agent_function_call",
                 toolCallId,
                 voiceSessionId: sessionId,
-                proofAttemptId: activeBetaProofAttemptId || undefined,
+                proofAttemptId,
               },
             });
             setMessages((prev) =>
@@ -3906,7 +3920,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 voiceSessionId: sessionId,
                 agentLayer: "voice_realtime",
                 mode: "voice",
-                proofAttemptId: activeBetaProofAttemptId || undefined,
+                proofAttemptId,
               },
             });
             const recordedCount = results.filter(
@@ -4067,7 +4081,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   query,
                   reason: payload.error || "Voice web search unavailable.",
                   source: "voice_web_search",
-                  metadata: { toolCallId, voiceSessionId: sessionId },
+                  metadata: { toolCallId, voiceSessionId: sessionId, proofAttemptId },
                 });
                 throw new Error(
                   payload.error || "Voice web search unavailable.",
@@ -4104,6 +4118,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       toolCallId,
                       voiceSessionId: sessionId,
                       durationMs: Date.now() - searchStartedAt,
+                      proofAttemptId,
                     },
                   }),
               );
@@ -4113,7 +4128,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   query,
                   reason: "No web sources returned.",
                   source: "voice_web_search",
-                  metadata: { toolCallId, voiceSessionId: sessionId },
+                  metadata: { toolCallId, voiceSessionId: sessionId, proofAttemptId },
                 });
               }
               result = {
@@ -4143,7 +4158,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             metadata: {
               toolCallId,
               result,
-              proofAttemptId: activeBetaProofAttemptId || undefined,
+              proofAttemptId,
             },
           });
           await recordToolJobEvent({
@@ -4160,7 +4175,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             metadata: {
               toolCallId,
               voiceSessionId: sessionId,
-              proofAttemptId: activeBetaProofAttemptId || undefined,
+              proofAttemptId,
               result,
             },
           });
@@ -4183,7 +4198,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             metadata: {
               toolCallId,
               error: message,
-              proofAttemptId: activeBetaProofAttemptId || undefined,
+              proofAttemptId,
             },
           });
           await recordToolJobEvent({
@@ -4197,7 +4212,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             metadata: {
               toolCallId,
               voiceSessionId: sessionId,
-              proofAttemptId: activeBetaProofAttemptId || undefined,
+              proofAttemptId,
             },
           });
         }
@@ -4205,7 +4220,6 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     },
     [
       activeDocumentId,
-      activeBetaProofAttemptId,
       activeLearningBookTitle,
       activeProject,
       apiKey,
@@ -4213,6 +4227,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       buildVoiceStudyContext,
       cacheWebSources,
       canonicalActiveBookId,
+      getVoiceProofAttemptId,
       recordVoiceAgentEvent,
       recordWebSearchEvent,
       recordWebUsage,
@@ -4240,6 +4255,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       voiceTurnsRef.current = [];
       const sessionId = `voice-${Date.now()}`;
       voiceSessionIdRef.current = sessionId;
+      voiceProofAttemptIdRef.current = activeBetaProofAttemptId || null;
       voiceStartedAtRef.current = Date.now();
       voiceSessionCountedRef.current = false;
       voiceSessionErrorRef.current = null;
@@ -4252,6 +4268,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           language,
           bookId: canonicalActiveBookId,
           documentId: activeDocumentId,
+          proofAttemptId: getVoiceProofAttemptId(),
         },
       });
       recordVoiceModelRun("started", sessionId, {
@@ -4287,6 +4304,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               error: error instanceof Error ? error.message : String(error),
               bookId: canonicalActiveBookId,
               documentId: activeDocumentId,
+              proofAttemptId: getVoiceProofAttemptId(),
             },
           });
           return null;
@@ -4316,6 +4334,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             documentContextChars: voiceContextPayload.documentContextChars,
             rawContextChars: voiceContextPayload.rawContextChars,
             contextCompacted: voiceContextPayload.contextCompacted,
+            proofAttemptId:
+              voiceContextPayload.proofAttemptId || getVoiceProofAttemptId(),
           },
         });
         recordVoiceModelRun("started", sessionId, {
@@ -4432,15 +4452,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
       ws.onopen = () => {
         console.log("Connected to Deepgram proxy");
+        const proofAttemptId = getVoiceProofAttemptId();
         ws.send(
           JSON.stringify({
             type: "voice_auth",
             voiceSessionId: sessionId,
             requestId: sessionId,
-            proofAttemptId:
-              voiceContextPayload?.proofAttemptId ||
-              activeBetaProofAttemptId ||
-              undefined,
+            proofAttemptId,
             openRouterKey: apiKey,
             deepgramKey: deepgramApiKey,
             language,
@@ -4461,10 +4479,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             studyContextMetadata: {
               mode: "voice",
               agentLayer: "voice_realtime",
-              proofAttemptId:
-                voiceContextPayload?.proofAttemptId ||
-                activeBetaProofAttemptId ||
-                undefined,
+              proofAttemptId,
               documentIds: voiceContextPayload?.documentIds || [],
               readyDocumentIds: voiceContextPayload?.readyDocumentIds || [],
               contextDocumentIds:
@@ -4492,6 +4507,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         if (typeof event.data === "string") {
           try {
             const msg = JSON.parse(event.data);
+            const proofAttemptId = getVoiceProofAttemptId();
 
             if (msg.type === "usage" && msg.usage) {
               if (Number(msg.usage.sessions || 0) > 0) {
@@ -4507,6 +4523,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 summary: "Deepgram voice-agent settings applied.",
                 metadata: {
                   language,
+                  proofAttemptId,
                 },
               });
             } else if (msg.type === "ConversationText") {
@@ -4527,6 +4544,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   metadata: {
                     source: "microphone",
                     characterCount: String(msg.content || "").length,
+                    proofAttemptId,
                   },
                 });
                 if (!endingRef.current && detectEndIntent(msg.content || "")) {
@@ -4550,6 +4568,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   summary: `Aria replied: ${compactVoiceEventText(msg.content || "")}`,
                   metadata: {
                     characterCount: String(msg.content || "").length,
+                    proofAttemptId,
                   },
                 });
                 if (lastVoiceUserMessageRef.current && msg.content) {
@@ -4566,7 +4585,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                         : undefined,
                       documentId: activeDocumentId,
                       requestId: voiceSessionIdRef.current || undefined,
-                      proofAttemptId: activeBetaProofAttemptId || undefined,
+                      proofAttemptId,
                       mode: "voice",
                       agentLayer: "voice_realtime",
                     },
@@ -4578,7 +4597,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       activeBookId: canonicalActiveBookId,
                       activeDocumentId,
                       requestId: voiceSessionIdRef.current || undefined,
-                      proofAttemptId: activeBetaProofAttemptId || undefined,
+                      proofAttemptId,
                       mode: "voice",
                       agentLayer: "voice_realtime",
                       conversationId: canonicalActiveBookId
@@ -4609,6 +4628,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   "Student started speaking; current playback was interrupted.",
                 metadata: {
                   activeAudioNodes: activeAudioNodesRef.current.length,
+                  proofAttemptId,
                 },
               });
               activeAudioNodesRef.current.forEach((node) => {
@@ -4628,6 +4648,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 status: "running",
                 sessionId: voiceSessionIdRef.current || undefined,
                 summary: "Aria started speaking.",
+                metadata: {
+                  proofAttemptId,
+                },
               });
               setVoiceState("speaking");
             } else if (msg.type === "AgentFinishedSpeaking") {
@@ -4636,6 +4659,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 status: "completed",
                 sessionId: voiceSessionIdRef.current || undefined,
                 summary: "Aria finished speaking; listening resumed.",
+                metadata: {
+                  proofAttemptId,
+                },
               });
               setVoiceState("listening");
             } else if (msg.type === "Error") {
@@ -4650,6 +4676,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 summary: `Deepgram voice-agent error: ${voiceSessionErrorRef.current}`,
                 metadata: {
                   rawType: msg.type,
+                  proofAttemptId,
                 },
               });
               stopVoice();
@@ -4712,6 +4739,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             summary: `Voice websocket closed: ${voiceSessionErrorRef.current}`,
             metadata: {
               code: event.code,
+              proofAttemptId: getVoiceProofAttemptId(),
             },
           });
           window.alert(event.reason);
@@ -4727,6 +4755,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           status: "failed",
           sessionId: voiceSessionIdRef.current || undefined,
           summary: "Voice websocket could not connect.",
+          metadata: {
+            proofAttemptId: getVoiceProofAttemptId(),
+          },
         });
         window.alert(
           "Voice mode could not connect. Check the voice service keys and try again.",
@@ -4743,6 +4774,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         status: "failed",
         sessionId: voiceSessionIdRef.current || undefined,
         summary: `Voice start failed: ${voiceSessionErrorRef.current}`,
+        metadata: {
+          proofAttemptId: getVoiceProofAttemptId(),
+        },
       });
       stopVoice();
     }

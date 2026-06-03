@@ -102,12 +102,12 @@ about 98%.
 ## Graphify Context
 
 - `graphify query "multi pdf documents active book context chat voice ChatPanel
-  current document ids audio overview fallback admin paragraph" --budget 4000
-  --graph graphify-out/graph.json` routed the slice to `ChatPanel.tsx`,
+current document ids audio overview fallback admin paragraph" --budget 4000
+--graph graphify-out/graph.json` routed the slice to `ChatPanel.tsx`,
   `StudyView.tsx`, `brain.context.ts`, `AdminView.tsx`, `RevisionView.tsx`, and
   directly connected tests/docs.
 - `graphify path "StudyView()" "buildBrainContextPacket()" --graph
-  graphify-out/graph.json` found the three-hop route through `StudyView.tsx`,
+graphify-out/graph.json` found the three-hop route through `StudyView.tsx`,
   `ChatPanel.tsx`, and `brain.context.ts`.
 - `graphify path "StudyView()" "ChatPanel()" --graph graphify-out/graph.json`
   found the expected shared-store route.
@@ -132,7 +132,7 @@ about 98%.
 
 - `npm run format`: passed.
 - `npm run test -- tests/study-view-upload.test.mjs tests/brain-context.test.mjs
-  tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
+tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
   tests.
 - `npm run format:check`: passed.
 - `npm run lint`: passed.
@@ -172,6 +172,92 @@ about 98%.
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+# Packet ACI: Latched Voice Proof-Attempt Metadata
+
+Packet ACI keeps the client-side live voice session aligned with the deliberate
+Admin proof attempt selected at voice start. The previous packet made server
+websocket activity preserve proof metadata; this packet makes the browser-side
+voice session use one latched identity across context injection, websocket auth,
+model rows, tool rows, transcript events, and background learner-memory writes.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 99%.
+
+## Graphify Context
+
+- `graphify query "remaining live provider key beta proof typed chat live voice
+complete flow stored injected tool calling both agent layers Admin proof
+diagnostics" --budget 7000 --graph graphify-out/graph.json` routed the
+  remaining local proof gap to `ChatPanel.tsx`, beta diagnostics, Admin, voice
+  tools, model runs, and architecture-book surfaces.
+- `graphify path "recordModelRunEvent()" "ChatPanel()" --graph
+graphify-out/graph.json` confirmed the voice model-run path is connected to
+  `ChatPanel`.
+- `graphify query "voice proof attempt latch test ChatPanel latches active beta
+proof attempt live voice session voice-proof-attempt-latch" --budget 5000
+--graph graphify-out/graph.json` found `voice-proof-attempt-latch.test.mjs`,
+  `ChatPanel.tsx`, `ChatPanel()`, `sourceSlice()`, `startVoiceSource`,
+  `voiceToolSource`, and `sendMessageSource`.
+
+## Integration Decisions
+
+- Added `voiceProofAttemptIdRef` and `getVoiceProofAttemptId()` to `ChatPanel`.
+- Latched `activeBetaProofAttemptId` at `startVoice()` so live voice no longer
+  reads a changing Admin selection for the same session.
+- Reused the latched id in voice context, websocket auth metadata, settings and
+  transcript events, voice model-run rows, voice tool-job rows, and
+  `brainOrchestrator` background learner-memory updates.
+- Kept typed chat proof behavior unchanged: chat still scopes proof metadata to
+  the active Admin attempt at chat request time.
+- Added `tests/voice-proof-attempt-latch.test.mjs` as a source-contract guard.
+- Updated README, Tutor System Architecture, User Brain Architecture, and App
+  Design Language copy to describe the latched live-voice proof identity.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test -- tests/voice-proof-attempt-latch.test.mjs
+tests/system-activity.test.mjs tests/beta-diagnostics.test.mjs
+tests/voice-agent-tools.test.mjs`: passed via the project test runner, 164
+  tests.
+- `npm run test`: passed, 164 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason skill-preflight`: unavailable because
+  `package.json` has no `brain:postchange` script.
+- `npm run brain:retrieve -- remaining provider-key live beta proof typed chat
+live voice stored injected tool calling both agent layers`: unavailable because
+  `package.json` has no `brain:retrieve` script.
+- `npm run brain:impact -- src/memory/beta.diagnostics.ts`: unavailable because
+  `package.json` has no `brain:impact` script.
+- In-app Browser desktop QA confirmed App Design Language Local Beta Control
+  Patterns rendered the voice proof-attempt latch copy with no horizontal
+  overflow and zero warning/error logs.
+- `node .workflow/brain-architecture-implementation-program/packets/phase70-browser-qa.mjs`:
+  passed with local Chrome CDP approval. Desktop and mobile App Design Language
+  rendered the voice proof-attempt latch copy with no horizontal overflow and
+  zero warning/error logs.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1122 nodes, 1960 edges, and 65 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`82.3 KB`).
+- Graphify smoke query found the new latch test and connected ChatPanel/Admin
+  diagnostics nodes. `getVoiceProofAttemptId()` is an inline helper and was not
+  extracted as a standalone path node, so helper-level smoke used the
+  source-contract test and `ChatPanel` graph nodes.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns with real provider
+  rows, then use Admin's coherent proof bundle to confirm one fresh proof
+  attempt contains stored, injected, tool-called, transcript, and background
+  memory evidence for both agent layers.
+- Broader beta validation remains unfinished.
+- AWS/cloud synchronization remains deferred until after beta testing.
+
 # Packet ACH: Voice Proof-Attempt System Activity
 
 Packet ACH keeps the server-side live voice timeline aligned with the deliberate
@@ -187,13 +273,13 @@ typed-chat plus live-voice beta traffic with real provider rows.
 ## Graphify Context
 
 - `graphify query "server voice websocket proofAttemptId
-  recordVoiceToolRequest startVoiceSession recordSystemActivity" --budget 4000
-  --graph graphify-out/graph.json` routed the slice to `server.ts`,
+recordVoiceToolRequest startVoiceSession recordSystemActivity" --budget 4000
+--graph graphify-out/graph.json` routed the slice to `server.ts`,
   `ChatPanel.tsx`, `voiceAgentTools.ts`, `brain.context.ts`,
   `beta.diagnostics.ts`, `AdminView.tsx`, and connected tests.
 - `graphify query "voice proofAttemptId system activity Admin architecture book
-  app design userBrainArchitectureBook TUTOR_ARCHITECTURE RevisionView"
-  --budget 5000 --graph graphify-out/graph.json` routed the doc sync to
+app design userBrainArchitectureBook TUTOR_ARCHITECTURE RevisionView"
+--budget 5000 --graph graphify-out/graph.json` routed the doc sync to
   `src/lib/userBrainArchitectureBook.ts`, `TUTOR_ARCHITECTURE.md`,
   `README.md`, and `src/views/RevisionView.tsx`.
 
@@ -214,7 +300,7 @@ typed-chat plus live-voice beta traffic with real provider rows.
 ## Verification Evidence
 
 - `npm run test -- tests/system-activity.test.mjs
-  tests/voice-agent-tools.test.mjs tests/beta-diagnostics.test.mjs`: passed
+tests/voice-agent-tools.test.mjs tests/beta-diagnostics.test.mjs`: passed
   through the project test runner, 161 tests.
 - `npm run format`: passed.
 - `npm run test`: passed, 161 tests.
@@ -271,8 +357,8 @@ broader beta validation.
   routed the slice to `src/memory/beta.diagnostics.ts`,
   `src/views/AdminView.tsx`, and `tests/beta-diagnostics.test.mjs`.
 - `graphify query "provider key live proof drill packet documentation README
-  TUTOR_ARCHITECTURE userBrainArchitectureBook RevisionView App Design Language
-  Admin beta diagnostics" --budget 5000 --graph graphify-out/graph.json`
+TUTOR_ARCHITECTURE userBrainArchitectureBook RevisionView App Design Language
+Admin beta diagnostics" --budget 5000 --graph graphify-out/graph.json`
   routed the documentation/design update to `AdminView.tsx`,
   `RevisionView.tsx`, and `src/lib/userBrainArchitectureBook.ts`.
 

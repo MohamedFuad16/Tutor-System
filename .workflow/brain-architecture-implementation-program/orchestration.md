@@ -41,6 +41,7 @@
 - Packet ABU: See `packets/ABU-stored-audio-duration-evidence.md`.
 - Packet ABV: See `packets/ABV-coherent-live-proof-bundle.md`.
 - Packet ABW: See `packets/ABW-active-book-pdf-retrieval-hint.md`.
+- Packet ACI: See `packets/ACI-voice-proof-attempt-latch.md`.
 
 ## Completion Audit
 

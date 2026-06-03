@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "appUrl": "http://127.0.0.1:3100",
+  "port": 9351,
+  "results": [
+    {
+      "surface": "revision",
+      "label": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "hasAppDesign": true,
+      "hasControlPatterns": true,
+      "hasVoiceTimeline": true,
+      "hasLatchedProofCopy": true,
+      "hasAttemptStabilityCopy": true,
+      "consoleLogs": []
+    },
+    {
+      "surface": "revision",
+      "label": "mobile",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "hasAppDesign": true,
+      "hasControlPatterns": true,
+      "hasVoiceTimeline": true,
+      "hasLatchedProofCopy": true,
+      "hasAttemptStabilityCopy": true,
+      "consoleLogs": []
+    }
+  ],
+  "generatedAt": "2026-06-03T14:29:10.010Z"
+}

@@ -213,6 +213,9 @@ duration seconds without network access. Use the Deepgram provider in
 - Voice websocket activity also preserves that proof attempt id with `voice`
   mode and `voice_realtime` agent-layer metadata across auth, context,
   provider-ready, tool-request, tool-completion, and close rows.
+- Live voice latches the selected proof attempt id at session start, keeping
+  context, model-run, tool-job, transcript, and background learner-memory rows
+  under one attempt even if Admin selection changes during the session.
 - The provider-key panel derives a local live-proof drill packet from that same
   checklist. It renders setup steps, exact typed-chat and live-voice prompts,
   expected context/retrieval/model/tool/mastery/transcript/background rows,

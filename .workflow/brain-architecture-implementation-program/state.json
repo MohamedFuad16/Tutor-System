@@ -610,6 +610,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "server.ts, tests/system-activity.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACI",
+      "name": "Latched voice proof-attempt metadata",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/components/ChatPanel.tsx, tests/voice-proof-attempt-latch.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -916,7 +923,27 @@
       "Graphify smoke query found StudyView(), ChatPanel(), buildBrainContextPacket(), buildBrainDocumentRetrievalHint(), buildBrainRetrievalQuery(), brain.context.ts, and connected Study/Admin/Revision nodes",
       "graphify path StudyView() to buildBrainContextPacket() found a three-hop route through StudyView.tsx, ChatPanel.tsx, and brain.context.ts",
       "graphify path StudyView() to ChatPanel() found the expected shared-store route",
-      "Packet ACF graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+      "Packet ACF graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+      "Packet ACI selected after Graphify routed the remaining provider-key live proof gap through ChatPanel.tsx, beta.diagnostics.ts, AdminView.tsx, voiceAgentTools.ts, model.runs.ts, userBrainArchitectureBook.ts, TUTOR_ARCHITECTURE.md, README.md, and RevisionView.tsx",
+      "Live voice now latches activeBetaProofAttemptId at session start with voiceProofAttemptIdRef/getVoiceProofAttemptId() and reuses that identity for voice context, websocket auth, model-run rows, tool-job rows, transcript turn events, and voice background-memory updates",
+      "tests/voice-proof-attempt-latch.test.mjs now guards the live voice latch, voice tool-call proof metadata, and typed-chat proof scoping contracts",
+      "README, Tutor System Architecture, User Brain Architecture, and App Design Language copy document the latched live-voice proof identity contract",
+      "npm run format passed for Packet ACI",
+      "npm run test -- tests/voice-proof-attempt-latch.test.mjs tests/system-activity.test.mjs tests/beta-diagnostics.test.mjs tests/voice-agent-tools.test.mjs passed via the project test runner, 164 tests",
+      "npm run test passed for Packet ACI, 164 tests",
+      "npm run format:check passed for Packet ACI",
+      "npm run lint passed for Packet ACI",
+      "npm run build passed for Packet ACI",
+      "npm run brain:retrieve -- remaining provider-key live beta proof typed chat live voice stored injected tool calling both agent layers remained unavailable because current package.json has no brain:retrieve script",
+      "npm run brain:impact -- src/memory/beta.diagnostics.ts remained unavailable because current package.json has no brain:impact script",
+      "In-app Browser desktop QA confirmed App Design Language Local Beta Control Patterns rendered the voice proof-attempt latch copy with no horizontal overflow and zero warning/error logs",
+      "Headless Chrome CDP QA via phase70-browser-qa.mjs confirmed desktop and mobile App Design Language rendered the voice proof-attempt latch copy with no horizontal overflow and zero warning/error logs",
+      "Browser QA screenshots saved as ACI-app-design-voice-latch-desktop.png and ACI-app-design-voice-latch-mobile.png; JSON evidence saved as phase70-browser-qa.json",
+      "graphify update . --force regenerated code architecture artifacts with 1122 nodes, 1960 edges, and 65 communities",
+      "npm run graphify:tree passed for Packet ACI and wrote GRAPH_TREE.html at 82.3 KB",
+      "Graphify smoke query found voice-proof-attempt-latch.test.mjs, ChatPanel.tsx, ChatPanel(), sourceSlice(), startVoiceSource, voiceToolSource, sendMessageSource, and connected beta diagnostics/Admin/Revision nodes",
+      "Graphify did not extract getVoiceProofAttemptId() as a standalone path node, so helper-level path smoke used the regenerated source-contract test and ChatPanel graph nodes instead",
+      "Packet ACI top-level graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
     ]
   },
   "evidence": [
@@ -1430,11 +1457,31 @@
     "npm run graphify:tree passed for Packet ACH and wrote GRAPH_TREE.html at 81.9 KB",
     "Graphify smoke query found hasVoiceProofMetadata(), system-activity.test.mjs, startVoiceApp(), server.ts, ChatPanel.tsx, voiceAgentTools.ts, brain.context.ts, beta.diagnostics.ts, and AdminView.tsx",
     "graphify path hasVoiceProofMetadata() to startVoiceApp() found a two-hop route through system-activity.test.mjs",
-    "Packet ACH top-level graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
+    "Packet ACH top-level graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references",
+    "Packet ACI selected after Graphify routed the remaining provider-key live proof gap through ChatPanel.tsx, beta.diagnostics.ts, AdminView.tsx, voiceAgentTools.ts, model.runs.ts, userBrainArchitectureBook.ts, TUTOR_ARCHITECTURE.md, README.md, and RevisionView.tsx",
+    "Live voice now latches activeBetaProofAttemptId at session start with voiceProofAttemptIdRef/getVoiceProofAttemptId() and reuses that identity for voice context, websocket auth, model-run rows, tool-job rows, transcript turn events, and voice background-memory updates",
+    "tests/voice-proof-attempt-latch.test.mjs now guards the live voice latch, voice tool-call proof metadata, and typed-chat proof scoping contracts",
+    "README, Tutor System Architecture, User Brain Architecture, and App Design Language copy document the latched live-voice proof identity contract",
+    "npm run format passed for Packet ACI",
+    "npm run test -- tests/voice-proof-attempt-latch.test.mjs tests/system-activity.test.mjs tests/beta-diagnostics.test.mjs tests/voice-agent-tools.test.mjs passed via the project test runner, 164 tests",
+    "npm run test passed for Packet ACI, 164 tests",
+    "npm run format:check passed for Packet ACI",
+    "npm run lint passed for Packet ACI",
+    "npm run build passed for Packet ACI",
+    "npm run brain:retrieve -- remaining provider-key live beta proof typed chat live voice stored injected tool calling both agent layers remained unavailable because current package.json has no brain:retrieve script",
+    "npm run brain:impact -- src/memory/beta.diagnostics.ts remained unavailable because current package.json has no brain:impact script",
+    "In-app Browser desktop QA confirmed App Design Language Local Beta Control Patterns rendered the voice proof-attempt latch copy with no horizontal overflow and zero warning/error logs",
+    "Headless Chrome CDP QA via phase70-browser-qa.mjs confirmed desktop and mobile App Design Language rendered the voice proof-attempt latch copy with no horizontal overflow and zero warning/error logs",
+    "Browser QA screenshots saved as ACI-app-design-voice-latch-desktop.png and ACI-app-design-voice-latch-mobile.png; JSON evidence saved as phase70-browser-qa.json",
+    "graphify update . --force regenerated code architecture artifacts with 1122 nodes, 1960 edges, and 65 communities",
+    "npm run graphify:tree passed for Packet ACI and wrote GRAPH_TREE.html at 82.3 KB",
+    "Graphify smoke query found voice-proof-attempt-latch.test.mjs, ChatPanel.tsx, ChatPanel(), sourceSlice(), startVoiceSource, voiceToolSource, sendMessageSource, and connected beta diagnostics/Admin/Revision nodes",
+    "Graphify did not extract getVoiceProofAttemptId() as a standalone path node, so helper-level path smoke used the regenerated source-contract test and ChatPanel graph nodes instead",
+    "Packet ACI top-level graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACH final gates: voice websocket system-activity rows now carry the same deliberate proofAttemptId, voice mode, and voice_realtime agent-layer metadata as the client ledgers, so Admin can correlate auth, context injection, provider readiness, tool requests, tool completions, and close events during a manual provider-key voice proof. The shared chat/voice context path, multi-PDF intake/context, retrieval hints, Admin diagnostics, tool-call/evidence ledgers, proof-attempt lifecycle, stored audio, docs, browser QA, and Graphify artifacts are implemented and verified. The remaining unproven gap is deliberate provider-key typed-chat plus live-voice beta traffic with real provider rows; broader beta validation and AWS/cloud synchronization remain incomplete/out of scope.",
-    "updatedAt": "2026-06-03T22:57:57.000+09:00"
+    "basis": "Local architecture estimate after Packet ACI final gates: live voice now latches the deliberate provider-key proofAttemptId at session start and carries it through voice context, websocket auth, model/tool rows, transcript events, and background learner-memory writes, matching the server-side voice websocket proof metadata from Packet ACH. The shared chat/voice context path, multi-PDF intake/context, retrieval hints, Admin diagnostics, tool-call/evidence ledgers, proof-attempt lifecycle, stored audio, docs, browser QA, and Graphify artifacts are implemented and verified. The remaining unproven gap is deliberate provider-key typed-chat plus live-voice beta traffic with real provider rows; broader beta validation and AWS/cloud synchronization remain incomplete/out of scope.",
+    "updatedAt": "2026-06-03T23:31:16.000+09:00"
   }
 }
