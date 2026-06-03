@@ -143,9 +143,10 @@ compacted.
 ### Study View
 
 `StudyView` contains the PDF workspace and `ChatPanel`. Mobile uses a stacked
-layout; desktop uses a split study/chat composition. Document ingestion accepts
-PDFs and images, classifies the file, and routes native, scanned, and mixed
-documents through the right extraction branch.
+layout; desktop uses a split study/chat composition. Document intake accepts one
+PDF or a multi-PDF selection/drop, saves each file into the active learning book,
+and routes native, scanned, and mixed documents through the right extraction
+branch.
 
 ### Chat Panel
 

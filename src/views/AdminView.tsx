@@ -1698,8 +1698,8 @@ export function AdminView() {
                   Admin Center
                 </h1>
                 <p className="text-zinc-600 leading-relaxed max-w-2xl text-sm font-serif">
-                  See what Tutor just did: models, tools, memory, retrieval,
-                  voice, and beta readiness.
+                  Track models, tools, memory, retrieval, voice, and beta
+                  readiness.
                 </p>
               </div>
 

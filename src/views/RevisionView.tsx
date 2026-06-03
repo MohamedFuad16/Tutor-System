@@ -2330,7 +2330,7 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
       {
         title: "PDF chip rail",
         detail:
-          "Study keeps document switching compact: selected PDFs appear as rounded chips above the reader, each with a small remove action and a dashed add control.",
+          "Study keeps document switching compact: one or several uploaded PDFs are saved into the active book, then appear as rounded chips above the reader with a small remove action and a dashed add control.",
       },
       {
         title: "Request timelines",

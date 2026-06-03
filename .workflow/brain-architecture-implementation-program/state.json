@@ -589,6 +589,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/longterm.memory.ts, src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, tests/memory-events.test.mjs, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, src/views/RevisionView.tsx, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACF",
+      "name": "Multi-PDF upload intake and simple Admin copy",
+      "owner": "main agent with two read-only sidecar explorers closed after timeout",
+      "status": "completed",
+      "write_scope": "src/views/StudyView.tsx, tests/study-view-upload.test.mjs, src/views/AdminView.tsx, src/views/RevisionView.tsx, README.md, TUTOR_ARCHITECTURE.md, src/lib/userBrainArchitectureBook.ts, .workflow/brain-architecture-implementation-program/packets/phase68-browser-qa.mjs, .workflow/brain-architecture-implementation-program/results/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -875,7 +882,27 @@
       "graphify update . --force regenerated Graphify artifacts with 1021 nodes, 1813 edges, and 63 communities",
       "Graphify smoke query found summarizeBrainWiringRehearsalGap(), BrainWiringRehearsalGap, runLocalBrainWiringRehearsal(), and AdminView()",
       "graphify path summarizeBrainWiringRehearsalGap() to AdminView() found a two-hop route through AdminView.tsx",
-      "Packet ABP graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+      "Packet ABP graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+      "Packet ACF selected after Graphify routed multi-PDF intake through StudyView(), ChatPanel(), buildBrainContextPacket(), brain.context.ts, AdminView(), and RevisionView()",
+      "StudyView now accepts one or several PDFs in one selection/drop, bulk-saves learningDocuments rows for the active book, and keeps the first selected PDF active while companion PDFs remain in shared book context",
+      "StudyView ingestion tracking now uses a per-document cancellation set plus active-ingestion counter instead of a latest-upload sequence, so parallel PDF extraction does not cancel older uploads",
+      "Admin Center preface copy was simplified to one sentence",
+      "README, Tutor System Architecture, User Brain Architecture, and App Design Language copy document multi-file PDF intake feeding shared chat/voice context",
+      "Added tests/study-view-upload.test.mjs source regression coverage for multi-PDF inputs, bulk document persistence, per-document ingestion tracking, and no files[0] collapse",
+      "npm run format passed for Packet ACF",
+      "npm run test -- tests/study-view-upload.test.mjs tests/brain-context.test.mjs tests/audio-overview-plan.test.mjs passed via the project test runner, 161 tests",
+      "npm run format:check passed for Packet ACF",
+      "npm run lint passed for Packet ACF",
+      "npm run build passed for Packet ACF",
+      "npm run brain:ui-regression remained unavailable because current package.json has no brain:ui-regression script",
+      "Headless Chrome CDP QA via phase68-browser-qa.mjs confirmed desktop and mobile Study exposed multi-PDF file inputs, Admin rendered the simplified preface, Revision rendered multi-PDF App Design copy and one visible audio player, no horizontal overflow, and zero warning/error logs",
+      "Browser QA screenshots saved as ACF-study-multipdf-desktop.png, ACF-study-multipdf-mobile.png, ACF-admin-simple-copy-desktop.png, ACF-admin-simple-copy-mobile.png, ACF-revision-multipdf-audio-desktop.png, and ACF-revision-multipdf-audio-mobile.png; JSON evidence saved as phase68-browser-qa.json",
+      "graphify update . --force regenerated code architecture artifacts with 1109 nodes, 1946 edges, and 62 communities",
+      "npm run graphify:tree passed for Packet ACF and wrote GRAPH_TREE.html at 81.5 KB",
+      "Graphify smoke query found StudyView(), ChatPanel(), buildBrainContextPacket(), buildBrainDocumentRetrievalHint(), buildBrainRetrievalQuery(), brain.context.ts, and connected Study/Admin/Revision nodes",
+      "graphify path StudyView() to buildBrainContextPacket() found a three-hop route through StudyView.tsx, ChatPanel.tsx, and brain.context.ts",
+      "graphify path StudyView() to ChatPanel() found the expected shared-store route",
+      "Packet ACF graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
     ]
   },
   "evidence": [
@@ -1331,11 +1358,30 @@
     "Graphify smoke query found AdminView(), recordMemoryEvent(), memory.events.ts, buildCoherentLiveProofFromLedgers(), buildBetaDiagnosticsSnapshot(), buildBrainFlowCoverageFromLedgers(), AdminView.tsx, beta.diagnostics.ts, and longterm.memory.ts",
     "graphify path AdminView() to recordMemoryEvent() found the expected route through AdminView.tsx",
     "graphify path buildCoherentLiveProofFromLedgers() to AdminView() found a direct call route",
-    "Packet ACE graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
+    "Packet ACE graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes",
+    "Packet ACF selected after Graphify routed multi-PDF intake through StudyView(), ChatPanel(), buildBrainContextPacket(), brain.context.ts, AdminView(), and RevisionView()",
+    "StudyView now accepts one or several PDFs in one selection/drop, bulk-saves learningDocuments rows for the active book, and keeps the first selected PDF active while companion PDFs remain in shared book context",
+    "StudyView ingestion tracking now uses a per-document cancellation set plus active-ingestion counter instead of a latest-upload sequence, so parallel PDF extraction does not cancel older uploads",
+    "Admin Center preface copy was simplified to one sentence",
+    "README, Tutor System Architecture, User Brain Architecture, and App Design Language copy document multi-file PDF intake feeding shared chat/voice context",
+    "Added tests/study-view-upload.test.mjs source regression coverage for multi-PDF inputs, bulk document persistence, per-document ingestion tracking, and no files[0] collapse",
+    "npm run format passed for Packet ACF",
+    "npm run test -- tests/study-view-upload.test.mjs tests/brain-context.test.mjs tests/audio-overview-plan.test.mjs passed via the project test runner, 161 tests",
+    "npm run format:check passed for Packet ACF",
+    "npm run lint passed for Packet ACF",
+    "npm run build passed for Packet ACF",
+    "Headless Chrome CDP QA via phase68-browser-qa.mjs confirmed desktop and mobile Study exposed multi-PDF file inputs, Admin rendered the simplified preface, Revision rendered multi-PDF App Design copy and one visible audio player, no horizontal overflow, and zero warning/error logs",
+    "Browser QA screenshots saved as ACF-study-multipdf-desktop.png, ACF-study-multipdf-mobile.png, ACF-admin-simple-copy-desktop.png, ACF-admin-simple-copy-mobile.png, ACF-revision-multipdf-audio-desktop.png, and ACF-revision-multipdf-audio-mobile.png; JSON evidence saved as phase68-browser-qa.json",
+    "graphify update . --force regenerated code architecture artifacts with 1109 nodes, 1946 edges, and 62 communities",
+    "npm run graphify:tree passed for Packet ACF and wrote GRAPH_TREE.html at 81.5 KB",
+    "Graphify smoke query found StudyView(), ChatPanel(), buildBrainContextPacket(), buildBrainDocumentRetrievalHint(), buildBrainRetrievalQuery(), brain.context.ts, and connected Study/Admin/Revision nodes",
+    "graphify path StudyView() to buildBrainContextPacket() found a three-hop route through StudyView.tsx, ChatPanel.tsx, and brain.context.ts",
+    "graphify path StudyView() to ChatPanel() found the expected shared-store route",
+    "Packet ACF graph artifact grep found no server.mjs, .tmp-test, or /private/tmp scratch nodes"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 97,
-    "basis": "Local architecture estimate after Packet ACE final gates: chat/voice context, request-correlated multi-PDF injection proof, active-plus-companion PDF retrieval hints, local observability ledgers, Admin diagnostics, tool-call records, evaluated-answer evidence, synthetic rehearsal, model-observation gates, durable local memory-worker queues, typed-chat/voice thread persistence proof, request-correlated transcript-save rows, an Admin live-vs-synthetic brain-flow gap surface, compact live signal anchors, shared chat/voice tool-schema preflight checks, a provider-key live proof checklist, measured stored-audio duration evidence, a coherent chat+voice live proof bundle, simplified Admin copy, single-player stored audio behavior, an Admin live beta proof runbook, Beta Diagnostics provider-meter freshness, a provider-key fallback guard, selected coherent request-row detail, phase-aware durable model-run ids for started/fallback/completed rows, a fresh local proof-window gate, shared deliberate proof-attempt identity across typed chat and live voice, and durable Admin proof-attempt lifecycle memory rows are implemented and browser-verified; deliberate provider-key chat/voice traffic, broader beta validation, and AWS/cloud synchronization remain incomplete.",
-    "updatedAt": "2026-06-03T21:20:00.000+09:00"
+    "estimatePercent": 98,
+    "basis": "Local architecture estimate after Packet ACF final gates: multi-file PDF intake now matches the shared chat/voice active-book context path, existing multi-PDF context injection, retrieval hints, Admin diagnostics, tool-call/evidence ledgers, voice/chat proof-attempt lifecycle, stored audio, and Graphify artifacts are implemented and browser-verified. The largest remaining unproven gap is deliberate provider-key typed-chat plus live-voice beta traffic with real provider rows; broader beta validation and AWS/cloud synchronization remain incomplete/out of scope.",
+    "updatedAt": "2026-06-03T22:20:00.000+09:00"
   }
 }

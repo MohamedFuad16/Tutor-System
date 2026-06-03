@@ -1,0 +1,78 @@
+{
+  "status": "passed",
+  "appUrl": "http://127.0.0.1:3100",
+  "port": 9342,
+  "results": [
+    {
+      "surface": "study",
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "pdfInputs": 1,
+      "multiPdfInputs": 1,
+      "hasStudySurface": true,
+      "consoleLogs": []
+    },
+    {
+      "surface": "admin",
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "hasSimplePreface": true,
+      "hasOldPreface": false,
+      "consoleLogs": []
+    },
+    {
+      "surface": "revision",
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "hasAppDesign": true,
+      "hasMultiIntakeCopy": true,
+      "hasContextPacketCopy": true,
+      "hasAudioGuide": true,
+      "visiblePlayButtons": 1,
+      "audioCount": 1,
+      "hiddenAudioCount": 1,
+      "nativeControls": 0,
+      "fallbackTextVisible": false,
+      "consoleLogs": []
+    },
+    {
+      "surface": "study",
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "pdfInputs": 1,
+      "multiPdfInputs": 1,
+      "hasStudySurface": true,
+      "consoleLogs": []
+    },
+    {
+      "surface": "admin",
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "hasSimplePreface": true,
+      "hasOldPreface": false,
+      "consoleLogs": []
+    },
+    {
+      "surface": "revision",
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "hasAppDesign": true,
+      "hasMultiIntakeCopy": true,
+      "hasContextPacketCopy": true,
+      "hasAudioGuide": true,
+      "visiblePlayButtons": 1,
+      "audioCount": 1,
+      "hiddenAudioCount": 1,
+      "nativeControls": 0,
+      "fallbackTextVisible": false,
+      "consoleLogs": []
+    }
+  ],
+  "generatedAt": "2026-06-03T13:18:02.133Z"
+}

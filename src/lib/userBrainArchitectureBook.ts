@@ -25,6 +25,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 
 - Chat and Study can capture local document context.
 - Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
+- Study can now add one PDF or several PDFs in the same file selection/drop. Each file is saved as a local active-book document before extraction starts, so the visible document rail, chat context, and voice context all see the same book-level PDF set.
 - Typed chat and live voice now build one shared brain-context packet from semantic memory, active-book summary, an active-book PDF manifest, balanced excerpts from multiple ready PDFs, and interaction timing state before handing context to the chat stream or voice realtime agent. Retrieval also receives a compact active-book PDF hint that names the active PDF and companion PDFs, so memory lookup does not collapse to only the visible page. The packet records added, ready, excerpted, pending/failed, and omitted ready PDF counts so Admin can verify whether chat and voice saw the wider book context, not only the PDF on screen. Voice prioritizes book/document context before long memory when its live prompt is compacted.
 - Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
 - Background learner-memory writes now carry the same request metadata, so chat and voice learning-book, interaction, and graph update rows can be grouped with the foreground request in Admin. Interaction-memory capture, learning-book updates, and graph-concept updates also write durable local background-job state with queued, running, completed, retry-scheduled, and dead-letter statuses.
@@ -213,6 +214,7 @@ Implemented now:
 - durable evidence and mastery ledgers;
 - durable model/tool/memory/retrieval observability rows;
 - request-correlated retrieval, model-run, tool-job, server-activity, and voice-session timelines;
+- multi-file PDF intake into one active local learning book;
 - active-book PDF manifest metadata for shared chat/voice brain-context injections;
 - local voice current-page vision parity with typed chat for rendered PDF page questions;
 - local voice web-search tool parity with typed chat for explicit live-web/freshness questions;

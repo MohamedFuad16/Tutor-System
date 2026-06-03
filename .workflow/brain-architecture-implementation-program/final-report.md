@@ -89,6 +89,89 @@ about 95%.
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+# Phase 70: Multi-PDF Upload Intake
+
+Packet ACF closes the intake-side gap behind the shared multi-PDF brain-context
+path. Chat and live voice already consumed the active book's document set; this
+phase makes Study accept one or several PDFs in a single selection/drop and keeps
+parallel extraction from cancelling older uploads.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 98%.
+
+## Graphify Context
+
+- `graphify query "multi pdf documents active book context chat voice ChatPanel
+  current document ids audio overview fallback admin paragraph" --budget 4000
+  --graph graphify-out/graph.json` routed the slice to `ChatPanel.tsx`,
+  `StudyView.tsx`, `brain.context.ts`, `AdminView.tsx`, `RevisionView.tsx`, and
+  directly connected tests/docs.
+- `graphify path "StudyView()" "buildBrainContextPacket()" --graph
+  graphify-out/graph.json` found the three-hop route through `StudyView.tsx`,
+  `ChatPanel.tsx`, and `brain.context.ts`.
+- `graphify path "StudyView()" "ChatPanel()" --graph graphify-out/graph.json`
+  found the expected shared-store route.
+
+## Integration Decisions
+
+- `StudyView` now accepts multi-file PDF selections and drops.
+- Uploaded PDFs are bulk-saved into `learningDocuments` for the active book
+  before extraction starts; the first selected PDF becomes active, while all
+  selected PDFs remain available as companion context.
+- Document ingestion now uses an active-ingestion counter plus a cancelled
+  document-id set, replacing the latest-upload sequence that could invalidate
+  older uploads.
+- Added `tests/study-view-upload.test.mjs` to preserve multi-PDF inputs, bulk
+  document persistence, per-document ingestion tracking, and the absence of
+  `files?.[0]` collapse.
+- Simplified the Admin Center preface to one plain sentence.
+- README, Tutor Architecture, User Brain Architecture, and App Design Language
+  copy now document multi-file intake feeding shared chat/voice context.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- `npm run test -- tests/study-view-upload.test.mjs tests/brain-context.test.mjs
+  tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
+  tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- `node .workflow/brain-architecture-implementation-program/packets/phase68-browser-qa.mjs`:
+  passed with local Chrome CDP approval. Desktop and mobile Study exposed
+  multi-PDF file inputs; Admin rendered the simplified preface; Revision rendered
+  App Design Language multi-PDF intake copy and one visible audio player with one
+  hidden audio element, no native controls, no fallback play/native fallback
+  copy, no horizontal overflow, and zero captured warning/error logs.
+- Browser screenshots saved as `ACF-study-multipdf-desktop.png`,
+  `ACF-study-multipdf-mobile.png`, `ACF-admin-simple-copy-desktop.png`,
+  `ACF-admin-simple-copy-mobile.png`, `ACF-revision-multipdf-audio-desktop.png`,
+  and `ACF-revision-multipdf-audio-mobile.png`; JSON evidence saved as
+  `phase68-browser-qa.json`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1109 nodes, 1946 edges, and 62 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`81.5 KB`).
+- Graphify smoke query found `StudyView()`, `ChatPanel()`,
+  `buildBrainContextPacket()`, `buildBrainDocumentRetrievalHint()`,
+  `buildBrainRetrievalQuery()`, `brain.context.ts`, and connected
+  Study/Admin/Revision nodes.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the provider-key checklist and coherent proof
+  bundle to confirm real rows satisfy the complete local beta flow.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Phase 72: Model Run Phase Ledger IDs
 
 Packet ACB makes model-run identity phase-aware. Started, fallback, completed,

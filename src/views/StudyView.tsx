@@ -450,6 +450,7 @@ function StudyIntroSplash({
       <input
         type="file"
         accept="application/pdf"
+        multiple
         ref={fileInputRef}
         className="hidden"
         onChange={handleFileChange}
@@ -589,7 +590,8 @@ export function StudyView() {
   const startedHeadlineRefs = useRef<Set<number>>(new Set());
   const completedHeadlineRefs = useRef<Set<number>>(new Set());
   const introTimersRef = useRef<number[]>([]);
-  const ingestionSequenceRef = useRef(0);
+  const activeIngestionCountRef = useRef(0);
+  const cancelledIngestionDocumentIdsRef = useRef<Set<string>>(new Set());
   const chatSurfaceRef = useRef<HTMLElement | null>(null);
   const chatPanelFrameRef = useRef<HTMLDivElement | null>(null);
   const minimizedChatButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -859,14 +861,29 @@ export function StudyView() {
     });
   };
 
+  const beginDocumentIngestion = () => {
+    activeIngestionCountRef.current += 1;
+    setIsIngesting(true);
+  };
+
+  const finishDocumentIngestion = () => {
+    activeIngestionCountRef.current = Math.max(
+      0,
+      activeIngestionCountRef.current - 1,
+    );
+    setIsIngesting(activeIngestionCountRef.current > 0);
+  };
+
+  const isDocumentIngestionCancelled = (documentId: string) =>
+    cancelledIngestionDocumentIdsRef.current.has(documentId);
+
   const ingestDocument = async (
     file: File,
     documentRecord: LearningDocument,
     book: LearningBook,
   ) => {
-    const sequence = ingestionSequenceRef.current + 1;
-    ingestionSequenceRef.current = sequence;
-    setIsIngesting(true);
+    cancelledIngestionDocumentIdsRef.current.delete(documentRecord.id);
+    beginDocumentIngestion();
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -880,7 +897,7 @@ export function StudyView() {
 
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      if (sequence !== ingestionSequenceRef.current) return;
+      if (isDocumentIngestionCancelled(documentRecord.id)) return;
       console.info("Document classification:", data.classification);
 
       const extractedText = String(data.content || "").trim();
@@ -893,6 +910,7 @@ export function StudyView() {
         updatedAt: Date.now(),
       };
       await db.learningDocuments.update(documentRecord.id, nextDocument);
+      if (isDocumentIngestionCancelled(documentRecord.id)) return;
 
       if (data.content && data.content.trim()) {
         const updatedBook =
@@ -921,7 +939,7 @@ export function StudyView() {
         }
       }
     } catch (e) {
-      if (sequence === ingestionSequenceRef.current) {
+      if (!isDocumentIngestionCancelled(documentRecord.id)) {
         console.error("Ingestion failed:", e);
         await db.learningDocuments.update(documentRecord.id, {
           processingStatus: "failed",
@@ -930,49 +948,56 @@ export function StudyView() {
         });
       }
     } finally {
-      if (sequence === ingestionSequenceRef.current) {
-        setIsIngesting(false);
-      }
+      finishDocumentIngestion();
+      cancelledIngestionDocumentIdsRef.current.delete(documentRecord.id);
     }
   };
 
-  const attachDocument = async (file: File) => {
-    if (file.type !== "application/pdf") return;
+  const attachDocuments = async (files: File[]) => {
+    const pdfFiles = files.filter((file) => file.type === "application/pdf");
+    if (!pdfFiles.length) return;
     const book = await ensureActiveBook();
     const now = Date.now();
-    const documentId = `doc:${crypto.randomUUID()}`;
-    const documentRecord: LearningDocument = {
-      id: documentId,
+    const documentRecords = pdfFiles.map((file, index): LearningDocument => ({
+      id: `doc:${crypto.randomUUID()}`,
       bookId: book.id,
       title: file.name.replace(/\.pdf$/i, "").trim() || "Untitled PDF",
       mimeType: file.type || "application/pdf",
       size: file.size,
       blob: file.slice(0, file.size, file.type || "application/pdf"),
       processingStatus: "processing",
-      createdAt: now,
-      updatedAt: now,
+      createdAt: now + index,
+      updatedAt: now + pdfFiles.length - index,
       lastViewedPage: 1,
-    };
-    await db.learningDocuments.put(documentRecord);
-    await updateBookDocumentLinks(book.id, documentId);
+    }));
+    const activeUploadedDocumentId = documentRecords[0]?.id;
+    await db.learningDocuments.bulkPut(documentRecords);
+    await updateBookDocumentLinks(book.id, activeUploadedDocumentId || null);
     setActiveLearningBookId(book.id);
     setActiveProject(book.title);
-    setActiveDocumentId(documentId);
+    setActiveDocumentId(activeUploadedDocumentId || null);
     setSelectedTextContext("");
     setIsChatOpen(true);
-    void ingestDocument(file, documentRecord, book);
+    documentRecords.forEach((documentRecord, index) => {
+      void ingestDocument(pdfFiles[index], documentRecord, book);
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file?.type === "application/pdf") void attachDocument(file);
+    const files = Array.from(e.target.files || []);
+    if (files.some((file) => file.type === "application/pdf")) {
+      void attachDocuments(files);
+    }
+    e.currentTarget.value = "";
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file?.type === "application/pdf") void attachDocument(file);
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.some((file) => file.type === "application/pdf")) {
+      void attachDocuments(files);
+    }
   };
 
   const selectDocument = async (document: LearningDocument) => {
@@ -986,8 +1011,7 @@ export function StudyView() {
   const removeDocument = async (documentId: string) => {
     const document = orderedDocuments.find((item) => item.id === documentId);
     if (!document) return;
-    ingestionSequenceRef.current += 1;
-    setIsIngesting(false);
+    cancelledIngestionDocumentIdsRef.current.add(documentId);
     setSelectedTextContext("");
     await db.learningDocuments.delete(documentId);
     removeAnnotationsForDocument(documentId);
@@ -1108,6 +1132,7 @@ export function StudyView() {
             <input
               type="file"
               accept="application/pdf"
+              multiple
               ref={fileInputRef}
               className="hidden"
               onChange={handleFileChange}

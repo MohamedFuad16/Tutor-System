@@ -202,8 +202,8 @@ context.
 Study books can now hold more than one PDF:
 
 1. Select or create the book context in Chat or Revision.
-2. Add PDFs from Study. Each PDF is saved as a `learningDocuments` record linked
-   to the active book.
+2. Add one PDF or several PDFs at once from Study. Each PDF is saved as a
+   `learningDocuments` record linked to the active book.
 3. The document rail lets you switch between PDFs without replacing the book.
 4. Removing a PDF deletes that document record and its document-scoped
    annotations without deleting the learning book notes.
