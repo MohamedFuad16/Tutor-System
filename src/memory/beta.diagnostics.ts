@@ -127,6 +127,27 @@ export type ProviderKeyProofCheck = {
   evidence: BetaBrainFlowSignalEvidence;
 };
 
+export type LiveBetaProofRunbookStep = {
+  id: string;
+  title: string;
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  summary: string;
+  action: string;
+  evidenceNeeded: string[];
+  blockingChecks: string[];
+  evidence: BetaBrainFlowSignalEvidence;
+};
+
+export type LiveBetaProofRunbook = {
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  canStart: boolean;
+  readySteps: number;
+  totalSteps: number;
+  nextStepId?: string;
+  summary: string;
+  steps: LiveBetaProofRunbookStep[];
+};
+
 export type ProviderKeyProofChecklist = {
   status: Exclude<BetaDiagnosticStatus, "deferred">;
   completionPercent: number;
@@ -139,6 +160,7 @@ export type ProviderKeyProofChecklist = {
   canAttemptProviderKeyRun: boolean;
   proofComplete: boolean;
   coherentLiveProof: CoherentLiveProofBundle;
+  liveProofRunbook: LiveBetaProofRunbook;
   summary: string;
   missingChecks: string[];
   checks: ProviderKeyProofCheck[];
@@ -1302,6 +1324,35 @@ const mergeSignalEvidence = (
   };
 };
 
+const mergeCheckEvidence = (
+  checks: ProviderKeyProofCheck[],
+): BetaBrainFlowSignalEvidence => {
+  const latestTimestamps = checks
+    .map((check) => check.evidence.latestTimestamp)
+    .filter(
+      (timestamp): timestamp is number =>
+        typeof timestamp === "number" && Number.isFinite(timestamp),
+    );
+  const latestTimestamp =
+    latestTimestamps.length > 0 ? Math.max(...latestTimestamps) : undefined;
+
+  return {
+    requestIds: compactUnique(
+      checks.flatMap((check) => check.evidence.requestIds),
+      8,
+    ),
+    sources: compactUnique(
+      checks.flatMap((check) => check.evidence.sources),
+      8,
+    ),
+    documentIds: compactUnique(
+      checks.flatMap((check) => check.evidence.documentIds),
+      8,
+    ),
+    ...(latestTimestamp ? { latestTimestamp } : {}),
+  };
+};
+
 const providerKeyProofSignalChecks = [
   {
     id: "typed_chat_context_proof",
@@ -1419,6 +1470,201 @@ const providerKeyProofSignalChecks = [
       "Inspect learning-book or graph-concept rows and confirm the model-observation evidence contract is present.",
   },
 ] as const;
+
+export const buildLiveBetaProofRunbook = ({
+  checks,
+  canAttemptProviderKeyRun,
+  proofComplete,
+  failedRows,
+}: {
+  checks: ProviderKeyProofCheck[];
+  canAttemptProviderKeyRun: boolean;
+  proofComplete: boolean;
+  failedRows: number;
+}): LiveBetaProofRunbook => {
+  const checkById = new Map(checks.map((check) => [check.id, check]));
+
+  const step = ({
+    id,
+    title,
+    checkIds,
+    readySummary,
+    pendingSummary,
+    action,
+    evidenceNeeded,
+  }: {
+    id: string;
+    title: string;
+    checkIds: string[];
+    readySummary: string;
+    pendingSummary: string;
+    action: string;
+    evidenceNeeded: string[];
+  }): LiveBetaProofRunbookStep => {
+    const stepChecks = checkIds
+      .map((checkId) => checkById.get(checkId))
+      .filter((check): check is ProviderKeyProofCheck => Boolean(check));
+    const blockingChecks = stepChecks
+      .filter((check) => !check.ready)
+      .map((check) => check.title);
+    const blocked =
+      failedRows > 0 || stepChecks.some((check) => check.status === "blocked");
+    const ready = stepChecks.length > 0 && blockingChecks.length === 0;
+    const status: Exclude<BetaDiagnosticStatus, "deferred"> = ready
+      ? "ready"
+      : blocked
+        ? "blocked"
+        : "watch";
+
+    return {
+      id,
+      title,
+      status,
+      summary: ready ? readySummary : pendingSummary,
+      action,
+      evidenceNeeded,
+      blockingChecks,
+      evidence: mergeCheckEvidence(stepChecks),
+    };
+  };
+
+  const steps: LiveBetaProofRunbookStep[] = [
+    step({
+      id: "provider_keys",
+      title: "Confirm local provider keys",
+      checkIds: ["chat_model_provider_key", "voice_realtime_provider_key"],
+      readySummary:
+        "Chat model and realtime voice keys are visible through local settings or server fallback meters.",
+      pendingSummary:
+        "The deliberate run cannot start until both local provider-key meters are visible.",
+      action:
+        "Configure OpenRouter and Deepgram locally, then reopen Admin to confirm both meters read as seen.",
+      evidenceNeeded: ["chat model key meter", "voice realtime key meter"],
+    }),
+    step({
+      id: "active_multi_pdf_book",
+      title: "Use one multi-PDF active book",
+      checkIds: ["typed_chat_multi_pdf_proof", "live_voice_multi_pdf_proof"],
+      readySummary:
+        "Typed chat and live voice both used more than one ready PDF from the same active book.",
+      pendingSummary:
+        "Choose an active book with multiple ready PDFs before running both proof turns.",
+      action:
+        "Open the target learning book, make sure at least two PDFs are ready, and keep that book active for the chat and voice turns.",
+      evidenceNeeded: [
+        "chat contextDocumentIds",
+        "voice contextDocumentIds",
+        "more than one shared PDF id",
+      ],
+    }),
+    step({
+      id: "typed_chat_turn",
+      title: "Run the typed-chat proof turn",
+      checkIds: [
+        "typed_chat_context_proof",
+        "request_timeline_proof",
+        "typed_chat_tool_proof",
+        "typed_chat_mastery_proof",
+        "typed_chat_transcript_proof",
+      ],
+      readySummary:
+        "A single typed-chat request has context, request timeline, tool, evaluated mastery, and transcript evidence.",
+      pendingSummary:
+        "Typed chat still needs a request-correlated turn with tool, mastery, and saved transcript rows.",
+      action:
+        "Ask typed chat a source-grounded active-recall question that uses a visible tool, then check the request timeline.",
+      evidenceNeeded: [
+        "brain_context_injected",
+        "retrieval row",
+        "model run",
+        "foreground tool job",
+        "evaluated mastery evidence",
+        "book_chat_thread_saved",
+      ],
+    }),
+    step({
+      id: "live_voice_turn",
+      title: "Run the live-voice proof turn",
+      checkIds: [
+        "live_voice_context_proof",
+        "live_voice_tool_proof",
+        "live_voice_mastery_proof",
+        "live_voice_transcript_proof",
+      ],
+      readySummary:
+        "A single live-voice request has context, tool, evaluated mastery, and saved transcript evidence.",
+      pendingSummary:
+        "Live voice still needs request-correlated context, tool, mastery, and transcript rows.",
+      action:
+        "Start a voice session on the same book, ask for an evaluated answer/tool action, then end the session so the transcript saves.",
+      evidenceNeeded: [
+        "voice brain_context_injected",
+        "voice-agent tool job",
+        "voice evaluated mastery evidence",
+        "voice book_chat_thread_saved",
+      ],
+    }),
+    step({
+      id: "background_memory_gate",
+      title: "Wait for memory workers and gates",
+      checkIds: ["background_memory_proof", "model_observation_gate_proof"],
+      readySummary:
+        "Background memory rows are present and model-derived rows keep the observation-only gate.",
+      pendingSummary:
+        "Background learner-memory evidence or model-observation gate rows are still missing.",
+      action:
+        "Wait for local memory jobs to complete, then inspect background rows for chat and voice request ids.",
+      evidenceNeeded: [
+        "request-correlated background rows",
+        "model-observation evidence contract",
+        "mastery mutation disabled on model summaries",
+      ],
+    }),
+    step({
+      id: "coherent_bundle_export",
+      title: "Confirm coherent bundle and export",
+      checkIds: ["coherent_chat_voice_beta_bundle"],
+      readySummary:
+        "The selected chat and voice request ids share one book, one thread, and multi-PDF context anchors.",
+      pendingSummary:
+        "The proof rows exist only when chat and voice form one shared local book/thread bundle.",
+      action:
+        "Use the coherent bundle panel to compare request ids, then export the diagnostics JSON for beta review.",
+      evidenceNeeded: [
+        "chat request id",
+        "voice request id",
+        "shared book id",
+        "shared thread id",
+        "shared PDF ids",
+      ],
+    }),
+  ];
+
+  const readySteps = steps.filter((entry) => entry.status === "ready").length;
+  const blockedSteps = steps.filter(
+    (entry) => entry.status === "blocked",
+  ).length;
+  const nextStepId = steps.find((entry) => entry.status !== "ready")?.id;
+  const status: Exclude<BetaDiagnosticStatus, "deferred"> =
+    blockedSteps > 0 ? "blocked" : proofComplete ? "ready" : "watch";
+
+  return {
+    status,
+    canStart: canAttemptProviderKeyRun,
+    readySteps,
+    totalSteps: steps.length,
+    ...(nextStepId ? { nextStepId } : {}),
+    summary:
+      status === "ready"
+        ? "The local provider-key chat and voice proof runbook is complete."
+        : status === "blocked"
+          ? `${failedRows} failed or blocked live rows must be resolved before continuing the proof runbook.`
+          : canAttemptProviderKeyRun
+            ? "Provider keys are present. Run the ordered chat and voice proof turns, then export the local diagnostics."
+            : "Complete local provider-key setup before attempting the deliberate live proof run.",
+    steps,
+  };
+};
 
 export const buildProviderKeyProofChecklist = ({
   brainFlow,
@@ -1543,6 +1789,12 @@ export const buildProviderKeyProofChecklist = ({
       : proofComplete
         ? "Provider-key chat and voice proof is complete in the local ledger."
         : `${readyChecks}/${totalChecks} provider-key proof checks are ready; run deliberate chat and voice beta turns to fill the remaining live evidence.`;
+  const liveProofRunbook = buildLiveBetaProofRunbook({
+    checks,
+    canAttemptProviderKeyRun,
+    proofComplete,
+    failedRows: brainFlow.failedRows,
+  });
 
   return {
     status,
@@ -1556,6 +1808,7 @@ export const buildProviderKeyProofChecklist = ({
     canAttemptProviderKeyRun,
     proofComplete,
     coherentLiveProof,
+    liveProofRunbook,
     summary,
     missingChecks,
     checks,

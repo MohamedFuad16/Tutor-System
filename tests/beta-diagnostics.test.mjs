@@ -247,6 +247,15 @@ test("provider-key proof checklist separates key readiness from live proof", () 
   assert.equal(checklist.voiceRealtimeKeyConfigured, false);
   assert.ok(checklist.missingChecks.includes("Chat model provider key"));
   assert.ok(checklist.missingChecks.includes("Typed chat context proof"));
+  assert.equal(checklist.liveProofRunbook.status, "watch");
+  assert.equal(checklist.liveProofRunbook.canStart, false);
+  assert.equal(checklist.liveProofRunbook.readySteps, 0);
+  assert.equal(checklist.liveProofRunbook.nextStepId, "provider_keys");
+  assert.deepEqual(
+    checklist.liveProofRunbook.steps.find((step) => step.id === "provider_keys")
+      ?.blockingChecks,
+    ["Chat model provider key", "Voice realtime provider key"],
+  );
 });
 
 test("provider-key proof checklist requires keys and complete live ledger anchors", () => {
@@ -284,6 +293,16 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   assert.equal(readyChecklist.proofComplete, true);
   assert.equal(readyChecklist.completionPercent, 100);
   assert.equal(readyChecklist.missingChecks.length, 0);
+  assert.equal(readyChecklist.liveProofRunbook.status, "ready");
+  assert.equal(readyChecklist.liveProofRunbook.canStart, true);
+  assert.equal(readyChecklist.liveProofRunbook.readySteps, 6);
+  assert.equal(readyChecklist.liveProofRunbook.nextStepId, undefined);
+  assert.equal(
+    readyChecklist.liveProofRunbook.steps.find(
+      (step) => step.id === "coherent_bundle_export",
+    )?.status,
+    "ready",
+  );
   assert.equal(readyChecklist.coherentLiveProof.status, "ready");
   assert.deepEqual(readyChecklist.coherentLiveProof.sharedDocumentIds, [
     "doc-active",
@@ -633,6 +652,21 @@ test("coherent live proof rejects scattered rows even when aggregate brain-flow 
   assert.ok(
     checklist.missingChecks.includes("Coherent chat + voice beta bundle"),
   );
+  assert.equal(checklist.liveProofRunbook.status, "watch");
+  assert.equal(checklist.liveProofRunbook.canStart, true);
+  assert.equal(
+    checklist.liveProofRunbook.steps.find(
+      (step) => step.id === "typed_chat_turn",
+    )?.status,
+    "ready",
+  );
+  assert.equal(
+    checklist.liveProofRunbook.steps.find(
+      (step) => step.id === "coherent_bundle_export",
+    )?.status,
+    "watch",
+  );
+  assert.equal(checklist.liveProofRunbook.nextStepId, "coherent_bundle_export");
 });
 
 test("brain flow coverage requires chat and voice multi-PDF context evidence", () => {

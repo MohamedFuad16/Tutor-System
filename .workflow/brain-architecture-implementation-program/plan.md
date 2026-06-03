@@ -145,3 +145,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   path add active and companion PDF hints to semantic retrieval, simplify Admin
   preface copy, and lock stored audio overview fallback inside one visible
   player with browser QA evidence.
+- ABX: Live beta proof runbook. Derive an ordered manual runbook from the
+  provider-key proof checklist, render next-step blockers/evidence in Admin,
+  include it in the local diagnostics export metadata, and verify desktop/mobile
+  Admin Beta Diagnostics without running provider traffic.

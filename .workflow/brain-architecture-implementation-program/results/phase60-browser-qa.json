@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-06-03T07:43:58.495Z",
+  "appUrl": "http://127.0.0.1:3100",
+  "results": [
+    {
+      "label": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "hasLocalBetaReadiness": true,
+      "hasRunbook": true,
+      "hasManualStatus": true,
+      "hasProviderKeysStep": true,
+      "hasActiveBookStep": true,
+      "hasTypedChatStep": true,
+      "hasVoiceStep": true,
+      "hasBackgroundGate": true,
+      "hasCoherentExport": true,
+      "hasLocalOnly": true,
+      "consoleLogs": []
+    },
+    {
+      "label": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "hasLocalBetaReadiness": true,
+      "hasRunbook": true,
+      "hasManualStatus": true,
+      "hasProviderKeysStep": true,
+      "hasActiveBookStep": true,
+      "hasTypedChatStep": true,
+      "hasVoiceStep": true,
+      "hasBackgroundGate": true,
+      "hasCoherentExport": true,
+      "hasLocalOnly": true,
+      "consoleLogs": []
+    }
+  ]
+}

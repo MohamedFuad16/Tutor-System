@@ -1001,6 +1001,7 @@ export function AdminView() {
       deepgramApiKey,
     ],
   );
+  const liveProofRunbook = providerKeyProofChecklist.liveProofRunbook;
   const brainWiringRehearsalGap = useMemo(
     () =>
       brainWiringRehearsal
@@ -1351,6 +1352,16 @@ export function AdminView() {
         activeProject,
         aiModel,
         exportedFrom: "AdminView",
+        providerKeyProof: {
+          status: providerKeyProofChecklist.status,
+          completionPercent: providerKeyProofChecklist.completionPercent,
+          liveCoveragePercent: providerKeyProofChecklist.liveCoveragePercent,
+          canAttemptProviderKeyRun:
+            providerKeyProofChecklist.canAttemptProviderKeyRun,
+          proofComplete: providerKeyProofChecklist.proofComplete,
+          missingChecks: providerKeyProofChecklist.missingChecks,
+          liveProofRunbook,
+        },
       },
       ledgers: {
         learningBooks,
@@ -4415,6 +4426,170 @@ export function AdminView() {
 
                       <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-600 font-serif">
                         {providerKeyProofChecklist.summary}
+                      </div>
+
+                      <div className="mt-4 rounded-2xl border border-blue-100 bg-white p-4">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-blue-500">
+                              Live beta runbook
+                            </div>
+                            <h4 className="mt-1 text-base font-semibold text-zinc-900">
+                              Ordered manual proof path
+                            </h4>
+                            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                              {liveProofRunbook.summary}
+                            </p>
+                          </div>
+                          <div className="shrink-0 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-right">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              Runbook
+                            </div>
+                            <div className="mt-1 text-xl font-semibold tabular-nums text-zinc-900">
+                              {liveProofRunbook.readySteps}/
+                              {liveProofRunbook.totalSteps}
+                            </div>
+                            <span
+                              className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(liveProofRunbook.status)}`}
+                            >
+                              {liveProofRunbook.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <span
+                            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${liveProofRunbook.canStart ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                          >
+                            {liveProofRunbook.canStart
+                              ? "manual run can start"
+                              : "setup before run"}
+                          </span>
+                          {liveProofRunbook.nextStepId && (
+                            <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-blue-700">
+                              next{" "}
+                              {liveProofRunbook.nextStepId.replace(/_/g, " ")}
+                            </span>
+                          )}
+                          <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                            local only
+                          </span>
+                        </div>
+
+                        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                          {liveProofRunbook.steps.map((runbookStep, index) => {
+                            const StepIcon =
+                              runbookStep.status === "ready"
+                                ? ShieldCheck
+                                : runbookStep.status === "blocked"
+                                  ? AlertTriangle
+                                  : Clock;
+                            const hasStepEvidence =
+                              runbookStep.evidence.requestIds.length > 0 ||
+                              runbookStep.evidence.documentIds.length > 0 ||
+                              typeof runbookStep.evidence.latestTimestamp ===
+                                "number";
+                            return (
+                              <article
+                                key={runbookStep.id}
+                                className={`rounded-2xl border p-3 ${
+                                  runbookStep.status === "ready"
+                                    ? "border-green-200 bg-green-50"
+                                    : runbookStep.status === "blocked"
+                                      ? "border-red-200 bg-red-50"
+                                      : "border-zinc-200 bg-zinc-50"
+                                }`}
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <span className="rounded-full border border-white/70 bg-white/70 px-2 py-0.5 text-[10px] font-mono text-zinc-500">
+                                        {index + 1}
+                                      </span>
+                                      <h5 className="m-0 text-sm font-semibold text-zinc-900">
+                                        {runbookStep.title}
+                                      </h5>
+                                      <span
+                                        className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(runbookStep.status)}`}
+                                      >
+                                        {runbookStep.status}
+                                      </span>
+                                    </div>
+                                    <p className="mt-2 text-xs leading-relaxed text-zinc-600 font-serif">
+                                      {runbookStep.summary}
+                                    </p>
+                                  </div>
+                                  <StepIcon
+                                    size={15}
+                                    className={`shrink-0 ${
+                                      runbookStep.status === "ready"
+                                        ? "text-green-600"
+                                        : runbookStep.status === "blocked"
+                                          ? "text-red-600"
+                                          : "text-zinc-400"
+                                    }`}
+                                  />
+                                </div>
+
+                                <p className="mt-3 rounded-xl border border-white/80 bg-white/80 px-3 py-2 text-[11px] leading-relaxed text-zinc-600 font-serif">
+                                  {runbookStep.action}
+                                </p>
+
+                                <div className="mt-3 flex flex-wrap gap-1.5">
+                                  {runbookStep.evidenceNeeded.map((entry) => (
+                                    <span
+                                      key={`${runbookStep.id}-needed-${entry}`}
+                                      className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-zinc-600"
+                                    >
+                                      {entry}
+                                    </span>
+                                  ))}
+                                </div>
+
+                                {runbookStep.blockingChecks.length > 0 && (
+                                  <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800 font-serif">
+                                    Missing:{" "}
+                                    {runbookStep.blockingChecks.join(", ")}.
+                                  </div>
+                                )}
+
+                                {hasStepEvidence && (
+                                  <div className="mt-3 flex flex-wrap gap-1.5">
+                                    {typeof runbookStep.evidence
+                                      .latestTimestamp === "number" && (
+                                      <span className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-mono text-zinc-600">
+                                        latest{" "}
+                                        {formatTime(
+                                          runbookStep.evidence.latestTimestamp,
+                                        )}
+                                      </span>
+                                    )}
+                                    {runbookStep.evidence.requestIds.map(
+                                      (requestId) => (
+                                        <span
+                                          key={`runbook-request-${runbookStep.id}-${requestId}`}
+                                          className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-700"
+                                        >
+                                          req {requestId}
+                                        </span>
+                                      ),
+                                    )}
+                                    {runbookStep.evidence.documentIds.map(
+                                      (documentId) => (
+                                        <span
+                                          key={`runbook-document-${runbookStep.id}-${documentId}`}
+                                          className="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[10px] font-mono text-violet-700"
+                                        >
+                                          pdf {documentId}
+                                        </span>
+                                      ),
+                                    )}
+                                  </div>
+                                )}
+                              </article>
+                            );
+                          })}
+                        </div>
                       </div>
 
                       <div className="mt-4 rounded-2xl border border-blue-100 bg-white p-4">

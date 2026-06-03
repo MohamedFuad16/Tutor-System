@@ -4448,6 +4448,87 @@ the downstream display path through `AdminView()`,
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+# Phase 68: Live Beta Proof Runbook
+
+Packet ABX turns the Provider-Key Live Proof panel into an ordered manual
+runbook. Admin now tells the beta runner which local step is next, what evidence
+is needed, and which proof checks are still blocking completion, without calling
+providers or treating synthetic evidence as real live traffic.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 90%.
+
+## Graphify Context
+
+- `graphify query "AdminView beta diagnostics user brain architecture" --budget
+  4000 --graph graphify-out/graph.json` routed the slice to `AdminView.tsx`,
+  `beta.diagnostics.ts`, `buildCoherentLiveProofFromLedgers()`,
+  `buildBetaDiagnosticsSnapshot()`, and
+  `buildBrainFlowCoverageFromLedgers()`.
+- Exact Graphify CLI routing was needed because a broad MCP graph query
+  overmatched on provider-like terms.
+- Post-regeneration smoke query found `buildLiveBetaProofRunbook()`,
+  `LiveBetaProofRunbook`, `ProviderKeyProofChecklist`,
+  `buildProviderKeyProofChecklist()`, `beta.diagnostics.ts`, and
+  `AdminView.tsx`.
+- Graphify path `buildLiveBetaProofRunbook()` to `AdminView()` found a connected
+  route through `beta.diagnostics.ts` and Admin's beta diagnostics calls.
+- Graphify path `buildLiveBetaProofRunbook()` to
+  `buildProviderKeyProofChecklist()` found the expected one-hop connection.
+
+## Integration Decisions
+
+- Added `LiveBetaProofRunbook` and `buildLiveBetaProofRunbook()` in
+  `src/memory/beta.diagnostics.ts`.
+- `ProviderKeyProofChecklist` now carries the runbook, so Admin derives both the
+  checklist and the manual proof path from one local truth source.
+- The runbook has six ordered steps: provider keys, one multi-PDF active book,
+  typed-chat proof, live-voice proof, background memory/gates, and coherent
+  bundle export.
+- Admin renders step status, action, evidence needed, missing blockers, and
+  compact request/PDF anchors where available.
+- Diagnostics export metadata now includes provider-key proof summary and the
+  runbook without exposing provider key values.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- Direct `node --test tests/beta-diagnostics.test.mjs`: unavailable because the
+  project test harness must first generate `.tmp-test/*`.
+- `npm run test`: passed, 151 tests.
+- `npm run format:check`: passed.
+- `npm run brain:postchange -- --reason debug-skill-change`: unavailable
+  because `package.json` has no `brain:postchange` script.
+- `npm run brain:ui-regression`: unavailable because `package.json` has no
+  `brain:ui-regression` script.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser desktop QA on `http://localhost:3100` confirmed Admin Beta
+  Diagnostics renders the live beta runbook, all six ordered steps, setup/next
+  status, local-only chip, no horizontal overflow, and zero console logs.
+- `node .workflow/brain-architecture-implementation-program/packets/phase60-browser-qa.mjs`:
+  passed with local Chrome CDP approval. Desktop and mobile Admin rendered Local
+  Beta Readiness, Live beta runbook, manual/setup status, all six runbook
+  steps, local-only copy, no horizontal overflow, and zero console logs.
+- Browser screenshots saved as `ABX-admin-runbook-desktop.png` and
+  `ABX-admin-runbook-mobile.png`; JSON evidence saved as
+  `phase60-browser-qa.json`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1075 nodes, 1899 edges, and 55 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`79.6 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, or `/private/tmp`
+  scratch nodes.
+
+## Remaining Work
+
+- Run deliberate provider-key typed chat and live voice turns when live provider
+  traffic is in scope, then use the runbook and coherent proof bundle to confirm
+  real request-correlated rows satisfy the complete local beta flow.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 # Phase 67: Active-Book PDF Retrieval Hint
 
 Packet ABW tightens the multi-PDF context path at the retrieval layer. The
