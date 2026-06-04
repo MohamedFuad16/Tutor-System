@@ -326,12 +326,19 @@ const collectMermaidTourNodes = (svg: SVGSVGElement) => {
     .slice(0, 16);
 };
 
-const Mermaid = ({ chart }: { chart: string }) => {
+const Mermaid = ({
+  chart,
+  variant = "inline",
+}: {
+  chart: string;
+  variant?: "inline" | "stage";
+}) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const originalViewBoxRef = useRef<string>("");
   const viewBoxAnimationRef = useRef<number | null>(null);
   const [tourNodes, setTourNodes] = useState<string[]>([]);
   const [activeNodeIndex, setActiveNodeIndex] = useState(0);
+  const isStage = variant === "stage";
 
   useEffect(() => {
     let cancelled = false;
@@ -468,8 +475,11 @@ const Mermaid = ({ chart }: { chart: string }) => {
 
   return (
     <div
-      className="learningai-mermaid-tour my-4 w-full max-w-[420px] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-zinc-100 shadow-[0_20px_50px_rgba(0,0,0,0.22)]"
+      className={`learningai-mermaid-tour w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-[0_20px_50px_rgba(0,0,0,0.22)] ${
+        isStage ? "my-0 max-w-none p-4" : "my-4 max-w-[420px] p-3"
+      }`}
       data-mermaid-focus-tour
+      data-mermaid-variant={variant}
     >
       <style>{`
         .learningai-mermaid-tour [data-mermaid-tour-node='true'] {
@@ -497,7 +507,9 @@ const Mermaid = ({ chart }: { chart: string }) => {
       `}</style>
       <div
         ref={chartRef}
-        className="flex min-h-[180px] justify-center overflow-hidden rounded-lg p-2"
+        className={`flex justify-center overflow-hidden rounded-lg p-2 ${
+          isStage ? "min-h-[320px] max-h-[56vh]" : "min-h-[180px]"
+        }`}
       />
       {tourNodes.length > 1 && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-zinc-200">
@@ -942,14 +954,228 @@ const MorphBlob = ({ speaking }: { speaking: boolean }) => {
   );
 };
 
+const VoiceStageSourceGrid = ({
+  sources,
+}: {
+  sources: NormalizedWebSource[];
+}) => {
+  if (!sources.length) {
+    return (
+      <div className="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-zinc-400">
+        No external image/source cards were returned for this voice visual.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-2 sm:grid-cols-2">
+      {sources.slice(0, 6).map((source, index) => (
+        <a
+          key={source.id || source.url || `${source.title}-${index}`}
+          href={source.url}
+          target="_blank"
+          rel="noreferrer"
+          className="group flex min-w-0 gap-3 rounded-xl border border-white/10 bg-white/[0.06] p-3 transition-colors hover:bg-white/[0.1]"
+        >
+          {(source.thumbnailUrl || source.imageUrl) && (
+            <span className="relative block h-16 w-20 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/5">
+              <img
+                src={source.thumbnailUrl || source.imageUrl}
+                alt=""
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
+              <span className="absolute bottom-1 right-1 rounded-full bg-black/70 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-white">
+                image
+              </span>
+            </span>
+          )}
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-blue-300/20 bg-blue-400/10 text-blue-100">
+            {source.sourceType === "image" ? (
+              <ImageIcon size={13} />
+            ) : (
+              <Globe2 size={13} />
+            )}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+              <span className="truncate">{source.domain}</span>
+              <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-zinc-400">
+                {index + 1}
+              </span>
+              <span className="rounded-full bg-blue-400/10 px-1.5 py-0.5 text-blue-200">
+                {source.sourceType === "image" ? "image" : "source"}
+              </span>
+            </span>
+            <span className="mt-1 line-clamp-2 block text-[12px] font-semibold leading-snug text-zinc-200 group-hover:text-white">
+              {source.title}
+            </span>
+            {source.snippet && (
+              <span className="mt-1 line-clamp-2 block text-[11px] leading-snug text-zinc-500">
+                {source.snippet}
+              </span>
+            )}
+          </span>
+          <ExternalLink
+            size={12}
+            className="mt-1 shrink-0 text-zinc-600 transition-colors group-hover:text-zinc-300"
+          />
+        </a>
+      ))}
+    </div>
+  );
+};
+
+const VoiceVisualStage = ({
+  focus,
+  onDismiss,
+}: {
+  focus: VoiceVisualFocus;
+  onDismiss?: () => void;
+}) => {
+  const sources = Array.isArray(focus.sources)
+    ? (focus.sources as NormalizedWebSource[])
+    : [];
+  const imageSources = sources.filter(
+    (source) => source.imageUrl || source.thumbnailUrl,
+  );
+  const featuredImage = imageSources[0];
+  const statusClass =
+    focus.status === "ready"
+      ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-100"
+      : focus.status === "blocked" || focus.status === "failed"
+        ? "border-red-300/25 bg-red-400/10 text-red-100"
+        : "border-amber-300/25 bg-amber-400/10 text-amber-100";
+
+  return (
+    <gsapMotion.div
+      data-voice-visual-stage
+      data-voice-visual-stage-kind={focus.kind}
+      initial={{ opacity: 0, y: 18, scale: 0.985 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.46, ease: "easeOut" }}
+      className="pointer-events-auto absolute inset-x-3 bottom-24 top-[8.75rem] flex items-center justify-center sm:bottom-7 sm:left-[12.5rem] sm:right-7 sm:top-7"
+      aria-live="polite"
+    >
+      <div className="flex max-h-full w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#050505]/95 shadow-[0_28px_90px_rgba(0,0,0,0.58)] backdrop-blur-2xl">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-5">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] ${statusClass}`}
+              >
+                {focus.status}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+                {focus.kind.replace("_", " ")}
+              </span>
+              {focus.focusedTarget && (
+                <span className="rounded-full border border-orange-300/20 bg-orange-400/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-orange-100">
+                  focusing {focus.focusedTarget}
+                </span>
+              )}
+            </div>
+            <h3 className="mt-2 truncate text-base font-semibold text-white">
+              {focus.title}
+            </h3>
+            {focus.summary && (
+              <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
+                {focus.summary}
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="shrink-0 rounded-full border border-white/10 bg-white/[0.06] p-2 text-zinc-400 transition-colors hover:border-white/20 hover:text-white"
+            aria-label="Return voice blob to center"
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        <div className="custom-scroll min-h-0 flex-1 overflow-auto p-4 sm:p-5">
+          {focus.kind === "diagram" && focus.mermaid ? (
+            <div data-voice-stage-mermaid className="flex justify-center">
+              <Mermaid chart={focus.mermaid} variant="stage" />
+            </div>
+          ) : null}
+
+          {focus.kind === "web_search" && (
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
+                {featuredImage ? (
+                  <img
+                    src={featuredImage.imageUrl || featuredImage.thumbnailUrl}
+                    alt={featuredImage.title || "Voice web image result"}
+                    className="max-h-[52vh] w-full object-contain"
+                  />
+                ) : (
+                  <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 px-6 text-center text-zinc-500">
+                    <ImageIcon size={30} />
+                    <p className="max-w-sm text-sm leading-relaxed">
+                      This voice web-search result did not include a renderable
+                      image. Source metadata is still visible on the right.
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 space-y-3">
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                  <span className="rounded-full bg-white/10 px-2 py-1">
+                    {sources.length} source{sources.length === 1 ? "" : "s"}
+                  </span>
+                  <span className="rounded-full bg-white/10 px-2 py-1">
+                    {imageSources.length} image
+                    {imageSources.length === 1 ? "" : "s"}
+                  </span>
+                  {focus.query && (
+                    <span className="min-w-0 truncate rounded-full bg-blue-400/10 px-2 py-1 text-blue-100">
+                      {focus.query}
+                    </span>
+                  )}
+                </div>
+                <VoiceStageSourceGrid sources={sources} />
+              </div>
+            </div>
+          )}
+
+          {focus.kind === "current_page" && (
+            <div className="flex min-h-[260px] flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] px-6 py-8 text-center">
+              <Layers size={30} className="text-blue-200" />
+              <h4 className="mt-3 text-base font-semibold text-white">
+                Current study surface is in focus
+              </h4>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
+                {focus.summary ||
+                  "Aria inspected the visible PDF/page surface and the reader is highlighting that area."}
+              </p>
+              {focus.query && (
+                <p className="mt-3 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold text-zinc-300">
+                  Query: {focus.query}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </gsapMotion.div>
+  );
+};
+
 const VoiceUniverse = ({
   state,
   caption,
+  visualFocus,
+  onDismissVisual,
 }: {
   state: "listening" | "speaking";
   caption: VoiceCaption;
+  visualFocus?: VoiceVisualFocus | null;
+  onDismissVisual?: () => void;
 }) => {
   const label = state === "speaking" ? "Aria is speaking" : "Listening";
+  const hasVisualStage = Boolean(visualFocus);
   return (
     <gsapMotion.div
       initial={{ opacity: 0 }}
@@ -960,7 +1186,16 @@ const VoiceUniverse = ({
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(124,92,255,0.24),transparent_34%),radial-gradient(circle_at_18%_70%,rgba(59,130,246,0.14),transparent_30%),radial-gradient(circle_at_82%_72%,rgba(255,110,0,0.12),transparent_26%)]" />
       <div className="absolute inset-0 opacity-35 [background-image:radial-gradient(circle_at_center,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:26px_26px]" />
-      <div className="absolute inset-0 flex flex-col items-center justify-center pb-24">
+      {visualFocus && (
+        <VoiceVisualStage focus={visualFocus} onDismiss={onDismissVisual} />
+      )}
+      <div
+        className={`absolute flex flex-col items-center transition-[left,top,transform] duration-700 ease-out ${
+          hasVisualStage
+            ? "left-4 top-4 origin-top-left scale-[0.42] sm:left-7 sm:top-7"
+            : "left-1/2 top-1/2 origin-center -translate-x-1/2 -translate-y-[58%] scale-100"
+        }`}
+      >
         <div className="mb-5 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
           {label}
         </div>
@@ -3422,8 +3657,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const [isPlayingTTS, setIsPlayingTTS] = useState<string | null>(null);
   const [thinkingStep, setThinkingStep] = useState(0);
   const [serverOpenRouterReady, setServerOpenRouterReady] = useState(false);
+  const [serverDeepgramReady, setServerDeepgramReady] = useState(false);
   const hasOpenRouterRuntimeKey =
     Boolean(apiKey.trim()) || serverOpenRouterReady;
+  const hasDeepgramRuntimeKey =
+    Boolean(deepgramApiKey.trim()) || serverDeepgramReady;
   const [chatArchives, setChatArchives] = useState<ChatArchive[]>(() =>
     readChatArchives(),
   );
@@ -3447,8 +3685,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           Boolean(payload?.meters?.providers?.openRouter) ||
             Boolean(payload?.meters?.providers?.openRouterByok),
         );
+        setServerDeepgramReady(Boolean(payload?.meters?.providers?.deepgram));
       } catch {
-        if (!cancelled) setServerOpenRouterReady(false);
+        if (!cancelled) {
+          setServerOpenRouterReady(false);
+          setServerDeepgramReady(false);
+        }
       }
     };
     void refreshProviderMeters();
@@ -3507,6 +3749,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     "idle" | "listening" | "speaking"
   >("idle");
   const [voiceCaption, setVoiceCaption] = useState<VoiceCaption>(null);
+  const [voiceStageFocus, setVoiceStageFocus] =
+    useState<VoiceVisualFocus | null>(null);
+  const [dismissedVoiceStageFocusId, setDismissedVoiceStageFocusId] = useState<
+    string | null
+  >(null);
   const wsRef = useRef<WebSocket | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -3529,6 +3776,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const voiceProofAttemptIdRef = useRef<string | null>(null);
   const pendingVoiceProofScriptRef = useRef<string | null>(null);
   const micSignalAnnouncedRef = useRef(false);
+  const voiceInputSampleRateRef = useRef(48000);
+  const voiceStageFocusRef = useRef<VoiceVisualFocus | null>(null);
+  const voiceStageReturnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const getVoiceProofAttemptId = useCallback(() => {
     return (
       voiceStudyContextRef.current?.proofAttemptId ||
@@ -3537,6 +3789,82 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       undefined
     );
   }, [activeBetaProofAttemptId]);
+
+  const clearVoiceStageReturnTimer = useCallback(() => {
+    if (voiceStageReturnTimerRef.current) {
+      clearTimeout(voiceStageReturnTimerRef.current);
+      voiceStageReturnTimerRef.current = null;
+    }
+  }, []);
+
+  const dismissVoiceStageFocus = useCallback(
+    (focusId?: string | null) => {
+      clearVoiceStageReturnTimer();
+      const id = focusId || voiceStageFocusRef.current?.id || null;
+      if (id) {
+        setDismissedVoiceStageFocusId(id);
+      }
+      setVoiceStageFocus((current) =>
+        !id || current?.id === id ? null : current,
+      );
+    },
+    [clearVoiceStageReturnTimer],
+  );
+
+  const scheduleVoiceStageReturn = useCallback(() => {
+    clearVoiceStageReturnTimer();
+    const focusId = voiceStageFocusRef.current?.id;
+    if (!focusId) return;
+    voiceStageReturnTimerRef.current = setTimeout(() => {
+      dismissVoiceStageFocus(focusId);
+    }, 6500);
+  }, [clearVoiceStageReturnTimer, dismissVoiceStageFocus]);
+
+  useEffect(() => {
+    voiceStageFocusRef.current = voiceStageFocus;
+  }, [voiceStageFocus]);
+
+  const latestVoiceVisualFocus = React.useMemo(() => {
+    if (voiceState === "idle") return null;
+    const activeVoiceMessage =
+      (voiceSessionIdRef.current
+        ? messages.find((message) => message.id === voiceSessionIdRef.current)
+        : null) ||
+      [...messages].reverse().find((message) => Boolean(message.voiceSession));
+    const focuses = activeVoiceMessage?.voiceSession?.visualFocuses || [];
+    return (
+      [...focuses]
+        .reverse()
+        .find((focus) =>
+          ["ready", "blocked", "empty", "failed"].includes(focus.status),
+        ) || null
+    );
+  }, [messages, voiceState]);
+
+  useEffect(() => {
+    if (voiceState === "idle") {
+      clearVoiceStageReturnTimer();
+      setVoiceStageFocus(null);
+      setDismissedVoiceStageFocusId(null);
+      return;
+    }
+    if (
+      latestVoiceVisualFocus &&
+      latestVoiceVisualFocus.id !== dismissedVoiceStageFocusId
+    ) {
+      clearVoiceStageReturnTimer();
+      setVoiceStageFocus((current) =>
+        current?.id === latestVoiceVisualFocus.id
+          ? current
+          : latestVoiceVisualFocus,
+      );
+    }
+  }, [
+    clearVoiceStageReturnTimer,
+    dismissedVoiceStageFocusId,
+    latestVoiceVisualFocus,
+    voiceState,
+  ]);
 
   const forceScrollToBottom = useCallback(
     (behavior: ScrollBehavior = "smooth") => {
@@ -4152,6 +4480,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       clearTimeout(endTimerRef.current);
       endTimerRef.current = null;
     }
+    clearVoiceStageReturnTimer();
     endingRef.current = false;
     if (outputRafRef.current !== null) {
       cancelAnimationFrame(outputRafRef.current);
@@ -4257,9 +4586,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     voiceProofAttemptIdRef.current = null;
     pendingVoiceProofScriptRef.current = null;
     micSignalAnnouncedRef.current = false;
+    voiceInputSampleRateRef.current = 48000;
     voiceSessionCountedRef.current = false;
     voiceSessionErrorRef.current = null;
     voiceTurnsRef.current = [];
+    setVoiceStageFocus(null);
+    setDismissedVoiceStageFocusId(null);
     setVoiceState("idle");
   };
 
@@ -5047,13 +5379,41 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       });
       mediaStreamRef.current = stream;
 
-      const audioContext = new (
-        window.AudioContext || (window as any).webkitAudioContext
-      )({ sampleRate: 48000 });
+      const AudioContextCtor =
+        window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextCtor) {
+        throw new Error("Microphone audio processing is not available here.");
+      }
+      let audioContext: AudioContext;
+      try {
+        audioContext = new AudioContextCtor({ sampleRate: 48000 });
+      } catch {
+        audioContext = new AudioContextCtor();
+      }
       audioContextRef.current = audioContext;
       if (audioContext.state === "suspended") {
         await audioContext.resume();
       }
+      const inputSampleRate = Math.max(
+        8000,
+        Math.round(audioContext.sampleRate || 48000),
+      );
+      voiceInputSampleRateRef.current = inputSampleRate;
+      const audioTrackSettings = (stream.getAudioTracks()[0]?.getSettings?.() ||
+        {}) as Record<string, unknown>;
+      recordVoiceAgentEvent({
+        type: "mic_signal",
+        status: "started",
+        sessionId,
+        summary: `Microphone stream opened at ${inputSampleRate} Hz; waiting for speech.`,
+        metadata: {
+          inputSampleRate,
+          requestedSampleRate: 48000,
+          trackSampleRate: audioTrackSettings.sampleRate,
+          channelCount: audioTrackSettings.channelCount,
+          proofAttemptId: getVoiceProofAttemptId(),
+        },
+      });
 
       const source = audioContext.createMediaStreamSource(stream);
       const processor = audioContext.createScriptProcessor(4096, 1, 1);
@@ -5116,6 +5476,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               "Microphone signal detected; audio frames are reaching the voice websocket.",
             metadata: {
               volume: volume.toFixed(3),
+              inputSampleRate: voiceInputSampleRateRef.current,
               proofAttemptId: getVoiceProofAttemptId(),
             },
           });
@@ -5176,6 +5537,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             proofAttemptId,
             openRouterKey: apiKey,
             deepgramKey: deepgramApiKey,
+            inputSampleRate,
             language,
             studyContext: voiceContextPayload?.studyContext || "",
             activeBookId: canonicalActiveBookId || "",
@@ -5369,6 +5731,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               setVoiceCaption(null);
               setVoiceState("listening");
             } else if (msg.type === "AgentStartedSpeaking") {
+              clearVoiceStageReturnTimer();
               recordVoiceAgentEvent({
                 type: "agent_started_speaking",
                 status: "running",
@@ -5380,6 +5743,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               });
               setVoiceState("speaking");
             } else if (msg.type === "AgentFinishedSpeaking") {
+              scheduleVoiceStageReturn();
               recordVoiceAgentEvent({
                 type: "agent_finished_speaking",
                 status: "completed",
@@ -6971,13 +7335,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     </span>
                     <span
                       className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
-                        deepgramApiKey.trim()
+                        hasDeepgramRuntimeKey
                           ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
                           : "border-amber-300/30 bg-amber-400/10 text-amber-200"
                       }`}
                     >
-                      {deepgramApiKey.trim()
-                        ? "Deepgram key set"
+                      {hasDeepgramRuntimeKey
+                        ? deepgramApiKey.trim()
+                          ? "Deepgram key set"
+                          : "Deepgram server fallback"
                         : "Deepgram key missing"}
                     </span>
                   </div>
@@ -7548,7 +7914,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       </div>
       <AnimatePresence>
         {voiceState !== "idle" && (
-          <VoiceUniverse state={voiceState} caption={voiceCaption} />
+          <VoiceUniverse
+            state={voiceState}
+            caption={voiceCaption}
+            visualFocus={voiceStageFocus}
+            onDismissVisual={() => dismissVoiceStageFocus()}
+          />
         )}
       </AnimatePresence>
     </div>

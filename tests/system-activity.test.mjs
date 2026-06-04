@@ -199,6 +199,7 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
       voiceSessionId: "voice-test-session-1",
       requestId: "voice-test-session-1",
       proofAttemptId,
+      inputSampleRate: 44100,
       studyContext: "Local websocket test study context.",
       activeBookId: "book:voice-test",
       activeBookTitle: "Voice Tool Test",
@@ -284,6 +285,7 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         event.title === "Voice session accepted" &&
         event.requestId === "voice-test-session-1" &&
         event.metadata?.studyContextChars === 35 &&
+        event.metadata?.inputSampleRate === 44100 &&
         hasVoiceProofMetadata(event),
     ),
   );

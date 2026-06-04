@@ -7387,3 +7387,59 @@ product bugs requested in the pivot, but the separate real OpenRouter plus live
 Deepgram provider drill remains open until a usable Deepgram key, microphone
 permission, and one coherent proof attempt are verified. AWS/cloud work remains
 deferred.
+
+# Latest Addendum: Voice Input Sample-Rate and Live Visual Stage
+
+Packet ADJ fixes a narrower but important voice-mode bug report: the app now
+sends the browser's measured microphone sample rate to the server, and the
+server configures Deepgram Voice Agent input audio to match that rate instead of
+hardcoding 48 kHz for every browser.
+
+Implementation:
+
+- `ChatPanel.startVoice()` records microphone-open evidence, stores the actual
+  `AudioContext.sampleRate`, sends it in `voice_auth`, and includes it in
+  `mic_signal` metadata.
+- `server.ts` normalizes `inputSampleRate`, applies it to Deepgram
+  `audio.input.sample_rate`, and uses it for input-audio usage seconds.
+- ChatPanel now reads the existing system-activity provider meter for Deepgram
+  and shows `Deepgram server fallback` when the local server fallback key is
+  available, instead of falsely showing `Deepgram key missing`.
+- Voice mode now has a live visual stage. Mermaid diagrams, current-page focus,
+  and web image/source results can render inside `VoiceUniverse`; the voice blob
+  moves to the top-left while the stage is active.
+- Mermaid has a stage-sized variant and preserves the active focus-tour node
+  behavior. The stage returns after `AgentFinishedSpeaking`, not merely after an
+  arbitrary listening timer.
+
+Verification evidence:
+
+- Repo-local Graphify queries routed the slice through `ChatPanel.tsx`,
+  `server.ts`, `voiceAgentTools.ts`, provider-meter UI, and system-activity
+  tests before source inspection.
+- `npm run lint`: passed.
+- `npm run test`: passed, 203 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason voice-input-visual-stage --full`
+  initially found `server.ts` formatting drift; a narrow Prettier pass fixed it.
+- Rerun `npm run brain:postchange -- --reason voice-input-visual-stage --full`:
+  passed, including format check, typecheck, production build, all 203 tests,
+  diff whitespace check, and graphify-out scratch scan.
+- In-app Browser QA verified the ChatPanel live-proof HUD now displays
+  `OpenRouter server fallback` and `Deepgram server fallback`.
+- During Browser QA, the local system-activity ledger showed real Deepgram Voice
+  Agent sessions accepted by the server, `Welcome`/`SettingsApplied` provider
+  readiness, nonzero input and output byte counts, and a `render_diagram` voice
+  tool call.
+- Browser-visible Mermaid evidence remained present in the chat surface with an
+  active focus tour.
+- After reload, the in-app Browser automation could open ChatPanel but did not
+  reliably activate the nested mic button for a fresh live-stage screenshot.
+  This is recorded as a browser-control limitation, not as a provider-proof
+  completion claim.
+
+Current conservative implementation estimate remains 98%. ADJ improves the
+local voice input path and voice visual behavior, but the separate coherent
+provider drill remains open until one deliberate proof attempt links typed
+OpenRouter chat, live Deepgram voice, visual voice behavior, image retrieval,
+and Admin/Beta Diagnostics readiness. AWS/cloud work remains deferred.

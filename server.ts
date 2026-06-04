@@ -261,6 +261,14 @@ const normalizeVoiceLanguage = (value: unknown) => {
   return language === "ja" || language === "ko" ? language : "en";
 };
 
+const normalizeVoiceInputSampleRate = (value: unknown) => {
+  const sampleRate = Number(value);
+  if (!Number.isFinite(sampleRate)) return 48000;
+  const rounded = Math.round(sampleRate);
+  if (rounded < 8000 || rounded > 96000) return 48000;
+  return rounded;
+};
+
 const VOICE_STUDY_CONTEXT_LIMIT = 8000;
 
 const compactVoiceStudyContext = (value: unknown) => {
@@ -3196,6 +3204,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       const voiceAgentSpeakModel = "aura-asteria-en";
       let voiceRequestId = `voice_${voiceStartedAt}`;
       let voiceProofAttemptId = "";
+      let voiceInputSampleRate = 48000;
 
       const voiceProofActivityMetadata = () => ({
         proofAttemptId: voiceProofAttemptId || undefined,
@@ -3232,7 +3241,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               ttsModel: voiceAgentSpeakModel,
               connectionSeconds: deltaSeconds,
               inputAudioSeconds:
-                deltaInputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
+                deltaInputBytes / Math.max(1, voiceInputSampleRate * 2),
               outputAudioSeconds:
                 deltaOutputBytes / PCM16_MONO_48K_BYTES_PER_SECOND,
               cost: voiceAgentCostForSeconds(deltaSeconds),
@@ -3364,9 +3373,13 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         providedDeepgramKey = "",
         studyContext = "",
         studyContextMetadata: Record<string, unknown> = {},
+        providedInputSampleRate: unknown = 48000,
       ) => {
         if (isVoiceSessionStarted) return true;
         const useMockVoiceProvider = options.voiceProvider === "mock";
+        const inputSampleRate = normalizeVoiceInputSampleRate(
+          providedInputSampleRate,
+        );
 
         const openRouterKey =
           sanitizeApiKey(providedOpenRouterKey) ||
@@ -3401,6 +3414,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         }
 
         language = normalizeVoiceLanguage(selectedLanguage);
+        voiceInputSampleRate = inputSampleRate;
         const compactStudyContext = compactVoiceStudyContext(studyContext);
         voiceProofAttemptId =
           normalizeClientRequestId(studyContextMetadata.proofAttemptId) ||
@@ -3423,6 +3437,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 ? "flux-general-multi"
                 : "flux-general-en",
             speakModel: voiceAgentSpeakModel,
+            inputSampleRate,
             studyContextChars: compactStudyContext.length,
             ...studyContextMetadata,
             ...voiceProofActivityMetadata(),
@@ -3515,7 +3530,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               audio: {
                 input: {
                   encoding: "linear16",
-                  sample_rate: 48000,
+                  sample_rate: inputSampleRate,
                 },
                 output: {
                   encoding: "linear16",
@@ -3561,6 +3576,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 listenModel,
                 speakModel: voiceAgentSpeakModel,
                 language,
+                inputSampleRate,
               },
             });
 
@@ -3843,8 +3859,12 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 contextCompacted: Boolean(
                   studyContextMetadata.contextCompacted,
                 ),
+                inputSampleRate: normalizeVoiceInputSampleRate(
+                  authPayload.inputSampleRate,
+                ),
                 clientRequestId: clientRequestId || undefined,
               },
+              authPayload.inputSampleRate,
             );
             return;
           }
