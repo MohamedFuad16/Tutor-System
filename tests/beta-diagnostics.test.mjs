@@ -685,10 +685,110 @@ test("live beta proof preflight requires approval, active attempt, and multiple 
     ),
   );
 
+  const transientApprovalPreflight = buildLiveBetaProofPreflight({
+    providerKeyProof: seededChecklist,
+    activeLearningBookId: "book-1",
+    activeBetaProofAttemptId: PROOF_ATTEMPT_ID,
+    providerTrafficApproved: true,
+    documents: [
+      {
+        id: "doc-active",
+        bookId: "book-1",
+        title: "Active PDF",
+        mimeType: "application/pdf",
+        size: 1024,
+        extractedText: "Active source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+      {
+        id: "doc-companion",
+        bookId: "book-1",
+        title: "Companion PDF",
+        mimeType: "application/pdf",
+        size: 2048,
+        extractedText: "Companion source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+    ],
+  });
+
+  assert.equal(transientApprovalPreflight.canRun, false);
+  assert.equal(transientApprovalPreflight.providerTrafficApproved, false);
+  assert.deepEqual(
+    transientApprovalPreflight.providerTrafficApprovalEventIds,
+    [],
+  );
+  assert.ok(
+    transientApprovalPreflight.missingChecks.includes(
+      "Provider traffic approved",
+    ),
+  );
+  assert.match(
+    transientApprovalPreflight.checks.find(
+      (check) => check.id === "provider_traffic_approved",
+    )?.summary || "",
+    /durable local approval row/,
+  );
+  assert.equal(
+    transientApprovalPreflight.attemptAudit.canRunProviderTraffic,
+    false,
+  );
+  assert.equal(
+    transientApprovalPreflight.attemptAudit.providerTrafficApproved,
+    false,
+  );
+
+  const durableApprovalOnlyPreflight = buildLiveBetaProofPreflight({
+    providerKeyProof: seededChecklist,
+    activeLearningBookId: "book-1",
+    activeBetaProofAttemptId: PROOF_ATTEMPT_ID,
+    memoryEvents: completeBrainFlowLedgers.memoryEvents,
+    documents: [
+      {
+        id: "doc-active",
+        bookId: "book-1",
+        title: "Active PDF",
+        mimeType: "application/pdf",
+        size: 1024,
+        extractedText: "Active source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+      {
+        id: "doc-companion",
+        bookId: "book-1",
+        title: "Companion PDF",
+        mimeType: "application/pdf",
+        size: 2048,
+        extractedText: "Companion source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+    ],
+  });
+
+  assert.equal(durableApprovalOnlyPreflight.canRun, false);
+  assert.equal(durableApprovalOnlyPreflight.providerTrafficApproved, false);
+  assert.deepEqual(
+    durableApprovalOnlyPreflight.providerTrafficApprovalEventIds,
+    ["provider-traffic-approved-1"],
+  );
+  assert.equal(
+    durableApprovalOnlyPreflight.attemptAudit.canRunProviderTraffic,
+    false,
+  );
+
   const approvedPreflight = buildLiveBetaProofPreflight({
     providerKeyProof: seededChecklist,
     activeLearningBookId: "book-1",
     activeBetaProofAttemptId: PROOF_ATTEMPT_ID,
+    providerTrafficApproved: true,
     memoryEvents: completeBrainFlowLedgers.memoryEvents,
     documents: [
       {

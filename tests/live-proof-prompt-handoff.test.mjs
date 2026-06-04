@@ -21,7 +21,7 @@ test("Admin can load provider proof prompts into ChatPanel", () => {
   assert.match(adminSource, /setActiveView\("study"\);/);
   assert.match(adminSource, /Load in chat/);
   assert.match(adminSource, /Load voice script/);
-  assert.match(adminSource, /disabled=\{!activeBetaProofAttemptId\}/);
+  assert.match(adminSource, /disabled=\{!liveProofPreflight\.canRun\}/);
 });
 
 test("StudyView opens ChatPanel when Admin queues a tutor prompt", () => {

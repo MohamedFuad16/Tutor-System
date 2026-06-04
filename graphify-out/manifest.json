@@ -44,16 +44,16 @@
     "hash": "be2be37586d9355e4ce46bba0eced178"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/beta-diagnostics.test.mjs": {
-    "mtime": 1780565344.374289,
-    "hash": "0dac7b5f82346879aa913f641744a76d"
+    "mtime": 1780566694.3364112,
+    "hash": "36a030821da8e32dfd8bad2e22458fd1"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/document-ingest.test.mjs": {
     "mtime": 1780146650.2664282,
     "hash": "b24dd32b0eb5b60c255a76ce2366646b"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/live-proof-prompt-handoff.test.mjs": {
-    "mtime": 1780538914.2482119,
-    "hash": "5d3161dab56c146142c53973c6855b6b"
+    "mtime": 1780566002.4951642,
+    "hash": "0c53c72cb07e5e6375587765aa690b1e"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/flashcard-concepts.test.mjs": {
     "mtime": 1780406453.1562533,
@@ -84,8 +84,8 @@
     "hash": "96b567c190743b625eb7db123d67c2b1"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/voice-proof-attempt-latch.test.mjs": {
-    "mtime": 1780564349.72917,
-    "hash": "3d54109fb0aca285bfa61668d89dcb4b"
+    "mtime": 1780566002.3920517,
+    "hash": "eead5411d366fa94585fc3cf5de223dc"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/web-search.test.mjs": {
     "mtime": 1780285414.7914789,
@@ -212,8 +212,8 @@
     "hash": "0f77529b6365cb91cf75b6d2533c0abc"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/beta.diagnostics.ts": {
-    "mtime": 1780565344.2912161,
-    "hash": "09b66dc7e39375e82430d3cf70bf4d3d"
+    "mtime": 1780566694.1365528,
+    "hash": "85ba351ee82e57c52165400773c9a86d"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/retrieval.events.ts": {
     "mtime": 1780386947.8736541,
@@ -304,8 +304,8 @@
     "hash": "9bc10b581e5bc65e134a855223d4989d"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/ChatPanel.tsx": {
-    "mtime": 1780564288.111957,
-    "hash": "feab705dc7c684be100ee86f6d9470d5"
+    "mtime": 1780565957.3151302,
+    "hash": "971d092f9d37b81c9b6a6441a28cb610"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/AnimatedScrollText.tsx": {
     "mtime": 1779879420.319919,
@@ -380,8 +380,8 @@
     "hash": "e50d88f62d7d8cfd330de4cd2ff382ee"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AdminView.tsx": {
-    "mtime": 1780565123.7223985,
-    "hash": "763e0340e71db6542a28357add23cf70"
+    "mtime": 1780566694.2376182,
+    "hash": "f811974f85de270cca895305af742a59"
   },
   "/Users/mfuad16/Documents/LearningAI/src/store/index.ts": {
     "mtime": 1780564100.201139,

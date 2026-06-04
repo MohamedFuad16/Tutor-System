@@ -7084,3 +7084,69 @@ Remaining hard gap is unchanged: run the real approved OpenRouter typed-chat
 turn plus live Deepgram voice drill under one Admin proof attempt, then confirm
 real local-live provider rows share proof attempt, book, thread, and multi-PDF
 context. AWS/cloud work remains deferred until after beta.
+
+# Latest Addendum: Durable Provider Traffic Unlock
+
+This slice closes the approval race before the final real provider-key drill.
+Transient attempt-scoped store approval and historical durable approval rows
+can no longer unlock provider traffic by themselves. Admin prompt handoff and
+ChatPanel provider-backed proof calls stay locked until current approval and
+the matching durable local approval event are both present for the active proof
+attempt.
+
+Implementation:
+
+- `buildLiveBetaProofPreflight()` and `buildLiveBetaProofAttemptAudit()` now
+  require current active-attempt approval plus its persisted approval event
+  before provider traffic is ready.
+- ChatPanel watches the local approval ledger and shows `Approval ledger
+  pending` while transient approval is waiting for its durable row.
+- Admin distinguishes approved, approval saving, approval event pending, and
+  locked states. Exact chat and voice proof handoff remains disabled until the
+  durable gate is ready.
+- Regression tests prove transient approval alone cannot unlock the drill.
+- No OpenRouter, Deepgram, microphone, or AWS/cloud call was made.
+
+Verification evidence:
+
+- `npm run brain:postchange -- --reason skill-preflight`: unavailable because
+  `package.json` has no `brain:postchange` script.
+- Focused proof tests passed through the project runner with all 187 tests.
+- `npm run format:check`: passed after a narrow Prettier fix.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run test`: passed, 187 tests.
+- In-app Browser desktop Admin QA showed a fresh proof attempt, durable
+  `approval event memory-event:beta_provider_traffic_approved...` evidence, and
+  disabled proof handoff while provider-key/multi-PDF prerequisites were
+  missing.
+- Desktop Admin revoke QA immediately changed the gate to `traffic locked`
+  while historical approval rows stayed visible; both proof handoff buttons
+  stayed disabled. Re-approval returned to `traffic approved` after the new
+  durable row appeared.
+- In-app Browser desktop/mobile Chat QA showed the proof HUD without sending a
+  prompt or starting the microphone.
+- In-app Browser mobile Admin QA at `390x844` showed the durable approval event,
+  disabled chat/voice handoff buttons, and no horizontal overflow.
+- Screenshots saved as
+  `ADD-durable-approval-admin-desktop.png`,
+  `ADD-durable-approval-admin-mobile.png`,
+  `ADD-durable-approval-chat-hud-desktop.png`, and
+  `ADD-durable-approval-chat-hud-mobile.png` in the workflow results folder.
+- `graphify update . --force`: passed with 1217 nodes, 2085 edges, and 69
+  communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`87.9 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`,
+  `node_modules/.cache`, `/private/tmp`, or `codex-runtimes` references.
+- Repo-local Graphify CLI query routed the durable approval gate through
+  `ChatPanel.tsx`, `AdminView.tsx`, proof tests, and connected store/diagnostic
+  surfaces. The global Graphify MCP connection remained bound to another
+  repository, so the refreshed repo-local CLI graph is authoritative here.
+
+Current conservative local-beta brain architecture completion estimate: 99%.
+
+Remaining hard gap is unchanged: run the real approved OpenRouter typed-chat
+turn plus live Deepgram voice drill under one Admin proof attempt, then confirm
+real local-live provider rows share proof attempt, book, thread, and multi-PDF
+context. AWS/cloud work remains deferred until after beta.

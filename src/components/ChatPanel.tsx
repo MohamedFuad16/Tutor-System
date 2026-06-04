@@ -68,6 +68,7 @@ import { createFlashcardForStorage } from "../memory/flashcard.concepts";
 import type {
   BookChatThread,
   LearningDocument,
+  MemoryEvent,
 } from "../memory/longterm.memory";
 import type { Message } from "../types";
 import { FloatingSkillsMenu } from "./FloatingSkillsMenu";
@@ -3225,6 +3226,31 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       ),
     [orderedBookDocuments],
   );
+  const activeProofTrafficApprovalEvents =
+    useLiveQuery(
+      () =>
+        activeBetaProofAttemptId
+          ? db.memoryEvents
+              .where("eventType")
+              .equals("beta_provider_traffic_approved")
+              .toArray()
+          : Promise.resolve([]),
+      [activeBetaProofAttemptId],
+    ) || [];
+  const hasDurableActiveProofTrafficApproval = React.useMemo(
+    () =>
+      Boolean(
+        activeBetaProofAttemptId &&
+          activeProofTrafficApprovalEvents.some((event: MemoryEvent) => {
+            const metadata = event.metadata || {};
+            return (
+              event.status === "completed" &&
+              metadata.proofAttemptId === activeBetaProofAttemptId
+            );
+          }),
+      ),
+    [activeBetaProofAttemptId, activeProofTrafficApprovalEvents],
+  );
   const hasLoadedProofPrompt = Boolean(
     activeBetaProofAttemptId && /Provider-key proof turn/i.test(input),
   );
@@ -3233,14 +3259,20 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   );
   const isActiveProofTrafficApproved = Boolean(
     activeBetaProofAttemptId &&
-      betaProofTrafficApproval?.attemptId === activeBetaProofAttemptId,
+      betaProofTrafficApproval?.attemptId === activeBetaProofAttemptId &&
+      hasDurableActiveProofTrafficApproval,
+  );
+  const hasPendingProofTrafficApproval = Boolean(
+    activeBetaProofAttemptId &&
+      betaProofTrafficApproval?.attemptId === activeBetaProofAttemptId &&
+      !hasDurableActiveProofTrafficApproval,
   );
   const activeBetaProofTrafficLocked = Boolean(
     activeBetaProofAttemptId && !isActiveProofTrafficApproved,
   );
   const alertProofTrafficApprovalNeeded = useCallback(() => {
     alert(
-      "Approve provider traffic for this proof attempt in Admin before running provider-key chat or live voice proof.",
+      "Approve provider traffic for this proof attempt in Admin and wait for the local approval event before running provider-key chat or live voice proof.",
     );
   }, []);
   const buildVoiceStudyContext = useCallback(async () => {
@@ -6302,7 +6334,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     >
                       {isActiveProofTrafficApproved
                         ? "Provider traffic approved"
-                        : "Approve traffic in Admin"}
+                        : hasPendingProofTrafficApproval
+                          ? "Approval ledger pending"
+                          : "Approve traffic in Admin"}
                     </span>
                     {hasLoadedProofPrompt && (
                       <span className="rounded-full border border-cyan-300/25 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-cyan-200">

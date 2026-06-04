@@ -708,6 +708,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/longterm.memory.ts, src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, tests/memory-events.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ADD",
+      "name": "Durable provider traffic unlock",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/memory/beta.diagnostics.ts, src/components/ChatPanel.tsx, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, tests/live-proof-prompt-handoff.test.mjs, tests/voice-proof-attempt-latch.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1930,11 +1937,30 @@
     "graphify update . --force regenerated code architecture artifacts with 1215 nodes, 2082 edges, and 78 communities",
     "npm run graphify:tree passed for Packet ADC and wrote GRAPH_TREE.html at 87.8 KB",
     "Packet ADC graph artifact grep found no server.mjs, .tmp-test, node_modules/.cache, /private/tmp, or codex-runtimes scratch references",
-    "Packet ADC Graphify query routed approval-ledger proof through AdminView.tsx, beta.diagnostics.ts, tests/beta-diagnostics.test.mjs, and connected proof/store/Admin/Chat surfaces"
+    "Packet ADC Graphify query routed approval-ledger proof through AdminView.tsx, beta.diagnostics.ts, tests/beta-diagnostics.test.mjs, and connected proof/store/Admin/Chat surfaces",
+    "Packet ADD selected after Graphify routed the durable provider traffic unlock through ChatPanel.tsx, AdminView.tsx, beta.diagnostics.ts, store approval state, and focused proof tests",
+    "buildLiveBetaProofPreflight and buildLiveBetaProofAttemptAudit now require current active-attempt approval plus a matching durable approval event before provider traffic is ready",
+    "ChatPanel now watches durable approval rows, blocks provider-backed proof traffic until the active attempt row is visible, and shows Approval ledger pending during the write window",
+    "Admin provider traffic chips now distinguish approved, approval saving, approval event pending, and locked states while exact proof handoff remains disabled until durable preflight canRun",
+    "npm run brain:postchange -- --reason skill-preflight remained unavailable because package.json has no brain:postchange script",
+    "Focused Packet ADD proof tests passed through the project runner with all 187 tests",
+    "npm run format:check passed for Packet ADD after a narrow Prettier fix",
+    "npm run lint passed for Packet ADD",
+    "npm run build passed for Packet ADD",
+    "npm run test passed for Packet ADD, 187 tests",
+    "In-app Browser desktop Admin QA showed a fresh active proof attempt, traffic approved, the matching durable approval event, and disabled prompt handoff while provider-key and multi-PDF prerequisites were missing",
+    "In-app Browser desktop revoke QA immediately changed the gate to traffic locked while historical approval rows remained visible; both proof handoff buttons stayed disabled, and re-approval returned to traffic approved after the new durable row appeared",
+    "In-app Browser desktop and mobile Chat QA showed the live proof HUD without sending a prompt or starting the microphone",
+    "In-app Browser mobile Admin QA at 390x844 showed the durable approval event, disabled chat and voice handoff buttons, and no horizontal overflow with scrollWidth 390",
+    "Browser screenshots saved as ADD-durable-approval-admin-desktop.png, ADD-durable-approval-admin-mobile.png, ADD-durable-approval-chat-hud-desktop.png, and ADD-durable-approval-chat-hud-mobile.png in the workflow results folder",
+    "graphify update . --force regenerated code architecture artifacts with 1217 nodes, 2085 edges, and 69 communities",
+    "npm run graphify:tree passed for Packet ADD and wrote GRAPH_TREE.html at 87.9 KB",
+    "Packet ADD graph artifact grep found no server.mjs, .tmp-test, node_modules/.cache, /private/tmp, or codex-runtimes scratch references",
+    "Packet ADD repo-local Graphify CLI query routed durable approval through ChatPanel.tsx, AdminView.tsx, beta-diagnostics.test.mjs, live-proof-prompt-handoff.test.mjs, and connected store/proof surfaces; the global Graphify MCP remained bound to another repository"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ADC: provider-traffic approval is now both attempt-scoped UI/store state and durable local memory-event lifecycle evidence, and coherent local-live provider-key proof requires that approval row. The app remains at 99% because 100% still requires actually running the real approved OpenRouter typed-chat plus Deepgram live-voice drill under one Admin proof attempt and confirming attempt-bound local-live provider rows with shared multi-PDF book/thread anchors. AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T09:33:24Z"
+    "basis": "Local architecture estimate after Packet ADD: provider traffic now unlocks only when the active attempt has both current approval state and a visible durable local approval event, closing transient approval and historical-ledger races across Admin prompt handoff and ChatPanel provider calls. The app remains at 99% because 100% still requires actually running the real approved OpenRouter typed-chat plus Deepgram live-voice drill under one Admin proof attempt and confirming attempt-bound local-live provider rows with shared multi-PDF book/thread anchors. AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T09:54:24Z"
   }
 }

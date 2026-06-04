@@ -3010,10 +3010,11 @@ const buildLiveBetaProofAttemptAudit = ({
     multiPdfReady &&
     liveBlockersClear &&
     activeAttemptMatchesSelectedBundle;
+  const providerTrafficApprovalPersisted =
+    providerTrafficApprovalEventIds.length > 0 && Boolean(activeProofAttemptId);
   const providerTrafficApprovalReady =
     providerKeyProof.betaProofReady ||
-    ((providerTrafficApproved || providerTrafficApprovalEventIds.length > 0) &&
-      Boolean(activeProofAttemptId));
+    (providerTrafficApproved && providerTrafficApprovalPersisted);
   const canRunProviderTraffic =
     providerTrafficPrereqsReady &&
     providerTrafficApprovalReady &&
@@ -3063,10 +3064,10 @@ const buildLiveBetaProofAttemptAudit = ({
       summary: providerKeyProof.betaProofReady
         ? "Final proof is already ready, so no new provider traffic approval is needed."
         : providerTrafficApprovalReady
-          ? providerTrafficApprovalEventIds.length > 0
-            ? "Provider traffic approval is recorded in the local memory ledger for this attempt."
-            : "Provider traffic approval is tied to the active proof attempt."
-          : "Approve real provider traffic locally before running the typed chat and live voice drill.",
+          ? "Provider traffic approval is recorded in the local memory ledger for this attempt."
+          : providerTrafficApproved && Boolean(activeProofAttemptId)
+            ? "Provider traffic approval is waiting for its local memory ledger row before provider prompts unlock."
+            : "Approve real provider traffic locally before running the typed chat and live voice drill.",
     }),
     check({
       id: "active_attempt_matches_selected_bundle",
@@ -3208,10 +3209,11 @@ export const buildLiveBetaProofPreflight = ({
     providerTrafficApprovalRows.map((event) => event.id),
     8,
   );
+  const trafficApprovalPersisted =
+    providerTrafficApprovalEventIds.length > 0 && Boolean(activeProofAttemptId);
   const trafficApprovalReady =
     !needsProviderTraffic ||
-    ((providerTrafficApproved || providerTrafficApprovalEventIds.length > 0) &&
-      Boolean(activeProofAttemptId));
+    (providerTrafficApproved && trafficApprovalPersisted);
 
   const check = ({
     id,
@@ -3271,12 +3273,12 @@ export const buildLiveBetaProofPreflight = ({
       ready: trafficApprovalReady,
       count: trafficApprovalReady ? 1 : 0,
       readySummary: needsProviderTraffic
-        ? providerTrafficApprovalEventIds.length > 0
-          ? "Real provider traffic is approved and recorded in the local ledger for the active proof attempt."
-          : "Real provider traffic is approved for the active proof attempt."
+        ? "Real provider traffic is approved and recorded in the local ledger for the active proof attempt."
         : "Final proof is already ready, so no new provider traffic approval is needed.",
       pendingSummary:
-        "Provider traffic has not been approved for this proof attempt.",
+        providerTrafficApproved && Boolean(activeProofAttemptId)
+          ? "Provider traffic approval is visible, but the durable local approval row has not appeared yet."
+          : "Provider traffic has not been approved for this proof attempt.",
       action:
         "Use Approve provider traffic in Admin after confirming the proof will send context/audio to OpenRouter and Deepgram.",
     }),

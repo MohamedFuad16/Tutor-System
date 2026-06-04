@@ -30,6 +30,7 @@ test("ChatPanel latches active beta proof attempt for each live voice session", 
     chatPanelSource,
     /const activeBetaProofTrafficLocked = Boolean\(/,
   );
+  assert.match(chatPanelSource, /hasDurableActiveProofTrafficApproval/);
 
   const startVoiceSource = sourceSlice(
     "const startVoice = async () => {",
@@ -97,6 +98,10 @@ test("ChatPanel keeps typed chat proof attempts scoped to chat requests", () => 
     sendMessageSource,
     /if \(activeBetaProofTrafficLocked\) \{[\s\S]*?alertProofTrafficApprovalNeeded\(\);[\s\S]*?return;[\s\S]*?\}/,
   );
+  assert.match(
+    chatPanelSource,
+    /betaProofTrafficApproval\?\.attemptId === activeBetaProofAttemptId &&\s+hasDurableActiveProofTrafficApproval/,
+  );
   assert.doesNotMatch(sendMessageSource, /getVoiceProofAttemptId\(\)/);
 });
 
@@ -110,6 +115,7 @@ test("ChatPanel proof capture HUD is gated by the active proof attempt", () => {
   assert.match(hudSource, /Ready PDFs \{readyProofDocuments\.length\}/);
   assert.match(hudSource, /Chat capture on/);
   assert.match(hudSource, /Provider traffic approved/);
+  assert.match(hudSource, /Approval ledger pending/);
   assert.match(hudSource, /Approve traffic in Admin/);
   assert.match(hudSource, /Voice capture ready/);
   assert.match(hudSource, /OpenRouter key set/);

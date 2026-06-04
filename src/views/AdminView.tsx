@@ -1095,6 +1095,14 @@ export function AdminView() {
   const liveProofDrillPacket = providerKeyProofChecklist.liveProofDrillPacket;
   const liveProofReceipt = providerKeyProofChecklist.liveProofReceipt;
   const liveProofAttemptAudit = liveProofPreflight.attemptAudit;
+  const providerTrafficApprovalReady =
+    providerTrafficApprovedForActiveAttempt &&
+    liveProofPreflight.providerTrafficApprovalEventIds.length > 0;
+  const providerTrafficStateLabel = providerTrafficApprovalReady
+    ? "approved"
+    : providerTrafficApprovedForActiveAttempt
+      ? "approval saving"
+      : "approval needed";
   const recordProofAttemptLifecycle = (
     eventType:
       | "beta_proof_attempt_started"
@@ -4727,12 +4735,9 @@ export function AdminView() {
                           {activeBetaProofAttemptId || "not started"}
                         </span>
                         <span
-                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerTrafficApprovedForActiveAttempt ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerTrafficApprovalReady ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
                         >
-                          traffic{" "}
-                          {providerTrafficApprovedForActiveAttempt
-                            ? "approved"
-                            : "approval needed"}
+                          traffic {providerTrafficStateLabel}
                         </span>
                         <span
                           className={`max-w-full truncate rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.coherentLiveProof.sharedProofAttemptIds.length > 0 ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
@@ -4815,11 +4820,13 @@ export function AdminView() {
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2">
                           <span
-                            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerTrafficApprovedForActiveAttempt ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-white text-amber-700"}`}
+                            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerTrafficApprovalReady ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-white text-amber-700"}`}
                           >
-                            {providerTrafficApprovedForActiveAttempt
+                            {providerTrafficApprovalReady
                               ? "traffic approved"
-                              : "traffic locked"}
+                              : providerTrafficApprovedForActiveAttempt
+                                ? "approval event pending"
+                                : "traffic locked"}
                           </span>
                           <span className="max-w-full truncate rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-mono text-zinc-600">
                             attempt {activeBetaProofAttemptId || "not started"}

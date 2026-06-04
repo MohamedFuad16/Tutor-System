@@ -254,3 +254,9 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   coherent proof require the approval lifecycle row, surface the event id in
   Admin Beta Diagnostics, and verify desktop/mobile without calling providers
   or starting AWS/cloud work.
+- ADD: Durable provider traffic unlock. Require both the active attempt's
+  current approval state and its durable approval event before Admin prompt
+  handoff or ChatPanel provider-backed proof traffic can unlock, distinguish
+  the transient approval-saving state in Admin and the proof HUD, and verify
+  approve/revoke behavior without calling providers, starting the microphone,
+  or starting AWS/cloud work.
