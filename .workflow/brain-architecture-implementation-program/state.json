@@ -694,6 +694,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, tests/book-readiness-contract.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ADB",
+      "name": "Provider traffic approval gate",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/store/index.ts, src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, src/components/ChatPanel.tsx, tests/beta-diagnostics.test.mjs, tests/voice-proof-attempt-latch.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1878,11 +1885,30 @@
     "npm run lint passed for Packet ADA",
     "npm run build passed for Packet ADA",
     "npm run test passed for Packet ADA, 185 tests",
-    "git diff --check passed for Packet ADA"
+    "git diff --check passed for Packet ADA",
+    "Packet ADB selected after Graphify routed provider traffic approval work through ChatPanel.tsx, AdminView.tsx, beta.diagnostics.ts, src/store/index.ts, and provider-proof tests",
+    "Store state now records betaProofTrafficApproval as an attempt-scoped local approval and clears it when the active proof attempt changes or is cleared",
+    "buildLiveBetaProofPreflight and LiveBetaProofAttemptAudit now require Provider traffic approved before the real provider-key drill canRun/canRunProviderTraffic becomes true",
+    "Admin Beta Diagnostics now renders an External provider traffic panel, exports approval metadata, and disables exact chat/voice proof prompt handoff until preflight is approved",
+    "ChatPanel proof HUD now shows Provider traffic approved or Approve traffic in Admin, and blocks provider-backed chat/voice calls while an active proof attempt lacks approval",
+    "npm run brain:postchange -- --reason skill-preflight remained unavailable because package.json has no brain:postchange script",
+    "npm run test passed for Packet ADB, 185 tests",
+    "npm run format:check passed for Packet ADB",
+    "npm run lint passed for Packet ADB",
+    "npm run build passed for Packet ADB",
+    "In-app Browser desktop Admin QA on localhost:3001 started a proof attempt, verified the provider traffic gate moved from locked to approved, and found no horizontal overflow at 1280x720",
+    "In-app Browser desktop Chat QA showed Live proof capture, Ready PDFs 0, Chat capture on, Provider traffic approved, Voice capture ready, OpenRouter key missing, and Deepgram key missing",
+    "In-app Browser mobile Chat QA at 390x844 showed the same provider traffic approved proof HUD with no horizontal overflow",
+    "In-app Browser mobile Admin QA at 390x844 showed External provider traffic, traffic approved, Revoke approval, and no horizontal overflow through the mobile Beta tab",
+    "Browser screenshots saved in /private/tmp as learningai-provider-traffic-approval-desktop.png, learningai-provider-traffic-chat-hud-desktop.png, learningai-provider-traffic-chat-hud-mobile.png, and learningai-provider-traffic-admin-mobile.png",
+    "graphify update . --force regenerated code architecture artifacts with 1212 nodes, 2079 edges, and 69 communities",
+    "npm run graphify:tree passed for Packet ADB and wrote GRAPH_TREE.html at 87.6 KB",
+    "Packet ADB graph artifact grep found no server.mjs, .tmp-test, node_modules/.cache, /private/tmp, or codex-runtimes scratch references",
+    "Packet ADB Graphify query routed the provider traffic approval gate through ChatPanel.tsx, AdminView.tsx, beta.diagnostics.ts, src/store/index.ts, and beta-diagnostics.test.mjs"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ADA: Admin exposes and exports the local beta completion meter and provider drill audit, and Graphify now routes provider-proof work through source files instead of generated scratch output. The app remains at 99% because 100% requires a real OpenRouter typed-chat plus Deepgram live-voice provider drill with shared proof attempt, multi-PDF book/thread anchors, and attempt-bound local-live provider rows. AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T08:57:01Z"
+    "basis": "Local architecture estimate after Packet ADB: the final provider-key drill now has an attempt-scoped local traffic approval gate in Admin, diagnostics, export metadata, and the ChatPanel proof HUD. The app remains at 99% because 100% still requires actually running the real OpenRouter typed-chat plus Deepgram live-voice drill under one approved proof attempt and confirming attempt-bound local-live provider rows with shared multi-PDF book/thread anchors. AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T09:23:00Z"
   }
 }

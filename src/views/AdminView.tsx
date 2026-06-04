@@ -402,6 +402,9 @@ export function AdminView() {
     activeBetaProofAttemptId,
     setActiveBetaProofAttemptId,
     clearActiveBetaProofAttempt,
+    betaProofTrafficApproval,
+    approveBetaProofProviderTraffic,
+    clearBetaProofProviderTrafficApproval,
     setAskTutorQuery,
   } = useStore();
   const motionEnabled = useMotionPreference();
@@ -1061,18 +1064,28 @@ export function AdminView() {
       deepgramApiKey,
     ],
   );
+  const activeProviderTrafficApproval =
+    activeBetaProofAttemptId &&
+    betaProofTrafficApproval?.attemptId === activeBetaProofAttemptId
+      ? betaProofTrafficApproval
+      : null;
+  const providerTrafficApprovedForActiveAttempt = Boolean(
+    activeProviderTrafficApproval,
+  );
   const liveProofPreflight = useMemo(
     () =>
       buildLiveBetaProofPreflight({
         providerKeyProof: providerKeyProofChecklist,
         activeLearningBookId,
         activeBetaProofAttemptId,
+        providerTrafficApproved: providerTrafficApprovedForActiveAttempt,
         documents: learningDocuments,
       }),
     [
       activeBetaProofAttemptId,
       activeLearningBookId,
       learningDocuments,
+      providerTrafficApprovedForActiveAttempt,
       providerKeyProofChecklist,
     ],
   );
@@ -1125,6 +1138,17 @@ export function AdminView() {
     if (proofAttemptId) {
       recordProofAttemptLifecycle("beta_proof_attempt_cleared", proofAttemptId);
     }
+  };
+  const approveLiveProofProviderTraffic = () => {
+    if (!activeBetaProofAttemptId) return;
+    approveBetaProofProviderTraffic(activeBetaProofAttemptId);
+    setDiagnosticsExportFeedback(
+      `Provider traffic approved for proof attempt ${activeBetaProofAttemptId}.`,
+    );
+  };
+  const revokeLiveProofProviderTrafficApproval = () => {
+    clearBetaProofProviderTrafficApproval();
+    setDiagnosticsExportFeedback("Provider traffic approval cleared.");
   };
   const loadLiveProofPrompt = (prompt: string) => {
     setAskTutorQuery(prompt);
@@ -1496,6 +1520,7 @@ export function AdminView() {
           liveProofDrillPacket,
           liveProofReceipt,
           liveProofAttemptAudit,
+          providerTrafficApproval: activeProviderTrafficApproval || undefined,
           activeProofAttemptId: activeBetaProofAttemptId || undefined,
         },
       },
@@ -4580,7 +4605,8 @@ export function AdminView() {
                             with live ledger anchors. Keys make a live run
                             possible; only request-correlated chat and voice
                             rows make proof complete. No key values are shown
-                            and this panel does not call providers.
+                            and this panel does not call providers until this
+                            attempt is explicitly approved for traffic.
                           </p>
                           <div className="mt-3 flex flex-wrap gap-2">
                             <button
@@ -4671,6 +4697,14 @@ export function AdminView() {
                           {activeBetaProofAttemptId || "not started"}
                         </span>
                         <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerTrafficApprovedForActiveAttempt ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                        >
+                          traffic{" "}
+                          {providerTrafficApprovedForActiveAttempt
+                            ? "approved"
+                            : "approval needed"}
+                        </span>
+                        <span
                           className={`max-w-full truncate rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerKeyProofChecklist.coherentLiveProof.sharedProofAttemptIds.length > 0 ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
                         >
                           shared attempt{" "}
@@ -4708,6 +4742,67 @@ export function AdminView() {
 
                       <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-600 font-serif">
                         {providerKeyProofChecklist.summary}
+                      </div>
+
+                      <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-700">
+                              External provider traffic
+                            </div>
+                            <h4 className="mt-1 text-base font-semibold text-zinc-900">
+                              Approve this proof attempt before the real drill
+                            </h4>
+                            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
+                              Approval lets the exact proof prompts send the
+                              active book context to OpenRouter and live voice
+                              audio/context to Deepgram. It may use provider
+                              credits. Approval is local, attempt-scoped, and
+                              does not reveal keys.
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 flex-wrap gap-2 md:justify-end">
+                            <button
+                              type="button"
+                              onClick={approveLiveProofProviderTraffic}
+                              disabled={!activeBetaProofAttemptId}
+                              className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-amber-700 transition hover:border-amber-400 hover:bg-amber-50 disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-400"
+                            >
+                              <ShieldCheck size={13} />
+                              Approve provider traffic
+                            </button>
+                            {providerTrafficApprovedForActiveAttempt && (
+                              <button
+                                type="button"
+                                onClick={revokeLiveProofProviderTrafficApproval}
+                                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-600 transition hover:border-zinc-300 hover:bg-zinc-50"
+                              >
+                                <Trash2 size={13} />
+                                Revoke approval
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <span
+                            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${providerTrafficApprovedForActiveAttempt ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-white text-amber-700"}`}
+                          >
+                            {providerTrafficApprovedForActiveAttempt
+                              ? "traffic approved"
+                              : "traffic locked"}
+                          </span>
+                          <span className="max-w-full truncate rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-mono text-zinc-600">
+                            attempt {activeBetaProofAttemptId || "not started"}
+                          </span>
+                          {activeProviderTrafficApproval && (
+                            <span className="rounded-full border border-green-200 bg-white px-2.5 py-1 text-[11px] font-mono text-green-700">
+                              approved{" "}
+                              {formatTime(
+                                activeProviderTrafficApproval.approvedAt,
+                              )}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
@@ -5310,7 +5405,7 @@ export function AdminView() {
                                   onClick={() =>
                                     loadLiveProofPrompt(prompt.prompt)
                                   }
-                                  disabled={!activeBetaProofAttemptId}
+                                  disabled={!liveProofPreflight.canRun}
                                   className="mt-3 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-400"
                                 >
                                   Load in chat
@@ -5322,7 +5417,7 @@ export function AdminView() {
                                   onClick={() =>
                                     loadLiveProofPrompt(prompt.prompt)
                                   }
-                                  disabled={!activeBetaProofAttemptId}
+                                  disabled={!liveProofPreflight.canRun}
                                   className="mt-3 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-violet-700 transition-colors hover:border-violet-300 hover:bg-violet-100 disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-400"
                                 >
                                   Load voice script

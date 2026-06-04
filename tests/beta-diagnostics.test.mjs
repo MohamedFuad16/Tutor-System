@@ -561,8 +561,10 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   });
   assert.equal(finalPreflight.needsProviderTraffic, false);
   assert.equal(finalPreflight.canRun, false);
+  assert.equal(finalPreflight.providerTrafficApproved, true);
   assert.equal(finalPreflight.attemptAudit.status, "ready");
   assert.equal(finalPreflight.attemptAudit.canRunProviderTraffic, false);
+  assert.equal(finalPreflight.attemptAudit.providerTrafficApproved, true);
   assert.equal(finalPreflight.attemptAudit.receiptReady, true);
   assert.equal(finalPreflight.attemptAudit.sourceReadyForBeta, true);
   assert.equal(
@@ -574,7 +576,7 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   ]);
 });
 
-test("live beta proof preflight requires active attempt and multiple ready PDFs before provider traffic", () => {
+test("live beta proof preflight requires approval, active attempt, and multiple ready PDFs before provider traffic", () => {
   const seededLedgers = {
     ...completeBrainFlowLedgers,
     modelRuns: completeBrainFlowLedgers.modelRuns.map((row) =>
@@ -602,7 +604,7 @@ test("live beta proof preflight requires active attempt and multiple ready PDFs 
   assert.equal(seededChecklist.proofComplete, true);
   assert.equal(seededChecklist.betaProofReady, false);
 
-  const readyPreflight = buildLiveBetaProofPreflight({
+  const readyButLockedPreflight = buildLiveBetaProofPreflight({
     providerKeyProof: seededChecklist,
     activeLearningBookId: "book-1",
     activeBetaProofAttemptId: PROOF_ATTEMPT_ID,
@@ -632,34 +634,89 @@ test("live beta proof preflight requires active attempt and multiple ready PDFs 
     ],
   });
 
-  assert.equal(readyPreflight.status, "ready");
-  assert.equal(readyPreflight.canRun, true);
-  assert.equal(readyPreflight.needsProviderTraffic, true);
-  assert.equal(readyPreflight.readyChecks, readyPreflight.totalChecks);
-  assert.equal(readyPreflight.readyDocumentCount, 2);
-  assert.deepEqual(readyPreflight.readyDocumentIds, [
+  assert.equal(readyButLockedPreflight.status, "watch");
+  assert.equal(readyButLockedPreflight.canRun, false);
+  assert.equal(readyButLockedPreflight.needsProviderTraffic, true);
+  assert.equal(readyButLockedPreflight.providerTrafficApproved, false);
+  assert.equal(readyButLockedPreflight.readyDocumentCount, 2);
+  assert.deepEqual(readyButLockedPreflight.readyDocumentIds, [
     "doc-active",
     "doc-companion",
   ]);
-  assert.match(readyPreflight.summary, /run the real provider-key/);
-  assert.equal(readyPreflight.attemptAudit.status, "ready");
-  assert.equal(readyPreflight.attemptAudit.canRunProviderTraffic, true);
-  assert.equal(readyPreflight.attemptAudit.receiptReady, true);
-  assert.equal(readyPreflight.attemptAudit.sourceReadyForBeta, false);
+  assert.ok(
+    readyButLockedPreflight.missingChecks.includes("Provider traffic approved"),
+  );
+  assert.equal(readyButLockedPreflight.attemptAudit.status, "watch");
   assert.equal(
-    readyPreflight.attemptAudit.selectedLedgerProofAttemptId,
+    readyButLockedPreflight.attemptAudit.canRunProviderTraffic,
+    false,
+  );
+  assert.equal(
+    readyButLockedPreflight.attemptAudit.providerTrafficApproved,
+    false,
+  );
+  assert.equal(readyButLockedPreflight.attemptAudit.receiptReady, true);
+  assert.equal(readyButLockedPreflight.attemptAudit.sourceReadyForBeta, false);
+  assert.equal(
+    readyButLockedPreflight.attemptAudit.selectedLedgerProofAttemptId,
     PROOF_ATTEMPT_ID,
   );
   assert.ok(
-    readyPreflight.attemptAudit.missingChecks.includes(
+    readyButLockedPreflight.attemptAudit.missingChecks.includes(
+      "Provider traffic approved",
+    ),
+  );
+  assert.ok(
+    readyButLockedPreflight.attemptAudit.missingChecks.includes(
       "Receipt source beta-ready",
     ),
   );
+
+  const approvedPreflight = buildLiveBetaProofPreflight({
+    providerKeyProof: seededChecklist,
+    activeLearningBookId: "book-1",
+    activeBetaProofAttemptId: PROOF_ATTEMPT_ID,
+    providerTrafficApproved: true,
+    documents: [
+      {
+        id: "doc-active",
+        bookId: "book-1",
+        title: "Active PDF",
+        mimeType: "application/pdf",
+        size: 1024,
+        extractedText: "Active source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+      {
+        id: "doc-companion",
+        bookId: "book-1",
+        title: "Companion PDF",
+        mimeType: "application/pdf",
+        size: 2048,
+        extractedText: "Companion source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+    ],
+  });
+
+  assert.equal(approvedPreflight.status, "ready");
+  assert.equal(approvedPreflight.canRun, true);
+  assert.equal(approvedPreflight.providerTrafficApproved, true);
+  assert.equal(approvedPreflight.readyChecks, approvedPreflight.totalChecks);
+  assert.match(approvedPreflight.summary, /ready and approved/);
+  assert.equal(approvedPreflight.attemptAudit.status, "ready");
+  assert.equal(approvedPreflight.attemptAudit.canRunProviderTraffic, true);
+  assert.equal(approvedPreflight.attemptAudit.providerTrafficApproved, true);
 
   const blockedPreflight = buildLiveBetaProofPreflight({
     providerKeyProof: seededChecklist,
     activeLearningBookId: "book-1",
     activeBetaProofAttemptId: PROOF_ATTEMPT_ID,
+    providerTrafficApproved: true,
     documents: [
       {
         id: "doc-active",

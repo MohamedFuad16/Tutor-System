@@ -11,6 +11,13 @@ import {
 export type ViewState = "study" | "analytics" | "revision" | "admin";
 
 const ACTIVE_BETA_PROOF_ATTEMPT_STORAGE_KEY = "active_beta_proof_attempt_id";
+const BETA_PROOF_TRAFFIC_APPROVAL_STORAGE_KEY =
+  "beta_proof_traffic_approval";
+
+export type BetaProofTrafficApproval = {
+  attemptId: string;
+  approvedAt: number;
+};
 
 export interface Concept {
   id: string;
@@ -263,6 +270,25 @@ const persistUsage = (
   );
 };
 
+const readBetaProofTrafficApproval = (): BetaProofTrafficApproval | null => {
+  try {
+    const raw = localStorage.getItem(BETA_PROOF_TRAFFIC_APPROVAL_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<BetaProofTrafficApproval>;
+    if (
+      typeof parsed.attemptId !== "string" ||
+      !parsed.attemptId.trim() ||
+      typeof parsed.approvedAt !== "number" ||
+      !Number.isFinite(parsed.approvedAt)
+    ) {
+      return null;
+    }
+    return { attemptId: parsed.attemptId.trim(), approvedAt: parsed.approvedAt };
+  } catch {
+    return null;
+  }
+};
+
 interface AppState {
   accessMode: AccessMode;
   setAccessMode: (mode: AccessMode) => void;
@@ -327,6 +353,9 @@ interface AppState {
   activeBetaProofAttemptId: string | null;
   setActiveBetaProofAttemptId: (attemptId: string | null) => void;
   clearActiveBetaProofAttempt: () => void;
+  betaProofTrafficApproval: BetaProofTrafficApproval | null;
+  approveBetaProofProviderTraffic: (attemptId: string) => void;
+  clearBetaProofProviderTrafficApproval: () => void;
 
   totalTokens: number;
   estimatedCost: number;
@@ -519,6 +548,7 @@ export const useStore = create<AppState>()(
       },
       activeBetaProofAttemptId:
         localStorage.getItem(ACTIVE_BETA_PROOF_ATTEMPT_STORAGE_KEY) || null,
+      betaProofTrafficApproval: readBetaProofTrafficApproval(),
       setActiveBetaProofAttemptId: (attemptId) => {
         const cleanAttemptId = attemptId?.trim() || null;
         if (cleanAttemptId) {
@@ -529,11 +559,43 @@ export const useStore = create<AppState>()(
         } else {
           localStorage.removeItem(ACTIVE_BETA_PROOF_ATTEMPT_STORAGE_KEY);
         }
-        set({ activeBetaProofAttemptId: cleanAttemptId });
+        const currentApproval = get().betaProofTrafficApproval;
+        const approvalStillMatches =
+          cleanAttemptId && currentApproval?.attemptId === cleanAttemptId;
+        if (!approvalStillMatches) {
+          localStorage.removeItem(BETA_PROOF_TRAFFIC_APPROVAL_STORAGE_KEY);
+        }
+        set({
+          activeBetaProofAttemptId: cleanAttemptId,
+          betaProofTrafficApproval: approvalStillMatches
+            ? currentApproval
+            : null,
+        });
       },
       clearActiveBetaProofAttempt: () => {
         localStorage.removeItem(ACTIVE_BETA_PROOF_ATTEMPT_STORAGE_KEY);
-        set({ activeBetaProofAttemptId: null });
+        localStorage.removeItem(BETA_PROOF_TRAFFIC_APPROVAL_STORAGE_KEY);
+        set({
+          activeBetaProofAttemptId: null,
+          betaProofTrafficApproval: null,
+        });
+      },
+      approveBetaProofProviderTraffic: (attemptId) => {
+        const cleanAttemptId = attemptId.trim();
+        if (!cleanAttemptId) return;
+        const approval = {
+          attemptId: cleanAttemptId,
+          approvedAt: Date.now(),
+        };
+        localStorage.setItem(
+          BETA_PROOF_TRAFFIC_APPROVAL_STORAGE_KEY,
+          JSON.stringify(approval),
+        );
+        set({ betaProofTrafficApproval: approval });
+      },
+      clearBetaProofProviderTrafficApproval: () => {
+        localStorage.removeItem(BETA_PROOF_TRAFFIC_APPROVAL_STORAGE_KEY);
+        set({ betaProofTrafficApproval: null });
       },
 
       totalTokens:

@@ -26,6 +26,10 @@ test("ChatPanel latches active beta proof attempt for each live voice session", 
     chatPanelSource,
     /const getVoiceProofAttemptId = useCallback\(\(\) => \{/,
   );
+  assert.match(
+    chatPanelSource,
+    /const activeBetaProofTrafficLocked = Boolean\(/,
+  );
 
   const startVoiceSource = sourceSlice(
     "const startVoice = async () => {",
@@ -35,6 +39,10 @@ test("ChatPanel latches active beta proof attempt for each live voice session", 
   assert.match(
     startVoiceSource,
     /voiceProofAttemptIdRef\.current = activeBetaProofAttemptId \|\| null;/,
+  );
+  assert.match(
+    startVoiceSource,
+    /if \(activeBetaProofTrafficLocked\) \{[\s\S]*?alertProofTrafficApprovalNeeded\(\);[\s\S]*?return;[\s\S]*?\}/,
   );
   assert.equal(
     [...startVoiceSource.matchAll(/activeBetaProofAttemptId/g)].length,
@@ -85,6 +93,10 @@ test("ChatPanel keeps typed chat proof attempts scoped to chat requests", () => 
     sendMessageSource,
     /proofAttemptId: activeBetaProofAttemptId \|\| undefined,\s+mode: "chat"/,
   );
+  assert.match(
+    sendMessageSource,
+    /if \(activeBetaProofTrafficLocked\) \{[\s\S]*?alertProofTrafficApprovalNeeded\(\);[\s\S]*?return;[\s\S]*?\}/,
+  );
   assert.doesNotMatch(sendMessageSource, /getVoiceProofAttemptId\(\)/);
 });
 
@@ -97,6 +109,8 @@ test("ChatPanel proof capture HUD is gated by the active proof attempt", () => {
   assert.match(hudSource, /Live proof capture/);
   assert.match(hudSource, /Ready PDFs \{readyProofDocuments\.length\}/);
   assert.match(hudSource, /Chat capture on/);
+  assert.match(hudSource, /Provider traffic approved/);
+  assert.match(hudSource, /Approve traffic in Admin/);
   assert.match(hudSource, /Voice capture ready/);
   assert.match(hudSource, /OpenRouter key set/);
   assert.match(hudSource, /Deepgram key set/);

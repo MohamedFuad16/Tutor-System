@@ -6957,3 +6957,66 @@ Remaining hard gap is unchanged: run the real provider-key typed-chat turn plus
 live Deepgram voice drill with OpenRouter and Deepgram traffic under one Admin
 proof attempt, then confirm the selected provider captures are real local-live
 rows bound to that proof attempt.
+
+# Latest Addendum: Provider Traffic Approval Gate
+
+This slice adds the missing local safety gate before the final real
+provider-key drill. Admin can still prepare one proof attempt and inspect the
+runbook, but the exact proof prompts and Chat/Voice proof calls stay locked
+until provider traffic is approved for that same attempt.
+
+Implementation:
+
+- Added `betaProofTrafficApproval` local state in the store, scoped by proof
+  attempt id and cleared automatically when the active attempt changes or is
+  cleared.
+- Extended `buildLiveBetaProofPreflight()` and
+  `LiveBetaProofAttemptAudit` with a `Provider traffic approved` check.
+- Admin Beta Diagnostics now renders an External provider traffic approval
+  panel, exports the approval metadata, and disables the exact chat/voice proof
+  prompt handoff until preflight is approved.
+- ChatPanel shows the approval state in the live proof HUD and blocks
+  provider-backed chat/voice calls while an Admin proof attempt is active but
+  traffic is not approved.
+- No OpenRouter, Deepgram, microphone, or AWS/cloud call was made.
+
+Verification evidence:
+
+- `npm run brain:postchange -- --reason skill-preflight`: unavailable because
+  `package.json` has no `brain:postchange` script.
+- `npm run test`: passed, 185 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser desktop QA on `http://localhost:3001`: Admin Beta Diagnostics
+  showed External provider traffic, started a proof attempt, approval flipped
+  the gate from locked to approved, and horizontal overflow was false at
+  `1280x720`.
+- In-app Browser desktop Chat QA: opening tutor chat showed `Live proof
+  capture`, `Ready PDFs 0`, `Chat capture on`, `Provider traffic approved`,
+  `Voice capture ready`, and local key-state chips.
+- In-app Browser mobile Chat QA at `390x844`: the same live proof HUD appeared
+  with `Provider traffic approved` and no horizontal overflow.
+- In-app Browser mobile Admin QA at `390x844`: the mobile `Beta` tab showed the
+  External provider traffic panel, `traffic approved`, `Revoke approval`, and no
+  horizontal overflow.
+- Screenshots saved to `/private/tmp/learningai-provider-traffic-approval-desktop.png`,
+  `/private/tmp/learningai-provider-traffic-chat-hud-desktop.png`,
+  `/private/tmp/learningai-provider-traffic-chat-hud-mobile.png`, and
+  `/private/tmp/learningai-provider-traffic-admin-mobile.png`.
+- `graphify update . --force`: passed with 1212 nodes, 2079 edges, and 69
+  communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`87.6 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`,
+  `node_modules/.cache`, `/private/tmp`, or `codex-runtimes` references.
+- Graphify query routed the provider traffic gate through `ChatPanel.tsx`,
+  `AdminView.tsx`, `beta.diagnostics.ts`, `src/store/index.ts`, and the
+  provider-proof tests.
+
+Current conservative local-beta brain architecture completion estimate: 99%.
+
+Remaining hard gap is intentionally unchanged: run the real provider-key
+typed-chat turn plus live Deepgram voice drill with OpenRouter and Deepgram
+traffic under one approved Admin proof attempt, then confirm the selected
+provider captures are real local-live rows bound to that proof attempt.

@@ -198,6 +198,7 @@ export type LiveBetaProofAttemptAuditCheck = {
 export type LiveBetaProofAttemptAudit = {
   status: Exclude<BetaDiagnosticStatus, "deferred">;
   canRunProviderTraffic: boolean;
+  providerTrafficApproved: boolean;
   receiptReady: boolean;
   sourceReadyForBeta: boolean;
   activeAttemptMatchesSelectedBundle: boolean;
@@ -223,6 +224,7 @@ export type LiveBetaProofPreflight = {
   status: Exclude<BetaDiagnosticStatus, "deferred">;
   canRun: boolean;
   needsProviderTraffic: boolean;
+  providerTrafficApproved: boolean;
   readyChecks: number;
   totalChecks: number;
   activeBookId?: string;
@@ -297,6 +299,7 @@ export type LiveBetaProofPreflightInput = {
   providerKeyProof: ProviderKeyProofChecklist;
   activeLearningBookId?: string | null;
   activeBetaProofAttemptId?: string | null;
+  providerTrafficApproved?: boolean;
   documents?: LearningDocument[];
   minReadyDocuments?: number;
 };
@@ -2917,6 +2920,7 @@ export const buildProviderKeyProofChecklist = ({
 const buildLiveBetaProofAttemptAudit = ({
   providerKeyProof,
   activeProofAttemptId,
+  providerTrafficApproved,
   activeBookReady,
   multiPdfReady,
   liveBlockersClear,
@@ -2925,6 +2929,7 @@ const buildLiveBetaProofAttemptAudit = ({
 }: {
   providerKeyProof: ProviderKeyProofChecklist;
   activeProofAttemptId: string;
+  providerTrafficApproved: boolean;
   activeBookReady: boolean;
   multiPdfReady: boolean;
   liveBlockersClear: boolean;
@@ -2954,8 +2959,13 @@ const buildLiveBetaProofAttemptAudit = ({
     multiPdfReady &&
     liveBlockersClear &&
     activeAttemptMatchesSelectedBundle;
+  const providerTrafficApprovalReady =
+    providerKeyProof.betaProofReady ||
+    (providerTrafficApproved && Boolean(activeProofAttemptId));
   const canRunProviderTraffic =
-    providerTrafficPrereqsReady && !providerKeyProof.betaProofReady;
+    providerTrafficPrereqsReady &&
+    providerTrafficApprovalReady &&
+    !providerKeyProof.betaProofReady;
 
   const check = ({
     id,
@@ -2993,6 +3003,16 @@ const buildLiveBetaProofAttemptAudit = ({
       summary: activeProofAttemptId
         ? `Active proof attempt ${activeProofAttemptId} is selected.`
         : "No active Admin proof attempt is selected.",
+    }),
+    check({
+      id: "provider_traffic_approved",
+      title: "Provider traffic approved",
+      ready: providerTrafficApprovalReady,
+      summary: providerKeyProof.betaProofReady
+        ? "Final proof is already ready, so no new provider traffic approval is needed."
+        : providerTrafficApprovalReady
+          ? "Provider traffic approval is tied to the active proof attempt."
+          : "Approve real provider traffic locally before running the typed chat and live voice drill.",
     }),
     check({
       id: "active_attempt_matches_selected_bundle",
@@ -3051,21 +3071,26 @@ const buildLiveBetaProofAttemptAudit = ({
   const summary = finalReady
     ? "Attempt audit is receipt-ready: selected chat and voice rows share the active proof attempt and real provider captures."
     : canRunProviderTraffic
-      ? "Attempt audit is locked: provider keys, active attempt, and multi-PDF book are ready for the real drill."
-      : blocked
-        ? "Attempt audit is blocked because the active Admin attempt does not match the selected ledger bundle."
-        : `Attempt audit needs ${missingChecks.join(", ")}.`;
+      ? "Attempt audit is locked and approved: provider keys, active attempt, and multi-PDF book are ready for the real drill."
+      : providerTrafficPrereqsReady && !providerTrafficApprovalReady
+        ? "Attempt audit is waiting for local provider traffic approval before the real drill."
+        : blocked
+          ? "Attempt audit is blocked because the active Admin attempt does not match the selected ledger bundle."
+          : `Attempt audit needs ${missingChecks.join(", ")}.`;
   const nextAction = finalReady
     ? "Export diagnostics for beta review."
     : canRunProviderTraffic
       ? "Run the typed-chat prompt and live-voice script without changing the active attempt."
-      : blocked
-        ? "Start a fresh Admin proof attempt or rerun chat and voice under the current attempt."
-        : "Finish the missing attempt prerequisites before provider traffic.";
+      : providerTrafficPrereqsReady && !providerTrafficApprovalReady
+        ? "Approve real provider traffic in Admin for this attempt, then load the proof prompts."
+        : blocked
+          ? "Start a fresh Admin proof attempt or rerun chat and voice under the current attempt."
+          : "Finish the missing attempt prerequisites before provider traffic.";
 
   return {
     status,
     canRunProviderTraffic,
+    providerTrafficApproved: providerTrafficApprovalReady,
     receiptReady: receipt.ready,
     sourceReadyForBeta: receipt.sourceReadyForBeta,
     activeAttemptMatchesSelectedBundle,
@@ -3092,6 +3117,7 @@ export const buildLiveBetaProofPreflight = ({
   providerKeyProof,
   activeLearningBookId,
   activeBetaProofAttemptId,
+  providerTrafficApproved = false,
   documents = [],
   minReadyDocuments = 2,
 }: LiveBetaProofPreflightInput): LiveBetaProofPreflight => {
@@ -3115,6 +3141,10 @@ export const buildLiveBetaProofPreflight = ({
   const multiPdfReady = readyDocuments.length >= minReadyDocuments;
   const liveBlockersClear =
     providerKeyProof.failedRows === 0 && providerKeyProof.status !== "blocked";
+  const needsProviderTraffic = !providerKeyProof.betaProofReady;
+  const trafficApprovalReady =
+    !needsProviderTraffic ||
+    (providerTrafficApproved && Boolean(activeProofAttemptId));
 
   const check = ({
     id,
@@ -3169,6 +3199,19 @@ export const buildLiveBetaProofPreflight = ({
         "Use Start proof attempt in Admin and keep the same attempt active through typed chat and live voice.",
     }),
     check({
+      id: "provider_traffic_approved",
+      title: "Provider traffic approved",
+      ready: trafficApprovalReady,
+      count: trafficApprovalReady ? 1 : 0,
+      readySummary: needsProviderTraffic
+        ? "Real provider traffic is approved for the active proof attempt."
+        : "Final proof is already ready, so no new provider traffic approval is needed.",
+      pendingSummary:
+        "Provider traffic has not been approved for this proof attempt.",
+      action:
+        "Use Approve provider traffic in Admin after confirming the proof will send context/audio to OpenRouter and Deepgram.",
+    }),
+    check({
       id: "active_book_selected",
       title: "Active learning book selected",
       ready: activeBookReady,
@@ -3205,13 +3248,13 @@ export const buildLiveBetaProofPreflight = ({
   const missingChecks = checks
     .filter((entry) => !entry.ready)
     .map((entry) => entry.title);
-  const needsProviderTraffic = !providerKeyProof.betaProofReady;
   const preflightReady = missingChecks.length === 0;
   const canRun = preflightReady && needsProviderTraffic;
   const blocked = checks.some((entry) => entry.status === "blocked");
   const attemptAudit = buildLiveBetaProofAttemptAudit({
     providerKeyProof,
     activeProofAttemptId,
+    providerTrafficApproved: trafficApprovalReady,
     activeBookReady,
     multiPdfReady,
     liveBlockersClear,
@@ -3228,6 +3271,7 @@ export const buildLiveBetaProofPreflight = ({
     status,
     canRun,
     needsProviderTraffic,
+    providerTrafficApproved: trafficApprovalReady,
     readyChecks,
     totalChecks: checks.length,
     ...(activeBookId ? { activeBookId } : {}),
@@ -3238,7 +3282,7 @@ export const buildLiveBetaProofPreflight = ({
     summary: providerKeyProof.betaProofReady
       ? "Final provider-key beta proof is already ready from local-live ledger rows."
       : canRun
-        ? "Preflight is ready: you can run the real provider-key chat and voice drill now."
+        ? "Preflight is ready and approved: you can run the real provider-key chat and voice drill now."
         : blocked
           ? "Preflight is blocked by failed or blocked local live rows."
           : `Preflight needs ${missingChecks.join(", ")} before provider traffic.`,

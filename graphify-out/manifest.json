@@ -44,8 +44,8 @@
     "hash": "be2be37586d9355e4ce46bba0eced178"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/beta-diagnostics.test.mjs": {
-    "mtime": 1780562585.396252,
-    "hash": "e1b4841bea3da4066f05ade3f44dd5e6"
+    "mtime": 1780564379.8415747,
+    "hash": "60f9b69d99748137bf15acde0536099b"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/document-ingest.test.mjs": {
     "mtime": 1780146650.2664282,
@@ -84,8 +84,8 @@
     "hash": "96b567c190743b625eb7db123d67c2b1"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/voice-proof-attempt-latch.test.mjs": {
-    "mtime": 1780529537.8655968,
-    "hash": "458449ee069a13972da724ab3d4edeaa"
+    "mtime": 1780564349.72917,
+    "hash": "3d54109fb0aca285bfa61668d89dcb4b"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/web-search.test.mjs": {
     "mtime": 1780285414.7914789,
@@ -212,8 +212,8 @@
     "hash": "0f77529b6365cb91cf75b6d2533c0abc"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/beta.diagnostics.ts": {
-    "mtime": 1780562609.114972,
-    "hash": "9e4a3d2c0e05d07ba03e8d55e4c81876"
+    "mtime": 1780564379.7640753,
+    "hash": "9b51ead23417ebc0535382f3e7ec5db9"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/retrieval.events.ts": {
     "mtime": 1780386947.8736541,
@@ -304,8 +304,8 @@
     "hash": "9bc10b581e5bc65e134a855223d4989d"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/ChatPanel.tsx": {
-    "mtime": 1780553324.9100614,
-    "hash": "0386236015814edbe2229b16876786d5"
+    "mtime": 1780564288.111957,
+    "hash": "feab705dc7c684be100ee86f6d9470d5"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/AnimatedScrollText.tsx": {
     "mtime": 1779879420.319919,
@@ -380,12 +380,12 @@
     "hash": "e50d88f62d7d8cfd330de4cd2ff382ee"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AdminView.tsx": {
-    "mtime": 1780562609.326059,
-    "hash": "cb44052937b1bced0029ad1776a53b15"
+    "mtime": 1780564241.9493597,
+    "hash": "629ceff15cdf606479d1146c3c73a9dd"
   },
   "/Users/mfuad16/Documents/LearningAI/src/store/index.ts": {
-    "mtime": 1780553284.5097144,
-    "hash": "335b7945c99d7332f4f014d3525e6c78"
+    "mtime": 1780564100.201139,
+    "hash": "3923b535030970cafe6047a24260866a"
   },
   "/Users/mfuad16/Documents/LearningAI/RESPONSIVENESS.md": {
     "mtime": 1779805908.087153,

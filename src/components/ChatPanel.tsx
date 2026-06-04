@@ -2997,6 +2997,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const activeBetaProofAttemptId = useStore(
     (state) => state.activeBetaProofAttemptId,
   );
+  const betaProofTrafficApproval = useStore(
+    (state) => state.betaProofTrafficApproval,
+  );
   const activeDocumentId = useStore((state) => state.activeDocumentId);
   const ttsVoice = useStore((state) => state.ttsVoice);
   const misoTtsApiUrl = useStore((state) => state.misoTtsApiUrl);
@@ -3228,6 +3231,18 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const hasLoadedVoiceProofScript = Boolean(
     activeBetaProofAttemptId && /Provider-key voice proof turn/i.test(input),
   );
+  const isActiveProofTrafficApproved = Boolean(
+    activeBetaProofAttemptId &&
+      betaProofTrafficApproval?.attemptId === activeBetaProofAttemptId,
+  );
+  const activeBetaProofTrafficLocked = Boolean(
+    activeBetaProofAttemptId && !isActiveProofTrafficApproved,
+  );
+  const alertProofTrafficApprovalNeeded = useCallback(() => {
+    alert(
+      "Approve provider traffic for this proof attempt in Admin before running provider-key chat or live voice proof.",
+    );
+  }, []);
   const buildVoiceStudyContext = useCallback(async () => {
     const contextQuery = [
       `Voice tutoring session for ${activeLearningBookTitle || activeProject}.`,
@@ -4321,6 +4336,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       );
       return;
     }
+    if (activeBetaProofTrafficLocked) {
+      alertProofTrafficApprovalNeeded();
+      return;
+    }
     if (window.location.hostname.endsWith(".vercel.app")) {
       alert(
         "Live Voice uses a WebSocket backend, which cannot run inside this Vercel deployment. Read Aloud still works through the HTTP TTS route; deploy the Node server separately for live voice.",
@@ -4987,6 +5006,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || sendState !== "idle") return;
+    if (activeBetaProofTrafficLocked) {
+      alertProofTrafficApprovalNeeded();
+      return;
+    }
 
     audio.playClick();
     clearThinkingPauseTimer();
@@ -5848,6 +5871,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const handleSend = () => {
     if (!input.trim()) return;
     if (hasLoadedVoiceProofScript && voiceState === "idle") {
+      if (activeBetaProofTrafficLocked) {
+        alertProofTrafficApprovalNeeded();
+        textareaRef.current?.focus();
+        return;
+      }
       pendingVoiceProofScriptRef.current = input.trim();
       startVoice();
       textareaRef.current?.focus();
@@ -6264,6 +6292,17 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     </span>
                     <span className="rounded-full border border-blue-300/25 bg-blue-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue-200">
                       Chat capture on
+                    </span>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                        isActiveProofTrafficApproved
+                          ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
+                          : "border-amber-300/30 bg-amber-400/10 text-amber-200"
+                      }`}
+                    >
+                      {isActiveProofTrafficApproved
+                        ? "Provider traffic approved"
+                        : "Approve traffic in Admin"}
                     </span>
                     {hasLoadedProofPrompt && (
                       <span className="rounded-full border border-cyan-300/25 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-cyan-200">

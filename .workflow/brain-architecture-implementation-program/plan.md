@@ -244,3 +244,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   repo-root `server.mjs`, ignore `.tmp-test/`, clean the stale generated bundle,
   rebuild `graphify-out` from scratch, and verify the architecture graph no
   longer routes agents to generated scratch output.
+- ADB: Provider traffic approval gate. Add an Admin-scoped local approval gate
+  for the real provider-key proof drill, bind the approval to one active proof
+  attempt, keep exact proof prompts disabled until preflight is approved, show
+  the traffic state in the ChatPanel proof HUD, and verify the gate without
+  calling OpenRouter, Deepgram, or AWS/cloud systems.
