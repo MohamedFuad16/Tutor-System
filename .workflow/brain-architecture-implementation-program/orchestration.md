@@ -56,6 +56,7 @@
 - Packet ADE: See `packets/ADE-learner-state-integrity.md`; independent audit
   sidecars are in `packets/ADE-book-runtime-gap-audit.md` and
   `packets/ADE-completion-claim-audit.md`.
+- Packet ADF: See `packets/ADF-local-postchange-preflight.md`.
 
 ## Completion Audit
 

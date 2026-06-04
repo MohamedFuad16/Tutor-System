@@ -722,6 +722,13 @@
       "owner": "main agent + read-only sidecars Meitner and Herschel",
       "status": "completed",
       "write_scope": "src/memory/answer.evidence.ts, src/memory/misconception.graph.ts, src/memory/learner.model.ts, src/memory/memory.orchestrator.ts, src/memory/bkt.engine.ts, src/memory/evidence.ledger.ts, src/memory/beta.diagnostics.ts, src/memory/longterm.memory.ts, src/memory/revision.evidence.ts, src/views/AdminView.tsx, focused tests/docs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ADF",
+      "name": "Local postchange preflight",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "package.json, scripts/brain-postchange.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1102,7 +1109,15 @@
       "npm run graphify:tree passed for Packet ACN and wrote GRAPH_TREE.html at 83.7 KB",
       "Graphify smoke query found ProviderKeyProofChecklist, buildProviderKeyProofChecklist(), buildLiveBetaProofReceipt(), buildLiveBetaProofDrillPacket(), buildProviderCapture(), buildCoherentLiveProofFromLedgers(), and connected diagnostics/Admin nodes",
       "graphify path buildProviderKeyProofChecklist to AdminView found a connected two-hop route through AdminView.tsx",
-      "Packet ACN graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
+      "Packet ACN graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references",
+      "Packet ADF selected after repo-local Graphify routed the missing postchange gate through package.json, scripts, graphify-out artifacts, and workflow evidence",
+      "Packet ADF added scripts/brain-postchange.mjs and npm run brain:postchange without recreating the removed custom architecture runtime",
+      "npm run brain:postchange -- --reason skill-preflight passed for Packet ADF",
+      "npm run brain:postchange -- --reason final-gate --full passed for Packet ADF, including all 202 tests",
+      "graphify update . --force regenerated code architecture artifacts with 1257 nodes, 2149 edges, and 63 communities for Packet ADF",
+      "npm run graphify:tree passed for Packet ADF and wrote GRAPH_TREE.html at 90.3 KB",
+      "Packet ADF Graphify smoke query found brain-postchange.mjs, checkGraphifyScratchRefs(), textFilesIn(), and scratchPatterns",
+      "npm run brain:postchange -- --reason post-graphify-refresh passed for Packet ADF after refreshed Graphify artifact scratch scanning"
     ]
   },
   "evidence": [
@@ -1980,11 +1995,15 @@
     "Packet ADE graph artifact grep found no removed recordMasteryDelta, server.mjs, .tmp-test, node_modules/.cache, /private/tmp, or codex-runtimes references",
     "Packet ADE Graphify paths connected commitValidatedMasteryAttempt() to buildMasteryLedgerIntegrity() in four hops and MisconceptionGraph to LearnerModel in two hops",
     "Final Packet ADE self-review persisted exact attempt/evidence/delta/contract links, made corrupt duplicate replay fail closed, and preserved legacy count-based integrity checks",
-    "Final Packet ADE verification passed npm run format:check, npm run lint, npm run test with 202 tests, npm run build, and git diff --check"
+    "Final Packet ADE verification passed npm run format:check, npm run lint, npm run test with 202 tests, npm run build, and git diff --check",
+    "Packet ADF added a truthful local brain:postchange compatibility preflight instead of restoring the removed custom brain runtime",
+    "Packet ADF final gate passed npm run brain:postchange -- --reason final-gate --full, including format check, lint, build, git diff --check, 202 tests, and Graphify scratch scan",
+    "Packet ADF regenerated Graphify code architecture artifacts with 1257 nodes, 2149 edges, and 63 communities, then rebuilt GRAPH_TREE.html at 90.3 KB",
+    "Packet ADF post-Graphify preflight passed and the refreshed graph routes to brain-postchange.mjs, checkGraphifyScratchRefs(), textFilesIn(), and scratchPatterns"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 98,
-    "basis": "Conservative local implementation estimate after Packet ADE. The identified P0 mastery-ledger atomicity gap and inert misconception-candidate loop are closed, and Admin/readiness now blocks 99/100 when learner-state audit integrity is not proven. A fresh post-ADE completion audit plus the real approved OpenRouter typed-chat and live Deepgram voice drill are still required before renewing a 99% or 100% claim. AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T10:27:44Z"
+    "basis": "Conservative local implementation estimate after Packet ADF. Packet ADF closes the missing local postchange workflow gate and makes final verification repeatable, while preserving Graphify as the code architecture graph and avoiding the removed custom brain runtime. The real approved OpenRouter typed-chat plus live Deepgram voice drill remains required before renewing a 99% or 100% claim. AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T12:31:28Z"
   }
 }

@@ -7240,3 +7240,41 @@ No provider traffic, microphone action, or AWS/cloud work occurred.
 Current conservative implementation estimate: 98%. The program remains active
 until a fresh completion audit and the real approved provider-key typed-chat
 plus live Deepgram voice drill prove the remaining local architecture.
+
+# Latest Addendum: Local Postchange Preflight
+
+Packet ADF closes the repeated missing `brain:postchange` gate without
+recreating the removed custom architecture runtime. The new wrapper makes the
+repo's expected post-change check executable, keeps Graphify as the code
+architecture graph, and requires the refreshed graph artifacts to stay free of
+scratch references.
+
+Implementation:
+
+- Added `scripts/brain-postchange.mjs`.
+- Added `npm run brain:postchange`.
+- Included the wrapper in the existing format and format-check file lists.
+- The wrapper runs format check, TypeScript lint, production build,
+  `git diff --check`, and a Graphify artifact scratch-reference scan.
+- `--full` additionally runs the full test suite.
+
+Verification evidence:
+
+- `npm run brain:postchange -- --reason skill-preflight`: passed.
+- `npm run brain:postchange -- --reason final-gate --full`: passed, including
+  all 202 tests.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1257 nodes, 2149 edges, and 63 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`90.3 KB`).
+- Repo-local Graphify smoke query found `brain-postchange.mjs`,
+  `checkGraphifyScratchRefs()`, `textFilesIn()`, and `scratchPatterns`.
+- `npm run brain:postchange -- --reason post-graphify-refresh`: passed against
+  the refreshed Graphify artifacts.
+- No provider traffic, microphone action, AWS/cloud work, or implicit Graphify
+  regeneration occurred.
+
+Current conservative implementation estimate remains 98%. This slice improves
+local workflow reliability, but the hard gap remains the real approved
+OpenRouter typed-chat plus live Deepgram voice drill under one coherent local
+proof attempt. AWS/cloud work remains deferred until after beta testing.

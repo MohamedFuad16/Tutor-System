@@ -264,3 +264,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   misconception candidate path, make validated mastery commits atomic and
   idempotent, expose mastery-ledger integrity in Admin/readiness, and reject
   99/100 when stored learner-state audit links are missing or mismatched.
+- ADF: Local postchange preflight. Replace the repeated missing
+  `brain:postchange` gate with a truthful compatibility script that runs real
+  local checks, scans Graphify artifacts for scratch references, preserves
+  Graphify as the code architecture graph, and does not recreate the removed
+  custom architecture runtime.
