@@ -240,3 +240,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   request ids, and receipt source readiness so the final provider-key
   typed-chat plus live Deepgram voice drill has one crisp go/no-go audit without
   calling providers or weakening the real-live proof gate.
+- ADA: Graphify scratch contamination guard. Move the dev-server bundle out of
+  repo-root `server.mjs`, ignore `.tmp-test/`, clean the stale generated bundle,
+  rebuild `graphify-out` from scratch, and verify the architecture graph no
+  longer routes agents to generated scratch output.

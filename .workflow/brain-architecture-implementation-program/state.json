@@ -1864,11 +1864,25 @@
     "In-app Browser mobile QA at 390x844 confirmed Admin Beta Diagnostics opens through the Beta tab, Attempt audit and Live drill preflight exist in DOM, and horizontal overflow is false; mobile screenshot capture timed out in the Browser backend",
     "graphify update . --force regenerated code architecture artifacts with 1244 nodes, 2119 edges, and 72 communities",
     "npm run graphify:tree passed for Packet ACZ and wrote GRAPH_TREE.html at 89.1 KB",
-    "Packet ACZ Graphify query found LiveBetaProofAttemptAudit, LiveBetaProofAttemptAuditCheck, AdminView(), and beta.diagnostics.ts"
+    "Packet ACZ Graphify query found LiveBetaProofAttemptAudit, LiveBetaProofAttemptAuditCheck, AdminView(), and beta.diagnostics.ts",
+    "Packet ADA selected after Graphify routed provider-proof queries to generated repo-root server.mjs, proving the code architecture graph was contaminated by dev-server scratch output",
+    "npm run dev now writes its server bundle to node_modules/.cache/learningai/server.mjs instead of repo-root server.mjs, preserving Node dependency resolution while keeping the bundle outside Graphify source scans",
+    "npm run clean now removes server.mjs, .tmp-test, and node_modules/.cache/learningai; .tmp-test/ is ignored in .gitignore",
+    "Root server.mjs was removed, stale graphify-out was moved aside into /private/tmp/LearningAI-graphify-stale.HL5ius/graphify-out, and Graphify was rebuilt from a clean graph directory",
+    "PORT=3001 npm run dev passed for Packet ADA and did not recreate repo-root server.mjs",
+    "graphify update . --force rebuilt clean code architecture artifacts with 1208 nodes, 2075 edges, and 77 communities",
+    "npm run graphify:tree passed for Packet ADA and wrote GRAPH_TREE.html at 87.4 KB",
+    "Packet ADA graph artifact grep found no server.mjs, .tmp-test, node_modules/.cache, /private/tmp, or codex-runtimes scratch references",
+    "Packet ADA provider-proof Graphify query now routes to source/test files such as ChatPanel.tsx, AdminView.tsx, beta-diagnostics.test.mjs, longterm.memory.ts, memory.orchestrator.ts, and StudyView.tsx instead of generated server.mjs",
+    "npm run format:check passed for Packet ADA",
+    "npm run lint passed for Packet ADA",
+    "npm run build passed for Packet ADA",
+    "npm run test passed for Packet ADA, 185 tests",
+    "git diff --check passed for Packet ADA"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACZ: Admin now exposes and exports both a source-backed local beta completion meter and an attempt-level provider drill audit. The app remains at 99% because 100% requires a real OpenRouter typed-chat plus Deepgram live-voice provider drill with shared proof attempt, multi-PDF book/thread anchors, and attempt-bound local-live provider rows. AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T08:49:18Z"
+    "basis": "Local architecture estimate after Packet ADA: Admin exposes and exports the local beta completion meter and provider drill audit, and Graphify now routes provider-proof work through source files instead of generated scratch output. The app remains at 99% because 100% requires a real OpenRouter typed-chat plus Deepgram live-voice provider drill with shared proof attempt, multi-PDF book/thread anchors, and attempt-bound local-live provider rows. AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T08:57:01Z"
   }
 }

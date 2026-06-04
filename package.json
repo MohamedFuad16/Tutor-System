@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=server.mjs && node server.mjs",
+    "dev": "mkdir -p node_modules/.cache/learningai && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/learningai/server.mjs && node node_modules/.cache/learningai/server.mjs",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js server.mjs",
+    "clean": "rm -rf dist server.js server.mjs .tmp-test node_modules/.cache/learningai",
     "lint": "tsc --noEmit",
     "audio:overview:dry-run": "node scripts/generate-user-brain-audio-overviews.mjs --dry-run",
     "audio:overview:generate": "node scripts/generate-user-brain-audio-overviews.mjs",

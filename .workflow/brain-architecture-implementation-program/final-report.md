@@ -6911,3 +6911,49 @@ Remaining hard gap: run the real provider-key typed-chat turn plus live
 Deepgram voice drill with OpenRouter and Deepgram traffic under one Admin proof
 attempt, then confirm the selected provider captures are real local-live rows
 bound to that proof attempt. AWS/cloud work is still deferred until after beta.
+
+# Latest Addendum: Graphify Scratch Contamination Guard
+
+This slice fixes a code-architecture graph hygiene issue found while continuing
+the final provider-proof work. Graphify was still routing some queries through
+generated repo-root `server.mjs`, which is a dev-server bundle and not a source
+file agents should inspect.
+
+Implementation:
+
+- Changed `npm run dev` to build its temporary server bundle into
+  `node_modules/.cache/learningai/server.mjs` instead of repo-root
+  `server.mjs`.
+- Updated `npm run clean` to remove `server.mjs`, `.tmp-test`, and the dev
+  cache bundle.
+- Added `.tmp-test/` to `.gitignore`.
+- Removed the generated root `server.mjs`.
+- Moved stale `graphify-out` aside into `/private/tmp` and rebuilt fresh
+  Graphify artifacts from the current checkout.
+
+Verification evidence:
+
+- `PORT=3001 npm run dev`: passed, serving from the cache bundle path.
+- Root `server.mjs` and `.tmp-test` were absent after cleanup.
+- `graphify update . --force`: passed from a clean graph directory with 1208
+  nodes, 2075 edges, and 77 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`87.4 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`,
+  `node_modules/.cache`, `/private/tmp`, or `codex-runtimes` references.
+- Provider-proof Graphify query now routes to source/test files like
+  `ChatPanel.tsx`, `AdminView.tsx`, `beta-diagnostics.test.mjs`,
+  `longterm.memory.ts`, `memory.orchestrator.ts`, and `StudyView.tsx`; it no
+  longer routes to generated `server.mjs`.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run test`: passed, 185 tests.
+- `git diff --check`: passed.
+
+Current conservative local-beta brain architecture completion estimate: 99%.
+
+Remaining hard gap is unchanged: run the real provider-key typed-chat turn plus
+live Deepgram voice drill with OpenRouter and Deepgram traffic under one Admin
+proof attempt, then confirm the selected provider captures are real local-live
+rows bound to that proof attempt.
