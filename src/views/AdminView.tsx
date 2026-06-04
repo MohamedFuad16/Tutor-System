@@ -1079,6 +1079,7 @@ export function AdminView() {
   const liveProofRunbook = providerKeyProofChecklist.liveProofRunbook;
   const liveProofDrillPacket = providerKeyProofChecklist.liveProofDrillPacket;
   const liveProofReceipt = providerKeyProofChecklist.liveProofReceipt;
+  const liveProofAttemptAudit = liveProofPreflight.attemptAudit;
   const recordProofAttemptLifecycle = (
     eventType: "beta_proof_attempt_started" | "beta_proof_attempt_cleared",
     proofAttemptId: string,
@@ -1494,6 +1495,7 @@ export function AdminView() {
           liveProofRunbook,
           liveProofDrillPacket,
           liveProofReceipt,
+          liveProofAttemptAudit,
           activeProofAttemptId: activeBetaProofAttemptId || undefined,
         },
       },
@@ -5159,6 +5161,96 @@ export function AdminView() {
                               {liveProofPreflight.missingChecks.join(", ")}.
                             </div>
                           )}
+
+                          <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50/70 px-3 py-2">
+                            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                              <div>
+                                <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-blue-700">
+                                  Attempt audit
+                                </div>
+                                <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-zinc-600 font-serif">
+                                  {liveProofAttemptAudit.summary}
+                                </p>
+                                <p className="mt-1 text-[11px] leading-relaxed text-zinc-500 font-serif">
+                                  {liveProofAttemptAudit.nextAction}
+                                </p>
+                              </div>
+                              <div className="shrink-0 text-left md:text-right">
+                                <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                  Audit
+                                </div>
+                                <div className="mt-1 text-lg font-semibold tabular-nums text-zinc-900">
+                                  {liveProofAttemptAudit.readyChecks}/
+                                  {liveProofAttemptAudit.totalChecks}
+                                </div>
+                                <span
+                                  className={`mt-1 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(liveProofAttemptAudit.status)}`}
+                                >
+                                  {liveProofAttemptAudit.status}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="mt-3 flex flex-wrap gap-1.5">
+                              <span
+                                className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${liveProofAttemptAudit.canRunProviderTraffic ? "border-green-200 bg-green-50 text-green-700" : liveProofAttemptAudit.sourceReadyForBeta ? "border-blue-200 bg-white text-blue-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                              >
+                                {liveProofAttemptAudit.canRunProviderTraffic
+                                  ? "provider run unlocked"
+                                  : liveProofAttemptAudit.sourceReadyForBeta
+                                    ? "receipt beta-ready"
+                                    : "provider run locked"}
+                              </span>
+                              <span className="rounded-full border border-blue-100 bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue-700">
+                                captures{" "}
+                                {liveProofAttemptAudit.providerCaptureCount}
+                              </span>
+                              <span className="rounded-full border border-violet-100 bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-violet-700">
+                                ready PDFs{" "}
+                                {liveProofAttemptAudit.readyDocumentCount}
+                              </span>
+                              {liveProofAttemptAudit.activeProofAttemptId && (
+                                <span className="max-w-full truncate rounded-full border border-blue-100 bg-white px-2 py-0.5 text-[10px] font-mono text-blue-700">
+                                  active{" "}
+                                  {liveProofAttemptAudit.activeProofAttemptId}
+                                </span>
+                              )}
+                              {liveProofAttemptAudit.selectedLedgerProofAttemptId && (
+                                <span className="max-w-full truncate rounded-full border border-cyan-100 bg-white px-2 py-0.5 text-[10px] font-mono text-cyan-700">
+                                  ledger{" "}
+                                  {
+                                    liveProofAttemptAudit.selectedLedgerProofAttemptId
+                                  }
+                                </span>
+                              )}
+                              {liveProofAttemptAudit.selectedRequestIds.map(
+                                (requestId) => (
+                                  <span
+                                    key={`attempt-audit-request-${requestId}`}
+                                    className="max-w-full truncate rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-mono text-zinc-600"
+                                  >
+                                    req {requestId}
+                                  </span>
+                                ),
+                              )}
+                              {liveProofAttemptAudit.providerProofAttemptIds.map(
+                                (attemptId) => (
+                                  <span
+                                    key={`attempt-audit-provider-${attemptId}`}
+                                    className="max-w-full truncate rounded-full border border-emerald-100 bg-white px-2 py-0.5 text-[10px] font-mono text-emerald-700"
+                                  >
+                                    provider {attemptId}
+                                  </span>
+                                ),
+                              )}
+                            </div>
+                            {liveProofAttemptAudit.missingChecks.length > 0 && (
+                              <div className="mt-2 text-[11px] leading-relaxed text-amber-700 font-serif">
+                                Audit still needs{" "}
+                                {liveProofAttemptAudit.missingChecks.join(", ")}
+                                .
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         <div className="mt-4 grid gap-3 lg:grid-cols-2">

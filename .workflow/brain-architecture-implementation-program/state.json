@@ -1851,11 +1851,24 @@
     "Admin Beta Diagnostics now renders a top-level Brain Architecture Local beta completion card and diagnostics export includes the readiness object",
     "Readiness is conservative: 100% requires complete local-live coherent proof, 99% is reserved for the final provider-proof binding gap, and AWS/cloud readiness remains deferred",
     "tests/beta-diagnostics.test.mjs covers 100% local-live proof, 99% provider-proof binding gap, blocked local rows, and export preservation for brainArchitectureReadiness",
-    "TUTOR_ARCHITECTURE.md, userBrainArchitectureBook.ts, tutorBook.json, and the App Design reader card describe the same readiness percentage boundary"
+    "TUTOR_ARCHITECTURE.md, userBrainArchitectureBook.ts, tutorBook.json, and the App Design reader card describe the same readiness percentage boundary",
+    "Packet ACZ selected after Graphify routed the remaining provider-key typed chat/live voice proof gap through beta.diagnostics.ts, AdminView.tsx, ChatPanel.tsx, server.ts, and beta diagnostics tests",
+    "LiveBetaProofAttemptAudit now compares active Admin proof attempt, selected ledger attempt, provider capture attempts, selected request ids, ready active-book PDFs, and receipt source readiness without calling providers",
+    "Admin Beta Diagnostics now renders the attempt audit in Provider-Key Live Proof and includes it in diagnostics export metadata",
+    "tests/beta-diagnostics.test.mjs covers final receipt-ready live proof, seeded QA evidence that can rerun provider traffic, and blocked multi-PDF preflight for the attempt audit",
+    "npm run test -- tests/beta-diagnostics.test.mjs passed through the project runner with 185 tests for Packet ACZ",
+    "npm run format:check passed for Packet ACZ; git diff --check passed",
+    "npm run lint passed for Packet ACZ",
+    "npm run build passed for Packet ACZ",
+    "In-app Browser desktop QA confirmed Admin Beta Diagnostics, Provider-Key Live Proof, Attempt audit, and Live drill preflight render on localhost:3001",
+    "In-app Browser mobile QA at 390x844 confirmed Admin Beta Diagnostics opens through the Beta tab, Attempt audit and Live drill preflight exist in DOM, and horizontal overflow is false; mobile screenshot capture timed out in the Browser backend",
+    "graphify update . --force regenerated code architecture artifacts with 1244 nodes, 2119 edges, and 72 communities",
+    "npm run graphify:tree passed for Packet ACZ and wrote GRAPH_TREE.html at 89.1 KB",
+    "Packet ACZ Graphify query found LiveBetaProofAttemptAudit, LiveBetaProofAttemptAuditCheck, AdminView(), and beta.diagnostics.ts"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACY: Admin now exposes and exports a source-backed local beta completion meter. The app remains at 99% only when brain-flow evidence is complete and the final provider-proof binding gap remains; 100% requires a real OpenRouter typed-chat plus Deepgram live-voice provider drill with shared proof attempt, multi-PDF book/thread anchors, and attempt-bound provider rows. AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T08:18:00Z"
+    "basis": "Local architecture estimate after Packet ACZ: Admin now exposes and exports both a source-backed local beta completion meter and an attempt-level provider drill audit. The app remains at 99% because 100% requires a real OpenRouter typed-chat plus Deepgram live-voice provider drill with shared proof attempt, multi-PDF book/thread anchors, and attempt-bound local-live provider rows. AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T08:49:18Z"
   }
 }

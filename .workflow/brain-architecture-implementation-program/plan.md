@@ -234,3 +234,9 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   readiness object in diagnostics JSON, treats 100% as complete local-live proof,
   treats 99% as only the final provider-proof binding gap, and keeps AWS/cloud
   readiness deferred.
+- ACZ: Live provider attempt audit. Add a reusable local diagnostics object and
+  Admin Beta Diagnostics panel that compares active proof attempt, selected
+  ledger attempt, provider capture attempts, ready active-book PDFs, selected
+  request ids, and receipt source readiness so the final provider-key
+  typed-chat plus live Deepgram voice drill has one crisp go/no-go audit without
+  calling providers or weakening the real-live proof gate.

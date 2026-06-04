@@ -6863,3 +6863,51 @@ Remaining hard gap: run a real provider-key typed-chat turn plus live Deepgram
 voice drill with OpenRouter and Deepgram traffic under one Admin proof attempt,
 then confirm coherent provider-ready proof rows from that real run. Broader beta
 validation remains open. AWS/cloud work is still deferred until after beta.
+
+# Latest Addendum: Live Provider Attempt Audit
+
+This slice makes the final real provider-key drill easier to run and review
+without spending provider traffic automatically. Admin Beta Diagnostics now has
+an attempt-level audit that compares the active Admin proof attempt, selected
+ledger proof attempt, provider capture attempts, selected chat/voice request
+ids, ready PDFs in the active book, and receipt source readiness.
+
+Implementation:
+
+- Added `LiveBetaProofAttemptAudit` in `beta.diagnostics.ts`.
+- Attached the audit to `buildLiveBetaProofPreflight()` so it can explain both
+  “ready to call providers” and “receipt beta-ready” states.
+- Admin Beta Diagnostics renders the attempt audit inside the Provider-Key Live
+  Proof panel and includes it in diagnostics export metadata.
+- Tests cover final local-live receipt readiness, seeded-QA proof that can
+  rerun provider traffic, and blocked multi-PDF preflight.
+
+Verification evidence:
+
+- `npm run test -- tests/beta-diagnostics.test.mjs`: passed through the project
+  runner with 185 tests.
+- `npm run format:check`: passed.
+- `git diff --check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser desktop QA on `http://localhost:3001`: Admin Beta Diagnostics
+  opened, Provider-Key Live Proof rendered, and DOM contained `Attempt audit`
+  plus `Live drill preflight`.
+- In-app Browser mobile QA at `390x844`: Admin Beta Diagnostics opened through
+  the mobile `Beta` tab, DOM contained `Attempt audit` plus `Live drill
+  preflight`, and measured horizontal overflow was false.
+- Mobile screenshot capture timed out in the Browser backend, so the mobile
+  evidence for this packet is DOM/overflow based rather than screenshot based.
+- `graphify update . --force`: passed with 1244 nodes, 2119 edges, and 72
+  communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`89.1 KB`).
+- Graphify query found `LiveBetaProofAttemptAudit`,
+  `LiveBetaProofAttemptAuditCheck`, `AdminView()`, and `beta.diagnostics.ts`.
+
+Current conservative local-beta brain architecture completion estimate: 99%.
+
+Remaining hard gap: run the real provider-key typed-chat turn plus live
+Deepgram voice drill with OpenRouter and Deepgram traffic under one Admin proof
+attempt, then confirm the selected provider captures are real local-live rows
+bound to that proof attempt. AWS/cloud work is still deferred until after beta.

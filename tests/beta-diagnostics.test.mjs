@@ -529,6 +529,49 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
       instruction.includes("chat-req-1 and voice-req-1"),
     ),
   );
+
+  const finalPreflight = buildLiveBetaProofPreflight({
+    providerKeyProof: readyChecklist,
+    activeLearningBookId: "book-1",
+    activeBetaProofAttemptId: PROOF_ATTEMPT_ID,
+    documents: [
+      {
+        id: "doc-active",
+        bookId: "book-1",
+        title: "Active PDF",
+        mimeType: "application/pdf",
+        size: 1024,
+        extractedText: "Active source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+      {
+        id: "doc-companion",
+        bookId: "book-1",
+        title: "Companion PDF",
+        mimeType: "application/pdf",
+        size: 2048,
+        extractedText: "Companion source text.",
+        processingStatus: "ready",
+        createdAt: PROOF_BASE_TS,
+        updatedAt: PROOF_BASE_TS,
+      },
+    ],
+  });
+  assert.equal(finalPreflight.needsProviderTraffic, false);
+  assert.equal(finalPreflight.canRun, false);
+  assert.equal(finalPreflight.attemptAudit.status, "ready");
+  assert.equal(finalPreflight.attemptAudit.canRunProviderTraffic, false);
+  assert.equal(finalPreflight.attemptAudit.receiptReady, true);
+  assert.equal(finalPreflight.attemptAudit.sourceReadyForBeta, true);
+  assert.equal(
+    finalPreflight.attemptAudit.selectedLedgerProofAttemptId,
+    PROOF_ATTEMPT_ID,
+  );
+  assert.deepEqual(finalPreflight.attemptAudit.providerProofAttemptIds, [
+    PROOF_ATTEMPT_ID,
+  ]);
 });
 
 test("live beta proof preflight requires active attempt and multiple ready PDFs before provider traffic", () => {
@@ -599,6 +642,19 @@ test("live beta proof preflight requires active attempt and multiple ready PDFs 
     "doc-companion",
   ]);
   assert.match(readyPreflight.summary, /run the real provider-key/);
+  assert.equal(readyPreflight.attemptAudit.status, "ready");
+  assert.equal(readyPreflight.attemptAudit.canRunProviderTraffic, true);
+  assert.equal(readyPreflight.attemptAudit.receiptReady, true);
+  assert.equal(readyPreflight.attemptAudit.sourceReadyForBeta, false);
+  assert.equal(
+    readyPreflight.attemptAudit.selectedLedgerProofAttemptId,
+    PROOF_ATTEMPT_ID,
+  );
+  assert.ok(
+    readyPreflight.attemptAudit.missingChecks.includes(
+      "Receipt source beta-ready",
+    ),
+  );
 
   const blockedPreflight = buildLiveBetaProofPreflight({
     providerKeyProof: seededChecklist,
@@ -636,6 +692,12 @@ test("live beta proof preflight requires active attempt and multiple ready PDFs 
   assert.ok(
     blockedPreflight.missingChecks.includes(
       "Active book has multiple ready PDFs",
+    ),
+  );
+  assert.equal(blockedPreflight.attemptAudit.canRunProviderTraffic, false);
+  assert.ok(
+    blockedPreflight.attemptAudit.missingChecks.includes(
+      "Active multi-PDF book ready",
     ),
   );
 });

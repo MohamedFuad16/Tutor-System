@@ -187,6 +187,38 @@ export type LiveBetaProofPreflightCheck = {
   action: string;
 };
 
+export type LiveBetaProofAttemptAuditCheck = {
+  id: string;
+  title: string;
+  ready: boolean;
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  summary: string;
+};
+
+export type LiveBetaProofAttemptAudit = {
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  canRunProviderTraffic: boolean;
+  receiptReady: boolean;
+  sourceReadyForBeta: boolean;
+  activeAttemptMatchesSelectedBundle: boolean;
+  activeProofAttemptId?: string;
+  selectedLedgerProofAttemptId?: string;
+  providerProofAttemptIds: string[];
+  selectedRequestIds: string[];
+  providerCaptureCount: number;
+  readyDocumentCount: number;
+  readyDocumentIds: string[];
+  sharedDocumentIds: string[];
+  sharedBookIds: string[];
+  sharedConversationIds: string[];
+  readyChecks: number;
+  totalChecks: number;
+  missingChecks: string[];
+  summary: string;
+  nextAction: string;
+  checks: LiveBetaProofAttemptAuditCheck[];
+};
+
 export type LiveBetaProofPreflight = {
   status: Exclude<BetaDiagnosticStatus, "deferred">;
   canRun: boolean;
@@ -199,6 +231,7 @@ export type LiveBetaProofPreflight = {
   readyDocumentIds: string[];
   missingChecks: string[];
   summary: string;
+  attemptAudit: LiveBetaProofAttemptAudit;
   checks: LiveBetaProofPreflightCheck[];
 };
 
@@ -2881,6 +2914,180 @@ export const buildProviderKeyProofChecklist = ({
   };
 };
 
+const buildLiveBetaProofAttemptAudit = ({
+  providerKeyProof,
+  activeProofAttemptId,
+  activeBookReady,
+  multiPdfReady,
+  liveBlockersClear,
+  readyDocumentCount,
+  readyDocumentIds,
+}: {
+  providerKeyProof: ProviderKeyProofChecklist;
+  activeProofAttemptId: string;
+  activeBookReady: boolean;
+  multiPdfReady: boolean;
+  liveBlockersClear: boolean;
+  readyDocumentCount: number;
+  readyDocumentIds: string[];
+}): LiveBetaProofAttemptAudit => {
+  const receipt = providerKeyProof.liveProofReceipt;
+  const coherentLiveProof = providerKeyProof.coherentLiveProof;
+  const selectedLedgerProofAttemptId =
+    coherentLiveProof.sharedProofAttemptIds[0] || "";
+  const providerProofAttemptIds = compactUnique(
+    receipt.providerCaptures.flatMap((capture) => capture.proofAttemptIds),
+    8,
+  );
+  const activeAttemptMatchesSelectedBundle =
+    Boolean(activeProofAttemptId) &&
+    (!selectedLedgerProofAttemptId ||
+      selectedLedgerProofAttemptId === activeProofAttemptId);
+  const providerProofBoundToSelectedAttempt =
+    Boolean(selectedLedgerProofAttemptId) &&
+    providerProofAttemptIds.includes(selectedLedgerProofAttemptId) &&
+    receipt.providerCaptureCount >= 2;
+  const providerTrafficPrereqsReady =
+    providerKeyProof.canAttemptProviderKeyRun &&
+    Boolean(activeProofAttemptId) &&
+    activeBookReady &&
+    multiPdfReady &&
+    liveBlockersClear &&
+    activeAttemptMatchesSelectedBundle;
+  const canRunProviderTraffic =
+    providerTrafficPrereqsReady && !providerKeyProof.betaProofReady;
+
+  const check = ({
+    id,
+    title,
+    ready,
+    summary,
+    blocked = false,
+  }: {
+    id: string;
+    title: string;
+    ready: boolean;
+    summary: string;
+    blocked?: boolean;
+  }): LiveBetaProofAttemptAuditCheck => ({
+    id,
+    title,
+    ready,
+    status: ready ? "ready" : blocked ? "blocked" : "watch",
+    summary,
+  });
+
+  const checks = [
+    check({
+      id: "provider_key_meters_seen",
+      title: "Provider-key meters seen",
+      ready: providerKeyProof.canAttemptProviderKeyRun,
+      summary: providerKeyProof.canAttemptProviderKeyRun
+        ? "OpenRouter and Deepgram provider-key meters are visible locally."
+        : "Provider-key meters are not both visible yet.",
+    }),
+    check({
+      id: "active_attempt_locked",
+      title: "Active attempt locked",
+      ready: Boolean(activeProofAttemptId),
+      summary: activeProofAttemptId
+        ? `Active proof attempt ${activeProofAttemptId} is selected.`
+        : "No active Admin proof attempt is selected.",
+    }),
+    check({
+      id: "active_attempt_matches_selected_bundle",
+      title: "Active attempt matches selected bundle",
+      ready: activeAttemptMatchesSelectedBundle,
+      summary: selectedLedgerProofAttemptId
+        ? activeAttemptMatchesSelectedBundle
+          ? "The selected coherent bundle uses the same proof attempt as Admin."
+          : "The selected coherent bundle uses a different proof attempt than Admin."
+        : activeProofAttemptId
+          ? "No coherent ledger attempt has been selected yet; new rows will be checked against the active attempt."
+          : "Start an Admin proof attempt before chat or voice rows are created.",
+      blocked:
+        Boolean(activeProofAttemptId) &&
+        Boolean(selectedLedgerProofAttemptId) &&
+        !activeAttemptMatchesSelectedBundle,
+    }),
+    check({
+      id: "active_multi_pdf_book_ready",
+      title: "Active multi-PDF book ready",
+      ready: activeBookReady && multiPdfReady,
+      summary:
+        activeBookReady && multiPdfReady
+          ? `${readyDocumentCount} extracted PDFs are ready for the active book.`
+          : `${readyDocumentCount} extracted PDFs are ready; select a book with at least two ready PDFs.`,
+    }),
+    check({
+      id: "provider_captures_attempt_bound",
+      title: "Provider captures attempt-bound",
+      ready: providerProofBoundToSelectedAttempt,
+      summary: providerProofBoundToSelectedAttempt
+        ? "OpenRouter and Deepgram provider captures carry the selected proof attempt id."
+        : "Provider captures are still missing or not yet bound to the selected proof attempt.",
+    }),
+    check({
+      id: "receipt_source_beta_ready",
+      title: "Receipt source beta-ready",
+      ready: receipt.sourceReadyForBeta,
+      summary: receipt.sourceReadyForBeta
+        ? "The receipt is backed by real local-live provider rows."
+        : "The receipt is not beta-ready until real local-live provider rows replace seeded or missing proof.",
+    }),
+  ];
+  const blocked = checks.some((entry) => entry.status === "blocked");
+  const readyChecks = checks.filter((entry) => entry.ready).length;
+  const missingChecks = checks
+    .filter((entry) => !entry.ready)
+    .map((entry) => entry.title);
+  const finalReady =
+    providerKeyProof.betaProofReady && receipt.sourceReadyForBeta;
+  const status: Exclude<BetaDiagnosticStatus, "deferred"> = blocked
+    ? "blocked"
+    : finalReady || canRunProviderTraffic
+      ? "ready"
+      : "watch";
+  const summary = finalReady
+    ? "Attempt audit is receipt-ready: selected chat and voice rows share the active proof attempt and real provider captures."
+    : canRunProviderTraffic
+      ? "Attempt audit is locked: provider keys, active attempt, and multi-PDF book are ready for the real drill."
+      : blocked
+        ? "Attempt audit is blocked because the active Admin attempt does not match the selected ledger bundle."
+        : `Attempt audit needs ${missingChecks.join(", ")}.`;
+  const nextAction = finalReady
+    ? "Export diagnostics for beta review."
+    : canRunProviderTraffic
+      ? "Run the typed-chat prompt and live-voice script without changing the active attempt."
+      : blocked
+        ? "Start a fresh Admin proof attempt or rerun chat and voice under the current attempt."
+        : "Finish the missing attempt prerequisites before provider traffic.";
+
+  return {
+    status,
+    canRunProviderTraffic,
+    receiptReady: receipt.ready,
+    sourceReadyForBeta: receipt.sourceReadyForBeta,
+    activeAttemptMatchesSelectedBundle,
+    ...(activeProofAttemptId ? { activeProofAttemptId } : {}),
+    ...(selectedLedgerProofAttemptId ? { selectedLedgerProofAttemptId } : {}),
+    providerProofAttemptIds,
+    selectedRequestIds: receipt.selectedRequestIds,
+    providerCaptureCount: receipt.providerCaptureCount,
+    readyDocumentCount,
+    readyDocumentIds,
+    sharedDocumentIds: coherentLiveProof.sharedDocumentIds,
+    sharedBookIds: coherentLiveProof.sharedBookIds,
+    sharedConversationIds: coherentLiveProof.sharedConversationIds,
+    readyChecks,
+    totalChecks: checks.length,
+    missingChecks,
+    summary,
+    nextAction,
+    checks,
+  };
+};
+
 export const buildLiveBetaProofPreflight = ({
   providerKeyProof,
   activeLearningBookId,
@@ -3002,6 +3209,15 @@ export const buildLiveBetaProofPreflight = ({
   const preflightReady = missingChecks.length === 0;
   const canRun = preflightReady && needsProviderTraffic;
   const blocked = checks.some((entry) => entry.status === "blocked");
+  const attemptAudit = buildLiveBetaProofAttemptAudit({
+    providerKeyProof,
+    activeProofAttemptId,
+    activeBookReady,
+    multiPdfReady,
+    liveBlockersClear,
+    readyDocumentCount: readyDocuments.length,
+    readyDocumentIds,
+  });
   const status: Exclude<BetaDiagnosticStatus, "deferred"> = blocked
     ? "blocked"
     : providerKeyProof.betaProofReady || canRun
@@ -3026,6 +3242,7 @@ export const buildLiveBetaProofPreflight = ({
         : blocked
           ? "Preflight is blocked by failed or blocked local live rows."
           : `Preflight needs ${missingChecks.join(", ")} before provider traffic.`,
+    attemptAudit,
     checks,
   };
 };
