@@ -647,6 +647,81 @@ tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+# Phase 68: Chat Read-Aloud Miso Surface
+
+Packet ACV connects the MisoTTS 8B read-aloud option to the visible Tutor chat
+surface instead of leaving it discoverable only in Settings/Admin, and pushes a
+StudyView mobile reachability fix discovered during browser QA.
+
+Current conservative brain-architecture completion estimate after final gates:
+about 99%.
+
+## Graphify Context
+
+- `graphify query "remaining brain architecture completion gaps provider proof
+receipt live OpenRouter Deepgram MisoTTS read aloud voice mode Admin export
+beta validation" --budget 16000 --graph graphify-out/graph.json` routed the
+  next useful local proof gap to provider proof receipts and beta diagnostics.
+- `graphify query "ChatPanel ttsVoice read aloud voice mode MisoTTS /api/tts
+voice option message playback settings" --budget 12000 --graph
+graphify-out/graph.json` routed this slice to `ChatPanel.tsx`,
+  `SettingsModal.tsx`, `StudyView.tsx`, store state, and MisoTTS read-aloud
+  tests.
+- Browser QA then surfaced a directly related mobile StudyView shell issue:
+  the chat action row could be below the first phone viewport, and the root
+  needed to be height-bound so its existing `overflow-y-auto` could scroll
+  inside the app shell.
+
+## Integration Decisions
+
+- Added `READ_ALOUD_VOICE_LABELS`, `getReadAloudVoiceLabel()`, and
+  `getReadAloudVoiceTooltip()` in `ChatPanel.tsx`.
+- Passed the selected `ttsVoice` into assistant `MessageItem` actions so the
+  existing Read Aloud button renders a provider badge and accessible label.
+- MisoTTS copy explicitly describes local HTTP read-aloud while leaving realtime
+  Live Voice on Deepgram; no second fallback button was added.
+- Changed the mobile StudyView root from `min-h-[100dvh]` to `h-full` with the
+  existing `overflow-y-auto`, making the chat action row reachable inside the
+  app-level `overflow-hidden` shell.
+- Added source-level regression checks for the chat Miso label and StudyView
+  mobile scroll shell.
+
+## Verification Evidence
+
+- `npm run format`: passed.
+- Direct touched-file Prettier check for `ChatPanel.tsx`, `StudyView.tsx`,
+  `tts-provider-routing.test.mjs`, and `study-view-upload.test.mjs`: passed.
+- `npm run test -- tests/tts-provider-routing.test.mjs
+tests/study-view-upload.test.mjs tests/beta-diagnostics.test.mjs`: passed via
+  the project runner, 177 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser desktop QA on `http://127.0.0.1:3001` confirmed exactly one
+  visible `Read aloud with MisoTTS 8B` button, not clipped, with Settings
+  persisting the MisoTTS selection.
+- In-app Browser phone QA at 390x844 confirmed the StudyView root is scrollable
+  and the same `Read aloud with MisoTTS 8B` control is visible without clipping.
+- Browser screenshots saved as `ACV-chat-read-aloud-miso-desktop.png` and
+  `ACV-chat-read-aloud-miso-phone.png`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1181 nodes, 2041 edges, and 78 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`85.7 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch references.
+
+## Remaining Work
+
+- Provision a larger executable Vast disk, preload MisoTTS 8B weights, launch
+  the local FastAPI wrapper, and capture real audio through the existing
+  `/api/tts?voice=miso-tts-8b` Read Aloud path.
+- Run deliberate provider-key typed chat and live voice turns with real
+  OpenRouter and Deepgram traffic, then confirm the coherent proof bundle.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 ## Vast MisoTTS Remote Evidence - 2026-06-04
 
 - Vast SSH access to `root@120.238.149.205:31651` is now working.
@@ -677,7 +752,7 @@ tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
   the read-aloud voice provider as blocked with the action to start the Vast API
   and confirm `/health` before claiming the 8B proof.
 - Verification: `npm run test -- tests/beta-diagnostics.test.mjs
-  tests/system-activity.test.mjs tests/tts-provider-routing.test.mjs` passed
+tests/system-activity.test.mjs tests/tts-provider-routing.test.mjs` passed
   through the project runner with 175 tests.
 - Verification: `npm run format:check`, `npm run lint`, and `npm run build`
   passed.

@@ -2594,6 +2594,27 @@ const MessageUsageFooter = ({
   );
 };
 
+const READ_ALOUD_VOICE_LABELS: Record<string, string> = {
+  "miso-tts-8b": "MisoTTS 8B",
+  "gpt-4o-mini-tts": "OpenAI TTS",
+  "aura-asteria-en": "Asteria",
+  "aura-luna-en": "Luna",
+  "aura-stella-en": "Stella",
+  "aura-athena-en": "Athena",
+};
+
+const getReadAloudVoiceLabel = (voice?: string) => {
+  return READ_ALOUD_VOICE_LABELS[voice || ""] || voice || "Asteria";
+};
+
+const getReadAloudVoiceTooltip = (voice?: string) => {
+  const label = getReadAloudVoiceLabel(voice);
+  if (voice === "miso-tts-8b") {
+    return "Read Aloud voice: MisoTTS 8B via local HTTP TTS. Live Voice still uses Deepgram.";
+  }
+  return `Read Aloud voice: ${label}.`;
+};
+
 const MessageItem = React.memo(
   ({
     msg,
@@ -2601,6 +2622,7 @@ const MessageItem = React.memo(
     isLast,
     animationsEnabled,
     isPlayingTTS,
+    ttsVoice,
     onSendMessage,
     onHandleTTS,
     onSetActiveView,
@@ -2614,6 +2636,7 @@ const MessageItem = React.memo(
     isLast?: boolean;
     animationsEnabled: boolean;
     isPlayingTTS: string | null;
+    ttsVoice: string;
     onSendMessage: (msg: string) => void;
     onHandleTTS: (id: string, content: string) => void;
     onSetActiveView: (view: string) => void;
@@ -2625,6 +2648,9 @@ const MessageItem = React.memo(
     const [isGeneratingFlashcards, setIsGeneratingFlashcards] =
       React.useState(false);
     const [isVoiceSessionOpen, setIsVoiceSessionOpen] = React.useState(false);
+    const readAloudVoiceLabel = getReadAloudVoiceLabel(ttsVoice);
+    const readAloudVoiceTooltip = getReadAloudVoiceTooltip(ttsVoice);
+    const isMisoReadAloudVoice = ttsVoice === "miso-tts-8b";
 
     const handleGenerateFlashcards = async () => {
       setIsGeneratingFlashcards(true);
@@ -2901,21 +2927,38 @@ const MessageItem = React.memo(
 
             <button
               onClick={() => onHandleTTS(msg.id, msg.content)}
-              className={`flex items-center gap-1.5 text-xs font-medium ml-auto px-3 py-1.5 rounded-lg transition-colors border shadow-sm ${
+              aria-label={
+                isPlayingTTS === msg.id
+                  ? `Stop reading with ${readAloudVoiceLabel}`
+                  : `Read aloud with ${readAloudVoiceLabel}`
+              }
+              title={readAloudVoiceTooltip}
+              className={`ml-auto flex max-w-full flex-wrap items-center justify-end gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium shadow-sm transition-colors ${
                 isPlayingTTS === msg.id
                   ? "text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100"
                   : "text-zinc-600 hover:text-zinc-900 bg-white hover:bg-zinc-50 border-black/10"
               }`}
             >
-              {isPlayingTTS === msg.id ? (
-                <>
-                  <Square size={12} className="fill-current" /> Stop Reading
-                </>
-              ) : (
-                <>
-                  <Volume2 size={12} /> Read Aloud
-                </>
-              )}
+              <span className="flex items-center gap-1.5">
+                {isPlayingTTS === msg.id ? (
+                  <>
+                    <Square size={12} className="fill-current" /> Stop Reading
+                  </>
+                ) : (
+                  <>
+                    <Volume2 size={12} /> Read Aloud
+                  </>
+                )}
+              </span>
+              <span
+                className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold leading-none ${
+                  isMisoReadAloudVoice
+                    ? "border-orange-200 bg-orange-50 text-orange-600"
+                    : "border-black/5 bg-zinc-50 text-zinc-400"
+                }`}
+              >
+                {readAloudVoiceLabel}
+              </span>
             </button>
           </div>
         )}
@@ -2928,6 +2971,7 @@ const MessageItem = React.memo(
       prevProps.sendState === nextProps.sendState &&
       prevProps.animationsEnabled === nextProps.animationsEnabled &&
       prevProps.isPlayingTTS === nextProps.isPlayingTTS &&
+      prevProps.ttsVoice === nextProps.ttsVoice &&
       prevProps.apiKey === nextProps.apiKey &&
       prevProps.activeBookId === nextProps.activeBookId &&
       prevProps.activeBookTitle === nextProps.activeBookTitle
@@ -6163,6 +6207,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               isLast={index === displayMessages.length - 1}
               animationsEnabled={animationsEnabled}
               isPlayingTTS={isPlayingTTS}
+              ttsVoice={ttsVoice}
               onSendMessage={sendMessage}
               onHandleTTS={handleTTS}
               onSetActiveView={setActiveView}

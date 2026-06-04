@@ -12,6 +12,10 @@ const settingsSource = readFileSync(
   `${repoRoot}/src/components/SettingsModal.tsx`,
   "utf8",
 );
+const chatPanelSource = readFileSync(
+  `${repoRoot}/src/components/ChatPanel.tsx`,
+  "utf8",
+);
 
 const startTutorApp = async () => {
   const { app } = await createTutorServerApp({ serveClient: false });
@@ -50,6 +54,13 @@ test("MisoTTS read-aloud option is available in settings", () => {
   assert.match(settingsSource, /miso-tts-8b/);
   assert.match(settingsSource, /MisoTTS 8B \(Vast local API\)/);
   assert.match(settingsSource, /MISO_TTS_API_URL/);
+});
+
+test("chat read-aloud control surfaces the selected MisoTTS voice", () => {
+  assert.match(chatPanelSource, /READ_ALOUD_VOICE_LABELS/);
+  assert.match(chatPanelSource, /"miso-tts-8b": "MisoTTS 8B"/);
+  assert.match(chatPanelSource, /Read aloud with/);
+  assert.match(chatPanelSource, /Live Voice still uses Deepgram/);
 });
 
 test("TTS route proxies the MisoTTS voice to the local tunneled API", async (t) => {

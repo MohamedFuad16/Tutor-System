@@ -673,6 +673,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "server.ts, src/components/SettingsModal.tsx, scripts/misotts_api_server.py, tests/tts-provider-routing.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACV",
+      "name": "Chat read-aloud Miso surface",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/components/ChatPanel.tsx, src/views/StudyView.tsx, tests/tts-provider-routing.test.mjs, tests/study-view-upload.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1779,11 +1786,26 @@
     "In-app Browser QA confirmed Admin Beta Diagnostics renders the blocked Read-aloud voice provider item on desktop 1280px and mobile 390px with zero warning/error console logs and no horizontal overflow",
     "Clean Graphify regeneration passed with 1177 nodes, 2036 edges, and 66 communities after removing generated server.mjs and .tmp-test scratch",
     "npm run graphify:tree passed for Packet ACU and wrote GRAPH_TREE.html at 85.4 KB",
-    "Graphify smoke paths confirmed AdminView() to buildBetaDiagnosticsSnapshot() and probeMisoTtsHealth() to misoTtsApiBaseUrl(); graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
+    "Graphify smoke paths confirmed AdminView() to buildBetaDiagnosticsSnapshot() and probeMisoTtsHealth() to misoTtsApiBaseUrl(); graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references",
+    "Packet ACV selected after Graphify routed the remaining MisoTTS/read-aloud surface work through ChatPanel.tsx, SettingsModal.tsx, StudyView.tsx, store state, and focused TTS routing tests",
+    "ChatPanel assistant message actions now show the selected read-aloud provider badge and accessible label, including Read aloud with MisoTTS 8B when miso-tts-8b is selected",
+    "MisoTTS tooltip copy clarifies that local HTTP TTS powers Read Aloud while Live Voice remains Deepgram, avoiding a fake realtime voice replacement claim",
+    "StudyView root is now height-bound and scrollable on mobile so the Tutor chat action row and composer remain reachable inside the app shell",
+    "tests/tts-provider-routing.test.mjs guards the chat MisoTTS label; tests/study-view-upload.test.mjs guards the mobile StudyView scroll shell",
+    "npm run test -- tests/tts-provider-routing.test.mjs tests/study-view-upload.test.mjs tests/beta-diagnostics.test.mjs passed through the project runner with 177 tests",
+    "npm run format:check passed for Packet ACV; direct touched-file Prettier check passed for ChatPanel, StudyView, and focused tests",
+    "npm run lint passed for Packet ACV",
+    "npm run build passed for Packet ACV",
+    "In-app Browser desktop QA confirmed exactly one visible Read aloud with MisoTTS 8B button with no clipping",
+    "In-app Browser phone QA at 390x844 confirmed the StudyView root scrolls and the Read aloud with MisoTTS 8B button is visible with no clipping",
+    "Browser QA screenshots saved as ACV-chat-read-aloud-miso-desktop.png and ACV-chat-read-aloud-miso-phone.png",
+    "graphify update . --force regenerated code architecture artifacts with 1181 nodes, 2041 edges, and 78 communities",
+    "npm run graphify:tree passed for Packet ACV and wrote GRAPH_TREE.html at 85.7 KB",
+    "Packet ACV graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACU: Admin can now expose the MisoTTS 8B route as a first-class beta readiness item backed by a real local /health meter instead of workflow notes only. Chat, voice, multi-PDF context injection, proof-attempt handoff, local TTS routing, Admin proof receipts, and Graphify code architecture refresh are wired locally. Remaining unproven gaps are the deliberate real OpenRouter plus Deepgram beta drill, broader beta validation, and a larger-disk Vast MisoTTS model preload/API audio proof; AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T05:42:39Z"
+    "basis": "Local architecture estimate after Packet ACV: chat, voice, multi-PDF context injection, proof-attempt handoff, local TTS routing, MisoTTS read-aloud selection/visibility, Admin proof receipts, provider meters, and Graphify code architecture refresh are wired locally. The remaining unproven gaps are the real OpenRouter plus Deepgram provider-key beta drill, broader beta validation, and a larger-disk Vast MisoTTS 8B model preload/API audio proof; AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T06:05:00Z"
   }
 }

@@ -24,8 +24,8 @@
     "hash": "ae90e6107ff18a6a52b72d819335c765"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/study-view-upload.test.mjs": {
-    "mtime": 1780492149.9888153,
-    "hash": "577db890258ac5b643c2f64e3a4ce6f2"
+    "mtime": 1780552518.3559349,
+    "hash": "3fc0cfc9038d3a57b77fb81de193481e"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/answer-evidence.test.mjs": {
     "mtime": 1780406453.1092412,
@@ -108,8 +108,8 @@
     "hash": "ef737debf8b312a4d1fdd078958ce0b5"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/tts-provider-routing.test.mjs": {
-    "mtime": 1780539667.461065,
-    "hash": "5472fc33f3bcf188f98cd551dca68475"
+    "mtime": 1780552186.4140313,
+    "hash": "cded7031f7dbe585b09589977a11eccf"
   },
   "/Users/mfuad16/Documents/LearningAI/server/web-search.ts": {
     "mtime": 1780146650.2537935,
@@ -300,8 +300,8 @@
     "hash": "9bc10b581e5bc65e134a855223d4989d"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/ChatPanel.tsx": {
-    "mtime": 1780538901.5529485,
-    "hash": "b4fb309311ec2c95c3e374f891b5e2b0"
+    "mtime": 1780552202.6737297,
+    "hash": "5da91fba06e3225f42b29a8646b06cca"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/AnimatedScrollText.tsx": {
     "mtime": 1779879420.319919,
@@ -364,8 +364,8 @@
     "hash": "2432d9319629449e3ad69e6cb4acd562"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/StudyView.tsx": {
-    "mtime": 1780538019.047758,
-    "hash": "0e2854912f0de4cf928cfa7294e66146"
+    "mtime": 1780552524.4187121,
+    "hash": "f4b733a0c5b6f031e0c8b693fcfe200a"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/RevisionView.tsx": {
     "mtime": 1780497851.6696131,

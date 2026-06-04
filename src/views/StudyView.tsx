@@ -959,18 +959,20 @@ export function StudyView() {
     if (!pdfFiles.length) return;
     const book = await ensureActiveBook();
     const now = Date.now();
-    const documentRecords = pdfFiles.map((file, index): LearningDocument => ({
-      id: `doc:${crypto.randomUUID()}`,
-      bookId: book.id,
-      title: file.name.replace(/\.pdf$/i, "").trim() || "Untitled PDF",
-      mimeType: file.type || "application/pdf",
-      size: file.size,
-      blob: file.slice(0, file.size, file.type || "application/pdf"),
-      processingStatus: "processing",
-      createdAt: now + index,
-      updatedAt: now + pdfFiles.length - index,
-      lastViewedPage: 1,
-    }));
+    const documentRecords = pdfFiles.map(
+      (file, index): LearningDocument => ({
+        id: `doc:${crypto.randomUUID()}`,
+        bookId: book.id,
+        title: file.name.replace(/\.pdf$/i, "").trim() || "Untitled PDF",
+        mimeType: file.type || "application/pdf",
+        size: file.size,
+        blob: file.slice(0, file.size, file.type || "application/pdf"),
+        processingStatus: "processing",
+        createdAt: now + index,
+        updatedAt: now + pdfFiles.length - index,
+        lastViewedPage: 1,
+      }),
+    );
     const activeUploadedDocumentId = documentRecords[0]?.id;
     await db.learningDocuments.bulkPut(documentRecords);
     await updateBookDocumentLinks(book.id, activeUploadedDocumentId || null);
@@ -1070,7 +1072,7 @@ export function StudyView() {
   }, [askTutorQuery]);
 
   return (
-    <div className="relative flex min-h-[100dvh] w-full flex-col gap-3 overflow-y-auto bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:h-[100dvh] xl:flex-row xl:gap-8 xl:overflow-hidden xl:px-8 xl:pb-8 xl:pt-24">
+    <div className="relative flex h-full w-full flex-col gap-3 overflow-y-auto bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:h-[100dvh] xl:flex-row xl:gap-8 xl:overflow-hidden xl:px-8 xl:pb-8 xl:pt-24">
       <div
         className={`relative flex w-full flex-1 shrink flex-col overflow-hidden rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B] shadow-2xl transition-[flex-basis,width,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] xl:h-full xl:min-h-0 ${
           pdfUrl

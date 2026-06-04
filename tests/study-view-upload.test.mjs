@@ -58,3 +58,14 @@ test("StudyView file inputs expose multi-PDF selection", () => {
 
   assert.equal(fileInputs.length, 2);
 });
+
+test("StudyView mobile shell stays height-bound and scrollable", () => {
+  assert.match(
+    studyViewSource,
+    /className="relative flex h-full w-full flex-col gap-3 overflow-y-auto/,
+  );
+  assert.doesNotMatch(
+    studyViewSource,
+    /relative flex min-h-\[100dvh\] w-full flex-col gap-3 overflow-y-auto/,
+  );
+});
