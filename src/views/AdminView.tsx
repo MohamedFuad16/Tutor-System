@@ -141,6 +141,14 @@ type SystemActivityPayload = {
   };
   meters: {
     providers: Record<string, boolean>;
+    providerDetails?: {
+      misoTts?: {
+        configured: boolean;
+        reachable: boolean;
+        status: number;
+        error?: string;
+      };
+    };
     graph: Record<string, string>;
     tuning: Record<string, string | number>;
   };
@@ -380,6 +388,7 @@ export function AdminView() {
     systemPrompt,
     apiKey,
     deepgramApiKey,
+    ttsVoice,
     activeLearningBookId,
     activeProject,
     pricing,
@@ -1017,7 +1026,12 @@ export function AdminView() {
     webSearches: webUsage.requests,
     brainFlow: brainFlowCoverage,
     coherentLiveProof,
-    runtimeSettings: brainRuntimeSettings,
+    runtimeSettings: {
+      ...brainRuntimeSettings,
+      ttsVoice,
+      providerMeters: activityPayload?.meters.providers || {},
+      providerDetails: activityPayload?.meters.providerDetails || {},
+    },
   });
   const providerKeyProofChecklist = useMemo(
     () =>

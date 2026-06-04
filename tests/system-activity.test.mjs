@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { once } from "node:events";
+import http from "node:http";
 import { WebSocket } from "ws";
 
 import { createTutorServerApp } from "../.tmp-test/server.mjs";
@@ -37,6 +38,22 @@ const readActivity = async (baseUrl) => {
   return response.json();
 };
 
+const startMisoHealthServer = async () => {
+  const server = http.createServer((req, res) => {
+    if (req.url === "/health") {
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ ok: true, modelLoaded: true }));
+      return;
+    }
+    res.statusCode = 404;
+    res.end("not found");
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const { port } = server.address();
+  return { server, baseUrl: `http://127.0.0.1:${port}` };
+};
+
 const waitForActivity = async (baseUrl, predicate) => {
   const deadline = Date.now() + 1500;
   while (Date.now() < deadline) {
@@ -61,6 +78,32 @@ test("system activity endpoint exposes local ledger metadata", async (t) => {
   assert.ok(Array.isArray(body.events));
   assert.ok(body.events.some((event) => event.kind === "system"));
   assert.equal(body.meters.graph.codeArchitecture, "Graphify");
+  assert.equal(body.meters.providers.misoTts, false);
+  assert.equal(body.meters.providerDetails.misoTts.configured, true);
+});
+
+test("system activity marks MisoTTS reachable when the local API health endpoint responds", async (t) => {
+  const previousMisoUrl = process.env.MISO_TTS_API_URL;
+  const miso = await startMisoHealthServer();
+  process.env.MISO_TTS_API_URL = miso.baseUrl;
+  t.after(() => {
+    miso.server.close();
+    if (previousMisoUrl === undefined) {
+      delete process.env.MISO_TTS_API_URL;
+    } else {
+      process.env.MISO_TTS_API_URL = previousMisoUrl;
+    }
+  });
+
+  const { server, baseUrl } = await startApp();
+  t.after(() => server.close());
+
+  const body = await readActivity(baseUrl);
+
+  assert.equal(body.meters.providers.misoTts, true);
+  assert.equal(body.meters.providerDetails.misoTts.configured, true);
+  assert.equal(body.meters.providerDetails.misoTts.reachable, true);
+  assert.equal(body.meters.providerDetails.misoTts.status, 200);
 });
 
 test("blocked chat requests are recorded without live model calls", async (t) => {

@@ -75,6 +75,7 @@ const ttsCostForModel = (model: string, characters: number) => {
 };
 
 const MISO_TTS_8B_VOICE = "miso-tts-8b";
+const MISO_TTS_HEALTH_TIMEOUT_MS = 800;
 
 const misoTtsApiBaseUrl = () => {
   const raw = (process.env.MISO_TTS_API_URL || "http://127.0.0.1:8080").trim();
@@ -83,6 +84,52 @@ const misoTtsApiBaseUrl = () => {
     throw new Error("MISO_TTS_API_URL must use http or https.");
   }
   return parsed.toString().replace(/\/+$/, "");
+};
+
+const probeMisoTtsHealth = async () => {
+  let baseUrl = "";
+  try {
+    baseUrl = misoTtsApiBaseUrl();
+  } catch (error) {
+    return {
+      configured: false,
+      reachable: false,
+      status: 0,
+      error: error instanceof Error ? error.message : "Invalid MisoTTS URL",
+    };
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    MISO_TTS_HEALTH_TIMEOUT_MS,
+  );
+  try {
+    const response = await fetch(`${baseUrl}/health`, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    return {
+      configured: true,
+      reachable: response.ok,
+      status: response.status,
+      error: response.ok ? "" : `HTTP ${response.status}`,
+    };
+  } catch (error) {
+    return {
+      configured: true,
+      reachable: false,
+      status: 0,
+      error:
+        error instanceof Error && error.name === "AbortError"
+          ? "Health probe timed out"
+          : error instanceof Error
+            ? error.message
+            : "MisoTTS health probe failed",
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
 };
 
 const voiceAgentCostForSeconds = (seconds: number) =>
@@ -730,7 +777,7 @@ export async function createTutorServerApp(
     res.status(204).end();
   });
 
-  app.get("/api/debug/system-activity", (req, res) => {
+  app.get("/api/debug/system-activity", async (req, res) => {
     applyDebugCors(req, res);
     if (!isAuthorizedDebugRequest(debugRequestLike(req))) {
       return res.status(403).json({
@@ -738,6 +785,8 @@ export async function createTutorServerApp(
           "Debug activity requires a trusted local request or debug token.",
       });
     }
+
+    const misoTtsHealth = await probeMisoTtsHealth();
 
     res.json({
       ok: true,
@@ -755,6 +804,15 @@ export async function createTutorServerApp(
           openRouterByok: true,
           serper: Boolean(sanitizeApiKey(process.env.SERPER_API_KEY)),
           deepgram: Boolean(sanitizeApiKey(process.env.DEEPGRAM_API_KEY)),
+          misoTts: misoTtsHealth.reachable,
+        },
+        providerDetails: {
+          misoTts: {
+            configured: misoTtsHealth.configured,
+            reachable: misoTtsHealth.reachable,
+            status: misoTtsHealth.status,
+            error: misoTtsHealth.error,
+          },
         },
         graph: {
           codeArchitecture: "Graphify",

@@ -2879,6 +2879,14 @@ export const buildBetaDiagnosticsSnapshot = (
       : counts.artifactRecords > 0
         ? "ready"
         : "watch";
+  const runtimeSettingsRecord = objectRecord(input.runtimeSettings) || {};
+  const selectedTtsVoice = metadataString(runtimeSettingsRecord, "ttsVoice");
+  const providerMeters =
+    objectRecord(runtimeSettingsRecord.providerMeters) || {};
+  const misoTtsSelected = selectedTtsVoice === "miso-tts-8b";
+  const misoTtsReachable = providerMeters.misoTts === true;
+  const readAloudVoiceStatus: BetaDiagnosticStatus =
+    misoTtsSelected && !misoTtsReachable ? "blocked" : "ready";
 
   const items = [
     item({
@@ -3057,6 +3065,24 @@ export const buildBetaDiagnosticsSnapshot = (
           : coherentLiveProof.status === "blocked"
             ? "Fix failed live rows before treating chat and voice as one coherent beta proof."
             : "Run typed chat and live voice against the same multi-PDF active book, then inspect the shared request bundle.",
+    }),
+    item({
+      id: "read_aloud_voice_provider",
+      title: "Read-aloud voice provider",
+      status: readAloudVoiceStatus,
+      summary: misoTtsSelected
+        ? misoTtsReachable
+          ? "MisoTTS 8B is selected and the local API health meter is reachable."
+          : "MisoTTS 8B is selected, but the local API health meter is not reachable."
+        : selectedTtsVoice
+          ? `Read-aloud is using ${selectedTtsVoice}; select MisoTTS 8B when running the local Vast voice proof.`
+          : "Read-aloud voice selection was not included in this diagnostics snapshot.",
+      count: misoTtsReachable ? 1 : 0,
+      action: misoTtsSelected
+        ? misoTtsReachable
+          ? "Run the Read Aloud flow and confirm the request timeline captures the MisoTTS route."
+          : "Start the Vast MisoTTS API and tunnel, then confirm /health before claiming the 8B voice proof."
+        : "Use this item to distinguish ordinary read-aloud readiness from the MisoTTS 8B beta proof.",
     }),
     item({
       id: "diagnostic_export",

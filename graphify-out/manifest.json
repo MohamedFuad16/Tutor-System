@@ -4,8 +4,8 @@
     "hash": "cbe4dd018d422f1967ab47ee905f39b0"
   },
   "/Users/mfuad16/Documents/LearningAI/server.ts": {
-    "mtime": 1780539626.9235268,
-    "hash": "cd5933e92d8f26026163f1aa0f38308f"
+    "mtime": 1780551832.9500833,
+    "hash": "ae948e6e9c7e10b54410146cb9542b89"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/memory-events.test.mjs": {
     "mtime": 1780488785.76721,
@@ -40,8 +40,8 @@
     "hash": "be2be37586d9355e4ce46bba0eced178"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/beta-diagnostics.test.mjs": {
-    "mtime": 1780508136.728732,
-    "hash": "dbd1ac41a799c6bf9bbe34dddd928832"
+    "mtime": 1780551343.3627875,
+    "hash": "8933a7f7ed85ad19125fd110b41142b7"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/document-ingest.test.mjs": {
     "mtime": 1780146650.2664282,
@@ -60,8 +60,8 @@
     "hash": "fe005f6b31772398d3cf5c8c89de6000"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/system-activity.test.mjs": {
-    "mtime": 1780494541.9610648,
-    "hash": "053d5af6207d55ae378d2038f4427541"
+    "mtime": 1780551839.5521245,
+    "hash": "65bd1381b57cc26be50bcc62d779439b"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/chat-thread-utils.test.mjs": {
     "mtime": 1780441127.5873094,
@@ -208,8 +208,8 @@
     "hash": "0f77529b6365cb91cf75b6d2533c0abc"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/beta.diagnostics.ts": {
-    "mtime": 1780508160.0974247,
-    "hash": "ab1a2f1140eab25576c2d08ff5ad5a77"
+    "mtime": 1780551315.7097487,
+    "hash": "10d51b219389dba41a301dd021bfad63"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/retrieval.events.ts": {
     "mtime": 1780386947.8736541,
@@ -376,8 +376,8 @@
     "hash": "e50d88f62d7d8cfd330de4cd2ff382ee"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AdminView.tsx": {
-    "mtime": 1780538224.567359,
-    "hash": "ac91c82128a7fdc58390bdb8e4122d15"
+    "mtime": 1780551301.0580404,
+    "hash": "baf569a23b50204750dca10d753b05ef"
   },
   "/Users/mfuad16/Documents/LearningAI/src/store/index.ts": {
     "mtime": 1780486458.8044205,

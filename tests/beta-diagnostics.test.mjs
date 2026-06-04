@@ -317,6 +317,40 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
   );
 });
 
+test("beta diagnostics expose MisoTTS read-aloud readiness without hiding the disk/API blocker", () => {
+  const blockedSnapshot = buildBetaDiagnosticsSnapshot({
+    learningBooks: 1,
+    memoryEvents: 1,
+    runtimeSettings: {
+      ttsVoice: "miso-tts-8b",
+      providerMeters: { misoTts: false },
+    },
+  });
+  const blockedItem = blockedSnapshot.items.find(
+    (item) => item.id === "read_aloud_voice_provider",
+  );
+
+  assert.equal(blockedSnapshot.overallStatus, "blocked");
+  assert.equal(blockedItem?.status, "blocked");
+  assert.match(blockedItem?.summary || "", /MisoTTS 8B is selected/);
+  assert.match(blockedItem?.action || "", /confirm \/health/);
+
+  const readySnapshot = buildBetaDiagnosticsSnapshot({
+    learningBooks: 1,
+    memoryEvents: 1,
+    runtimeSettings: {
+      ttsVoice: "miso-tts-8b",
+      providerMeters: { misoTts: true },
+    },
+  });
+  const readyItem = readySnapshot.items.find(
+    (item) => item.id === "read_aloud_voice_provider",
+  );
+
+  assert.equal(readyItem?.status, "ready");
+  assert.match(readyItem?.summary || "", /health meter is reachable/);
+});
+
 test("provider-key proof checklist separates key readiness from live proof", () => {
   const emptyFlow = buildBrainFlowCoverageFromLedgers();
   const checklist = buildProviderKeyProofChecklist({

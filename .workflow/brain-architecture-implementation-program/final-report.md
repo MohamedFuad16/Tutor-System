@@ -666,6 +666,32 @@ tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
   preserved, but live MisoTTS 8B API/audio QA requires a larger executable disk
   allocation before the model weights can be downloaded and loaded.
 
+## Packet ACU: MisoTTS Admin Readiness Meter - 2026-06-04
+
+- Added a server-side MisoTTS `/health` probe to the local system activity
+  endpoint. The provider meter now distinguishes an available TTS route from a
+  actually reachable local MisoTTS API.
+- Admin passes the selected `ttsVoice` and provider meters into beta
+  diagnostics, then renders a `Read-aloud voice provider` item.
+- When `miso-tts-8b` is selected and the local API is unreachable, Admin marks
+  the read-aloud voice provider as blocked with the action to start the Vast API
+  and confirm `/health` before claiming the 8B proof.
+- Verification: `npm run test -- tests/beta-diagnostics.test.mjs
+  tests/system-activity.test.mjs tests/tts-provider-routing.test.mjs` passed
+  through the project runner with 175 tests.
+- Verification: `npm run format:check`, `npm run lint`, and `npm run build`
+  passed.
+- Browser QA: Admin Beta Diagnostics rendered the new blocked MisoTTS readiness
+  item on desktop and mobile, with zero warning/error console logs and no
+  horizontal overflow at 1280px or 390px.
+- Graphify was clean-regenerated after removing generated scratch, yielding
+  1177 nodes, 2036 edges, and 66 communities; `npm run graphify:tree` wrote
+  `GRAPH_TREE.html` at 85.4 KB.
+- Graphify smoke checks confirmed `AdminView()` reaches
+  `buildBetaDiagnosticsSnapshot()`, `probeMisoTtsHealth()` reaches
+  `misoTtsApiBaseUrl()`, and the graph artifacts contain no `server.mjs`,
+  `.tmp-test`, `/private/tmp`, or `codex-runtimes` scratch references.
+
 ---
 
 # Packet ACL: Live Provider Proof Receipt

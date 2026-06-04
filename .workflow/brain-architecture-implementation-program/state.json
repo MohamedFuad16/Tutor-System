@@ -1765,11 +1765,25 @@
     "Remote MisoTTS environment imports passed with torch 2.4.0+cu121, torchaudio 2.4.0+cu121, CUDA true, NVIDIA GeForce RTX 3090, generator, silentcipher, transformers, huggingface_hub, moshi, bitsandbytes, torchtune, torchao, fastapi, and uvicorn",
     "MisoTTS 8B preload reached Hugging Face model resolution for MisoLabs/MisoTTS but reported an expected model file size of about 32752.53 MB against the current 32 GB container filesystem",
     "Moving the venv to /dev/shm made enough root space available but failed because /dev/shm is mounted noexec and Torch shared libraries could not map executable segments",
-    "The container refused a new executable tmpfs mount, so the venv was restored to /root/MisoTTS/.venv; live MisoTTS API/audio QA now requires a larger executable disk allocation before downloading the 8B weights"
+    "The container refused a new executable tmpfs mount, so the venv was restored to /root/MisoTTS/.venv; live MisoTTS API/audio QA now requires a larger executable disk allocation before downloading the 8B weights",
+    "Packet ACU selected after Graphify routed MisoTTS/Admin readiness work through server.ts, AdminView.tsx, beta.diagnostics.ts, system-activity tests, and beta-diagnostics tests",
+    "server.ts now probes the local MisoTTS /health endpoint and exposes misoTtsConfigured plus misoTts provider meters through /api/debug/system-activity",
+    "AdminView now threads the selected ttsVoice and provider meters into buildBetaDiagnosticsSnapshot",
+    "buildBetaDiagnosticsSnapshot now emits a Read-aloud voice provider diagnostic item that blocks only when MisoTTS 8B is selected and the health meter is unreachable",
+    "tests/beta-diagnostics.test.mjs covers the blocked and reachable MisoTTS diagnostic states",
+    "tests/system-activity.test.mjs covers default unreachable MisoTTS meters and a reachable local /health stub",
+    "npm run test -- tests/beta-diagnostics.test.mjs tests/system-activity.test.mjs tests/tts-provider-routing.test.mjs passed through the project runner with 175 tests",
+    "npm run format:check passed for Packet ACU",
+    "npm run lint passed for Packet ACU",
+    "npm run build passed for Packet ACU",
+    "In-app Browser QA confirmed Admin Beta Diagnostics renders the blocked Read-aloud voice provider item on desktop 1280px and mobile 390px with zero warning/error console logs and no horizontal overflow",
+    "Clean Graphify regeneration passed with 1177 nodes, 2036 edges, and 66 communities after removing generated server.mjs and .tmp-test scratch",
+    "npm run graphify:tree passed for Packet ACU and wrote GRAPH_TREE.html at 85.4 KB",
+    "Graphify smoke paths confirmed AdminView() to buildBetaDiagnosticsSnapshot() and probeMisoTtsHealth() to misoTtsApiBaseUrl(); graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packets ACS and ACT final gates: Admin can start a proof attempt, load typed-chat and live-voice proof prompts into ChatPanel, staged voice proof text queues and flushes after websocket auth, chat/read-aloud TTS settings can select MisoTTS 8B through the existing local /api/tts route, and the code architecture graph has been regenerated cleanly. Vast SSH and dependency installation now work, but MisoTTS 8B live audio QA is blocked by the rented container's 32 GB executable root disk, which cannot fit the 32.8 GB model blob plus the Torch runtime. Remaining unproven gaps are the deliberate real OpenRouter plus Deepgram beta drill, broader beta validation, and a larger-disk Vast MisoTTS model preload/API proof; AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T05:22:08Z"
+    "basis": "Local architecture estimate after Packet ACU: Admin can now expose the MisoTTS 8B route as a first-class beta readiness item backed by a real local /health meter instead of workflow notes only. Chat, voice, multi-PDF context injection, proof-attempt handoff, local TTS routing, Admin proof receipts, and Graphify code architecture refresh are wired locally. Remaining unproven gaps are the deliberate real OpenRouter plus Deepgram beta drill, broader beta validation, and a larger-disk Vast MisoTTS model preload/API audio proof; AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T05:42:39Z"
   }
 }
