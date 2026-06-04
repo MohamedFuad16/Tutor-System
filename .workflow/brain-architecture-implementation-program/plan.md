@@ -213,3 +213,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   expose a local ChatPanel HUD that shows the active attempt, active book, ready
   PDF count, chat capture, voice capture, and local OpenRouter/Deepgram key
   states before the real provider drill runs.
+- ACQ: Live proof prompt handoff. Add an Admin-to-Study handoff that starts from
+  the exact typed-chat provider proof prompt, opens ChatPanel, focuses the
+  prompt, and keeps the active proof attempt/multi-PDF HUD visible before the
+  user sends real provider traffic.

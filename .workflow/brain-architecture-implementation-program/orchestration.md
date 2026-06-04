@@ -49,6 +49,7 @@
 - Packet ACN: See `packets/ACN-source-ready-beta-proof-gate.md`.
 - Packet ACO: See `packets/ACO-live-provider-drill-preflight.md`.
 - Packet ACP: See `packets/ACP-chat-voice-proof-capture-hud.md`.
+- Packet ACQ: See `packets/ACQ-live-proof-prompt-handoff.md`.
 
 ## Completion Audit
 

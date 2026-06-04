@@ -1690,11 +1690,29 @@
     "Graphify smoke query found ChatPanel(), ChatPanel.tsx, AdminView.tsx, index.ts, beta-diagnostics.test.mjs, and connected proof/store/Admin nodes",
     "graphify path ChatPanel() to recordModelRunEvent found a two-hop route through ChatPanel.tsx",
     "graphify path ChatPanel() to buildBrainContextPacket found a two-hop route through ChatPanel.tsx",
-    "Packet ACP graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
+    "Packet ACP graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references",
+    "Packet ACQ selected after Graphify CLI routed the live provider proof handoff through AdminView.tsx, StudyView.tsx, ChatPanel.tsx, store state, beta diagnostics, and provider-key proof nodes",
+    "Admin Beta Diagnostics now exposes Load in chat on the typed-chat provider proof prompt after a proof attempt is active",
+    "StudyView opens ChatPanel when Admin queues a tutor prompt through askTutorQuery",
+    "ChatPanel inserts the queued provider proof prompt, focuses the textarea on the next animation frame, and marks the proof HUD with Proof prompt loaded",
+    "Added tests/live-proof-prompt-handoff.test.mjs for the Admin, StudyView, and ChatPanel handoff contract",
+    "Added phase74-live-proof-prompt-handoff-qa.mjs plus desktop/mobile screenshots for the rendered Admin-to-Chat proof prompt handoff",
+    "npm run format passed for Packet ACQ",
+    "npm run test -- tests/live-proof-prompt-handoff.test.mjs tests/voice-proof-attempt-latch.test.mjs passed via the project runner, 171 tests",
+    "npm run format:check passed for Packet ACQ",
+    "npm run lint passed for Packet ACQ",
+    "npm run build passed for Packet ACQ",
+    "Headless Chrome QA via phase74-live-proof-prompt-handoff-qa.mjs confirmed desktop/mobile Admin -> Beta Diagnostics -> Start proof attempt -> Load in chat, then ChatPanel rendered Live proof capture, active attempt, active book, ready PDFs 2, Proof prompt loaded, OpenRouter/Deepgram key states, focused textarea, no horizontal overflow, and zero console logs",
+    "Clean graphify update . --force regenerated code architecture artifacts with 1157 nodes, 2012 edges, and 64 communities",
+    "npm run graphify:tree passed for Packet ACQ and wrote GRAPH_TREE.html at 84.4 KB",
+    "Graphify smoke query found ChatPanel(), StudyView(), AdminView.tsx, StudyView.tsx, ChatPanel.tsx, index.ts, and connected store/Admin/Study/Chat nodes",
+    "graphify path AdminView() to ChatPanel() found a two-hop route through useStore",
+    "graphify path AdminView() to StudyView() found a two-hop route through useMotionPreference()",
+    "Packet ACQ graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACP local gates: Admin can prove setup readiness through the live provider drill preflight, and ChatPanel now visibly latches active proof attempts into the chat/voice run surface before provider traffic. The remaining unproven gap is still the deliberate real OpenRouter plus Deepgram beta drill that records non-seeded live provider rows with sourceKind local_live_ledger, sourceReadyForBeta true, and betaProofReady true, plus broader beta validation; AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-03T23:43:15Z"
+    "basis": "Local architecture estimate after Packet ACQ local gates: Admin can start a proof attempt and load the exact typed-chat provider proof prompt into the live Study/Chat surface with active book, multi-PDF readiness, proof attempt, provider-key state, and focused composer visible. The remaining unproven gap is still the deliberate real OpenRouter plus Deepgram beta drill that records non-seeded live provider rows with sourceKind local_live_ledger, sourceReadyForBeta true, and betaProofReady true, plus broader beta validation; AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T01:50:27Z"
   }
 }

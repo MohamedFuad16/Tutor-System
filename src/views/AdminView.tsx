@@ -392,6 +392,7 @@ export function AdminView() {
     activeBetaProofAttemptId,
     setActiveBetaProofAttemptId,
     clearActiveBetaProofAttempt,
+    setAskTutorQuery,
   } = useStore();
   const motionEnabled = useMotionPreference();
   const [traceLimit, setTraceLimit] = useState(TRACE_PAGE_SIZE);
@@ -1104,6 +1105,10 @@ export function AdminView() {
     if (proofAttemptId) {
       recordProofAttemptLifecycle("beta_proof_attempt_cleared", proofAttemptId);
     }
+  };
+  const loadLiveProofChatPrompt = (prompt: string) => {
+    setAskTutorQuery(prompt);
+    setActiveView("study");
   };
   const brainWiringRehearsalGap = useMemo(
     () =>
@@ -5112,6 +5117,18 @@ export function AdminView() {
                                   exact prompt
                                 </span>
                               </div>
+                              {prompt.layer === "chat" && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    loadLiveProofChatPrompt(prompt.prompt)
+                                  }
+                                  disabled={!activeBetaProofAttemptId}
+                                  className="mt-3 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-400"
+                                >
+                                  Load in chat
+                                </button>
+                              )}
                               <p className="mt-3 rounded-xl border border-cyan-100 bg-cyan-50/60 px-3 py-2 text-xs leading-relaxed text-zinc-700 font-serif">
                                 {prompt.prompt}
                               </p>

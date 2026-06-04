@@ -581,6 +581,7 @@ export function StudyView() {
   const setSelectedTextContext = useStore(
     (state) => state.setSelectedTextContext,
   );
+  const askTutorQuery = useStore((state) => state.askTutorQuery);
   const [isDragging, setIsDragging] = useState(false);
   const [isIngesting, setIsIngesting] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(Boolean(pdfUrl));
@@ -1061,6 +1062,12 @@ export function StudyView() {
       0.42,
     );
   }, [isChatOpen, motionEnabled, pdfUrl]);
+
+  useEffect(() => {
+    if (askTutorQuery.trim()) {
+      setIsChatOpen(true);
+    }
+  }, [askTutorQuery]);
 
   return (
     <div className="relative flex min-h-[100dvh] w-full flex-col gap-3 overflow-y-auto bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:h-[100dvh] xl:flex-row xl:gap-8 xl:overflow-hidden xl:px-8 xl:pb-8 xl:pt-24">

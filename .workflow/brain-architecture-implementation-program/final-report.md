@@ -14,6 +14,89 @@
 
 ## Reusable Follow-up
 
+# Packet ACQ: Live Proof Prompt Handoff
+
+## Status
+
+Completed through focused source, test, build, desktop/mobile browser QA, and
+Graphify regeneration/smoke checks.
+
+Current conservative brain-architecture completion estimate after ACQ:
+about 99%.
+
+## Graphify Context
+
+- The repo-local Graphify CLI routed this slice through
+  `src/views/AdminView.tsx`, `src/views/StudyView.tsx`,
+  `src/components/ChatPanel.tsx`, `src/store/index.ts`,
+  `src/memory/beta.diagnostics.ts`, `tests/voice-proof-attempt-latch.test.mjs`,
+  and provider-key proof diagnostics nodes.
+- Graphify path `buildProviderKeyProofChecklist()` to `ChatPanel()` connected
+  Admin diagnostics to ChatPanel through `AdminView.tsx` and `useStore`.
+- Graphify path `buildLiveBetaProofReceipt()` to `ChatPanel()` connected the
+  receipt builder to the same Admin/store/ChatPanel handoff path.
+
+## Integration Decisions
+
+- Reused the existing `askTutorQuery` store field instead of creating a new
+  drill-prompt schema.
+- Admin now renders `Load in chat` on the typed-chat proof prompt; the action is
+  disabled until a proof attempt exists.
+- StudyView opens ChatPanel when a queued tutor prompt exists, so Admin can
+  route the proof prompt into the live chat surface even after view changes.
+- ChatPanel inserts the prompt, focuses the textarea on the next animation
+  frame, and shows `Proof prompt loaded` in the proof HUD.
+- The handoff remains local-only: it does not call providers, show keys, change
+  Dexie schema, or mark beta proof ready.
+
+## Verification Evidence
+
+- `npm run format -- src/components/ChatPanel.tsx src/views/AdminView.tsx
+src/views/StudyView.tsx tests/live-proof-prompt-handoff.test.mjs
+tests/voice-proof-attempt-latch.test.mjs`: passed.
+- `npm run test -- tests/live-proof-prompt-handoff.test.mjs
+tests/voice-proof-attempt-latch.test.mjs`: passed through the project runner,
+  171 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Headless Chrome QA via `phase74-live-proof-prompt-handoff-qa.mjs` confirmed
+  desktop and mobile could click Admin, open Beta Diagnostics, start a proof
+  attempt, load the typed proof prompt into ChatPanel, and see the live proof
+  HUD with active attempt, active book, ready PDFs 2, provider key states,
+  `Proof prompt loaded`, focused textarea, no horizontal overflow, and zero
+  console logs.
+- Browser screenshots were saved as
+  `ACQ-live-proof-prompt-handoff-desktop.png` and
+  `ACQ-live-proof-prompt-handoff-mobile.png`; JSON evidence was saved as
+  `phase74-live-proof-prompt-handoff-qa.json`.
+- `graphify update . --force`: passed, regenerating clean code architecture
+  artifacts with 1157 nodes, 2012 edges, and 64 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`84.4 KB`).
+- Graphify smoke query found `ChatPanel()`, `StudyView()`, `AdminView.tsx`,
+  `StudyView.tsx`, `ChatPanel.tsx`, `index.ts`, and connected
+  store/Admin/Study/Chat nodes.
+- Graphify path `AdminView()` to `ChatPanel()` found a connected two-hop route
+  through `useStore`.
+- Graphify path `AdminView()` to `StudyView()` found a connected two-hop route
+  through `useMotionPreference()`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch references.
+
+## Remaining Work
+
+- Send the loaded typed-chat provider proof prompt through the real OpenRouter
+  model path, then run the live-voice Deepgram proof script in the same active
+  book/proof attempt.
+- Verify the resulting receipt is `sourceKind: local_live_ledger`,
+  `sourceReadyForBeta: true`, and `betaProofReady: true`.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
+---
+
 # Packet ACP: Chat/Voice Proof Capture HUD
 
 ## Status
