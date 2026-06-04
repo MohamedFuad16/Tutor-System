@@ -3179,6 +3179,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const hasLoadedProofPrompt = Boolean(
     activeBetaProofAttemptId && /Provider-key proof turn/i.test(input),
   );
+  const hasLoadedVoiceProofScript = Boolean(
+    activeBetaProofAttemptId && /Provider-key voice proof turn/i.test(input),
+  );
   const buildVoiceStudyContext = useCallback(async () => {
     const contextQuery = [
       `Voice tutoring session for ${activeLearningBookTitle || activeProject}.`,
@@ -5786,6 +5789,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
   const handleSend = () => {
     if (!input.trim()) return;
+    if (hasLoadedVoiceProofScript && voiceState === "idle") {
+      startVoice();
+      textareaRef.current?.focus();
+      return;
+    }
     const currentInput = input;
     handleInputChange("");
     if (
@@ -6200,6 +6208,16 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     {hasLoadedProofPrompt && (
                       <span className="rounded-full border border-cyan-300/25 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-cyan-200">
                         Proof prompt loaded
+                      </span>
+                    )}
+                    {hasLoadedVoiceProofScript && (
+                      <span className="rounded-full border border-violet-300/25 bg-violet-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-violet-200">
+                        Voice script loaded
+                      </span>
+                    )}
+                    {hasLoadedVoiceProofScript && voiceState === "idle" && (
+                      <span className="rounded-full border border-amber-300/30 bg-amber-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-200">
+                        Start voice first
                       </span>
                     )}
                     <span

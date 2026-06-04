@@ -11,15 +11,16 @@ const chatPanelSource = readFileSync(
   "utf8",
 );
 
-test("Admin can load the typed provider proof prompt into ChatPanel", () => {
+test("Admin can load provider proof prompts into ChatPanel", () => {
   assert.match(adminSource, /setAskTutorQuery,/);
   assert.match(
     adminSource,
-    /const loadLiveProofChatPrompt = \(prompt: string\) => \{/,
+    /const loadLiveProofPrompt = \(prompt: string\) => \{/,
   );
   assert.match(adminSource, /setAskTutorQuery\(prompt\);/);
   assert.match(adminSource, /setActiveView\("study"\);/);
   assert.match(adminSource, /Load in chat/);
+  assert.match(adminSource, /Load voice script/);
   assert.match(adminSource, /disabled=\{!activeBetaProofAttemptId\}/);
 });
 
@@ -36,6 +37,13 @@ test("StudyView opens ChatPanel when Admin queues a tutor prompt", () => {
 
 test("ChatPanel consumes and focuses queued live proof prompts", () => {
   assert.match(chatPanelSource, /Provider-key proof turn/i);
+  assert.match(chatPanelSource, /Provider-key voice proof turn/i);
   assert.match(chatPanelSource, /textareaRef\.current\?\.focus\(\);/);
   assert.match(chatPanelSource, /Proof prompt loaded/);
+  assert.match(chatPanelSource, /Voice script loaded/);
+  assert.match(chatPanelSource, /Start voice first/);
+  assert.match(
+    chatPanelSource,
+    /if \(hasLoadedVoiceProofScript && voiceState === "idle"\) \{/,
+  );
 });

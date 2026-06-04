@@ -1708,11 +1708,28 @@
     "Graphify smoke query found ChatPanel(), StudyView(), AdminView.tsx, StudyView.tsx, ChatPanel.tsx, index.ts, and connected store/Admin/Study/Chat nodes",
     "graphify path AdminView() to ChatPanel() found a two-hop route through useStore",
     "graphify path AdminView() to StudyView() found a two-hop route through useMotionPreference()",
-    "Packet ACQ graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
+    "Packet ACQ graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references",
+    "Packet ACR selected after Graphify CLI routed live voice proof script handoff work through AdminView.tsx, ChatPanel.tsx, StudyView.tsx, store state, and provider-key proof drill nodes",
+    "Admin Beta Diagnostics now exposes Load voice script on the live-voice provider proof prompt after a proof attempt is active",
+    "ChatPanel now recognizes the staged Provider-key voice proof turn, marks the proof HUD with Voice script loaded and Start voice first, and starts voice instead of sending the script as typed chat while voice is idle",
+    "Extended tests/live-proof-prompt-handoff.test.mjs for the voice-script handoff contract",
+    "Added phase75-live-voice-script-handoff-qa.mjs plus desktop/mobile screenshots for the rendered Admin-to-Chat voice script handoff",
+    "npm run format passed for Packet ACR",
+    "npm run test -- tests/live-proof-prompt-handoff.test.mjs tests/voice-proof-attempt-latch.test.mjs passed via the project runner, 171 tests",
+    "npm run format:check passed for Packet ACR",
+    "npm run lint passed for Packet ACR",
+    "npm run build passed for Packet ACR",
+    "Headless Chrome QA via phase75-live-voice-script-handoff-qa.mjs confirmed desktop/mobile Admin -> Beta Diagnostics -> Start proof attempt -> Load voice script, then ChatPanel rendered Live proof capture, active attempt, active book, ready PDFs 2, Voice script loaded, Start voice first, OpenRouter/Deepgram key states, focused textarea, no horizontal overflow, and zero console logs",
+    "Clean graphify update . --force regenerated code architecture artifacts with 1157 nodes, 2012 edges, and 64 communities",
+    "npm run graphify:tree passed for Packet ACR and wrote GRAPH_TREE.html at 84.4 KB",
+    "Graphify smoke query found AdminView(), ChatPanel(), ChatPanel.tsx, AdminView.tsx, beta.diagnostics.ts, index.ts, and connected proof/store/Admin/Chat nodes",
+    "graphify path AdminView() to ChatPanel() found a two-hop route through useStore",
+    "graphify path ChatPanel() to useStore found a direct call route",
+    "Packet ACR graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACQ local gates: Admin can start a proof attempt and load the exact typed-chat provider proof prompt into the live Study/Chat surface with active book, multi-PDF readiness, proof attempt, provider-key state, and focused composer visible. The remaining unproven gap is still the deliberate real OpenRouter plus Deepgram beta drill that records non-seeded live provider rows with sourceKind local_live_ledger, sourceReadyForBeta true, and betaProofReady true, plus broader beta validation; AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T01:50:27Z"
+    "basis": "Local architecture estimate after Packet ACR local gates: Admin can start a proof attempt and load both the exact typed-chat provider proof prompt and the live-voice proof script into the live Study/Chat surface with active book, multi-PDF readiness, proof attempt, provider-key state, and focused composer visible. The remaining unproven gap is still the deliberate real OpenRouter plus Deepgram beta drill that records non-seeded live provider rows with sourceKind local_live_ledger, sourceReadyForBeta true, and betaProofReady true, plus broader beta validation; AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T01:59:35Z"
   }
 }

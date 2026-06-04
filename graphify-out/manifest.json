@@ -48,8 +48,8 @@
     "hash": "b24dd32b0eb5b60c255a76ce2366646b"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/live-proof-prompt-handoff.test.mjs": {
-    "mtime": 1780530715.1488376,
-    "hash": "df22fa60303e6283efb49ebdd18a6acf"
+    "mtime": 1780538224.872961,
+    "hash": "8fdfa3276ae1c1341c532cd9f9abaa59"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/flashcard-concepts.test.mjs": {
     "mtime": 1780406453.1562533,
@@ -292,8 +292,8 @@
     "hash": "9bc10b581e5bc65e134a855223d4989d"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/ChatPanel.tsx": {
-    "mtime": 1780537649.0103302,
-    "hash": "b32d9f14841d7becf5ed4fe8fd6759bc"
+    "mtime": 1780538224.7243047,
+    "hash": "d54b316056a44a296f99f5fa877c4e1e"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/AnimatedScrollText.tsx": {
     "mtime": 1779879420.319919,
@@ -356,8 +356,8 @@
     "hash": "2432d9319629449e3ad69e6cb4acd562"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/StudyView.tsx": {
-    "mtime": 1780530726.3174121,
-    "hash": "bb44187e7fbf101a24a3549fb444b6ea"
+    "mtime": 1780538019.047758,
+    "hash": "0e2854912f0de4cf928cfa7294e66146"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/RevisionView.tsx": {
     "mtime": 1780497851.6696131,
@@ -368,8 +368,8 @@
     "hash": "e50d88f62d7d8cfd330de4cd2ff382ee"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AdminView.tsx": {
-    "mtime": 1780530714.6851928,
-    "hash": "d99829aa9cee101901f49410d79b658e"
+    "mtime": 1780538224.567359,
+    "hash": "ac91c82128a7fdc58390bdb8e4122d15"
   },
   "/Users/mfuad16/Documents/LearningAI/src/store/index.ts": {
     "mtime": 1780486458.8044205,

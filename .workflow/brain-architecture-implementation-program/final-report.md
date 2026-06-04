@@ -14,6 +14,88 @@
 
 ## Reusable Follow-up
 
+# Packet ACR: Live Voice Script Handoff
+
+## Status
+
+Completed through focused source, test, build, desktop/mobile browser QA, and
+Graphify regeneration/smoke checks.
+
+Current conservative brain-architecture completion estimate after ACR:
+about 99%.
+
+## Graphify Context
+
+- The repo-local Graphify CLI routed this slice through
+  `src/views/AdminView.tsx`, `src/components/ChatPanel.tsx`,
+  `src/views/StudyView.tsx`, `src/store/index.ts`,
+  `tests/live-proof-prompt-handoff.test.mjs`,
+  `tests/voice-proof-attempt-latch.test.mjs`, and provider-key proof drill
+  nodes.
+- Graphify path `AdminView()` to `ChatPanel()` connected the handoff through
+  shared `useStore`.
+- Graphify did not extract `sendVoiceText` as a standalone node, so ChatPanel's
+  source slice and the focused test guard the voice-script send behavior.
+
+## Integration Decisions
+
+- Reused the existing `askTutorQuery` handoff path for voice, keeping the slice
+  schema-free.
+- Admin now renders `Load voice script` for the live-voice proof prompt; the
+  action is disabled until a proof attempt exists.
+- ChatPanel now recognizes `Provider-key voice proof turn`, shows `Voice script
+loaded`, and tells the user to start voice first.
+- Pressing send with the staged voice script while voice is idle starts voice
+  instead of sending the script as typed chat.
+- The handoff remains local-only: it does not call providers, show keys, change
+  Dexie schema, or mark beta proof ready.
+
+## Verification Evidence
+
+- `npm run format -- src/views/AdminView.tsx src/components/ChatPanel.tsx
+tests/live-proof-prompt-handoff.test.mjs tests/voice-proof-attempt-latch.test.mjs`:
+  passed.
+- `npm run test -- tests/live-proof-prompt-handoff.test.mjs
+tests/voice-proof-attempt-latch.test.mjs`: passed through the project runner,
+  171 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Headless Chrome QA via `phase75-live-voice-script-handoff-qa.mjs` confirmed
+  desktop and mobile could click Admin, open Beta Diagnostics, start a proof
+  attempt, load the live-voice proof script into ChatPanel, and see the live
+  proof HUD with active attempt, active book, ready PDFs 2, provider key states,
+  `Voice script loaded`, `Start voice first`, focused textarea, no horizontal
+  overflow, and zero console logs.
+- Browser screenshots were saved as `ACR-live-voice-script-handoff-desktop.png`
+  and `ACR-live-voice-script-handoff-mobile.png`; JSON evidence was saved as
+  `phase75-live-voice-script-handoff-qa.json`.
+- `graphify update . --force`: passed, regenerating clean code architecture
+  artifacts with 1157 nodes, 2012 edges, and 64 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`84.4 KB`).
+- Graphify smoke query found `AdminView()`, `ChatPanel()`, `ChatPanel.tsx`,
+  `AdminView.tsx`, `beta.diagnostics.ts`, `index.ts`, and connected
+  proof/store/Admin/Chat nodes.
+- Graphify path `AdminView()` to `ChatPanel()` found a connected two-hop route
+  through `useStore`.
+- Graphify path `ChatPanel()` to `useStore` found a direct call route.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch references.
+
+## Remaining Work
+
+- Send the loaded typed-chat provider proof prompt through the real OpenRouter
+  model path, then start live voice and send or speak the staged Deepgram proof
+  script in the same active book/proof attempt.
+- Verify the resulting receipt is `sourceKind: local_live_ledger`,
+  `sourceReadyForBeta: true`, and `betaProofReady: true`.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
+---
+
 # Packet ACQ: Live Proof Prompt Handoff
 
 ## Status

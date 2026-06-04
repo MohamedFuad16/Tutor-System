@@ -217,3 +217,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   the exact typed-chat provider proof prompt, opens ChatPanel, focuses the
   prompt, and keeps the active proof attempt/multi-PDF HUD visible before the
   user sends real provider traffic.
+- ACR: Live voice script handoff. Add the matching Admin-to-Study handoff for
+  the live-voice proof script, mark it in the ChatPanel proof HUD, and prevent
+  the staged voice script from being accidentally submitted as typed chat before
+  voice mode is active.

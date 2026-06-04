@@ -1106,7 +1106,7 @@ export function AdminView() {
       recordProofAttemptLifecycle("beta_proof_attempt_cleared", proofAttemptId);
     }
   };
-  const loadLiveProofChatPrompt = (prompt: string) => {
+  const loadLiveProofPrompt = (prompt: string) => {
     setAskTutorQuery(prompt);
     setActiveView("study");
   };
@@ -5121,12 +5121,24 @@ export function AdminView() {
                                 <button
                                   type="button"
                                   onClick={() =>
-                                    loadLiveProofChatPrompt(prompt.prompt)
+                                    loadLiveProofPrompt(prompt.prompt)
                                   }
                                   disabled={!activeBetaProofAttemptId}
                                   className="mt-3 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-400"
                                 >
                                   Load in chat
+                                </button>
+                              )}
+                              {prompt.layer === "voice" && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    loadLiveProofPrompt(prompt.prompt)
+                                  }
+                                  disabled={!activeBetaProofAttemptId}
+                                  className="mt-3 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-violet-700 transition-colors hover:border-violet-300 hover:bg-violet-100 disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-400"
+                                >
+                                  Load voice script
                                 </button>
                               )}
                               <p className="mt-3 rounded-xl border border-cyan-100 bg-cyan-50/60 px-3 py-2 text-xs leading-relaxed text-zinc-700 font-serif">

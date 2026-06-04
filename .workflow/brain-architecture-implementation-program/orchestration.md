@@ -50,6 +50,7 @@
 - Packet ACO: See `packets/ACO-live-provider-drill-preflight.md`.
 - Packet ACP: See `packets/ACP-chat-voice-proof-capture-hud.md`.
 - Packet ACQ: See `packets/ACQ-live-proof-prompt-handoff.md`.
+- Packet ACR: See `packets/ACR-live-voice-script-handoff.md`.
 
 ## Completion Audit
 

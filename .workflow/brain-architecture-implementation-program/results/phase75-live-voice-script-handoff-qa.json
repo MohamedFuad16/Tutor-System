@@ -1,0 +1,40 @@
+[
+  {
+    "surface": "admin-to-chat",
+    "label": "desktop",
+    "width": 1440,
+    "height": 1000,
+    "scrollWidth": 1440,
+    "hasHud": true,
+    "hasAttempt": true,
+    "hasBook": true,
+    "hasVoiceScriptLoaded": true,
+    "hasStartVoiceFirst": true,
+    "hasReadyPdfs": true,
+    "hasOpenRouterKey": true,
+    "hasDeepgramKey": true,
+    "textareaHasPrompt": true,
+    "textareaFocused": true,
+    "hudSnippet": "Live proof captureChat and voice rows will save under attempt beta-mpyuj8s4-92415207 for ACR Voice Script Book.Ready PDFs 2Chat capture onVoice script loadedStart voice firstVoice capture readyOpenRouter key setDeepgram key setProvider-key voice proof turn. On this same active book and proof attempt, use all ready PDFs in context. Ask me one short active-recall question that connects two PDFs, then evaluate my spoken",
+    "consoleLogs": []
+  },
+  {
+    "surface": "admin-to-chat",
+    "label": "mobile",
+    "width": 390,
+    "height": 844,
+    "scrollWidth": 390,
+    "hasHud": true,
+    "hasAttempt": true,
+    "hasBook": true,
+    "hasVoiceScriptLoaded": true,
+    "hasStartVoiceFirst": true,
+    "hasReadyPdfs": true,
+    "hasOpenRouterKey": true,
+    "hasDeepgramKey": true,
+    "textareaHasPrompt": true,
+    "textareaFocused": true,
+    "hudSnippet": "Live proof captureChat and voice rows will save under attempt beta-mpyujb3q-e19004b1 for ACR Voice Script Book.Ready PDFs 2Chat capture onVoice script loadedStart voice firstVoice capture readyOpenRouter key setDeepgram key setProvider-key voice proof turn. On this same active book and proof attempt, use all ready PDFs in context. Ask me one short active-recall question that connects two PDFs, then evaluate my spoken",
+    "consoleLogs": []
+  }
+]
