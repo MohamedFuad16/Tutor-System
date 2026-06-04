@@ -43,6 +43,17 @@ test("voice agent tool definitions expose local study tools", () => {
   assert.deepEqual(renderDiagramTool.parameters.required, ["title", "mermaid"]);
   assert.match(renderDiagramTool.description, /Mermaid/);
   assert.match(renderDiagramTool.description, /focus tour/);
+  assert.match(renderDiagramTool.description, /architecture\/API/);
+  assert.match(renderDiagramTool.description, /ER\/database/);
+  assert.match(renderDiagramTool.description, /state diagram/);
+  assert.match(
+    renderDiagramTool.parameters.properties.mermaid.description,
+    /erDiagram/,
+  );
+  assert.match(
+    renderDiagramTool.parameters.properties.mermaid.description,
+    /stateDiagram-v2/,
+  );
   assert.match(webSearchTool.description, /external image/);
   const evaluateAnswerTool = VOICE_AGENT_TOOL_DEFINITIONS.find(
     (tool) => tool.name === "evaluate_answer",

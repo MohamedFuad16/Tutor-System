@@ -153,7 +153,7 @@ export const VOICE_AGENT_TOOL_DEFINITIONS = [
   {
     name: "render_diagram",
     description:
-      "Render a local Mermaid diagram in the chat window when a spoken explanation would be clearer as a flowchart, process diagram, or step-by-step visual. The UI will animate a focus tour through the rendered diagram boxes while the voice explanation continues.",
+      "Render a local Mermaid diagram in the chat window when a spoken explanation would be clearer as a flowchart, architecture/API infrastructure diagram, ER/database relationship diagram, state diagram, process diagram, or step-by-step visual. The voice UI moves the blob to the top-left and animates a slow focus tour through semantic diagram boxes while the explanation continues.",
     parameters: {
       type: "object",
       properties: {
@@ -164,7 +164,7 @@ export const VOICE_AGENT_TOOL_DEFINITIONS = [
         mermaid: {
           type: "string",
           description:
-            "A valid Mermaid diagram, usually starting with flowchart TD, graph TD, sequenceDiagram, or stateDiagram-v2.",
+            "A valid Mermaid diagram, usually starting with flowchart TD, graph TD, erDiagram, sequenceDiagram, or stateDiagram-v2.",
         },
         explanation: {
           type: "string",

@@ -228,6 +228,9 @@ export function PdfViewer() {
   useEffect(() => {
     const handleVoiceVisualFocus = (event: Event) => {
       const detail = (event as CustomEvent).detail || {};
+      if (detail.source && detail.source !== "voice_look_at_current_page") {
+        return;
+      }
       if (
         detail.activeDocumentId &&
         detail.activeDocumentId !== activeDocumentId
@@ -744,28 +747,9 @@ export function PdfViewer() {
               {voiceVisualFocus && (
                 <div
                   data-voice-visual-focus-overlay
-                  className="pointer-events-none absolute inset-3 z-20 rounded-xl border-2 border-blue-400/90 bg-blue-500/[0.04] shadow-[0_0_0_9999px_rgba(37,99,235,0.08),0_0_36px_rgba(59,130,246,0.35)]"
-                >
-                  <div className="absolute left-3 top-3 max-w-[min(420px,calc(100%-24px))] rounded-2xl border border-blue-200 bg-white/95 px-3 py-2 text-zinc-800 shadow-[0_16px_36px_rgba(15,23,42,0.18)]">
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-blue-700">
-                      <span>Voice visual focus</span>
-                      <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5">
-                        page {voiceVisualFocus.pageNumber}
-                      </span>
-                      <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-zinc-500">
-                        {voiceVisualFocus.status}
-                      </span>
-                    </div>
-                    <div className="mt-1 line-clamp-2 text-[12px] font-semibold leading-snug">
-                      {voiceVisualFocus.query}
-                    </div>
-                    {voiceVisualFocus.summary && (
-                      <div className="mt-1 line-clamp-2 text-[11px] leading-snug text-zinc-500">
-                        {voiceVisualFocus.summary}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  aria-label={`Voice is explaining PDF page ${voiceVisualFocus.pageNumber}`}
+                  className="pointer-events-none absolute inset-3 z-20 rounded-xl border-2 border-blue-300/95 bg-blue-400/[0.025] shadow-[0_0_0_9999px_rgba(37,99,235,0.055),0_0_42px_rgba(96,165,250,0.42)]"
+                />
               )}
 
               {/* Render Annotations */}

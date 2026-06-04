@@ -154,6 +154,15 @@ const rawByteLength = (data: any) => {
   return Buffer.byteLength(Buffer.from(data));
 };
 
+const compactActivityText = (value: unknown, maxLength = 180) => {
+  const compact =
+    typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
+  if (!compact) return "";
+  return compact.length <= maxLength
+    ? compact
+    : `${compact.slice(0, maxLength - 3)}...`;
+};
+
 const sanitizeApiKey = (value: unknown) => {
   const raw = Array.isArray(value) ? value[0] : value;
   const key = typeof raw === "string" ? raw.trim() : "";
@@ -2306,7 +2315,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 2. If the user requests flashcards, active recall questions, or revision cards, YOU MUST forcefully use the \`generate_flashcards\` tool to create them. NEVER simply write out the flashcards in text. ALWAYS use the tool. Start your message slightly confirming you generated them and suggest they navigate to the Revision tab.
 3. Source-material questions come first. If the user asks "what is this about", "what's on the screen", "what is this page about", "explain this page", "summarize this document", or similar reading-context questions, answer from selected text, active library context, and the page image via \`look_at_current_page\` when available. Do not use \`web_search\` for these questions unless the user explicitly asks to search the web.
 4. Use \`web_search\` only when the user explicitly asks for web/internet/online search, asks for an external image/diagram/flowchart example, or when the answer depends on fresh external facts such as latest/current/recent news, rankings, pricing, releases, trends, sports scores, elections, weather, laws, schedules, or named people/company roles. When using web sources, cite freshness-sensitive claims with compact references like [1] and [2]. Do not dump raw URLs in the answer body.
-5. When a concept is clearer as a flowchart, state machine, or process diagram, include a fenced \`\`\`mermaid code block. The chat UI renders Mermaid and automatically tours diagram nodes, so label boxes clearly and explain them in the surrounding text.
+5. When a concept is clearer as a diagram, include a fenced \`\`\`mermaid code block. Use the right Mermaid family for the idea: \`flowchart TD\` or \`graph TD\` for process and system/API architecture diagrams, \`erDiagram\` for database/entity relationships, and \`stateDiagram-v2\` for state machines. Keep diagrams spacious, readable, and not over-dense. The chat UI renders Mermaid and automatically tours semantic diagram nodes, so label boxes clearly and explain them in the surrounding text.
 6. If the user is answering a quiz, active-recall, or self-check question and you can identify a real local concept id from the supplied memory/book context, call \`evaluate_answer\` with the concept id, question, learner answer, and either score/maxScore or explicit correct/incorrect. If you cannot identify a real concept id, give normal feedback but do not fake mastery evidence.`;
 
       if (customPrompt) {
@@ -3201,6 +3210,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       let deepgramOutputBytes = 0;
       let lastUsageClientInputBytes = 0;
       let lastUsageDeepgramOutputBytes = 0;
+      let hasRecordedClientAudioInput = false;
       const voiceAgentSpeakModel = "aura-asteria-en";
       let voiceRequestId = `voice_${voiceStartedAt}`;
       let voiceProofAttemptId = "";
@@ -3523,7 +3533,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               thinkPrompt += `\n\nLOCAL STUDY CONTEXT FOR THIS VOICE SESSION:\n${compactStudyContext}\n\nUse this local learner memory, active book, and document context before general knowledge. If the student asks about the current material, answer from this context and say when a detail is not available locally. Keep the spoken answer concise.`;
             }
             thinkPrompt +=
-              "\n\nVOICE TOOL POLICY: You may call local client-side tools during this voice session. Use look_at_study_context before answering about the active book, document, selected text, learner memory, or current study material when the prompt context is not enough. Use look_at_current_page when the student asks about the current page, screen, visible diagram, flowchart, chart, or what they are reading; the client will visibly focus the current PDF page/diagram surface for the learner. Use render_diagram when the spoken answer would be clearer with a local Mermaid flowchart, state diagram, or step-by-step visual; the chat UI will render it and tour the diagram boxes. Use web_search only for explicit web, online, latest, current, recent, news-style external facts, or when the student explicitly asks for an external image, diagram, or flowchart example; returned image/source cards are rendered in the chat tool surface. Do not use web_search for current-page or document questions. If the student asks for flashcards, revision cards, quiz questions, or active recall, call generate_flashcards with concise cards before saying they were created. If the student answers a quiz or active-recall question and you can identify a real local concept id from the study context, call evaluate_answer with the concept id plus a clear score or correct/incorrect outcome; do not invent concept ids. When a new important concept should be added to the learner graph, call update_graph with one exact atomic concept. Keep spoken responses short after tool results.";
+              "\n\nVOICE TOOL POLICY: You may call local client-side tools during this voice session. Use look_at_study_context before answering about the active book, document, selected text, learner memory, or current study material when the prompt context is not enough. Use look_at_current_page when the student asks about the current page, screen, visible diagram, flowchart, chart, or what they are reading; the client will visibly focus the current PDF page/diagram surface for the learner. Use render_diagram when the spoken answer would be clearer with a local Mermaid diagram. Choose flowchart TD or graph TD for processes and system/API architecture diagrams, erDiagram for database/entity relationships, and stateDiagram-v2 for state machines. Keep diagrams spacious, readable, and not over-dense; the voice UI moves the blob to the top-left, centers the diagram, and tours semantic boxes slowly while you explain. Use web_search only for explicit web, online, latest, current, recent, news-style external facts, or when the student explicitly asks for an external image, diagram, or flowchart example; returned image/source cards are rendered in the chat tool surface. Do not use web_search for current-page or document questions. If the student asks for flashcards, revision cards, quiz questions, or active recall, call generate_flashcards with concise cards before saying they were created. If the student answers a quiz or active-recall question and you can identify a real local concept id from the study context, call evaluate_answer with the concept id plus a clear score or correct/incorrect outcome; do not invent concept ids. When a new important concept should be added to the learner graph, call update_graph with one exact atomic concept. Keep spoken responses short after tool results.";
 
             const config = {
               type: "Settings",
@@ -3635,16 +3645,28 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                 const messageStr = data.toString();
                 try {
                   const parsed = JSON.parse(messageStr);
-                  if (
-                    parsed.type === "SettingsApplied" ||
-                    parsed.type === "Welcome"
-                  ) {
+                  if (parsed.type === "Welcome") {
+                    recordSystemActivity({
+                      kind: "voice",
+                      status: "progress",
+                      title: "Voice provider connected",
+                      detail:
+                        "Deepgram Welcome received; waiting for SettingsApplied before releasing buffered audio.",
+                      requestId: voiceRequestId,
+                      phase: "provider_connect",
+                      metadata: {
+                        bufferedFrames: messageBuffer.length,
+                        ...voiceProofActivityMetadata(),
+                      },
+                    });
+                  } else if (parsed.type === "SettingsApplied") {
                     isDeepgramReady = true;
                     recordSystemActivity({
                       kind: "voice",
                       status: "completed",
                       title: "Voice provider ready",
-                      detail: `${parsed.type} received; buffered audio/control frames released.`,
+                      detail:
+                        "SettingsApplied received; buffered audio/control frames released.",
                       requestId: voiceRequestId,
                       phase: "settings",
                       metadata: {
@@ -3673,6 +3695,58 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                       parsed,
                       "Voice tool response received",
                     );
+                  } else if (parsed.type === "ConversationText") {
+                    const role =
+                      typeof parsed.role === "string" ? parsed.role : "";
+                    const content = compactActivityText(parsed.content);
+                    recordSystemActivity({
+                      kind: "voice",
+                      status: "completed",
+                      title: "Voice provider transcript",
+                      detail: content
+                        ? `${role || "speaker"}: ${content}`
+                        : "ConversationText received without content.",
+                      requestId: voiceRequestId,
+                      phase: "transcript",
+                      metadata: {
+                        providerEvent: parsed.type,
+                        role: role || undefined,
+                        characterCount:
+                          typeof parsed.content === "string"
+                            ? parsed.content.length
+                            : 0,
+                        ...voiceProofActivityMetadata(),
+                      },
+                    });
+                  } else if (
+                    typeof parsed.type === "string" &&
+                    /^(Warning|UserStartedSpeaking|AgentStartedSpeaking|AgentAudioDone|AgentFinishedSpeaking|Error)$/i.test(
+                      parsed.type,
+                    )
+                  ) {
+                    const warningMessage = compactActivityText(
+                      parsed.message || parsed.error || parsed.description,
+                    );
+                    recordSystemActivity({
+                      kind: "voice",
+                      status:
+                        parsed.type === "Error" || parsed.type === "Warning"
+                          ? "failed"
+                          : "progress",
+                      title: `Voice provider event: ${parsed.type}`,
+                      detail:
+                        warningMessage ||
+                        "Deepgram voice-agent status event received.",
+                      requestId: voiceRequestId,
+                      phase:
+                        parsed.type === "Error" || parsed.type === "Warning"
+                          ? "provider_error"
+                          : "provider_event",
+                      metadata: {
+                        providerEvent: parsed.type,
+                        ...voiceProofActivityMetadata(),
+                      },
+                    });
                   }
                 } catch (e) {}
                 ws.send(messageStr);
@@ -3753,6 +3827,23 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       const forwardClientMessage = (data: any, isBinary: boolean) => {
         if (isBinary) {
           clientInputBytes += rawByteLength(data);
+          if (!hasRecordedClientAudioInput && isVoiceSessionStarted) {
+            hasRecordedClientAudioInput = true;
+            recordSystemActivity({
+              kind: "voice",
+              status: "progress",
+              title: "Voice input audio received",
+              detail:
+                "Browser microphone PCM frames reached the voice websocket.",
+              requestId: voiceRequestId,
+              phase: "client_audio",
+              metadata: {
+                inputBytes: clientInputBytes,
+                inputSampleRate: voiceInputSampleRate,
+                ...voiceProofActivityMetadata(),
+              },
+            });
+          }
         } else {
           const text = Buffer.isBuffer(data)
             ? data.toString("utf8")

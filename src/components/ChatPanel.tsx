@@ -22,7 +22,6 @@ import {
   Sparkles,
   Network,
   BookOpen,
-  Layers,
   X,
   Check,
   Folder,
@@ -309,11 +308,24 @@ const cleanMermaidTourLabel = (value: string | null | undefined) =>
 
 const collectMermaidTourNodes = (svg: SVGSVGElement) => {
   const seen = new Set<Element>();
-  return Array.from(
+  const preferredCandidates = Array.from(
     svg.querySelectorAll<SVGGElement>(
-      "g.node, g[id*='flowchart'][class*='node'], g[id*='state'][class*='node']",
+      [
+        "g.node",
+        "g[class*='state']",
+        "g[class*='entity']",
+        "g[class*='relationship']",
+        "g[class*='classGroup']",
+        "g[id*='flowchart'][class*='node']",
+        "g[id*='state'][class*='node']",
+        "g[id*='entity']",
+      ].join(", "),
     ),
-  )
+  );
+  const candidates = preferredCandidates.length
+    ? preferredCandidates
+    : Array.from(svg.querySelectorAll<SVGGElement>("g"));
+  return candidates
     .filter((node) => {
       if (seen.has(node)) return false;
       seen.add(node);
@@ -369,13 +381,16 @@ const Mermaid = ({
         svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
         svg.removeAttribute("width");
         svg.removeAttribute("height");
-        svg.style.transition =
-          "transform 820ms cubic-bezier(0.22, 1, 0.36, 1), filter 500ms ease";
+        svg.style.transition = `transform ${
+          isStage ? 1280 : 900
+        }ms cubic-bezier(0.22, 1, 0.36, 1), filter 560ms ease`;
         svg.style.display = "block";
         svg.style.width = "100%";
         svg.style.maxWidth = "100%";
+        svg.style.maxHeight = isStage ? "72vh" : "none";
         svg.style.minWidth = "0";
         svg.style.height = "auto";
+        svg.style.margin = "0 auto";
         svg.style.transformOrigin = "0 0";
         svg.style.willChange = "transform";
         if (!svg.getAttribute("viewBox")) {
@@ -427,9 +442,9 @@ const Mermaid = ({
     if (reduceMotion) return;
     const timer = window.setInterval(() => {
       setActiveNodeIndex((current) => (current + 1) % tourNodes.length);
-    }, 3600);
+    }, isStage ? 5600 : 4400);
     return () => window.clearInterval(timer);
-  }, [tourNodes.length]);
+  }, [isStage, tourNodes.length]);
 
   useEffect(() => {
     const container = chartRef.current;
@@ -461,22 +476,34 @@ const Mermaid = ({
         const viewportCenterY = viewportRect.top + viewportRect.height * 0.44;
         const activeCenterX = activeRect.left + activeRect.width / 2;
         const activeCenterY = activeRect.top + activeRect.height / 2;
-        const dx = viewportCenterX - activeCenterX;
-        const dy = viewportCenterY - activeCenterY;
+        const rawDx = viewportCenterX - activeCenterX;
+        const rawDy = viewportCenterY - activeCenterY;
+        const maxDx = viewportRect.width * (isStage ? 0.18 : 0.24);
+        const maxDy = viewportRect.height * (isStage ? 0.14 : 0.22);
+        const dx = Math.max(-maxDx, Math.min(maxDx, rawDx));
+        const dy = Math.max(-maxDy, Math.min(maxDy, rawDy));
         const scale =
-          activeRect.width > viewportRect.width * 0.82 ? 1.04 : 1.18;
+          activeRect.width > viewportRect.width * 0.78
+            ? isStage
+              ? 1
+              : 1.02
+            : isStage
+              ? 1.055
+              : 1.09;
         svg.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
         viewBoxAnimationRef.current = null;
       });
     } catch {}
-  }, [activeNodeIndex, tourNodes.length]);
+  }, [activeNodeIndex, isStage, tourNodes.length]);
 
   const activeTourLabel = tourNodes[activeNodeIndex];
 
   return (
     <div
-      className={`learningai-mermaid-tour w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-[0_20px_50px_rgba(0,0,0,0.22)] ${
-        isStage ? "my-0 max-w-none p-4" : "my-4 max-w-[420px] p-3"
+      className={`learningai-mermaid-tour w-full text-zinc-100 ${
+        isStage
+          ? "my-0 max-w-none overflow-visible border-0 bg-transparent p-0 shadow-none"
+          : "my-4 max-w-[420px] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-3 shadow-[0_20px_50px_rgba(0,0,0,0.22)]"
       }`}
       data-mermaid-focus-tour
       data-mermaid-variant={variant}
@@ -489,6 +516,22 @@ const Mermaid = ({
         .learningai-mermaid-tour [data-mermaid-active='true'] {
           opacity: 1;
           filter: drop-shadow(0 0 18px rgba(249, 115, 22, 0.65));
+        }
+        .learningai-mermaid-tour[data-mermaid-variant='stage'] svg {
+          background: transparent !important;
+        }
+        .learningai-mermaid-tour[data-mermaid-variant='stage'] .node rect,
+        .learningai-mermaid-tour[data-mermaid-variant='stage'] .node polygon,
+        .learningai-mermaid-tour[data-mermaid-variant='stage'] .node circle,
+        .learningai-mermaid-tour[data-mermaid-variant='stage'] .node ellipse,
+        .learningai-mermaid-tour[data-mermaid-variant='stage'] .stateGroup rect,
+        .learningai-mermaid-tour[data-mermaid-variant='stage'] .entityBox {
+          fill: rgba(24, 24, 27, 0.88) !important;
+          stroke: rgba(244, 244, 245, 0.62) !important;
+        }
+        .learningai-mermaid-tour[data-mermaid-variant='stage'] text,
+        .learningai-mermaid-tour[data-mermaid-variant='stage'] tspan {
+          fill: #f4f4f5 !important;
         }
         .learningai-mermaid-tour [data-mermaid-active='true'] rect,
         .learningai-mermaid-tour [data-mermaid-active='true'] polygon,
@@ -507,11 +550,13 @@ const Mermaid = ({
       `}</style>
       <div
         ref={chartRef}
-        className={`flex justify-center overflow-hidden rounded-lg p-2 ${
-          isStage ? "min-h-[320px] max-h-[56vh]" : "min-h-[180px]"
+        className={`flex justify-center ${
+          isStage
+            ? "min-h-[52vh] items-center overflow-visible p-0 sm:min-h-[72vh]"
+            : "min-h-[180px] overflow-hidden rounded-lg p-2"
         }`}
       />
-      {tourNodes.length > 1 && (
+      {tourNodes.length > 1 && !isStage && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-zinc-200">
           <span data-mermaid-focus-label>
             Focus tour {activeNodeIndex + 1}/{tourNodes.length}
@@ -1040,12 +1085,9 @@ const VoiceVisualStage = ({
     (source) => source.imageUrl || source.thumbnailUrl,
   );
   const featuredImage = imageSources[0];
-  const statusClass =
-    focus.status === "ready"
-      ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-100"
-      : focus.status === "blocked" || focus.status === "failed"
-        ? "border-red-300/25 bg-red-400/10 text-red-100"
-        : "border-amber-300/25 bg-amber-400/10 text-amber-100";
+  const isDiagramStage = focus.kind === "diagram" && Boolean(focus.mermaid);
+
+  if (focus.kind === "current_page") return null;
 
   return (
     <gsapMotion.div
@@ -1054,111 +1096,69 @@ const VoiceVisualStage = ({
       initial={{ opacity: 0, y: 18, scale: 0.985 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.46, ease: "easeOut" }}
-      className="pointer-events-auto absolute inset-x-3 bottom-24 top-[8.75rem] flex items-center justify-center sm:bottom-7 sm:left-[12.5rem] sm:right-7 sm:top-7"
+      className={`pointer-events-auto absolute flex items-center justify-center ${
+        isDiagramStage
+          ? "inset-x-2 bottom-16 top-16 sm:bottom-4 sm:left-[6.75rem] sm:right-4 sm:top-4"
+          : "inset-x-3 bottom-24 top-[8.75rem] sm:bottom-7 sm:left-[9rem] sm:right-7 sm:top-7"
+      }`}
       aria-live="polite"
     >
-      <div className="flex max-h-full w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#050505]/95 shadow-[0_28px_90px_rgba(0,0,0,0.58)] backdrop-blur-2xl">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-5">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={`rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] ${statusClass}`}
-              >
-                {focus.status}
-              </span>
-              <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-400">
-                {focus.kind.replace("_", " ")}
-              </span>
-              {focus.focusedTarget && (
-                <span className="rounded-full border border-orange-300/20 bg-orange-400/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-orange-100">
-                  focusing {focus.focusedTarget}
-                </span>
+      <button
+        type="button"
+        onClick={onDismiss}
+        className="absolute right-2 top-2 z-20 rounded-full border border-white/10 bg-black/40 p-2 text-zinc-300 shadow-[0_12px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-colors hover:border-white/20 hover:text-white"
+        aria-label="Return voice blob to center"
+      >
+        <X size={14} />
+      </button>
+
+      {isDiagramStage ? (
+        <div
+          data-voice-stage-mermaid
+          className="flex h-full w-full items-center justify-center"
+        >
+          <Mermaid chart={focus.mermaid || ""} variant="stage" />
+        </div>
+      ) : focus.kind === "web_search" ? (
+        <div className="custom-scroll max-h-full w-full max-w-6xl overflow-auto rounded-2xl border border-white/10 bg-[#050505]/92 p-4 shadow-[0_28px_90px_rgba(0,0,0,0.58)] backdrop-blur-2xl sm:p-5">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
+              {featuredImage ? (
+                <img
+                  src={featuredImage.imageUrl || featuredImage.thumbnailUrl}
+                  alt={featuredImage.title || "Voice web image result"}
+                  className="max-h-[58vh] w-full object-contain"
+                />
+              ) : (
+                <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 px-6 text-center text-zinc-500">
+                  <ImageIcon size={30} />
+                  <p className="max-w-sm text-sm leading-relaxed">
+                    This voice web-search result did not include a renderable
+                    image. Source metadata is still visible on the right.
+                  </p>
+                </div>
               )}
             </div>
-            <h3 className="mt-2 truncate text-base font-semibold text-white">
-              {focus.title}
-            </h3>
-            {focus.summary && (
-              <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-                {focus.summary}
-              </p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={onDismiss}
-            className="shrink-0 rounded-full border border-white/10 bg-white/[0.06] p-2 text-zinc-400 transition-colors hover:border-white/20 hover:text-white"
-            aria-label="Return voice blob to center"
-          >
-            <X size={14} />
-          </button>
-        </div>
-
-        <div className="custom-scroll min-h-0 flex-1 overflow-auto p-4 sm:p-5">
-          {focus.kind === "diagram" && focus.mermaid ? (
-            <div data-voice-stage-mermaid className="flex justify-center">
-              <Mermaid chart={focus.mermaid} variant="stage" />
-            </div>
-          ) : null}
-
-          {focus.kind === "web_search" && (
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
-              <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
-                {featuredImage ? (
-                  <img
-                    src={featuredImage.imageUrl || featuredImage.thumbnailUrl}
-                    alt={featuredImage.title || "Voice web image result"}
-                    className="max-h-[52vh] w-full object-contain"
-                  />
-                ) : (
-                  <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 px-6 text-center text-zinc-500">
-                    <ImageIcon size={30} />
-                    <p className="max-w-sm text-sm leading-relaxed">
-                      This voice web-search result did not include a renderable
-                      image. Source metadata is still visible on the right.
-                    </p>
-                  </div>
+            <div className="min-w-0 space-y-3">
+              <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <span className="rounded-full bg-white/10 px-2 py-1">
+                  {sources.length} source{sources.length === 1 ? "" : "s"}
+                </span>
+                <span className="rounded-full bg-white/10 px-2 py-1">
+                  {imageSources.length} image
+                  {imageSources.length === 1 ? "" : "s"}
+                </span>
+                {focus.query && (
+                  <span className="min-w-0 truncate rounded-full bg-blue-400/10 px-2 py-1 text-blue-100">
+                    {focus.query}
+                  </span>
                 )}
               </div>
-              <div className="min-w-0 space-y-3">
-                <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
-                  <span className="rounded-full bg-white/10 px-2 py-1">
-                    {sources.length} source{sources.length === 1 ? "" : "s"}
-                  </span>
-                  <span className="rounded-full bg-white/10 px-2 py-1">
-                    {imageSources.length} image
-                    {imageSources.length === 1 ? "" : "s"}
-                  </span>
-                  {focus.query && (
-                    <span className="min-w-0 truncate rounded-full bg-blue-400/10 px-2 py-1 text-blue-100">
-                      {focus.query}
-                    </span>
-                  )}
-                </div>
-                <VoiceStageSourceGrid sources={sources} />
-              </div>
+              <VoiceStageSourceGrid sources={sources} />
             </div>
-          )}
-
-          {focus.kind === "current_page" && (
-            <div className="flex min-h-[260px] flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] px-6 py-8 text-center">
-              <Layers size={30} className="text-blue-200" />
-              <h4 className="mt-3 text-base font-semibold text-white">
-                Current study surface is in focus
-              </h4>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
-                {focus.summary ||
-                  "Aria inspected the visible PDF/page surface and the reader is highlighting that area."}
-              </p>
-              {focus.query && (
-                <p className="mt-3 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold text-zinc-300">
-                  Query: {focus.query}
-                </p>
-              )}
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+      ) : null}
     </gsapMotion.div>
   );
 };
@@ -1175,7 +1175,9 @@ const VoiceUniverse = ({
   onDismissVisual?: () => void;
 }) => {
   const label = state === "speaking" ? "Aria is speaking" : "Listening";
-  const hasVisualStage = Boolean(visualFocus);
+  const visibleVisualFocus =
+    visualFocus?.kind === "current_page" ? null : visualFocus;
+  const hasVisualStage = Boolean(visibleVisualFocus);
   return (
     <gsapMotion.div
       initial={{ opacity: 0 }}
@@ -1186,19 +1188,24 @@ const VoiceUniverse = ({
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(124,92,255,0.24),transparent_34%),radial-gradient(circle_at_18%_70%,rgba(59,130,246,0.14),transparent_30%),radial-gradient(circle_at_82%_72%,rgba(255,110,0,0.12),transparent_26%)]" />
       <div className="absolute inset-0 opacity-35 [background-image:radial-gradient(circle_at_center,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:26px_26px]" />
-      {visualFocus && (
-        <VoiceVisualStage focus={visualFocus} onDismiss={onDismissVisual} />
+      {visibleVisualFocus && (
+        <VoiceVisualStage
+          focus={visibleVisualFocus}
+          onDismiss={onDismissVisual}
+        />
       )}
       <div
         className={`absolute flex flex-col items-center transition-[left,top,transform] duration-700 ease-out ${
           hasVisualStage
-            ? "left-4 top-4 origin-top-left scale-[0.42] sm:left-7 sm:top-7"
+            ? "-left-4 -top-4 origin-top-left scale-[0.36] sm:-left-6 sm:-top-6 sm:scale-[0.36]"
             : "left-1/2 top-1/2 origin-center -translate-x-1/2 -translate-y-[58%] scale-100"
         }`}
       >
-        <div className="mb-5 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
-          {label}
-        </div>
+        {!hasVisualStage && (
+          <div className="mb-5 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
+            {label}
+          </div>
+        )}
         <MorphBlob speaking={state === "speaking"} />
       </div>
       <RollingSubtitle caption={caption} />
@@ -2561,7 +2568,10 @@ const VoiceVisualFocusPanel = ({
 }: {
   focuses?: VoiceVisualFocus[];
 }) => {
-  if (!focuses?.length) return null;
+  const visibleFocuses = (focuses || []).filter(
+    (focus) => focus.kind !== "current_page",
+  );
+  if (!visibleFocuses.length) return null;
   return (
     <div
       data-voice-visual-focus-panel
@@ -2572,10 +2582,11 @@ const VoiceVisualFocusPanel = ({
           <ImageIcon size={11} /> Voice visual focus
         </span>
         <span className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase text-zinc-500">
-          {focuses.length} visual event{focuses.length === 1 ? "" : "s"}
+          {visibleFocuses.length} visual event
+          {visibleFocuses.length === 1 ? "" : "s"}
         </span>
       </div>
-      {focuses.slice(-3).map((focus) => (
+      {visibleFocuses.slice(-3).map((focus) => (
         <div
           key={focus.id}
           data-voice-visual-focus-kind={focus.kind}
@@ -3777,6 +3788,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const pendingVoiceProofScriptRef = useRef<string | null>(null);
   const micSignalAnnouncedRef = useRef(false);
   const voiceInputSampleRateRef = useRef(48000);
+  const lastVoicePointerDownRef = useRef(0);
   const voiceStageFocusRef = useRef<VoiceVisualFocus | null>(null);
   const voiceStageReturnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -3832,13 +3844,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         : null) ||
       [...messages].reverse().find((message) => Boolean(message.voiceSession));
     const focuses = activeVoiceMessage?.voiceSession?.visualFocuses || [];
-    return (
+    const latestFocus =
       [...focuses]
         .reverse()
         .find((focus) =>
           ["ready", "blocked", "empty", "failed"].includes(focus.status),
-        ) || null
-    );
+        ) || null;
+    return latestFocus?.kind === "current_page" ? null : latestFocus;
   }, [messages, voiceState]);
 
   useEffect(() => {
@@ -3858,6 +3870,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           ? current
           : latestVoiceVisualFocus,
       );
+      return;
+    }
+    if (!latestVoiceVisualFocus) {
+      setVoiceStageFocus(null);
     }
   }, [
     clearVoiceStageReturnTimer,
@@ -5311,6 +5327,187 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         },
       ]);
       setVoiceState("listening");
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error(
+          "Microphone capture is not available in this browser context.",
+        );
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      mediaStreamRef.current = stream;
+
+      const AudioContextCtor =
+        window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextCtor) {
+        throw new Error("Microphone audio processing is not available here.");
+      }
+      let audioContext: AudioContext;
+      try {
+        audioContext = new AudioContextCtor({ sampleRate: 48000 });
+      } catch {
+        audioContext = new AudioContextCtor();
+      }
+      audioContextRef.current = audioContext;
+      if (audioContext.state === "suspended") {
+        await audioContext.resume();
+      }
+      const inputSampleRate = Math.max(
+        8000,
+        Math.round(audioContext.sampleRate || 48000),
+      );
+      voiceInputSampleRateRef.current = inputSampleRate;
+      const audioTrackSettings = (stream.getAudioTracks()[0]?.getSettings?.() ||
+        {}) as Record<string, unknown>;
+      recordVoiceAgentEvent({
+        type: "mic_signal",
+        status: "started",
+        sessionId,
+        summary: `Microphone stream opened at ${inputSampleRate} Hz; waiting for speech.`,
+        metadata: {
+          inputSampleRate,
+          requestedSampleRate: 48000,
+          trackSampleRate: audioTrackSettings.sampleRate,
+          channelCount: audioTrackSettings.channelCount,
+          proofAttemptId: getVoiceProofAttemptId(),
+        },
+      });
+
+      let ws: WebSocket | null = null;
+      let hasSentVoiceAuth = false;
+      const pendingVoiceAudioFrames: ArrayBuffer[] = [];
+      const flushPendingVoiceAudio = () => {
+        if (!ws || ws.readyState !== WebSocket.OPEN || !hasSentVoiceAuth) {
+          return;
+        }
+        const frames = pendingVoiceAudioFrames.splice(
+          0,
+          pendingVoiceAudioFrames.length,
+        );
+        frames.forEach((frame) => ws?.send(frame));
+      };
+
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      processorRef.current = processor;
+
+      const outputGain = audioContext.createGain();
+      const outputAnalyser = audioContext.createAnalyser();
+      outputAnalyser.fftSize = 256;
+      outputAnalyser.smoothingTimeConstant = 0.6;
+      outputGain.connect(outputAnalyser);
+      outputAnalyser.connect(audioContext.destination);
+      outputGainRef.current = outputGain;
+      outputAnalyserRef.current = outputAnalyser;
+
+      const outputBuffer = new Uint8Array(outputAnalyser.fftSize);
+      const sampleOutput = () => {
+        const analyser = outputAnalyserRef.current;
+        if (analyser) {
+          analyser.getByteTimeDomainData(outputBuffer);
+          let sum = 0;
+          for (let i = 0; i < outputBuffer.length; i++) {
+            const value = (outputBuffer[i] - 128) / 128;
+            sum += value * value;
+          }
+          const rms = Math.sqrt(sum / outputBuffer.length);
+          window.dispatchEvent(
+            new CustomEvent("tts-volume", { detail: Math.min(1, rms * 3.5) }),
+          );
+        }
+        outputRafRef.current = requestAnimationFrame(sampleOutput);
+      };
+      outputRafRef.current = requestAnimationFrame(sampleOutput);
+
+      processor.onaudioprocess = (e) => {
+        const inputData = e.inputBuffer.getChannelData(0);
+        let sum = 0;
+        for (let i = 0; i < inputData.length; i++) {
+          sum += inputData[i] * inputData[i];
+        }
+        const rms = Math.sqrt(sum / inputData.length);
+        const volume = Math.min(1, rms * 8); // Scale
+        window.dispatchEvent(new CustomEvent("mic-volume", { detail: volume }));
+
+        const pcm16 = new Int16Array(inputData.length);
+        for (let i = 0; i < inputData.length; i++) {
+          pcm16[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7fff;
+        }
+        const pcmFrame = pcm16.buffer.slice(0);
+
+        if (
+          !micSignalAnnouncedRef.current &&
+          volume > 0.035 &&
+          ((ws?.readyState === WebSocket.OPEN && hasSentVoiceAuth) ||
+            pendingVoiceAudioFrames.length > 0)
+        ) {
+          micSignalAnnouncedRef.current = true;
+          recordVoiceAgentEvent({
+            type: "mic_signal",
+            status: "running",
+            sessionId: voiceSessionIdRef.current || undefined,
+            summary:
+              "Microphone signal detected; audio frames are queued for the voice websocket.",
+            metadata: {
+              volume: volume.toFixed(3),
+              inputSampleRate: voiceInputSampleRateRef.current,
+              pendingFrames: pendingVoiceAudioFrames.length,
+              proofAttemptId: getVoiceProofAttemptId(),
+            },
+          });
+        }
+
+        if (volume < 0.28) {
+          noiseFloorRef.current = noiseFloorRef.current * 0.95 + volume * 0.05;
+        }
+
+        const bargeThreshold = Math.max(
+          0.46,
+          noiseFloorRef.current * 2.5 + 0.24,
+        );
+        if (activeAudioNodesRef.current.length > 0) {
+          if (volume > bargeThreshold) {
+            bargeInFramesRef.current += 1;
+            if (bargeInFramesRef.current >= 6) {
+              activeAudioNodesRef.current.forEach((node) => {
+                try {
+                  node.stop();
+                } catch {}
+              });
+              activeAudioNodesRef.current = [];
+              if (audioContextRef.current) {
+                nextPlayTimeRef.current = audioContextRef.current.currentTime;
+              }
+              setVoiceCaption(null);
+              setVoiceState("listening");
+              bargeInFramesRef.current = 0;
+            }
+          } else {
+            bargeInFramesRef.current = 0;
+          }
+        } else {
+          bargeInFramesRef.current = 0;
+        }
+
+        if (ws?.readyState === WebSocket.OPEN && hasSentVoiceAuth) {
+          flushPendingVoiceAudio();
+          ws.send(pcmFrame);
+        } else if (pendingVoiceAudioFrames.length < 120) {
+          pendingVoiceAudioFrames.push(pcmFrame);
+        } else {
+          pendingVoiceAudioFrames.shift();
+          pendingVoiceAudioFrames.push(pcmFrame);
+        }
+      };
+
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+
       const voiceContextPayload = await buildVoiceStudyContext().catch(
         (error) => {
           console.warn("[ChatPanel] Voice study context failed:", error);
@@ -5365,166 +5562,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           rawContextChars: voiceContextPayload.rawContextChars,
         });
       }
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error(
-          "Microphone capture is not available in this browser context.",
-        );
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
-      mediaStreamRef.current = stream;
-
-      const AudioContextCtor =
-        window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContextCtor) {
-        throw new Error("Microphone audio processing is not available here.");
-      }
-      let audioContext: AudioContext;
-      try {
-        audioContext = new AudioContextCtor({ sampleRate: 48000 });
-      } catch {
-        audioContext = new AudioContextCtor();
-      }
-      audioContextRef.current = audioContext;
-      if (audioContext.state === "suspended") {
-        await audioContext.resume();
-      }
-      const inputSampleRate = Math.max(
-        8000,
-        Math.round(audioContext.sampleRate || 48000),
-      );
-      voiceInputSampleRateRef.current = inputSampleRate;
-      const audioTrackSettings = (stream.getAudioTracks()[0]?.getSettings?.() ||
-        {}) as Record<string, unknown>;
-      recordVoiceAgentEvent({
-        type: "mic_signal",
-        status: "started",
-        sessionId,
-        summary: `Microphone stream opened at ${inputSampleRate} Hz; waiting for speech.`,
-        metadata: {
-          inputSampleRate,
-          requestedSampleRate: 48000,
-          trackSampleRate: audioTrackSettings.sampleRate,
-          channelCount: audioTrackSettings.channelCount,
-          proofAttemptId: getVoiceProofAttemptId(),
-        },
-      });
-
-      const source = audioContext.createMediaStreamSource(stream);
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
-      processorRef.current = processor;
-
-      const outputGain = audioContext.createGain();
-      const outputAnalyser = audioContext.createAnalyser();
-      outputAnalyser.fftSize = 256;
-      outputAnalyser.smoothingTimeConstant = 0.6;
-      outputGain.connect(outputAnalyser);
-      outputAnalyser.connect(audioContext.destination);
-      outputGainRef.current = outputGain;
-      outputAnalyserRef.current = outputAnalyser;
-
-      const outputBuffer = new Uint8Array(outputAnalyser.fftSize);
-      const sampleOutput = () => {
-        const analyser = outputAnalyserRef.current;
-        if (analyser) {
-          analyser.getByteTimeDomainData(outputBuffer);
-          let sum = 0;
-          for (let i = 0; i < outputBuffer.length; i++) {
-            const value = (outputBuffer[i] - 128) / 128;
-            sum += value * value;
-          }
-          const rms = Math.sqrt(sum / outputBuffer.length);
-          window.dispatchEvent(
-            new CustomEvent("tts-volume", { detail: Math.min(1, rms * 3.5) }),
-          );
-        }
-        outputRafRef.current = requestAnimationFrame(sampleOutput);
-      };
-      outputRafRef.current = requestAnimationFrame(sampleOutput);
 
       const wsUrl = `${voiceServerWsUrl()}/api/voice-agent?language=${encodeURIComponent(language)}`;
-      const ws = new WebSocket(wsUrl);
+      ws = new WebSocket(wsUrl);
       wsRef.current = ws;
-      let hasSentVoiceAuth = false;
-
-      processor.onaudioprocess = (e) => {
-        const inputData = e.inputBuffer.getChannelData(0);
-        let sum = 0;
-        for (let i = 0; i < inputData.length; i++) {
-          sum += inputData[i] * inputData[i];
-        }
-        const rms = Math.sqrt(sum / inputData.length);
-        const volume = Math.min(1, rms * 8); // Scale
-        window.dispatchEvent(new CustomEvent("mic-volume", { detail: volume }));
-        if (
-          !micSignalAnnouncedRef.current &&
-          volume > 0.045 &&
-          ws.readyState === WebSocket.OPEN &&
-          hasSentVoiceAuth
-        ) {
-          micSignalAnnouncedRef.current = true;
-          recordVoiceAgentEvent({
-            type: "mic_signal",
-            status: "running",
-            sessionId: voiceSessionIdRef.current || undefined,
-            summary:
-              "Microphone signal detected; audio frames are reaching the voice websocket.",
-            metadata: {
-              volume: volume.toFixed(3),
-              inputSampleRate: voiceInputSampleRateRef.current,
-              proofAttemptId: getVoiceProofAttemptId(),
-            },
-          });
-        }
-
-        if (volume < 0.28) {
-          noiseFloorRef.current = noiseFloorRef.current * 0.95 + volume * 0.05;
-        }
-
-        const bargeThreshold = Math.max(
-          0.46,
-          noiseFloorRef.current * 2.5 + 0.24,
-        );
-        if (activeAudioNodesRef.current.length > 0) {
-          if (volume > bargeThreshold) {
-            bargeInFramesRef.current += 1;
-            if (bargeInFramesRef.current >= 6) {
-              activeAudioNodesRef.current.forEach((node) => {
-                try {
-                  node.stop();
-                } catch {}
-              });
-              activeAudioNodesRef.current = [];
-              if (audioContextRef.current) {
-                nextPlayTimeRef.current = audioContextRef.current.currentTime;
-              }
-              setVoiceCaption(null);
-              setVoiceState("listening");
-              bargeInFramesRef.current = 0;
-            }
-          } else {
-            bargeInFramesRef.current = 0;
-          }
-        } else {
-          bargeInFramesRef.current = 0;
-        }
-
-        if (ws.readyState === WebSocket.OPEN && hasSentVoiceAuth) {
-          const pcm16 = new Int16Array(inputData.length);
-          for (let i = 0; i < inputData.length; i++) {
-            pcm16[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7fff;
-          }
-          ws.send(pcm16.buffer);
-        }
-      };
-
-      source.connect(processor);
-      processor.connect(audioContext.destination);
 
       ws.onopen = () => {
         console.log("Connected to Deepgram proxy");
@@ -5576,6 +5617,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           }),
         );
         hasSentVoiceAuth = true;
+        flushPendingVoiceAudio();
         const pendingVoiceProofScript = pendingVoiceProofScriptRef.current;
         if (pendingVoiceProofScript) {
           pendingVoiceProofScriptRef.current = null;
@@ -5742,7 +5784,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 },
               });
               setVoiceState("speaking");
-            } else if (msg.type === "AgentFinishedSpeaking") {
+            } else if (
+              msg.type === "AgentFinishedSpeaking" ||
+              msg.type === "AgentAudioDone"
+            ) {
               scheduleVoiceStageReturn();
               recordVoiceAgentEvent({
                 type: "agent_finished_speaking",
@@ -5750,6 +5795,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 sessionId: voiceSessionIdRef.current || undefined,
                 summary: "Aria finished speaking; listening resumed.",
                 metadata: {
+                  rawType: msg.type,
                   proofAttemptId,
                 },
               });
@@ -5859,16 +5905,33 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       voiceSessionErrorRef.current = compactVoiceEventText(
         err instanceof Error ? err.message : String(err),
       );
+      const voiceStartErrorMessage =
+        voiceSessionErrorRef.current || "Voice mode could not start.";
       recordVoiceAgentEvent({
         type: "error",
         status: "failed",
         sessionId: voiceSessionIdRef.current || undefined,
-        summary: `Voice start failed: ${voiceSessionErrorRef.current}`,
+        summary: `Voice start failed: ${voiceStartErrorMessage}`,
         metadata: {
           proofAttemptId: getVoiceProofAttemptId(),
         },
       });
       stopVoice();
+      const isMicPermissionError =
+        /notallowed|permission|denied|microphone/i.test(
+          voiceStartErrorMessage,
+        );
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `voice-start-error-${Date.now()}`,
+          role: "assistant",
+          content: isMicPermissionError
+            ? "**Microphone permission is blocked.** Allow microphone access for this app/browser, then tap the mic again. Voice mode needs that permission before it can send your speech."
+            : `**Voice mode could not start.** ${voiceStartErrorMessage}`,
+          phase: "complete",
+        },
+      ]);
     }
   };
 
@@ -5878,6 +5941,19 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     } else {
       stopVoice();
     }
+  };
+
+  const handleVoiceButtonPointerDown = (
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+    lastVoicePointerDownRef.current = Date.now();
+    toggleVoice();
+  };
+
+  const handleVoiceButtonClick = () => {
+    if (Date.now() - lastVoicePointerDownRef.current < 650) return;
+    toggleVoice();
   };
 
   useEffect(() => {
@@ -7573,8 +7649,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           <div className="relative flex items-center gap-2 shrink-0 z-50 mr-2 mb-2">
             <div className="relative flex items-center justify-center shrink-0 rounded-full h-[48px] w-[48px] p-[2px]">
               <gsapMotion.button
+                type="button"
                 className="relative flex items-center justify-center w-full h-full rounded-full group focus:outline-none shrink-0"
-                onClick={toggleVoice}
+                onPointerDown={handleVoiceButtonPointerDown}
+                onClick={handleVoiceButtonClick}
                 aria-label={
                   voiceState === "idle" ? "Start voice input" : "Voice input"
                 }

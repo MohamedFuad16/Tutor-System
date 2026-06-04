@@ -7443,3 +7443,51 @@ local voice input path and voice visual behavior, but the separate coherent
 provider drill remains open until one deliberate proof attempt links typed
 OpenRouter chat, live Deepgram voice, visual voice behavior, image retrieval,
 and Admin/Beta Diagnostics readiness. AWS/cloud work remains deferred.
+
+# Latest Addendum: Voice Stage Layout and Page Focus
+
+Packet ADK follows the user's narrower visual-stage correction after the mic
+path started working in their real browser.
+
+Implementation:
+
+- The live voice overlay no longer renders current-page focus cards. Current
+  page inspection is handled by the PDF viewer itself.
+- The PDF viewer now listens only for `voice_look_at_current_page` events and
+  draws a border-only outline on the actual page surface.
+- Voice diagram stage chrome was stripped back: no status/header chips, no
+  `focusing chat diagram surface` label, no nested card background, and no
+  stage-level `Next box` controls.
+- The Mermaid stage is larger, centered, transparent, and still semantically
+  highlights the active diagram node.
+- The voice blob moves farther into the top-left and hides its label while a
+  visual stage is active.
+- The server now waits for Deepgram `SettingsApplied` before flushing buffered
+  mic frames and records first input-byte plus provider transcript/status
+  evidence.
+
+Verification evidence:
+
+- Graphify-first traversal routed the slice through `ChatPanel.tsx`,
+  `PdfViewer.tsx`, `server.ts`, and voice tool/test surfaces before source
+  inspection.
+- Read-only sidecars Hubble, Ohm, and Turing independently diagnosed the voice
+  input, layout, and current-page stage paths. Darwin did not return before the
+  local implementation and gates completed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 203 tests.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason voice-stage-visual-reliability --full`:
+  passed, including format check, typecheck, production build, all 203 tests,
+  diff whitespace check, and graphify-out scratch scan.
+- In-app Browser QA confirmed the chat Mermaid surface still renders and visible
+  text no longer includes forbidden voice-stage copy such as `focusing chat
+  diagram surface` or `Current study surface in focus`.
+- The in-app Browser security policy blocked synthetic JavaScript injection for
+  a fake microphone/WebSocket voice-stage screenshot. No live provider-proof
+  completion is claimed from this packet.
+
+Current conservative implementation estimate remains 98%. ADK fixes the local
+voice visual-stage layout and page-focus behavior, but the coherent real
+OpenRouter plus Deepgram provider drill remains open. AWS/cloud work remains
+deferred.

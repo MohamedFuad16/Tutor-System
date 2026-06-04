@@ -226,6 +226,7 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
   );
 
   const request = await functionRequest;
+  ws.send(Buffer.from(new Int16Array([180, -120, 90, -60]).buffer));
   const toolNames = request.functions.map((fn) => fn.name).sort();
   assert.deepEqual(toolNames, [
     "evaluate_answer",
@@ -274,6 +275,18 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         event.status === "completed" &&
         event.title === "Voice client tool completed" &&
         event.requestId === "voice-test-session-1" &&
+        hasVoiceProofMetadata(event),
+    ),
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "voice" &&
+        event.status === "progress" &&
+        event.title === "Voice input audio received" &&
+        event.requestId === "voice-test-session-1" &&
+        event.metadata?.inputBytes > 0 &&
+        event.metadata?.inputSampleRate === 44100 &&
         hasVoiceProofMetadata(event),
     ),
   );

@@ -736,6 +736,34 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ADH",
+      "name": "Provider proof visual drill packet",
+      "owner": "main agent",
+      "status": "open",
+      "write_scope": "workflow packet only until real provider drill resumes"
+    },
+    {
+      "id": "ADI",
+      "name": "Voice visual audio fixes",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/components/ChatPanel.tsx, src/lib/voiceAgentTools.ts, server.ts, server/web-search.ts, audio/library surfaces, tests, workflow evidence"
+    },
+    {
+      "id": "ADJ",
+      "name": "Voice input sample-rate and live visual stage",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/components/ChatPanel.tsx, server.ts, src/lib/voiceAgentTools.ts, tests, workflow evidence"
+    },
+    {
+      "id": "ADK",
+      "name": "Voice stage layout and page focus",
+      "owner": "main agent + read-only sidecars Hubble, Ohm, Turing",
+      "status": "completed",
+      "write_scope": "src/components/ChatPanel.tsx, src/components/PdfViewer.tsx, server.ts, src/lib/voiceAgentTools.ts, tests, workflow evidence"
     }
   ],
   "verification": {
@@ -2019,11 +2047,23 @@
     "Packet ADG Graphify smoke query found BrainArchitectureReadinessGapGroup, beta.diagnostics.ts, and beta-diagnostics.test.mjs",
     "Packet ADG graph artifact grep found no server.mjs, .tmp-test, node_modules/.cache, /private/tmp, or codex-runtimes scratch references",
     "npm run brain:postchange -- --reason post-graphify-final passed for Packet ADG",
-    "npm run brain:postchange -- --reason final-gate --full passed for Packet ADG, including all 202 tests"
+    "npm run brain:postchange -- --reason final-gate --full passed for Packet ADG, including all 202 tests",
+    "Packet ADI fixed local voice transcript tolerance, Mermaid render_diagram tooling, chat/voice image metadata surfaces, Mermaid focus tours, and library audio click behavior without claiming the real provider drill complete",
+    "Packet ADJ measured the browser microphone sample rate, sent inputSampleRate in voice_auth, configured Deepgram input audio to match it, and added a live VoiceUniverse visual stage",
+    "Packet ADK selected after Graphify routed voice visual correction through ChatPanel.tsx, PdfViewer.tsx, server.ts, voiceAgentTools.ts, and focused tests",
+    "Packet ADK read-only sidecars Hubble, Ohm, and Turing diagnosed voice input buffering, blob/stage layout, and current-page PDF focus; Darwin did not return before gates completed",
+    "Packet ADK made current_page voice focuses skip the voice overlay and render as a border-only PDF page outline in PdfViewer",
+    "Packet ADK removed voice diagram stage header/status/focusing copy, made stage Mermaid transparent and centered, hid stage tour controls, and moved the blob farther to the top-left",
+    "Packet ADK server handling now waits for Deepgram SettingsApplied before flushing buffered mic audio and records first voice input bytes plus sanitized provider transcript/status events",
+    "npm run lint passed for Packet ADK",
+    "npm run test passed for Packet ADK, 203 tests",
+    "npm run build passed for Packet ADK",
+    "npm run brain:postchange -- --reason voice-stage-visual-reliability --full passed for Packet ADK, including format check, lint, build, 203 tests, diff whitespace check, and graphify-out scratch scan",
+    "In-app Browser QA for Packet ADK confirmed the chat Mermaid surface still rendered and visible text did not include forbidden voice-stage copy; synthetic voice-stage screenshot injection was blocked by Browser security policy"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 98,
-    "basis": "Conservative local implementation estimate after Packet ADG. Packet ADG makes remaining local beta proof gaps inspectable by category in diagnostics and Admin, but does not run the real approved OpenRouter typed-chat plus live Deepgram voice drill. That drill remains required before renewing a 99% or 100% claim. AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T12:42:31Z"
+    "basis": "Conservative local implementation estimate after Packet ADK. Packets ADI-ADK improve the local voice input, voice visual stage, Mermaid focus tour, web/image metadata, and current-page PDF outline behavior, but they do not complete the real approved OpenRouter typed-chat plus live Deepgram provider drill. That coherent proof attempt remains required before renewing a 99% or 100% claim. AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T15:03:00Z"
   }
 }
