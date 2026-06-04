@@ -44,6 +44,7 @@ export type BrainWiringRehearsalResult = {
   chatToolNames: string[];
   voiceToolNames: string[];
   toolContracts: BrainWiringToolContract[];
+  voiceOnlyToolContracts: BrainWiringVoiceOnlyToolContract[];
   coverage: BetaBrainFlowCoverage;
   checks: BrainWiringRehearsalCheck[];
 };
@@ -56,6 +57,15 @@ export type BrainWiringToolContract = {
   sharedRequiredParameters: string[];
   chatRequiredParameters: string[];
   voiceRequiredParameters: string[];
+};
+
+export type BrainWiringVoiceOnlyToolContract = {
+  toolName: string;
+  ready: boolean;
+  voiceReady: boolean;
+  chatExcluded: boolean;
+  requiredParameters: string[];
+  detail: string;
 };
 
 export type BrainWiringRehearsalGap = {
@@ -76,6 +86,8 @@ const REQUIRED_DUAL_AGENT_TOOL_NAMES = [
   "look_at_current_page",
   "web_search",
 ] as const;
+
+const REQUIRED_VOICE_ONLY_TOOL_NAMES = ["look_at_study_context"] as const;
 
 const stringArray = (value: unknown) =>
   Array.isArray(value)
@@ -126,6 +138,41 @@ const buildToolContracts = (): BrainWiringToolContract[] => {
       sharedRequiredParameters,
       chatRequiredParameters,
       voiceRequiredParameters,
+    };
+  });
+};
+
+const buildVoiceOnlyToolContracts = (): BrainWiringVoiceOnlyToolContract[] => {
+  const chatDefinitionNames = new Set(
+    buildChatAgentToolDefinitions({ includeCurrentPage: true }).map(
+      (tool) => tool.function.name,
+    ),
+  );
+  const voiceDefinitions = new Map(
+    VOICE_AGENT_TOOL_DEFINITIONS.map((tool) => [tool.name, tool]),
+  );
+
+  return REQUIRED_VOICE_ONLY_TOOL_NAMES.map((toolName) => {
+    const voiceDefinition = voiceDefinitions.get(toolName);
+    const requiredParameters = requiredParametersFromSchema(
+      voiceDefinition?.parameters,
+    );
+    const voiceReady = Boolean(voiceDefinition);
+    const chatExcluded = !chatDefinitionNames.has(toolName);
+    const ready =
+      voiceReady &&
+      chatExcluded &&
+      requiredParameters.length === 1 &&
+      requiredParameters[0] === "question";
+
+    return {
+      toolName,
+      ready,
+      voiceReady,
+      chatExcluded,
+      requiredParameters,
+      detail:
+        "Live voice keeps a voice-only study-context tool with a required question field; typed chat receives the same study context through pre-stream packet injection instead of this tool.",
     };
   });
 };
@@ -254,11 +301,16 @@ export const runLocalBrainWiringRehearsal = (
   });
   const chatTools = chatAgentToolNames({ includeCurrentPage: true });
   const voiceTools = [...voiceAgentToolNames];
+  const voiceToolNameSet = new Set<string>(voiceTools);
   const toolContracts = buildToolContracts();
+  const voiceOnlyToolContracts = buildVoiceOnlyToolContracts();
   const sharedToolsReady = REQUIRED_DUAL_AGENT_TOOL_NAMES.every(
     (toolName) => chatTools.includes(toolName) && voiceTools.includes(toolName),
   );
   const toolContractsReady = toolContracts.every((contract) => contract.ready);
+  const voiceOnlyToolsReady = voiceOnlyToolContracts.every(
+    (contract) => contract.ready && voiceToolNameSet.has(contract.toolName),
+  );
   const coverage = buildBrainFlowCoverageFromLedgers({
     memoryEvents: [
       contextEventFor(chatPacket, 1),
@@ -432,6 +484,13 @@ export const runLocalBrainWiringRehearsal = (
         "The rehearsal compares chat and voice tool definitions before provider traffic so missing or drifted required fields are caught locally.",
     },
     {
+      id: "voice_context_tool",
+      title: "Voice-only study context tool",
+      ready: voiceOnlyToolsReady,
+      detail:
+        "Live voice exposes look_at_study_context with a required question field, while typed chat stays on pre-injected brain-context packets instead of adding that voice-only tool to parity checks.",
+    },
+    {
       id: "synthetic_isolation",
       title: "Synthetic isolation",
       ready: true,
@@ -458,7 +517,7 @@ export const runLocalBrainWiringRehearsal = (
     liveCoverageMutated: false,
     status: ready ? "ready" : "failed",
     summary: ready
-      ? "Shared packet assembly, balanced multi-PDF context, dual-agent tools, and the thirteen-signal verifier passed in memory."
+      ? "Shared packet assembly, balanced multi-PDF context, dual-agent tools, the voice-only study-context tool, and the thirteen-signal verifier passed in memory."
       : "One or more local wiring contracts failed rehearsal. Review the failed synthetic checks before live beta traffic.",
     chatRequestId: chatPacket.requestId,
     voiceRequestId: voicePacket.requestId,
@@ -466,6 +525,7 @@ export const runLocalBrainWiringRehearsal = (
     chatToolNames: chatTools,
     voiceToolNames: voiceTools,
     toolContracts,
+    voiceOnlyToolContracts,
     coverage,
     checks,
   };

@@ -152,6 +152,79 @@ tests/system-activity.test.mjs tests/beta-diagnostics.test.mjs`: passed through
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+## 2026-06-04 Slice: Voice-Only Study-Context Tool Boundary
+
+### Scope
+
+- Tightened the local brain-wiring rehearsal so the Admin synthetic rehearsal
+  proves the intentional asymmetry between typed chat and live voice.
+- Shared chat/voice tool parity remains scoped to `update_graph`,
+  `generate_flashcards`, `evaluate_answer`, `look_at_current_page`, and
+  `web_search`.
+- Added a separate voice-only contract for `look_at_study_context` with required
+  `question` input, while confirming typed chat stays on pre-stream
+  brain-context packet injection instead of exposing that voice-only tool.
+- Updated Admin Beta Diagnostics and architecture-book copy so the proof UI,
+  built-in docs, and executable tests describe the same boundary.
+
+### Graphify Evidence
+
+- `graphify query "brain flow coverage verifier chat voice context injection tool
+  calls transcript persistence background memory provider-key proof remaining
+  runtime gaps Admin Beta Diagnostics" --budget 2500 --graph
+  graphify-out/graph.json` routed the audit to `beta.diagnostics.ts`,
+  `brain.rehearsal.ts`, `AdminView.tsx`, `chatAgentTools.ts`,
+  `voiceAgentTools.ts`, and `tests/brain-rehearsal.test.mjs`.
+- `graphify path "ChatPanel()" "buildBrainContextPacket()" --graph
+  graphify-out/graph.json` confirmed typed chat reaches the shared context packet
+  builder through `ChatPanel.tsx` and `brain.context.ts`.
+- After regeneration, `graphify query "voice-only study-context tool boundary in
+  local brain wiring rehearsal Admin Beta Diagnostics" --budget 1600 --graph
+  graphify-out/graph.json` found `BrainWiringVoiceOnlyToolContract`,
+  `buildVoiceOnlyToolContracts()`, `REQUIRED_VOICE_ONLY_TOOL_NAMES`,
+  `runLocalBrainWiringRehearsal()`, `AdminView.tsx`, and the new test
+  `voiceOnlyContext` node.
+
+### Verification Evidence
+
+- `npm run format:check`: passed.
+- `npm run test`: passed, 184 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Browser QA in the Codex in-app browser at `http://localhost:3001`:
+  - Desktop 1280x720: Beta Diagnostics loaded, synthetic rehearsal ran, and the
+    rendered result showed `synthetic ready`, `live remains 0%`,
+    `Voice-only context`, and `look at study context` with no horizontal
+    overflow.
+  - Mobile 390x844: same rendered proof strings visible with `scrollWidth ===
+    clientWidth` and no horizontal overflow.
+  - Screenshots saved to
+    `/private/tmp/learningai-admin-voice-context-desktop.png` and
+    `/private/tmp/learningai-admin-voice-context-mobile.png`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1199 nodes, 2060 edges, and 77 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`86.7 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch nodes.
+
+### Current Estimate
+
+- Local user-brain architecture implementation remains about 99% complete for
+  the local beta scope.
+- This slice reduces proof ambiguity, but it does not replace the hard live
+  provider drill.
+
+### Remaining Work
+
+- Run deliberate real provider-key typed chat and live voice turns with
+  OpenRouter and Deepgram when beta traffic is in scope.
+- Confirm the coherent proof bundle with real provider-ready rows, not fallback
+  chat rows or mock voice-provider rows.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
 ---
 
 # Packet ACT: MisoTTS Vast API Option
@@ -786,6 +859,43 @@ tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
 - Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
+
+# Latest Addendum: Voice-Only Study-Context Tool Boundary
+
+The latest implementation slice tightens the Admin synthetic rehearsal contract:
+shared typed-chat/live-voice tool parity remains the five shared tools, and live
+voice now has an explicit separate proof for the voice-only
+`look_at_study_context` tool with required `question` input. Typed chat remains
+validated through pre-stream brain-context packet injection.
+
+Evidence recorded in this run:
+
+- `npm run format:check`: passed.
+- `npm run test`: passed, 184 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Browser QA on `http://localhost:3001`: desktop 1280x720 and mobile 390x844
+  both rendered `synthetic ready`, `live remains 0%`, `Voice-only context`, and
+  `look at study context` with no horizontal overflow.
+- Screenshots:
+  `/private/tmp/learningai-admin-voice-context-desktop.png` and
+  `/private/tmp/learningai-admin-voice-context-mobile.png`.
+- `graphify update . --force`: passed with 1199 nodes, 2060 edges, and 77
+  communities.
+- `npm run graphify:tree`: passed.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch nodes.
+- Graphify query found `BrainWiringVoiceOnlyToolContract`,
+  `buildVoiceOnlyToolContracts()`, `REQUIRED_VOICE_ONLY_TOOL_NAMES`,
+  `runLocalBrainWiringRehearsal()`, `AdminView.tsx`, and the new
+  `voiceOnlyContext` test node.
+
+Current conservative local-beta brain architecture completion estimate: about
+99%.
+
+Remaining hard gaps: real provider-key typed chat plus live voice drill with
+OpenRouter and Deepgram, coherent provider-ready proof rows, broader beta
+validation, and the deferred AWS/cloud work after beta.
 
 # Phase 68: Chat Read-Aloud Miso Surface
 

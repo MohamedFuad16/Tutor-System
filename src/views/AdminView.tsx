@@ -5794,10 +5794,10 @@ export function AdminView() {
                             shared multi-PDF packet helpers, typed-chat tool
                             definitions, live-voice tool definitions, and the
                             same thirteen-signal coverage verifier. It also
-                            compares shared tool schemas before live provider
-                            turns. It writes no durable rows, calls no
-                            providers, and never raises the live coverage meter
-                            above.
+                            compares shared tool schemas and the voice-only
+                            study-context tool before live provider turns. It
+                            writes no durable rows, calls no providers, and
+                            never raises the live coverage meter above.
                           </p>
                         </div>
                         <button
@@ -6013,6 +6013,34 @@ export function AdminView() {
                                       ),
                                     )}
                                   </div>
+                                </div>
+                                <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2">
+                                  <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                    Voice-only context
+                                  </div>
+                                  <div className="mt-2 flex flex-wrap gap-1">
+                                    {brainWiringRehearsal.voiceOnlyToolContracts.map(
+                                      (contract) => (
+                                        <span
+                                          key={contract.toolName}
+                                          title={`Required: ${contract.requiredParameters.join(", ") || "none"}; ${contract.chatExcluded ? "excluded from typed-chat parity" : "unexpectedly exposed to typed chat"}`}
+                                          className={`rounded-full border px-2 py-0.5 text-[10px] font-mono ${
+                                            contract.ready
+                                              ? "border-green-100 bg-green-50 text-green-700"
+                                              : "border-red-100 bg-red-50 text-red-700"
+                                          }`}
+                                        >
+                                          {contract.toolName.replace(/_/g, " ")}
+                                        </span>
+                                      ),
+                                    )}
+                                  </div>
+                                  <p className="mt-2 text-[11px] leading-relaxed text-zinc-500 font-serif">
+                                    Typed chat is checked through pre-stream
+                                    context injection; live voice also keeps
+                                    this local tool so it can inspect study
+                                    context mid-session.
+                                  </p>
                                 </div>
                               </div>
                             </div>

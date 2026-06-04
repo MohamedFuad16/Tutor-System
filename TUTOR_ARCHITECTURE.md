@@ -236,9 +236,9 @@ duration seconds without network access. Use the Deepgram provider in
   reviewed.
 - Beta Diagnostics also includes a deterministic synthetic wiring rehearsal.
   It exercises the shared multi-PDF packet helpers, typed-chat and live-voice
-  tool definitions, and the same thirteen-signal verifier in memory only. It does
-  not write Dexie, call providers, enter exports, or count toward live beta
-  readiness.
+  tool definitions, the intentional voice-only study-context tool boundary, and
+  the same thirteen-signal verifier in memory only. It does not write Dexie, call
+  providers, enter exports, or count toward live beta readiness.
 - Source-card local citation checks, generated flashcard provenance checks,
   generated learning-note provenance checks, plus chapter audio-guide manifest
   integrity checks. Flashcard provenance checks saved card ids and local

@@ -37,6 +37,10 @@ test("local brain wiring rehearsal proves shared contracts without persisting be
     rehearsal.toolContracts.every((contract) => contract.ready),
     true,
   );
+  assert.equal(
+    rehearsal.voiceOnlyToolContracts.every((contract) => contract.ready),
+    true,
+  );
 });
 
 test("synthetic rehearsal cannot raise an empty live beta snapshot", () => {
@@ -83,6 +87,34 @@ test("local brain wiring rehearsal checks the shared typed-chat and voice tool c
       (contract) => contract.toolName === "evaluate_answer",
     )?.sharedRequiredParameters,
     ["conceptId", "learnerAnswer", "question"],
+  );
+});
+
+test("local brain wiring rehearsal proves the voice-only study-context tool boundary", () => {
+  const rehearsal = runLocalBrainWiringRehearsal();
+  const voiceOnlyContext = rehearsal.voiceOnlyToolContracts.find(
+    (contract) => contract.toolName === "look_at_study_context",
+  );
+
+  assert.ok(voiceOnlyContext);
+  assert.equal(voiceOnlyContext.ready, true);
+  assert.equal(voiceOnlyContext.voiceReady, true);
+  assert.equal(voiceOnlyContext.chatExcluded, true);
+  assert.deepEqual(voiceOnlyContext.requiredParameters, ["question"]);
+  assert.ok(rehearsal.voiceToolNames.includes("look_at_study_context"));
+  assert.equal(
+    rehearsal.chatToolNames.includes("look_at_study_context"),
+    false,
+  );
+  assert.equal(
+    rehearsal.toolContracts.some(
+      (contract) => contract.toolName === "look_at_study_context",
+    ),
+    false,
+  );
+  assert.equal(
+    rehearsal.checks.find((check) => check.id === "voice_context_tool")?.ready,
+    true,
   );
 });
 
