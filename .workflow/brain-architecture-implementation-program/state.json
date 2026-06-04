@@ -1760,11 +1760,16 @@
     "npm run graphify:tree passed for Packet ACT and wrote GRAPH_TREE.html at 85.1 KB",
     "Graphify smoke query found misoTtsApiBaseUrl(), misotts_api_server.py, speech(), SettingsModal.tsx, ChatPanel(), RevisionView(), and connected server/store/read-aloud surfaces",
     "graphify path SettingsButton() to ttsCostForModel() found a connected five-hop route through store/Admin/server graph nodes",
-    "Packet ACT graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
+    "Packet ACT graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references",
+    "Vast SSH to root@120.238.149.205 port 31651 now works after accepting the updated host key",
+    "Remote MisoTTS environment imports passed with torch 2.4.0+cu121, torchaudio 2.4.0+cu121, CUDA true, NVIDIA GeForce RTX 3090, generator, silentcipher, transformers, huggingface_hub, moshi, bitsandbytes, torchtune, torchao, fastapi, and uvicorn",
+    "MisoTTS 8B preload reached Hugging Face model resolution for MisoLabs/MisoTTS but reported an expected model file size of about 32752.53 MB against the current 32 GB container filesystem",
+    "Moving the venv to /dev/shm made enough root space available but failed because /dev/shm is mounted noexec and Torch shared libraries could not map executable segments",
+    "The container refused a new executable tmpfs mount, so the venv was restored to /root/MisoTTS/.venv; live MisoTTS API/audio QA now requires a larger executable disk allocation before downloading the 8B weights"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packets ACS and ACT final gates: Admin can start a proof attempt, load typed-chat and live-voice proof prompts into ChatPanel, staged voice proof text queues and flushes after websocket auth, chat/read-aloud TTS settings can select MisoTTS 8B through the existing local /api/tts route, and the code architecture graph has been regenerated cleanly. Remaining unproven gaps are the deliberate real OpenRouter plus Deepgram beta drill, broader beta validation, and the Vast MisoTTS remote install/audio QA after the SSH endpoint accepts connections; AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T03:18:00Z"
+    "basis": "Local architecture estimate after Packets ACS and ACT final gates: Admin can start a proof attempt, load typed-chat and live-voice proof prompts into ChatPanel, staged voice proof text queues and flushes after websocket auth, chat/read-aloud TTS settings can select MisoTTS 8B through the existing local /api/tts route, and the code architecture graph has been regenerated cleanly. Vast SSH and dependency installation now work, but MisoTTS 8B live audio QA is blocked by the rented container's 32 GB executable root disk, which cannot fit the 32.8 GB model blob plus the Torch runtime. Remaining unproven gaps are the deliberate real OpenRouter plus Deepgram beta drill, broader beta validation, and a larger-disk Vast MisoTTS model preload/API proof; AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T05:22:08Z"
   }
 }

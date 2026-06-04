@@ -647,6 +647,25 @@ tests/audio-overview-plan.test.mjs`: passed through the project runner, 161
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
 
+## Vast MisoTTS Remote Evidence - 2026-06-04
+
+- Vast SSH access to `root@120.238.149.205:31651` is now working.
+- Remote host has an NVIDIA GeForce RTX 3090 and CUDA-enabled
+  `torch 2.4.0+cu121` / `torchaudio 2.4.0+cu121`.
+- `/root/MisoTTS` is cloned, `silentcipher` is installed from the matching
+  upstream commit, and the MisoTTS Python environment imports `generator`,
+  `silentcipher`, `transformers`, `huggingface_hub`, `moshi`, `bitsandbytes`,
+  `torchtune`, `torchao`, `fastapi`, and `uvicorn`.
+- MisoTTS model preload reached Hugging Face weight resolution for
+  `MisoLabs/MisoTTS`, but the model blob requires about 32.8 GB while the
+  current Vast container has only a 32 GB executable root filesystem.
+- Moving the venv to `/dev/shm` made enough root space available, but
+  `/dev/shm` is mounted `noexec`, causing Torch shared library loading to fail;
+  the container also rejects creating a new executable tmpfs mount.
+- The venv was restored to `/root/MisoTTS/.venv`; dependency installation is
+  preserved, but live MisoTTS 8B API/audio QA requires a larger executable disk
+  allocation before the model weights can be downloaded and loaded.
+
 ---
 
 # Packet ACL: Live Provider Proof Receipt
