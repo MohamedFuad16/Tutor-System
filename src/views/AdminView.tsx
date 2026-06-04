@@ -4307,6 +4307,82 @@ export function AdminView() {
                         </div>
                       )}
 
+                      <div className="mb-4 rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-600/75">
+                              <BrainCircuit size={13} /> Brain Architecture
+                            </div>
+                            <h3 className="mt-2 text-xl font-serif font-medium text-zinc-900">
+                              Local beta completion
+                            </h3>
+                            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-zinc-600 font-serif">
+                              {
+                                betaDiagnosticsSnapshot
+                                  .brainArchitectureReadiness.summary
+                              }
+                            </p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <span
+                                className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${statusTone(betaDiagnosticsSnapshot.brainArchitectureReadiness.status)}`}
+                              >
+                                {betaDiagnosticsSnapshot.brainArchitectureReadiness.stage.replace(
+                                  /_/g,
+                                  " ",
+                                )}
+                              </span>
+                              <span className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-600">
+                                brain flow{" "}
+                                {
+                                  betaDiagnosticsSnapshot
+                                    .brainArchitectureReadiness.brainFlowPercent
+                                }
+                                %
+                              </span>
+                              <span className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-600">
+                                coherent proof{" "}
+                                {
+                                  betaDiagnosticsSnapshot
+                                    .brainArchitectureReadiness
+                                    .coherentProofPercent
+                                }
+                                %
+                              </span>
+                              <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-amber-700">
+                                cloud deferred
+                              </span>
+                            </div>
+                          </div>
+                          <div className="shrink-0 rounded-2xl border border-blue-100 bg-white px-5 py-4 text-right shadow-sm">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              Completion
+                            </div>
+                            <div className="mt-1 text-3xl font-semibold tabular-nums text-zinc-900">
+                              {
+                                betaDiagnosticsSnapshot
+                                  .brainArchitectureReadiness.localBetaPercent
+                              }
+                              %
+                            </div>
+                            <p className="mt-2 max-w-[11rem] text-[11px] leading-relaxed text-zinc-500 font-serif">
+                              Local brain architecture proof, not AWS readiness.
+                            </p>
+                          </div>
+                        </div>
+
+                        {betaDiagnosticsSnapshot.brainArchitectureReadiness
+                          .remainingGaps.length > 0 && (
+                          <div className="mt-4 rounded-xl border border-white/80 bg-white/80 px-3 py-2 text-xs leading-relaxed text-zinc-600 font-serif">
+                            Next gap:{" "}
+                            {
+                              betaDiagnosticsSnapshot.brainArchitectureReadiness
+                                .remainingGaps[0]
+                            }
+                            .
+                          </div>
+                        )}
+                      </div>
+
                       <div className="grid gap-3 md:grid-cols-5">
                         {[
                           [

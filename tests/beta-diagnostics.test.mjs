@@ -302,8 +302,17 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
   assert.equal(snapshot.counts.bookChatThreads, 1);
   assert.equal(snapshot.brainFlow.status, "ready");
   assert.equal(snapshot.coherentLiveProof.status, "ready");
+  assert.equal(snapshot.brainArchitectureReadiness.status, "ready");
+  assert.equal(snapshot.brainArchitectureReadiness.stage, "local_beta_proven");
+  assert.equal(snapshot.brainArchitectureReadiness.localBetaPercent, 100);
+  assert.equal(snapshot.brainArchitectureReadiness.betaProofReady, true);
   assert.equal(
     snapshot.items.find((item) => item.id === "coherent_live_proof")?.status,
+    "ready",
+  );
+  assert.equal(
+    snapshot.items.find((item) => item.id === "brain_architecture_readiness")
+      ?.status,
     "ready",
   );
   assert.equal(
@@ -1110,6 +1119,31 @@ test("coherent live proof requires provider rows to carry the shared proof attem
     proof.checks.find((check) => check.id === "provider_evidence_attempt_bound")
       ?.ready,
     false,
+  );
+  const snapshot = buildBetaDiagnosticsSnapshot({
+    brainFlow: completeBrainFlow,
+    coherentLiveProof: proof,
+  });
+  assert.equal(snapshot.brainArchitectureReadiness.status, "watch");
+  assert.equal(
+    snapshot.brainArchitectureReadiness.stage,
+    "provider_drill_pending",
+  );
+  assert.equal(snapshot.brainArchitectureReadiness.localBetaPercent, 99);
+  assert.ok(
+    snapshot.brainArchitectureReadiness.remainingGaps.includes(
+      "Provider evidence shares proof attempt",
+    ),
+  );
+  assert.ok(
+    snapshot.brainArchitectureReadiness.remainingGaps.includes(
+      "Real provider-key typed chat plus live Deepgram voice drill",
+    ),
+  );
+  assert.equal(
+    snapshot.items.find((item) => item.id === "brain_architecture_readiness")
+      ?.status,
+    "watch",
   );
   for (const bundle of proof.requestBundles) {
     assert.equal(bundle.complete, true);
@@ -1978,6 +2012,7 @@ test("brain flow coverage stays blocked when local flow rows fail", () => {
   );
   assert.equal(flowItem?.status, "blocked");
   assert.match(flowItem?.summary || "", /failed or blocked/);
+  assert.equal(snapshot.brainArchitectureReadiness.status, "blocked");
 });
 
 test("beta diagnostics escalate failed model and retrieval rows", () => {
@@ -2094,4 +2129,6 @@ test("beta diagnostics export preserves local-only scope and ledger samples", ()
   });
   assert.equal(payload.ledgers.memoryEvents[0].id, "memory-1");
   assert.ok(payload.outOfScope.includes("AWS/cloud synchronization"));
+  assert.equal(payload.snapshot.brainArchitectureReadiness.localOnly, true);
+  assert.equal(payload.snapshot.brainArchitectureReadiness.cloudDeferred, true);
 });

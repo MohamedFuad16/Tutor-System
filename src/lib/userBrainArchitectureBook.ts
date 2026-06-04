@@ -35,6 +35,7 @@ The system is inspired by continuous interaction-model work, but LearningAI is a
 - Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
 - Admin exposes model runs, tool jobs, background job retry/dead-letter rows, voice-agent lifecycle events, memory/retrieval events, evidence, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
 - Beta Diagnostics now includes a local brain-flow coverage verifier for chat context injection, voice context injection, chat and voice multi-PDF context evidence, request correlation, chat and voice foreground tool calls, chat and voice evaluated mastery evidence, chat and voice transcript persistence, background learner-memory writes, and the model-observation evidence gate on those background writes. Each signal now surfaces compact live request anchors, row sources, latest timestamps, and context PDF ids when the live ledger has proof.
+- Admin now shows a top-level brain architecture readiness percentage in Beta Diagnostics and exports it in the local diagnostics JSON. It reaches 100% only when the local-live coherent proof is ready; it reaches 99% only for the final provider-proof binding gap, and it keeps AWS/cloud readiness deferred.
 - Admin can start a local proof attempt before the manual provider-key chat and voice run. That start action writes a local lifecycle memory event, chat and voice context, retrieval, transcript, model/tool, evidence, and background-memory metadata carry the same attempt id, and coherent proof requires the durable start row plus shared book, thread, and multi-PDF anchors.
 - Coherent provider-key proof now separates completed model rows from provider-ready evidence: typed chat must include a completed OpenRouter-backed row for the selected request, live voice must include the server-side Deepgram \`Voice provider ready\` system-activity row, and both provider evidence rows must carry the same Admin proof attempt id as the selected chat and voice rows. The local \`Mock voice provider ready\` row stays visible for debugging but does not satisfy provider-key proof.
 - Voice websocket system-activity rows now preserve the same proof attempt id, voice mode, and voice-realtime agent layer across auth, context injection, provider readiness, tool requests, tool completions, and close events.
@@ -178,7 +179,7 @@ Implemented Admin surfaces:
 | Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and chapter audio guide provenance. |
 | Correction Requests | Non-destructive review and propagation state. |
 | Runtime Tuning | Local knobs for source-vs-web, memory context, tool budget, and refresh cadence. |
-| Beta Diagnostics | Capped local export, readiness gate summary, live brain-flow coverage for chat, voice, both foreground tool layers, retrieval, model, both evaluated mastery layers, background memory evidence, model-observation gates, provider-key drill prompts with expected rows, attempt-bound real provider-ready row proof, and background job dead-letter blocking. Each live signal shows compact request/source/PDF anchors when evidence exists. The tab also includes a clearly separated in-memory synthetic wiring rehearsal that checks shared chat/voice tool schemas without counting toward live readiness. |
+| Beta Diagnostics | Capped local export, top-level brain architecture readiness percentage, readiness gate summary, live brain-flow coverage for chat, voice, both foreground tool layers, retrieval, model, both evaluated mastery layers, background memory evidence, model-observation gates, provider-key drill prompts with expected rows, attempt-bound real provider-ready row proof, and background job dead-letter blocking. Each live signal shows compact request/source/PDF anchors when evidence exists. The tab also includes a clearly separated in-memory synthetic wiring rehearsal that checks shared chat/voice tool schemas without counting toward live readiness. |
 
 The key boundary: Admin reports recorded system state. It must not pretend to know private model internals beyond saved traces, summaries, tool rows, voice lifecycle events, and artifacts.`,
   },
@@ -233,6 +234,7 @@ Implemented now:
 - local generated learning-note provenance verifier;
 - local stored audio-guide manifest-integrity verifier;
 - capped beta diagnostics export;
+- top-level local brain architecture readiness percentage in Admin and diagnostics export;
 - Admin-started local proof attempt ids and lifecycle memory rows for provider-key chat+voice beta proof;
 - voice proof-attempt metadata in local websocket system-activity rows;
 - latched live-voice proof attempt ids across voice context, model, tool, transcript, and background-memory rows;
@@ -244,6 +246,7 @@ Implemented now:
 
 Still local beta work:
 
+- real provider-key typed chat plus live Deepgram voice drill against one active multi-PDF book and proof attempt;
 - stronger semantic source-span matching beyond the current generated-note preview-level lexical support;
 - generated-artifact verifiers for charts, code snippets, images, websites, previews, and other unsupported artifact kinds;
 - document-wide grounding and entailment checks for generated learning notes beyond compact saved previews;

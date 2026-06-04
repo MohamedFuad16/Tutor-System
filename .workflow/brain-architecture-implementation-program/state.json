@@ -1845,11 +1845,17 @@
     "Browser QA screenshots saved as phase77-admin-concise-preface-desktop.png, phase77-tutor-book-misotts-provider-desktop.png, and phase77-user-brain-misotts-mobile.png; JSON evidence saved as phase77-book-readiness-browser-qa.json",
     "Clean graphify update . --force regenerated code architecture artifacts with 1195 nodes, 2054 edges, and 66 communities after removing generated server.mjs",
     "npm run graphify:tree passed for Packet ACX and wrote GRAPH_TREE.html at 86.5 KB",
-    "Packet ACX graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
+    "Packet ACX graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references",
+    "Packet ACY selected after Graphify routed Admin readiness, beta diagnostics, user brain architecture, app design book, and workflow state through beta.diagnostics.ts, AdminView.tsx, userBrainArchitectureBook.ts, tutorBook.json, RevisionView.tsx, and focused beta diagnostics tests",
+    "buildBrainArchitectureReadiness now turns brain-flow coverage plus coherent live proof into a local-only readiness object with localBetaPercent, stage, nextAction, completedMilestones, remainingGaps, missingSignals, and missingProofChecks",
+    "Admin Beta Diagnostics now renders a top-level Brain Architecture Local beta completion card and diagnostics export includes the readiness object",
+    "Readiness is conservative: 100% requires complete local-live coherent proof, 99% is reserved for the final provider-proof binding gap, and AWS/cloud readiness remains deferred",
+    "tests/beta-diagnostics.test.mjs covers 100% local-live proof, 99% provider-proof binding gap, blocked local rows, and export preservation for brainArchitectureReadiness",
+    "TUTOR_ARCHITECTURE.md, userBrainArchitectureBook.ts, tutorBook.json, and the App Design reader card describe the same readiness percentage boundary"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACX: chat, voice, multi-PDF context injection, proof-attempt handoff, local TTS routing, configurable MisoTTS endpoint selection, Admin proof receipts, provider meters, architecture books, audio guide contracts, and Graphify code architecture refresh are wired locally. The remaining unproven gaps are the real OpenRouter plus Deepgram provider-key beta drill, broader beta validation, and a larger-disk Vast MisoTTS 8B model preload/API audio proof; AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T06:37:00Z"
+    "basis": "Local architecture estimate after Packet ACY: Admin now exposes and exports a source-backed local beta completion meter. The app remains at 99% only when brain-flow evidence is complete and the final provider-proof binding gap remains; 100% requires a real OpenRouter typed-chat plus Deepgram live-voice provider drill with shared proof attempt, multi-PDF book/thread anchors, and attempt-bound provider rows. AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T08:18:00Z"
   }
 }

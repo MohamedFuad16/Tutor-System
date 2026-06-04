@@ -170,17 +170,17 @@ tests/system-activity.test.mjs tests/beta-diagnostics.test.mjs`: passed through
 ### Graphify Evidence
 
 - `graphify query "brain flow coverage verifier chat voice context injection tool
-  calls transcript persistence background memory provider-key proof remaining
-  runtime gaps Admin Beta Diagnostics" --budget 2500 --graph
-  graphify-out/graph.json` routed the audit to `beta.diagnostics.ts`,
+calls transcript persistence background memory provider-key proof remaining
+runtime gaps Admin Beta Diagnostics" --budget 2500 --graph
+graphify-out/graph.json` routed the audit to `beta.diagnostics.ts`,
   `brain.rehearsal.ts`, `AdminView.tsx`, `chatAgentTools.ts`,
   `voiceAgentTools.ts`, and `tests/brain-rehearsal.test.mjs`.
 - `graphify path "ChatPanel()" "buildBrainContextPacket()" --graph
-  graphify-out/graph.json` confirmed typed chat reaches the shared context packet
+graphify-out/graph.json` confirmed typed chat reaches the shared context packet
   builder through `ChatPanel.tsx` and `brain.context.ts`.
 - After regeneration, `graphify query "voice-only study-context tool boundary in
-  local brain wiring rehearsal Admin Beta Diagnostics" --budget 1600 --graph
-  graphify-out/graph.json` found `BrainWiringVoiceOnlyToolContract`,
+local brain wiring rehearsal Admin Beta Diagnostics" --budget 1600 --graph
+graphify-out/graph.json` found `BrainWiringVoiceOnlyToolContract`,
   `buildVoiceOnlyToolContracts()`, `REQUIRED_VOICE_ONLY_TOOL_NAMES`,
   `runLocalBrainWiringRehearsal()`, `AdminView.tsx`, and the new test
   `voiceOnlyContext` node.
@@ -197,7 +197,7 @@ tests/system-activity.test.mjs tests/beta-diagnostics.test.mjs`: passed through
     `Voice-only context`, and `look at study context` with no horizontal
     overflow.
   - Mobile 390x844: same rendered proof strings visible with `scrollWidth ===
-    clientWidth` and no horizontal overflow.
+clientWidth` and no horizontal overflow.
   - Screenshots saved to
     `/private/tmp/learningai-admin-voice-context-desktop.png` and
     `/private/tmp/learningai-admin-voice-context-mobile.png`.
@@ -6768,7 +6768,7 @@ Verification evidence:
 - `npm run build`: passed.
 - Browser QA on `http://localhost:3001`:
   - Admin Beta Diagnostics desktop 1280x720 rendered `Provider evidence shares
-    proof attempt`, the attempt-bound provider evidence copy, and the coherent
+proof attempt`, the attempt-bound provider evidence copy, and the coherent
     bundle with no horizontal overflow.
   - Admin Beta Diagnostics mobile 390x844 rendered the same proof check/copy
     with no horizontal overflow and zero browser error logs.
@@ -6796,3 +6796,70 @@ Current conservative local-beta brain architecture completion estimate: about
 Remaining hard gaps: real provider-key typed chat plus live voice drill with
 OpenRouter and Deepgram, coherent provider-ready proof rows from that real run,
 broader beta validation, and the deferred AWS/cloud work after beta.
+
+# Latest Addendum: Brain Architecture Readiness Rollup
+
+This slice makes the brain architecture completion percentage a reusable local
+diagnostics contract instead of a report-only estimate. Admin Beta Diagnostics
+now shows a top-level Brain Architecture `Local beta completion` card, and the
+diagnostics JSON export carries the same readiness object.
+
+Implementation:
+
+- Added `BrainArchitectureReadiness` and
+  `buildBrainArchitectureReadiness()` in `beta.diagnostics.ts`.
+- The readiness rollup combines brain-flow coverage and coherent live proof into
+  `localBetaPercent`, `stage`, `nextAction`, completed milestones, remaining
+  gaps, missing signals, and missing proof checks.
+- The percentage is intentionally conservative: `100%` requires complete
+  local-live coherent proof; `99%` is reserved for the final provider-proof
+  binding gap; AWS/cloud readiness remains deferred.
+- Admin Beta Diagnostics renders the readiness card before the long signal
+  grids, including brain-flow percent, coherent-proof percent, stage, cloud
+  deferred, and the next gap.
+- Tutor System Architecture, User Brain Architecture, Tutor/App Design book
+  copy, the App Design reader card, workflow plan, and workflow state now
+  describe the same readiness boundary.
+
+Verification evidence:
+
+- `npm run brain:postchange -- --reason skill-preflight`: unavailable because
+  `package.json` has no `brain:postchange` script.
+- `npm run format:check`: passed.
+- `npm run test`: passed, 185 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser QA on `http://localhost:3001`:
+  - Admin Beta Diagnostics desktop `1280x720` rendered Brain Architecture,
+    Local beta completion, cloud deferred, and not-AWS-readiness copy with no
+    horizontal overflow and zero browser warning/error logs.
+  - Admin Beta Diagnostics mobile `390x844` rendered the same readiness card
+    with no horizontal overflow and zero browser warning/error logs.
+  - App Design Language reader desktop and mobile rendered the Local Beta
+    Control Patterns readiness rule, including the `100%` and `99%` boundaries
+    plus cloud-deferred copy, with no horizontal overflow and zero browser
+    warning/error logs.
+- Screenshots:
+  `.workflow/brain-architecture-implementation-program/results/ACY-admin-brain-readiness-desktop.png`,
+  `.workflow/brain-architecture-implementation-program/results/ACY-admin-brain-readiness-mobile.png`,
+  `.workflow/brain-architecture-implementation-program/results/ACY-app-design-readiness-desktop.png`,
+  and
+  `.workflow/brain-architecture-implementation-program/results/ACY-app-design-readiness-mobile.png`.
+- `graphify update . --force`: passed with 1204 nodes, 2069 edges, and 72
+  communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`87.1 KB`).
+- Graphify query found `buildBrainArchitectureReadiness()`,
+  `buildBetaDiagnosticsSnapshot()`, `buildProviderKeyProofChecklist()`, and
+  `AdminView()`.
+- Graphify path `buildBrainArchitectureReadiness` to `AdminView()` found a
+  two-hop route through `buildBetaDiagnosticsSnapshot()`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch nodes.
+
+Current conservative local-beta brain architecture completion estimate: 99%.
+
+Remaining hard gap: run a real provider-key typed-chat turn plus live Deepgram
+voice drill with OpenRouter and Deepgram traffic under one Admin proof attempt,
+then confirm coherent provider-ready proof rows from that real run. Broader beta
+validation remains open. AWS/cloud work is still deferred until after beta.

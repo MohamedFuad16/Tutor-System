@@ -346,6 +346,29 @@ export type CoherentLiveProofBundle = {
   checks: CoherentLiveProofCheck[];
 };
 
+export type BrainArchitectureReadinessStage =
+  | "local_beta_proven"
+  | "provider_drill_pending"
+  | "live_evidence_pending"
+  | "blocked";
+
+export type BrainArchitectureReadiness = {
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  stage: BrainArchitectureReadinessStage;
+  localBetaPercent: number;
+  brainFlowPercent: number;
+  coherentProofPercent: number;
+  betaProofReady: boolean;
+  localOnly: true;
+  cloudDeferred: true;
+  summary: string;
+  nextAction: string;
+  completedMilestones: string[];
+  remainingGaps: string[];
+  missingSignals: string[];
+  missingProofChecks: string[];
+};
+
 type BetaMemoryEventLedgerRow = Pick<
   MemoryEvent,
   | "eventType"
@@ -422,6 +445,7 @@ export type BetaDiagnosticsSnapshot = {
   >;
   brainFlow: BetaBrainFlowCoverage;
   coherentLiveProof: CoherentLiveProofBundle;
+  brainArchitectureReadiness: BrainArchitectureReadiness;
   runtimeSettings?: unknown;
   items: BetaDiagnosticItem[];
   outOfScope: string[];
@@ -1929,6 +1953,121 @@ export const buildCoherentLiveProofFromLedgers = (
   };
 };
 
+const FINAL_PROVIDER_PROOF_GAPS = new Set([
+  "Provider evidence shares proof attempt",
+  "Fresh live proof window",
+]);
+
+export const buildBrainArchitectureReadiness = ({
+  brainFlow,
+  coherentLiveProof,
+}: {
+  brainFlow: BetaBrainFlowCoverage;
+  coherentLiveProof: CoherentLiveProofBundle;
+}): BrainArchitectureReadiness => {
+  const failedRows = Math.max(
+    brainFlow.failedRows,
+    coherentLiveProof.failedRows,
+  );
+  const blocked =
+    failedRows > 0 ||
+    brainFlow.status === "blocked" ||
+    coherentLiveProof.status === "blocked";
+  const betaProofReady =
+    brainFlow.status === "ready" && coherentLiveProof.ready === true;
+  const finalProviderBindingGap =
+    brainFlow.status === "ready" &&
+    !coherentLiveProof.ready &&
+    coherentLiveProof.totalChecks > 0 &&
+    coherentLiveProof.readyChecks >= coherentLiveProof.totalChecks - 1 &&
+    coherentLiveProof.missingChecks.length > 0 &&
+    coherentLiveProof.missingChecks.every((check) =>
+      FINAL_PROVIDER_PROOF_GAPS.has(check),
+    );
+  const stage: BrainArchitectureReadinessStage = blocked
+    ? "blocked"
+    : betaProofReady
+      ? "local_beta_proven"
+      : finalProviderBindingGap
+        ? "provider_drill_pending"
+        : "live_evidence_pending";
+  const blendedPercent = Math.round(
+    brainFlow.coveragePercent * 0.6 + coherentLiveProof.completionPercent * 0.4,
+  );
+  const localBetaPercent = betaProofReady
+    ? 100
+    : finalProviderBindingGap
+      ? 99
+      : Math.min(98, Math.max(0, blendedPercent));
+  const status: Exclude<BetaDiagnosticStatus, "deferred"> = blocked
+    ? "blocked"
+    : betaProofReady
+      ? "ready"
+      : "watch";
+  const completedMilestones = compactUnique(
+    [
+      brainFlow.status === "ready"
+        ? "Chat, voice, retrieval, tools, transcript persistence, mastery evidence, and background memory have local ledger coverage."
+        : "",
+      coherentLiveProof.ready
+        ? "Typed chat and live voice share one proof attempt, book, thread, multi-PDF context, and provider evidence bundle."
+        : "",
+      finalProviderBindingGap
+        ? "The selected chat and voice request bundles are otherwise coherent; only the final provider proof binding remains."
+        : "",
+    ],
+    6,
+  );
+  const remainingGaps = compactUnique(
+    [
+      ...brainFlow.missingSignals,
+      ...coherentLiveProof.missingChecks,
+      ...(!betaProofReady
+        ? ["Real provider-key typed chat plus live Deepgram voice drill"]
+        : []),
+    ],
+    12,
+  );
+  const summary =
+    stage === "local_beta_proven"
+      ? "100% local beta architecture proof is ready from local-live chat and voice ledger rows."
+      : stage === "provider_drill_pending"
+        ? "99% local beta architecture: the flow is wired, and the remaining gap is binding real provider evidence to the shared proof attempt."
+        : stage === "blocked"
+          ? `${localBetaPercent}% local beta architecture; failed or blocked rows must be resolved before the brain proof can advance.`
+          : `${localBetaPercent}% local beta architecture evidence is present; more live chat and voice rows are needed.`;
+  const nextAction =
+    stage === "local_beta_proven"
+      ? "Export diagnostics for beta review, then continue broader beta validation."
+      : stage === "provider_drill_pending"
+        ? "Run the real provider-key typed chat and live voice drill with one active proof attempt, then confirm OpenRouter and Deepgram rows carry that attempt id."
+        : stage === "blocked"
+          ? "Fix blocked or failed local rows in Admin before rerunning chat or voice proof."
+          : "Run one typed-chat turn and one live-voice turn on the same multi-PDF active book, then inspect the coherent bundle.";
+
+  return {
+    status,
+    stage,
+    localBetaPercent,
+    brainFlowPercent: brainFlow.coveragePercent,
+    coherentProofPercent: coherentLiveProof.completionPercent,
+    betaProofReady,
+    localOnly: true,
+    cloudDeferred: true,
+    summary,
+    nextAction,
+    completedMilestones:
+      completedMilestones.length > 0
+        ? completedMilestones
+        : [
+            "The local diagnostics contract is loaded; live evidence is still accumulating.",
+          ],
+    remainingGaps,
+    missingSignals: [...brainFlow.missingSignals],
+    missingProofChecks: [...coherentLiveProof.missingChecks],
+  };
+};
+
 const emptySignalEvidence = (): BetaBrainFlowSignalEvidence => ({
   requestIds: [],
   sources: [],
@@ -2900,6 +3039,10 @@ export const buildBetaDiagnosticsSnapshot = (
     input.brainFlow || buildBrainFlowCoverageFromLedgers({ memoryEvents: [] });
   const coherentLiveProof =
     input.coherentLiveProof || buildCoherentLiveProofFromLedgers();
+  const brainArchitectureReadiness = buildBrainArchitectureReadiness({
+    brainFlow,
+    coherentLiveProof,
+  });
   const totalRows =
     counts.learningBooks +
     counts.mappedConcepts +
@@ -3115,6 +3258,15 @@ export const buildBetaDiagnosticsSnapshot = (
             : "Run typed chat and live voice against the same multi-PDF active book, then inspect the shared request bundle.",
     }),
     item({
+      id: "brain_architecture_readiness",
+      title: "Brain architecture readiness",
+      status: brainArchitectureReadiness.status,
+      summary: `${brainArchitectureReadiness.localBetaPercent}% local beta: ${brainArchitectureReadiness.summary}`,
+      detail: brainArchitectureReadiness.remainingGaps.join(", "),
+      count: brainArchitectureReadiness.localBetaPercent,
+      action: brainArchitectureReadiness.nextAction,
+    }),
+    item({
       id: "read_aloud_voice_provider",
       title: "Read-aloud voice provider",
       status: readAloudVoiceStatus,
@@ -3170,6 +3322,7 @@ export const buildBetaDiagnosticsSnapshot = (
     counts,
     brainFlow,
     coherentLiveProof,
+    brainArchitectureReadiness,
     runtimeSettings: input.runtimeSettings,
     items,
     outOfScope: [

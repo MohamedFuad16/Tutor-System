@@ -211,6 +211,10 @@ duration seconds without network access. Use the Deepgram provider in
   model-observation evidence gates before marking the local flow ready. Each
   signal surfaces compact live request/source/timestamp/PDF anchors when proof
   exists.
+- Beta Diagnostics also exposes a top-level brain architecture readiness
+  percentage in Admin and diagnostics exports. It reaches 100% only when the
+  local-live coherent proof is ready; it reaches 99% only for the final
+  provider-proof binding gap, and it keeps AWS/cloud readiness deferred.
 - Admin can start a local proof attempt before the manual provider-key chat and
   voice run. The start action writes a local memory-event lifecycle row,
   chat/voice context, retrieval, transcript, model/tool, evidence, and

@@ -228,3 +228,9 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   MisoTTS 8B through the existing `/api/tts` route, provide a FastAPI wrapper
   for the Vast-hosted model, and document the current SSH blocker without
   implementing AWS/cloud deployment.
+- ACY: Brain architecture readiness rollup. Add a reusable local diagnostics
+  contract and Admin card that reports the brain architecture completion
+  percentage from brain-flow coverage plus coherent live proof, exports that
+  readiness object in diagnostics JSON, treats 100% as complete local-live proof,
+  treats 99% as only the final provider-proof binding gap, and keeps AWS/cloud
+  readiness deferred.
