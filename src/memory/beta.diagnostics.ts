@@ -2,12 +2,17 @@ import type {
   BackgroundJob,
   EvidenceEvent,
   LearningDocument,
+  MasteryDelta,
   MemoryEvent,
   ModelRun,
+  PersistentConcept,
   RetrievalEvent,
   ToolJob,
 } from "./longterm.memory";
-import { MODEL_OBSERVATION_EVIDENCE_CONTRACT } from "./evidence.mastery";
+import {
+  isDirectRecallEvidence,
+  MODEL_OBSERVATION_EVIDENCE_CONTRACT,
+} from "./evidence.mastery";
 
 export type BetaDiagnosticStatus = "ready" | "watch" | "blocked" | "deferred";
 
@@ -56,6 +61,7 @@ export type BetaDiagnosticsInput = {
   webSearches?: number;
   brainFlow?: BetaBrainFlowCoverage;
   coherentLiveProof?: CoherentLiveProofBundle;
+  masteryIntegrity?: MasteryLedgerIntegrity;
   runtimeSettings?: unknown;
   generatedAt?: string;
 };
@@ -399,6 +405,7 @@ export type BrainArchitectureReadiness = {
   brainFlowPercent: number;
   coherentProofPercent: number;
   betaProofReady: boolean;
+  masteryIntegrityReady: boolean;
   localOnly: true;
   cloudDeferred: true;
   summary: string;
@@ -407,6 +414,44 @@ export type BrainArchitectureReadiness = {
   remainingGaps: string[];
   missingSignals: string[];
   missingProofChecks: string[];
+};
+
+export type MasteryLedgerIntegrity = {
+  status: "ready" | "blocked";
+  ready: boolean;
+  conceptAttemptCount: number;
+  verifiedRecallEvidenceCount: number;
+  masteryDeltaCount: number;
+  missingDeltaCount: number;
+  orphanDeltaCount: number;
+  orphanEvidenceCount: number;
+  mismatchedLinkCount: number;
+  summary: string;
+  issues: string[];
+};
+
+export type MasteryLedgerIntegrityInput = {
+  concepts?: Pick<PersistentConcept, "id" | "attempt_history">[];
+  evidenceEvents?: Pick<
+    EvidenceEvent,
+    | "id"
+    | "attemptId"
+    | "conceptId"
+    | "evidenceType"
+    | "verified"
+    | "correct"
+    | "metadata"
+  >[];
+  masteryDeltas?: Pick<
+    MasteryDelta,
+    | "id"
+    | "attemptId"
+    | "conceptId"
+    | "evidenceEventId"
+    | "evidenceType"
+    | "verified"
+    | "correct"
+  >[];
 };
 
 type BetaMemoryEventLedgerRow = Pick<
@@ -480,11 +525,16 @@ export type BetaDiagnosticsSnapshot = {
   counts: Required<
     Omit<
       BetaDiagnosticsInput,
-      "brainFlow" | "coherentLiveProof" | "runtimeSettings" | "generatedAt"
+      | "brainFlow"
+      | "coherentLiveProof"
+      | "masteryIntegrity"
+      | "runtimeSettings"
+      | "generatedAt"
     >
   >;
   brainFlow: BetaBrainFlowCoverage;
   coherentLiveProof: CoherentLiveProofBundle;
+  masteryIntegrity: MasteryLedgerIntegrity;
   brainArchitectureReadiness: BrainArchitectureReadiness;
   runtimeSettings?: unknown;
   items: BetaDiagnosticItem[];
@@ -501,6 +551,179 @@ const numberOrZero = (value: unknown) =>
   typeof value === "number" && Number.isFinite(value)
     ? Math.max(0, Math.round(value))
     : 0;
+
+export const buildMasteryLedgerIntegrity = ({
+  concepts = [],
+  evidenceEvents = [],
+  masteryDeltas = [],
+}: MasteryLedgerIntegrityInput = {}): MasteryLedgerIntegrity => {
+  const evidenceById = new Map(
+    evidenceEvents.map((event) => [event.id, event]),
+  );
+  const deltaById = new Map(masteryDeltas.map((delta) => [delta.id, delta]));
+  const deltaByAttemptId = new Map(
+    masteryDeltas
+      .filter((delta) => delta.attemptId)
+      .map((delta) => [delta.attemptId, delta]),
+  );
+  const deltaEvidenceIds = new Set(
+    masteryDeltas.map((delta) => delta.evidenceEventId),
+  );
+  const deltaCountByConcept = masteryDeltas.reduce<Record<string, number>>(
+    (counts, delta) => {
+      counts[delta.conceptId] = (counts[delta.conceptId] || 0) + 1;
+      return counts;
+    },
+    {},
+  );
+  const conceptAttemptCount = concepts.reduce(
+    (count, concept) => count + concept.attempt_history.length,
+    0,
+  );
+  const missingDeltaCount = concepts.reduce((count, concept) => {
+    const explicitlyMissing = concept.attempt_history.filter((attempt) => {
+      if (!attempt.attemptId && !attempt.masteryDeltaId) return false;
+      return !(
+        (attempt.masteryDeltaId && deltaById.has(attempt.masteryDeltaId)) ||
+        (attempt.attemptId && deltaByAttemptId.has(attempt.attemptId))
+      );
+    }).length;
+    return (
+      count +
+      Math.max(
+        explicitlyMissing,
+        concept.attempt_history.length - (deltaCountByConcept[concept.id] || 0),
+      )
+    );
+  }, 0);
+  const verifiedRecallEvidence = evidenceEvents.filter(
+    (event) => event.verified && isDirectRecallEvidence(event.evidenceType),
+  );
+  const orphanEvidenceCount = verifiedRecallEvidence.filter(
+    (event) => !deltaEvidenceIds.has(event.id),
+  ).length;
+  const attemptById = new Map(
+    concepts.flatMap((concept) =>
+      concept.attempt_history
+        .filter((attempt) => attempt.attemptId)
+        .map((attempt) => [
+          attempt.attemptId,
+          { conceptId: concept.id, attempt },
+        ]),
+    ),
+  );
+  const conceptsWithExactAttemptLinks = new Set(
+    concepts
+      .filter((concept) =>
+        concept.attempt_history.some(
+          (attempt) =>
+            attempt.attemptId ||
+            attempt.evidenceEventId ||
+            attempt.masteryDeltaId,
+        ),
+      )
+      .map((concept) => concept.id),
+  );
+  const orphanDeltaKeys = new Set<string>();
+  const mismatchKeys = new Set<string>();
+
+  masteryDeltas.forEach((delta) => {
+    const event = evidenceById.get(delta.evidenceEventId);
+    if (!event) {
+      orphanDeltaKeys.add(delta.id);
+      return;
+    }
+    if (
+      !delta.verified ||
+      !event.verified ||
+      !isDirectRecallEvidence(event.evidenceType) ||
+      event.conceptId !== delta.conceptId ||
+      event.evidenceType !== delta.evidenceType ||
+      event.correct !== delta.correct ||
+      (event.attemptId &&
+        delta.attemptId &&
+        event.attemptId !== delta.attemptId)
+    ) {
+      mismatchKeys.add(delta.id);
+    }
+    if (delta.attemptId) {
+      const linkedAttempt = attemptById.get(delta.attemptId);
+      if (
+        !linkedAttempt &&
+        conceptsWithExactAttemptLinks.has(delta.conceptId)
+      ) {
+        orphanDeltaKeys.add(delta.id);
+      } else if (
+        linkedAttempt &&
+        (linkedAttempt.conceptId !== delta.conceptId ||
+          linkedAttempt.attempt.type !== delta.evidenceType ||
+          linkedAttempt.attempt.correct !== delta.correct ||
+          (linkedAttempt.attempt.evidenceContract &&
+            linkedAttempt.attempt.evidenceContract !==
+              event.metadata?.evidenceContract) ||
+          (linkedAttempt.attempt.masteryDeltaId &&
+            linkedAttempt.attempt.masteryDeltaId !== delta.id) ||
+          (linkedAttempt.attempt.evidenceEventId &&
+            linkedAttempt.attempt.evidenceEventId !== delta.evidenceEventId))
+      ) {
+        mismatchKeys.add(delta.id);
+      }
+    }
+  });
+  const orphanDeltaCount = orphanDeltaKeys.size;
+  const mismatchedLinkCount = mismatchKeys.size;
+
+  const issues = [
+    missingDeltaCount > 0
+      ? `${missingDeltaCount} concept attempts lack mastery deltas`
+      : "",
+    orphanDeltaCount > 0
+      ? `${orphanDeltaCount} mastery deltas lack evidence events`
+      : "",
+    orphanEvidenceCount > 0
+      ? `${orphanEvidenceCount} verified recall evidence events lack mastery deltas`
+      : "",
+    mismatchedLinkCount > 0
+      ? `${mismatchedLinkCount} mastery links are mismatched or unverified`
+      : "",
+  ].filter(Boolean);
+  const ready = issues.length === 0;
+
+  return {
+    status: ready ? "ready" : "blocked",
+    ready,
+    conceptAttemptCount,
+    verifiedRecallEvidenceCount: verifiedRecallEvidence.length,
+    masteryDeltaCount: masteryDeltas.length,
+    missingDeltaCount,
+    orphanDeltaCount,
+    orphanEvidenceCount,
+    mismatchedLinkCount,
+    summary: ready
+      ? masteryDeltas.length > 0
+        ? `${masteryDeltas.length} mastery deltas have linked verified evidence and cover ${conceptAttemptCount} stored concept attempts.`
+        : "No unaudited mastery mutations are present."
+      : `Mastery audit integrity is blocked: ${issues.join("; ")}.`,
+    issues,
+  };
+};
+
+const unprovenMasteryLedgerIntegrity = (
+  masteryDeltaCount: number,
+): MasteryLedgerIntegrity => ({
+  status: "blocked",
+  ready: false,
+  conceptAttemptCount: 0,
+  verifiedRecallEvidenceCount: 0,
+  masteryDeltaCount,
+  missingDeltaCount: 0,
+  orphanDeltaCount: 0,
+  orphanEvidenceCount: 0,
+  mismatchedLinkCount: 0,
+  summary:
+    "Mastery deltas exist, but the linked concept/evidence rows were not supplied for integrity verification.",
+  issues: ["Mastery ledger integrity is unproven"],
+});
 
 const requiredCounts = (
   input: BetaDiagnosticsInput,
@@ -2046,9 +2269,11 @@ const FINAL_PROVIDER_PROOF_GAPS = new Set([
 export const buildBrainArchitectureReadiness = ({
   brainFlow,
   coherentLiveProof,
+  masteryIntegrity,
 }: {
   brainFlow: BetaBrainFlowCoverage;
   coherentLiveProof: CoherentLiveProofBundle;
+  masteryIntegrity: MasteryLedgerIntegrity;
 }): BrainArchitectureReadiness => {
   const failedRows = Math.max(
     brainFlow.failedRows,
@@ -2057,10 +2282,14 @@ export const buildBrainArchitectureReadiness = ({
   const blocked =
     failedRows > 0 ||
     brainFlow.status === "blocked" ||
-    coherentLiveProof.status === "blocked";
+    coherentLiveProof.status === "blocked" ||
+    masteryIntegrity.status === "blocked";
   const betaProofReady =
-    brainFlow.status === "ready" && coherentLiveProof.ready === true;
+    brainFlow.status === "ready" &&
+    coherentLiveProof.ready === true &&
+    masteryIntegrity.ready;
   const finalProviderBindingGap =
+    masteryIntegrity.ready &&
     brainFlow.status === "ready" &&
     !coherentLiveProof.ready &&
     coherentLiveProof.totalChecks > 0 &&
@@ -2097,6 +2326,9 @@ export const buildBrainArchitectureReadiness = ({
       coherentLiveProof.ready
         ? "Typed chat and live voice share one proof attempt, book, thread, multi-PDF context, and provider evidence bundle."
         : "",
+      masteryIntegrity.ready
+        ? "Stored mastery attempts, verified evidence rows, and mastery deltas have no detected orphan links."
+        : "",
       finalProviderBindingGap
         ? "The selected chat and voice request bundles are otherwise coherent; only the final provider proof binding remains."
         : "",
@@ -2107,6 +2339,7 @@ export const buildBrainArchitectureReadiness = ({
     [
       ...brainFlow.missingSignals,
       ...coherentLiveProof.missingChecks,
+      ...masteryIntegrity.issues,
       ...(!betaProofReady
         ? ["Real provider-key typed chat plus live Deepgram voice drill"]
         : []),
@@ -2137,6 +2370,7 @@ export const buildBrainArchitectureReadiness = ({
     brainFlowPercent: brainFlow.coveragePercent,
     coherentProofPercent: coherentLiveProof.completionPercent,
     betaProofReady,
+    masteryIntegrityReady: masteryIntegrity.ready,
     localOnly: true,
     cloudDeferred: true,
     summary,
@@ -3373,9 +3607,16 @@ export const buildBetaDiagnosticsSnapshot = (
     input.brainFlow || buildBrainFlowCoverageFromLedgers({ memoryEvents: [] });
   const coherentLiveProof =
     input.coherentLiveProof || buildCoherentLiveProofFromLedgers();
+  const masteryIntegrity =
+    input.masteryIntegrity ||
+    (counts.masteryDeltas > 0 ||
+    brainFlow.requestCorrelatedMasteryEvidenceEvents > 0
+      ? unprovenMasteryLedgerIntegrity(counts.masteryDeltas)
+      : buildMasteryLedgerIntegrity());
   const brainArchitectureReadiness = buildBrainArchitectureReadiness({
     brainFlow,
     coherentLiveProof,
+    masteryIntegrity,
   });
   const totalRows =
     counts.learningBooks +
@@ -3545,15 +3786,28 @@ export const buildBetaDiagnosticsSnapshot = (
       id: "evidence_mastery",
       title: "Evidence and mastery",
       status:
-        counts.evidenceEvents > 0 || counts.masteryDeltas > 0
-          ? "ready"
-          : "watch",
+        masteryIntegrity.status === "blocked"
+          ? "blocked"
+          : counts.evidenceEvents > 0 && counts.masteryDeltas > 0
+            ? "ready"
+            : "watch",
       summary: `${counts.evidenceEvents} evidence events and ${counts.masteryDeltas} mastery deltas are visible.`,
       count: counts.evidenceEvents + counts.masteryDeltas,
       action:
         counts.masteryDeltas > 0
           ? "Confirm mastery movement comes only from explicit recall evidence."
           : "Run active recall to populate mastery audit evidence.",
+    }),
+    item({
+      id: "mastery_integrity",
+      title: "Mastery ledger integrity",
+      status: masteryIntegrity.status,
+      summary: masteryIntegrity.summary,
+      detail: masteryIntegrity.issues.join(", "),
+      count: masteryIntegrity.masteryDeltaCount,
+      action: masteryIntegrity.ready
+        ? "Keep every mastery mutation inside the atomic validated-attempt transaction."
+        : "Repair or quarantine orphan mastery state before claiming local beta readiness.",
     }),
     item({
       id: "brain_flow_coverage",
@@ -3656,6 +3910,7 @@ export const buildBetaDiagnosticsSnapshot = (
     counts,
     brainFlow,
     coherentLiveProof,
+    masteryIntegrity,
     brainArchitectureReadiness,
     runtimeSettings: input.runtimeSettings,
     items,

@@ -7,6 +7,7 @@ const {
   buildBrainFlowCoverageFromLedgers,
   buildCoherentLiveProofFromLedgers,
   buildLiveBetaProofPreflight,
+  buildMasteryLedgerIntegrity,
   buildProviderKeyProofChecklist,
 } = await import("../.tmp-test/beta.diagnostics.mjs");
 const { modelObservationGateMetadata } =
@@ -270,6 +271,51 @@ const completeBrainFlow = buildBrainFlowCoverageFromLedgers(
 const completeCoherentLiveProof = buildCoherentLiveProofFromLedgers(
   completeBrainFlowLedgers,
 );
+const completeMasteryIntegrity = buildMasteryLedgerIntegrity({
+  concepts: [
+    {
+      id: "bayes",
+      attempt_history: [
+        { correct: true, type: "generation", timestamp: 11 },
+        { correct: false, type: "generation", timestamp: 12 },
+      ],
+    },
+  ],
+  evidenceEvents: [
+    {
+      id: "evidence-chat",
+      attemptId: "chat-attempt",
+      conceptId: "bayes",
+      evidenceType: "generation",
+      verified: true,
+    },
+    {
+      id: "evidence-voice",
+      attemptId: "voice-attempt",
+      conceptId: "bayes",
+      evidenceType: "generation",
+      verified: true,
+    },
+  ],
+  masteryDeltas: [
+    {
+      id: "delta-chat",
+      attemptId: "chat-attempt",
+      conceptId: "bayes",
+      evidenceEventId: "evidence-chat",
+      evidenceType: "generation",
+      verified: true,
+    },
+    {
+      id: "delta-voice",
+      attemptId: "voice-attempt",
+      conceptId: "bayes",
+      evidenceEventId: "evidence-voice",
+      evidenceType: "generation",
+      verified: true,
+    },
+  ],
+});
 
 test("beta diagnostics mark clean local ledgers as export-ready while cloud stays deferred", () => {
   const snapshot = buildBetaDiagnosticsSnapshot(
@@ -293,6 +339,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
       traceEvents: 2,
       brainFlow: completeBrainFlow,
       coherentLiveProof: completeCoherentLiveProof,
+      masteryIntegrity: completeMasteryIntegrity,
       runtimeSettings: { webSearchPolicy: "source_first" },
     },
     new Date("2026-06-01T00:00:00.000Z"),
@@ -319,6 +366,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
   assert.equal(snapshot.brainArchitectureReadiness.stage, "local_beta_proven");
   assert.equal(snapshot.brainArchitectureReadiness.localBetaPercent, 100);
   assert.equal(snapshot.brainArchitectureReadiness.betaProofReady, true);
+  assert.equal(snapshot.masteryIntegrity.ready, true);
   assert.equal(
     snapshot.items.find((item) => item.id === "coherent_live_proof")?.status,
     "ready",
@@ -371,6 +419,123 @@ test("beta diagnostics expose MisoTTS read-aloud readiness without hiding the di
 
   assert.equal(readyItem?.status, "ready");
   assert.match(readyItem?.summary || "", /health meter is reachable/);
+});
+
+test("mastery ledger integrity detects orphan attempts and blocks readiness", () => {
+  const blockedIntegrity = buildMasteryLedgerIntegrity({
+    concepts: [
+      {
+        id: "bayes",
+        attempt_history: [{ correct: true, type: "generation", timestamp: 1 }],
+      },
+    ],
+  });
+  const snapshot = buildBetaDiagnosticsSnapshot({
+    brainFlow: completeBrainFlow,
+    coherentLiveProof: completeCoherentLiveProof,
+    masteryIntegrity: blockedIntegrity,
+  });
+
+  assert.equal(blockedIntegrity.status, "blocked");
+  assert.equal(blockedIntegrity.missingDeltaCount, 1);
+  assert.equal(snapshot.brainArchitectureReadiness.status, "blocked");
+  assert.equal(snapshot.brainArchitectureReadiness.betaProofReady, false);
+  assert.ok(snapshot.brainArchitectureReadiness.localBetaPercent <= 98);
+  assert.equal(
+    snapshot.items.find((item) => item.id === "mastery_integrity")?.status,
+    "blocked",
+  );
+});
+
+test("mastery ledger integrity blocks mismatched exact attempt links", () => {
+  const integrity = buildMasteryLedgerIntegrity({
+    concepts: [
+      {
+        id: "bayes",
+        attempt_history: [
+          {
+            correct: true,
+            type: "generation",
+            timestamp: 1,
+            attemptId: "attempt-1",
+            evidenceEventId: "evidence-1",
+            masteryDeltaId: "delta-1",
+            evidenceContract: "evaluated_answer_v1",
+          },
+        ],
+      },
+    ],
+    evidenceEvents: [
+      {
+        id: "evidence-1",
+        attemptId: "attempt-1",
+        conceptId: "bayes",
+        evidenceType: "generation",
+        verified: true,
+        correct: true,
+      },
+    ],
+    masteryDeltas: [
+      {
+        id: "delta-1",
+        attemptId: "attempt-1",
+        conceptId: "other-concept",
+        evidenceEventId: "evidence-1",
+        evidenceType: "generation",
+        verified: true,
+        correct: true,
+      },
+    ],
+  });
+
+  assert.equal(integrity.status, "blocked");
+  assert.equal(integrity.mismatchedLinkCount, 1);
+});
+
+test("mastery ledger integrity blocks mismatched exact evidence contracts", () => {
+  const integrity = buildMasteryLedgerIntegrity({
+    concepts: [
+      {
+        id: "bayes",
+        attempt_history: [
+          {
+            correct: true,
+            type: "generation",
+            timestamp: 1,
+            attemptId: "attempt-1",
+            evidenceEventId: "evidence-1",
+            masteryDeltaId: "delta-1",
+            evidenceContract: "evaluated_answer_v1",
+          },
+        ],
+      },
+    ],
+    evidenceEvents: [
+      {
+        id: "evidence-1",
+        attemptId: "attempt-1",
+        conceptId: "bayes",
+        evidenceType: "generation",
+        verified: true,
+        correct: true,
+        metadata: { evidenceContract: "flashcard_review_v1" },
+      },
+    ],
+    masteryDeltas: [
+      {
+        id: "delta-1",
+        attemptId: "attempt-1",
+        conceptId: "bayes",
+        evidenceEventId: "evidence-1",
+        evidenceType: "generation",
+        verified: true,
+        correct: true,
+      },
+    ],
+  });
+
+  assert.equal(integrity.status, "blocked");
+  assert.equal(integrity.mismatchedLinkCount, 1);
 });
 
 test("provider-key proof checklist separates key readiness from live proof", () => {
@@ -1032,6 +1197,7 @@ test("beta diagnostics block when background jobs reach dead-letter", () => {
       backgroundJobs: 3,
       deadLetterBackgroundJobs: 1,
       brainFlow: completeBrainFlow,
+      masteryIntegrity: completeMasteryIntegrity,
     },
     new Date("2026-06-01T00:00:00.000Z"),
   );
@@ -1395,6 +1561,7 @@ test("coherent live proof requires provider rows to carry the shared proof attem
   const snapshot = buildBetaDiagnosticsSnapshot({
     brainFlow: completeBrainFlow,
     coherentLiveProof: proof,
+    masteryIntegrity: completeMasteryIntegrity,
   });
   assert.equal(snapshot.brainArchitectureReadiness.status, "watch");
   assert.equal(

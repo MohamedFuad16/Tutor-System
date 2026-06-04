@@ -1,4 +1,9 @@
-import { db, PersistentConcept } from "./longterm.memory";
+import {
+  db,
+  type EvidenceEvent,
+  type MasteryDelta,
+  type PersistentConcept,
+} from "./longterm.memory";
 import {
   clamp01,
   confidenceDeltaFromEvidenceAttempt,
@@ -6,12 +11,28 @@ import {
   masteryFromEvidenceAttempt,
   type MasteryEvidenceType,
 } from "./evidence.mastery";
-import { recordMasteryDelta } from "./evidence.ledger";
+import { createMasteryDeltaRecords } from "./evidence.ledger";
 
-type BKTAttemptOptions = {
+export type ValidatedMasteryEvidenceContract =
+  | "evaluated_answer_v1"
+  | "flashcard_review_v1";
+
+export type BKTAttemptOptions = {
+  attemptId: string;
+  evidenceContract: ValidatedMasteryEvidenceContract;
   source?: string;
   summary?: string;
   metadata?: Record<string, unknown>;
+};
+
+export type MasteryCommitStore = {
+  transaction: <T>(operation: () => Promise<T>) => Promise<T>;
+  getConcept: (id: string) => Promise<PersistentConcept | undefined>;
+  putConcept: (concept: PersistentConcept) => Promise<unknown>;
+  getEvidenceEvent: (id: string) => Promise<EvidenceEvent | undefined>;
+  getMasteryDelta: (id: string) => Promise<MasteryDelta | undefined>;
+  addEvidenceEvent: (event: EvidenceEvent) => Promise<unknown>;
+  addMasteryDelta: (delta: MasteryDelta) => Promise<unknown>;
 };
 
 // Default BKT Parameters for new concepts
@@ -42,6 +63,163 @@ export const buildBKTConfidenceUpdate = (
     confidenceSignal,
     confidenceSource: "validated_recall_attempt",
   };
+};
+
+const validatedAttemptId = (options: BKTAttemptOptions) => {
+  const attemptId = options.attemptId.replace(/\s+/g, " ").trim().slice(0, 500);
+  if (!attemptId) {
+    throw new Error("Validated mastery attempts require an attempt id.");
+  }
+  if (
+    options.evidenceContract !== "evaluated_answer_v1" &&
+    options.evidenceContract !== "flashcard_review_v1"
+  ) {
+    throw new Error(
+      "Validated mastery attempts require a recognized evidence contract.",
+    );
+  }
+  return attemptId;
+};
+
+const dexieMasteryCommitStore: MasteryCommitStore = {
+  transaction: async <T>(operation: () => Promise<T>) =>
+    await db.transaction(
+      "rw",
+      db.concepts,
+      db.evidenceEvents,
+      db.masteryDeltas,
+      operation,
+    ),
+  getConcept: (id) => db.concepts.get(id),
+  putConcept: (concept) => db.concepts.put(concept),
+  getEvidenceEvent: (id) => db.evidenceEvents.get(id),
+  getMasteryDelta: (id) => db.masteryDeltas.get(id),
+  addEvidenceEvent: (event) => db.evidenceEvents.add(event),
+  addMasteryDelta: (delta) => db.masteryDeltas.add(delta),
+};
+
+export const commitValidatedMasteryAttempt = async (
+  input: {
+    conceptId: string;
+    isCorrect: boolean;
+    type: "recognition" | "generation" | "transfer";
+    options: BKTAttemptOptions;
+    calculatePosterior: (
+      concept: PersistentConcept,
+      isCorrect: boolean,
+    ) => number;
+    timestamp?: number;
+  },
+  store: MasteryCommitStore = dexieMasteryCommitStore,
+) => {
+  const attemptId = validatedAttemptId(input.options);
+  const deltaId = `mastery-delta:${attemptId}`;
+  const timestamp = input.timestamp ?? Date.now();
+
+  return await store.transaction(async () => {
+    const existingDelta = await store.getMasteryDelta(deltaId);
+    if (existingDelta) {
+      const existingConcept = await store.getConcept(input.conceptId);
+      const existingEvidence = await store.getEvidenceEvent(
+        existingDelta.evidenceEventId,
+      );
+      const existingAttempt = existingConcept?.attempt_history.find(
+        (attempt) => attempt.attemptId === attemptId,
+      );
+      if (
+        !existingConcept ||
+        !existingEvidence ||
+        !existingAttempt ||
+        existingDelta.attemptId !== attemptId ||
+        existingDelta.conceptId !== input.conceptId ||
+        existingDelta.evidenceType !== input.type ||
+        existingDelta.correct !== input.isCorrect ||
+        existingDelta.verified !== true ||
+        existingEvidence.attemptId !== attemptId ||
+        existingEvidence.conceptId !== input.conceptId ||
+        existingEvidence.evidenceType !== input.type ||
+        existingEvidence.correct !== input.isCorrect ||
+        existingEvidence.verified !== true ||
+        existingAttempt.type !== input.type ||
+        existingAttempt.correct !== input.isCorrect ||
+        existingAttempt.evidenceEventId !== existingEvidence.id ||
+        existingAttempt.masteryDeltaId !== existingDelta.id ||
+        existingAttempt.evidenceContract !== input.options.evidenceContract ||
+        existingEvidence.metadata?.evidenceContract !==
+          input.options.evidenceContract
+      ) {
+        throw new Error(
+          "Validated mastery replay has incomplete or mismatched audit rows.",
+        );
+      }
+      return existingConcept;
+    }
+
+    const concept = await store.getConcept(input.conceptId);
+    if (!concept) return null;
+
+    const previousMastery = concept.mastery;
+    const previousPLearn = concept.p_learn;
+    const posterior = input.calculatePosterior(concept, input.isCorrect);
+    const confidenceUpdate = buildBKTConfidenceUpdate(
+      concept.confidence,
+      input.type,
+      input.isCorrect,
+    );
+    const cappedPosterior = masteryFromEvidenceAttempt(input.type, posterior);
+    const records = createMasteryDeltaRecords(
+      {
+        attemptId,
+        conceptId: input.conceptId,
+        evidenceType: input.type,
+        correct: input.isCorrect,
+        previousMastery,
+        nextMastery: cappedPosterior,
+        previousPLearn,
+        nextPLearn: cappedPosterior,
+        source: input.options.source || "bkt_attempt",
+        summary:
+          input.options.summary ||
+          `${input.type} recall attempt was ${
+            input.isCorrect ? "correct" : "incorrect"
+          }`,
+        metadata: {
+          ...input.options.metadata,
+          evidenceContract: input.options.evidenceContract,
+          masteryAttemptId: attemptId,
+          posterior,
+          cappedPosterior,
+          attemptCount: concept.attempt_history.length + 1,
+          ...confidenceUpdate,
+        },
+      },
+      timestamp,
+    );
+    const nextConcept: PersistentConcept = {
+      ...concept,
+      p_learn: cappedPosterior,
+      mastery: cappedPosterior,
+      confidence: confidenceUpdate.nextConfidence,
+      attempt_history: [
+        ...concept.attempt_history,
+        {
+          correct: input.isCorrect,
+          type: input.type,
+          timestamp,
+          attemptId,
+          evidenceEventId: records.event.id,
+          masteryDeltaId: records.delta.id,
+          evidenceContract: input.options.evidenceContract,
+        },
+      ],
+      lastReviewedAt: timestamp,
+    };
+
+    await store.addEvidenceEvent(records.event);
+    await store.addMasteryDelta(records.delta);
+    await store.putConcept(nextConcept);
+    return nextConcept;
+  });
 };
 
 export class BKTEngine {
@@ -76,54 +254,16 @@ export class BKTEngine {
     conceptId: string,
     isCorrect: boolean,
     type: "recognition" | "generation" | "transfer",
-    options: BKTAttemptOptions = {},
+    options: BKTAttemptOptions,
   ) {
-    const concept = await db.concepts.get(conceptId);
-    if (!concept) return null;
-
-    const previousMastery = concept.mastery;
-    const previousPLearn = concept.p_learn;
-    const posterior = this.calculatePosterior(concept, isCorrect);
-    const confidenceUpdate = buildBKTConfidenceUpdate(
-      concept.confidence,
-      type,
-      isCorrect,
-    );
-
-    const cappedPosterior = masteryFromEvidenceAttempt(type, posterior);
-    concept.p_learn = cappedPosterior;
-    concept.mastery = cappedPosterior;
-    concept.confidence = confidenceUpdate.nextConfidence;
-
-    concept.attempt_history.push({
-      correct: isCorrect,
-      type,
-      timestamp: Date.now(),
-    });
-    concept.lastReviewedAt = Date.now();
-
-    await db.concepts.put(concept);
-    await recordMasteryDelta({
+    return await commitValidatedMasteryAttempt({
       conceptId,
-      evidenceType: type,
-      correct: isCorrect,
-      previousMastery,
-      nextMastery: concept.mastery,
-      previousPLearn,
-      nextPLearn: concept.p_learn,
-      source: options.source || "bkt_attempt",
-      summary:
-        options.summary ||
-        `${type} recall attempt was ${isCorrect ? "correct" : "incorrect"}`,
-      metadata: {
-        ...options.metadata,
-        posterior,
-        cappedPosterior,
-        attemptCount: concept.attempt_history.length,
-        ...confidenceUpdate,
-      },
+      isCorrect,
+      type,
+      options,
+      calculatePosterior: (concept, correct) =>
+        this.calculatePosterior(concept, correct),
     });
-    return concept;
   }
 }
 

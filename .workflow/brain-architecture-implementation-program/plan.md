@@ -260,3 +260,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   the transient approval-saving state in Admin and the proof HUD, and verify
   approve/revoke behavior without calling providers, starting the microphone,
   or starting AWS/cloud work.
+- ADE: Learner-state integrity and misconception loop. Close the source-linked
+  misconception candidate path, make validated mastery commits atomic and
+  idempotent, expose mastery-ledger integrity in Admin/readiness, and reject
+  99/100 when stored learner-state audit links are missing or mismatched.

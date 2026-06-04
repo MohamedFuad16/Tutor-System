@@ -110,6 +110,7 @@ test("model-summary evidence records are durable but not mastery evidence", () =
 test("mastery delta records link explicit evidence to BKT changes", () => {
   const { event, delta } = createMasteryDeltaRecords(
     {
+      attemptId: "chat-1:tool-1:bayes",
       conceptId: "bayes",
       evidenceType: "generation",
       correct: true,
@@ -130,9 +131,13 @@ test("mastery delta records link explicit evidence to BKT changes", () => {
   );
 
   assert.equal(event.verified, true);
+  assert.equal(event.id, "evidence:mastery-attempt:chat-1:tool-1:bayes");
+  assert.equal(delta.id, "mastery-delta:chat-1:tool-1:bayes");
+  assert.equal(event.attemptId, delta.attemptId);
   assert.equal(delta.evidenceEventId, event.id);
   assert.equal(delta.evidenceType, "generation");
   assert.ok(Math.abs(delta.delta - 0.61) < 0.001);
   assert.equal(event.metadata.confidenceSource, "validated_recall_attempt");
   assert.equal(event.metadata.nextConfidence, 0.38);
+  assert.equal(event.metadata.masteryMutationAllowed, true);
 });

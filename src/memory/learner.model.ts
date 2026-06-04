@@ -11,10 +11,11 @@ export class LearnerModel {
   public async getLearnerSnapshot(
     currentConceptId?: string,
     sessionData?: any,
+    activeBookId?: string,
   ) {
     const zpd = await zpdCalculator.getZones();
     const active_misconceptions =
-      await misconceptionGraph.getActiveMisconceptions();
+      await misconceptionGraph.getActiveMisconceptions(activeBookId);
 
     let currentConcept = undefined;
     let scaffold_level = 5;

@@ -53,6 +53,9 @@
 - Packet ACR: See `packets/ACR-live-voice-script-handoff.md`.
 - Packet ACS: See `packets/ACS-live-voice-script-auto-injection.md`.
 - Packet ACT: See `packets/ACT-misotts-vast-api-option.md`.
+- Packet ADE: See `packets/ADE-learner-state-integrity.md`; independent audit
+  sidecars are in `packets/ADE-book-runtime-gap-audit.md` and
+  `packets/ADE-completion-claim-audit.md`.
 
 ## Completion Audit
 

@@ -6,7 +6,9 @@ type RevisionEvidenceEngine = {
     conceptId: string,
     isCorrect: boolean,
     type: "generation",
-    options?: {
+    options: {
+      attemptId: string;
+      evidenceContract: "flashcard_review_v1";
       source?: string;
       summary?: string;
       metadata?: Record<string, unknown>;
@@ -65,6 +67,8 @@ export const recordFlashcardReviewEvidence = async (
     outcome.correct,
     outcome.evidenceType,
     {
+      attemptId: `flashcard-review:${card.id}:${Date.now()}`,
+      evidenceContract: "flashcard_review_v1",
       source: "revision_flashcard",
       summary: flashcardReviewSummary(card, quality),
       metadata: {

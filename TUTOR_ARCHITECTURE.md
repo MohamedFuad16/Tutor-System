@@ -117,12 +117,21 @@ flashcard reviews and evaluated learner answers tied to real concept ids update
 BKT mastery and durable learner confidence with capped evidence deltas, and the
 evidence metadata stores the previous/next confidence values plus rubric, score,
 and request anchors when present.
+The BKT mutation boundary is fail-closed: every validated attempt carries a
+recognized evidence contract and stable audit id, and the concept mutation,
+verified evidence event, and linked mastery delta commit in one Dexie
+transaction. Duplicate replay is idempotent and any ledger failure rolls the
+whole attempt back.
 Chat and live voice can now call `evaluate_answer` for quiz or active-recall
 turns. The browser records the staged evaluation locally only when the payload
 has a real concept id and an explicit score or correct/incorrect outcome.
 Active learning-book concept ids are resolved through `learningBookConcepts`
 and promoted into `concepts` before BKT runs; unresolved ids remain
 `missing_concept` so mastery is not invented.
+Incorrect evaluated answers can also create or consolidate source-linked
+misconception candidates. Active-book retrieval uses those candidates for
+Socratic repair, while Admin exposes their bounded evidence trail and preserves
+the rule that a candidate cannot mutate mastery by itself.
 Admin correction propagation protects the same durable state in the other
 direction: mark-wrong, deletion-review, and supersede requests that touch a
 concept quarantine that concept locally by clearing durable confidence, capping
@@ -198,6 +207,7 @@ duration seconds without network access. Use the Deepgram provider in
   memory events, retrieval events, tool jobs, local background job retry and
   dead-letter rows for interaction, learning-book, and graph-concept memory
   workers, voice-agent lifecycle events, evidence/mastery ledgers,
+  misconception candidates, atomic mastery-ledger integrity,
   correction
   controls, source artifacts, and beta diagnostics.
   Brain-context rows surface document counts for added, ready, excerpted,
@@ -213,8 +223,9 @@ duration seconds without network access. Use the Deepgram provider in
   exists.
 - Beta Diagnostics also exposes a top-level brain architecture readiness
   percentage in Admin and diagnostics exports. It reaches 100% only when the
-  local-live coherent proof is ready; it reaches 99% only for the final
-  provider-proof binding gap, and it keeps AWS/cloud readiness deferred.
+  local-live coherent proof and mastery-ledger integrity are ready; it reaches
+  99% only for the final provider-proof binding gap while mastery integrity is
+  ready, and it keeps AWS/cloud readiness deferred.
 - Admin can start a local proof attempt before the manual provider-key chat and
   voice run. The start action writes a local memory-event lifecycle row,
   chat/voice context, retrieval, transcript, model/tool, evidence, and

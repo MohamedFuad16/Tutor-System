@@ -1,7 +1,11 @@
 import { bktEngine } from "./bkt.engine";
 import type { MasteryEvidenceType } from "./evidence.mastery";
 import { ensurePersistentConceptForLearningBookConceptId } from "./flashcard.concepts";
-import type { PersistentConcept } from "./longterm.memory";
+import type { Misconception, PersistentConcept } from "./longterm.memory";
+import {
+  misconceptionGraph,
+  type MisconceptionCandidateInput,
+} from "./misconception.graph";
 
 type AnswerEvidenceType = Exclude<MasteryEvidenceType, "model_summary">;
 
@@ -13,12 +17,17 @@ export type AnswerEvidenceEngine = {
     conceptId: string,
     isCorrect: boolean,
     type: AnswerEvidenceType,
-    options?: {
+    options: {
+      attemptId: string;
+      evidenceContract: "evaluated_answer_v1";
       source?: string;
       summary?: string;
       metadata?: Record<string, unknown>;
     },
   ) => Promise<PersistentConcept | null>;
+  upsertMisconceptionCandidate?: (
+    input: MisconceptionCandidateInput,
+  ) => Promise<Misconception>;
 };
 
 export type EvaluatedAnswerEvidenceInput = {
@@ -64,6 +73,8 @@ export type EvaluatedAnswerEvidenceResult = {
   correct?: boolean;
   evidenceType?: AnswerEvidenceType;
   scoreRatio?: number;
+  misconceptionCandidateId?: string;
+  misconceptionCandidateStatus?: "recorded" | "error";
 };
 
 const DEFAULT_THRESHOLD = 0.7;
@@ -79,6 +90,8 @@ type ConceptPromotionStatus =
 const defaultAnswerEvidenceEngine: AnswerEvidenceEngine = {
   ensureConceptForAttempt: ensurePersistentConceptForLearningBookConceptId,
   updateConceptAttempt: (...args) => bktEngine.updateConceptAttempt(...args),
+  upsertMisconceptionCandidate: (input) =>
+    misconceptionGraph.upsertMisconceptionCandidate(input),
 };
 
 const compact = (value: string) => value.replace(/\s+/g, " ").trim();
@@ -154,6 +167,24 @@ const rubricValue = (value: unknown) =>
         .filter(Boolean)
         .slice(0, 8)
     : undefined;
+
+export const evaluatedAnswerMasteryAttemptId = (
+  input: EvaluatedAnswerEvidenceInput,
+  conceptId: string,
+) => {
+  const anchor =
+    input.requestId ||
+    input.sourceId ||
+    input.conversationId ||
+    `${Date.now()}:${Math.random().toString(36).slice(2, 10)}`;
+  return boundedText(
+    `evaluated-answer:${anchor}:${conceptId}:${boundedText(
+      input.question,
+      180,
+    ).toLowerCase()}`,
+    500,
+  );
+};
 
 export const evaluatedAnswerConceptId = (
   input: Pick<EvaluatedAnswerEvidenceInput, "conceptId">,
@@ -242,6 +273,49 @@ export const evaluatedAnswerMetadata = (
   sourceId: input.sourceId,
 });
 
+export const evaluatedAnswerMisconceptionCandidate = (
+  input: EvaluatedAnswerEvidenceInput,
+  outcome: NonNullable<ReturnType<typeof evaluatedAnswerOutcome>>,
+  conceptId = evaluatedAnswerConceptId(input),
+): MisconceptionCandidateInput | null => {
+  if (!conceptId || outcome.correct) return null;
+
+  const question = boundedText(input.question || "Untitled recall check", 180);
+  const answer = boundedText(input.learnerAnswer || "No answer preview", 240);
+  const scoreSummary =
+    outcome.scoreRatio === undefined
+      ? "evaluated incorrect"
+      : `scored ${Math.round(outcome.scoreRatio * 100)}% below the ${Math.round(
+          outcome.threshold * 100,
+        )}% threshold`;
+
+  return {
+    conceptId,
+    description: `Possible misconception revealed by an incorrect evaluated answer to "${question}".`,
+    evidence: `Learner answered "${answer}" for "${question}" and ${scoreSummary}.`,
+    confidence: 0.6,
+    fingerprint: `evaluated-answer:${conceptId}:${question.toLowerCase()}`,
+    bookId: input.bookId,
+    conversationId: input.conversationId,
+    requestId: input.requestId,
+    sourceId: input.sourceId,
+    source: input.source || "evaluated_answer",
+    evaluator: input.evaluator || "local_rubric",
+    evidenceType: outcome.evidenceType,
+    scoreRatio: outcome.scoreRatio,
+    metadata: {
+      candidateContract: "evaluated_answer_misconception_candidate_v1",
+      evidenceContract: "evaluated_answer_v1",
+      question,
+      learnerAnswerPreview: answer,
+      evaluationThreshold: outcome.threshold,
+      rubric: input.rubric?.map((item) => boundedText(item, 240)),
+      candidateOnly: true,
+      masteryMutationAllowed: false,
+    },
+  };
+};
+
 export const normalizeEvaluatedAnswerEvidenceInput = (
   payload: unknown,
   context: EvaluatedAnswerEvidenceContext = {},
@@ -319,6 +393,8 @@ export const recordEvaluatedAnswerEvidence = async (
     outcome.correct,
     outcome.evidenceType,
     {
+      attemptId: evaluatedAnswerMasteryAttemptId(input, conceptId),
+      evidenceContract: "evaluated_answer_v1",
       source: input.source || "evaluated_answer",
       summary: evaluatedAnswerSummary(input).slice(0, MAX_SUMMARY_TEXT + 80),
       metadata: {
@@ -329,12 +405,39 @@ export const recordEvaluatedAnswerEvidence = async (
     },
   );
 
+  let misconceptionCandidateId: string | undefined;
+  let misconceptionCandidateStatus:
+    | EvaluatedAnswerEvidenceResult["misconceptionCandidateStatus"]
+    | undefined;
+  const misconceptionCandidate = evaluatedAnswerMisconceptionCandidate(
+    input,
+    outcome,
+    conceptId,
+  );
+  if (
+    updatedConcept &&
+    misconceptionCandidate &&
+    engine.upsertMisconceptionCandidate
+  ) {
+    try {
+      const recordedCandidate = await engine.upsertMisconceptionCandidate(
+        misconceptionCandidate,
+      );
+      misconceptionCandidateId = recordedCandidate.id;
+      misconceptionCandidateStatus = "recorded";
+    } catch {
+      misconceptionCandidateStatus = "error";
+    }
+  }
+
   return {
     status: updatedConcept ? "recorded" : "missing_concept",
     conceptId,
     correct: outcome.correct,
     evidenceType: outcome.evidenceType,
     scoreRatio: outcome.scoreRatio,
+    misconceptionCandidateId,
+    misconceptionCandidateStatus,
   };
 };
 

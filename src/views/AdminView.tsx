@@ -16,6 +16,7 @@ import {
   type EvidenceEvent,
   type MasteryDelta,
   type MemoryEvent,
+  type Misconception,
   type ModelRun,
   type RetrievalEvent,
   type ToolJob,
@@ -53,6 +54,7 @@ import {
   buildBetaDiagnosticsSnapshot,
   buildCoherentLiveProofFromLedgers,
   buildLiveBetaProofPreflight,
+  buildMasteryLedgerIntegrity,
   buildProviderKeyProofChecklist,
 } from "../memory/beta.diagnostics";
 import {
@@ -430,6 +432,8 @@ export function AdminView() {
       () => db.learningBookConcepts.orderBy("updatedAt").reverse().toArray(),
       [],
     ) || [];
+  const persistentConcepts =
+    useLiveQuery(() => db.concepts.toArray(), []) || [];
   const learningEntries =
     useLiveQuery(
       () =>
@@ -442,11 +446,17 @@ export function AdminView() {
         db.evidenceEvents.orderBy("timestamp").reverse().limit(50).toArray(),
       [],
     ) || [];
+  const misconceptions =
+    useLiveQuery(() => db.misconceptions.toArray(), []) || [];
   const masteryDeltas =
     useLiveQuery(
       () => db.masteryDeltas.orderBy("timestamp").reverse().limit(30).toArray(),
       [],
     ) || [];
+  const masteryIntegrityEvidenceEvents =
+    useLiveQuery(() => db.evidenceEvents.toArray(), []) || [];
+  const masteryIntegrityDeltas =
+    useLiveQuery(() => db.masteryDeltas.toArray(), []) || [];
   const toolJobs =
     useLiveQuery(
       () => db.toolJobs.orderBy("timestamp").reverse().limit(20).toArray(),
@@ -823,6 +833,19 @@ export function AdminView() {
   const traceCount = totalTraceCount || logs?.length || 0;
   const latestTrace = logs?.[0];
   const latestEvidence = evidenceEvents[0] as EvidenceEvent | undefined;
+  const sortedMisconceptions = useMemo(
+    () =>
+      [...misconceptions].sort(
+        (a, b) => (b.updatedAt || b.createdAt) - (a.updatedAt || a.createdAt),
+      ),
+    [misconceptions],
+  );
+  const activeMisconceptions = sortedMisconceptions.filter(
+    (misconception) => !misconception.resolved,
+  );
+  const latestMisconception = sortedMisconceptions[0] as
+    | Misconception
+    | undefined;
   const latestMasteryDelta = masteryDeltas[0] as MasteryDelta | undefined;
   const latestToolJob = toolJobs[0] as ToolJob | undefined;
   const latestBackgroundJob = backgroundJobs[0] as BackgroundJob | undefined;
@@ -981,6 +1004,19 @@ export function AdminView() {
     toolJobs,
     evidenceEvents,
   });
+  const masteryIntegrity = useMemo(
+    () =>
+      buildMasteryLedgerIntegrity({
+        concepts: persistentConcepts,
+        evidenceEvents: masteryIntegrityEvidenceEvents,
+        masteryDeltas: masteryIntegrityDeltas,
+      }),
+    [
+      masteryIntegrityDeltas,
+      masteryIntegrityEvidenceEvents,
+      persistentConcepts,
+    ],
+  );
   const diagnosticGeneratedAtMs = (() => {
     const parsed = activityPayload?.generatedAt
       ? Date.parse(activityPayload.generatedAt)
@@ -1030,6 +1066,7 @@ export function AdminView() {
     propagatedCorrectionRows,
     evidenceEvents: evidenceEventCount,
     masteryDeltas: masteryDeltaCount,
+    masteryIntegrity,
     traceEvents: traceCount,
     webSearches: webUsage.requests,
     brainFlow: brainFlowCoverage,
@@ -1573,8 +1610,10 @@ export function AdminView() {
         correctionEvents,
         artifactRecords,
         citationStates,
-        evidenceEvents,
-        masteryDeltas,
+        evidenceEvents: masteryIntegrityEvidenceEvents,
+        masteryDeltas: masteryIntegrityDeltas,
+        persistentConcepts,
+        misconceptions,
         modelRuns,
         toolJobs,
         backgroundJobs,
@@ -1667,8 +1706,12 @@ export function AdminView() {
     learningBooks.length,
     logs?.length,
     masteryDeltas.length,
+    masteryIntegrityDeltas.length,
+    masteryIntegrityEvidenceEvents.length,
     memoryEvents.length,
+    misconceptions.length,
     modelRuns.length,
+    persistentConcepts.length,
     motionEnabled,
     recentSystemEvents.length,
     retrievalEvents.length,
@@ -4413,6 +4456,12 @@ export function AdminView() {
                                 }
                                 %
                               </span>
+                              <span
+                                className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${statusTone(masteryIntegrity.status)}`}
+                              >
+                                mastery integrity{" "}
+                                {masteryIntegrity.ready ? "ready" : "blocked"}
+                              </span>
                               <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-amber-700">
                                 cloud deferred
                               </span>
@@ -6872,11 +6921,15 @@ export function AdminView() {
                         </div>
                       </div>
 
-                      <div className="grid gap-3 md:grid-cols-4">
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                         {[
                           ["Evidence Events", evidenceEventCount],
                           ["Model Summaries", modelSummaryEvidenceCount],
                           ["Mastery Deltas", masteryDeltaCount],
+                          [
+                            "Active Misconceptions",
+                            activeMisconceptions.length,
+                          ],
                           ["Tool Jobs", toolJobCount],
                         ].map(([label, value]) => (
                           <div
@@ -6891,6 +6944,38 @@ export function AdminView() {
                             </div>
                           </div>
                         ))}
+                      </div>
+
+                      <div
+                        className={`mt-4 rounded-2xl border p-4 ${
+                          masteryIntegrity.ready
+                            ? "border-green-200 bg-green-50"
+                            : "border-red-200 bg-red-50"
+                        }`}
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
+                              <ShieldCheck size={15} />
+                              Mastery ledger integrity
+                            </div>
+                            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-600 font-serif">
+                              {masteryIntegrity.summary}
+                            </p>
+                            {masteryIntegrity.issues.length > 0 && (
+                              <div className="mt-2 text-xs font-mono text-red-700">
+                                {masteryIntegrity.issues.join(" | ")}
+                              </div>
+                            )}
+                          </div>
+                          <span
+                            className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(masteryIntegrity.status)}`}
+                          >
+                            {masteryIntegrity.ready
+                              ? "atomic audit ready"
+                              : "readiness blocked"}
+                          </span>
+                        </div>
                       </div>
                     </section>
 
@@ -7049,6 +7134,127 @@ export function AdminView() {
                           </div>
                         )}
                       </div>
+                    </section>
+
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h3 className="text-xl font-serif font-medium text-zinc-900">
+                            Misconception candidates
+                          </h3>
+                          <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-500 font-serif">
+                            Incorrect evaluated answers can create or
+                            consolidate source-linked candidates for Socratic
+                            follow-up. Candidates are auditable learner-state
+                            hypotheses; they never mutate mastery by themselves.
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                          <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-orange-700">
+                            {activeMisconceptions.length} active
+                          </span>
+                          <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1">
+                            {sortedMisconceptions.length -
+                              activeMisconceptions.length}{" "}
+                            resolved
+                          </span>
+                          <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1">
+                            {formatTime(
+                              latestMisconception?.updatedAt ||
+                                latestMisconception?.createdAt,
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      {sortedMisconceptions.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
+                          No misconception candidates yet. A validated incorrect
+                          answer tied to a real concept will create the first
+                          source-linked candidate here.
+                        </div>
+                      ) : (
+                        <div className="grid gap-3 xl:grid-cols-2">
+                          {sortedMisconceptions.map((misconception, index) => (
+                            <article
+                              key={misconception.id}
+                              className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-4 ${index < 12 ? "admin-animated-item" : ""}`}
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <h4 className="m-0 truncate text-sm font-semibold text-zinc-900">
+                                      {misconception.concept_id}
+                                    </h4>
+                                    <span
+                                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                                        misconception.resolved
+                                          ? "border-green-200 bg-green-50 text-green-700"
+                                          : "border-orange-200 bg-orange-50 text-orange-700"
+                                      }`}
+                                    >
+                                      {misconception.resolved
+                                        ? "resolved"
+                                        : misconception.candidateContract
+                                          ? "candidate"
+                                          : "active"}
+                                    </span>
+                                  </div>
+                                  <p className="mt-2 text-sm leading-relaxed text-zinc-600 font-serif">
+                                    {misconception.description}
+                                  </p>
+                                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
+                                    <span>
+                                      evidence {misconception.evidence.length}
+                                    </span>
+                                    <span>
+                                      confidence{" "}
+                                      {(misconception.confidence * 100).toFixed(
+                                        0,
+                                      )}
+                                      %
+                                    </span>
+                                    {misconception.evidenceType && (
+                                      <span>{misconception.evidenceType}</span>
+                                    )}
+                                    {misconception.scoreRatio !== undefined && (
+                                      <span>
+                                        score{" "}
+                                        {(
+                                          misconception.scoreRatio * 100
+                                        ).toFixed(0)}
+                                        %
+                                      </span>
+                                    )}
+                                    {misconception.bookId && (
+                                      <span className="max-w-[12rem] truncate">
+                                        book {misconception.bookId}
+                                      </span>
+                                    )}
+                                    {misconception.requestId && (
+                                      <span className="max-w-[12rem] truncate">
+                                        request {misconception.requestId}
+                                      </span>
+                                    )}
+                                    {misconception.source && (
+                                      <span>{misconception.source}</span>
+                                    )}
+                                    {misconception.evaluator && (
+                                      <span>{misconception.evaluator}</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="shrink-0 text-right text-[10px] font-mono text-zinc-500">
+                                  {formatTime(
+                                    misconception.updatedAt ||
+                                      misconception.createdAt,
+                                  )}
+                                </div>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      )}
                     </section>
 
                     <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">

@@ -1299,6 +1299,8 @@ export class MemoryOrchestrator {
       const { learnerModel } = await import("./learner.model");
       const snapshot = await learnerModel.getLearnerSnapshot(
         scoredConcepts[0]?.c.id,
+        undefined,
+        activeBookId,
       );
       const tutorInstructions =
         await learnerModel.getTutorInstructions(snapshot);
@@ -1333,6 +1335,11 @@ export class MemoryOrchestrator {
             .length,
           conceptsWithEmbeddings: concepts.filter((c) => c.embedding).length,
           learnerSnapshotConceptId: scoredConcepts[0]?.c.id,
+          activeMisconceptionCount: snapshot.active_misconceptions.length,
+          scaffoldLevel: snapshot.scaffold_level,
+          cognitiveLoad: snapshot.cognitive_load.level,
+          prerequisiteGapCount: snapshot.prerequisite_gaps.length,
+          illusionFlagCount: snapshot.illusion_flags.length,
         },
       });
 

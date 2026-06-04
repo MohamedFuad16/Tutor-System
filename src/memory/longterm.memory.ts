@@ -21,6 +21,10 @@ export interface PersistentConcept {
     correct: boolean;
     type: "recognition" | "generation" | "transfer";
     timestamp: number;
+    attemptId?: string;
+    evidenceEventId?: string;
+    masteryDeltaId?: string;
+    evidenceContract?: "evaluated_answer_v1" | "flashcard_review_v1";
   }[];
   decay_factor: number;
 
@@ -62,6 +66,18 @@ export interface Misconception {
   resolved: boolean;
   resolution_strategy?: string;
   createdAt: number;
+  updatedAt?: number;
+  candidateContract?: "evaluated_answer_misconception_candidate_v1";
+  fingerprint?: string;
+  bookId?: string;
+  conversationId?: string;
+  requestId?: string;
+  sourceId?: string;
+  source?: string;
+  evaluator?: "local_rubric" | "model_rubric" | "human_review";
+  evidenceType?: "recognition" | "generation" | "transfer";
+  scoreRatio?: number;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SessionMemoryRecord {
@@ -204,6 +220,7 @@ export interface BookChatThread {
 export interface EvidenceEvent {
   id: string;
   timestamp: number;
+  attemptId?: string;
   source: string;
   evidenceType: "model_summary" | "recognition" | "generation" | "transfer";
   verified: boolean;
@@ -220,6 +237,7 @@ export interface EvidenceEvent {
 export interface MasteryDelta {
   id: string;
   timestamp: number;
+  attemptId?: string;
   conceptId: string;
   evidenceEventId: string;
   evidenceType: "recognition" | "generation" | "transfer";

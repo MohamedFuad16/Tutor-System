@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   evaluatedAnswerConceptId,
+  evaluatedAnswerMisconceptionCandidate,
   evaluatedAnswerOutcome,
   evaluatedAnswerSummary,
   normalizeEvaluatedAnswerEvidenceInput,
@@ -13,12 +14,27 @@ import {
 const createEngine = (concept = { id: "bayes" }, ensureConcept = undefined) => {
   const calls = [];
   const ensureCalls = [];
+  const misconceptionCalls = [];
   const engine = {
     calls,
     ensureCalls,
+    misconceptionCalls,
     async updateConceptAttempt(...args) {
       calls.push(args);
       return concept;
+    },
+    async upsertMisconceptionCandidate(input) {
+      misconceptionCalls.push(input);
+      return {
+        id: `misconception-${misconceptionCalls.length}`,
+        concept_id: input.conceptId,
+        description: input.description,
+        evidence: [input.evidence],
+        confidence: input.confidence,
+        attempts_to_resolve: 0,
+        resolved: false,
+        createdAt: Date.now(),
+      };
     },
   };
 
@@ -70,6 +86,75 @@ test("evaluated answer summary keeps the learner question visible", () => {
       maxScore: 5,
     }),
     'Evaluated answer scored 3/5 for "Explain Bayes rule in your own words."',
+  );
+});
+
+test("incorrect evaluated answers create conservative misconception candidates", () => {
+  const candidate = evaluatedAnswerMisconceptionCandidate(
+    {
+      conceptId: "book:bayes:concept:likelihood",
+      question: "What does likelihood measure?",
+      learnerAnswer: "It is the probability the hypothesis is true.",
+      score: 1,
+      maxScore: 4,
+      threshold: 0.7,
+      bookId: "book:bayes",
+      conversationId: "conversation-1",
+      requestId: "request-1",
+      sourceId: "quiz-1",
+      source: "chat_tool_evaluate_answer",
+      evaluator: "model_rubric",
+    },
+    {
+      correct: false,
+      evidenceType: "generation",
+      scoreRatio: 0.25,
+      threshold: 0.7,
+    },
+  );
+
+  assert.equal(candidate.conceptId, "book:bayes:concept:likelihood");
+  assert.match(candidate.description, /Possible misconception/);
+  assert.match(candidate.evidence, /scored 25% below the 70% threshold/);
+  assert.equal(candidate.bookId, "book:bayes");
+  assert.equal(candidate.requestId, "request-1");
+  assert.equal(candidate.source, "chat_tool_evaluate_answer");
+  assert.equal(candidate.evaluator, "model_rubric");
+  assert.equal(candidate.metadata.candidateOnly, true);
+  assert.equal(candidate.metadata.masteryMutationAllowed, false);
+});
+
+test("correct or conceptless answers do not create misconception candidates", () => {
+  assert.equal(
+    evaluatedAnswerMisconceptionCandidate(
+      {
+        conceptId: "bayes",
+        question: "Define posterior.",
+        correct: true,
+      },
+      {
+        correct: true,
+        evidenceType: "generation",
+        scoreRatio: undefined,
+        threshold: 0.7,
+      },
+    ),
+    null,
+  );
+  assert.equal(
+    evaluatedAnswerMisconceptionCandidate(
+      {
+        question: "Define posterior.",
+        correct: false,
+      },
+      {
+        correct: false,
+        evidenceType: "generation",
+        scoreRatio: undefined,
+        threshold: 0.7,
+      },
+    ),
+    null,
   );
 });
 
@@ -195,6 +280,8 @@ test("evaluated answer evidence records scored attempts through BKT", async () =
   assert.equal(isCorrect, true);
   assert.equal(evidenceType, "transfer");
   assert.equal(options.source, "evaluated_answer");
+  assert.equal(options.evidenceContract, "evaluated_answer_v1");
+  assert.match(options.attemptId, /^evaluated-answer:request-1:bayes:/);
   assert.match(options.summary, /Evaluated answer scored 4\/5/);
   assert.equal(options.metadata.evidenceContract, "evaluated_answer_v1");
   assert.equal(options.metadata.scoreRatio, 0.8);
@@ -206,6 +293,42 @@ test("evaluated answer evidence records scored attempts through BKT", async () =
     "Uses likelihood",
     "Explains posterior",
   ]);
+  assert.equal(engine.misconceptionCalls.length, 0);
+});
+
+test("incorrect evaluated answers record candidates only after real concept updates", async () => {
+  const engine = createEngine({ id: "book:bayes:concept:likelihood" });
+  const result = await recordEvaluatedAnswerEvidence(
+    {
+      conceptId: "book:bayes:concept:likelihood",
+      question: "What does likelihood measure?",
+      learnerAnswer: "It is the probability the hypothesis is true.",
+      correct: false,
+      evidenceType: "generation",
+      bookId: "book:bayes",
+      conversationId: "conversation-1",
+      requestId: "request-1",
+      sourceId: "quiz-1",
+      source: "chat_tool_evaluate_answer",
+      evaluator: "model_rubric",
+    },
+    engine,
+  );
+
+  assert.equal(result.status, "recorded");
+  assert.equal(result.misconceptionCandidateStatus, "recorded");
+  assert.equal(result.misconceptionCandidateId, "misconception-1");
+  assert.equal(engine.calls.length, 1);
+  assert.equal(engine.misconceptionCalls.length, 1);
+
+  const candidate = engine.misconceptionCalls[0];
+  assert.equal(candidate.bookId, "book:bayes");
+  assert.equal(candidate.requestId, "request-1");
+  assert.equal(candidate.sourceId, "quiz-1");
+  assert.equal(candidate.source, "chat_tool_evaluate_answer");
+  assert.equal(candidate.evaluator, "model_rubric");
+  assert.equal(candidate.metadata.candidateOnly, true);
+  assert.equal(candidate.metadata.masteryMutationAllowed, false);
 });
 
 test("evaluated answer evidence promotes learning-book concepts before BKT", async () => {
@@ -236,6 +359,7 @@ test("evaluated answer evidence promotes learning-book concepts before BKT", asy
     "update:book:bayes:concept:posterior",
   ]);
   assert.equal(engine.calls[0][3].metadata.conceptPromotionStatus, "ready");
+  assert.equal(engine.calls[0][3].evidenceContract, "evaluated_answer_v1");
 });
 
 test("evaluated answer evidence does not fake mastery when promotion misses", async () => {
@@ -269,4 +393,5 @@ test("evaluated answer evidence reports missing concepts without faking mastery"
 
   assert.equal(result.status, "missing_concept");
   assert.equal(engine.calls.length, 1);
+  assert.equal(engine.misconceptionCalls.length, 0);
 });

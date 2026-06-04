@@ -17,6 +17,7 @@ type ModelSummaryEvidenceInput = {
 };
 
 type MasteryDeltaInput = {
+  attemptId?: string;
   conceptId: string;
   evidenceType: Exclude<MasteryEvidenceType, "model_summary">;
   correct: boolean;
@@ -63,20 +64,31 @@ export const createMasteryDeltaRecords = (
   timestamp = Date.now(),
 ) => {
   const verified = isDirectRecallEvidence(input.evidenceType);
+  const attemptId = input.attemptId?.replace(/\s+/g, " ").trim().slice(0, 500);
   const event: EvidenceEvent = {
-    id: createLedgerId("evidence", timestamp),
+    id: attemptId
+      ? `evidence:mastery-attempt:${attemptId}`
+      : createLedgerId("evidence", timestamp),
     timestamp,
+    attemptId,
     source: input.source,
     evidenceType: input.evidenceType,
     verified,
     conceptId: input.conceptId,
     summary: compactSummary(input.summary),
     correct: input.correct,
-    metadata: input.metadata,
+    metadata: {
+      ...input.metadata,
+      attemptId,
+      masteryMutationAllowed: true,
+    },
   };
   const delta: MasteryDelta = {
-    id: createLedgerId("mastery-delta", timestamp),
+    id: attemptId
+      ? `mastery-delta:${attemptId}`
+      : createLedgerId("mastery-delta", timestamp),
     timestamp,
+    attemptId,
     conceptId: input.conceptId,
     evidenceEventId: event.id,
     evidenceType: input.evidenceType,
@@ -105,24 +117,4 @@ export const recordModelSummaryEvidence = async (
   }
 
   return event;
-};
-
-export const recordMasteryDelta = async (input: MasteryDeltaInput) => {
-  const records = createMasteryDeltaRecords(input);
-
-  try {
-    await db.transaction(
-      "rw",
-      db.evidenceEvents,
-      db.masteryDeltas,
-      async () => {
-        await db.evidenceEvents.add(records.event);
-        await db.masteryDeltas.add(records.delta);
-      },
-    );
-  } catch (error) {
-    warnLedgerFailure("mastery delta write", error);
-  }
-
-  return records;
 };

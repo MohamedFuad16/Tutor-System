@@ -7085,6 +7085,81 @@ turn plus live Deepgram voice drill under one Admin proof attempt, then confirm
 real local-live provider rows share proof attempt, book, thread, and multi-PDF
 context. AWS/cloud work remains deferred until after beta.
 
+# Latest Addendum: Learner-State Audit-Link Hardening
+
+The final Packet ADE self-review tightened idempotency and integrity after the
+initial atomic-commit implementation. New mastery attempts now preserve exact
+attempt, evidence-event, mastery-delta, and evidence-contract links in concept
+history. Duplicate replay succeeds only when the complete linked audit rows
+still match; missing or conflicting audit rows fail closed.
+
+`buildMasteryLedgerIntegrity()` now verifies exact links for new attempt rows
+while preserving count-based checks for legacy history that predates those
+fields. Regression coverage proves corrupt replay and exact-link mismatch are
+blocked.
+
+Final verification:
+
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 202 tests.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- No provider traffic, microphone action, or AWS/cloud work occurred.
+
+Current conservative implementation estimate: 98%.
+
+The program remains active. A fresh completion audit plus the real approved
+provider-key typed-chat and live Deepgram voice drill remain required before a
+99% or 100% claim. AWS/cloud remains deferred.
+
+# Latest Addendum: Learner-State Integrity And Misconception Loop
+
+Two independent read-only audits rejected the previous 99% narrative because a
+mastery mutation could survive an evidence-ledger failure. Packet ADE fixes
+that P0 and closes the architecture book's previously inert misconception
+candidate loop.
+
+Implementation:
+
+- Validated incorrect evaluated answers create or consolidate bounded,
+  source-linked misconception candidates only after a real concept update.
+- Learner-model retrieval scopes active candidates to the active book, Admin
+  Evidence exposes their audit trail, and candidates cannot mutate mastery.
+- Validated mastery attempts require a stable audit id and recognized evidence
+  contract.
+- Concept mutation, verified evidence event, and linked mastery delta now
+  commit atomically; failures roll back and duplicate replay is idempotent.
+- Admin and Beta Diagnostics detect orphan/mismatched mastery audit links and
+  block 99/100 unless mastery integrity is ready.
+
+Verification evidence:
+
+- `npm run brain:postchange -- --reason skill-preflight`: unavailable because
+  `package.json` has no `brain:postchange` script.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run test`: passed, 202 tests.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- In-app Browser desktop/mobile Admin QA showed the Evidence integrity meter,
+  misconception boundary, and mandatory Beta Diagnostics integrity chip with
+  no horizontal overflow and zero browser warning/error logs.
+- No provider traffic, microphone action, or AWS/cloud work occurred.
+- An ordinary Graphify regeneration exposed a stale removed symbol, so a clean
+  rebuild was performed and the prior graph preserved in `/private/tmp`.
+- Clean `graphify update . --force`: 1247 nodes, 2139 edges, 69 communities.
+- `npm run graphify:tree`: passed, writing `GRAPH_TREE.html` at 89.8 KB.
+- Graph artifact contamination grep passed, and refreshed path smoke connected
+  atomic mastery commit to Admin integrity plus misconception graph to learner
+  model.
+
+Current conservative implementation estimate: 98%.
+
+The program remains active. A fresh post-ADE completion audit plus the real
+approved provider-key typed-chat and live Deepgram voice drill remain required
+before renewing a 99% or 100% claim. AWS/cloud remains deferred.
+
 # Latest Addendum: Durable Provider Traffic Unlock
 
 This slice closes the approval race before the final real provider-key drill.
@@ -7150,3 +7225,18 @@ Remaining hard gap is unchanged: run the real approved OpenRouter typed-chat
 turn plus live Deepgram voice drill under one Admin proof attempt, then confirm
 real local-live provider rows share proof attempt, book, thread, and multi-PDF
 context. AWS/cloud work remains deferred until after beta.
+
+# Current Program Status After Packet ADE
+
+Packet ADE supersedes the older 99% estimate above. Its final self-review
+persists exact attempt/evidence/delta/contract links, makes incomplete or
+conflicting duplicate replay fail closed, and preserves legacy count-based
+integrity checks.
+
+Final verification passed `npm run format:check`, `npm run lint`,
+`npm run test` with 202 tests, `npm run build`, and `git diff --check`.
+No provider traffic, microphone action, or AWS/cloud work occurred.
+
+Current conservative implementation estimate: 98%. The program remains active
+until a fresh completion audit and the real approved provider-key typed-chat
+plus live Deepgram voice drill prove the remaining local architecture.

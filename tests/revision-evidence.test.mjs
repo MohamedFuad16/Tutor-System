@@ -53,6 +53,8 @@ test("flashcard review records BKT evidence with source metadata", async () => {
   assert.equal(calls.length, 1);
   assert.deepEqual(calls[0].slice(0, 3), ["bayes-rule", true, "generation"]);
   assert.equal(calls[0][3].source, "revision_flashcard");
+  assert.equal(calls[0][3].evidenceContract, "flashcard_review_v1");
+  assert.match(calls[0][3].attemptId, /^flashcard-review:card-1:/);
   assert.equal(calls[0][3].metadata.flashcardId, "card-1");
   assert.equal(calls[0][3].metadata.quality, 5);
 });

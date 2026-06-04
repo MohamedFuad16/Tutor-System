@@ -715,6 +715,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, src/components/ChatPanel.tsx, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, tests/live-proof-prompt-handoff.test.mjs, tests/voice-proof-attempt-latch.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ADE",
+      "name": "Learner-state integrity and misconception loop",
+      "owner": "main agent + read-only sidecars Meitner and Herschel",
+      "status": "completed",
+      "write_scope": "src/memory/answer.evidence.ts, src/memory/misconception.graph.ts, src/memory/learner.model.ts, src/memory/memory.orchestrator.ts, src/memory/bkt.engine.ts, src/memory/evidence.ledger.ts, src/memory/beta.diagnostics.ts, src/memory/longterm.memory.ts, src/memory/revision.evidence.ts, src/views/AdminView.tsx, focused tests/docs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1956,11 +1963,28 @@
     "graphify update . --force regenerated code architecture artifacts with 1217 nodes, 2085 edges, and 69 communities",
     "npm run graphify:tree passed for Packet ADD and wrote GRAPH_TREE.html at 87.9 KB",
     "Packet ADD graph artifact grep found no server.mjs, .tmp-test, node_modules/.cache, /private/tmp, or codex-runtimes scratch references",
-    "Packet ADD repo-local Graphify CLI query routed durable approval through ChatPanel.tsx, AdminView.tsx, beta-diagnostics.test.mjs, live-proof-prompt-handoff.test.mjs, and connected store/proof surfaces; the global Graphify MCP remained bound to another repository"
+    "Packet ADD repo-local Graphify CLI query routed durable approval through ChatPanel.tsx, AdminView.tsx, beta-diagnostics.test.mjs, live-proof-prompt-handoff.test.mjs, and connected store/proof surfaces; the global Graphify MCP remained bound to another repository",
+    "Two independent Packet ADE read-only audits found that the previous 99% claim excluded a P0 mastery-ledger atomicity gap",
+    "Packet ADE implemented source-linked active-book misconception candidates that cannot mutate mastery",
+    "Packet ADE implemented commitValidatedMasteryAttempt so concept, verified evidence event, and linked mastery delta commit atomically with duplicate replay protection",
+    "Packet ADE implemented buildMasteryLedgerIntegrity and made Admin/readiness block 99/100 on missing, orphan, mismatched, or unverified mastery audit links",
+    "npm run brain:postchange -- --reason skill-preflight remained unavailable because package.json has no brain:postchange script",
+    "npm run format:check passed for Packet ADE",
+    "npm run lint passed for Packet ADE",
+    "npm run test passed for Packet ADE, 202 tests",
+    "npm run build passed for Packet ADE",
+    "git diff --check passed for Packet ADE",
+    "In-app Browser desktop/mobile Admin QA showed mastery-integrity and misconception Evidence surfaces plus the mandatory Beta Diagnostics integrity chip with no horizontal overflow and zero browser warning/error logs",
+    "Packet ADE clean Graphify rebuild regenerated code architecture artifacts with 1247 nodes, 2139 edges, and 69 communities after an ordinary rebuild exposed a stale removed symbol",
+    "npm run graphify:tree passed for Packet ADE and wrote GRAPH_TREE.html at 89.8 KB",
+    "Packet ADE graph artifact grep found no removed recordMasteryDelta, server.mjs, .tmp-test, node_modules/.cache, /private/tmp, or codex-runtimes references",
+    "Packet ADE Graphify paths connected commitValidatedMasteryAttempt() to buildMasteryLedgerIntegrity() in four hops and MisconceptionGraph to LearnerModel in two hops",
+    "Final Packet ADE self-review persisted exact attempt/evidence/delta/contract links, made corrupt duplicate replay fail closed, and preserved legacy count-based integrity checks",
+    "Final Packet ADE verification passed npm run format:check, npm run lint, npm run test with 202 tests, npm run build, and git diff --check"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ADD: provider traffic now unlocks only when the active attempt has both current approval state and a visible durable local approval event, closing transient approval and historical-ledger races across Admin prompt handoff and ChatPanel provider calls. The app remains at 99% because 100% still requires actually running the real approved OpenRouter typed-chat plus Deepgram live-voice drill under one Admin proof attempt and confirming attempt-bound local-live provider rows with shared multi-PDF book/thread anchors. AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T09:54:24Z"
+    "estimatePercent": 98,
+    "basis": "Conservative local implementation estimate after Packet ADE. The identified P0 mastery-ledger atomicity gap and inert misconception-candidate loop are closed, and Admin/readiness now blocks 99/100 when learner-state audit integrity is not proven. A fresh post-ADE completion audit plus the real approved OpenRouter typed-chat and live Deepgram voice drill are still required before renewing a 99% or 100% claim. AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T10:27:44Z"
   }
 }
