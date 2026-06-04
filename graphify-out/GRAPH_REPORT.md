@@ -1,16 +1,16 @@
 # Graph Report - LearningAI  (2026-06-04)
 
 ## Corpus Check
-- 101 files · ~184,929 words
+- 101 files · ~185,434 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1212 nodes · 2079 edges · 69 communities (58 shown, 11 thin omitted)
+- 1215 nodes · 2082 edges · 78 communities (67 shown, 11 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 7 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `edae1387`
+- Built from commit: `bbd51c56`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -31,11 +31,13 @@
 - [[_COMMUNITY_Community 13|Community 13]]
 - [[_COMMUNITY_Community 14|Community 14]]
 - [[_COMMUNITY_Community 15|Community 15]]
+- [[_COMMUNITY_Community 16|Community 16]]
 - [[_COMMUNITY_Community 17|Community 17]]
 - [[_COMMUNITY_Community 18|Community 18]]
 - [[_COMMUNITY_Community 19|Community 19]]
 - [[_COMMUNITY_Community 20|Community 20]]
 - [[_COMMUNITY_Community 21|Community 21]]
+- [[_COMMUNITY_Community 22|Community 22]]
 - [[_COMMUNITY_Community 23|Community 23]]
 - [[_COMMUNITY_Community 24|Community 24]]
 - [[_COMMUNITY_Community 25|Community 25]]
@@ -43,18 +45,24 @@
 - [[_COMMUNITY_Community 27|Community 27]]
 - [[_COMMUNITY_Community 28|Community 28]]
 - [[_COMMUNITY_Community 29|Community 29]]
+- [[_COMMUNITY_Community 30|Community 30]]
 - [[_COMMUNITY_Community 31|Community 31]]
 - [[_COMMUNITY_Community 32|Community 32]]
+- [[_COMMUNITY_Community 33|Community 33]]
 - [[_COMMUNITY_Community 34|Community 34]]
 - [[_COMMUNITY_Community 35|Community 35]]
 - [[_COMMUNITY_Community 36|Community 36]]
 - [[_COMMUNITY_Community 37|Community 37]]
+- [[_COMMUNITY_Community 38|Community 38]]
+- [[_COMMUNITY_Community 39|Community 39]]
 - [[_COMMUNITY_Community 40|Community 40]]
 - [[_COMMUNITY_Community 41|Community 41]]
 - [[_COMMUNITY_Community 42|Community 42]]
 - [[_COMMUNITY_Community 43|Community 43]]
 - [[_COMMUNITY_Community 44|Community 44]]
+- [[_COMMUNITY_Community 45|Community 45]]
 - [[_COMMUNITY_Community 46|Community 46]]
+- [[_COMMUNITY_Community 47|Community 47]]
 - [[_COMMUNITY_Community 48|Community 48]]
 - [[_COMMUNITY_Community 49|Community 49]]
 - [[_COMMUNITY_Community 50|Community 50]]
@@ -82,6 +90,7 @@
 - [[_COMMUNITY_Community 72|Community 72]]
 - [[_COMMUNITY_Community 73|Community 73]]
 - [[_COMMUNITY_Community 74|Community 74]]
+- [[_COMMUNITY_Community 77|Community 77]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `db` - 24 edges
@@ -107,27 +116,27 @@
 - `startTutorApp()` --calls--> `createTutorServerApp()`  [INFERRED]
   tests/tts-provider-routing.test.mjs → server.ts
 
-## Communities (69 total, 11 thin omitted)
+## Communities (78 total, 11 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.05
-Nodes (57): recordStoredAudioOverviewArtifacts(), addRows(), addTarget(), applyCorrectionPropagation(), buildConceptCorrectionPatch(), buildCorrectionPropagationMetadata(), buildCorrectionPropagationPatch(), cleanList() (+49 more)
+Cohesion: 0.08
+Nodes (22): recordStoredAudioOverviewArtifacts(), BookChatThread, ActivityStatus, AdminRequestTimeline, AdminTab, AdminView(), artifactTypeBuckets, correctionImpactedRows() (+14 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.03
 Nodes (34): AnimatedMarkdown, ChatArchive, END_INTENT_PATTERNS, getReadAloudVoiceLabel(), getReadAloudVoiceTooltip(), gsapMotion, InteractiveCodeBlock, languageExtensions (+26 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.05
-Nodes (75): recordGeneratedNotesArtifact(), BackgroundJobEventInput, backgroundJobIdFor(), BackgroundJobRunResult, BackgroundJobStatusInput, compact(), createBackgroundJobRecord(), errorSummary() (+67 more)
+Cohesion: 0.06
+Nodes (55): BackgroundJobEventInput, backgroundJobIdFor(), BackgroundJobRunResult, BackgroundJobStatusInput, compact(), createBackgroundJobRecord(), errorSummary(), jobAnchorFor() (+47 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.03
-Nodes (60): aggregateFlow, approvedPreflight, blockedFlow, blockedItem, blockedPreflight, blockedSnapshot, chatBundle, chatMultiPdfSignal (+52 more)
+Nodes (61): aggregateFlow, approvedPreflight, blockedFlow, blockedItem, blockedPreflight, blockedSnapshot, chatBundle, chatMultiPdfSignal (+53 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.09
-Nodes (56): applyArtifactCitationState(), applyCitationIntegrityResult(), artifactRecordIdFor(), ArtifactStatusInput, ArtifactVerificationInput, artifactVerificationStateForCitationStates(), CitationIntegrityResult, CitationIntegrityState (+48 more)
+Nodes (57): applyArtifactCitationState(), applyCitationIntegrityResult(), artifactRecordIdFor(), ArtifactStatusInput, ArtifactVerificationInput, artifactVerificationStateForCitationStates(), CitationIntegrityResult, CitationIntegrityState (+49 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.07
@@ -139,15 +148,15 @@ Nodes (42): BetaBrainFlowLedgerInput, BetaBrainFlowSignal, BetaBrainFlowSignalEv
 
 ### Community 7 - "Community 7"
 Cohesion: 0.09
-Nodes (39): AnswerEvidenceEngine, AnswerEvidenceType, asRecord(), boundedText(), clamp01(), compact(), ConceptPromotionStatus, defaultAnswerEvidenceEngine (+31 more)
+Nodes (40): AnswerEvidenceEngine, AnswerEvidenceType, asRecord(), boundedText(), clamp01(), compact(), ConceptPromotionStatus, defaultAnswerEvidenceEngine (+32 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.07
 Nodes (27): args, bookArg, chapterArg, concatMp3Files(), dryRun, execFileAsync, existingFiles, modelArg (+19 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.05
-Nodes (38): PatternCard(), pressDots, themes, SvgBeige(), SvgDark(), SvgOrange(), audioOverviewEntries, builtInBookAudioOverviews (+30 more)
+Cohesion: 0.06
+Nodes (24): audioOverviewEntries, builtInBookAudioOverviews, ChapterAudioOverview, ChapterAudioOverviewManifestEntry, userBrainArchitectureBook, BuiltInBook, builtInBookIds, builtInBooks (+16 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.08
@@ -158,28 +167,32 @@ Cohesion: 0.08
 Nodes (17): compactBrainContextMetadata(), compactStringList(), debugAdminToken, DEEPGRAM_PRICING, fetchOpenRouterPricing(), misoTtsApiBaseUrl(), nonNegativeInteger(), normalizeModelPricing() (+9 more)
 
 ### Community 12 - "Community 12"
-Cohesion: 0.08
-Nodes (18): AppState, BetaProofTrafficApproval, ChatUsage, Concept, emptyChatUsage, emptyPricing, emptyVoiceUsage, emptyWebUsage (+10 more)
+Cohesion: 0.07
+Nodes (19): Annotation, AppState, BetaProofTrafficApproval, ChatUsage, Concept, emptyChatUsage, emptyPricing, emptyVoiceUsage (+11 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.09
 Nodes (22): 1. Prerequisites, 2. Install, 3. Configure Environment, 4. Run, 5. Generate Stored Chapter Audio, Book-Scoped Study Workflow, code:text (Upload), code:mermaid (graph TD) (+14 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.14
-Nodes (18): RetrievalEvent, cosineSimilarity(), generateEmbedding(), normalize(), TOKEN_STOPWORDS, tokenize(), boundedScore(), cleanList() (+10 more)
+Cohesion: 0.11
+Nodes (26): addRows(), addTarget(), cleanList(), collectCorrectionPropagationTargets(), compact(), CorrectionEventActionInput, correctionEventIdFor(), CorrectionEventInput (+18 more)
 
 ### Community 15 - "Community 15"
-Cohesion: 0.05
-Nodes (38): CognitiveLoadMonitor, CognitiveLoadState, IllusionDetector, LearnerModel, BackgroundJob, BookChatThread, BrainDatabase, db (+30 more)
+Cohesion: 0.13
+Nodes (8): CognitiveLoadMonitor, CognitiveLoadState, IllusionDetector, LearnerModel, db, PrerequisiteDAG, ScaffoldingEngine, ZPDCalculator
+
+### Community 16 - "Community 16"
+Cohesion: 0.16
+Nodes (15): BKTAttemptOptions, BKTEngine, buildBKTConfidenceUpdate(), DEFAULT_BKT, CONFIDENCE_ATTEMPT_DELTAS, confidenceDeltaFromEvidenceAttempt(), confidenceFromEvidenceAttempt(), confidenceFromUnderstandingDelta() (+7 more)
 
 ### Community 17 - "Community 17"
-Cohesion: 0.17
-Nodes (8): FloatingSkillsMenu(), SKILLS, SiriLiquidGlass(), useMotionPreference(), AnalyticsView(), COLORS, ConceptAnalyticsRecord, RevisionView()
+Cohesion: 0.15
+Nodes (17): ChatPanel(), FloatingSkillsMenu(), SKILLS, Navigation(), PdfViewer(), SettingsButton(), SiriLiquidGlass(), useMotionPreference() (+9 more)
 
 ### Community 18 - "Community 18"
 Cohesion: 0.13
-Nodes (10): PdfViewer(), Language, translations, LearningBook, LearningDocument, brainOrchestrator, Annotation, CardTarget (+2 more)
+Nodes (12): PatternCard(), pressDots, themes, SvgBeige(), SvgDark(), SvgOrange(), LearningBook, LearningDocument (+4 more)
 
 ### Community 19 - "Community 19"
 Cohesion: 0.17
@@ -192,6 +205,10 @@ Nodes (17): checkedInFiles, existingFiles, expectedBooks, expectedTotal, measure
 ### Community 21 - "Community 21"
 Cohesion: 0.11
 Nodes (17): 1. Product Purpose, 2. Runtime Stack, 3. Model Inventory, 4. Zustand Store, 5. Dexie Database, 6. Core Views, 7. Graphify Architecture Layer, 8. Maintenance Boundaries (+9 more)
+
+### Community 22 - "Community 22"
+Cohesion: 0.12
+Nodes (11): BrainDatabase, EvidenceEvent, LearningChapter, LearningEntry, MasteryDelta, Misconception, PersistentConcept, SessionMemoryRecord (+3 more)
 
 ### Community 23 - "Community 23"
 Cohesion: 0.18
@@ -221,6 +238,10 @@ Nodes (14): buildProviderCapture(), hasModelObservationGate(), isChatLayer(), is
 Cohesion: 0.15
 Nodes (11): adminPrefaceMatch, adminViewSource, architectureDoc, audioOverviewManifest, copy, repoRoot, revisionViewSource, tutorBook (+3 more)
 
+### Community 30 - "Community 30"
+Cohesion: 0.35
+Nodes (10): compactSummary(), createLedgerId(), createMasteryDeltaRecords(), createModelSummaryEvidenceRecord(), MasteryDeltaInput, ModelSummaryEvidenceInput, recordMasteryDelta(), recordModelSummaryEvidence() (+2 more)
+
 ### Community 31 - "Community 31"
 Cohesion: 0.18
 Nodes (8): BaseModel, generator(), speech(), SpeechRequest, currentPageTool, evaluateAnswerTool, response, webSearchTool
@@ -228,6 +249,10 @@ Nodes (8): BaseModel, generator(), speech(), SpeechRequest, currentPageTool, eva
 ### Community 32 - "Community 32"
 Cohesion: 0.23
 Nodes (12): debugTokenFromRequest(), deepgramKeyFromRequest(), firstHeader(), getOpenRouterServerFallbackKey(), hostNameFromHeader(), isAuthorizedDebugRequest(), isLoopbackAddress(), isLoopbackHost() (+4 more)
+
+### Community 33 - "Community 33"
+Cohesion: 0.33
+Nodes (10): MemoryEvent, clamp01(), cleanSourceIds(), compact(), createMemoryEventRecord(), memoryEventIdFor(), MemoryEventInput, MemoryEventStatusInput (+2 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.2
@@ -245,9 +270,17 @@ Nodes (9): BRAIN_RUNTIME_SETTING_LIMITS, BrainRuntimeSettings, BrainWebSearchPol
 Cohesion: 0.2
 Nodes (9): chatQuery, compacted, context, documentContext, documents, event, rawContext, report (+1 more)
 
+### Community 38 - "Community 38"
+Cohesion: 0.33
+Nodes (10): ModelRun, compact(), createModelRunRecord(), idPart(), ModelRunEventInput, modelRunIdFor(), ModelRunStatusInput, nonNegativeNumber() (+2 more)
+
+### Community 39 - "Community 39"
+Cohesion: 0.31
+Nodes (10): applyCorrectionPropagation(), buildConceptCorrectionPatch(), buildCorrectionPropagationMetadata(), buildCorrectionPropagationPatch(), effectForAction(), getPropagationRow(), metadataRecord(), updateCorrectionEventPropagationStatus() (+2 more)
+
 ### Community 40 - "Community 40"
 Cohesion: 0.22
-Nodes (11): ChatPanel(), Navigation(), SettingsButton(), useTranslation(), AdminView, AnalyticsView, App(), RevisionView (+3 more)
+Nodes (5): AdminView, AnalyticsView, App(), RevisionView, VALID_VIEWS
 
 ### Community 41 - "Community 41"
 Cohesion: 0.22
@@ -265,9 +298,17 @@ Nodes (6): chatPanelSource, hudSource, repoRoot, sendMessageSource, startVoiceSo
 Cohesion: 0.38
 Nodes (7): compactModel(), formatCount(), formatCurrency(), formatSeconds(), MessageUsageFooter(), UsageAnalyticsStrip(), useAnimatedNumber()
 
+### Community 45 - "Community 45"
+Cohesion: 0.36
+Nodes (8): Flashcard, compact(), flashcardEvidenceConceptId(), FlashcardReviewEvidenceResult, flashcardReviewOutcome(), flashcardReviewSummary(), recordFlashcardReviewEvidence(), RevisionEvidenceEngine
+
 ### Community 46 - "Community 46"
 Cohesion: 0.33
 Nodes (5): buildVoiceFunctionCallResponse(), parseVoiceFunctionArguments(), VOICE_AGENT_TOOL_DEFINITIONS, VoiceAgentFunctionCall, voiceAgentToolNames
+
+### Community 47 - "Community 47"
+Cohesion: 0.36
+Nodes (8): ToolJob, compact(), createToolJobRecord(), normalizeToolJobStatus(), recordToolJobEvent(), ToolJobEventInput, toolJobIdFor(), ToolJobStatusInput
 
 ### Community 49 - "Community 49"
 Cohesion: 0.33
@@ -333,8 +374,12 @@ Nodes (3): searchDetectionForExplicitRequest(), stripWebSearchSystemPrefix(), de
 Cohesion: 0.67
 Nodes (3): isProviderBackedChatModelRun(), isRealVoiceProviderReadyEvent(), normalizedText()
 
+### Community 71 - "Community 71"
+Cohesion: 0.4
+Nodes (4): approved, cleared, id, record
+
 ## Knowledge Gaps
-- **470 isolated node(s):** `deferredPreloadChunks`, `DEEPGRAM_PRICING`, `OpenRouterPricing`, `RequestLike`, `debugAdminToken` (+465 more)
+- **473 isolated node(s):** `deferredPreloadChunks`, `DEEPGRAM_PRICING`, `OpenRouterPricing`, `RequestLike`, `debugAdminToken` (+468 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -343,15 +388,15 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `createTutorServerApp()` connect `Community 10` to `Community 11`?**
   _High betweenness centrality (0.042) - this node is a cross-community bridge._
-- **Why does `db` connect `Community 15` to `Community 0`, `Community 1`, `Community 2`, `Community 4`, `Community 5`, `Community 7`, `Community 9`, `Community 14`, `Community 17`, `Community 18`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
+- **Why does `db` connect `Community 15` to `Community 0`, `Community 33`, `Community 2`, `Community 1`, `Community 4`, `Community 5`, `Community 38`, `Community 7`, `Community 9`, `Community 14`, `Community 47`, `Community 16`, `Community 17`, `Community 18`, `Community 22`, `Community 30`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
 - **Why does `BrainRuntimeSettings` connect `Community 36` to `Community 0`, `Community 11`, `Community 12`, `Community 5`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
+  _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **What connects `deferredPreloadChunks`, `DEEPGRAM_PRICING`, `OpenRouterPricing` to the rest of the system?**
-  _470 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _473 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.03 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06 - nodes in this community are weakly interconnected._

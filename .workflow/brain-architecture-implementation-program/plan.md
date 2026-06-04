@@ -249,3 +249,8 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   attempt, keep exact proof prompts disabled until preflight is approved, show
   the traffic state in the ChatPanel proof HUD, and verify the gate without
   calling OpenRouter, Deepgram, or AWS/cloud systems.
+- ADC: Provider traffic approval ledger. Record Admin provider-traffic approval
+  and approval-cleared decisions as durable local memory events, let the final
+  coherent proof require the approval lifecycle row, surface the event id in
+  Admin Beta Diagnostics, and verify desktop/mobile without calling providers
+  or starting AWS/cloud work.

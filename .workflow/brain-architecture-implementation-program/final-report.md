@@ -7020,3 +7020,67 @@ Remaining hard gap is intentionally unchanged: run the real provider-key
 typed-chat turn plus live Deepgram voice drill with OpenRouter and Deepgram
 traffic under one approved Admin proof attempt, then confirm the selected
 provider captures are real local-live rows bound to that proof attempt.
+
+# Latest Addendum: Provider Traffic Approval Ledger
+
+This slice makes the Admin provider-traffic approval auditable as local durable
+evidence. The previous approval gate was attempt-scoped UI/store state; now the
+approval and revoke actions also write memory-event lifecycle rows so the final
+provider-key proof can show a concrete local send/spend decision.
+
+Implementation:
+
+- Added `beta_provider_traffic_approved` and
+  `beta_provider_traffic_approval_cleared` memory event types.
+- Admin Beta Diagnostics records approval and cleared rows against the active
+  proof attempt, with local provider destinations and send/context warnings in
+  metadata.
+- `buildLiveBetaProofPreflight()` accepts memory events, exposes
+  `providerTrafficApprovalEventIds`, and treats a matching durable approval row
+  as approval evidence for the active attempt.
+- `buildCoherentLiveProofFromLedgers()` now requires a
+  `Provider traffic approval recorded` proof check for final coherent
+  local-live provider-key proof.
+- Admin shows compact `approval event ...` chips in the External provider
+  traffic panel.
+- No OpenRouter, Deepgram, microphone, or AWS/cloud call was made.
+
+Verification evidence:
+
+- `npm run brain:postchange -- --reason skill-preflight`: unavailable because
+  `package.json` has no `brain:postchange` script.
+- `npm run test -- tests/beta-diagnostics.test.mjs
+  tests/memory-events.test.mjs`: passed through the project runner with 187
+  tests.
+- `npm run format:check`: initially found formatting in the touched test and
+  diagnostics files; narrow Prettier write fixed it.
+- `npm run format:check`: passed after formatting.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run test`: passed after formatting, 187 tests.
+- In-app Browser desktop Admin QA on `http://localhost:3001`: Beta Diagnostics
+  started a proof attempt, approved provider traffic, rendered
+  `traffic approved`, and showed an
+  `approval event memory-event:beta_provider_traffic_approved...` chip.
+- In-app Browser mobile Admin QA at `390x844`: the same approval event chip and
+  approved state were visible with no horizontal overflow (`scrollWidth` 390).
+- Screenshots saved to
+  `.workflow/brain-architecture-implementation-program/results/ADC-admin-approval-ledger-desktop.png`
+  and
+  `.workflow/brain-architecture-implementation-program/results/ADC-admin-approval-ledger-mobile.png`.
+- `graphify update . --force`: passed with 1215 nodes, 2082 edges, and 78
+  communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`87.8 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`,
+  `node_modules/.cache`, `/private/tmp`, or `codex-runtimes` references.
+- Graphify query routed the approval-ledger proof through `AdminView.tsx`,
+  `beta.diagnostics.ts`, `tests/beta-diagnostics.test.mjs`, and connected
+  proof/store/Admin/Chat surfaces.
+
+Current conservative local-beta brain architecture completion estimate: 99%.
+
+Remaining hard gap is unchanged: run the real approved OpenRouter typed-chat
+turn plus live Deepgram voice drill under one Admin proof attempt, then confirm
+real local-live provider rows share proof attempt, book, thread, and multi-PDF
+context. AWS/cloud work remains deferred until after beta.

@@ -199,6 +199,7 @@ export type LiveBetaProofAttemptAudit = {
   status: Exclude<BetaDiagnosticStatus, "deferred">;
   canRunProviderTraffic: boolean;
   providerTrafficApproved: boolean;
+  providerTrafficApprovalEventIds: string[];
   receiptReady: boolean;
   sourceReadyForBeta: boolean;
   activeAttemptMatchesSelectedBundle: boolean;
@@ -225,6 +226,7 @@ export type LiveBetaProofPreflight = {
   canRun: boolean;
   needsProviderTraffic: boolean;
   providerTrafficApproved: boolean;
+  providerTrafficApprovalEventIds: string[];
   readyChecks: number;
   totalChecks: number;
   activeBookId?: string;
@@ -300,6 +302,7 @@ export type LiveBetaProofPreflightInput = {
   activeLearningBookId?: string | null;
   activeBetaProofAttemptId?: string | null;
   providerTrafficApproved?: boolean;
+  memoryEvents?: MemoryEvent[];
   documents?: LearningDocument[];
   minReadyDocuments?: number;
 };
@@ -373,6 +376,7 @@ export type CoherentLiveProofBundle = {
   sharedDocumentIds: string[];
   sharedProofAttemptIds: string[];
   proofAttemptLifecycleEventIds: string[];
+  providerTrafficApprovalEventIds: string[];
   latestTimestamp?: number;
   proofWindowMs?: number;
   proofAgeMs?: number;
@@ -1460,6 +1464,12 @@ export const buildCoherentLiveProofFromLedgers = (
       event.status === "completed" &&
       Boolean(metadataProofAttemptId(event.metadata)),
   );
+  const providerTrafficApprovedRows = memoryEvents.filter(
+    (event) =>
+      event.eventType === "beta_provider_traffic_approved" &&
+      event.status === "completed" &&
+      Boolean(metadataProofAttemptId(event.metadata)),
+  );
   const backgroundRows = memoryEvents.filter(
     (event) =>
       event.status === "completed" &&
@@ -1709,10 +1719,28 @@ export const buildCoherentLiveProofFromLedgers = (
     sharedProofAttemptLifecycleRows.map((event) => event.id),
     8,
   );
+  const sharedProviderTrafficApprovalRows = providerTrafficApprovedRows.filter(
+    (event) => {
+      const proofAttemptId = metadataProofAttemptId(event.metadata);
+      return Boolean(
+        proofAttemptId && sharedProofAttemptIds.includes(proofAttemptId),
+      );
+    },
+  );
+  const providerTrafficApprovalEventIds = compactUnique(
+    sharedProviderTrafficApprovalRows.map((event) => event.id),
+    8,
+  );
   const allAnchors = [
     ...(selectedChat?.anchors || []),
     ...(selectedVoice?.anchors || []),
     ...sharedProofAttemptLifecycleRows.map((event) => ({
+      metadata: event.metadata,
+      proofAttemptId: metadataProofAttemptId(event.metadata),
+      source: event.eventType,
+      timestamp: event.timestamp,
+    })),
+    ...sharedProviderTrafficApprovalRows.map((event) => ({
       metadata: event.metadata,
       proofAttemptId: metadataProofAttemptId(event.metadata),
       source: event.eventType,
@@ -1852,6 +1880,26 @@ export const buildCoherentLiveProofFromLedgers = (
       },
     },
     {
+      id: "provider_traffic_approval_lifecycle",
+      title: "Provider traffic approval recorded",
+      ready: providerTrafficApprovalEventIds.length > 0,
+      status: providerTrafficApprovalEventIds.length > 0 ? "ready" : "watch",
+      summary:
+        providerTrafficApprovalEventIds.length > 0
+          ? "A local Admin approval event records that provider traffic was approved for this proof attempt."
+          : "Approve provider traffic from Admin so the final proof records the local send/spend decision.",
+      evidence: {
+        requestIds: compactUnique(
+          [selectedChat?.requestId, selectedVoice?.requestId],
+          4,
+        ),
+        sources: ["beta_provider_traffic_approved"],
+        documentIds: [],
+        proofAttemptIds: sharedProofAttemptIds,
+        ...(latestTimestamp ? { latestTimestamp } : {}),
+      },
+    },
+    {
       id: "shared_multi_pdf_context",
       title: "Shared multi-PDF context",
       ready: sharedDocumentIds.length > 1,
@@ -1974,6 +2022,7 @@ export const buildCoherentLiveProofFromLedgers = (
     sharedDocumentIds,
     sharedProofAttemptIds,
     proofAttemptLifecycleEventIds,
+    providerTrafficApprovalEventIds,
     ...(latestTimestamp ? { latestTimestamp } : {}),
     ...(proofWindowMs !== undefined ? { proofWindowMs } : {}),
     ...(proofAgeMs !== undefined ? { proofAgeMs } : {}),
@@ -2921,6 +2970,7 @@ const buildLiveBetaProofAttemptAudit = ({
   providerKeyProof,
   activeProofAttemptId,
   providerTrafficApproved,
+  providerTrafficApprovalEventIds,
   activeBookReady,
   multiPdfReady,
   liveBlockersClear,
@@ -2930,6 +2980,7 @@ const buildLiveBetaProofAttemptAudit = ({
   providerKeyProof: ProviderKeyProofChecklist;
   activeProofAttemptId: string;
   providerTrafficApproved: boolean;
+  providerTrafficApprovalEventIds: string[];
   activeBookReady: boolean;
   multiPdfReady: boolean;
   liveBlockersClear: boolean;
@@ -2961,7 +3012,8 @@ const buildLiveBetaProofAttemptAudit = ({
     activeAttemptMatchesSelectedBundle;
   const providerTrafficApprovalReady =
     providerKeyProof.betaProofReady ||
-    (providerTrafficApproved && Boolean(activeProofAttemptId));
+    ((providerTrafficApproved || providerTrafficApprovalEventIds.length > 0) &&
+      Boolean(activeProofAttemptId));
   const canRunProviderTraffic =
     providerTrafficPrereqsReady &&
     providerTrafficApprovalReady &&
@@ -3011,7 +3063,9 @@ const buildLiveBetaProofAttemptAudit = ({
       summary: providerKeyProof.betaProofReady
         ? "Final proof is already ready, so no new provider traffic approval is needed."
         : providerTrafficApprovalReady
-          ? "Provider traffic approval is tied to the active proof attempt."
+          ? providerTrafficApprovalEventIds.length > 0
+            ? "Provider traffic approval is recorded in the local memory ledger for this attempt."
+            : "Provider traffic approval is tied to the active proof attempt."
           : "Approve real provider traffic locally before running the typed chat and live voice drill.",
     }),
     check({
@@ -3091,6 +3145,7 @@ const buildLiveBetaProofAttemptAudit = ({
     status,
     canRunProviderTraffic,
     providerTrafficApproved: providerTrafficApprovalReady,
+    providerTrafficApprovalEventIds,
     receiptReady: receipt.ready,
     sourceReadyForBeta: receipt.sourceReadyForBeta,
     activeAttemptMatchesSelectedBundle,
@@ -3118,6 +3173,7 @@ export const buildLiveBetaProofPreflight = ({
   activeLearningBookId,
   activeBetaProofAttemptId,
   providerTrafficApproved = false,
+  memoryEvents = [],
   documents = [],
   minReadyDocuments = 2,
 }: LiveBetaProofPreflightInput): LiveBetaProofPreflight => {
@@ -3142,9 +3198,20 @@ export const buildLiveBetaProofPreflight = ({
   const liveBlockersClear =
     providerKeyProof.failedRows === 0 && providerKeyProof.status !== "blocked";
   const needsProviderTraffic = !providerKeyProof.betaProofReady;
+  const providerTrafficApprovalRows = memoryEvents.filter(
+    (event) =>
+      event.eventType === "beta_provider_traffic_approved" &&
+      event.status === "completed" &&
+      metadataProofAttemptId(event.metadata) === activeProofAttemptId,
+  );
+  const providerTrafficApprovalEventIds = compactUnique(
+    providerTrafficApprovalRows.map((event) => event.id),
+    8,
+  );
   const trafficApprovalReady =
     !needsProviderTraffic ||
-    (providerTrafficApproved && Boolean(activeProofAttemptId));
+    ((providerTrafficApproved || providerTrafficApprovalEventIds.length > 0) &&
+      Boolean(activeProofAttemptId));
 
   const check = ({
     id,
@@ -3204,7 +3271,9 @@ export const buildLiveBetaProofPreflight = ({
       ready: trafficApprovalReady,
       count: trafficApprovalReady ? 1 : 0,
       readySummary: needsProviderTraffic
-        ? "Real provider traffic is approved for the active proof attempt."
+        ? providerTrafficApprovalEventIds.length > 0
+          ? "Real provider traffic is approved and recorded in the local ledger for the active proof attempt."
+          : "Real provider traffic is approved for the active proof attempt."
         : "Final proof is already ready, so no new provider traffic approval is needed.",
       pendingSummary:
         "Provider traffic has not been approved for this proof attempt.",
@@ -3255,6 +3324,7 @@ export const buildLiveBetaProofPreflight = ({
     providerKeyProof,
     activeProofAttemptId,
     providerTrafficApproved: trafficApprovalReady,
+    providerTrafficApprovalEventIds,
     activeBookReady,
     multiPdfReady,
     liveBlockersClear,
@@ -3272,6 +3342,7 @@ export const buildLiveBetaProofPreflight = ({
     canRun,
     needsProviderTraffic,
     providerTrafficApproved: trafficApprovalReady,
+    providerTrafficApprovalEventIds,
     readyChecks,
     totalChecks: checks.length,
     ...(activeBookId ? { activeBookId } : {}),

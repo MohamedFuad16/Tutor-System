@@ -88,6 +88,19 @@ const completeBrainFlowLedgers = {
       },
     },
     {
+      id: "provider-traffic-approved-1",
+      eventType: "beta_provider_traffic_approved",
+      status: "completed",
+      source: "admin_beta_diagnostics",
+      sessionId: PROOF_ATTEMPT_ID,
+      timestamp: 0.5,
+      metadata: {
+        proofAttemptId: PROOF_ATTEMPT_ID,
+        mode: "admin",
+        providerTrafficDestinations: ["openrouter", "deepgram"],
+      },
+    },
+    {
       eventType: "brain_context_injected",
       status: "completed",
       timestamp: 1,
@@ -264,7 +277,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
       learningBooks: 2,
       mappedConcepts: 8,
       bookChatThreads: 1,
-      memoryEvents: 8,
+      memoryEvents: 9,
       retrievalEvents: 3,
       modelRuns: 4,
       toolJobs: 1,
@@ -676,7 +689,7 @@ test("live beta proof preflight requires approval, active attempt, and multiple 
     providerKeyProof: seededChecklist,
     activeLearningBookId: "book-1",
     activeBetaProofAttemptId: PROOF_ATTEMPT_ID,
-    providerTrafficApproved: true,
+    memoryEvents: completeBrainFlowLedgers.memoryEvents,
     documents: [
       {
         id: "doc-active",
@@ -706,11 +719,18 @@ test("live beta proof preflight requires approval, active attempt, and multiple 
   assert.equal(approvedPreflight.status, "ready");
   assert.equal(approvedPreflight.canRun, true);
   assert.equal(approvedPreflight.providerTrafficApproved, true);
+  assert.deepEqual(approvedPreflight.providerTrafficApprovalEventIds, [
+    "provider-traffic-approved-1",
+  ]);
   assert.equal(approvedPreflight.readyChecks, approvedPreflight.totalChecks);
   assert.match(approvedPreflight.summary, /ready and approved/);
   assert.equal(approvedPreflight.attemptAudit.status, "ready");
   assert.equal(approvedPreflight.attemptAudit.canRunProviderTraffic, true);
   assert.equal(approvedPreflight.attemptAudit.providerTrafficApproved, true);
+  assert.deepEqual(
+    approvedPreflight.attemptAudit.providerTrafficApprovalEventIds,
+    ["provider-traffic-approved-1"],
+  );
 
   const blockedPreflight = buildLiveBetaProofPreflight({
     providerKeyProof: seededChecklist,
@@ -1032,8 +1052,8 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.equal(completeCoherentLiveProof.status, "ready");
   assert.equal(completeCoherentLiveProof.ready, true);
   assert.equal(completeCoherentLiveProof.completionPercent, 100);
-  assert.equal(completeCoherentLiveProof.readyChecks, 10);
-  assert.equal(completeCoherentLiveProof.totalChecks, 10);
+  assert.equal(completeCoherentLiveProof.readyChecks, 11);
+  assert.equal(completeCoherentLiveProof.totalChecks, 11);
   assert.equal(completeCoherentLiveProof.proofWindowReady, true);
   assert.equal(completeCoherentLiveProof.proofFresh, true);
   assert.equal(completeCoherentLiveProof.chatRequestId, "chat-req-1");
@@ -1052,6 +1072,9 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.deepEqual(completeCoherentLiveProof.proofAttemptLifecycleEventIds, [
     "proof-attempt-started-1",
   ]);
+  assert.deepEqual(completeCoherentLiveProof.providerTrafficApprovalEventIds, [
+    "provider-traffic-approved-1",
+  ]);
   assert.equal(
     completeCoherentLiveProof.checks.find(
       (check) => check.id === "shared_proof_attempt",
@@ -1061,6 +1084,12 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.equal(
     completeCoherentLiveProof.checks.find(
       (check) => check.id === "proof_attempt_lifecycle",
+    )?.ready,
+    true,
+  );
+  assert.equal(
+    completeCoherentLiveProof.checks.find(
+      (check) => check.id === "provider_traffic_approval_lifecycle",
     )?.ready,
     true,
   );
@@ -1187,6 +1216,30 @@ test("coherent live proof requires a durable proof attempt lifecycle row", () =>
   );
 });
 
+test("coherent live proof requires a durable provider traffic approval row", () => {
+  const ledgersWithoutTrafficApproval = {
+    ...completeBrainFlowLedgers,
+    memoryEvents: completeBrainFlowLedgers.memoryEvents.filter(
+      (row) => row.eventType !== "beta_provider_traffic_approved",
+    ),
+  };
+  const proof = buildCoherentLiveProofFromLedgers(
+    ledgersWithoutTrafficApproval,
+  );
+
+  assert.equal(proof.status, "watch");
+  assert.equal(proof.ready, false);
+  assert.deepEqual(proof.sharedProofAttemptIds, [PROOF_ATTEMPT_ID]);
+  assert.deepEqual(proof.providerTrafficApprovalEventIds, []);
+  assert.ok(proof.missingChecks.includes("Provider traffic approval recorded"));
+  assert.equal(
+    proof.checks.find(
+      (check) => check.id === "provider_traffic_approval_lifecycle",
+    )?.ready,
+    false,
+  );
+});
+
 test("coherent live proof requires provider rows to carry the shared proof attempt id", () => {
   const withoutProofAttemptMetadata = (row) => ({
     ...row,
@@ -1213,8 +1266,8 @@ test("coherent live proof requires provider rows to carry the shared proof attem
 
   assert.equal(proof.status, "watch");
   assert.equal(proof.ready, false);
-  assert.equal(proof.readyChecks, 9);
-  assert.equal(proof.totalChecks, 10);
+  assert.equal(proof.readyChecks, 10);
+  assert.equal(proof.totalChecks, 11);
   assert.deepEqual(proof.sharedProofAttemptIds, [PROOF_ATTEMPT_ID]);
   assert.ok(
     proof.missingChecks.includes("Provider evidence shares proof attempt"),

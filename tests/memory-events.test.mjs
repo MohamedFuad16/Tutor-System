@@ -70,6 +70,44 @@ test("memory event records preserve beta proof attempt lifecycle types", () => {
   assert.equal(record.metadata.proofAttemptId, "beta-attempt-1");
 });
 
+test("memory event records preserve beta provider traffic approval types", () => {
+  const approved = createMemoryEventRecord(
+    {
+      eventType: "beta_provider_traffic_approved",
+      source: "admin_beta_diagnostics",
+      sessionId: "beta-attempt-1",
+      summary:
+        "Admin approved provider traffic for proof attempt beta-attempt-1.",
+      metadata: {
+        proofAttemptId: "beta-attempt-1",
+        providerTrafficDestinations: ["openrouter", "deepgram"],
+      },
+    },
+    334,
+  );
+  const cleared = createMemoryEventRecord(
+    {
+      eventType: "beta_provider_traffic_approval_cleared",
+      source: "admin_beta_diagnostics",
+      sessionId: "beta-attempt-1",
+      summary:
+        "Admin cleared provider traffic approval for proof attempt beta-attempt-1.",
+      metadata: {
+        proofAttemptId: "beta-attempt-1",
+      },
+    },
+    335,
+  );
+
+  assert.equal(approved.eventType, "beta_provider_traffic_approved");
+  assert.equal(cleared.eventType, "beta_provider_traffic_approval_cleared");
+  assert.equal(approved.sessionId, "beta-attempt-1");
+  assert.deepEqual(approved.metadata.providerTrafficDestinations, [
+    "openrouter",
+    "deepgram",
+  ]);
+});
+
 test("memory event records compact summaries and preserve metadata", () => {
   const record = createMemoryEventRecord(
     {

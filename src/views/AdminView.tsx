@@ -1079,12 +1079,14 @@ export function AdminView() {
         activeLearningBookId,
         activeBetaProofAttemptId,
         providerTrafficApproved: providerTrafficApprovedForActiveAttempt,
+        memoryEvents,
         documents: learningDocuments,
       }),
     [
       activeBetaProofAttemptId,
       activeLearningBookId,
       learningDocuments,
+      memoryEvents,
       providerTrafficApprovedForActiveAttempt,
       providerKeyProofChecklist,
     ],
@@ -1094,7 +1096,11 @@ export function AdminView() {
   const liveProofReceipt = providerKeyProofChecklist.liveProofReceipt;
   const liveProofAttemptAudit = liveProofPreflight.attemptAudit;
   const recordProofAttemptLifecycle = (
-    eventType: "beta_proof_attempt_started" | "beta_proof_attempt_cleared",
+    eventType:
+      | "beta_proof_attempt_started"
+      | "beta_proof_attempt_cleared"
+      | "beta_provider_traffic_approved"
+      | "beta_provider_traffic_approval_cleared",
     proofAttemptId: string,
     metadata: Record<string, unknown> = {},
   ) => {
@@ -1107,7 +1113,11 @@ export function AdminView() {
       summary:
         eventType === "beta_proof_attempt_started"
           ? `Admin started proof attempt ${proofAttemptId}.`
-          : `Admin cleared proof attempt ${proofAttemptId}.`,
+          : eventType === "beta_proof_attempt_cleared"
+            ? `Admin cleared proof attempt ${proofAttemptId}.`
+            : eventType === "beta_provider_traffic_approved"
+              ? `Admin approved provider traffic for proof attempt ${proofAttemptId}.`
+              : `Admin cleared provider traffic approval for proof attempt ${proofAttemptId}.`,
       retentionPolicy: "local_indexeddb",
       metadata: {
         proofAttemptId,
@@ -1142,12 +1152,32 @@ export function AdminView() {
   const approveLiveProofProviderTraffic = () => {
     if (!activeBetaProofAttemptId) return;
     approveBetaProofProviderTraffic(activeBetaProofAttemptId);
+    recordProofAttemptLifecycle(
+      "beta_provider_traffic_approved",
+      activeBetaProofAttemptId,
+      {
+        approvedAt: Date.now(),
+        providerTrafficDestinations: ["openrouter", "deepgram"],
+        sendsActiveBookContext: true,
+        sendsLiveVoiceAudio: true,
+      },
+    );
     setDiagnosticsExportFeedback(
       `Provider traffic approved for proof attempt ${activeBetaProofAttemptId}.`,
     );
   };
   const revokeLiveProofProviderTrafficApproval = () => {
+    const proofAttemptId = activeProviderTrafficApproval?.attemptId;
     clearBetaProofProviderTrafficApproval();
+    if (proofAttemptId) {
+      recordProofAttemptLifecycle(
+        "beta_provider_traffic_approval_cleared",
+        proofAttemptId,
+        {
+          clearedAt: Date.now(),
+        },
+      );
+    }
     setDiagnosticsExportFeedback("Provider traffic approval cleared.");
   };
   const loadLiveProofPrompt = (prompt: string) => {
@@ -4801,6 +4831,16 @@ export function AdminView() {
                                 activeProviderTrafficApproval.approvedAt,
                               )}
                             </span>
+                          )}
+                          {liveProofPreflight.providerTrafficApprovalEventIds.map(
+                            (eventId) => (
+                              <span
+                                key={`provider-traffic-approval-event-${eventId}`}
+                                className="max-w-full truncate rounded-full border border-green-200 bg-white px-2.5 py-1 text-[11px] font-mono text-green-700"
+                              >
+                                approval event {eventId}
+                              </span>
+                            ),
                           )}
                         </div>
                       </div>

@@ -243,6 +243,8 @@ export interface MemoryEvent {
     | "book_chat_thread_saved"
     | "beta_proof_attempt_started"
     | "beta_proof_attempt_cleared"
+    | "beta_provider_traffic_approved"
+    | "beta_provider_traffic_approval_cleared"
     | "learning_book_updated"
     | "learning_concept_updated"
     | "graph_concept_updated"
