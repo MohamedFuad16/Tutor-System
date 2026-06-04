@@ -3081,6 +3081,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const voiceTurnsRef = useRef<VoiceSessionTurn[]>([]);
   const voiceStudyContextRef = useRef<VoiceStudyContextPayload | null>(null);
   const voiceProofAttemptIdRef = useRef<string | null>(null);
+  const pendingVoiceProofScriptRef = useRef<string | null>(null);
   const getVoiceProofAttemptId = useCallback(() => {
     return (
       voiceStudyContextRef.current?.proofAttemptId ||
@@ -3726,6 +3727,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     voiceStartedAtRef.current = null;
     voiceStudyContextRef.current = null;
     voiceProofAttemptIdRef.current = null;
+    pendingVoiceProofScriptRef.current = null;
     voiceSessionCountedRef.current = false;
     voiceSessionErrorRef.current = null;
     voiceTurnsRef.current = [];
@@ -4530,6 +4532,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           }),
         );
         hasSentVoiceAuth = true;
+        const pendingVoiceProofScript = pendingVoiceProofScriptRef.current;
+        if (pendingVoiceProofScript) {
+          pendingVoiceProofScriptRef.current = null;
+          sendVoiceText(pendingVoiceProofScript);
+          handleInputChange("");
+        }
         // Settings config is sent by the proxy after auth. We just stream audio now.
       };
 
@@ -5790,6 +5798,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const handleSend = () => {
     if (!input.trim()) return;
     if (hasLoadedVoiceProofScript && voiceState === "idle") {
+      pendingVoiceProofScriptRef.current = input.trim();
       startVoice();
       textareaRef.current?.focus();
       return;

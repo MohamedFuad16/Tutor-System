@@ -221,3 +221,10 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   the live-voice proof script, mark it in the ChatPanel proof HUD, and prevent
   the staged voice script from being accidentally submitted as typed chat before
   voice mode is active.
+- ACS: Live voice script auto-injection. Queue the staged provider-key voice
+  proof script when voice starts, then inject it as a live voice user turn after
+  websocket auth so the drill no longer depends on a second manual send.
+- ACT: MisoTTS Vast API option. Add a local read-aloud provider option for
+  MisoTTS 8B through the existing `/api/tts` route, provide a FastAPI wrapper
+  for the Vast-hosted model, and document the current SSH blocker without
+  implementing AWS/cloud deployment.

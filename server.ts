@@ -74,6 +74,17 @@ const ttsCostForModel = (model: string, characters: number) => {
   return roundCost((Math.max(0, characters) / 1000) * rate);
 };
 
+const MISO_TTS_8B_VOICE = "miso-tts-8b";
+
+const misoTtsApiBaseUrl = () => {
+  const raw = (process.env.MISO_TTS_API_URL || "http://127.0.0.1:8080").trim();
+  const parsed = new URL(raw);
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("MISO_TTS_API_URL must use http or https.");
+  }
+  return parsed.toString().replace(/\/+$/, "");
+};
+
 const voiceAgentCostForSeconds = (seconds: number) =>
   roundCost((Math.max(0, seconds) / 60) * DEEPGRAM_PRICING.voiceAgentPerMinute);
 
@@ -1461,14 +1472,73 @@ CRITICAL RULES:
           ? req.query.voice
           : "aura-asteria-en";
       const ttsModel =
-        requestedVoice === "gpt-4o-mini-tts"
-          ? requestedVoice
-          : /^aura-[a-z0-9-]+-en$/i.test(requestedVoice)
+        requestedVoice === MISO_TTS_8B_VOICE
+          ? MISO_TTS_8B_VOICE
+          : requestedVoice === "gpt-4o-mini-tts"
             ? requestedVoice
-            : "aura-asteria-en";
+            : /^aura-[a-z0-9-]+-en$/i.test(requestedVoice)
+              ? requestedVoice
+              : "aura-asteria-en";
       const billedText = text.slice(0, 4000);
       const inputCharacters = billedText.length;
       const estimatedCost = ttsCostForModel(ttsModel, inputCharacters);
+
+      if (ttsModel === MISO_TTS_8B_VOICE) {
+        const response = await fetch(`${misoTtsApiBaseUrl()}/v1/audio/speech`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: billedText,
+            speaker: 0,
+            max_audio_length_ms: Math.min(
+              90_000,
+              Math.max(2_000, inputCharacters * 90),
+            ),
+          }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(
+            `MisoTTS error ${response.status}: ${JSON.stringify(err)}`,
+          );
+        }
+
+        res.setHeader(
+          "Content-Type",
+          response.headers.get("Content-Type") || "audio/wav",
+        );
+        res.setHeader("Transfer-Encoding", "chunked");
+        res.setHeader("X-Usage-Provider", "misotts");
+        res.setHeader("X-Usage-Model", MISO_TTS_8B_VOICE);
+        res.setHeader("X-Usage-Unit", "characters");
+        res.setHeader("X-Usage-Input-Chars", String(inputCharacters));
+        res.setHeader("X-Usage-Cost", "0");
+        res.setHeader("X-Usage-Estimated", "true");
+
+        const body = response.body as any;
+        if (body && typeof body.pipe === "function") {
+          body.pipe(res);
+        } else if (body && body.getReader) {
+          try {
+            for await (const chunk of body) {
+              if (res.writableEnded) break;
+              res.write(chunk);
+            }
+          } catch (e) {
+            console.warn(
+              "[TTS] Client stream disconnected during MisoTTS write.",
+            );
+          }
+          if (!res.writableEnded) res.end();
+        } else {
+          const buffer = Buffer.from(await response.arrayBuffer());
+          res.send(buffer);
+        }
+        return;
+      }
 
       if (ttsModel === "gpt-4o-mini-tts") {
         try {

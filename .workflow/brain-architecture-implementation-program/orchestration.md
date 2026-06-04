@@ -51,6 +51,8 @@
 - Packet ACP: See `packets/ACP-chat-voice-proof-capture-hud.md`.
 - Packet ACQ: See `packets/ACQ-live-proof-prompt-handoff.md`.
 - Packet ACR: See `packets/ACR-live-voice-script-handoff.md`.
+- Packet ACS: See `packets/ACS-live-voice-script-auto-injection.md`.
+- Packet ACT: See `packets/ACT-misotts-vast-api-option.md`.
 
 ## Completion Audit
 

@@ -14,6 +14,151 @@
 
 ## Reusable Follow-up
 
+# Packet ACT: MisoTTS Vast API Option
+
+## Status
+
+Completed for local Tutor integration through source, focused route tests,
+desktop/mobile browser QA, final gates, and Graphify regeneration. Remote Vast
+installation is not complete because the provided SSH endpoint closed before
+key exchange.
+
+Current conservative brain-architecture completion estimate after ACT:
+about 99% for the local brain architecture program, with the MisoTTS remote
+install/API runtime still pending host access.
+
+## Graphify Context
+
+- Graphify routed the read-aloud integration through `server.ts`,
+  `src/components/SettingsModal.tsx`, `src/components/ChatPanel.tsx`,
+  `src/lib/audio.ts`, `src/views/RevisionView.tsx`, and the existing
+  `/api/tts` provider path.
+- Existing Chat/Revision read-aloud surfaces already consume the saved
+  `tts_voice` setting, so the first coherent slice stays in provider routing
+  and Settings rather than widening ChatPanel/RevisionView.
+
+## Integration Decisions
+
+- Added `miso-tts-8b` as a Settings voice option labeled
+  `MisoTTS 8B (Vast local API)`.
+- Kept the user-facing Read Aloud button path unchanged; the new option is
+  routed by the existing `/api/tts` endpoint.
+- Added a local MisoTTS proxy branch in `server.ts` that POSTs to
+  `${MISO_TTS_API_URL || "http://127.0.0.1:8080"}/v1/audio/speech`, streams
+  WAV/audio bytes back to the browser, and emits zero-cost local usage headers.
+- Added `scripts/misotts_api_server.py`, a FastAPI wrapper for the cloned
+  MisoTTS repo that lazily loads `load_miso_8b`, exposes `/health`, and serves
+  `/v1/audio/speech`.
+- Vast SSH was attempted with
+  `ssh -p 31651 root@120.238.149.205 -L 8080:localhost:8080`; the host closed
+  before key exchange, so model installation could not proceed in this slice.
+- AWS/cloud deployment remains deferred.
+
+## Verification Evidence
+
+- `npm run format -- server.ts src/components/SettingsModal.tsx
+tests/tts-provider-routing.test.mjs src/components/ChatPanel.tsx
+tests/live-proof-prompt-handoff.test.mjs`: passed.
+- Python syntax parse for `scripts/misotts_api_server.py`: passed.
+- `npm run test -- tests/tts-provider-routing.test.mjs
+tests/live-proof-prompt-handoff.test.mjs
+tests/voice-proof-attempt-latch.test.mjs`: passed through the project runner,
+  173 tests.
+- `npm run test`: passed, 173 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Headless Chrome QA via `phase76-misotts-settings-qa.mjs` confirmed desktop
+  and mobile Settings rendered `MisoTTS 8B (Vast local API)`, `localhost:8080`,
+  and `MISO_TTS_API_URL`; selecting the option persisted
+  `tts_voice=miso-tts-8b`, the modal closed after save, no horizontal overflow
+  appeared, and zero warning/error console logs were captured.
+- Browser screenshots were saved as `ACT-misotts-settings-desktop.png` and
+  `ACT-misotts-settings-mobile.png`; JSON evidence was saved as
+  `phase76-misotts-settings-qa.json`.
+- Clean `graphify update . --force`: passed, regenerating code architecture
+  artifacts with 1171 nodes, 2027 edges, and 67 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`85.1 KB`).
+- Graphify smoke query found `misoTtsApiBaseUrl()`,
+  `misotts_api_server.py`, `speech()`, `SettingsModal.tsx`, `ChatPanel()`,
+  `RevisionView()`, and connected server/store/read-aloud surfaces.
+- Graphify path `SettingsButton()` to `ttsCostForModel()` found a connected
+  five-hop route through store/Admin/server graph nodes.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch references.
+
+## Remaining Work
+
+- Reconnect to a Vast endpoint that accepts SSH, clone/install MisoTTS there,
+  run the FastAPI wrapper on localhost:8080, and keep the SSH tunnel open.
+- Run real read-aloud audio QA with `tts_voice=miso-tts-8b` once the remote
+  model API is live.
+- Keep AWS/cloud deployment out of scope until after beta testing.
+
+---
+
+# Packet ACS: Live Voice Script Auto-Injection
+
+## Status
+
+Completed through focused source, test, final format/lint/build gates, browser
+QA coverage from the handoff surfaces, and Graphify regeneration/smoke checks.
+
+Current conservative brain-architecture completion estimate after ACS:
+about 99%.
+
+## Graphify Context
+
+- Graphify routed the remaining local-live proof gap through `ChatPanel.tsx`,
+  `AdminView.tsx`, `beta.diagnostics.ts`, `server.ts`, provider-key proof
+  receipt/checklist nodes, and voice-provider readiness rows.
+- Graphify confirmed the final readiness signal still depends on real local
+  provider rows: typed chat needs OpenRouter-backed completed model evidence,
+  and live voice needs the server's real `Voice provider ready` Deepgram row.
+- The implementation therefore stays in `ChatPanel.tsx`, where the staged Admin
+  voice proof script becomes a real voice user turn after websocket auth.
+
+## Integration Decisions
+
+- Added `pendingVoiceProofScriptRef` so the staged voice proof script can
+  survive the transition from idle composer to live voice socket.
+- Pressing send on the staged `Provider-key voice proof turn` while voice is
+  idle now queues the current text and starts voice.
+- After voice websocket auth is sent with session id, proof attempt id, provider
+  keys, and multi-PDF study context, ChatPanel flushes the queued script through
+  `sendVoiceText(...)`.
+- The composer clears only after the queued script is injected into voice.
+- `stopVoice()` clears any stale pending proof script so failed or ended voice
+  sessions do not leak an old drill script into a later session.
+- No provider is called automatically from Admin, no seeded rows are promoted,
+  and AWS/cloud remains out of scope.
+
+## Verification Evidence
+
+- `npm run format -- src/components/ChatPanel.tsx
+tests/live-proof-prompt-handoff.test.mjs`: passed.
+- `npm run test -- tests/live-proof-prompt-handoff.test.mjs
+tests/voice-proof-attempt-latch.test.mjs`: passed through the project runner,
+  171 tests.
+- `npm run test`: passed, 173 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Clean Graphify regeneration for the combined ACS/ACT slice passed with 1171
+  nodes, 2027 edges, and 67 communities.
+
+## Remaining Work
+
+- Run the deliberate real provider-key beta drill with OpenRouter and Deepgram
+  when external provider traffic is approved/in scope, then confirm
+  `sourceKind: local_live_ledger`, `sourceReadyForBeta: true`, and
+  `betaProofReady: true`.
+- Reconnect to a working Vast SSH endpoint before completing the MisoTTS remote
+  install and real audio QA.
+
+---
+
 # Packet ACR: Live Voice Script Handoff
 
 ## Status

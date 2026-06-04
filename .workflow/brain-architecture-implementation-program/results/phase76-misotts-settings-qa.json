@@ -1,0 +1,32 @@
+[
+  {
+    "surface": "settings",
+    "label": "desktop",
+    "width": 1440,
+    "height": 1000,
+    "scrollWidth": 1440,
+    "savedVoice": "miso-tts-8b",
+    "hasSettingsModalClosed": true,
+    "modalSnapshot": {
+      "hasMisoOption": true,
+      "hasEnvCopy": true,
+      "hasTunnelCopy": true
+    },
+    "consoleLogs": []
+  },
+  {
+    "surface": "settings",
+    "label": "mobile",
+    "width": 390,
+    "height": 844,
+    "scrollWidth": 390,
+    "savedVoice": "miso-tts-8b",
+    "hasSettingsModalClosed": true,
+    "modalSnapshot": {
+      "hasMisoOption": true,
+      "hasEnvCopy": true,
+      "hasTunnelCopy": true
+    },
+    "consoleLogs": []
+  }
+]

@@ -659,6 +659,20 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "src/memory/beta.diagnostics.ts, src/views/AdminView.tsx, tests/beta-diagnostics.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACS",
+      "name": "Live voice script auto-injection",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/components/ChatPanel.tsx, tests/live-proof-prompt-handoff.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACT",
+      "name": "MisoTTS Vast API option",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "server.ts, src/components/SettingsModal.tsx, scripts/misotts_api_server.py, tests/tts-provider-routing.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1725,11 +1739,32 @@
     "Graphify smoke query found AdminView(), ChatPanel(), ChatPanel.tsx, AdminView.tsx, beta.diagnostics.ts, index.ts, and connected proof/store/Admin/Chat nodes",
     "graphify path AdminView() to ChatPanel() found a two-hop route through useStore",
     "graphify path ChatPanel() to useStore found a direct call route",
-    "Packet ACR graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
+    "Packet ACR graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references",
+    "Packet ACS selected after Graphify CLI routed the remaining local-live provider proof gap through ChatPanel.tsx, AdminView.tsx, beta.diagnostics.ts, server voice-provider readiness rows, and provider-key receipt/checklist nodes",
+    "ChatPanel now queues the staged Provider-key voice proof script when send starts voice from idle, then injects the script through sendVoiceText after websocket auth is sent",
+    "ChatPanel clears stale pending voice proof scripts when voice stops and clears the composer only after the queued proof script flushes to voice",
+    "Extended tests/live-proof-prompt-handoff.test.mjs for the voice-script queue and websocket-auth flush contract",
+    "npm run format passed for Packet ACS",
+    "npm run test -- tests/live-proof-prompt-handoff.test.mjs tests/voice-proof-attempt-latch.test.mjs passed via the project runner, 171 tests",
+    "Packet ACT selected after Graphify routed MisoTTS read-aloud integration through server.ts, SettingsModal.tsx, ChatPanel.tsx, RevisionView.tsx, audio helper surfaces, and the existing /api/tts provider route",
+    "Added MisoTTS 8B as a local Vast API TTS option in Settings and routed /api/tts voice=miso-tts-8b to MISO_TTS_API_URL or localhost:8080 /v1/audio/speech",
+    "Added scripts/misotts_api_server.py as a FastAPI wrapper for the cloned MisoTTS repository on the Vast host",
+    "Vast SSH attempt to root@120.238.149.205 port 31651 closed before key exchange, so remote model install and live audio QA remain pending host access",
+    "npm run format passed for the combined ACS/ACT slice after excluding the Python wrapper from Prettier and checking it separately with Python AST parse",
+    "npm run test passed for Packet ACT, 173 tests",
+    "npm run format:check passed for Packet ACT",
+    "npm run lint passed for Packet ACT",
+    "npm run build passed for Packet ACT",
+    "Headless Chrome QA via phase76-misotts-settings-qa.mjs confirmed desktop/mobile Settings rendered the MisoTTS option, localhost:8080 tunnel copy, MISO_TTS_API_URL copy, persisted tts_voice=miso-tts-8b, had no horizontal overflow, and captured zero warning/error console logs",
+    "Clean graphify update . --force regenerated code architecture artifacts with 1171 nodes, 2027 edges, and 67 communities",
+    "npm run graphify:tree passed for Packet ACT and wrote GRAPH_TREE.html at 85.1 KB",
+    "Graphify smoke query found misoTtsApiBaseUrl(), misotts_api_server.py, speech(), SettingsModal.tsx, ChatPanel(), RevisionView(), and connected server/store/read-aloud surfaces",
+    "graphify path SettingsButton() to ttsCostForModel() found a connected five-hop route through store/Admin/server graph nodes",
+    "Packet ACT graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACR local gates: Admin can start a proof attempt and load both the exact typed-chat provider proof prompt and the live-voice proof script into the live Study/Chat surface with active book, multi-PDF readiness, proof attempt, provider-key state, and focused composer visible. The remaining unproven gap is still the deliberate real OpenRouter plus Deepgram beta drill that records non-seeded live provider rows with sourceKind local_live_ledger, sourceReadyForBeta true, and betaProofReady true, plus broader beta validation; AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T01:59:35Z"
+    "basis": "Local architecture estimate after Packets ACS and ACT final gates: Admin can start a proof attempt, load typed-chat and live-voice proof prompts into ChatPanel, staged voice proof text queues and flushes after websocket auth, chat/read-aloud TTS settings can select MisoTTS 8B through the existing local /api/tts route, and the code architecture graph has been regenerated cleanly. Remaining unproven gaps are the deliberate real OpenRouter plus Deepgram beta drill, broader beta validation, and the Vast MisoTTS remote install/audio QA after the SSH endpoint accepts connections; AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T03:18:00Z"
   }
 }

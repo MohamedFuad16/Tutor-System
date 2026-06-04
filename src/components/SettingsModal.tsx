@@ -454,7 +454,10 @@ function UserUsagePanel({
                 <div className="relative mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-[11px] text-zinc-500">
                   <span>{option.description}</span>
                   {selected && (
-                    <ShieldCheck size={15} className="shrink-0 text-[#ffb17a]" />
+                    <ShieldCheck
+                      size={15}
+                      className="shrink-0 text-[#ffb17a]"
+                    />
                   )}
                 </div>
               </button>
@@ -530,6 +533,7 @@ export function SettingsButton() {
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const TTS_VOICES = [
+    { id: "miso-tts-8b", name: "MisoTTS 8B (Vast local API)" },
     { id: "gpt-4o-mini-tts", name: "OpenAI gpt-4o-mini-tts (Premium)" },
     { id: "aura-asteria-en", name: "Asteria (Clear)" },
     { id: "aura-luna-en", name: "Luna (Warm)" },
@@ -597,7 +601,11 @@ export function SettingsButton() {
       gsap.fromTo(
         modalBackdropRef.current,
         { autoAlpha: 0 },
-        { autoAlpha: 1, duration: motionEnabled ? 0.16 : 0, ease: "power2.out" },
+        {
+          autoAlpha: 1,
+          duration: motionEnabled ? 0.16 : 0,
+          ease: "power2.out",
+        },
       );
     }
     if (modalFrameRef.current) {
@@ -687,9 +695,12 @@ export function SettingsButton() {
     if (mode === "user" && activeView === "admin") {
       setActiveView("study");
     }
-    window.setTimeout(() => {
-      window.location.reload();
-    }, motionEnabled ? 480 : 120);
+    window.setTimeout(
+      () => {
+        window.location.reload();
+      },
+      motionEnabled ? 480 : 120,
+    );
   };
 
   const handleSave = async () => {
@@ -822,501 +833,485 @@ export function SettingsButton() {
             className="fixed inset-0 z-[101] flex items-center justify-center px-3 py-4 pointer-events-none sm:px-6"
           >
             <div className="pointer-events-auto relative flex max-h-[min(720px,calc(100dvh-2rem))] w-full max-w-2xl flex-col gap-4 overflow-hidden rounded-[28px] border border-white/10 bg-[#09090b]/95 p-4 shadow-[0_34px_110px_rgba(0,0,0,0.58),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl sm:gap-5 sm:rounded-[30px] sm:p-6">
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),transparent_42%)]" />
-                <div className="flex justify-between items-center">
-                  <h2 className="relative z-10 text-xl font-medium tracking-tight text-white flex items-center gap-2">
-                    <Settings size={20} className="text-[#ff6e00]" />
-                    {t("app_settings")}
-                  </h2>
-                  <button
-                    onClick={() => {
-                      if (!isValidating) setIsOpen(false);
-                    }}
-                    className="relative z-10 rounded-full p-1 text-zinc-500 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50"
-                    disabled={isValidating}
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),transparent_42%)]" />
+              <div className="flex justify-between items-center">
+                <h2 className="relative z-10 text-xl font-medium tracking-tight text-white flex items-center gap-2">
+                  <Settings size={20} className="text-[#ff6e00]" />
+                  {t("app_settings")}
+                </h2>
+                <button
+                  onClick={() => {
+                    if (!isValidating) setIsOpen(false);
+                  }}
+                  className="relative z-10 rounded-full p-1 text-zinc-500 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50"
+                  disabled={isValidating}
+                >
+                  <X size={20} />
+                </button>
+              </div>
 
-                <div className="relative z-10 overflow-visible rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                  <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_11.5rem] sm:items-center">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                        <UserCog size={15} className="text-[#ff6e00]" />
-                        Access style
-                      </div>
-                      <p className="mt-1 max-w-md text-xs leading-relaxed text-zinc-500">
-                        User mode shows plan limits and milestones. Admin keeps
-                        the developer controls available.
-                      </p>
+              <div className="relative z-10 overflow-visible rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+                <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_11.5rem] sm:items-center">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                      <UserCog size={15} className="text-[#ff6e00]" />
+                      Access style
                     </div>
-                    <div className="grid h-9 w-full max-w-[11.5rem] grid-cols-2 gap-0.5 justify-self-stretch overflow-hidden rounded-full border border-white/10 bg-black/35 p-0.5 sm:justify-self-end">
-                      {(["user", "admin"] as AccessMode[]).map((mode) => {
-                        const selected = accessMode === mode;
-                        return (
-                          <button
-                            key={mode}
-                            type="button"
-                            onClick={() => handleAccessModeChange(mode)}
-                            disabled={Boolean(switchingMode)}
-                            className={`relative rounded-full px-1.5 text-[11px] font-semibold capitalize transition-[color,background-color,border-color,box-shadow] disabled:cursor-wait ${
-                              selected
-                                ? "border border-white/10 bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-                                : "text-zinc-500 hover:text-zinc-200"
-                            }`}
-                          >
-                            <span className="relative z-10">{mode}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <p className="mt-1 max-w-md text-xs leading-relaxed text-zinc-500">
+                      User mode shows plan limits and milestones. Admin keeps
+                      the developer controls available.
+                    </p>
+                  </div>
+                  <div className="grid h-9 w-full max-w-[11.5rem] grid-cols-2 gap-0.5 justify-self-stretch overflow-hidden rounded-full border border-white/10 bg-black/35 p-0.5 sm:justify-self-end">
+                    {(["user", "admin"] as AccessMode[]).map((mode) => {
+                      const selected = accessMode === mode;
+                      return (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => handleAccessModeChange(mode)}
+                          disabled={Boolean(switchingMode)}
+                          className={`relative rounded-full px-1.5 text-[11px] font-semibold capitalize transition-[color,background-color,border-color,box-shadow] disabled:cursor-wait ${
+                            selected
+                              ? "border border-white/10 bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                              : "text-zinc-500 hover:text-zinc-200"
+                          }`}
+                        >
+                          <span className="relative z-10">{mode}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
+              </div>
 
-                <div
-                  ref={settingsTabBarRef}
-                  className="relative z-10 flex rounded-full border border-white/10 bg-white/[0.05] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+              <div
+                ref={settingsTabBarRef}
+                className="relative z-10 flex rounded-full border border-white/10 bg-white/[0.05] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+              >
+                <span
+                  ref={settingsTabPillRef}
+                  className="pointer-events-none absolute left-0 top-0 z-10 rounded-full border border-white/10 bg-white/[0.09] opacity-0 shadow-[0_10px_24px_rgba(0,0,0,0.25)]"
+                />
+                <button
+                  ref={(node) => {
+                    settingsTabButtonRefs.current.general = node;
+                  }}
+                  onClick={() => setActiveTab("general")}
+                  className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-[color,background-color,box-shadow] ${
+                    activeTab === "general"
+                      ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                      : "text-zinc-500 hover:text-zinc-200"
+                  }`}
                 >
-                  <span
-                    ref={settingsTabPillRef}
-                    className="pointer-events-none absolute left-0 top-0 z-10 rounded-full border border-white/10 bg-white/[0.09] opacity-0 shadow-[0_10px_24px_rgba(0,0,0,0.25)]"
-                  />
-                  <button
-                    ref={(node) => {
-                      settingsTabButtonRefs.current.general = node;
-                    }}
-                    onClick={() => setActiveTab("general")}
-                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-[color,background-color,box-shadow] ${
-                      activeTab === "general"
-                        ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-                        : "text-zinc-500 hover:text-zinc-200"
-                    }`}
-                  >
-                    {t("general")}
-                  </button>
-                  <button
-                    ref={(node) => {
-                      settingsTabButtonRefs.current.usage = node;
-                    }}
-                    onClick={() => setActiveTab("usage")}
-                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-[color,background-color,box-shadow] ${
-                      activeTab === "usage"
-                        ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-                        : "text-zinc-500 hover:text-zinc-200"
-                    }`}
-                  >
-                    {t("usage")}
-                  </button>
-                  <button
-                    ref={(node) => {
-                      settingsTabButtonRefs.current.persona = node;
-                    }}
-                    onClick={() => setActiveTab("persona")}
-                    className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-[color,background-color,box-shadow] ${
-                      activeTab === "persona"
-                        ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-                        : "text-zinc-500 hover:text-zinc-200"
-                    }`}
-                  >
-                    {t("persona_studio")}
-                  </button>
-                </div>
+                  {t("general")}
+                </button>
+                <button
+                  ref={(node) => {
+                    settingsTabButtonRefs.current.usage = node;
+                  }}
+                  onClick={() => setActiveTab("usage")}
+                  className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-[color,background-color,box-shadow] ${
+                    activeTab === "usage"
+                      ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                      : "text-zinc-500 hover:text-zinc-200"
+                  }`}
+                >
+                  {t("usage")}
+                </button>
+                <button
+                  ref={(node) => {
+                    settingsTabButtonRefs.current.persona = node;
+                  }}
+                  onClick={() => setActiveTab("persona")}
+                  className={`relative z-20 flex-1 rounded-full px-3 py-2 text-sm font-medium transition-[color,background-color,box-shadow] ${
+                    activeTab === "persona"
+                      ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                      : "text-zinc-500 hover:text-zinc-200"
+                  }`}
+                >
+                  {t("persona_studio")}
+                </button>
+              </div>
 
-                <div className="custom-scrollbar relative flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden pr-2">
-                    {activeTab === "general" && (
-                      <div
-                        ref={tabPanelRef}
-                        key="general"
-                        className="flex flex-col gap-5"
+              <div className="custom-scrollbar relative flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden pr-2">
+                {activeTab === "general" && (
+                  <div
+                    ref={tabPanelRef}
+                    key="general"
+                    className="flex flex-col gap-5"
+                  >
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                        <Globe2 size={14} className="text-zinc-400" />
+                        {t("language")}
+                      </label>
+                      <select
+                        value={inputLanguage}
+                        onChange={(e) => setInputLanguage(e.target.value)}
+                        disabled={isValidating}
+                        className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <div className="flex flex-col gap-2">
-                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                            <Globe2 size={14} className="text-zinc-400" />
-                            {t("language")}
-                          </label>
-                          <select
-                            value={inputLanguage}
-                            onChange={(e) => setInputLanguage(e.target.value)}
-                            disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <option value="en">English (US)</option>
-                            <option value="ja">日本語 (Japanese)</option>
-                            <option value="ko">한국어 (Korean)</option>
-                          </select>
-                        </div>
+                        <option value="en">English (US)</option>
+                        <option value="ja">日本語 (Japanese)</option>
+                        <option value="ko">한국어 (Korean)</option>
+                      </select>
+                    </div>
 
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                        <UserRound size={14} className="text-zinc-400" />
+                        {t("learner_name")}
+                      </label>
+                      <input
+                        type="text"
+                        value={inputLearnerName}
+                        onChange={(e) => setInputLearnerName(e.target.value)}
+                        placeholder="Your name"
+                        disabled={isValidating}
+                        className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] disabled:opacity-50"
+                      />
+                      <p className="text-xs text-zinc-500 leading-relaxed">
+                        Used as the root node of your virtual brain map and
+                        DeepSeek trace cards.
+                      </p>
+                    </div>
+
+                    {accessMode === "user" ? (
+                      <UserUsagePanel
+                        showPlanSelector={false}
+                        showMilestones={false}
+                      />
+                    ) : (
+                      <>
                         <div className="flex flex-col gap-2">
                           <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                            <UserRound size={14} className="text-zinc-400" />
-                            {t("learner_name")}
+                            <Key size={14} className="text-zinc-400" />
+                            {t("openrouter_key")}
                           </label>
                           <input
-                            type="text"
-                            value={inputLearnerName}
-                            onChange={(e) =>
-                              setInputLearnerName(e.target.value)
-                            }
-                            placeholder="Your name"
+                            type="password"
+                            value={inputKey}
+                            onChange={(e) => setInputKey(e.target.value)}
+                            placeholder="sk-or-v1-..."
                             disabled={isValidating}
-                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] disabled:opacity-50"
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
                           />
                           <p className="text-xs text-zinc-500 leading-relaxed">
-                            Used as the root node of your virtual brain map and
-                            DeepSeek trace cards.
+                            Your key is stored locally in your browser's
+                            localStorage and is sent as a bearer key only for
+                            your own AI requests. Hosted deployments use this
+                            key by default; a server OpenRouter key is used only
+                            when the deployment owner explicitly enables the
+                            shared fallback.
                           </p>
                         </div>
 
-                        {accessMode === "user" ? (
-                          <UserUsagePanel
-                            showPlanSelector={false}
-                            showMilestones={false}
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                            <Globe2 size={14} className="text-zinc-400" />
+                            {t("serper_key")}
+                          </label>
+                          <input
+                            type="password"
+                            value={inputSerperKey}
+                            onChange={(e) => setInputSerperKey(e.target.value)}
+                            placeholder="SERPER_API_KEY"
+                            disabled={isValidating}
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
                           />
-                        ) : (
-                          <>
-                            <div className="flex flex-col gap-2">
-                              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                                <Key size={14} className="text-zinc-400" />
-                                {t("openrouter_key")}
-                              </label>
-                              <input
-                                type="password"
-                                value={inputKey}
-                                onChange={(e) => setInputKey(e.target.value)}
-                                placeholder="sk-or-v1-..."
-                                disabled={isValidating}
-                                className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
-                              />
-                              <p className="text-xs text-zinc-500 leading-relaxed">
-                                Your key is stored locally in your browser's
-                                localStorage and is sent as a bearer key only
-                                for your own AI requests. Hosted deployments
-                                use this key by default; a server OpenRouter
-                                key is used only when the deployment owner
-                                explicitly enables the shared fallback.
-                              </p>
-                            </div>
+                          <p className="text-xs text-zinc-500 leading-relaxed">
+                            Stored locally and sent only to this app's backend
+                            when live web search is needed. Server environment
+                            keys still work as a fallback.
+                          </p>
+                        </div>
 
-                            <div className="flex flex-col gap-2">
-                              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                                <Globe2 size={14} className="text-zinc-400" />
-                                {t("serper_key")}
-                              </label>
-                              <input
-                                type="password"
-                                value={inputSerperKey}
-                                onChange={(e) =>
-                                  setInputSerperKey(e.target.value)
-                                }
-                                placeholder="SERPER_API_KEY"
-                                disabled={isValidating}
-                                className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
-                              />
-                              <p className="text-xs text-zinc-500 leading-relaxed">
-                                Stored locally and sent only to this app's
-                                backend when live web search is needed. Server
-                                environment keys still work as a fallback.
-                              </p>
-                            </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                            <Mic size={14} className="text-zinc-400" />
+                            {t("deepgram_key")}
+                          </label>
+                          <input
+                            type="password"
+                            value={inputDeepgramKey}
+                            onChange={(e) =>
+                              setInputDeepgramKey(e.target.value)
+                            }
+                            placeholder="DEEPGRAM_API_KEY"
+                            disabled={isValidating}
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
+                          />
+                          <p className="text-xs text-zinc-500 leading-relaxed">
+                            Stored locally and sent only to this app's backend
+                            for voice and Deepgram read-aloud requests. Server
+                            environment keys still work as a fallback.
+                          </p>
+                        </div>
 
-                            <div className="flex flex-col gap-2">
-                              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                                <Mic size={14} className="text-zinc-400" />
-                                {t("deepgram_key")}
-                              </label>
-                              <input
-                                type="password"
-                                value={inputDeepgramKey}
-                                onChange={(e) =>
-                                  setInputDeepgramKey(e.target.value)
-                                }
-                                placeholder="DEEPGRAM_API_KEY"
-                                disabled={isValidating}
-                                className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
-                              />
-                              <p className="text-xs text-zinc-500 leading-relaxed">
-                                Stored locally and sent only to this app's
-                                backend for voice and Deepgram read-aloud
-                                requests. Server environment keys still work as
-                                a fallback.
-                              </p>
-                            </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                            <Mic size={14} className="text-zinc-400" />
+                            {t("tts_voice")}
+                          </label>
+                          <select
+                            value={inputVoice}
+                            onChange={(e) => setInputVoice(e.target.value)}
+                            disabled={isValidating}
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {TTS_VOICES.map((voice) => (
+                              <option key={voice.id} value={voice.id}>
+                                {voice.name}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="text-xs text-zinc-500 leading-relaxed">
+                            MisoTTS uses the same Read Aloud button through the
+                            local server. Keep the Vast tunnel open at
+                            localhost:8080 or set MISO_TTS_API_URL on the
+                            server.
+                          </p>
+                        </div>
 
-                            <div className="flex flex-col gap-2">
-                              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                                <Mic size={14} className="text-zinc-400" />
-                                {t("tts_voice")}
-                              </label>
-                              <select
-                                value={inputVoice}
-                                onChange={(e) =>
-                                  setInputVoice(e.target.value)
-                                }
-                                disabled={isValidating}
-                                className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                {TTS_VOICES.map((voice) => (
-                                  <option key={voice.id} value={voice.id}>
-                                    {voice.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="flex flex-col gap-2">
-                              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                                <Settings
-                                  size={14}
-                                  className="text-zinc-400"
-                                />
-                                {t("ai_model")}
-                              </label>
-                              <select
-                                value={inputModel}
-                                onChange={(e) =>
-                                  setInputModel(e.target.value)
-                                }
-                                disabled={isValidating}
-                                className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                <option value="gpt-4o-mini">
-                                  GPT-4o Mini (Fast/Cheap)
-                                </option>
-                                <option value="gpt-4o">GPT-4o (Smart)</option>
-                                <option value="anthropic/claude-3.5-sonnet">
-                                  Claude 3.5 Sonnet
-                                </option>
-                                <option value="google/gemini-1.5-pro">
-                                  Gemini 1.5 Pro
-                                </option>
-                                <option value="deepseek/deepseek-v4-flash">
-                                  DeepSeek V4 Flash
-                                </option>
-                              </select>
-                            </div>
-                          </>
-                        )}
-
-                        <div className="flex items-center justify-between mt-2">
+                        <div className="flex flex-col gap-2">
                           <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
                             <Settings size={14} className="text-zinc-400" />
-                            {t("ui_animations")}
+                            {t("ai_model")}
                           </label>
-                          <button
-                            type="button"
-                            onClick={() => setInputAnimations(!inputAnimations)}
-                            className={`w-11 h-6 rounded-full transition-colors relative ${inputAnimations ? "bg-[#ff6e00]" : "bg-zinc-700"}`}
+                          <select
+                            value={inputModel}
+                            onChange={(e) => setInputModel(e.target.value)}
+                            disabled={isValidating}
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <div
-                              className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${inputAnimations ? "translate-x-5" : "translate-x-0"}`}
-                            />
-                          </button>
+                            <option value="gpt-4o-mini">
+                              GPT-4o Mini (Fast/Cheap)
+                            </option>
+                            <option value="gpt-4o">GPT-4o (Smart)</option>
+                            <option value="anthropic/claude-3.5-sonnet">
+                              Claude 3.5 Sonnet
+                            </option>
+                            <option value="google/gemini-1.5-pro">
+                              Gemini 1.5 Pro
+                            </option>
+                            <option value="deepseek/deepseek-v4-flash">
+                              DeepSeek V4 Flash
+                            </option>
+                          </select>
                         </div>
-
-                        {validationError && (
-                          <div className="flex items-center gap-2 text-sm text-red-400 bg-red-400/10 p-3 rounded-xl border border-red-400/20">
-                            <AlertCircle size={16} />
-                            <p>{validationError}</p>
-                          </div>
-                        )}
-                      </div>
+                      </>
                     )}
 
-                    {activeTab === "usage" && (
-                      <div
-                        ref={tabPanelRef}
-                        key="usage"
+                    <div className="flex items-center justify-between mt-2">
+                      <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                        <Settings size={14} className="text-zinc-400" />
+                        {t("ui_animations")}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setInputAnimations(!inputAnimations)}
+                        className={`w-11 h-6 rounded-full transition-colors relative ${inputAnimations ? "bg-[#ff6e00]" : "bg-zinc-700"}`}
                       >
-                        <div className="mb-4 flex items-center gap-2">
-                          <BarChart3 size={16} className="text-[#ff6e00]" />
-                          <div>
-                            <div className="text-sm font-semibold text-white">
-                              {accessMode === "user"
-                                ? "Plan and milestones"
-                                : "Usage analytics"}
-                            </div>
-                            <div className="text-xs text-zinc-500">
-                              {accessMode === "user"
-                                ? "Service time, rate limit left, and simple plan controls."
-                                : "Tokens, requests, and cost for this browser."}
-                            </div>
-                          </div>
-                        </div>
-                        {accessMode === "user" ? (
-                          <UserUsagePanel />
-                        ) : (
-                          <UsageInsightsPanel />
-                        )}
+                        <div
+                          className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${inputAnimations ? "translate-x-5" : "translate-x-0"}`}
+                        />
+                      </button>
+                    </div>
+
+                    {validationError && (
+                      <div className="flex items-center gap-2 text-sm text-red-400 bg-red-400/10 p-3 rounded-xl border border-red-400/20">
+                        <AlertCircle size={16} />
+                        <p>{validationError}</p>
                       </div>
                     )}
+                  </div>
+                )}
 
-                    {activeTab === "persona" && (
-                      <div
-                        ref={tabPanelRef}
-                        key="persona"
-                        className="flex flex-col gap-5"
-                      >
-                        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                          <div className="flex flex-col gap-3">
-                            <label className="text-sm font-medium text-zinc-200 flex items-center justify-between">
-                              <span className="flex items-center gap-2">
-                                <Settings
-                                  size={14}
-                                  className="text-zinc-400"
-                                />
-                                AI Persona Studio
-                              </span>
-                              <span className="rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-zinc-400">
-                                Live prompt
-                              </span>
-                            </label>
-                            <p className="text-xs leading-relaxed text-zinc-500">
-                              Describe the tutor you want. The generator writes
-                              a professional system prompt, applies the no-emoji
-                              tutor style, and saves it when you press Save.
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {[
-                                "Socratic Python mentor",
-                                "Concise exam coach",
-                                "Research paper tutor",
-                              ].map((preset) => (
-                                <button
-                                  key={preset}
-                                  type="button"
-                                  onClick={() => setPersonaDesc(preset)}
-                                  className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] text-zinc-400 transition-colors hover:border-[#ff6e00]/35 hover:text-white"
-                                >
-                                  {preset}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="mt-4 flex gap-2">
-                            <input
-                              type="text"
-                              value={personaDesc}
-                              onChange={(e) => setPersonaDesc(e.target.value)}
-                              placeholder="I want an AI tutor specialized in..."
-                              className="flex-1 bg-[#121214] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 transition-[color,background-color,border-color,box-shadow,transform,opacity]"
-                            />
+                {activeTab === "usage" && (
+                  <div ref={tabPanelRef} key="usage">
+                    <div className="mb-4 flex items-center gap-2">
+                      <BarChart3 size={16} className="text-[#ff6e00]" />
+                      <div>
+                        <div className="text-sm font-semibold text-white">
+                          {accessMode === "user"
+                            ? "Plan and milestones"
+                            : "Usage analytics"}
+                        </div>
+                        <div className="text-xs text-zinc-500">
+                          {accessMode === "user"
+                            ? "Service time, rate limit left, and simple plan controls."
+                            : "Tokens, requests, and cost for this browser."}
+                        </div>
+                      </div>
+                    </div>
+                    {accessMode === "user" ? (
+                      <UserUsagePanel />
+                    ) : (
+                      <UsageInsightsPanel />
+                    )}
+                  </div>
+                )}
+
+                {activeTab === "persona" && (
+                  <div
+                    ref={tabPanelRef}
+                    key="persona"
+                    className="flex flex-col gap-5"
+                  >
+                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                      <div className="flex flex-col gap-3">
+                        <label className="text-sm font-medium text-zinc-200 flex items-center justify-between">
+                          <span className="flex items-center gap-2">
+                            <Settings size={14} className="text-zinc-400" />
+                            AI Persona Studio
+                          </span>
+                          <span className="rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-zinc-400">
+                            Live prompt
+                          </span>
+                        </label>
+                        <p className="text-xs leading-relaxed text-zinc-500">
+                          Describe the tutor you want. The generator writes a
+                          professional system prompt, applies the no-emoji tutor
+                          style, and saves it when you press Save.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            "Socratic Python mentor",
+                            "Concise exam coach",
+                            "Research paper tutor",
+                          ].map((preset) => (
                             <button
-                              onClick={async () => {
-                                if (!personaDesc.trim()) return;
-                                setIsGeneratingPersona(true);
-                                try {
-                                  const res = await fetch(
-                                    "/api/generate-persona",
-                                    {
-                                      method: "POST",
-                                      headers: {
-                                        "Content-Type": "application/json",
-                                        ...(inputKey.trim()
-                                          ? {
-                                              Authorization: `Bearer ${inputKey.trim()}`,
-                                            }
-                                          : {}),
-                                      },
-                                      body: JSON.stringify({
-                                        description: personaDesc,
-                                      }),
-                                    },
-                                  );
-                                  const data = await res.json();
-                                  if (!res.ok || data.error) {
-                                    throw new Error(
-                                      data.error ||
-                                        "Persona generation failed.",
-                                    );
-                                  }
-                                  if (data.prompt) {
-                                    setInputPrompt(data.prompt);
-                                    setPersonaStatus(
-                                      "Persona prompt generated. Press Save to apply it.",
-                                    );
-                                  }
-                                } catch (e) {
-                                  console.error(e);
-                                  setPersonaStatus(
-                                    e instanceof Error
-                                      ? e.message
-                                      : "Persona generation failed.",
-                                  );
-                                } finally {
-                                  setIsGeneratingPersona(false);
-                                }
-                              }}
-                              disabled={isGeneratingPersona}
-                              className="px-4 py-2 bg-white/[0.08] text-white hover:bg-white/[0.12] rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2 border border-white/10"
+                              key={preset}
+                              type="button"
+                              onClick={() => setPersonaDesc(preset)}
+                              className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] text-zinc-400 transition-colors hover:border-[#ff6e00]/35 hover:text-white"
                             >
-                              {isGeneratingPersona ? (
-                                <Loader2 size={14} className="animate-spin" />
-                              ) : null}
-                              Generate
+                              {preset}
                             </button>
-                          </div>
-                          {personaStatus && (
-                            <div className="mt-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs leading-relaxed text-zinc-400">
-                              {personaStatus}
-                            </div>
-                          )}
-                          <textarea
-                            value={inputPrompt}
-                            onChange={(e) => setInputPrompt(e.target.value)}
-                            placeholder="You are a precise, professional tutor. Use clear markdown, ask targeted questions, and do not use emojis unless explicitly requested."
-                            className="mt-3 min-h-[170px] w-full resize-y rounded-xl border border-white/10 bg-[#121214] px-4 py-3 font-mono text-sm leading-relaxed text-white transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:border-[#ff6e00]/45 focus:outline-none focus:ring-1 focus:ring-[#ff6e00]/30"
-                          />
+                          ))}
                         </div>
                       </div>
-                    )}
-                </div>
+                      <div className="mt-4 flex gap-2">
+                        <input
+                          type="text"
+                          value={personaDesc}
+                          onChange={(e) => setPersonaDesc(e.target.value)}
+                          placeholder="I want an AI tutor specialized in..."
+                          className="flex-1 bg-[#121214] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 transition-[color,background-color,border-color,box-shadow,transform,opacity]"
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!personaDesc.trim()) return;
+                            setIsGeneratingPersona(true);
+                            try {
+                              const res = await fetch("/api/generate-persona", {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  ...(inputKey.trim()
+                                    ? {
+                                        Authorization: `Bearer ${inputKey.trim()}`,
+                                      }
+                                    : {}),
+                                },
+                                body: JSON.stringify({
+                                  description: personaDesc,
+                                }),
+                              });
+                              const data = await res.json();
+                              if (!res.ok || data.error) {
+                                throw new Error(
+                                  data.error || "Persona generation failed.",
+                                );
+                              }
+                              if (data.prompt) {
+                                setInputPrompt(data.prompt);
+                                setPersonaStatus(
+                                  "Persona prompt generated. Press Save to apply it.",
+                                );
+                              }
+                            } catch (e) {
+                              console.error(e);
+                              setPersonaStatus(
+                                e instanceof Error
+                                  ? e.message
+                                  : "Persona generation failed.",
+                              );
+                            } finally {
+                              setIsGeneratingPersona(false);
+                            }
+                          }}
+                          disabled={isGeneratingPersona}
+                          className="px-4 py-2 bg-white/[0.08] text-white hover:bg-white/[0.12] rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2 border border-white/10"
+                        >
+                          {isGeneratingPersona ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : null}
+                          Generate
+                        </button>
+                      </div>
+                      {personaStatus && (
+                        <div className="mt-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs leading-relaxed text-zinc-400">
+                          {personaStatus}
+                        </div>
+                      )}
+                      <textarea
+                        value={inputPrompt}
+                        onChange={(e) => setInputPrompt(e.target.value)}
+                        placeholder="You are a precise, professional tutor. Use clear markdown, ask targeted questions, and do not use emojis unless explicitly requested."
+                        className="mt-3 min-h-[170px] w-full resize-y rounded-xl border border-white/10 bg-[#121214] px-4 py-3 font-mono text-sm leading-relaxed text-white transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:border-[#ff6e00]/45 focus:outline-none focus:ring-1 focus:ring-[#ff6e00]/30"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    disabled={isValidating}
-                    className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
-                  >
-                    {t("cancel")}
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={isValidating}
-                    className="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-medium bg-white text-black hover:bg-zinc-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)] disabled:opacity-50"
-                  >
-                    {isValidating && (
-                      <Loader2 size={16} className="animate-spin" />
-                    )}
-                    {isValidating ? "Validating..." : t("save_changes")}
-                  </button>
-                </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  disabled={isValidating}
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                >
+                  {t("cancel")}
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={isValidating}
+                  className="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-medium bg-white text-black hover:bg-zinc-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)] disabled:opacity-50"
+                >
+                  {isValidating && (
+                    <Loader2 size={16} className="animate-spin" />
+                  )}
+                  {isValidating ? "Validating..." : t("save_changes")}
+                </button>
               </div>
             </div>
+          </div>
         </>
       )}
 
       {switchingMode && (
+        <div
+          ref={switchingOverlayRef}
+          className="fixed inset-0 z-[140] flex items-center justify-center bg-[#030303]/90 backdrop-blur-2xl"
+        >
           <div
-            ref={switchingOverlayRef}
-            className="fixed inset-0 z-[140] flex items-center justify-center bg-[#030303]/90 backdrop-blur-2xl"
+            ref={switchingCardRef}
+            className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.06] px-8 py-6 text-center shadow-[0_30px_100px_rgba(0,0,0,0.55)]"
           >
-            <div
-              ref={switchingCardRef}
-              className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.06] px-8 py-6 text-center shadow-[0_30px_100px_rgba(0,0,0,0.55)]"
-            >
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,110,0,0.25),transparent_45%)]" />
-              <div className="relative text-[10px] font-bold uppercase tracking-[0.22em] text-[#ffb17a]">
-                Switching access
-              </div>
-              <div className="relative mt-2 text-2xl font-semibold capitalize text-white">
-                {switchingMode} mode
-              </div>
-              <div className="relative mt-3 flex justify-center">
-                <Loader2 size={22} className="animate-spin text-[#ff6e00]" />
-              </div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,110,0,0.25),transparent_45%)]" />
+            <div className="relative text-[10px] font-bold uppercase tracking-[0.22em] text-[#ffb17a]">
+              Switching access
+            </div>
+            <div className="relative mt-2 text-2xl font-semibold capitalize text-white">
+              {switchingMode} mode
+            </div>
+            <div className="relative mt-3 flex justify-center">
+              <Loader2 size={22} className="animate-spin text-[#ff6e00]" />
             </div>
           </div>
+        </div>
       )}
     </>
   );

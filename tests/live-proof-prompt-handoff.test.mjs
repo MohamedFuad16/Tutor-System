@@ -46,4 +46,16 @@ test("ChatPanel consumes and focuses queued live proof prompts", () => {
     chatPanelSource,
     /if \(hasLoadedVoiceProofScript && voiceState === "idle"\) \{/,
   );
+  assert.match(
+    chatPanelSource,
+    /const pendingVoiceProofScriptRef = useRef<string \| null>\(null\);/,
+  );
+  assert.match(
+    chatPanelSource,
+    /pendingVoiceProofScriptRef\.current = input\.trim\(\);/,
+  );
+  assert.match(
+    chatPanelSource,
+    /const pendingVoiceProofScript = pendingVoiceProofScriptRef\.current;[\s\S]*?sendVoiceText\(pendingVoiceProofScript\);[\s\S]*?handleInputChange\(""\);/,
+  );
 });
