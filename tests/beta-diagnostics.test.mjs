@@ -904,8 +904,8 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.equal(completeCoherentLiveProof.status, "ready");
   assert.equal(completeCoherentLiveProof.ready, true);
   assert.equal(completeCoherentLiveProof.completionPercent, 100);
-  assert.equal(completeCoherentLiveProof.readyChecks, 9);
-  assert.equal(completeCoherentLiveProof.totalChecks, 9);
+  assert.equal(completeCoherentLiveProof.readyChecks, 10);
+  assert.equal(completeCoherentLiveProof.totalChecks, 10);
   assert.equal(completeCoherentLiveProof.proofWindowReady, true);
   assert.equal(completeCoherentLiveProof.proofFresh, true);
   assert.equal(completeCoherentLiveProof.chatRequestId, "chat-req-1");
@@ -951,6 +951,12 @@ test("coherent live proof requires one complete chat request and one complete vo
   assert.equal(
     completeCoherentLiveProof.checks.find(
       (check) => check.id === "real_voice_provider_ready",
+    )?.ready,
+    true,
+  );
+  assert.equal(
+    completeCoherentLiveProof.checks.find(
+      (check) => check.id === "provider_evidence_attempt_bound",
     )?.ready,
     true,
   );
@@ -1051,6 +1057,65 @@ test("coherent live proof requires a durable proof attempt lifecycle row", () =>
     proof.checks.find((check) => check.id === "proof_attempt_lifecycle")?.ready,
     false,
   );
+});
+
+test("coherent live proof requires provider rows to carry the shared proof attempt id", () => {
+  const withoutProofAttemptMetadata = (row) => ({
+    ...row,
+    metadata: row.metadata
+      ? Object.fromEntries(
+          Object.entries(row.metadata).filter(
+            ([key]) => key !== "proofAttemptId",
+          ),
+        )
+      : row.metadata,
+  });
+  const ledgersWithoutProviderAttempt = {
+    ...completeBrainFlowLedgers,
+    modelRuns: completeBrainFlowLedgers.modelRuns.map((row) =>
+      row.source === "chat_stream" ? withoutProofAttemptMetadata(row) : row,
+    ),
+    systemActivityEvents: completeBrainFlowLedgers.systemActivityEvents.map(
+      withoutProofAttemptMetadata,
+    ),
+  };
+  const proof = buildCoherentLiveProofFromLedgers(
+    ledgersWithoutProviderAttempt,
+  );
+
+  assert.equal(proof.status, "watch");
+  assert.equal(proof.ready, false);
+  assert.equal(proof.readyChecks, 9);
+  assert.equal(proof.totalChecks, 10);
+  assert.deepEqual(proof.sharedProofAttemptIds, [PROOF_ATTEMPT_ID]);
+  assert.ok(
+    proof.missingChecks.includes("Provider evidence shares proof attempt"),
+  );
+  assert.equal(
+    proof.checks.find((check) => check.id === "typed_chat_request_bundle")
+      ?.ready,
+    true,
+  );
+  assert.equal(
+    proof.checks.find((check) => check.id === "live_voice_request_bundle")
+      ?.ready,
+    true,
+  );
+  assert.equal(
+    proof.checks.find((check) => check.id === "real_voice_provider_ready")
+      ?.ready,
+    true,
+  );
+  assert.equal(
+    proof.checks.find((check) => check.id === "provider_evidence_attempt_bound")
+      ?.ready,
+    false,
+  );
+  for (const bundle of proof.requestBundles) {
+    assert.equal(bundle.complete, true);
+    assert.deepEqual(bundle.missingRows, []);
+    assert.equal(bundle.providerCaptures[0]?.proofAttemptIds.length, 0);
+  }
 });
 
 test("coherent live proof rejects stale selected rows when diagnostic time is provided", () => {

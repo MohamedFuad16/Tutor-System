@@ -219,7 +219,10 @@ duration seconds without network access. Use the Deepgram provider in
 - Coherent provider-key proof distinguishes completed model rows from real
   provider-ready rows. Typed chat needs a completed OpenRouter-backed model row
   for the selected request, and live voice needs the server-side Deepgram
-  `Voice provider ready` system-activity row. The local `Mock voice provider ready` row remains debuggable but never satisfies provider-key proof.
+  `Voice provider ready` system-activity row. Both provider evidence rows must
+  carry the same Admin proof attempt id as the selected chat and voice rows. The
+  local `Mock voice provider ready` row remains debuggable but never satisfies
+  provider-key proof.
 - Voice websocket activity also preserves that proof attempt id with `voice`
   mode and `voice_realtime` agent-layer metadata across auth, context,
   provider-ready, tool-request, tool-completion, and close rows.

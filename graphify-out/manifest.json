@@ -44,8 +44,8 @@
     "hash": "be2be37586d9355e4ce46bba0eced178"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/beta-diagnostics.test.mjs": {
-    "mtime": 1780551343.3627875,
-    "hash": "8933a7f7ed85ad19125fd110b41142b7"
+    "mtime": 1780556123.2510228,
+    "hash": "ff3b5f3b5d986ca06cad5b2321d56e99"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/document-ingest.test.mjs": {
     "mtime": 1780146650.2664282,
@@ -212,8 +212,8 @@
     "hash": "0f77529b6365cb91cf75b6d2533c0abc"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/beta.diagnostics.ts": {
-    "mtime": 1780551315.7097487,
-    "hash": "10d51b219389dba41a301dd021bfad63"
+    "mtime": 1780556106.3804479,
+    "hash": "52117b42b80594e17946c50f72b2bb5b"
   },
   "/Users/mfuad16/Documents/LearningAI/src/memory/retrieval.events.ts": {
     "mtime": 1780386947.8736541,
@@ -352,8 +352,8 @@
     "hash": "ecb181ff82756860ebd6a34bcaf3b638"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/userBrainArchitectureBook.ts": {
-    "mtime": 1780555414.82074,
-    "hash": "7d12ed340076671a7feaa0cdf1d14e1a"
+    "mtime": 1780556100.0601575,
+    "hash": "433eaef895b39d84a1a9081a37af5e6e"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/chatAgentTools.ts": {
     "mtime": 1780417068.3185222,
@@ -372,8 +372,8 @@
     "hash": "f4b733a0c5b6f031e0c8b693fcfe200a"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/RevisionView.tsx": {
-    "mtime": 1780497851.6696131,
-    "hash": "e643c3107e6f3bc27f3f2a3c82808839"
+    "mtime": 1780556088.0443614,
+    "hash": "e5d2be7eb9ef78cb80e946709ff3a81c"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AnalyticsView.tsx": {
     "mtime": 1780285414.7910829,
@@ -408,8 +408,8 @@
     "hash": "d642a67e7461cadcc1cc05f28f1ee9db"
   },
   "/Users/mfuad16/Documents/LearningAI/TUTOR_ARCHITECTURE.md": {
-    "mtime": 1780555408.8441408,
-    "hash": "9206cd07be7d393cb038caacd387d46a"
+    "mtime": 1780556055.140188,
+    "hash": "ec86514593a721fe253f36fb61fa68a0"
   },
   "/Users/mfuad16/Documents/LearningAI/test_native.pdf": {
     "mtime": 1779965165.4411347,

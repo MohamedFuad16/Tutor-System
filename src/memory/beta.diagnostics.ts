@@ -1685,6 +1685,44 @@ export const buildCoherentLiveProofFromLedgers = (
     buildCoherentRequestBundle("chat", selectedChat),
     buildCoherentRequestBundle("voice", selectedVoice),
   ];
+  const chatProviderProofAttemptIds = compactUnique(
+    (selectedChat?.providerRows || []).map((row) =>
+      metadataProofAttemptId(row.metadata),
+    ),
+    5,
+  );
+  const voiceProviderProofAttemptIds = compactUnique(
+    (selectedVoice?.providerRows || []).map((row) =>
+      metadataProofAttemptId(row.metadata),
+    ),
+    5,
+  );
+  const sharedProviderProofAttemptIds = sharedStrings(
+    sharedStrings(chatProviderProofAttemptIds, voiceProviderProofAttemptIds, 5),
+    sharedProofAttemptIds,
+    5,
+  );
+  const providerEvidenceAttemptBound =
+    sharedProviderProofAttemptIds.length > 0 &&
+    Boolean(
+      selectedChat?.providerRows.length && selectedVoice?.providerRows.length,
+    );
+  const providerEvidence = buildSignalEvidence([
+    ...(selectedChat?.providerRows || []).map((row) => ({
+      metadata: row.metadata,
+      proofAttemptId: metadataProofAttemptId(row.metadata),
+      requestId: row.requestId || selectedChat?.requestId,
+      source: "provider_model_run",
+      timestamp: row.timestamp,
+    })),
+    ...(selectedVoice?.providerRows || []).map((row) => ({
+      metadata: row.metadata,
+      proofAttemptId: metadataProofAttemptId(row.metadata),
+      requestId: row.requestId || selectedVoice?.requestId,
+      source: "voice_provider_ready",
+      timestamp: row.timestamp,
+    })),
+  ]);
 
   const checks: CoherentLiveProofCheck[] = [
     {
@@ -1821,6 +1859,16 @@ export const buildCoherentLiveProofFromLedgers = (
             ),
           )
         : emptySignalEvidence(),
+    },
+    {
+      id: "provider_evidence_attempt_bound",
+      title: "Provider evidence shares proof attempt",
+      ready: providerEvidenceAttemptBound,
+      status: providerEvidenceAttemptBound ? "ready" : "watch",
+      summary: providerEvidenceAttemptBound
+        ? "The selected OpenRouter model row and Deepgram provider-ready row both carry the shared Admin proof attempt id."
+        : "Provider-ready evidence must carry the same Admin proof attempt id as the selected chat and voice rows before beta proof is final.",
+      evidence: providerEvidence,
     },
     {
       id: "fresh_live_proof_window",

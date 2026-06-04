@@ -6739,3 +6739,60 @@ graphify-out/graph.json` routed the audio/book work to `RevisionView.tsx`,
 - Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
   retrieval, corrections, artifacts, and evidence surfaces.
 - AWS/cloud synchronization remains out of scope until after beta testing.
+
+# Latest Addendum: Attempt-Bound Provider Evidence
+
+This slice hardens the coherent provider-key proof. A selected typed-chat
+OpenRouter model row and selected live-voice Deepgram provider-ready row must
+now carry the same Admin proof attempt id as the selected chat and voice rows.
+The proof can no longer pass solely because provider evidence shares a request
+id; the provider evidence itself must be attempt-bound.
+
+Implementation:
+
+- Added the `provider_evidence_attempt_bound` coherent live proof check in
+  `buildCoherentLiveProofFromLedgers()`.
+- Added a regression where all request-bundle rows are present, but provider
+  proof-attempt ids are stripped; coherent proof now stays `watch` with only
+  `9/10` internal coherent checks ready.
+- Updated Tutor System Architecture, User Brain Architecture, and the Revision
+  reader copy to describe attempt-bound provider-ready proof.
+
+Verification evidence:
+
+- `npm run brain:postchange -- --reason skill-preflight`: unavailable because
+  `package.json` has no `brain:postchange` script.
+- `npm run format:check`: passed.
+- `npm run test`: passed, 185 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Browser QA on `http://localhost:3001`:
+  - Admin Beta Diagnostics desktop 1280x720 rendered `Provider evidence shares
+    proof attempt`, the attempt-bound provider evidence copy, and the coherent
+    bundle with no horizontal overflow.
+  - Admin Beta Diagnostics mobile 390x844 rendered the same proof check/copy
+    with no horizontal overflow and zero browser error logs.
+  - User Brain Architecture reader desktop and mobile rendered the updated
+    provider-attempt wording with no horizontal overflow and zero browser error
+    logs.
+- Screenshots:
+  `/private/tmp/learningai-admin-provider-attempt-desktop.png`,
+  `/private/tmp/learningai-admin-provider-attempt-mobile.png`,
+  `/private/tmp/learningai-book-provider-proof-desktop.png`, and
+  `/private/tmp/learningai-book-provider-proof-mobile.png`.
+- `graphify update . --force`: passed with 1200 nodes, 2063 edges, and 73
+  communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`86.8 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch nodes.
+- Graphify query found `buildCoherentLiveProofFromLedgers()`,
+  `buildSignalEvidence()`, `sharedStrings()`, `buildProviderCapture()`,
+  `buildProviderKeyProofChecklist()`, and `AdminView()`.
+
+Current conservative local-beta brain architecture completion estimate: about
+99%.
+
+Remaining hard gaps: real provider-key typed chat plus live voice drill with
+OpenRouter and Deepgram, coherent provider-ready proof rows from that real run,
+broader beta validation, and the deferred AWS/cloud work after beta.
