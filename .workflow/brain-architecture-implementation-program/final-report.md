@@ -14,6 +14,80 @@
 
 ## Reusable Follow-up
 
+# Packet ACW: Configurable MisoTTS Endpoint
+
+## Status
+
+Completed through source, focused tests, format/lint/build gates, browser QA,
+remote health proof for the wrapper, and Graphify regeneration.
+
+Current conservative brain-architecture completion estimate after ACW:
+about 99% for the local brain architecture program. The remaining gap is not
+frontend/API readiness; it is the larger-disk remote model preload plus real
+MisoTTS 8B audio proof.
+
+## Graphify Context
+
+- Graphify routed the endpoint-ready fallback through `server.ts`,
+  `src/store/index.ts`, `src/components/SettingsModal.tsx`,
+  `src/components/ChatPanel.tsx`, `src/views/AdminView.tsx`,
+  `tests/tts-provider-routing.test.mjs`, and `tests/system-activity.test.mjs`.
+- The user-facing learner brain graph is not involved; regenerated Graphify
+  artifacts are for the repository code architecture graph only.
+
+## Integration Decisions
+
+- Added a browser-configurable `miso_tts_api_url` setting, defaulting to
+  `http://127.0.0.1:8080` and allowing a blank value to fall back to
+  `MISO_TTS_API_URL` on the server.
+- Settings now exposes `MisoTTS API URL` so the user can use either the Vast
+  tunnel or any compatible endpoint.
+- Chat read-aloud forwards `x-miso-tts-api-url` only when the selected voice is
+  `miso-tts-8b`.
+- Admin System Activity forwards the selected endpoint so provider meters track
+  the endpoint the user is tuning.
+- Server health and speech routes validate endpoint overrides as HTTP/HTTPS
+  URLs before probing or posting audio requests.
+- Vast SSH now works and the wrapper health endpoint is reachable, but the
+  model remains `loaded:false` because the current 32 GB container disk is too
+  small for the 8B checkpoint.
+- AWS/cloud deployment remains deferred.
+
+## Verification Evidence
+
+- Remote Vast health through SSH passed on `127.0.0.1:18080`; local tunnel
+  health passed on `http://127.0.0.1:8080/health` with MisoTTS 8B metadata and
+  `loaded:false`.
+- `npm run test -- tests/tts-provider-routing.test.mjs
+tests/system-activity.test.mjs tests/beta-diagnostics.test.mjs`: passed through
+  the project runner, 179 tests.
+- `npm run format:check`: passed.
+- Direct touched-file Prettier check: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- In-app Browser QA confirmed Settings contains `MisoTTS API URL` and
+  `http://127.0.0.1:8080`, Admin System Activity showed `Providers Ready` as
+  `4`, and zero warning/error console logs were captured.
+- Browser screenshot saved as
+  `ACW-misotts-admin-provider-ready-desktop.png`.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1182 nodes, 2042 edges, and 76 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`85.7 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch references.
+
+## Remaining Work
+
+- Re-provision a larger executable Vast disk, preload the MisoTTS 8B weights,
+  and capture real audio proof through Read Aloud.
+- Run the deliberate real OpenRouter plus Deepgram provider-key beta drill.
+- Continue broader beta validation across Study, Chat, Voice, Admin, Revision,
+  retrieval, corrections, artifacts, and evidence surfaces.
+- AWS/cloud synchronization remains out of scope until after beta testing.
+
+---
+
 # Packet ACT: MisoTTS Vast API Option
 
 ## Status

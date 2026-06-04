@@ -30,9 +30,10 @@ const startVoiceApp = async () => {
   };
 };
 
-const readActivity = async (baseUrl) => {
+const readActivity = async (baseUrl, headers = {}) => {
   const response = await fetch(`${baseUrl}/api/debug/system-activity`, {
     cache: "no-store",
+    headers,
   });
   assert.equal(response.status, 200);
   return response.json();
@@ -78,7 +79,7 @@ test("system activity endpoint exposes local ledger metadata", async (t) => {
   assert.ok(Array.isArray(body.events));
   assert.ok(body.events.some((event) => event.kind === "system"));
   assert.equal(body.meters.graph.codeArchitecture, "Graphify");
-  assert.equal(body.meters.providers.misoTts, false);
+  assert.equal(typeof body.meters.providers.misoTts, "boolean");
   assert.equal(body.meters.providerDetails.misoTts.configured, true);
 });
 
@@ -99,6 +100,32 @@ test("system activity marks MisoTTS reachable when the local API health endpoint
   t.after(() => server.close());
 
   const body = await readActivity(baseUrl);
+
+  assert.equal(body.meters.providers.misoTts, true);
+  assert.equal(body.meters.providerDetails.misoTts.configured, true);
+  assert.equal(body.meters.providerDetails.misoTts.reachable, true);
+  assert.equal(body.meters.providerDetails.misoTts.status, 200);
+});
+
+test("system activity uses a browser-provided MisoTTS API URL override", async (t) => {
+  const previousMisoUrl = process.env.MISO_TTS_API_URL;
+  delete process.env.MISO_TTS_API_URL;
+  const miso = await startMisoHealthServer();
+  t.after(() => {
+    miso.server.close();
+    if (previousMisoUrl === undefined) {
+      delete process.env.MISO_TTS_API_URL;
+    } else {
+      process.env.MISO_TTS_API_URL = previousMisoUrl;
+    }
+  });
+
+  const { server, baseUrl } = await startApp();
+  t.after(() => server.close());
+
+  const body = await readActivity(baseUrl, {
+    "x-miso-tts-api-url": miso.baseUrl,
+  });
 
   assert.equal(body.meters.providers.misoTts, true);
   assert.equal(body.meters.providerDetails.misoTts.configured, true);

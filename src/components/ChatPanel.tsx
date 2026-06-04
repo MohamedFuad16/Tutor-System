@@ -2999,6 +2999,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   );
   const activeDocumentId = useStore((state) => state.activeDocumentId);
   const ttsVoice = useStore((state) => state.ttsVoice);
+  const misoTtsApiUrl = useStore((state) => state.misoTtsApiUrl);
   const setActiveView = useStore((state) => state.setActiveView);
   const aiModel = useStore((state) => state.aiModel);
   const animationsEnabled = useStore((state) => state.animationsEnabled);
@@ -4917,13 +4918,18 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         cleanText.length > 1500
           ? cleanText.substring(0, 1500) + "..."
           : cleanText;
+      const ttsHeaders: Record<string, string> = {};
+      if (deepgramApiKey) {
+        ttsHeaders["x-deepgram-key"] = deepgramApiKey;
+      }
+      if (ttsVoice === "miso-tts-8b" && misoTtsApiUrl.trim()) {
+        ttsHeaders["x-miso-tts-api-url"] = misoTtsApiUrl.trim();
+      }
       const res = await fetch(
         `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || "aura-asteria-en")}`,
-        deepgramApiKey
+        Object.keys(ttsHeaders).length
           ? {
-              headers: {
-                "x-deepgram-key": deepgramApiKey,
-              },
+              headers: ttsHeaders,
             }
           : undefined,
       );

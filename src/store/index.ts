@@ -152,6 +152,7 @@ const emptyChatUsage: ChatUsage = {
 
 const DEFAULT_AI_MODEL = "deepseek/deepseek-v4-flash";
 const BRAIN_RUNTIME_SETTINGS_STORAGE_KEY = "brain_runtime_settings";
+const MISO_TTS_API_URL_STORAGE_KEY = "miso_tts_api_url";
 
 const normalizeAiModel = (model: string | null) =>
   model === "deepseek/deepseek-chat"
@@ -303,6 +304,8 @@ interface AppState {
 
   ttsVoice: string;
   setTtsVoice: (voice: string) => void;
+  misoTtsApiUrl: string;
+  setMisoTtsApiUrl: (url: string) => void;
 
   aiModel: string;
   setAiModel: (model: string) => void;
@@ -450,6 +453,18 @@ export const useStore = create<AppState>()(
       setTtsVoice: (voice) => {
         localStorage.setItem("tts_voice", voice);
         set({ ttsVoice: voice });
+      },
+      misoTtsApiUrl:
+        localStorage.getItem(MISO_TTS_API_URL_STORAGE_KEY) ||
+        "http://127.0.0.1:8080",
+      setMisoTtsApiUrl: (url) => {
+        const cleanUrl = url.trim();
+        if (cleanUrl) {
+          localStorage.setItem(MISO_TTS_API_URL_STORAGE_KEY, cleanUrl);
+        } else {
+          localStorage.removeItem(MISO_TTS_API_URL_STORAGE_KEY);
+        }
+        set({ misoTtsApiUrl: cleanUrl });
       },
 
       aiModel: normalizeAiModel(localStorage.getItem("ai_model")),

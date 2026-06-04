@@ -77,19 +77,29 @@ const ttsCostForModel = (model: string, characters: number) => {
 const MISO_TTS_8B_VOICE = "miso-tts-8b";
 const MISO_TTS_HEALTH_TIMEOUT_MS = 800;
 
-const misoTtsApiBaseUrl = () => {
-  const raw = (process.env.MISO_TTS_API_URL || "http://127.0.0.1:8080").trim();
+const readMisoTtsApiUrlOverride = (headers: IncomingHttpHeaders) => {
+  const raw = headers["x-miso-tts-api-url"];
+  if (Array.isArray(raw)) return raw[0] || "";
+  return typeof raw === "string" ? raw : "";
+};
+
+const misoTtsApiBaseUrl = (overrideUrl = "") => {
+  const raw = (
+    overrideUrl.trim() ||
+    process.env.MISO_TTS_API_URL ||
+    "http://127.0.0.1:8080"
+  ).trim();
   const parsed = new URL(raw);
   if (!["http:", "https:"].includes(parsed.protocol)) {
-    throw new Error("MISO_TTS_API_URL must use http or https.");
+    throw new Error("MisoTTS API URL must use http or https.");
   }
   return parsed.toString().replace(/\/+$/, "");
 };
 
-const probeMisoTtsHealth = async () => {
+const probeMisoTtsHealth = async (overrideUrl = "") => {
   let baseUrl = "";
   try {
-    baseUrl = misoTtsApiBaseUrl();
+    baseUrl = misoTtsApiBaseUrl(overrideUrl);
   } catch (error) {
     return {
       configured: false,
@@ -786,7 +796,9 @@ export async function createTutorServerApp(
       });
     }
 
-    const misoTtsHealth = await probeMisoTtsHealth();
+    const misoTtsHealth = await probeMisoTtsHealth(
+      readMisoTtsApiUrlOverride(req.headers),
+    );
 
     res.json({
       ok: true,
@@ -1542,20 +1554,23 @@ CRITICAL RULES:
       const estimatedCost = ttsCostForModel(ttsModel, inputCharacters);
 
       if (ttsModel === MISO_TTS_8B_VOICE) {
-        const response = await fetch(`${misoTtsApiBaseUrl()}/v1/audio/speech`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const response = await fetch(
+          `${misoTtsApiBaseUrl(readMisoTtsApiUrlOverride(req.headers))}/v1/audio/speech`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              text: billedText,
+              speaker: 0,
+              max_audio_length_ms: Math.min(
+                90_000,
+                Math.max(2_000, inputCharacters * 90),
+              ),
+            }),
           },
-          body: JSON.stringify({
-            text: billedText,
-            speaker: 0,
-            max_audio_length_ms: Math.min(
-              90_000,
-              Math.max(2_000, inputCharacters * 90),
-            ),
-          }),
-        });
+        );
 
         if (!response.ok) {
           const err = await response.json().catch(() => ({}));

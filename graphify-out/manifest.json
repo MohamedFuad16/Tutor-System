@@ -4,8 +4,8 @@
     "hash": "cbe4dd018d422f1967ab47ee905f39b0"
   },
   "/Users/mfuad16/Documents/LearningAI/server.ts": {
-    "mtime": 1780551832.9500833,
-    "hash": "ae948e6e9c7e10b54410146cb9542b89"
+    "mtime": 1780553256.1033351,
+    "hash": "889e00d52638eb9e889a78f59558a1c0"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/memory-events.test.mjs": {
     "mtime": 1780488785.76721,
@@ -60,8 +60,8 @@
     "hash": "fe005f6b31772398d3cf5c8c89de6000"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/system-activity.test.mjs": {
-    "mtime": 1780551839.5521245,
-    "hash": "65bd1381b57cc26be50bcc62d779439b"
+    "mtime": 1780553457.4558074,
+    "hash": "1312fdcd603aff0eaf7c4b053090cb0f"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/chat-thread-utils.test.mjs": {
     "mtime": 1780441127.5873094,
@@ -108,8 +108,8 @@
     "hash": "ef737debf8b312a4d1fdd078958ce0b5"
   },
   "/Users/mfuad16/Documents/LearningAI/tests/tts-provider-routing.test.mjs": {
-    "mtime": 1780552186.4140313,
-    "hash": "cded7031f7dbe585b09589977a11eccf"
+    "mtime": 1780553427.0259306,
+    "hash": "4104f0334c8ddd70d1eb30f36f2df286"
   },
   "/Users/mfuad16/Documents/LearningAI/server/web-search.ts": {
     "mtime": 1780146650.2537935,
@@ -300,8 +300,8 @@
     "hash": "9bc10b581e5bc65e134a855223d4989d"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/ChatPanel.tsx": {
-    "mtime": 1780552202.6737297,
-    "hash": "5da91fba06e3225f42b29a8646b06cca"
+    "mtime": 1780553324.9100614,
+    "hash": "0386236015814edbe2229b16876786d5"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/AnimatedScrollText.tsx": {
     "mtime": 1779879420.319919,
@@ -316,8 +316,8 @@
     "hash": "709cdc967df4107f466faaa959084231"
   },
   "/Users/mfuad16/Documents/LearningAI/src/components/SettingsModal.tsx": {
-    "mtime": 1780539714.0688303,
-    "hash": "17a72950520b0c91e7a39307367caa56"
+    "mtime": 1780553310.6300805,
+    "hash": "8d1ac7bef5a05cd80d71ca0750e457d7"
   },
   "/Users/mfuad16/Documents/LearningAI/src/hooks/useMotionPreference.ts": {
     "mtime": 1780146650.3001502,
@@ -376,12 +376,12 @@
     "hash": "e50d88f62d7d8cfd330de4cd2ff382ee"
   },
   "/Users/mfuad16/Documents/LearningAI/src/views/AdminView.tsx": {
-    "mtime": 1780551301.0580404,
-    "hash": "baf569a23b50204750dca10d753b05ef"
+    "mtime": 1780553389.3460813,
+    "hash": "3972a6fa57b378f6a78de49b01d9fc52"
   },
   "/Users/mfuad16/Documents/LearningAI/src/store/index.ts": {
-    "mtime": 1780486458.8044205,
-    "hash": "76cba1322bed365244be6ceb16196180"
+    "mtime": 1780553284.5097144,
+    "hash": "335b7945c99d7332f4f014d3525e6c78"
   },
   "/Users/mfuad16/Documents/LearningAI/RESPONSIVENESS.md": {
     "mtime": 1779805908.087153,

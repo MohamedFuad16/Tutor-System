@@ -486,6 +486,8 @@ export function SettingsButton() {
     setLearnerName,
     ttsVoice,
     setTtsVoice,
+    misoTtsApiUrl,
+    setMisoTtsApiUrl,
     aiModel,
     setAiModel,
     animationsEnabled,
@@ -502,6 +504,9 @@ export function SettingsButton() {
   const [inputDeepgramKey, setInputDeepgramKey] = useState(deepgramApiKey);
   const [inputLearnerName, setInputLearnerName] = useState(learnerName);
   const [inputVoice, setInputVoice] = useState(ttsVoice || "gpt-4o-mini-tts");
+  const [inputMisoTtsApiUrl, setInputMisoTtsApiUrl] = useState(
+    misoTtsApiUrl || "http://127.0.0.1:8080",
+  );
   const [inputModel, setInputModel] = useState(aiModel || "gpt-4o-mini");
   const [inputAnimations, setInputAnimations] = useState(animationsEnabled);
   const [inputPrompt, setInputPrompt] = useState(systemPrompt || "");
@@ -557,6 +562,7 @@ export function SettingsButton() {
       setInputDeepgramKey(deepgramApiKey);
       setInputLearnerName(learnerName);
       setInputVoice(ttsVoice || "gpt-4o-mini-tts");
+      setInputMisoTtsApiUrl(misoTtsApiUrl || "http://127.0.0.1:8080");
       setInputModel(aiModel || "gpt-4o-mini");
       setInputAnimations(animationsEnabled);
       setInputPrompt(systemPrompt || "");
@@ -572,6 +578,7 @@ export function SettingsButton() {
     deepgramApiKey,
     learnerName,
     ttsVoice,
+    misoTtsApiUrl,
     aiModel,
     animationsEnabled,
     systemPrompt,
@@ -707,6 +714,7 @@ export function SettingsButton() {
     setValidationError(null);
     const trimmedSerperKey = inputSerperKey.trim();
     const trimmedDeepgramKey = inputDeepgramKey.trim();
+    const trimmedMisoTtsApiUrl = inputMisoTtsApiUrl.trim();
 
     if (accessMode === "user") {
       setLearnerName(inputLearnerName);
@@ -723,6 +731,7 @@ export function SettingsButton() {
       setDeepgramApiKey(trimmedDeepgramKey);
       setLearnerName(inputLearnerName);
       setTtsVoice(inputVoice);
+      setMisoTtsApiUrl(trimmedMisoTtsApiUrl);
       setAiModel(inputModel);
       setAnimationsEnabled(inputAnimations);
       setSystemPrompt(inputPrompt);
@@ -755,6 +764,7 @@ export function SettingsButton() {
       setDeepgramApiKey(trimmedDeepgramKey);
       setLearnerName(inputLearnerName);
       setTtsVoice(inputVoice);
+      setMisoTtsApiUrl(trimmedMisoTtsApiUrl);
       setAiModel(inputModel);
       setAnimationsEnabled(inputAnimations);
       setSystemPrompt(inputPrompt);
@@ -1068,9 +1078,29 @@ export function SettingsButton() {
                           </select>
                           <p className="text-xs text-zinc-500 leading-relaxed">
                             MisoTTS uses the same Read Aloud button through the
-                            local server. Keep the Vast tunnel open at
-                            localhost:8080 or set MISO_TTS_API_URL on the
-                            server.
+                            local server.
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                            <Globe2 size={14} className="text-zinc-400" />
+                            MisoTTS API URL
+                          </label>
+                          <input
+                            type="url"
+                            value={inputMisoTtsApiUrl}
+                            onChange={(e) =>
+                              setInputMisoTtsApiUrl(e.target.value)
+                            }
+                            placeholder="http://127.0.0.1:8080"
+                            disabled={isValidating}
+                            className="bg-[#121214] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#ff6e00]/45 focus:ring-1 focus:ring-[#ff6e00]/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] font-mono disabled:opacity-50"
+                          />
+                          <p className="text-xs text-zinc-500 leading-relaxed">
+                            Use `http://127.0.0.1:8080` for the Vast tunnel, or
+                            paste any compatible cloud endpoint. Blank falls
+                            back to `MISO_TTS_API_URL` on the server.
                           </p>
                         </div>
 
