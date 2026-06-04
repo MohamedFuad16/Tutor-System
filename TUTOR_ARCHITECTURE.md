@@ -45,20 +45,21 @@ use a `#faf9f6` paper style to keep review and diagnostics readable.
 
 ## 3. Model Inventory
 
-| Use                       | Provider                   | Model                                                                                        |
-| ------------------------- | -------------------------- | -------------------------------------------------------------------------------------------- |
-| Default tutor chat        | OpenRouter                 | `deepseek/deepseek-v4-flash`                                                                 |
-| Settings chat options     | OpenRouter                 | Claude, Gemini, and DeepSeek options exposed in Settings                                     |
-| Chat fallback chain       | OpenRouter                 | Gemini, Claude Haiku, GPT-4o-mini, and Llama fallback options                                |
-| PDF title extraction      | OpenRouter                 | `qwen/qwen2.5-vl-72b-instruct`                                                               |
-| Trace explanation         | OpenRouter                 | `deepseek/deepseek-v4-flash`                                                                 |
-| Learning book updates     | OpenRouter                 | `deepseek/deepseek-v4-flash`                                                                 |
-| Page vision tool          | OpenRouter                 | `openai/gpt-4o-mini`                                                                         |
-| Voice Agent listen        | Deepgram                   | `flux-general-en` or multilingual hints                                                      |
-| Voice Agent think         | Deepgram/OpenAI-compatible | `gpt-4o-mini`                                                                                |
-| Voice Agent speak         | Deepgram/OpenAI-compatible | `gpt-4o-mini-tts` / Aura fallback                                                            |
-| Stored chapter audio      | Deepgram stored MP3 assets | GPT-authored chapter-guide scripts generated with Deepgram `aura-2-odysseus-en` at speed `1` |
-| Browser memory embeddings | Local deterministic        | 384-dimensional hashed text vectors                                                          |
+| Use                       | Provider                   | Model                                                                                                                     |
+| ------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Default tutor chat        | OpenRouter                 | `deepseek/deepseek-v4-flash`                                                                                              |
+| Settings chat options     | OpenRouter                 | Claude, Gemini, and DeepSeek options exposed in Settings                                                                  |
+| Chat fallback chain       | OpenRouter                 | Gemini, Claude Haiku, GPT-4o-mini, and Llama fallback options                                                             |
+| PDF title extraction      | OpenRouter                 | `qwen/qwen2.5-vl-72b-instruct`                                                                                            |
+| Trace explanation         | OpenRouter                 | `deepseek/deepseek-v4-flash`                                                                                              |
+| Learning book updates     | OpenRouter                 | `deepseek/deepseek-v4-flash`                                                                                              |
+| Page vision tool          | OpenRouter                 | `openai/gpt-4o-mini`                                                                                                      |
+| Voice Agent listen        | Deepgram                   | `flux-general-en` or multilingual hints                                                                                   |
+| Voice Agent think         | Deepgram/OpenAI-compatible | `gpt-4o-mini`                                                                                                             |
+| Voice Agent speak         | Deepgram/OpenAI-compatible | `gpt-4o-mini-tts` / Aura fallback                                                                                         |
+| MisoTTS read-aloud        | Local/API-compatible       | Optional `miso-tts-8b` Read Aloud provider through `MISO_TTS_API_URL`, a browser endpoint setting, or a local Vast tunnel |
+| Stored chapter audio      | Deepgram stored MP3 assets | GPT-authored chapter-guide scripts generated with Deepgram `aura-2-odysseus-en` at speed `1`                              |
+| Browser memory embeddings | Local deterministic        | 384-dimensional hashed text vectors                                                                                       |
 
 ## 4. Zustand Store
 
@@ -154,7 +155,12 @@ branch.
 source-material-first answering, handles web-search events, and manages TTS and
 voice flows. Chat and voice both ask the shared brain-context packet builder for
 local memory, active-book, active-book PDF manifest, balanced multi-PDF document
-excerpts, and interaction context before the model or voice agent runs. Live voice uses a dark audio-reactive stage, grouped voice-session
+excerpts, and interaction context before the model or voice agent runs. Read
+Aloud can use Deepgram/OpenAI-compatible speech or the optional MisoTTS 8B HTTP
+provider. MisoTTS is configured through Settings, `MISO_TTS_API_URL`, or a local
+Vast tunnel at `http://127.0.0.1:8080`; it reads assistant text after it exists
+and does not replace the realtime Deepgram voice websocket. Live voice uses a
+dark audio-reactive stage, grouped voice-session
 transcripts, typed-turn injection, Deepgram websocket usage events, local
 client-side tools, and a local voice-agent event ledger for Admin. Voice can call
 `look_at_current_page` for current-page, visible-diagram, screen, and reading

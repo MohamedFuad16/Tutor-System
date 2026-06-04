@@ -14,6 +14,72 @@
 
 ## Reusable Follow-up
 
+# Packet ACX: Book Readiness Contract
+
+## Status
+
+Completed through source/docs updates, focused static contract tests, full test
+suite, format/lint/build gates, browser QA, and clean Graphify regeneration.
+
+Current conservative brain-architecture completion estimate after ACX:
+still about 99%. This slice reduces book/runtime drift and protects explicit
+UI/audio requirements, but the remaining unproven runtime gaps are still the
+real provider-key drill, broader beta validation, and larger-disk MisoTTS 8B
+audio proof.
+
+## Graphify Context
+
+- Graphify routed this slice through `RevisionView.tsx`,
+  `chapterAudioOverviews.ts`, `userBrainArchitectureBook.ts`, `tutorBook.json`,
+  `AdminView.tsx`, `audio-overview-plan.test.mjs`, and the new
+  `book-readiness-contract.test.mjs`.
+- The regenerated artifacts are for the repository code architecture graph, not
+  the user-facing learner brain graph.
+
+## Integration Decisions
+
+- Documented MisoTTS as an optional assistant-message Read Aloud provider in
+  the architecture doc and built-in books.
+- Kept the realtime voice boundary explicit: live voice remains Deepgram; MisoTTS
+  reads existing assistant text through `/api/tts`.
+- Added a contract test that protects the reader-first book chapter order, the
+  concise Admin Center intro, the one-visible-player audio overview UI, and the
+  3-4 minute audio guide manifest window.
+- Added browser QA proof for Admin desktop, Tutor System Architecture desktop,
+  and User Brain Architecture mobile.
+- No AWS/cloud or live MisoTTS audio proof was claimed.
+
+## Verification Evidence
+
+- `node --test tests/book-readiness-contract.test.mjs`: passed, 4 tests.
+- `npm run test`: passed, 183 tests.
+- `npm run format:check`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- Browser QA via `phase77-book-readiness-browser-qa.mjs` passed with zero
+  console logs and no overflow for Admin desktop, Tutor book desktop, and User
+  Brain book mobile.
+- Screenshots saved as `phase77-admin-concise-preface-desktop.png`,
+  `phase77-tutor-book-misotts-provider-desktop.png`, and
+  `phase77-user-brain-misotts-mobile.png`; JSON evidence saved as
+  `phase77-book-readiness-browser-qa.json`.
+- Clean `graphify update . --force`: passed after removing generated
+  `server.mjs`, regenerating 1195 nodes, 2054 edges, and 66 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`86.5 KB`).
+- Graph artifact grep found no `server.mjs`, `.tmp-test`, `/private/tmp`, or
+  `codex-runtimes` scratch references.
+
+## Remaining Work
+
+- Continue with hard brain-flow runtime proof rather than stopping at book
+  alignment.
+- Run the deliberate real OpenRouter plus Deepgram provider-key beta drill.
+- Re-provision Vast with enough executable disk for MisoTTS 8B real audio proof.
+- AWS/cloud synchronization remains deferred until after beta testing.
+
+---
+
 # Packet ACW: Configurable MisoTTS Endpoint
 
 ## Status

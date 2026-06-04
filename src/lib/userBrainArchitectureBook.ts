@@ -200,6 +200,8 @@ Good voice behavior means:
 - let voice call live web search only for explicit web or freshness questions, while keeping current-page, selected-text, document, and active-book questions source-first;
 - avoid pretending live speech is evidence.
 
+Read Aloud is a separate audio path from live voice. The app can now send assistant-message text through the optional \`miso-tts-8b\` provider on \`/api/tts\`. Settings stores a \`MisoTTS API URL\` for a local Vast tunnel or any compatible endpoint, the server can fall back to \`MISO_TTS_API_URL\`, and Admin System Activity probes the selected endpoint. This keeps the frontend ready even when the current Vast disk is too small to preload the 8B weights. It also keeps the trust boundary plain: MisoTTS is read-aloud audio for existing text, while realtime voice still uses the Deepgram voice-agent websocket.
+
 For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a prepared explanation, generated once, stored as an asset, and played from the browser with one visible player. The target is a simple 3-4 minute explanation for each built-in chapter, long enough to teach the idea without turning into a lecture. The visible controls include play, pause, speed, and seek; the hidden audio element handles bounded retry playback inside the same player when the browser blocks scripted play, so learners do not see fallback controls or a second play button. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
 
 This phase extends that long-form stored-asset pattern to every built-in Library chapter: Tutor System Architecture, User Brain Architecture, and App Design Language. \`src/lib/chapterAudioOverviews.json\` holds the chapter scripts, target filenames, provider metadata, local MP3 manifest, and measured \`durationSeconds\` for each guide. \`npm run audio:overview:dry-run\` verifies which assets are checked in and prints their manifest duration evidence, while the local test suite can compare checked-in MP3 durations against that manifest when \`ffprobe\` or \`afinfo\` is available. \`npm run audio:overview:generate -- --provider deepgram --overwrite\` regenerates them with Deepgram when \`DEEPGRAM_API_KEY\` is available. The reader uses the stored assets directly, so playback is instant and does not depend on a live model call.`,
@@ -235,6 +237,7 @@ Implemented now:
 - voice proof-attempt metadata in local websocket system-activity rows;
 - latched live-voice proof attempt ids across voice context, model, tool, transcript, and background-memory rows;
 - deterministic in-memory dual-agent wiring rehearsal that cannot count toward live beta readiness;
+- optional MisoTTS 8B read-aloud endpoint selection, server proxying, and Admin provider-health meters, ready for a local Vast tunnel or compatible API endpoint;
 - stored audio guide UI for every built-in Library chapter;
 - chapter-by-chapter stored-audio manifest, checked-in MP3 assets, dry-run report, and Deepgram \`aura-2-odysseus-en\` regeneration path.
 - long-form 3-4 minute stored audio explainers for every built-in Library chapter, with measured manifest durations in the 180-245 second range.

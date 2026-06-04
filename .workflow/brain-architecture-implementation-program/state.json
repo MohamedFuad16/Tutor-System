@@ -687,6 +687,13 @@
       "owner": "main agent",
       "status": "completed",
       "write_scope": "server.ts, src/store/index.ts, src/components/SettingsModal.tsx, src/components/ChatPanel.tsx, src/views/AdminView.tsx, tests/tts-provider-routing.test.mjs, tests/system-activity.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
+    },
+    {
+      "id": "ACX",
+      "name": "Book readiness contract",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "TUTOR_ARCHITECTURE.md, src/lib/tutorBook.json, src/lib/userBrainArchitectureBook.ts, tests/book-readiness-contract.test.mjs, .workflow/brain-architecture-implementation-program/*, graphify-out/*"
     }
   ],
   "verification": {
@@ -1823,11 +1830,26 @@
     "Browser QA screenshot saved as ACW-misotts-admin-provider-ready-desktop.png",
     "graphify update . --force regenerated code architecture artifacts with 1182 nodes, 2042 edges, and 76 communities",
     "npm run graphify:tree passed for Packet ACW and wrote GRAPH_TREE.html at 85.7 KB",
-    "Packet ACW graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
+    "Packet ACW graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references",
+    "Packet ACX selected after Graphify routed book/audio/Admin readiness work through RevisionView.tsx, chapterAudioOverviews.ts, userBrainArchitectureBook.ts, tutorBook.json, AdminView.tsx, and audio overview tests",
+    "TUTOR_ARCHITECTURE.md now documents MisoTTS as optional assistant-message Read Aloud, separate from realtime Deepgram voice",
+    "src/lib/tutorBook.json now explains MisoTTS in Tools In Plain English and Model And Provider Map as a /api/tts read-aloud provider using Settings API URL, MISO_TTS_API_URL, or a local Vast tunnel",
+    "src/lib/userBrainArchitectureBook.ts now explains the MisoTTS read-aloud boundary and notes that Admin probes the selected endpoint",
+    "tests/book-readiness-contract.test.mjs guards reader-first built-in book chapter order, concise Admin Center intro, MisoTTS/read-aloud book boundaries, one visible audio overview player, and 3-4 minute audio guide manifest windows",
+    "node --test tests/book-readiness-contract.test.mjs passed with 4 tests",
+    "npm run test passed for Packet ACX, 183 tests",
+    "npm run format:check passed for Packet ACX",
+    "npm run lint passed for Packet ACX",
+    "npm run build passed for Packet ACX",
+    "Browser QA via phase77-book-readiness-browser-qa.mjs passed for Admin desktop, Tutor System Architecture desktop, and User Brain Architecture mobile with zero console logs and no overflow",
+    "Browser QA screenshots saved as phase77-admin-concise-preface-desktop.png, phase77-tutor-book-misotts-provider-desktop.png, and phase77-user-brain-misotts-mobile.png; JSON evidence saved as phase77-book-readiness-browser-qa.json",
+    "Clean graphify update . --force regenerated code architecture artifacts with 1195 nodes, 2054 edges, and 66 communities after removing generated server.mjs",
+    "npm run graphify:tree passed for Packet ACX and wrote GRAPH_TREE.html at 86.5 KB",
+    "Packet ACX graph artifact grep found no server.mjs, .tmp-test, /private/tmp, or codex-runtimes scratch references"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
-    "basis": "Local architecture estimate after Packet ACW: chat, voice, multi-PDF context injection, proof-attempt handoff, local TTS routing, configurable MisoTTS endpoint selection, Admin proof receipts, provider meters, and Graphify code architecture refresh are wired locally. The remaining unproven gaps are the real OpenRouter plus Deepgram provider-key beta drill, broader beta validation, and a larger-disk Vast MisoTTS 8B model preload/API audio proof; AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T06:16:36Z"
+    "basis": "Local architecture estimate after Packet ACX: chat, voice, multi-PDF context injection, proof-attempt handoff, local TTS routing, configurable MisoTTS endpoint selection, Admin proof receipts, provider meters, architecture books, audio guide contracts, and Graphify code architecture refresh are wired locally. The remaining unproven gaps are the real OpenRouter plus Deepgram provider-key beta drill, broader beta validation, and a larger-disk Vast MisoTTS 8B model preload/API audio proof; AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-04T06:37:00Z"
   }
 }

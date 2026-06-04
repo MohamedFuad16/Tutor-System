@@ -1,0 +1,21 @@
+{
+  "appUrl": "http://127.0.0.1:3001",
+  "checkedAt": "2026-06-04T06:34:21.254Z",
+  "results": [
+    {
+      "label": "admin desktop",
+      "consoleLogs": [],
+      "textLength": 2616
+    },
+    {
+      "label": "tutor book desktop",
+      "consoleLogs": [],
+      "textLength": 4000
+    },
+    {
+      "label": "user brain book mobile",
+      "consoleLogs": [],
+      "textLength": 4000
+    }
+  ]
+}

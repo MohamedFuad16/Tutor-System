@@ -35,6 +35,10 @@
     "mtime": 1780305498.579243,
     "hash": "52ceec43881e19eafc68a807d65a67fa"
   },
+  "/Users/mfuad16/Documents/LearningAI/tests/book-readiness-contract.test.mjs": {
+    "mtime": 1780554393.0050926,
+    "hash": "e8439b6a10389dbf0ff5d6bf197daff0"
+  },
   "/Users/mfuad16/Documents/LearningAI/tests/background-jobs.test.mjs": {
     "mtime": 1780423288.420039,
     "hash": "be2be37586d9355e4ce46bba0eced178"
@@ -348,8 +352,8 @@
     "hash": "ecb181ff82756860ebd6a34bcaf3b638"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/userBrainArchitectureBook.ts": {
-    "mtime": 1780497851.5754416,
-    "hash": "b3fee264fd760e91a33d2538fe4506a9"
+    "mtime": 1780554273.2897527,
+    "hash": "7e6abc12484942b94c1fc376ee7388c9"
   },
   "/Users/mfuad16/Documents/LearningAI/src/lib/chatAgentTools.ts": {
     "mtime": 1780417068.3185222,
@@ -404,8 +408,8 @@
     "hash": "d642a67e7461cadcc1cc05f28f1ee9db"
   },
   "/Users/mfuad16/Documents/LearningAI/TUTOR_ARCHITECTURE.md": {
-    "mtime": 1780498715.0008976,
-    "hash": "bcc8e89c0146e45d7d5c4afc43e05247"
+    "mtime": 1780554370.4902203,
+    "hash": "3bac0f59be6843fe9c77faec77af8686"
   },
   "/Users/mfuad16/Documents/LearningAI/test_native.pdf": {
     "mtime": 1779965165.4411347,
