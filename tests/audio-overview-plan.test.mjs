@@ -134,6 +134,10 @@ test("audio overview plan covers every built-in book chapter", () => {
         audioOverviewPublicSrcFor(entry),
         /^\/audio-overviews\/.+\.mp3$/,
       );
+      assert.equal(
+        audioOverviewPublicSrcFor(entry),
+        `/audio-overviews/${entry.outputFile}`,
+      );
       outputFiles.add(entry.outputFile);
       overviewIds.add(audioOverviewIdFor(entry));
     });
@@ -199,8 +203,10 @@ test(
 
 test("stored audio overview exposes one visible player", () => {
   assert.match(revisionViewSource, /const StoredAudioOverview/);
+  assert.match(revisionViewSource, /const resolveAudioOverviewSrc/);
   assert.match(revisionViewSource, /className="sr-only"/);
   assert.match(revisionViewSource, /Preparing audio guide/);
+  assert.match(revisionViewSource, /Open the local MP3 guide/);
   assert.doesNotMatch(
     revisionViewSource,
     /This same player is retrying in the background/,

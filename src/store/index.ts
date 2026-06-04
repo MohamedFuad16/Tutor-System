@@ -11,8 +11,7 @@ import {
 export type ViewState = "study" | "analytics" | "revision" | "admin";
 
 const ACTIVE_BETA_PROOF_ATTEMPT_STORAGE_KEY = "active_beta_proof_attempt_id";
-const BETA_PROOF_TRAFFIC_APPROVAL_STORAGE_KEY =
-  "beta_proof_traffic_approval";
+const BETA_PROOF_TRAFFIC_APPROVAL_STORAGE_KEY = "beta_proof_traffic_approval";
 
 export type BetaProofTrafficApproval = {
   attemptId: string;
@@ -103,6 +102,7 @@ export type WebSearchMode = "search" | "news";
 export interface NormalizedWebSource {
   id: string;
   type: WebSearchMode;
+  sourceType?: "web" | "image";
   title: string;
   url: string;
   domain: string;
@@ -110,6 +110,11 @@ export interface NormalizedWebSource {
   snippet: string;
   date?: string;
   position: number;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  imageSource?: string;
 }
 
 export interface WebSearchEvent {
@@ -129,6 +134,7 @@ export type VoiceAgentEventType =
   | "context_attached"
   | "settings_applied"
   | "tool_call"
+  | "mic_signal"
   | "user_turn"
   | "assistant_turn"
   | "agent_started_speaking"
@@ -283,7 +289,10 @@ const readBetaProofTrafficApproval = (): BetaProofTrafficApproval | null => {
     ) {
       return null;
     }
-    return { attemptId: parsed.attemptId.trim(), approvedAt: parsed.approvedAt };
+    return {
+      attemptId: parsed.attemptId.trim(),
+      approvedAt: parsed.approvedAt,
+    };
   } catch {
     return null;
   }

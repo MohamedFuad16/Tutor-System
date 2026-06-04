@@ -32,6 +32,21 @@ export type Message = {
       role: "user" | "assistant";
       content: string;
     }[];
+    visualFocuses?: {
+      id: string;
+      kind: "current_page" | "web_search" | "diagram";
+      status: "ready" | "blocked" | "failed" | "empty";
+      title: string;
+      query?: string;
+      summary?: string;
+      focusedTarget?: string;
+      activeDocumentId?: string;
+      toolCallId?: string;
+      imageCount?: number;
+      sources?: any[];
+      mermaid?: string;
+      timestamp: number;
+    }[];
     startedAt: number;
     durationSeconds: number;
   };

@@ -135,7 +135,7 @@ const BASE_CHAT_AGENT_TOOL_DEFINITIONS: ChatAgentToolDefinition[] = [
     function: {
       name: "web_search",
       description:
-        "Search the live web only when the user explicitly asks for web/internet/online search or needs fresh external facts. Do not use for current page, screen, document, PDF, selected text, uploaded source material, or active library questions.",
+        "Search the live web only when the user explicitly asks for web/internet/online search, needs fresh external facts, or asks for an external image/diagram/flowchart example. Do not use for current page, screen, document, PDF, selected text, uploaded source material, or active library questions.",
       parameters: {
         type: "object",
         properties: {

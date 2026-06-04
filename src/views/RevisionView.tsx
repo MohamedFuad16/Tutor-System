@@ -2012,11 +2012,20 @@ const formatAudioTime = (seconds: number) => {
   return `${minutes}:${remainder}`;
 };
 
+const resolveAudioOverviewSrc = (src: string) => {
+  if (/^(https?:|blob:|data:)/.test(src)) return src;
+  const base = import.meta.env.BASE_URL || "/";
+  const normalizedBase = base.endsWith("/") ? base : `${base}/`;
+  const normalizedSrc = src.startsWith("/") ? src.slice(1) : src;
+  return `${normalizedBase}${normalizedSrc}`;
+};
+
 const StoredAudioOverview = ({
   overview,
 }: {
   overview: ChapterAudioOverview;
 }) => {
+  const audioSrc = resolveAudioOverviewSrc(overview.audioSrc);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pendingPlayRef = useRef<Promise<void> | null>(null);
   const retryPlaybackTimerRef = useRef<number | null>(null);
@@ -2054,7 +2063,7 @@ const StoredAudioOverview = ({
       }
       pendingPlayRef.current = null;
     };
-  }, [overview.audioSrc]);
+  }, [audioSrc]);
 
   const startPlayback = async () => {
     const audioElement = audioRef.current;
@@ -2076,17 +2085,9 @@ const StoredAudioOverview = ({
       retryPlaybackTimerRef.current = null;
       void startPlayback().catch(() => {
         setAudioIssue("playback");
+        setError("Audio playback was blocked by the browser.");
       });
     }, 800);
-  };
-
-  const primePlayback = () => {
-    const audioElement = audioRef.current;
-    if (!audioElement || isPlaying || pendingPlayRef.current) return;
-    if (!audioElement.paused && !audioElement.ended) return;
-    pendingPlayRef.current = startPlayback().finally(() => {
-      pendingPlayRef.current = null;
-    });
   };
 
   const togglePlayback = async () => {
@@ -2098,7 +2099,7 @@ const StoredAudioOverview = ({
         await pendingPlay;
       } catch {
         setAudioIssue("playback");
-        setError("");
+        setError("Audio playback was blocked by the browser.");
         schedulePlaybackRetry();
       }
       return;
@@ -2111,7 +2112,7 @@ const StoredAudioOverview = ({
       await startPlayback();
     } catch {
       setAudioIssue("playback");
-      setError("");
+      setError("Audio playback was blocked by the browser.");
       schedulePlaybackRetry();
     }
   };
@@ -2132,15 +2133,17 @@ const StoredAudioOverview = ({
       ? Math.min(100, Math.max(0, (currentTime / duration) * 100))
       : 0;
   const playbackStatus =
-    audioIssue === "playback"
-      ? "Preparing audio guide"
-      : error
-        ? "Audio unavailable"
-        : isPlaying
-          ? "Playing audio guide"
-          : duration > 0
-            ? "Ready audio guide"
-            : "Loading audio metadata";
+    audioIssue === "playback" && error
+      ? "Open audio guide"
+      : audioIssue === "playback"
+        ? "Preparing audio guide"
+        : error
+          ? "Audio unavailable"
+          : isPlaying
+            ? "Playing audio guide"
+            : duration > 0
+              ? "Ready audio guide"
+              : "Loading audio metadata";
 
   return (
     <div className="mb-10 rounded-[30px] border border-zinc-200 bg-white/80 p-4 font-sans shadow-[0_20px_54px_rgba(46,36,22,0.08)] sm:p-5">
@@ -2157,7 +2160,6 @@ const StoredAudioOverview = ({
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           <button
             type="button"
-            onPointerDown={primePlayback}
             onClick={togglePlayback}
             className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-800"
           >
@@ -2207,7 +2209,7 @@ const StoredAudioOverview = ({
         </div>
         <audio
           ref={audioRef}
-          src={overview.audioSrc}
+          src={audioSrc}
           preload="auto"
           className="sr-only"
           onPlay={() => {
@@ -2226,6 +2228,8 @@ const StoredAudioOverview = ({
               : 0;
             setDuration(nextDuration);
             event.currentTarget.playbackRate = playbackRate;
+            setError("");
+            setAudioIssue("");
             if (audioIssue === "playback") schedulePlaybackRetry();
           }}
           onError={() => {
@@ -2234,9 +2238,17 @@ const StoredAudioOverview = ({
           }}
         />
       </div>
-      {error && audioIssue === "media" && (
-        <div className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
+      {error && (audioIssue === "media" || audioIssue === "playback") && (
+        <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          <span>{error}</span>{" "}
+          <a
+            href={audioSrc}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold underline underline-offset-4"
+          >
+            Open the local MP3 guide.
+          </a>
         </div>
       )}
       <details className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">

@@ -2924,20 +2924,23 @@ export const buildLiveBetaProofDrillPacket = ({
         layer: "voice",
         title: "Live-voice proof script",
         prompt:
-          "Provider-key voice proof turn. On this same active book and proof attempt, use all ready PDFs in context. Ask me one short active-recall question that connects two PDFs, then evaluate my spoken answer and use a visible voice tool/source lookup if available. End the session after the evaluation so the transcript saves locally.",
+          "Provider-key voice proof turn. On this same active book and proof attempt, use all ready PDFs in context. When explaining the relevant concept, render a local Mermaid flowchart and use the focus tour so the UI zooms through the spoken-about boxes. Also inspect or reference the current page/diagram so the UI focuses the spoken-about visual surface. Then run an explicit web image/source lookup for an external diagram or flowchart example and say whether the image/source cards are visible. Ask me one short active-recall question that connects two PDFs, evaluate my spoken answer, and end the session after the evaluation so the transcript saves locally.",
         expectedRows: [
           "voice brain_context_injected",
           "voice retrieval row",
           "voice completed model run",
           "voice-agent tool job",
+          "voice Mermaid diagram focus tour",
+          "voice current-page visual focus",
+          "voice web-search image/source display",
           "voice evaluated mastery evidence",
           "voice book_chat_thread_saved",
           "voice request-correlated background memory row",
         ],
         toolExpectation:
-          "A voice-agent tool row should complete with the same realtime request id as the voice context, model, mastery, and transcript rows.",
+          "Voice-agent tool rows should include Mermaid diagram rendering/focus tour, current-page visual focus, and web-search image/source retrieval with the same realtime request id as the voice context, model, mastery, and transcript rows.",
         evidenceGoal:
-          "Live voice proves the realtime agent layer receives the same multi-PDF book context and stores tool, mastery, transcript, and memory evidence locally.",
+          "Live voice proves the realtime agent layer receives the same multi-PDF book context, can render and focus visual explanations, can focus the spoken-about source surface, can render external web image/source evidence, and stores tool, mastery, transcript, and memory evidence locally.",
       },
     ],
   };

@@ -137,7 +137,7 @@ export const VOICE_AGENT_TOOL_DEFINITIONS = [
   {
     name: "look_at_current_page",
     description:
-      "Inspect the currently rendered PDF page image when the student asks about the current page, screen, visible diagram, chart, or what they are reading. Do not use for live web facts.",
+      "Inspect the currently rendered PDF page image when the student asks about the current page, screen, visible diagram, flowchart, chart, or what they are reading. The UI will focus the current page/diagram surface while the voice explanation references it. Do not use for live web facts.",
     parameters: {
       type: "object",
       properties: {
@@ -151,9 +151,34 @@ export const VOICE_AGENT_TOOL_DEFINITIONS = [
     },
   },
   {
+    name: "render_diagram",
+    description:
+      "Render a local Mermaid diagram in the chat window when a spoken explanation would be clearer as a flowchart, process diagram, or step-by-step visual. The UI will animate a focus tour through the rendered diagram boxes while the voice explanation continues.",
+    parameters: {
+      type: "object",
+      properties: {
+        title: {
+          type: "string",
+          description: "Short title for the rendered diagram.",
+        },
+        mermaid: {
+          type: "string",
+          description:
+            "A valid Mermaid diagram, usually starting with flowchart TD, graph TD, sequenceDiagram, or stateDiagram-v2.",
+        },
+        explanation: {
+          type: "string",
+          description:
+            "One concise sentence explaining how the diagram should be read.",
+        },
+      },
+      required: ["title", "mermaid"],
+    },
+  },
+  {
     name: "web_search",
     description:
-      "Search live web sources only when the student explicitly asks for web, internet, online, latest, current, recent, or news information. Do not use for current page, selected text, uploaded document, active library, or local study-context questions.",
+      "Search live web sources only when the student explicitly asks for web, internet, online, latest, current, recent, news information, or an external image/diagram/flowchart example. Do not use for current page, selected text, uploaded document, active library, or local study-context questions.",
     parameters: {
       type: "object",
       properties: {

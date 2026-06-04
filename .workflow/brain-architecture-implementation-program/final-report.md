@@ -7333,3 +7333,57 @@ Current conservative implementation estimate remains 98%. The remaining hard
 gap is unchanged: the real approved OpenRouter typed-chat plus live Deepgram
 voice drill must prove one coherent local beta flow before 99% or 100% can be
 claimed again. AWS/cloud work remains deferred.
+
+# Latest Addendum: Voice Visual Audio Fixes
+
+Packet ADI implements the user's requested local fixes for voice input
+observability, chat/voice visual intelligence, Mermaid focus tours, image-source
+cards, and library audio playback affordances.
+
+Implementation:
+
+- Voice transcript parsing now accepts tolerant transcript event shapes instead
+  of relying only on exact `ConversationText` payloads.
+- Voice mode records a `mic_signal` event once browser microphone frames reach
+  the voice websocket.
+- Added the local voice `render_diagram` tool and a `diagram` visual-focus kind
+  so voice mode can render Mermaid diagrams in the chat/voice surface.
+- Mermaid rendering now fits the chat rail, uses a dark high-contrast panel,
+  identifies real Mermaid node groups, and applies a transform spotlight/focus
+  tour through diagram boxes.
+- Web-search image metadata is preserved and rendered as thumbnails in source
+  cards when returned by the app search path.
+- Stored audio overview playback no longer primes on `pointerdown`; normal
+  click/tap controls playback, and browser-blocked playback now exposes the
+  local MP3 guide link instead of looping silently on "Preparing audio guide".
+- The live voice proof script now requires Mermaid flowchart focus-tour evidence
+  along with current-page focus and web image/source display.
+
+Verification evidence:
+
+- Repo-local Graphify queries routed the work to `ChatPanel.tsx`, `server.ts`,
+  `voiceAgentTools.ts`, `PdfViewer.tsx`, `RevisionView.tsx`,
+  `web-search.ts`, and diagnostics/tests before source inspection.
+- Browser QA opened the Revision library audio guide. The Play button was a
+  normal clickable control. The in-app browser blocked playback, and the UI
+  showed `Open audio guide` plus the local MP3 link.
+- Browser QA sent a Mermaid chat prompt through local OpenRouter fallback and
+  confirmed the Mermaid focus tour rendered 12 real nodes, auto-advanced, and
+  applied a live SVG transform spotlight to the active node.
+- Browser QA found the current app/browser state still had `Deepgram key
+  missing`; no live Deepgram microphone proof is claimed in this packet.
+- Browser automation for web-image prompt QA became unreliable after the large
+  animated Mermaid surface timed out CDP screenshot capture; source tests cover
+  image metadata preservation and source-card rendering.
+- `npm run test`: passed, 203 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason voice-visual-audio-fixes --full`:
+  passed, including format check, lint, production build, full test suite, and
+  graphify-out scratch scan.
+
+Current conservative implementation estimate remains 98%. ADI fixes the local
+product bugs requested in the pivot, but the separate real OpenRouter plus live
+Deepgram provider drill remains open until a usable Deepgram key, microphone
+permission, and one coherent proof attempt are verified. AWS/cloud work remains
+deferred.

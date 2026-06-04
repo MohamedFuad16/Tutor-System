@@ -98,6 +98,9 @@ import {
 } from "../lib/chatThreadUtils";
 
 type MermaidApi = typeof import("mermaid").default;
+type VoiceVisualFocus = NonNullable<
+  NonNullable<Message["voiceSession"]>["visualFocuses"]
+>[number];
 type Variants = Record<string, Record<string, any>>;
 type MotionTarget = string | false | null | undefined | Record<string, any>;
 type MotionTransition = {
@@ -297,13 +300,50 @@ const loadMermaid = () => {
   return mermaidPromise;
 };
 
+const cleanMermaidTourLabel = (value: string | null | undefined) =>
+  (value || "")
+    .replace(/\s+/g, " ")
+    .replace(/\b(node|label)\b/gi, "")
+    .trim()
+    .slice(0, 80);
+
+const collectMermaidTourNodes = (svg: SVGSVGElement) => {
+  const seen = new Set<Element>();
+  return Array.from(
+    svg.querySelectorAll<SVGGElement>(
+      "g.node, g[id*='flowchart'][class*='node'], g[id*='state'][class*='node']",
+    ),
+  )
+    .filter((node) => {
+      if (seen.has(node)) return false;
+      seen.add(node);
+      const hasShape = Boolean(
+        node.querySelector("rect, polygon, path, circle, ellipse"),
+      );
+      const label = cleanMermaidTourLabel(node.textContent);
+      return hasShape && label.length > 0;
+    })
+    .slice(0, 16);
+};
+
 const Mermaid = ({ chart }: { chart: string }) => {
   const chartRef = useRef<HTMLDivElement>(null);
+  const originalViewBoxRef = useRef<string>("");
+  const viewBoxAnimationRef = useRef<number | null>(null);
+  const [tourNodes, setTourNodes] = useState<string[]>([]);
+  const [activeNodeIndex, setActiveNodeIndex] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     if (!chartRef.current) return;
     chartRef.current.textContent = "";
+    originalViewBoxRef.current = "";
+    if (viewBoxAnimationRef.current !== null) {
+      cancelAnimationFrame(viewBoxAnimationRef.current);
+      viewBoxAnimationRef.current = null;
+    }
+    setTourNodes([]);
+    setActiveNodeIndex(0);
 
     loadMermaid()
       .then((mermaid) =>
@@ -313,27 +353,170 @@ const Mermaid = ({ chart }: { chart: string }) => {
         ),
       )
       .then((res) => {
-        if (!cancelled && chartRef.current)
-          chartRef.current.innerHTML = res.svg;
+        if (cancelled || !chartRef.current) return;
+        chartRef.current.innerHTML = res.svg;
+        const svg = chartRef.current.querySelector<SVGSVGElement>("svg");
+        if (!svg) return;
+        svg.setAttribute("role", "img");
+        svg.setAttribute("aria-label", "Mermaid diagram with focus tour");
+        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+        svg.removeAttribute("width");
+        svg.removeAttribute("height");
+        svg.style.transition =
+          "transform 820ms cubic-bezier(0.22, 1, 0.36, 1), filter 500ms ease";
+        svg.style.display = "block";
+        svg.style.width = "100%";
+        svg.style.maxWidth = "100%";
+        svg.style.minWidth = "0";
+        svg.style.height = "auto";
+        svg.style.transformOrigin = "0 0";
+        svg.style.willChange = "transform";
+        if (!svg.getAttribute("viewBox")) {
+          try {
+            const bounds = (svg as unknown as SVGGraphicsElement).getBBox();
+            svg.setAttribute(
+              "viewBox",
+              `${bounds.x} ${bounds.y} ${Math.max(bounds.width, 1)} ${Math.max(bounds.height, 1)}`,
+            );
+          } catch {}
+        }
+        originalViewBoxRef.current = svg.getAttribute("viewBox") || "";
+        const nodes = collectMermaidTourNodes(svg);
+        nodes.forEach((node, index) => {
+          node.setAttribute("data-mermaid-tour-node", "true");
+          node.setAttribute("data-mermaid-tour-index", String(index));
+          node.setAttribute("tabindex", "0");
+        });
+        setTourNodes(
+          nodes.map((node, index) => {
+            const label = cleanMermaidTourLabel(node.textContent);
+            return label || `Step ${index + 1}`;
+          }),
+        );
       })
       .catch((error) => {
         console.warn("Mermaid error", error);
         if (!cancelled && chartRef.current) {
           chartRef.current.textContent =
             error instanceof Error ? error.message : String(error);
+          setTourNodes([]);
         }
       });
 
     return () => {
       cancelled = true;
+      if (viewBoxAnimationRef.current !== null) {
+        cancelAnimationFrame(viewBoxAnimationRef.current);
+        viewBoxAnimationRef.current = null;
+      }
     };
   }, [chart]);
 
+  useEffect(() => {
+    if (tourNodes.length <= 1) return;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduceMotion) return;
+    const timer = window.setInterval(() => {
+      setActiveNodeIndex((current) => (current + 1) % tourNodes.length);
+    }, 3600);
+    return () => window.clearInterval(timer);
+  }, [tourNodes.length]);
+
+  useEffect(() => {
+    const container = chartRef.current;
+    const svg = container?.querySelector<SVGSVGElement>("svg");
+    if (!container || !svg || tourNodes.length <= 0) return;
+    const nodes = Array.from(
+      svg.querySelectorAll<SVGGElement>("[data-mermaid-tour-node='true']"),
+    );
+    nodes.forEach((node) => node.removeAttribute("data-mermaid-active"));
+    const activeNode = nodes[activeNodeIndex];
+    if (!activeNode) return;
+    activeNode.setAttribute("data-mermaid-active", "true");
+    try {
+      if (originalViewBoxRef.current) {
+        svg.setAttribute("viewBox", originalViewBoxRef.current);
+      }
+      if (viewBoxAnimationRef.current !== null) {
+        cancelAnimationFrame(viewBoxAnimationRef.current);
+        viewBoxAnimationRef.current = null;
+      }
+      svg.style.transform = "translate(0px, 0px) scale(1)";
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+      }
+      viewBoxAnimationRef.current = requestAnimationFrame(() => {
+        const viewportRect = container.getBoundingClientRect();
+        const activeRect = activeNode.getBoundingClientRect();
+        const viewportCenterX = viewportRect.left + viewportRect.width / 2;
+        const viewportCenterY = viewportRect.top + viewportRect.height * 0.44;
+        const activeCenterX = activeRect.left + activeRect.width / 2;
+        const activeCenterY = activeRect.top + activeRect.height / 2;
+        const dx = viewportCenterX - activeCenterX;
+        const dy = viewportCenterY - activeCenterY;
+        const scale =
+          activeRect.width > viewportRect.width * 0.82 ? 1.04 : 1.18;
+        svg.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        viewBoxAnimationRef.current = null;
+      });
+    } catch {}
+  }, [activeNodeIndex, tourNodes.length]);
+
+  const activeTourLabel = tourNodes[activeNodeIndex];
+
   return (
     <div
-      ref={chartRef}
-      className="my-4 flex justify-center bg-white/5 rounded-xl p-4 overflow-x-auto w-full"
-    />
+      className="learningai-mermaid-tour my-4 w-full max-w-[420px] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-zinc-100 shadow-[0_20px_50px_rgba(0,0,0,0.22)]"
+      data-mermaid-focus-tour
+    >
+      <style>{`
+        .learningai-mermaid-tour [data-mermaid-tour-node='true'] {
+          opacity: 0.48;
+          transition: opacity 500ms ease, filter 500ms ease, transform 500ms ease;
+        }
+        .learningai-mermaid-tour [data-mermaid-active='true'] {
+          opacity: 1;
+          filter: drop-shadow(0 0 18px rgba(249, 115, 22, 0.65));
+        }
+        .learningai-mermaid-tour [data-mermaid-active='true'] rect,
+        .learningai-mermaid-tour [data-mermaid-active='true'] polygon,
+        .learningai-mermaid-tour [data-mermaid-active='true'] path,
+        .learningai-mermaid-tour [data-mermaid-active='true'] circle,
+        .learningai-mermaid-tour [data-mermaid-active='true'] ellipse {
+          stroke: #fb923c !important;
+          stroke-width: 3px !important;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .learningai-mermaid-tour svg,
+          .learningai-mermaid-tour [data-mermaid-tour-node='true'] {
+            transition: none !important;
+          }
+        }
+      `}</style>
+      <div
+        ref={chartRef}
+        className="flex min-h-[180px] justify-center overflow-hidden rounded-lg p-2"
+      />
+      {tourNodes.length > 1 && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-zinc-200">
+          <span data-mermaid-focus-label>
+            Focus tour {activeNodeIndex + 1}/{tourNodes.length}
+            {activeTourLabel ? `: ${activeTourLabel}` : ""}
+          </span>
+          <button
+            type="button"
+            onClick={() =>
+              setActiveNodeIndex((current) => (current + 1) % tourNodes.length)
+            }
+            className="rounded-full border border-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-100 transition-colors hover:border-orange-300 hover:text-orange-100"
+          >
+            Next box
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -362,6 +545,92 @@ type VoiceStudyContextPayload = {
   unreadyDocumentCount: number;
   omittedReadyDocumentCount: number;
   contextCompacted: boolean;
+};
+
+type NormalizedVoiceTranscript = {
+  role: "user" | "assistant";
+  content: string;
+  rawType: string;
+  sourceField: string;
+};
+
+const voiceTranscriptTypePattern =
+  /(ConversationText|Transcript|Transcription|Utterance|UserMessage|AgentMessage|InputText|OutputText|FinalTranscript|InterimTranscript)/i;
+
+const compactTranscriptCandidate = (value: unknown) => {
+  if (typeof value !== "string") return "";
+  return value.replace(/\s+/g, " ").trim();
+};
+
+const extractVoiceTranscriptText = (
+  payload: Record<string, any>,
+): { content: string; sourceField: string } => {
+  const directFields = [
+    "content",
+    "text",
+    "transcript",
+    "utterance",
+    "message",
+  ];
+  for (const field of directFields) {
+    const content = compactTranscriptCandidate(payload[field]);
+    if (content) return { content, sourceField: field };
+  }
+  const alternatives = [
+    payload.channel?.alternatives?.[0],
+    payload.alternatives?.[0],
+    payload.results?.channels?.[0]?.alternatives?.[0],
+    payload.result?.channels?.[0]?.alternatives?.[0],
+    payload.speech,
+  ].filter(Boolean);
+  for (const alternative of alternatives) {
+    const content =
+      compactTranscriptCandidate(alternative.transcript) ||
+      compactTranscriptCandidate(alternative.text) ||
+      compactTranscriptCandidate(alternative.content);
+    if (content) {
+      return {
+        content,
+        sourceField: "nested_transcript",
+      };
+    }
+  }
+  return { content: "", sourceField: "" };
+};
+
+const normalizeVoiceTranscriptEvent = (
+  payload: unknown,
+): NormalizedVoiceTranscript | null => {
+  if (!payload || typeof payload !== "object") return null;
+  const msg = payload as Record<string, any>;
+  const rawType = String(msg.type || "");
+  const rawRole = String(msg.role || msg.speaker || msg.participant || "");
+  const hasTranscriptType = voiceTranscriptTypePattern.test(rawType);
+  const hasTranscriptField =
+    "transcript" in msg ||
+    "utterance" in msg ||
+    Boolean(msg.channel?.alternatives?.[0]?.transcript) ||
+    Boolean(msg.results?.channels?.[0]?.alternatives?.[0]?.transcript);
+  const roleLooksConversational =
+    /\b(user|student|human|agent|assistant|aria)\b/i.test(rawRole) &&
+    ("content" in msg || "text" in msg || "message" in msg);
+  if (!hasTranscriptType && !hasTranscriptField && !roleLooksConversational) {
+    return null;
+  }
+  const { content, sourceField } = extractVoiceTranscriptText(msg);
+  if (!content) return null;
+  const roleSeed = `${rawRole} ${rawType}`;
+  const role =
+    /\b(agent|assistant|aria|output)\b/i.test(roleSeed) &&
+    !/\b(user|student|human|input)\b/i.test(roleSeed)
+      ? "assistant"
+      : "user";
+  return {
+    role,
+    content,
+    rawType,
+    sourceField,
+  };
 };
 
 const VOICE_AGENT_CONTEXT_CHAR_LIMIT = 7000;
@@ -1873,6 +2142,21 @@ const SourceCards = ({
           className={`group block rounded-xl p-3 transition-colors ${dark ? "border border-white/10 bg-white/[0.06] hover:bg-white/[0.09]" : "border border-black/5 bg-white/80 shadow-[0_10px_24px_rgba(0,0,0,0.06)] hover:bg-white"}`}
         >
           <div className="flex items-start gap-2.5">
+            {(source.thumbnailUrl || source.imageUrl) && (
+              <span
+                className={`relative mt-0.5 block h-14 w-16 shrink-0 overflow-hidden rounded-lg border ${dark ? "border-white/10 bg-white/5" : "border-zinc-200 bg-zinc-100"}`}
+              >
+                <img
+                  src={source.thumbnailUrl || source.imageUrl}
+                  alt=""
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+                <span className="absolute bottom-1 right-1 rounded-full bg-black/65 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-white">
+                  image
+                </span>
+              </span>
+            )}
             <SourceGlyph domain={source.domain} className="mt-0.5 h-5 w-5" />
             <div className="min-w-0 flex-1">
               <div
@@ -1887,7 +2171,9 @@ const SourceCards = ({
                 <span
                   className={`rounded-full px-1.5 py-0.5 text-[9px] ${dark ? "bg-blue-400/10 text-blue-200" : "bg-blue-50 text-blue-600"}`}
                 >
-                  citation checking
+                  {source.sourceType === "image"
+                    ? "image source"
+                    : "citation checking"}
                 </span>
               </div>
               <div
@@ -2031,6 +2317,87 @@ const FinalSourcesPanel = ({ sources }: { sources: NormalizedWebSource[] }) => {
           </gsapMotion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+};
+
+const VoiceVisualFocusPanel = ({
+  focuses,
+}: {
+  focuses?: VoiceVisualFocus[];
+}) => {
+  if (!focuses?.length) return null;
+  return (
+    <div
+      data-voice-visual-focus-panel
+      className="space-y-2 rounded-2xl border border-blue-100 bg-blue-50/70 p-3"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-blue-700">
+          <ImageIcon size={11} /> Voice visual focus
+        </span>
+        <span className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase text-zinc-500">
+          {focuses.length} visual event{focuses.length === 1 ? "" : "s"}
+        </span>
+      </div>
+      {focuses.slice(-3).map((focus) => (
+        <div
+          key={focus.id}
+          data-voice-visual-focus-kind={focus.kind}
+          className="rounded-xl border border-white/80 bg-white/90 p-3 shadow-[0_10px_24px_rgba(59,130,246,0.08)]"
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] ${
+                focus.status === "ready"
+                  ? "border-green-200 bg-green-50 text-green-700"
+                  : focus.status === "blocked" || focus.status === "failed"
+                    ? "border-red-200 bg-red-50 text-red-700"
+                    : "border-amber-200 bg-amber-50 text-amber-700"
+              }`}
+            >
+              {focus.status}
+            </span>
+            <span className="text-[12px] font-semibold text-zinc-900">
+              {focus.title}
+            </span>
+            {focus.focusedTarget && (
+              <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-blue-700">
+                focus {focus.focusedTarget}
+              </span>
+            )}
+            {typeof focus.imageCount === "number" && (
+              <span className="rounded-full border border-purple-100 bg-purple-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-purple-700">
+                {focus.imageCount} image{focus.imageCount === 1 ? "" : "s"}
+              </span>
+            )}
+          </div>
+          {focus.query && (
+            <div className="mt-1 text-[11px] font-medium leading-snug text-zinc-500">
+              Query: {focus.query}
+            </div>
+          )}
+          {focus.summary && (
+            <div className="mt-2 text-[12px] leading-relaxed text-zinc-700">
+              {focus.summary}
+            </div>
+          )}
+          {focus.kind === "diagram" && focus.mermaid ? (
+            <div className="mt-3" data-voice-mermaid-diagram>
+              <Mermaid chart={focus.mermaid} />
+            </div>
+          ) : null}
+          {focus.sources?.length ? (
+            <div className="mt-3">
+              <SourceCards
+                sources={focus.sources as NormalizedWebSource[]}
+                compact
+                tone="light"
+              />
+            </div>
+          ) : null}
+        </div>
+      ))}
     </div>
   );
 };
@@ -2776,6 +3143,9 @@ const MessageItem = React.memo(
                   className="overflow-hidden border-t border-black/5"
                 >
                   <div className="space-y-3 px-4 py-3.5">
+                    <VoiceVisualFocusPanel
+                      focuses={session.visualFocuses || []}
+                    />
                     {turns.length === 0 && (
                       <div className="text-[12px] text-zinc-400">
                         No transcript captured.
@@ -3051,6 +3421,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   );
   const [isPlayingTTS, setIsPlayingTTS] = useState<string | null>(null);
   const [thinkingStep, setThinkingStep] = useState(0);
+  const [serverOpenRouterReady, setServerOpenRouterReady] = useState(false);
+  const hasOpenRouterRuntimeKey =
+    Boolean(apiKey.trim()) || serverOpenRouterReady;
   const [chatArchives, setChatArchives] = useState<ChatArchive[]>(() =>
     readChatArchives(),
   );
@@ -3061,6 +3434,30 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const loadedThreadBookIdRef = useRef<string | null>(null);
   const latestMessagesRef = useRef<Message[]>(messages);
   const latestBookTitleRef = useRef(activeProject);
+
+  useEffect(() => {
+    let cancelled = false;
+    const refreshProviderMeters = async () => {
+      try {
+        const response = await fetch("/api/debug/system-activity");
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (cancelled) return;
+        setServerOpenRouterReady(
+          Boolean(payload?.meters?.providers?.openRouter) ||
+            Boolean(payload?.meters?.providers?.openRouterByok),
+        );
+      } catch {
+        if (!cancelled) setServerOpenRouterReady(false);
+      }
+    };
+    void refreshProviderMeters();
+    const intervalId = window.setInterval(refreshProviderMeters, 10000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const flushStreamingAssistant = useCallback(() => {
     streamingFrameRef.current = null;
@@ -3131,6 +3528,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const voiceStudyContextRef = useRef<VoiceStudyContextPayload | null>(null);
   const voiceProofAttemptIdRef = useRef<string | null>(null);
   const pendingVoiceProofScriptRef = useRef<string | null>(null);
+  const micSignalAnnouncedRef = useRef(false);
   const getVoiceProofAttemptId = useCallback(() => {
     return (
       voiceStudyContextRef.current?.proofAttemptId ||
@@ -3241,13 +3639,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     () =>
       Boolean(
         activeBetaProofAttemptId &&
-          activeProofTrafficApprovalEvents.some((event: MemoryEvent) => {
-            const metadata = event.metadata || {};
-            return (
-              event.status === "completed" &&
-              metadata.proofAttemptId === activeBetaProofAttemptId
-            );
-          }),
+        activeProofTrafficApprovalEvents.some((event: MemoryEvent) => {
+          const metadata = event.metadata || {};
+          return (
+            event.status === "completed" &&
+            metadata.proofAttemptId === activeBetaProofAttemptId
+          );
+        }),
       ),
     [activeBetaProofAttemptId, activeProofTrafficApprovalEvents],
   );
@@ -3259,13 +3657,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   );
   const isActiveProofTrafficApproved = Boolean(
     activeBetaProofAttemptId &&
-      betaProofTrafficApproval?.attemptId === activeBetaProofAttemptId &&
-      hasDurableActiveProofTrafficApproval,
+    betaProofTrafficApproval?.attemptId === activeBetaProofAttemptId &&
+    hasDurableActiveProofTrafficApproval,
   );
   const hasPendingProofTrafficApproval = Boolean(
     activeBetaProofAttemptId &&
-      betaProofTrafficApproval?.attemptId === activeBetaProofAttemptId &&
-      !hasDurableActiveProofTrafficApproval,
+    betaProofTrafficApproval?.attemptId === activeBetaProofAttemptId &&
+    !hasDurableActiveProofTrafficApproval,
   );
   const activeBetaProofTrafficLocked = Boolean(
     activeBetaProofAttemptId && !isActiveProofTrafficApproved,
@@ -3670,6 +4068,44 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     });
   };
 
+  const appendVoiceVisualFocus = (
+    focus: Omit<VoiceVisualFocus, "timestamp">,
+  ) => {
+    const sessionId = voiceSessionIdRef.current;
+    if (!sessionId) return;
+    const visualFocus: VoiceVisualFocus = {
+      ...focus,
+      timestamp: Date.now(),
+    };
+    setMessages((prev) => {
+      const index = prev.findIndex((message) => message.id === sessionId);
+      if (index === -1) return prev;
+      const session = prev[index].voiceSession || {
+        turns: [],
+        startedAt: Date.now(),
+        durationSeconds: 0,
+      };
+      const existing = session.visualFocuses || [];
+      const nextFocuses = [
+        ...existing.filter((item) => item.id !== visualFocus.id),
+        visualFocus,
+      ].slice(-8);
+      const copy = [...prev];
+      copy[index] = {
+        ...copy[index],
+        voiceSession: {
+          ...session,
+          visualFocuses: nextFocuses,
+          durationSeconds: Math.max(
+            session.durationSeconds,
+            Math.round((Date.now() - session.startedAt) / 1000),
+          ),
+        },
+      };
+      return copy;
+    });
+  };
+
   const recordVoiceModelRun = (
     status: "started" | "completed" | "failed",
     sessionId: string,
@@ -3820,6 +4256,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     voiceStudyContextRef.current = null;
     voiceProofAttemptIdRef.current = null;
     pendingVoiceProofScriptRef.current = null;
+    micSignalAnnouncedRef.current = false;
     voiceSessionCountedRef.current = false;
     voiceSessionErrorRef.current = null;
     voiceTurnsRef.current = [];
@@ -4103,6 +4540,88 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 activeDocumentId: activeDocumentId || "",
               };
             }
+            const focusSummary =
+              typeof result.result === "string"
+                ? result.result
+                : typeof result.reason === "string"
+                  ? result.reason
+                  : "Voice current-page inspection finished.";
+            appendVoiceVisualFocus({
+              id: `${sessionId}:${toolCallId}:current-page`,
+              kind: "current_page",
+              status:
+                result.status === "blocked" || result.status === "failed"
+                  ? result.status
+                  : "ready",
+              title: "Current page or diagram inspected",
+              query,
+              summary: compactVoiceEventText(focusSummary, 320),
+              focusedTarget: "current PDF page",
+              activeDocumentId: activeDocumentId || "",
+              toolCallId,
+            });
+            window.dispatchEvent(
+              new CustomEvent("learningai:voice-visual-focus", {
+                detail: {
+                  source: "voice_look_at_current_page",
+                  status: result.status,
+                  query,
+                  summary: compactVoiceEventText(focusSummary, 220),
+                  activeDocumentId: activeDocumentId || "",
+                  proofAttemptId,
+                  toolCallId,
+                },
+              }),
+            );
+          } else if (toolName === "render_diagram") {
+            const title = String(args.title || "Voice diagram")
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 120);
+            const mermaid = String(args.mermaid || args.chart || "")
+              .replace(/\r\n/g, "\n")
+              .trim();
+            const explanation = String(args.explanation || "")
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 400);
+            if (!mermaid) {
+              throw new Error("render_diagram requires Mermaid content.");
+            }
+            appendVoiceVisualFocus({
+              id: `${sessionId}:${toolCallId}:diagram`,
+              kind: "diagram",
+              status: "ready",
+              title,
+              query: title,
+              summary:
+                explanation ||
+                "Rendered a local Mermaid diagram for the voice explanation.",
+              focusedTarget: "chat diagram surface",
+              toolCallId,
+              mermaid,
+            });
+            window.dispatchEvent(
+              new CustomEvent("learningai:voice-visual-focus", {
+                detail: {
+                  source: "voice_render_diagram",
+                  status: "ready",
+                  query: title,
+                  summary:
+                    explanation ||
+                    "Rendered a local Mermaid diagram for the voice explanation.",
+                  proofAttemptId,
+                  toolCallId,
+                },
+              }),
+            );
+            result = {
+              status: "ready",
+              title,
+              rendered: true,
+              focusTour: "enabled",
+              explanation,
+            };
           } else if (toolName === "web_search") {
             const query = String(args.query || "")
               .replace(/\s+/g, " ")
@@ -4120,6 +4639,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               /\b(web|internet|online|search|google|look up|browse)\b/i.test(
                 intentText,
               );
+            const externalImageIntent =
+              /\b(external|online|web|internet)\b/i.test(intentText) &&
+              /\b(image|images|diagram|diagrams|flowchart|flowcharts|figure|figures|visual example)\b/i.test(
+                intentText,
+              );
             const freshnessIntent =
               /\b(latest|current|recent|today|yesterday|news|price|pricing|release|ranking|rankings|weather|score|schedule|trend|trending)\b/i.test(
                 intentText,
@@ -4130,6 +4654,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               );
             const allowed =
               explicitWebIntent ||
+              externalImageIntent ||
               (freshnessIntent && !sourceLocalIntent) ||
               (brainRuntimeSettings.webSearchPolicy !== "manual_only" &&
                 freshnessIntent);
@@ -4262,14 +4787,47 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 mode,
                 sourceCount: sources.length,
                 sources: sources.slice(0, 6).map((source) => ({
+                  id: source.id,
+                  type: source.type,
+                  sourceType: source.sourceType,
                   title: source.title,
                   url: source.url,
                   domain: source.domain,
+                  faviconUrl: source.faviconUrl,
                   snippet: source.snippet,
                   date: source.date,
+                  position: source.position,
+                  imageUrl: source.imageUrl,
+                  thumbnailUrl: source.thumbnailUrl,
+                  imageWidth: source.imageWidth,
+                  imageHeight: source.imageHeight,
+                  imageSource: source.imageSource,
                 })),
               };
             }
+            const visibleSources = Array.isArray(result.sources)
+              ? (result.sources as NormalizedWebSource[])
+              : [];
+            appendVoiceVisualFocus({
+              id: `${sessionId}:${toolCallId}:web-search`,
+              kind: "web_search",
+              status:
+                result.status === "blocked" || result.status === "empty"
+                  ? result.status
+                  : "ready",
+              title: "Voice web image/source retrieval",
+              query,
+              summary:
+                result.status === "blocked"
+                  ? String(result.reason || "Voice web search was blocked.")
+                  : `${visibleSources.length} web source${visibleSources.length === 1 ? "" : "s"} returned through the voice web-search path.`,
+              focusedTarget: "chat tool surface",
+              toolCallId,
+              imageCount: visibleSources.filter(
+                (source) => source.imageUrl || source.thumbnailUrl,
+              ).length,
+              sources: visibleSources,
+            });
           } else {
             throw new Error(`Unsupported voice tool: ${toolName}`);
           }
@@ -4362,9 +4920,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   );
 
   const startVoice = async () => {
-    if (!apiKey) {
+    if (!hasOpenRouterRuntimeKey) {
       alert(
-        "Please configure your OpenRouter API Key in the settings (top right) before using Voice features.",
+        "Please configure your OpenRouter API Key in settings or expose the local server fallback before using Voice features.",
       );
       return;
     }
@@ -4388,6 +4946,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       voiceStartedAtRef.current = Date.now();
       voiceSessionCountedRef.current = false;
       voiceSessionErrorRef.current = null;
+      micSignalAnnouncedRef.current = false;
       recordVoiceAgentEvent({
         type: "session_started",
         status: "started",
@@ -4474,6 +5033,11 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           rawContextChars: voiceContextPayload.rawContextChars,
         });
       }
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error(
+          "Microphone capture is not available in this browser context.",
+        );
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -4487,6 +5051,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         window.AudioContext || (window as any).webkitAudioContext
       )({ sampleRate: 48000 });
       audioContextRef.current = audioContext;
+      if (audioContext.state === "suspended") {
+        await audioContext.resume();
+      }
 
       const source = audioContext.createMediaStreamSource(stream);
       const processor = audioContext.createScriptProcessor(4096, 1, 1);
@@ -4534,6 +5101,25 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         const rms = Math.sqrt(sum / inputData.length);
         const volume = Math.min(1, rms * 8); // Scale
         window.dispatchEvent(new CustomEvent("mic-volume", { detail: volume }));
+        if (
+          !micSignalAnnouncedRef.current &&
+          volume > 0.045 &&
+          ws.readyState === WebSocket.OPEN &&
+          hasSentVoiceAuth
+        ) {
+          micSignalAnnouncedRef.current = true;
+          recordVoiceAgentEvent({
+            type: "mic_signal",
+            status: "running",
+            sessionId: voiceSessionIdRef.current || undefined,
+            summary:
+              "Microphone signal detected; audio frames are reaching the voice websocket.",
+            metadata: {
+              volume: volume.toFixed(3),
+              proofAttemptId: getVoiceProofAttemptId(),
+            },
+          });
+        }
 
         if (volume < 0.28) {
           noiseFloorRef.current = noiseFloorRef.current * 0.95 + volume * 0.05;
@@ -4642,6 +5228,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           try {
             const msg = JSON.parse(event.data);
             const proofAttemptId = getVoiceProofAttemptId();
+            const transcriptEvent = normalizeVoiceTranscriptEvent(msg);
 
             if (msg.type === "usage" && msg.usage) {
               if (Number(msg.usage.sessions || 0) > 0) {
@@ -4660,28 +5247,31 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   proofAttemptId,
                 },
               });
-            } else if (msg.type === "ConversationText") {
-              if (msg.content) {
+            } else if (transcriptEvent) {
+              const transcriptContent = transcriptEvent.content;
+              if (transcriptContent) {
                 setVoiceCaption({
-                  role: msg.role === "user" ? "user" : "assistant",
-                  text: msg.content,
+                  role: transcriptEvent.role,
+                  text: transcriptContent,
                 });
               }
-              if (msg.role === "user") {
-                lastVoiceUserMessageRef.current = msg.content || "";
-                appendVoiceTurn("user", msg.content || "");
+              if (transcriptEvent.role === "user") {
+                lastVoiceUserMessageRef.current = transcriptContent;
+                appendVoiceTurn("user", transcriptContent);
                 recordVoiceAgentEvent({
                   type: "user_turn",
                   status: "running",
                   sessionId: voiceSessionIdRef.current || undefined,
-                  summary: `Student said: ${compactVoiceEventText(msg.content || "")}`,
+                  summary: `Student said: ${compactVoiceEventText(transcriptContent)}`,
                   metadata: {
                     source: "microphone",
-                    characterCount: String(msg.content || "").length,
+                    characterCount: transcriptContent.length,
+                    rawType: transcriptEvent.rawType,
+                    sourceField: transcriptEvent.sourceField,
                     proofAttemptId,
                   },
                 });
-                if (!endingRef.current && detectEndIntent(msg.content || "")) {
+                if (!endingRef.current && detectEndIntent(transcriptContent)) {
                   endingRef.current = true;
                   activeAudioNodesRef.current.forEach((node) => {
                     try {
@@ -4693,24 +5283,26 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   endTimerRef.current = setTimeout(() => stopVoice(), 250);
                   return;
                 }
-              } else if (msg.role === "assistant") {
-                appendVoiceTurn("assistant", msg.content || "");
+              } else if (transcriptEvent.role === "assistant") {
+                appendVoiceTurn("assistant", transcriptContent);
                 recordVoiceAgentEvent({
                   type: "assistant_turn",
                   status: "completed",
                   sessionId: voiceSessionIdRef.current || undefined,
-                  summary: `Aria replied: ${compactVoiceEventText(msg.content || "")}`,
+                  summary: `Aria replied: ${compactVoiceEventText(transcriptContent)}`,
                   metadata: {
-                    characterCount: String(msg.content || "").length,
+                    characterCount: transcriptContent.length,
+                    rawType: transcriptEvent.rawType,
+                    sourceField: transcriptEvent.sourceField,
                     proofAttemptId,
                   },
                 });
-                if (lastVoiceUserMessageRef.current && msg.content) {
+                if (lastVoiceUserMessageRef.current && transcriptContent) {
                   const userMessage = lastVoiceUserMessageRef.current;
                   lastVoiceUserMessageRef.current = "";
                   brainOrchestrator.trackInteraction(
                     userMessage,
-                    msg.content,
+                    transcriptContent,
                     undefined,
                     {
                       bookId: canonicalActiveBookId,
@@ -4739,7 +5331,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                         : undefined,
                       documentContexts: orderedBookDocuments,
                       userMessage,
-                      assistantMessage: msg.content,
+                      assistantMessage: transcriptContent,
                       apiKey,
                     })
                     .catch((error) => {
@@ -6366,13 +6958,15 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     </span>
                     <span
                       className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
-                        apiKey.trim()
+                        hasOpenRouterRuntimeKey
                           ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
                           : "border-amber-300/30 bg-amber-400/10 text-amber-200"
                       }`}
                     >
-                      {apiKey.trim()
-                        ? "OpenRouter key set"
+                      {hasOpenRouterRuntimeKey
+                        ? apiKey.trim()
+                          ? "OpenRouter key set"
+                          : "OpenRouter server fallback"
                         : "OpenRouter key missing"}
                     </span>
                     <span

@@ -701,7 +701,20 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
     chatPrompt?.expectedRows.includes("chat evaluated mastery evidence"),
   );
   assert.match(voicePrompt?.prompt || "", /same active book/);
+  assert.match(voicePrompt?.prompt || "", /Mermaid flowchart/);
+  assert.match(voicePrompt?.prompt || "", /focus tour/);
+  assert.match(voicePrompt?.prompt || "", /current page\/diagram/);
+  assert.match(voicePrompt?.prompt || "", /web image\/source lookup/);
   assert.ok(voicePrompt?.expectedRows.includes("voice-agent tool job"));
+  assert.ok(
+    voicePrompt?.expectedRows.includes("voice Mermaid diagram focus tour"),
+  );
+  assert.ok(
+    voicePrompt?.expectedRows.includes("voice current-page visual focus"),
+  );
+  assert.ok(
+    voicePrompt?.expectedRows.includes("voice web-search image/source display"),
+  );
   assert.ok(voicePrompt?.expectedRows.includes("voice book_chat_thread_saved"));
   assert.ok(
     readyChecklist.liveProofDrillPacket.exportInstructions.some((instruction) =>

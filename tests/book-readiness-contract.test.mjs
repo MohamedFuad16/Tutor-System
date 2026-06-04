@@ -100,8 +100,10 @@ test("MisoTTS read-aloud boundary is documented across architecture books", () =
 
 test("audio overview contract keeps one visible player and 3-4 minute guides", () => {
   assert.match(revisionViewSource, /const StoredAudioOverview/);
+  assert.match(revisionViewSource, /const resolveAudioOverviewSrc/);
   assert.match(revisionViewSource, /className="sr-only"/);
   assert.match(revisionViewSource, /Preparing audio guide/);
+  assert.match(revisionViewSource, /Open the local MP3 guide/);
   assert.doesNotMatch(revisionViewSource, /native fallback controls/i);
   assert.doesNotMatch(revisionViewSource, /fallback play/i);
   assert.doesNotMatch(revisionViewSource, /controls=\{showNativeControls\}/);
@@ -117,5 +119,10 @@ test("audio overview contract keeps one visible player and 3-4 minute guides", (
       `${overview.outputFile} should remain a plain-language long-form guide`,
     );
     assert.match(overview.durationLabel, /about (3|4) min/);
+    assert.equal(
+      overview.audioSrc,
+      `/audio-overviews/${overview.outputFile}`,
+      `${overview.outputFile} must resolve to the checked-in public MP3 path`,
+    );
   }
 });

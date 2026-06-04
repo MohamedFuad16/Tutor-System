@@ -15,9 +15,10 @@ test("voice agent tool definitions expose local study tools", () => {
     "generate_flashcards",
     "evaluate_answer",
     "look_at_current_page",
+    "render_diagram",
     "web_search",
   ]);
-  assert.equal(VOICE_AGENT_TOOL_DEFINITIONS.length, 6);
+  assert.equal(VOICE_AGENT_TOOL_DEFINITIONS.length, 7);
   assert.equal(
     VOICE_AGENT_TOOL_DEFINITIONS.every((tool) => !("endpoint" in tool)),
     true,
@@ -34,6 +35,15 @@ test("voice agent tool definitions expose local study tools", () => {
     (tool) => tool.name === "look_at_current_page",
   );
   assert.deepEqual(currentPageTool.parameters.required, ["query"]);
+  assert.match(currentPageTool.description, /flowchart/);
+  assert.match(currentPageTool.description, /focus/);
+  const renderDiagramTool = VOICE_AGENT_TOOL_DEFINITIONS.find(
+    (tool) => tool.name === "render_diagram",
+  );
+  assert.deepEqual(renderDiagramTool.parameters.required, ["title", "mermaid"]);
+  assert.match(renderDiagramTool.description, /Mermaid/);
+  assert.match(renderDiagramTool.description, /focus tour/);
+  assert.match(webSearchTool.description, /external image/);
   const evaluateAnswerTool = VOICE_AGENT_TOOL_DEFINITIONS.find(
     (tool) => tool.name === "evaluate_answer",
   );

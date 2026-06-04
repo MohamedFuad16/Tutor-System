@@ -1086,7 +1086,8 @@ export function AdminView() {
         providerKeys: {
           chatModelKeyConfigured:
             Boolean(apiKey.trim()) ||
-            Boolean(activityPayload?.meters.providers.openRouter),
+            Boolean(activityPayload?.meters.providers.openRouter) ||
+            Boolean(activityPayload?.meters.providers.openRouterByok),
           voiceRealtimeKeyConfigured:
             Boolean(deepgramApiKey.trim()) ||
             Boolean(activityPayload?.meters.providers.deepgram),
@@ -1095,6 +1096,7 @@ export function AdminView() {
     [
       activityPayload?.meters.providers.deepgram,
       activityPayload?.meters.providers.openRouter,
+      activityPayload?.meters.providers.openRouterByok,
       apiKey,
       betaDiagnosticsSnapshot.brainFlow,
       betaDiagnosticsSnapshot.coherentLiveProof,

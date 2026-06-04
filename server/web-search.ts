@@ -3,6 +3,7 @@ export type WebSearchMode = "search" | "news";
 export type NormalizedWebSource = {
   id: string;
   type: WebSearchMode;
+  sourceType?: "web" | "image";
   title: string;
   url: string;
   domain: string;
@@ -10,6 +11,11 @@ export type NormalizedWebSource = {
   snippet: string;
   date?: string;
   position: number;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  imageSource?: string;
 };
 
 type SearchOptions = {
@@ -72,6 +78,14 @@ const domainFromUrl = (url: string) => {
 const faviconForDomain = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
 
+const optionalString = (...values: unknown[]) => {
+  for (const value of values) {
+    const text = String(value || "").trim();
+    if (text) return text;
+  }
+  return undefined;
+};
+
 const normalizeRows = (
   payload: any,
   mode: WebSearchMode,
@@ -95,9 +109,12 @@ const normalizeRows = (
     seen.add(url);
 
     const domain = domainFromUrl(url);
+    const imageUrl = optionalString(row.imageUrl, row.image, row.thumbnailUrl);
+    const thumbnailUrl = optionalString(row.thumbnailUrl, row.thumbnail);
     results.push({
       id: stableId(`${mode}:${url}`),
       type: mode,
+      sourceType: "web",
       title,
       url,
       domain,
@@ -107,8 +124,59 @@ const normalizeRows = (
       ).trim(),
       date: row.date || row.publishedAt || undefined,
       position: Number(row.position || index + 1),
+      ...(imageUrl ? { imageUrl } : {}),
+      ...(thumbnailUrl ? { thumbnailUrl } : {}),
     });
   });
+
+  const imageRows = Array.isArray(payload?.images) ? payload.images : [];
+  imageRows.forEach((row: any, index: number) => {
+    const imageUrl = optionalString(row.imageUrl, row.image, row.thumbnailUrl);
+    const rawUrl = optionalString(row.link, row.url, row.sourceUrl, imageUrl);
+    const title = optionalString(row.title, row.source, "Image result");
+    if (!rawUrl || !imageUrl || !title) return;
+
+    const url = canonicalUrl(String(rawUrl));
+    if (seen.has(url)) return;
+    seen.add(url);
+
+    const domain = domainFromUrl(url);
+    results.push({
+      id: stableId(`${mode}:image:${url}:${imageUrl}`),
+      type: mode,
+      sourceType: "image",
+      title,
+      url,
+      domain,
+      faviconUrl: faviconForDomain(domain),
+      snippet: String(
+        row.snippet ||
+          row.summary ||
+          row.description ||
+          row.source ||
+          "Image result from web search.",
+      ).trim(),
+      date: row.date || row.publishedAt || undefined,
+      position: Number(row.position || results.length + index + 1),
+      imageUrl,
+      thumbnailUrl: optionalString(row.thumbnailUrl, row.thumbnail) || imageUrl,
+      imageWidth: Number(row.imageWidth || row.width || 0) || undefined,
+      imageHeight: Number(row.imageHeight || row.height || 0) || undefined,
+      imageSource: optionalString(row.source, row.domain),
+    });
+  });
+
+  const imageResults = results.filter(
+    (source) => source.sourceType === "image",
+  );
+  if (imageResults.length > 0 && maxResults > 1) {
+    const imageBudget = Math.min(2, imageResults.length, maxResults);
+    const webBudget = Math.max(0, maxResults - imageBudget);
+    const webResults = results
+      .filter((source) => source.sourceType !== "image")
+      .slice(0, webBudget);
+    return [...webResults, ...imageResults.slice(0, imageBudget)];
+  }
 
   return results.slice(0, maxResults);
 };
@@ -216,7 +284,9 @@ export function formatSourcesForPrompt(sources: NormalizedWebSource[]) {
   return sources
     .map((source, index) => {
       const date = source.date ? ` | ${source.date}` : "";
-      return `[${index + 1}] ${source.title} | ${source.domain}${date} | ${source.snippet} | ${source.url}`;
+      const kind = source.sourceType === "image" ? "image" : "web";
+      const image = source.imageUrl ? ` | image: ${source.imageUrl}` : "";
+      return `[${index + 1}] ${source.title} | ${source.domain} | ${kind}${date} | ${source.snippet} | ${source.url}${image}`;
     })
     .join("\n");
 }

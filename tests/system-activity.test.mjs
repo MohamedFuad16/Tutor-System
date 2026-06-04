@@ -231,6 +231,7 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
     "generate_flashcards",
     "look_at_current_page",
     "look_at_study_context",
+    "render_diagram",
     "update_graph",
     "web_search",
   ]);

@@ -52,6 +52,7 @@ export function PdfViewer() {
   const selectionTooltipRef = useRef<HTMLDivElement | null>(null);
   const selectionBorderRef = useRef<HTMLDivElement | null>(null);
   const draftNoteRef = useRef<HTMLDivElement | null>(null);
+  const voiceFocusTimeoutRef = useRef<number | null>(null);
   const titleRequestRef = useRef<AbortController | null>(null);
   const titleScheduleRef = useRef<number | null>(null);
   const titleGenerationRef = useRef(0);
@@ -68,6 +69,12 @@ export function PdfViewer() {
     y: number;
     color: string;
     rects: any[];
+  } | null>(null);
+  const [voiceVisualFocus, setVoiceVisualFocus] = useState<{
+    query: string;
+    summary: string;
+    status: string;
+    pageNumber: number;
   } | null>(null);
   const [noteText, setNoteText] = useState("");
   const [pageInputValue, setPageInputValue] = useState<string | null>(null);
@@ -212,8 +219,53 @@ export function PdfViewer() {
       if (titleScheduleRef.current !== null) {
         window.clearTimeout(titleScheduleRef.current);
       }
+      if (voiceFocusTimeoutRef.current !== null) {
+        window.clearTimeout(voiceFocusTimeoutRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    const handleVoiceVisualFocus = (event: Event) => {
+      const detail = (event as CustomEvent).detail || {};
+      if (
+        detail.activeDocumentId &&
+        detail.activeDocumentId !== activeDocumentId
+      ) {
+        return;
+      }
+      setVoiceVisualFocus({
+        query: String(detail.query || "Voice is explaining this page.").slice(
+          0,
+          180,
+        ),
+        summary: String(detail.summary || "").slice(0, 220),
+        status: String(detail.status || "ready"),
+        pageNumber: pdfPage,
+      });
+      pageWrapperRef.current?.scrollIntoView({
+        block: "center",
+        inline: "center",
+        behavior: "smooth",
+      });
+      if (voiceFocusTimeoutRef.current !== null) {
+        window.clearTimeout(voiceFocusTimeoutRef.current);
+      }
+      voiceFocusTimeoutRef.current = window.setTimeout(() => {
+        setVoiceVisualFocus(null);
+        voiceFocusTimeoutRef.current = null;
+      }, 12000);
+    };
+    window.addEventListener(
+      "learningai:voice-visual-focus",
+      handleVoiceVisualFocus,
+    );
+    return () =>
+      window.removeEventListener(
+        "learningai:voice-visual-focus",
+        handleVoiceVisualFocus,
+      );
+  }, [activeDocumentId, pdfPage]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -688,6 +740,33 @@ export function PdfViewer() {
                 onRenderSuccess={handlePageRenderSuccess}
               />
               <div className="absolute inset-0 pointer-events-none rounded-xl shadow-[inset_0_0_2px_rgba(255,255,255,0.2)] mix-blend-overlay" />
+
+              {voiceVisualFocus && (
+                <div
+                  data-voice-visual-focus-overlay
+                  className="pointer-events-none absolute inset-3 z-20 rounded-xl border-2 border-blue-400/90 bg-blue-500/[0.04] shadow-[0_0_0_9999px_rgba(37,99,235,0.08),0_0_36px_rgba(59,130,246,0.35)]"
+                >
+                  <div className="absolute left-3 top-3 max-w-[min(420px,calc(100%-24px))] rounded-2xl border border-blue-200 bg-white/95 px-3 py-2 text-zinc-800 shadow-[0_16px_36px_rgba(15,23,42,0.18)]">
+                    <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-blue-700">
+                      <span>Voice visual focus</span>
+                      <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5">
+                        page {voiceVisualFocus.pageNumber}
+                      </span>
+                      <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-zinc-500">
+                        {voiceVisualFocus.status}
+                      </span>
+                    </div>
+                    <div className="mt-1 line-clamp-2 text-[12px] font-semibold leading-snug">
+                      {voiceVisualFocus.query}
+                    </div>
+                    {voiceVisualFocus.summary && (
+                      <div className="mt-1 line-clamp-2 text-[11px] leading-snug text-zinc-500">
+                        {voiceVisualFocus.summary}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Render Annotations */}
               {pageAnnotations.map((ann) => (

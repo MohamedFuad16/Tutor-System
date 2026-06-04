@@ -48,8 +48,53 @@ test("formatSourcesForPrompt keeps source ordering and metadata", () => {
 
   assert.equal(
     prompt,
-    "[1] Example Result | example.com | 2026-05-29 | A concise snippet. | https://example.com/article",
+    "[1] Example Result | example.com | web | 2026-05-29 | A concise snippet. | https://example.com/article",
   );
+});
+
+test("searchSerper preserves image result metadata for chat and voice tool surfaces", async () => {
+  globalThis.fetch = async () =>
+    Response.json({
+      organic: [
+        {
+          title: "Text Result",
+          link: "https://example.com/text",
+          snippet: "Ordinary source.",
+          position: 1,
+        },
+      ],
+      images: [
+        {
+          title: "Transformer flowchart",
+          link: "https://example.com/transformer-flowchart",
+          imageUrl: "https://cdn.example.com/transformer-flowchart.png",
+          thumbnailUrl: "https://cdn.example.com/transformer-thumb.png",
+          source: "Example Images",
+          imageWidth: 1200,
+          imageHeight: 800,
+        },
+      ],
+    });
+
+  const results = await searchSerper({
+    query: "transformer architecture flowchart image",
+    apiKey: "image-key",
+    maxResults: 4,
+  });
+
+  const imageResult = results.find((source) => source.sourceType === "image");
+  assert.equal(imageResult?.title, "Transformer flowchart");
+  assert.equal(imageResult?.domain, "example.com");
+  assert.equal(
+    imageResult?.imageUrl,
+    "https://cdn.example.com/transformer-flowchart.png",
+  );
+  assert.equal(
+    imageResult?.thumbnailUrl,
+    "https://cdn.example.com/transformer-thumb.png",
+  );
+  assert.equal(imageResult?.imageWidth, 1200);
+  assert.equal(imageResult?.imageHeight, 800);
 });
 
 test("searchSerper isolates cached results by API key", async () => {
