@@ -398,6 +398,18 @@ export type BrainArchitectureReadinessStage =
   | "live_evidence_pending"
   | "blocked";
 
+export type BrainArchitectureReadinessGapGroup = {
+  id:
+    | "brain_flow"
+    | "coherent_live_proof"
+    | "mastery_integrity"
+    | "provider_drill";
+  title: string;
+  status: Exclude<BetaDiagnosticStatus, "deferred">;
+  gaps: string[];
+  action: string;
+};
+
 export type BrainArchitectureReadiness = {
   status: Exclude<BetaDiagnosticStatus, "deferred">;
   stage: BrainArchitectureReadinessStage;
@@ -412,6 +424,7 @@ export type BrainArchitectureReadiness = {
   nextAction: string;
   completedMilestones: string[];
   remainingGaps: string[];
+  gapGroups: BrainArchitectureReadinessGapGroup[];
   missingSignals: string[];
   missingProofChecks: string[];
 };
@@ -2346,6 +2359,51 @@ export const buildBrainArchitectureReadiness = ({
     ],
     12,
   );
+  const gapGroupCandidates: BrainArchitectureReadinessGapGroup[] = [
+    {
+      id: "brain_flow",
+      title: "Brain-flow ledger",
+      status: brainFlow.status,
+      gaps: compactUnique(
+        [
+          ...brainFlow.missingSignals,
+          ...(brainFlow.failedRows > 0
+            ? [`${brainFlow.failedRows} failed or blocked brain-flow rows`]
+            : []),
+        ],
+        8,
+      ),
+      action:
+        "Create request-correlated local chat and voice rows for any missing brain-flow signals.",
+    },
+    {
+      id: "coherent_live_proof",
+      title: "Coherent live proof",
+      status: coherentLiveProof.status,
+      gaps: compactUnique([...coherentLiveProof.missingChecks], 8),
+      action:
+        "Keep the selected typed-chat and live-voice rows on one proof attempt, book, thread, and multi-PDF context.",
+    },
+    {
+      id: "mastery_integrity",
+      title: "Mastery integrity",
+      status: masteryIntegrity.status,
+      gaps: compactUnique([...masteryIntegrity.issues], 8),
+      action:
+        "Repair or replay validated recall evidence so concept attempts, evidence rows, and mastery deltas stay linked.",
+    },
+    {
+      id: "provider_drill",
+      title: "Provider drill",
+      status: betaProofReady ? "ready" : "watch",
+      gaps: betaProofReady
+        ? []
+        : ["Real provider-key typed chat plus live Deepgram voice drill"],
+      action:
+        "Run the approved OpenRouter typed-chat turn and live Deepgram voice turn under the active proof attempt.",
+    },
+  ];
+  const gapGroups = gapGroupCandidates.filter((group) => group.gaps.length > 0);
   const summary =
     stage === "local_beta_proven"
       ? "100% local beta architecture proof is ready from local-live chat and voice ledger rows."
@@ -2382,6 +2440,7 @@ export const buildBrainArchitectureReadiness = ({
             "The local diagnostics contract is loaded; live evidence is still accumulating.",
           ],
     remainingGaps,
+    gapGroups,
     missingSignals: [...brainFlow.missingSignals],
     missingProofChecks: [...coherentLiveProof.missingChecks],
   };

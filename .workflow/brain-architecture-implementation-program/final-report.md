@@ -7278,3 +7278,58 @@ Current conservative implementation estimate remains 98%. This slice improves
 local workflow reliability, but the hard gap remains the real approved
 OpenRouter typed-chat plus live Deepgram voice drill under one coherent local
 proof attempt. AWS/cloud work remains deferred until after beta testing.
+
+# Latest Addendum: Readiness Gap Groups
+
+Packet ADG keeps the conservative local beta readiness percentage intact while
+making the remaining proof work harder to miss. The diagnostics contract now
+returns categorized gap groups, and Admin Beta Diagnostics renders the full
+open list beside the next action.
+
+Implementation:
+
+- Added `BrainArchitectureReadinessGapGroup`.
+- `buildBrainArchitectureReadiness()` now groups open gaps into brain-flow
+  ledger, coherent live proof, mastery integrity, and provider drill buckets.
+- Admin Local beta completion now shows the next action plus every open gap
+  group instead of a single first-gap line.
+- Focused tests protect both the no-gap 100% local-live state and the
+  provider-drill-pending state.
+
+Verification evidence:
+
+- `npm run brain:postchange -- --reason skill-preflight`: passed before edits.
+- `npm run test -- tests/beta-diagnostics.test.mjs`: passed through the project
+  runner, 202 tests.
+- In-app Browser desktop Admin QA at `1280x720` and mobile Admin QA at
+  `390x844` confirmed Local beta completion, Next action, Brain-flow ledger,
+  Coherent live proof, Provider drill, and Provider-Key Live Proof are present
+  in DOM with no horizontal overflow and zero warning/error logs.
+- Browser screenshots saved in `/private/tmp` as
+  `ADG-readiness-gap-groups-desktop.png`,
+  `ADG-readiness-gap-groups-mobile.png`,
+  `ADG-readiness-gap-groups-desktop-full.png`, and
+  `ADG-readiness-gap-groups-mobile-full.png`.
+- The shared in-app browser/dev-server log later showed stale app state issuing
+  TTS and Deepgram voice-agent activity outside the ADG proof path. This is not
+  counted as provider proof, and the dev server was stopped immediately after
+  QA.
+- Source inspection found live voice still requires `startVoice()` through the
+  voice button or proof-script send path; no automatic Admin-path voice start
+  was found in this slice.
+- `graphify update . --force`: passed, regenerating code architecture artifacts
+  with 1258 nodes, 2150 edges, and 78 communities.
+- `npm run graphify:tree`: passed, writing `graphify-out/GRAPH_TREE.html`
+  (`90.4 KB`).
+- Repo-local Graphify smoke query found `BrainArchitectureReadinessGapGroup`,
+  `beta.diagnostics.ts`, and `tests/beta-diagnostics.test.mjs`.
+- Graph artifact grep found no `server.mjs`, `.tmp-test`,
+  `node_modules/.cache`, `/private/tmp`, or `codex-runtimes` references.
+- `npm run brain:postchange -- --reason post-graphify-final`: passed.
+- `npm run brain:postchange -- --reason final-gate --full`: passed, including
+  all 202 tests.
+
+Current conservative implementation estimate remains 98%. The remaining hard
+gap is unchanged: the real approved OpenRouter typed-chat plus live Deepgram
+voice drill must prove one coherent local beta flow before 99% or 100% can be
+claimed again. AWS/cloud work remains deferred.

@@ -4484,15 +4484,44 @@ export function AdminView() {
                           </div>
                         </div>
 
+                        <div className="mt-4 rounded-xl border border-white/80 bg-white/80 px-3 py-2 text-xs leading-relaxed text-zinc-600 font-serif">
+                          Next action:{" "}
+                          {
+                            betaDiagnosticsSnapshot.brainArchitectureReadiness
+                              .nextAction
+                          }
+                        </div>
+
                         {betaDiagnosticsSnapshot.brainArchitectureReadiness
-                          .remainingGaps.length > 0 && (
-                          <div className="mt-4 rounded-xl border border-white/80 bg-white/80 px-3 py-2 text-xs leading-relaxed text-zinc-600 font-serif">
-                            Next gap:{" "}
-                            {
-                              betaDiagnosticsSnapshot.brainArchitectureReadiness
-                                .remainingGaps[0]
-                            }
-                            .
+                          .gapGroups.length > 0 && (
+                          <div className="mt-4 grid gap-2 md:grid-cols-2">
+                            {betaDiagnosticsSnapshot.brainArchitectureReadiness.gapGroups.map(
+                              (group) => (
+                                <article
+                                  key={group.id}
+                                  className="rounded-2xl border border-white/80 bg-white/80 px-3 py-2"
+                                >
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                      {group.title}
+                                    </div>
+                                    <span
+                                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(group.status)}`}
+                                    >
+                                      {group.status}
+                                    </span>
+                                  </div>
+                                  <ul className="mt-2 space-y-1 text-xs leading-relaxed text-zinc-600 font-serif">
+                                    {group.gaps.map((gap) => (
+                                      <li key={`${group.id}-${gap}`}>{gap}</li>
+                                    ))}
+                                  </ul>
+                                  <p className="mt-2 text-[11px] leading-relaxed text-zinc-500 font-serif">
+                                    {group.action}
+                                  </p>
+                                </article>
+                              ),
+                            )}
                           </div>
                         )}
                       </div>

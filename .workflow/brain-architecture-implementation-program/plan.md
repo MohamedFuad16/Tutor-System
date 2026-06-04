@@ -269,3 +269,7 @@ Build the user-brain architecture one local, GitHub-pushable implementation slic
   local checks, scans Graphify artifacts for scratch references, preserves
   Graphify as the code architecture graph, and does not recreate the removed
   custom architecture runtime.
+- ADG: Readiness gap groups. Add a typed diagnostics contract and Admin
+  rendering for categorized brain-flow, coherent-proof, mastery-integrity, and
+  provider-drill gaps so local beta completion cannot hide remaining proof work
+  behind one percent or one first-gap line.

@@ -57,6 +57,7 @@
   sidecars are in `packets/ADE-book-runtime-gap-audit.md` and
   `packets/ADE-completion-claim-audit.md`.
 - Packet ADF: See `packets/ADF-local-postchange-preflight.md`.
+- Packet ADG: See `packets/ADG-readiness-gap-groups.md`.
 
 ## Completion Audit
 

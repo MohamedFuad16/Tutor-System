@@ -366,6 +366,7 @@ test("beta diagnostics mark clean local ledgers as export-ready while cloud stay
   assert.equal(snapshot.brainArchitectureReadiness.stage, "local_beta_proven");
   assert.equal(snapshot.brainArchitectureReadiness.localBetaPercent, 100);
   assert.equal(snapshot.brainArchitectureReadiness.betaProofReady, true);
+  assert.deepEqual(snapshot.brainArchitectureReadiness.gapGroups, []);
   assert.equal(snapshot.masteryIntegrity.ready, true);
   assert.equal(
     snapshot.items.find((item) => item.id === "coherent_live_proof")?.status,
@@ -1578,6 +1579,22 @@ test("coherent live proof requires provider rows to carry the shared proof attem
     snapshot.brainArchitectureReadiness.remainingGaps.includes(
       "Real provider-key typed chat plus live Deepgram voice drill",
     ),
+  );
+  assert.deepEqual(
+    snapshot.brainArchitectureReadiness.gapGroups.map((group) => group.id),
+    ["coherent_live_proof", "provider_drill"],
+  );
+  assert.deepEqual(
+    snapshot.brainArchitectureReadiness.gapGroups.find(
+      (group) => group.id === "coherent_live_proof",
+    )?.gaps,
+    ["Provider evidence shares proof attempt"],
+  );
+  assert.deepEqual(
+    snapshot.brainArchitectureReadiness.gapGroups.find(
+      (group) => group.id === "provider_drill",
+    )?.gaps,
+    ["Real provider-key typed chat plus live Deepgram voice drill"],
   );
   assert.equal(
     snapshot.items.find((item) => item.id === "brain_architecture_readiness")
