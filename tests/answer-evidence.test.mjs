@@ -247,6 +247,37 @@ test("evaluated answer evidence batch records only normalized payloads", async (
   assert.equal(engine.calls[0][3].metadata.requestId, "voice-1");
 });
 
+test("evaluated answer evidence forwards runtime BKT settings", async () => {
+  const engine = createEngine();
+  const runtimeSettings = {
+    bktTransitProbability: 0.28,
+    bktSlipProbability: 0.04,
+    bktGuessProbability: 0.12,
+  };
+
+  await recordEvaluatedAnswerEvidenceBatch(
+    [
+      {
+        conceptId: "bayes",
+        question: "What does Bayes rule update?",
+        correct: true,
+      },
+    ],
+    {
+      requestId: "chat-runtime-1",
+      source: "chat_tool_evaluate_answer",
+      metadata: { runtimeSettings },
+    },
+    engine,
+  );
+
+  assert.equal(engine.calls.length, 1);
+  assert.deepEqual(
+    engine.calls[0][3].metadata.runtimeSettings,
+    runtimeSettings,
+  );
+});
+
 test("evaluated answer evidence records scored attempts through BKT", async () => {
   const engine = createEngine();
   const result = await recordEvaluatedAnswerEvidence(

@@ -1,0 +1,50 @@
+{
+  "title": "User Brain Architecture Chapter Refinement",
+  "slug": "user-brain-architecture-chapter-refinement",
+  "created_at": "2026-05-31T18:30:27+00:00",
+  "status": "completed",
+  "approval": {
+    "required": false,
+    "granted": true,
+    "notes": "User explicitly requested subagents for each chapter."
+  },
+  "packets": [
+    {"id":"C00","chapter":0,"status":"completed","lines":"3-32","agent_id":"019e7f4e-a431-7eb0-a2ca-7419f680fea6","nickname":"Schrodinger","result":"results/C00-chapter-0.md"},
+    {"id":"C01","chapter":1,"status":"completed","lines":"33-56","agent_id":"019e7f4e-a556-70d3-9fbb-efe7fc247a0c","nickname":"Sartre","result":"results/C01-chapter-1.md"},
+    {"id":"C02","chapter":2,"status":"completed","lines":"57-94","agent_id":"019e7f4e-a64b-7212-8ee0-f8f94546d873","nickname":"Rawls","result":"results/C02-chapter-2.md"},
+    {"id":"C03","chapter":3,"status":"completed","lines":"95-122","agent_id":"019e7f4e-a7a1-7932-805b-bfec340257dd","nickname":"Peirce","result":"results/C03-chapter-3.md"},
+    {"id":"C04","chapter":4,"status":"completed","lines":"123-151","agent_id":"019e7f4e-a96d-72d3-8ef2-a53405b9f86d","nickname":"Laplace","result":"results/C04-chapter-4.md"},
+    {"id":"C05","chapter":5,"status":"completed","lines":"152-203","agent_id":"019e7f4e-aa93-7ea2-9bdb-4e7dc6db71fb","nickname":"Lovelace","result":"results/C05-chapter-5.md"},
+    {"id":"C06","chapter":6,"status":"completed","lines":"204-251","agent_id":"019e7f4e-aba0-7582-b796-543c0fc6da13","nickname":"Newton","result":"results/C06-chapter-6.md"},
+    {"id":"C07","chapter":7,"status":"completed","lines":"252-289","agent_id":"019e7f4e-acb9-7163-a7f3-237e8e6b8c1a","nickname":"Linnaeus","result":"results/C07-chapter-7.md"},
+    {"id":"C08","chapter":8,"status":"completed","lines":"290-320","agent_id":"019e7f4e-b007-7202-97d7-7764fb11dca2","nickname":"Hubble","result":"results/C08-chapter-8.md"},
+    {"id":"C09","chapter":9,"status":"completed","lines":"321-363","agent_id":"019e7f4e-b26d-7e93-a8bf-1ffb55b69875","nickname":"Locke","result":"results/C09-chapter-9.md"},
+    {"id":"C10","chapter":10,"status":"completed","lines":"364-511","agent_id":"019e7f4e-b410-7c73-a5a6-69cbe7183329","nickname":"Arendt","result":"results/C10-chapter-10.md"},
+    {"id":"C11","chapter":11,"status":"completed","lines":"512-557","agent_id":"019e7f4e-b5bc-78f2-98ce-f991ec7cc482","nickname":"Ohm","result":"results/C11-chapter-11.md"},
+    {"id":"C12","chapter":12,"status":"completed","lines":"558-590","agent_id":"019e7f4e-b6fa-75d0-8699-63447d50586c","nickname":"Fermat","result":"results/C12-chapter-12.md"},
+    {"id":"C13","chapter":13,"status":"completed","lines":"591-665","agent_id":"019e7f4e-b835-7b60-b95e-9077186c367b","nickname":"Planck","result":"results/C13-chapter-13.md"},
+    {"id":"C14","chapter":14,"status":"completed","lines":"666-692","agent_id":"019e7f4e-b9fe-7a63-93b3-de461a242c5f","nickname":"Kuhn","result":"results/C14-chapter-14.md"},
+    {"id":"C15","chapter":15,"status":"completed","lines":"693-749","agent_id":"019e7f4e-bbbc-7582-8e58-1f60f7027056","nickname":"Popper","result":"results/C15-chapter-15.md"},
+    {"id":"C16","chapter":16,"status":"completed","lines":"750-826","agent_id":"019e7f4f-af73-7b53-b591-627460ba341a","nickname":"Gibbs","result":"results/C16-chapter-16.md"},
+    {"id":"C17","chapter":17,"status":"completed","lines":"827-935","agent_id":"019e7f58-f680-7372-b7b6-4992cad6d7c5","nickname":"Plato","result":"results/C17-chapter-17.md"},
+    {"id":"D01","role":"Chart visual language","status":"completed","agent_id":"019e7f58-f752-7e10-b69d-45f4777dee90","nickname":"Meitner","result":"results/D01-chart-visual-language.md"},
+    {"id":"D02","role":"Chart rendering implementation","status":"completed","agent_id":"019e7f58-f83c-7b93-8d12-c571ffcfb819","nickname":"Lorentz","result":"results/D02-chart-rendering.md"},
+    {"id":"D03","role":"Diagram content integration","status":"completed","agent_id":"019e7f58-f992-7e62-8ff6-527ad1f55bf3","nickname":"Mencius","result":"results/D03-diagram-content.md"},
+    {"id":"QA01","role":"Chapter clarity QA","status":"completed","agent_id":"019e7f5e-7a3a-7ed1-9309-392ccbcc0cbe","nickname":"Einstein","result":"results/QA01-chapter-clarity.md"},
+    {"id":"QA02","role":"Chart risk QA","status":"completed","agent_id":"019e7f5e-9038-7971-a0b1-d71d587ab79c","nickname":"Aquinas","result":"results/QA02-chart-risk.md"},
+    {"id":"QA03","role":"Source and citation QA","status":"completed","agent_id":"019e7f5e-a7fd-7ff2-93fc-e055b4301e83","nickname":"Euclid","result":"results/QA03-source-citation.md"}
+  ],
+  "verification": {
+    "status": "passed",
+    "checks": [
+      {"name":"npm run lint","status":"passed"},
+      {"name":"npm run build","status":"passed"},
+      {"name":"browser chapter 2 custom diagram","status":"passed"},
+      {"name":"browser chapter 7 mermaid diagram","status":"passed"},
+      {"name":"browser chapter 15 beta-gates table","status":"passed"},
+      {"name":"mobile viewport 390px diagram containment","status":"passed"},
+      {"name":"browser console errors/warnings","status":"passed"},
+      {"name":"workflow artifact completeness","status":"passed"}
+    ]
+  }
+}

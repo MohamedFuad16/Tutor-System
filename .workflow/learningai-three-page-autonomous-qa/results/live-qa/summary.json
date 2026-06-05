@@ -1,0 +1,2079 @@
+[
+  {
+    "scenario": {
+      "page": "study",
+      "viewport": "desktop",
+      "width": 1280,
+      "height": 800
+    },
+    "screenshotPath": "/Users/mfuad16/Documents/LearningAI/.workflow/learningai-three-page-autonomous-qa/results/live-qa/study-desktop-1280x800.png",
+    "metrics": {
+      "title": "Tutor LearningAI",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scroll": {
+        "documentWidth": 1280,
+        "viewportWidth": 1280,
+        "bodyWidth": 1280,
+        "xOverflow": false
+      },
+      "wideElements": [
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute opacity-0 group-hover:opacity-100 group-hover:translate-x-[50%] transition-[color,background-color,border-color,box-shadow,transfor",
+          "left": -618,
+          "right": 266,
+          "width": 884,
+          "height": 735
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute opacity-0 group-hover:opacity-100 group-hover:translate-x-[50%] transition-[color,background-color,border-color,box-shadow,transfor",
+          "left": -622,
+          "right": 334,
+          "width": 955,
+          "height": 716
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute opacity-0 group-hover:opacity-100 group-hover:translate-x-[50%] transition-[color,background-color,border-color,box-shadow,transfor",
+          "left": -672,
+          "right": 394,
+          "width": 1066,
+          "height": 733
+        }
+      ],
+      "visibleSignals": [
+        {
+          "tag": "button",
+          "text": "StudyStudy",
+          "top": 20,
+          "bottom": 49,
+          "left": 519,
+          "right": 589,
+          "width": 70,
+          "height": 29
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 28,
+          "bottom": 42,
+          "left": 529,
+          "right": 543,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "AnalyticsAnalytics",
+          "top": 20,
+          "bottom": 49,
+          "left": 593,
+          "right": 677,
+          "width": 84,
+          "height": 29
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 28,
+          "bottom": 42,
+          "left": 602,
+          "right": 616,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "RevisionRevision",
+          "top": 20,
+          "bottom": 49,
+          "left": 681,
+          "right": 761,
+          "width": 79,
+          "height": 29
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 28,
+          "bottom": 42,
+          "left": 690,
+          "right": 704,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "top": 32,
+          "bottom": 78,
+          "left": 1202,
+          "right": 1248,
+          "width": 46,
+          "height": 46
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 45,
+          "bottom": 65,
+          "left": 1215,
+          "right": 1235,
+          "width": 20,
+          "height": 20
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 271,
+          "bottom": 453,
+          "left": 472,
+          "right": 553,
+          "width": 81,
+          "height": 182
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 422,
+          "bottom": 439,
+          "left": 494,
+          "right": 511,
+          "width": 17,
+          "height": 17
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 263,
+          "bottom": 450,
+          "left": 538,
+          "right": 613,
+          "width": 75,
+          "height": 187
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 399,
+          "bottom": 416,
+          "left": 553,
+          "right": 570,
+          "width": 17,
+          "height": 17
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 251,
+          "bottom": 450,
+          "left": 594,
+          "right": 674,
+          "width": 81,
+          "height": 199
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 415,
+          "bottom": 433,
+          "left": 606,
+          "right": 624,
+          "width": 18,
+          "height": 18
+        },
+        {
+          "tag": "button",
+          "text": "Open tutor chat",
+          "top": 687,
+          "bottom": 743,
+          "left": 1167,
+          "right": 1223,
+          "width": 56,
+          "height": 56
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 705,
+          "bottom": 725,
+          "left": 1185,
+          "right": 1205,
+          "width": 20,
+          "height": 20
+        }
+      ],
+      "textSample": "Study Analytics Revision Upload your first document to retain knowledge forever. Interactive Tutor Chat with your document and test your knowledge. Knowledge Graph Visualize how concepts connect across all your documents. Upload Document Drag & drop your PDF here to begin learning."
+    },
+    "logs": []
+  },
+  {
+    "scenario": {
+      "page": "study",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    "screenshotPath": "/Users/mfuad16/Documents/LearningAI/.workflow/learningai-three-page-autonomous-qa/results/live-qa/study-mobile-390x844.png",
+    "metrics": {
+      "title": "Tutor LearningAI",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scroll": {
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "bodyWidth": 390,
+        "xOverflow": false
+      },
+      "wideElements": [
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute inset-[-50%] w-[200%] h-[200%]",
+          "left": -175,
+          "right": 565,
+          "width": 740,
+          "height": 71
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute inset-[-50%] w-[200%] h-[200%]",
+          "left": 311,
+          "right": 395,
+          "width": 84,
+          "height": 84
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute opacity-0 group-hover:opacity-100 group-hover:translate-x-[50%] transition-[color,background-color,border-color,box-shadow,transfor",
+          "left": -578,
+          "right": -29,
+          "width": 549,
+          "height": 445
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute opacity-0 group-hover:opacity-100 group-hover:translate-x-[50%] transition-[color,background-color,border-color,box-shadow,transfor",
+          "left": -599,
+          "right": 2,
+          "width": 601,
+          "height": 451
+        },
+        {
+          "tag": "div",
+          "text": "UploadDocumentDrag & drop your PDF here to begin learning.",
+          "className": "absolute left-1/2 top-0 origin-top pointer-events-auto",
+          "left": 63,
+          "right": 396,
+          "width": 333,
+          "height": 421
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute opacity-0 group-hover:opacity-100 group-hover:translate-x-[50%] transition-[color,background-color,border-color,box-shadow,transfor",
+          "left": -633,
+          "right": 33,
+          "width": 666,
+          "height": 462
+        }
+      ],
+      "visibleSignals": [
+        {
+          "tag": "button",
+          "text": "StudyStudy",
+          "top": 20,
+          "bottom": 47,
+          "left": 14,
+          "right": 132,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 49,
+          "right": 63,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "AnalyticsAnalytics",
+          "top": 20,
+          "bottom": 47,
+          "left": 136,
+          "right": 254,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 164,
+          "right": 178,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "RevisionRevision",
+          "top": 20,
+          "bottom": 47,
+          "left": 258,
+          "right": 376,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 288,
+          "right": 302,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "top": 70,
+          "bottom": 112,
+          "left": 332,
+          "right": 374,
+          "width": 42,
+          "height": 42
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 81,
+          "bottom": 101,
+          "left": 343,
+          "right": 363,
+          "width": 20,
+          "height": 20
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 184,
+          "bottom": 296,
+          "left": 96,
+          "right": 145,
+          "width": 48,
+          "height": 111
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 277,
+          "bottom": 287,
+          "left": 109,
+          "right": 119,
+          "width": 10,
+          "height": 10
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 182,
+          "bottom": 300,
+          "left": 131,
+          "right": 178,
+          "width": 47,
+          "height": 117
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 268,
+          "bottom": 279,
+          "left": 140,
+          "right": 151,
+          "width": 11,
+          "height": 11
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 172,
+          "bottom": 297,
+          "left": 161,
+          "right": 211,
+          "width": 50,
+          "height": 125
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 276,
+          "bottom": 287,
+          "left": 169,
+          "right": 180,
+          "width": 11,
+          "height": 11
+        },
+        {
+          "tag": "button",
+          "text": "Open tutor chat",
+          "top": 751,
+          "bottom": 807,
+          "left": 301,
+          "right": 357,
+          "width": 56,
+          "height": 56
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 769,
+          "bottom": 789,
+          "left": 319,
+          "right": 339,
+          "width": 20,
+          "height": 20
+        }
+      ],
+      "textSample": "Study Analytics Revision Upload your first document to retain knowledge forever. Interactive Tutor Chat with your document and test your knowledge. Knowledge Graph Visualize how concepts connect across all your documents. Upload Document Drag & drop your PDF here to begin learning."
+    },
+    "logs": []
+  },
+  {
+    "scenario": {
+      "page": "analytics",
+      "viewport": "desktop",
+      "width": 1280,
+      "height": 800
+    },
+    "screenshotPath": "/Users/mfuad16/Documents/LearningAI/.workflow/learningai-three-page-autonomous-qa/results/live-qa/analytics-desktop-1280x800.png",
+    "metrics": {
+      "title": "Tutor LearningAI",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scroll": {
+        "documentWidth": 1280,
+        "viewportWidth": 1280,
+        "bodyWidth": 1280,
+        "xOverflow": false
+      },
+      "wideElements": [],
+      "visibleSignals": [
+        {
+          "tag": "button",
+          "text": "StudyStudy",
+          "top": 20,
+          "bottom": 49,
+          "left": 519,
+          "right": 589,
+          "width": 70,
+          "height": 29
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 28,
+          "bottom": 42,
+          "left": 529,
+          "right": 543,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "AnalyticsAnalytics",
+          "top": 20,
+          "bottom": 49,
+          "left": 593,
+          "right": 677,
+          "width": 84,
+          "height": 29
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 28,
+          "bottom": 42,
+          "left": 602,
+          "right": 616,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "RevisionRevision",
+          "top": 20,
+          "bottom": 49,
+          "left": 681,
+          "right": 761,
+          "width": 79,
+          "height": 29
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 28,
+          "bottom": 42,
+          "left": 690,
+          "right": 704,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "top": 32,
+          "bottom": 78,
+          "left": 1202,
+          "right": 1248,
+          "width": 46,
+          "height": 46
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 45,
+          "bottom": 65,
+          "left": 1215,
+          "right": 1235,
+          "width": 20,
+          "height": 20
+        },
+        {
+          "tag": "h1",
+          "text": "Cognitive Analytics",
+          "top": 96,
+          "bottom": 134,
+          "left": 57,
+          "right": 1209,
+          "width": 1152,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "i",
+          "top": 238,
+          "bottom": 254,
+          "left": 184,
+          "right": 200,
+          "width": 16,
+          "height": 16
+        },
+        {
+          "tag": "button",
+          "text": "i",
+          "top": 238,
+          "bottom": 254,
+          "left": 556,
+          "right": 572,
+          "width": 16,
+          "height": 16
+        },
+        {
+          "tag": "button",
+          "text": "i",
+          "top": 238,
+          "bottom": 254,
+          "left": 970,
+          "right": 986,
+          "width": 16,
+          "height": 16
+        },
+        {
+          "tag": "button",
+          "text": "i",
+          "top": 416,
+          "bottom": 432,
+          "left": 807,
+          "right": 823,
+          "width": 16,
+          "height": 16
+        }
+      ],
+      "textSample": "Study Analytics Revision Cognitive Analytics Visualizing your learning memory and retention over time. Total Concepts i 0 The number of unique academic concepts you have extracted and studied across all documents. Interactions i 0 The total number of messages and voice queries you have exchanged with the AI Tutor. Study Sessions i 3 Distinct study periods you have completed, tracking your cognitive load over time. Concept Mastery Levels No concept mastery data yet Study a document or discuss concepts with the tutor to populate this chart. Mastery Distribution i Shows how many concepts are full"
+    },
+    "logs": []
+  },
+  {
+    "scenario": {
+      "page": "analytics",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    "screenshotPath": "/Users/mfuad16/Documents/LearningAI/.workflow/learningai-three-page-autonomous-qa/results/live-qa/analytics-mobile-390x844.png",
+    "metrics": {
+      "title": "Tutor LearningAI",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scroll": {
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "bodyWidth": 390,
+        "xOverflow": false
+      },
+      "wideElements": [
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute inset-[-50%] w-[200%] h-[200%]",
+          "left": -175,
+          "right": 565,
+          "width": 740,
+          "height": 71
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute inset-[-50%] w-[200%] h-[200%]",
+          "left": 311,
+          "right": 395,
+          "width": 84,
+          "height": 84
+        }
+      ],
+      "visibleSignals": [
+        {
+          "tag": "button",
+          "text": "StudyStudy",
+          "top": 20,
+          "bottom": 47,
+          "left": 14,
+          "right": 132,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 49,
+          "right": 63,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "AnalyticsAnalytics",
+          "top": 20,
+          "bottom": 47,
+          "left": 136,
+          "right": 254,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 164,
+          "right": 178,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "RevisionRevision",
+          "top": 20,
+          "bottom": 47,
+          "left": 258,
+          "right": 376,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 288,
+          "right": 302,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "top": 70,
+          "bottom": 112,
+          "left": 332,
+          "right": 374,
+          "width": 42,
+          "height": 42
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 81,
+          "bottom": 101,
+          "left": 343,
+          "right": 363,
+          "width": 20,
+          "height": 20
+        },
+        {
+          "tag": "h1",
+          "text": "Cognitive Analytics",
+          "top": 96,
+          "bottom": 134,
+          "left": 16,
+          "right": 374,
+          "width": 358,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "i",
+          "top": 261,
+          "bottom": 277,
+          "left": 143,
+          "right": 159,
+          "width": 16,
+          "height": 16
+        },
+        {
+          "tag": "button",
+          "text": "i",
+          "top": 415,
+          "bottom": 431,
+          "left": 123,
+          "right": 139,
+          "width": 16,
+          "height": 16
+        },
+        {
+          "tag": "button",
+          "text": "i",
+          "top": 569,
+          "bottom": 585,
+          "left": 146,
+          "right": 162,
+          "width": 16,
+          "height": 16
+        },
+        {
+          "tag": "button",
+          "text": "i",
+          "top": 1162,
+          "bottom": 1178,
+          "left": 178,
+          "right": 194,
+          "width": 16,
+          "height": 16
+        }
+      ],
+      "textSample": "Study Analytics Revision Cognitive Analytics Visualizing your learning memory and retention over time. Total Concepts i 0 The number of unique academic concepts you have extracted and studied across all documents. Interactions i 0 The total number of messages and voice queries you have exchanged with the AI Tutor. Study Sessions i 4 Distinct study periods you have completed, tracking your cognitive load over time. Concept Mastery Levels No concept mastery data yet Study a document or discuss concepts with the tutor to populate this chart. Mastery Distribution i Shows how many concepts are full"
+    },
+    "logs": []
+  },
+  {
+    "scenario": {
+      "page": "revision",
+      "viewport": "desktop",
+      "width": 1280,
+      "height": 800,
+      "bookId": "user-brain-architecture",
+      "bookTitle": "User Brain Architecture"
+    },
+    "screenshotPath": "/Users/mfuad16/Documents/LearningAI/.workflow/learningai-three-page-autonomous-qa/results/live-qa/revision-desktop-1280x800.png",
+    "metrics": {
+      "title": "Tutor LearningAI",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scroll": {
+        "documentWidth": 1280,
+        "viewportWidth": 1280,
+        "bodyWidth": 1280,
+        "xOverflow": false
+      },
+      "wideElements": [],
+      "visibleSignals": [
+        {
+          "tag": "button",
+          "text": "StudyStudy",
+          "top": 20,
+          "bottom": 49,
+          "left": 519,
+          "right": 589,
+          "width": 70,
+          "height": 29
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 28,
+          "bottom": 42,
+          "left": 529,
+          "right": 543,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "AnalyticsAnalytics",
+          "top": 20,
+          "bottom": 49,
+          "left": 593,
+          "right": 677,
+          "width": 84,
+          "height": 29
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 28,
+          "bottom": 42,
+          "left": 602,
+          "right": 616,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "RevisionRevision",
+          "top": 20,
+          "bottom": 49,
+          "left": 681,
+          "right": 761,
+          "width": 79,
+          "height": 29
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 28,
+          "bottom": 42,
+          "left": 690,
+          "right": 704,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "top": 32,
+          "bottom": 78,
+          "left": 1202,
+          "right": 1248,
+          "width": 46,
+          "height": 46
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 45,
+          "bottom": 65,
+          "left": 1215,
+          "right": 1235,
+          "width": 20,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": " Back to Library",
+          "top": 146,
+          "bottom": 182,
+          "left": 16,
+          "right": 271,
+          "width": 255,
+          "height": 36
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 156,
+          "bottom": 172,
+          "left": 24,
+          "right": 40,
+          "width": 16,
+          "height": 16
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 0: What We Are Building",
+          "top": 257,
+          "bottom": 298,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 41
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 1: What This Is And Is Not",
+          "top": 302,
+          "bottom": 363,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 2: The Simple Mental Model",
+          "top": 367,
+          "bottom": 427,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 3: Why We Are Not Continuously Fine-Tuning",
+          "top": 431,
+          "bottom": 492,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 4: The Learner Brain Ledger",
+          "top": 496,
+          "bottom": 556,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 5: Knowledge Tracing Strategy",
+          "top": 560,
+          "bottom": 621,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 6: Interaction Model Strategy",
+          "top": 625,
+          "bottom": 685,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 7: Continuous Tutor Loop",
+          "top": 689,
+          "bottom": 750,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 8: Teaching And Evaluation States",
+          "top": 754,
+          "bottom": 814,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 9: Tool-Using Background Worker Layer",
+          "top": 818,
+          "bottom": 879,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 10: Runtime Contracts",
+          "top": 883,
+          "bottom": 924,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 41
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 11: Voice And Human Timing",
+          "top": 928,
+          "bottom": 988,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 12: From Dexie To AWS",
+          "top": 992,
+          "bottom": 1034,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 41
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 13: Cloud Data Model",
+          "top": 1038,
+          "bottom": 1079,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 41
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 14: Isolation, Privacy, And Safety",
+          "top": 1083,
+          "bottom": 1143,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 15: Beta Gates And Roadmap",
+          "top": 1147,
+          "bottom": 1208,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 16: Final Deep Evaluation",
+          "top": 1212,
+          "bottom": 1272,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 17: Glossary And Sources",
+          "top": 1276,
+          "bottom": 1337,
+          "left": 16,
+          "right": 256,
+          "width": 240,
+          "height": 61
+        },
+        {
+          "tag": "h1",
+          "text": "Chapter 0: What We Are Building",
+          "top": 234,
+          "bottom": 275,
+          "left": 409,
+          "right": 1145,
+          "width": 736,
+          "height": 41
+        },
+        {
+          "tag": "h1",
+          "text": "What We Are Building",
+          "top": 372,
+          "bottom": 412,
+          "left": 409,
+          "right": 1145,
+          "width": 736,
+          "height": 40
+        },
+        {
+          "tag": "button",
+          "text": "← Previous",
+          "top": 1734,
+          "bottom": 1776,
+          "left": 409,
+          "right": 522,
+          "width": 114,
+          "height": 42
+        },
+        {
+          "tag": "button",
+          "text": "Next →",
+          "top": 1735,
+          "bottom": 1775,
+          "left": 1057,
+          "right": 1145,
+          "width": 87,
+          "height": 40
+        }
+      ],
+      "textSample": "Study Analytics Revision USER BRAIN ARCHITECTURE Back to Library CONTENTS Chapter 0: What We Are Building Chapter 1: What This Is And Is Not Chapter 2: The Simple Mental Model Chapter 3: Why We Are Not Continuously Fine-Tuning Chapter 4: The Learner Brain Ledger Chapter 5: Knowledge Tracing Strategy Chapter 6: Interaction Model Strategy Chapter 7: Continuous Tutor Loop Chapter 8: Teaching And Evaluation States Chapter 9: Tool-Using Background Worker Layer Chapter 10: Runtime Contracts Chapter 11: Voice And Human Timing Chapter 12: From Dexie To AWS Chapter 13: Cloud Data Model Chapter 14: Isol"
+    },
+    "logs": []
+  },
+  {
+    "scenario": {
+      "page": "revision",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "bookId": "user-brain-architecture",
+      "bookTitle": "User Brain Architecture"
+    },
+    "screenshotPath": "/Users/mfuad16/Documents/LearningAI/.workflow/learningai-three-page-autonomous-qa/results/live-qa/revision-mobile-390x844.png",
+    "metrics": {
+      "title": "Tutor LearningAI",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scroll": {
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "bodyWidth": 390,
+        "xOverflow": false
+      },
+      "wideElements": [
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute inset-[-50%] w-[200%] h-[200%]",
+          "left": -175,
+          "right": 565,
+          "width": 740,
+          "height": 71
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute inset-[-50%] w-[200%] h-[200%]",
+          "left": 311,
+          "right": 395,
+          "width": 84,
+          "height": 84
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 1: What This Is And Is Not",
+          "className": "max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors border-zinc-200 bg-white text-zinc-600 ho",
+          "left": 232,
+          "right": 444,
+          "width": 213,
+          "height": 38
+        },
+        {
+          "tag": "span",
+          "text": "Chapter 1: What This Is And Is Not",
+          "className": "line-clamp-1",
+          "left": 245,
+          "right": 431,
+          "width": 187,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 2: The Simple Mental Model",
+          "className": "max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors border-zinc-200 bg-white text-zinc-600 ho",
+          "left": 452,
+          "right": 672,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "span",
+          "text": "Chapter 2: The Simple Mental Model",
+          "className": "line-clamp-1",
+          "left": 465,
+          "right": 659,
+          "width": 194,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 3: Why We Are Not Continuously Fine-Tuning",
+          "className": "max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors border-zinc-200 bg-white text-zinc-600 ho",
+          "left": 680,
+          "right": 900,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "span",
+          "text": "Chapter 3: Why We Are Not Continuously Fine-Tuning",
+          "className": "line-clamp-1",
+          "left": 693,
+          "right": 887,
+          "width": 194,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 4: The Learner Brain Ledger",
+          "className": "max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors border-zinc-200 bg-white text-zinc-600 ho",
+          "left": 908,
+          "right": 1128,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "span",
+          "text": "Chapter 4: The Learner Brain Ledger",
+          "className": "line-clamp-1",
+          "left": 921,
+          "right": 1115,
+          "width": 194,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 5: Knowledge Tracing Strategy",
+          "className": "max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors border-zinc-200 bg-white text-zinc-600 ho",
+          "left": 1136,
+          "right": 1356,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "span",
+          "text": "Chapter 5: Knowledge Tracing Strategy",
+          "className": "line-clamp-1",
+          "left": 1149,
+          "right": 1343,
+          "width": 194,
+          "height": 20
+        }
+      ],
+      "visibleSignals": [
+        {
+          "tag": "button",
+          "text": "StudyStudy",
+          "top": 20,
+          "bottom": 47,
+          "left": 14,
+          "right": 132,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 49,
+          "right": 63,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "AnalyticsAnalytics",
+          "top": 20,
+          "bottom": 47,
+          "left": 136,
+          "right": 254,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 164,
+          "right": 178,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "RevisionRevision",
+          "top": 20,
+          "bottom": 47,
+          "left": 258,
+          "right": 376,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 288,
+          "right": 302,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "top": 70,
+          "bottom": 112,
+          "left": 332,
+          "right": 374,
+          "width": 42,
+          "height": 42
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 81,
+          "bottom": 101,
+          "left": 343,
+          "right": 363,
+          "width": 20,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": " Back to Library",
+          "top": 89,
+          "bottom": 109,
+          "left": 16,
+          "right": 140,
+          "width": 124,
+          "height": 20
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 91,
+          "bottom": 107,
+          "left": 16,
+          "right": 32,
+          "width": 16,
+          "height": 16
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 0: What We Are Building",
+          "top": 160,
+          "bottom": 198,
+          "left": 16,
+          "right": 224,
+          "width": 208,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 1: What This Is And Is Not",
+          "top": 160,
+          "bottom": 198,
+          "left": 232,
+          "right": 444,
+          "width": 213,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 2: The Simple Mental Model",
+          "top": 160,
+          "bottom": 198,
+          "left": 452,
+          "right": 672,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 3: Why We Are Not Continuously Fine-Tuning",
+          "top": 160,
+          "bottom": 198,
+          "left": 680,
+          "right": 900,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 4: The Learner Brain Ledger",
+          "top": 160,
+          "bottom": 198,
+          "left": 908,
+          "right": 1128,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 5: Knowledge Tracing Strategy",
+          "top": 160,
+          "bottom": 198,
+          "left": 1136,
+          "right": 1356,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 6: Interaction Model Strategy",
+          "top": 160,
+          "bottom": 198,
+          "left": 1364,
+          "right": 1584,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 7: Continuous Tutor Loop",
+          "top": 160,
+          "bottom": 198,
+          "left": 1592,
+          "right": 1809,
+          "width": 217,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 8: Teaching And Evaluation States",
+          "top": 160,
+          "bottom": 198,
+          "left": 1817,
+          "right": 2037,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 9: Tool-Using Background Worker Layer",
+          "top": 160,
+          "bottom": 198,
+          "left": 2045,
+          "right": 2265,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 10: Runtime Contracts",
+          "top": 160,
+          "bottom": 198,
+          "left": 2273,
+          "right": 2473,
+          "width": 200,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 11: Voice And Human Timing",
+          "top": 160,
+          "bottom": 198,
+          "left": 2481,
+          "right": 2701,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 12: From Dexie To AWS",
+          "top": 160,
+          "bottom": 198,
+          "left": 2709,
+          "right": 2906,
+          "width": 198,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 13: Cloud Data Model",
+          "top": 160,
+          "bottom": 198,
+          "left": 2914,
+          "right": 3107,
+          "width": 192,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 14: Isolation, Privacy, And Safety",
+          "top": 160,
+          "bottom": 198,
+          "left": 3115,
+          "right": 3335,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 15: Beta Gates And Roadmap",
+          "top": 160,
+          "bottom": 198,
+          "left": 3343,
+          "right": 3563,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 16: Final Deep Evaluation",
+          "top": 160,
+          "bottom": 198,
+          "left": 3571,
+          "right": 3783,
+          "width": 213,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 17: Glossary And Sources",
+          "top": 160,
+          "bottom": 198,
+          "left": 3791,
+          "right": 4006,
+          "width": 215,
+          "height": 38
+        },
+        {
+          "tag": "h1",
+          "text": "Chapter 0: What We Are Building",
+          "top": 296,
+          "bottom": 352,
+          "left": 20,
+          "right": 370,
+          "width": 350,
+          "height": 55
+        },
+        {
+          "tag": "h1",
+          "text": "What We Are Building",
+          "top": 449,
+          "bottom": 485,
+          "left": 20,
+          "right": 370,
+          "width": 350,
+          "height": 36
+        },
+        {
+          "tag": "button",
+          "text": "← Previous",
+          "top": 2090,
+          "bottom": 2132,
+          "left": 20,
+          "right": 134,
+          "width": 114,
+          "height": 42
+        },
+        {
+          "tag": "button",
+          "text": "Next →",
+          "top": 2091,
+          "bottom": 2131,
+          "left": 283,
+          "right": 370,
+          "width": 87,
+          "height": 40
+        }
+      ],
+      "textSample": "Study Analytics Revision Back to Library User Brain Architecture CONTENTS Chapter 0: What We Are Building Chapter 1: What This Is And Is Not Chapter 2: The Simple Mental Model Chapter 3: Why We Are Not Continuously Fine-Tuning Chapter 4: The Learner Brain Ledger Chapter 5: Knowledge Tracing Strategy Chapter 6: Interaction Model Strategy Chapter 7: Continuous Tutor Loop Chapter 8: Teaching And Evaluation States Chapter 9: Tool-Using Background Worker Layer Chapter 10: Runtime Contracts Chapter 11: Voice And Human Timing Chapter 12: From Dexie To AWS Chapter 13: Cloud Data Model Chapter 14: Isol"
+    },
+    "logs": []
+  },
+  {
+    "scenario": {
+      "page": "revision",
+      "viewport": "mobile-mermaid",
+      "width": 390,
+      "height": 844,
+      "bookId": "user-brain-architecture",
+      "bookTitle": "User Brain Architecture",
+      "clickChapter": "Chapter 5:",
+      "scrollToDiagram": true
+    },
+    "screenshotPath": "/Users/mfuad16/Documents/LearningAI/.workflow/learningai-three-page-autonomous-qa/results/live-qa/revision-mobile-mermaid-390x844.png",
+    "metrics": {
+      "title": "Tutor LearningAI",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scroll": {
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "bodyWidth": 390,
+        "xOverflow": false
+      },
+      "wideElements": [
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute inset-[-50%] w-[200%] h-[200%]",
+          "left": -175,
+          "right": 565,
+          "width": 740,
+          "height": 71
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "className": "absolute inset-[-50%] w-[200%] h-[200%]",
+          "left": 311,
+          "right": 395,
+          "width": 84,
+          "height": 84
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 1: What This Is And Is Not",
+          "className": "max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors border-zinc-200 bg-white text-zinc-600 ho",
+          "left": 232,
+          "right": 444,
+          "width": 213,
+          "height": 38
+        },
+        {
+          "tag": "span",
+          "text": "Chapter 1: What This Is And Is Not",
+          "className": "line-clamp-1",
+          "left": 245,
+          "right": 431,
+          "width": 187,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 2: The Simple Mental Model",
+          "className": "max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors border-zinc-200 bg-white text-zinc-600 ho",
+          "left": 452,
+          "right": 672,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "span",
+          "text": "Chapter 2: The Simple Mental Model",
+          "className": "line-clamp-1",
+          "left": 465,
+          "right": 659,
+          "width": 194,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 3: Why We Are Not Continuously Fine-Tuning",
+          "className": "max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors border-zinc-200 bg-white text-zinc-600 ho",
+          "left": 680,
+          "right": 900,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "span",
+          "text": "Chapter 3: Why We Are Not Continuously Fine-Tuning",
+          "className": "line-clamp-1",
+          "left": 693,
+          "right": 887,
+          "width": 194,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 4: The Learner Brain Ledger",
+          "className": "max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors border-zinc-200 bg-white text-zinc-600 ho",
+          "left": 908,
+          "right": 1128,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "span",
+          "text": "Chapter 4: The Learner Brain Ledger",
+          "className": "line-clamp-1",
+          "left": 921,
+          "right": 1115,
+          "width": 194,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 5: Knowledge Tracing Strategy",
+          "className": "max-w-[min(220px,70vw)] shrink-0 rounded-full border px-3 py-2 text-left text-xs transition-colors border-zinc-900 bg-zinc-900 text-white",
+          "left": 1136,
+          "right": 1356,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "span",
+          "text": "Chapter 5: Knowledge Tracing Strategy",
+          "className": "line-clamp-1",
+          "left": 1149,
+          "right": 1343,
+          "width": 194,
+          "height": 20
+        }
+      ],
+      "visibleSignals": [
+        {
+          "tag": "button",
+          "text": "StudyStudy",
+          "top": 20,
+          "bottom": 47,
+          "left": 14,
+          "right": 132,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 49,
+          "right": 63,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "AnalyticsAnalytics",
+          "top": 20,
+          "bottom": 47,
+          "left": 136,
+          "right": 254,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 164,
+          "right": 178,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "RevisionRevision",
+          "top": 20,
+          "bottom": 47,
+          "left": 258,
+          "right": 376,
+          "width": 118,
+          "height": 27
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 27,
+          "bottom": 41,
+          "left": 288,
+          "right": 302,
+          "width": 14,
+          "height": 14
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "top": 70,
+          "bottom": 112,
+          "left": 332,
+          "right": 374,
+          "width": 42,
+          "height": 42
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 81,
+          "bottom": 101,
+          "left": 343,
+          "right": 363,
+          "width": 20,
+          "height": 20
+        },
+        {
+          "tag": "button",
+          "text": " Back to Library",
+          "top": 89,
+          "bottom": 109,
+          "left": 16,
+          "right": 140,
+          "width": 124,
+          "height": 20
+        },
+        {
+          "tag": "svg",
+          "text": "",
+          "top": 91,
+          "bottom": 107,
+          "left": 16,
+          "right": 32,
+          "width": 16,
+          "height": 16
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 0: What We Are Building",
+          "top": 160,
+          "bottom": 198,
+          "left": 16,
+          "right": 224,
+          "width": 208,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 1: What This Is And Is Not",
+          "top": 160,
+          "bottom": 198,
+          "left": 232,
+          "right": 444,
+          "width": 213,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 2: The Simple Mental Model",
+          "top": 160,
+          "bottom": 198,
+          "left": 452,
+          "right": 672,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 3: Why We Are Not Continuously Fine-Tuning",
+          "top": 160,
+          "bottom": 198,
+          "left": 680,
+          "right": 900,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 4: The Learner Brain Ledger",
+          "top": 160,
+          "bottom": 198,
+          "left": 908,
+          "right": 1128,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 5: Knowledge Tracing Strategy",
+          "top": 160,
+          "bottom": 198,
+          "left": 1136,
+          "right": 1356,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 6: Interaction Model Strategy",
+          "top": 160,
+          "bottom": 198,
+          "left": 1364,
+          "right": 1584,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 7: Continuous Tutor Loop",
+          "top": 160,
+          "bottom": 198,
+          "left": 1592,
+          "right": 1809,
+          "width": 217,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 8: Teaching And Evaluation States",
+          "top": 160,
+          "bottom": 198,
+          "left": 1817,
+          "right": 2037,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 9: Tool-Using Background Worker Layer",
+          "top": 160,
+          "bottom": 198,
+          "left": 2045,
+          "right": 2265,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 10: Runtime Contracts",
+          "top": 160,
+          "bottom": 198,
+          "left": 2273,
+          "right": 2473,
+          "width": 200,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 11: Voice And Human Timing",
+          "top": 160,
+          "bottom": 198,
+          "left": 2481,
+          "right": 2701,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 12: From Dexie To AWS",
+          "top": 160,
+          "bottom": 198,
+          "left": 2709,
+          "right": 2906,
+          "width": 198,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 13: Cloud Data Model",
+          "top": 160,
+          "bottom": 198,
+          "left": 2914,
+          "right": 3107,
+          "width": 192,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 14: Isolation, Privacy, And Safety",
+          "top": 160,
+          "bottom": 198,
+          "left": 3115,
+          "right": 3335,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 15: Beta Gates And Roadmap",
+          "top": 160,
+          "bottom": 198,
+          "left": 3343,
+          "right": 3563,
+          "width": 220,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 16: Final Deep Evaluation",
+          "top": 160,
+          "bottom": 198,
+          "left": 3571,
+          "right": 3783,
+          "width": 213,
+          "height": 38
+        },
+        {
+          "tag": "button",
+          "text": "Chapter 17: Glossary And Sources",
+          "top": 160,
+          "bottom": 198,
+          "left": 3791,
+          "right": 4006,
+          "width": 215,
+          "height": 38
+        },
+        {
+          "tag": "h1",
+          "text": "Chapter 5: Knowledge Tracing Strategy",
+          "top": -3163,
+          "bottom": -3107,
+          "left": 20,
+          "right": 370,
+          "width": 350,
+          "height": 55
+        },
+        {
+          "tag": "h1",
+          "text": "Knowledge Tracing Strategy",
+          "top": -3010,
+          "bottom": -2938,
+          "left": 20,
+          "right": 370,
+          "width": 350,
+          "height": 72
+        },
+        {
+          "tag": "div",
+          "text": "#revision-mermaid-_r_0_{font-size:16px;fill:#1f2933;}@keyframes edge-a",
+          "top": 2,
+          "bottom": 843,
+          "left": 42,
+          "right": 348,
+          "width": 306,
+          "height": 842
+        },
+        {
+          "tag": "svg",
+          "text": "#revision-mermaid-_r_0_{font-size:16px;fill:#1f2933;}@keyframes edge-a",
+          "top": 10,
+          "bottom": 835,
+          "left": 50,
+          "right": 340,
+          "width": 290,
+          "height": 826
+        },
+        {
+          "tag": "button",
+          "text": "← Previous",
+          "top": 1487,
+          "bottom": 1529,
+          "left": 20,
+          "right": 134,
+          "width": 114,
+          "height": 42
+        },
+        {
+          "tag": "button",
+          "text": "Next →",
+          "top": 1488,
+          "bottom": 1528,
+          "left": 283,
+          "right": 370,
+          "width": 87,
+          "height": 40
+        }
+      ],
+      "textSample": "Study Analytics Revision Back to Library User Brain Architecture CONTENTS Chapter 0: What We Are Building Chapter 1: What This Is And Is Not Chapter 2: The Simple Mental Model Chapter 3: Why We Are Not Continuously Fine-Tuning Chapter 4: The Learner Brain Ledger Chapter 5: Knowledge Tracing Strategy Chapter 6: Interaction Model Strategy Chapter 7: Continuous Tutor Loop Chapter 8: Teaching And Evaluation States Chapter 9: Tool-Using Background Worker Layer Chapter 10: Runtime Contracts Chapter 11: Voice And Human Timing Chapter 12: From Dexie To AWS Chapter 13: Cloud Data Model Chapter 14: Isol"
+    },
+    "logs": []
+  }
+]

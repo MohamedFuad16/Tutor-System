@@ -73,6 +73,39 @@ test("flashcard review records BKT evidence with source metadata", async () => {
   assert.equal(calls[0][3].metadata.quality, 5);
 });
 
+test("flashcard review forwards runtime BKT settings", async () => {
+  const calls = [];
+  const engine = {
+    async updateConceptAttempt(...args) {
+      calls.push(args);
+      return { id: args[0] };
+    },
+  };
+  const runtimeSettings = {
+    bktTransitProbability: 0.22,
+    bktSlipProbability: 0.05,
+    bktGuessProbability: 0.14,
+  };
+  const card = {
+    id: "card-runtime",
+    conceptId: "bayes-rule",
+    bookId: "book-1",
+    bookTitle: "Bayes Notes",
+    front: "What does Bayes rule update?",
+    back: "Belief after evidence.",
+    nextReviewAt: 0,
+  };
+
+  const result = await recordFlashcardReviewEvidence(card, 4, {
+    engine,
+    runtimeSettings,
+  });
+
+  assert.equal(result.status, "recorded");
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0][3].metadata.runtimeSettings, runtimeSettings);
+});
+
 test("flashcard review fails closed when the concept is missing", async () => {
   const calls = [];
   const engine = {

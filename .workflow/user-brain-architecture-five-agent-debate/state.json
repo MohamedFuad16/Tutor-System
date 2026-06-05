@@ -1,0 +1,70 @@
+{
+  "title": "User Brain Architecture Five Agent Debate",
+  "slug": "user-brain-architecture-five-agent-debate",
+  "created_at": "2026-05-31T16:21:32+00:00",
+  "status": "completed",
+  "approval": {
+    "required": false,
+    "granted": true,
+    "notes": "Local research, local source edits, browser verification, and built-in image generation only."
+  },
+  "packets": [
+    {
+      "id": "P1-interaction-purist",
+      "status": "completed",
+      "owner": "Raman",
+      "agent_id": "019e7ed9-894d-7371-a645-16c6df15df6a",
+      "result": "results/P1-interaction-purist.md"
+    },
+    {
+      "id": "P2-learning-scientist",
+      "status": "completed",
+      "owner": "Anscombe",
+      "agent_id": "019e7ed9-89ec-7632-93bb-308117728d6d",
+      "result": "results/P2-learning-scientist.md"
+    },
+    {
+      "id": "P3-systems-architect",
+      "status": "completed",
+      "owner": "Carver",
+      "agent_id": "019e7ed9-8ac2-77d1-ad47-5dcf11a27251",
+      "result": "results/P3-systems-architect.md"
+    },
+    {
+      "id": "P4-product-tutor-designer",
+      "status": "completed",
+      "owner": "Maxwell",
+      "agent_id": "019e7ed9-8c88-7b01-8829-4c119ce50f0f",
+      "result": "results/P4-product-tutor-designer.md"
+    },
+    {
+      "id": "P5-leader-evaluator",
+      "status": "completed",
+      "owner": "Hubble",
+      "agent_id": "019e7ed9-8fe2-7290-a5ee-89091dd2ff58",
+      "result": "results/P5-leader-evaluator.md"
+    }
+  ],
+  "verification": {
+    "status": "passed",
+    "checks": [
+      {
+        "name": "npm run lint",
+        "status": "passed"
+      },
+      {
+        "name": "npm run build",
+        "status": "passed"
+      },
+      {
+        "name": "workflow verification",
+        "status": "passed"
+      },
+      {
+        "name": "browser smoke test",
+        "status": "passed",
+        "details": "Book opened; generated image loaded; Mermaid diagrams rendered in Chapter 9 without parse errors; Chapter 15 had 37 safe external source links."
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "title": "LearningAI Three Page Autonomous QA",
+  "slug": "learningai-three-page-autonomous-qa",
+  "created_at": "2026-06-01T01:57:44+00:00",
+  "status": "completed",
+  "approval": {
+    "required": false,
+    "granted": true,
+    "notes": "User explicitly requested three agents with nested delegation for autonomous page QA."
+  },
+  "packets": [
+    {"id":"STUDY","status":"completed","owner":"Study page","write_scope":["src/views/StudyView.tsx"],"agent_id":"019e80e7-e553-7332-92b6-c96848fcd3fd","nickname":"Sartre","result":"results/STUDY.md"},
+    {"id":"ANALYTICS","status":"completed","owner":"Analytics page","write_scope":["src/views/AnalyticsView.tsx"],"agent_id":"019e80e8-2536-7022-a6d7-e2164e221b11","nickname":"Lovelace","result":"results/ANALYTICS.md"},
+    {"id":"REVISION","status":"completed_after_local_takeover","owner":"Revision page","write_scope":["src/views/RevisionView.tsx"],"agent_id":"019e80e8-64b0-7503-b59a-93b383b134bc","nickname":"Carver","result":"results/REVISION.md","note":"Original subagent handle was unavailable after context compaction and had previously reported a usage-limit error; integrator completed the lane locally."}
+  ],
+  "verification": {
+    "status": "passed",
+    "checks": [
+      {"name":"Graphify query","status":"passed","evidence":"BFS depth=2 from StudyView, AnalyticsView, RevisionView over graphify-out/graph.json"},
+      {"name":"npm run lint","status":"passed","evidence":"tsc --noEmit exited 0"},
+      {"name":"npm run build","status":"passed","evidence":"vite build and esbuild server bundle exited 0"},
+      {"name":"live QA screenshots","status":"passed","evidence":"results/live-qa/summary.json; seven desktop/mobile screenshots captured"},
+      {"name":"console logs","status":"passed","evidence":"results/live-qa/summary.json reports zero page warnings/errors after favicon fix"},
+      {"name":"horizontal overflow","status":"passed","evidence":"results/live-qa/summary.json reports xOverflow=false for all seven scenarios"}
+    ]
+  }
+}

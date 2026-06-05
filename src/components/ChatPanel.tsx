@@ -440,9 +440,12 @@ const Mermaid = ({
       "(prefers-reduced-motion: reduce)",
     ).matches;
     if (reduceMotion) return;
-    const timer = window.setInterval(() => {
-      setActiveNodeIndex((current) => (current + 1) % tourNodes.length);
-    }, isStage ? 5600 : 4400);
+    const timer = window.setInterval(
+      () => {
+        setActiveNodeIndex((current) => (current + 1) % tourNodes.length);
+      },
+      isStage ? 5600 : 4400,
+    );
     return () => window.clearInterval(timer);
   }, [isStage, tourNodes.length]);
 
@@ -4825,6 +4828,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 agentLayer: "voice_realtime",
                 mode: "voice",
                 proofAttemptId,
+                runtimeSettings: brainRuntimeSettings,
               },
             });
             const recordedCount = results.filter(
@@ -5903,12 +5907,18 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         stopVoice();
       };
     } catch (err) {
-      console.error("Voice start error", err);
       voiceSessionErrorRef.current = compactVoiceEventText(
         err instanceof Error ? err.message : String(err),
       );
       const voiceStartErrorMessage =
         voiceSessionErrorRef.current || "Voice mode could not start.";
+      const isMicPermissionError =
+        /notallowed|permission|denied|microphone/i.test(voiceStartErrorMessage);
+      if (isMicPermissionError) {
+        console.warn("Voice microphone permission blocked", err);
+      } else {
+        console.error("Voice start error", err);
+      }
       recordVoiceAgentEvent({
         type: "error",
         status: "failed",
@@ -5919,10 +5929,6 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         },
       });
       stopVoice();
-      const isMicPermissionError =
-        /notallowed|permission|denied|microphone/i.test(
-          voiceStartErrorMessage,
-        );
       setMessages((prev) => [
         ...prev,
         {
@@ -6820,6 +6826,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                       proofAttemptId: activeBetaProofAttemptId || undefined,
                       activeDocumentId: activeDocumentId || undefined,
                       sourceUserMessage: userMsgContent.slice(0, 240),
+                      runtimeSettings: brainRuntimeSettings,
                     },
                   },
                 ).catch((error) => {

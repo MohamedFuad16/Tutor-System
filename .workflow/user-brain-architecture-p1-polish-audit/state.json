@@ -1,0 +1,16 @@
+{
+  "title": "User Brain Architecture P1 Polish Audit",
+  "slug": "user-brain-architecture-p1-polish-audit",
+  "created_at": "2026-05-31T17:04:28+00:00",
+  "status": "planned",
+  "approval": {
+    "required": null,
+    "granted": null,
+    "notes": ""
+  },
+  "packets": [],
+  "verification": {
+    "status": "not_started",
+    "checks": []
+  }
+}

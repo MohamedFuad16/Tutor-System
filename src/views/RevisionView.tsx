@@ -2836,6 +2836,7 @@ export function RevisionView() {
   );
   const setActiveDocumentId = useStore((state) => state.setActiveDocumentId);
   const setActiveProject = useStore((state) => state.setActiveProject);
+  const brainRuntimeSettings = useStore((state) => state.brainRuntimeSettings);
   const [libraryRevision, setLibraryRevision] = useState(0);
 
   const concepts = React.useMemo(
@@ -2991,7 +2992,9 @@ export function RevisionView() {
       nextReviewAt: Date.now() + nextDays * 24 * 60 * 60 * 1000,
     });
     try {
-      await recordFlashcardReviewEvidence(card, quality);
+      await recordFlashcardReviewEvidence(card, quality, {
+        runtimeSettings: brainRuntimeSettings,
+      });
     } catch (error) {
       console.warn("[RevisionView] Flashcard evidence write failed:", error);
     }

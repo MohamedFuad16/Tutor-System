@@ -1,5 +1,6 @@
 import type { Flashcard, PersistentConcept } from "./longterm.memory";
 import { bktEngine } from "./bkt.engine";
+import type { BrainRuntimeSettings } from "../lib/brainRuntimeSettings";
 
 type RevisionEvidenceEngine = {
   updateConceptAttempt: (
@@ -14,6 +15,11 @@ type RevisionEvidenceEngine = {
       metadata?: Record<string, unknown>;
     },
   ) => Promise<PersistentConcept | null>;
+};
+
+type RevisionEvidenceOptions = {
+  engine?: RevisionEvidenceEngine;
+  runtimeSettings?: Partial<BrainRuntimeSettings> | null;
 };
 
 export type FlashcardReviewEvidenceResult = {
@@ -49,8 +55,13 @@ export const flashcardReviewSummary = (
 export const recordFlashcardReviewEvidence = async (
   card: Flashcard,
   quality: number,
-  engine: RevisionEvidenceEngine = bktEngine,
+  engineOrOptions: RevisionEvidenceEngine | RevisionEvidenceOptions = {},
 ): Promise<FlashcardReviewEvidenceResult> => {
+  const options =
+    "updateConceptAttempt" in engineOrOptions
+      ? { engine: engineOrOptions }
+      : engineOrOptions;
+  const engine = options.engine || bktEngine;
   const conceptId = flashcardEvidenceConceptId(card);
   const outcome = flashcardReviewOutcome(quality);
 
@@ -76,6 +87,7 @@ export const recordFlashcardReviewEvidence = async (
         bookId: card.bookId,
         bookTitle: card.bookTitle,
         quality,
+        runtimeSettings: options.runtimeSettings || undefined,
       },
     },
   );

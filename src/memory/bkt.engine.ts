@@ -12,6 +12,10 @@ import {
   type MasteryEvidenceType,
 } from "./evidence.mastery";
 import { createMasteryDeltaRecords } from "./evidence.ledger";
+import {
+  normalizeBrainRuntimeSettings,
+  type BrainRuntimeSettings,
+} from "../lib/brainRuntimeSettings";
 
 export type ValidatedMasteryEvidenceContract =
   | "evaluated_answer_v1"
@@ -23,6 +27,14 @@ export type BKTAttemptOptions = {
   source?: string;
   summary?: string;
   metadata?: Record<string, unknown>;
+  runtimeSettings?: Partial<BrainRuntimeSettings> | null;
+  bktParameters?: Partial<BKTParameters> | null;
+};
+
+export type BKTParameters = {
+  p_transit: number;
+  p_slip: number;
+  p_guess: number;
 };
 
 export type MasteryCommitStore = {
@@ -36,12 +48,97 @@ export type MasteryCommitStore = {
 };
 
 // Default BKT Parameters for new concepts
-const DEFAULT_BKT = {
+export const DEFAULT_BKT = {
   p_learn_init: 0.2, // P(L0)
   p_transit: 0.1, // P(T) - chance to learn at each step
   p_slip: 0.1, // P(S) - chance of making a mistake despite knowing
   p_guess: 0.2, // P(G) - chance of guessing correctly without knowing
 };
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const probabilityOrFallback = (value: unknown, fallback: number) =>
+  clamp01(value, fallback);
+
+const normalizeBKTParameterOverrides = (
+  value: unknown,
+): Partial<BKTParameters> | null => {
+  const record = asRecord(value);
+  if (!record) return null;
+
+  const overrides: Partial<BKTParameters> = {};
+  if ("p_transit" in record) {
+    overrides.p_transit = probabilityOrFallback(
+      record.p_transit,
+      DEFAULT_BKT.p_transit,
+    );
+  }
+  if ("p_slip" in record) {
+    overrides.p_slip = probabilityOrFallback(record.p_slip, DEFAULT_BKT.p_slip);
+  }
+  if ("p_guess" in record) {
+    overrides.p_guess = probabilityOrFallback(
+      record.p_guess,
+      DEFAULT_BKT.p_guess,
+    );
+  }
+
+  return Object.keys(overrides).length > 0 ? overrides : null;
+};
+
+export const bktParametersFromRuntimeSettings = (
+  settings?: Partial<BrainRuntimeSettings> | null,
+): BKTParameters | null => {
+  if (!settings || typeof settings !== "object") return null;
+  const normalized = normalizeBrainRuntimeSettings(settings);
+  return {
+    p_transit: normalized.bktTransitProbability,
+    p_slip: normalized.bktSlipProbability,
+    p_guess: normalized.bktGuessProbability,
+  };
+};
+
+const bktParameterOverridesFromOptions = (
+  options: BKTAttemptOptions,
+): Partial<BKTParameters> | null => {
+  const metadata = asRecord(options.metadata);
+  const metadataRuntimeSettings = asRecord(metadata?.runtimeSettings);
+  const runtimeSettings =
+    bktParametersFromRuntimeSettings(options.runtimeSettings) ||
+    bktParametersFromRuntimeSettings(metadataRuntimeSettings);
+  const explicitOverrides = normalizeBKTParameterOverrides(
+    options.bktParameters,
+  );
+
+  const overrides = {
+    ...(runtimeSettings || {}),
+    ...(explicitOverrides || {}),
+  };
+
+  return Object.keys(overrides).length > 0 ? overrides : null;
+};
+
+export const resolveBKTParameters = (
+  concept: PersistentConcept,
+  overrides?: Partial<BKTParameters> | null,
+) => ({
+  p_learn: probabilityOrFallback(concept.p_learn, DEFAULT_BKT.p_learn_init),
+  p_transit: probabilityOrFallback(
+    overrides?.p_transit ?? concept.p_transit,
+    DEFAULT_BKT.p_transit,
+  ),
+  p_slip: probabilityOrFallback(
+    overrides?.p_slip ?? concept.p_slip,
+    DEFAULT_BKT.p_slip,
+  ),
+  p_guess: probabilityOrFallback(
+    overrides?.p_guess ?? concept.p_guess,
+    DEFAULT_BKT.p_guess,
+  ),
+});
 
 export const buildBKTConfidenceUpdate = (
   currentConfidence: unknown,
@@ -108,6 +205,11 @@ export const commitValidatedMasteryAttempt = async (
       concept: PersistentConcept,
       isCorrect: boolean,
     ) => number;
+    posteriorMetadata?: (
+      concept: PersistentConcept,
+      isCorrect: boolean,
+      posterior: number,
+    ) => Record<string, unknown>;
     timestamp?: number;
   },
   store: MasteryCommitStore = dexieMasteryCommitStore,
@@ -161,6 +263,8 @@ export const commitValidatedMasteryAttempt = async (
     const previousMastery = concept.mastery;
     const previousPLearn = concept.p_learn;
     const posterior = input.calculatePosterior(concept, input.isCorrect);
+    const posteriorMetadata =
+      input.posteriorMetadata?.(concept, input.isCorrect, posterior) || {};
     const confidenceUpdate = buildBKTConfidenceUpdate(
       concept.confidence,
       input.type,
@@ -190,6 +294,7 @@ export const commitValidatedMasteryAttempt = async (
           posterior,
           cappedPosterior,
           attemptCount: concept.attempt_history.length + 1,
+          ...posteriorMetadata,
           ...confidenceUpdate,
         },
       },
@@ -229,8 +334,12 @@ export class BKTEngine {
   public calculatePosterior(
     concept: PersistentConcept,
     isCorrect: boolean,
+    parameterOverrides?: Partial<BKTParameters> | null,
   ): number {
-    const { p_learn, p_transit, p_slip, p_guess } = concept;
+    const { p_learn, p_transit, p_slip, p_guess } = resolveBKTParameters(
+      concept,
+      parameterOverrides,
+    );
 
     // Probability of observing the current result given the state
     let p_obs_given_learned = isCorrect ? 1 - p_slip : p_slip;
@@ -255,15 +364,25 @@ export class BKTEngine {
     isCorrect: boolean,
     type: "recognition" | "generation" | "transfer",
     options: BKTAttemptOptions,
+    store: MasteryCommitStore = dexieMasteryCommitStore,
   ) {
-    return await commitValidatedMasteryAttempt({
-      conceptId,
-      isCorrect,
-      type,
-      options,
-      calculatePosterior: (concept, correct) =>
-        this.calculatePosterior(concept, correct),
-    });
+    const parameterOverrides = bktParameterOverridesFromOptions(options);
+
+    return await commitValidatedMasteryAttempt(
+      {
+        conceptId,
+        isCorrect,
+        type,
+        options,
+        calculatePosterior: (concept, correct) =>
+          this.calculatePosterior(concept, correct, parameterOverrides),
+        posteriorMetadata: (concept) => ({
+          bktParameters: resolveBKTParameters(concept, parameterOverrides),
+          bktRuntimeSettingsApplied: Boolean(parameterOverrides),
+        }),
+      },
+      store,
+    );
   }
 }
 

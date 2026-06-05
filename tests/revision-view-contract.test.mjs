@@ -30,6 +30,6 @@ test("RevisionView schedules reviews before recording BKT evidence", () => {
   );
   assert.match(
     revisionViewSource,
-    /await recordFlashcardReviewEvidence\(card, quality\);/,
+    /await recordFlashcardReviewEvidence\(card, quality,\s*{\s*runtimeSettings: brainRuntimeSettings,\s*}\);/s,
   );
 });

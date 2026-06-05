@@ -1,0 +1,83 @@
+{
+  "title": "User Brain Architecture Multi Agent Deep Research Debate",
+  "slug": "user-brain-architecture-multi-agent-deep-research-debate",
+  "created_at": "2026-05-31T18:06:52+00:00",
+  "status": "completed",
+  "approval": {
+    "required": false,
+    "granted": true,
+    "notes": "Read-only research, local workflow artifacts, and user-authorized subagents."
+  },
+  "config": {
+    "multi_agent": true,
+    "max_depth": 2,
+    "max_threads": 16,
+    "job_max_runtime_seconds": 3600
+  },
+  "packets": [
+    {
+      "id": "P1",
+      "role": "Cognitive Modeling Fit",
+      "status": "completed",
+      "agent_id": "019e7f3d-b675-7f31-8fef-8aba0e1baef6",
+      "nickname": "Mendel",
+      "result": "results/P1-cognitive-modeling-fit.md"
+    },
+    {
+      "id": "P2",
+      "role": "Scalability",
+      "status": "completed",
+      "agent_id": "019e7f3d-b8c4-78f3-ae10-ba7f35752f5f",
+      "nickname": "Meitner",
+      "result": "results/P2-scalability.md"
+    },
+    {
+      "id": "P3",
+      "role": "Adaptiveness",
+      "status": "completed",
+      "agent_id": "019e7f3d-bb03-77a2-951c-b0664b16f370",
+      "nickname": "Averroes",
+      "result": "results/P3-adaptiveness.md"
+    },
+    {
+      "id": "P4",
+      "role": "Long-Term Memory Formation",
+      "status": "completed",
+      "agent_id": "019e7f3d-bd25-7413-b8dd-07bb691bdffb",
+      "nickname": "Hegel",
+      "result": "results/P4-long-term-memory-formation.md"
+    }
+  ],
+  "verification": {
+    "status": "passed",
+    "checks": [
+      {
+        "name": "workflow verify",
+        "status": "passed"
+      },
+      {
+        "name": "npm run lint",
+        "status": "passed"
+      },
+      {
+        "name": "npm run build",
+        "status": "passed"
+      },
+      {
+        "name": "browser smoke",
+        "status": "passed",
+        "notes": "Loaded http://localhost:3100, opened Revision, opened User Brain Architecture, confirmed Chapter 0 and Chapter 16 in TOC, and confirmed old image reference absent."
+      }
+    ]
+  },
+  "debate": {
+    "status": "completed",
+    "result": "results/debate-round.md",
+    "participants": [
+      "019e7f3d-b675-7f31-8fef-8aba0e1baef6",
+      "019e7f3d-b8c4-78f3-ae10-ba7f35752f5f",
+      "019e7f3d-bb03-77a2-951c-b0664b16f370",
+      "019e7f3d-bd25-7413-b8dd-07bb691bdffb"
+    ]
+  }
+}

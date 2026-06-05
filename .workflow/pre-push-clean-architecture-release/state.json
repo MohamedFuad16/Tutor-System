@@ -1,0 +1,6 @@
+{
+  "workflow": "pre-push-clean-architecture-release",
+  "status": "in_progress",
+  "phase": "audit",
+  "updatedAt": "2026-06-05"
+}

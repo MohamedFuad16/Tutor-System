@@ -1,6 +1,6 @@
 {
   "id": "codex-multi-agent-ui-test-plan-extended",
-  "status": "phase_7_page_rendered_expansion_complete",
+  "status": "phase_11_browser_pdf_chatpanel_proof_partial_gates_green",
   "cwd": "/Users/mfuad16/Documents/LearningAI",
   "goalStatus": "active",
   "graphify": {
@@ -13,9 +13,11 @@
     "runner": "node:test plus vitest/jsdom",
     "prebundle": "esbuild via npm test",
     "vitestConfigured": true,
+    "vitestDomFileParallelism": false,
     "testingLibraryConfigured": true,
     "fakeIndexedDbConfigured": true,
-    "playwrightConfigured": false
+    "playwrightConfigured": false,
+    "fallbackBrowserAutomation": "Python Playwright with installed Google Chrome used outside repo for file-upload proof only"
   },
   "packets": [
     { "id": "P01", "name": "Study lead", "status": "completed_phase_1" },
@@ -72,19 +74,50 @@
     {
       "id": "P16",
       "name": "Per-component 40-50 rendered case expansion",
-      "status": "in_progress"
+      "status": "completed_phase_10"
+    },
+    {
+      "id": "P17",
+      "name": "Admin BKT posterior wiring",
+      "status": "completed_phase_8"
+    },
+    {
+      "id": "P18",
+      "name": "SettingsModal rendered expansion",
+      "status": "completed_phase_9"
+    },
+    {
+      "id": "P19",
+      "name": "ChatPanel rendered expansion",
+      "status": "completed_phase_10"
+    },
+    {
+      "id": "P20",
+      "name": "PdfViewer rendered expansion",
+      "status": "completed_phase_10"
+    },
+    {
+      "id": "P21",
+      "name": "Browser PDF selection and ChatPanel tool/voice proof",
+      "status": "completed_phase_11_partial_voice_permission"
     }
   ],
   "verification": {
     "focused": "passed",
-    "npmTest": "passed_253_of_253",
-    "npmRunTestDom": "passed_115_of_115",
+    "npmTest": "passed_837_of_837",
+    "npmRunTestNode": "passed_255_of_255",
+    "npmRunTestDom": "passed_582_of_582",
+    "settingsFocused": "passed_40_of_40",
+    "chatPanelPdfViewerFocused": "passed_97_of_97",
     "lint": "passed",
     "build": "passed",
     "formatCheck": "passed",
+    "gitDiffCheck": "passed",
     "browser": "passed_dev_production_desktop_mobile_parity_phase_6",
+    "browserPdfSelection": "passed_dev_3102_real_pdf_canvas_text_selection_highlight_and_ask_tutor",
+    "browserChatToolsVoice": "passed_dev_3102_web_search_tool_and_microphone_permission_recovery_warning_only",
     "noImplicitAnyAudit": "passed_enforced_by_lint"
   },
-  "remainingApprovalGate": "40-50 rendered cases per reusable component plus real PDF/voice browser flows",
-  "updatedAt": "2026-06-05T02:21:00+09:00"
+  "remainingApprovalGate": "permission-granted live Deepgram/OpenRouter provider proof rows, optional Admin priorMastery decision, and final end-to-end completion audit",
+  "updatedAt": "2026-06-05T12:02:11+09:00"
 }

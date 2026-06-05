@@ -16,5 +16,6 @@ export default defineConfig({
     include: ["tests/**/*.test.tsx"],
     restoreMocks: true,
     clearMocks: true,
+    fileParallelism: false,
   },
 });

@@ -1,0 +1,24 @@
+{
+  "title": "User Brain Architecture Final Deep Evaluation",
+  "slug": "user-brain-architecture-final-deep-evaluation",
+  "created_at": "2026-05-31T17:39:05+00:00",
+  "status": "running",
+  "approval": {
+    "required": false,
+    "granted": true,
+    "notes": "User explicitly requested image removal and one deeper evaluation agent. No external writes or destructive repo history actions planned."
+  },
+  "packets": [
+    {
+      "id": "P1-deep-final-evaluator",
+      "status": "running",
+      "owner": "subagent",
+      "agent_id": "019e7f1f-094c-75b1-8c27-e75ab41d842c",
+      "nickname": "Darwin"
+    }
+  ],
+  "verification": {
+    "status": "not_started",
+    "checks": []
+  }
+}

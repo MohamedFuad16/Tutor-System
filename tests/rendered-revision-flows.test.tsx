@@ -215,6 +215,14 @@ describe("rendered RevisionView flows", () => {
 
   it("reviews a due flashcard and persists the next review before evidence recording", async () => {
     const user = userEvent.setup();
+    useStore.setState({
+      brainRuntimeSettings: {
+        ...useStore.getState().brainRuntimeSettings,
+        bktTransitProbability: 0.23,
+        bktSlipProbability: 0.04,
+        bktGuessProbability: 0.13,
+      },
+    });
     await seedGeneratedRevisionData();
     renderRevision();
 
@@ -246,6 +254,13 @@ describe("rendered RevisionView flows", () => {
     expect(recordFlashcardReviewEvidenceMock).toHaveBeenCalledWith(
       expect.objectContaining({ id: "flashcard:revision-rendered" }),
       4,
+      expect.objectContaining({
+        runtimeSettings: expect.objectContaining({
+          bktTransitProbability: 0.23,
+          bktSlipProbability: 0.04,
+          bktGuessProbability: 0.13,
+        }),
+      }),
     );
   });
 

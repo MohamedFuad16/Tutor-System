@@ -1,0 +1,70 @@
+{
+  "title": "User Brain Architecture Cleanup Debate Verification",
+  "slug": "user-brain-architecture-cleanup-debate-verification",
+  "created_at": "2026-05-31T17:01:37+00:00",
+  "status": "completed",
+  "approval": {
+    "required": false,
+    "granted": true,
+    "notes": "User explicitly requested subagents, debate, source verification, and local book cleanup. No destructive or external-write actions planned."
+  },
+  "packets": [
+    {
+      "id": "P1-document-chart-polish",
+      "status": "completed",
+      "owner": "subagent",
+      "agent_id": "019e7efd-b790-7000-a7cc-7a3efa70dd95",
+      "nickname": "Bohr"
+    },
+    {
+      "id": "P2-source-concept-verification",
+      "status": "completed",
+      "owner": "subagent",
+      "agent_id": "019e7efd-b8d3-7801-b28e-19ab45075dff",
+      "nickname": "Turing"
+    },
+    {
+      "id": "P3-debate-interaction-maximalist",
+      "status": "completed",
+      "owner": "subagent",
+      "agent_id": "019e7efd-ba91-7911-9f05-a5336dbf519f",
+      "nickname": "Hooke"
+    },
+    {
+      "id": "P4-debate-reliability-minimalist",
+      "status": "completed",
+      "owner": "subagent",
+      "agent_id": "019e7efd-bd35-7062-bb80-e2ae0021a724",
+      "nickname": "Kant"
+    },
+    {
+      "id": "P5-evaluator",
+      "status": "completed",
+      "owner": "subagent",
+      "agent_id": "019e7efd-c0cd-7d21-9c72-f1840792c092",
+      "nickname": "Boole"
+    }
+  ],
+  "debate_hub_thread_id": "019e7efd-6fe3-74c1-80c1-a31ab428a79a",
+  "verification": {
+    "status": "passed",
+    "checks": [
+      {
+        "name": "workflow verification",
+        "status": "passed"
+      },
+      {
+        "name": "npm run lint",
+        "status": "passed"
+      },
+      {
+        "name": "npm run build",
+        "status": "passed"
+      },
+      {
+        "name": "browser reader smoke",
+        "status": "passed"
+      }
+    ]
+  }
+}

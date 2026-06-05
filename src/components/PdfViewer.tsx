@@ -775,6 +775,9 @@ export function PdfViewer() {
                       return (
                         <div
                           key={`${ann.id}-${i}`}
+                          data-annotation-id={ann.id}
+                          data-annotation-type={ann.type || "underline"}
+                          aria-hidden="true"
                           className="absolute pointer-events-none mix-blend-multiply"
                           style={{
                             left: `${rect.x * 100}%`,
@@ -791,6 +794,9 @@ export function PdfViewer() {
                       return (
                         <div
                           key={`${ann.id}-${i}`}
+                          data-annotation-id={ann.id}
+                          data-annotation-type={ann.type || "strikethrough"}
+                          aria-hidden="true"
                           className="absolute pointer-events-none mix-blend-multiply"
                           style={{
                             left: `${rect.x * 100}%`,
@@ -806,6 +812,9 @@ export function PdfViewer() {
                     return (
                       <div
                         key={`${ann.id}-${i}`}
+                        data-annotation-id={ann.id}
+                        data-annotation-type={ann.type || "highlight"}
+                        aria-hidden="true"
                         className="absolute mix-blend-multiply opacity-50 pointer-events-none cursor-pointer hover:opacity-70 transition-opacity"
                         style={{
                           left: `${rect.x * 100}%`,
@@ -820,6 +829,9 @@ export function PdfViewer() {
                   })}
                   {ann.type === "sticky" && ann.rects.length > 0 && (
                     <div
+                      data-annotation-id={ann.id}
+                      data-annotation-type="sticky"
+                      aria-hidden="true"
                       className="absolute w-6 h-6 -ml-3 -mt-3 rounded shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform origin-center"
                       style={{
                         left: `${ann.rects[0].x * 100}%`,

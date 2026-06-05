@@ -2,8 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  BKTEngine,
+  bktParametersFromRuntimeSettings,
   buildBKTConfidenceUpdate,
   commitValidatedMasteryAttempt,
+  resolveBKTParameters,
 } from "../.tmp-test/bkt.engine.mjs";
 
 const conceptRecord = () => ({
@@ -129,6 +132,95 @@ test("validated mastery commits concept, evidence, and delta atomically", async 
     masteryDeltaId: delta.id,
     evidenceContract: "evaluated_answer_v1",
   });
+});
+
+test("BKT posterior uses concept probabilities by default", () => {
+  const engine = new BKTEngine();
+  const posterior = engine.calculatePosterior(conceptRecord(), true);
+
+  assert.ok(Math.abs(posterior - 0.57647) < 0.001);
+});
+
+test("BKT posterior can be tuned by Admin runtime settings", () => {
+  const engine = new BKTEngine();
+  const concept = conceptRecord();
+  const defaultPosterior = engine.calculatePosterior(concept, true);
+  const runtimeParameters = bktParametersFromRuntimeSettings({
+    bktTransitProbability: 0.35,
+    bktSlipProbability: 0.01,
+    bktGuessProbability: 0.01,
+  });
+  const tunedPosterior = engine.calculatePosterior(
+    concept,
+    true,
+    runtimeParameters,
+  );
+
+  assert.ok(tunedPosterior > defaultPosterior);
+  assert.ok(Math.abs(tunedPosterior - 0.97475) < 0.001);
+});
+
+test("BKT runtime settings are normalized into posterior parameters", () => {
+  assert.deepEqual(
+    bktParametersFromRuntimeSettings({
+      bktTransitProbability: 1,
+      bktSlipProbability: 0,
+      bktGuessProbability: "0.214",
+    }),
+    {
+      p_transit: 0.35,
+      p_slip: 0.01,
+      p_guess: 0.21,
+    },
+  );
+
+  assert.deepEqual(
+    resolveBKTParameters(conceptRecord(), {
+      p_transit: 0.3,
+      p_slip: 0.04,
+      p_guess: 0.11,
+    }),
+    {
+      p_learn: 0.2,
+      p_transit: 0.3,
+      p_slip: 0.04,
+      p_guess: 0.11,
+    },
+  );
+});
+
+test("BKTEngine commits record the resolved Admin BKT parameters", async () => {
+  const { state, store } = createTransactionalStore();
+  const engine = new BKTEngine();
+
+  const result = await engine.updateConceptAttempt(
+    "bayes",
+    true,
+    "generation",
+    {
+      attemptId: "chat-2:tool-1:bayes",
+      evidenceContract: "evaluated_answer_v1",
+      source: "chat_tool_evaluate_answer",
+      runtimeSettings: {
+        bktTransitProbability: 0.35,
+        bktSlipProbability: 0.01,
+        bktGuessProbability: 0.01,
+      },
+    },
+    store,
+  );
+
+  assert.equal(result.mastery, 0.85);
+  const event = [...state.evidenceEvents.values()][0];
+  assert.equal(event.metadata.bktRuntimeSettingsApplied, true);
+  assert.deepEqual(event.metadata.bktParameters, {
+    p_learn: 0.2,
+    p_transit: 0.35,
+    p_slip: 0.01,
+    p_guess: 0.01,
+  });
+  assert.ok(event.metadata.posterior > 0.97);
+  assert.equal(event.metadata.cappedPosterior, 0.85);
 });
 
 test("validated mastery commit rolls back all rows when the ledger fails", async () => {

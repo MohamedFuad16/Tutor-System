@@ -1,0 +1,34 @@
+{
+  "title": "OpenAI Support Guidance Architecture Update",
+  "slug": "openai-support-guidance-architecture-update",
+  "created_at": "2026-05-31T14:48:09+00:00",
+  "status": "completed",
+  "approval": {
+    "required": true,
+    "granted": true,
+    "notes": "User explicitly requested launching 12 agents. Scope is read-only research and local workflow artifacts."
+  },
+  "packets": [
+    {"id":"T1-L","team":"model-strategy","role":"leader","agent":"019e7e82-b2f5-71e3-93e1-38792f766a1a","status":"completed"},
+    {"id":"T1-R","team":"model-strategy","role":"lead-researcher","agent":"019e7e82-cbba-7042-b5a0-06138155eb58","status":"completed"},
+    {"id":"T1-V","team":"model-strategy","role":"citation-verifier","agent":"019e7e83-2a2a-7012-9f8b-9759afcf1802","status":"completed"},
+    {"id":"T2-L","team":"learner-state","role":"leader","agent":"019e7e83-4424-7493-bd81-e73d2e2d622d","status":"completed"},
+    {"id":"T2-R","team":"learner-state","role":"lead-researcher","agent":"019e7e83-55ea-7451-b6b3-1c0d3ea8dbf8","status":"completed"},
+    {"id":"T2-V","team":"learner-state","role":"citation-verifier","agent":"019e7e83-66f3-7203-9553-47a92bea0074","status":"completed"},
+    {"id":"T3-L","team":"voice-realtime","role":"leader","agent":"019e7e87-2774-7f03-97a0-c499f6be8ba5","status":"completed"},
+    {"id":"T3-R","team":"voice-realtime","role":"lead-researcher","agent":"019e7e87-4120-73e3-9f36-a219d145e8ab","status":"completed"},
+    {"id":"T3-V","team":"voice-realtime","role":"citation-verifier","agent":"019e7e87-5dbe-7132-8702-834c0b4241aa","status":"completed"},
+    {"id":"T4-L","team":"beta-integration","role":"leader","agent":"019e7e87-7059-7ed3-8530-ed5835ad1fe5","status":"completed"},
+    {"id":"T4-R","team":"beta-integration","role":"lead-researcher","agent":"019e7e87-84e8-73d1-ae33-4e90b29ee10e","status":"completed"},
+    {"id":"T4-V","team":"beta-integration","role":"citation-verifier","agent":"019e7e87-965b-7fa0-a45b-4a72a0085916","status":"completed"}
+  ],
+  "verification": {
+    "status": "passed",
+    "checks": [
+      "12-agent launch check passed",
+      "citation/URL check completed",
+      "support-email integration check completed",
+      "verify_workflow.py passed"
+    ]
+  }
+}
