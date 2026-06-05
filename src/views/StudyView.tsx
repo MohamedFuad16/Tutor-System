@@ -831,7 +831,7 @@ export function StudyView() {
     if (activeLearningBookId) {
       const existing = await db.learningBooks
         .get(activeLearningBookId)
-        .catch(() => undefined);
+        .catch((): undefined => undefined);
       if (existing) return existing;
     }
     const book = await brainOrchestrator.ensureSessionLearningBook(
@@ -846,13 +846,15 @@ export function StudyView() {
   const updateBookDocumentLinks = async (
     bookId: string,
     documentId: string | null,
-  ) => {
-    const book = await db.learningBooks.get(bookId).catch(() => undefined);
+  ): Promise<void> => {
+    const book = await db.learningBooks
+      .get(bookId)
+      .catch((): undefined => undefined);
     const documents = await db.learningDocuments
       .where("bookId")
       .equals(bookId)
       .toArray()
-      .catch(() => []);
+      .catch((): LearningDocument[] => []);
     const documentIds = documents.map((document) => document.id);
     await db.learningBooks.update(bookId, {
       documentIds,
@@ -1014,14 +1016,21 @@ export function StudyView() {
   const removeDocument = async (documentId: string) => {
     const document = orderedDocuments.find((item) => item.id === documentId);
     if (!document) return;
+    const removedActiveDocument = documentId === activeDocumentId;
     cancelledIngestionDocumentIdsRef.current.add(documentId);
-    setSelectedTextContext("");
+    if (removedActiveDocument) {
+      setSelectedTextContext("");
+    }
     await db.learningDocuments.delete(documentId);
     removeAnnotationsForDocument(documentId);
     const remainingDocuments = orderedDocuments.filter(
       (item) => item.id !== documentId,
     );
-    const nextDocument = remainingDocuments[0] || null;
+    const nextDocument = removedActiveDocument
+      ? remainingDocuments[0] || null
+      : remainingDocuments.find((item) => item.id === activeDocumentId) ||
+        remainingDocuments[0] ||
+        null;
     revokeCachedDocumentObjectUrl(documentId);
     await updateBookDocumentLinks(document.bookId, nextDocument?.id || null);
     setActiveDocumentId(nextDocument?.id || null);

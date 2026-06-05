@@ -141,6 +141,46 @@ test("generated flashcards become not-checked artifact records with provenance",
   assert.equal(citation.metadata.externalContentFetched, false);
 });
 
+test("generated flashcard artifacts keep unresolved batches conceptless", () => {
+  const { artifact, citation } = createGeneratedFlashcardsArtifactRecords(
+    {
+      batchId: "batch-general",
+      sourceMessageId: "assistant-message-general",
+      conversationId: "thread:book-general",
+      bookId: "book-general",
+      bookTitle: "General Study",
+      cards: [
+        {
+          id: "card-general",
+          front: " What should I revisit first? ",
+          back: "The chapter summary.",
+          conceptId: "general",
+        },
+        {
+          id: "card-empty",
+          front: "",
+          back: "",
+          conceptId: "concept-should-not-appear",
+        },
+      ],
+    },
+    24681,
+  );
+
+  assert.equal(artifact.status, "ready");
+  assert.equal(artifact.conceptId, undefined);
+  assert.deepEqual(artifact.metadata.cardIds, ["card-general"]);
+  assert.deepEqual(artifact.metadata.conceptIds, []);
+  assert.equal(artifact.metadata.unresolvedCards, 1);
+  assert.deepEqual(artifact.metadata.samplePrompts, [
+    "What should I revisit first?",
+  ]);
+  assert.ok(artifact.sourceIds.includes("card-general"));
+  assert.equal(artifact.sourceIds.includes("card-empty"), false);
+  assert.deepEqual(citation.metadata.cardIds, ["card-general"]);
+  assert.deepEqual(citation.metadata.conceptIds, []);
+});
+
 test("generated learning notes become not-checked artifact records with provenance", () => {
   const { artifact, citation } = createGeneratedNotesArtifactRecords(
     {
@@ -200,6 +240,50 @@ test("generated learning notes become not-checked artifact records with provenan
   assert.equal(citation.sourceRef, "entry-1");
   assert.equal(citation.metadata.externalContentFetched, false);
   assert.equal(citation.verifier, "generated_learning_entry_provenance");
+});
+
+test("generated learning notes preserve single concept links and clamp confidence", () => {
+  const { artifact, citation } = createGeneratedNotesArtifactRecords(
+    {
+      entryId: "entry-single-concept",
+      conversationId: "conversation-single-concept",
+      bookId: "book-single-concept",
+      bookTitle: "Active Recall Notes",
+      chapterId: "chapter-active-recall",
+      chapterTitle: "Evidence-Gated Recall",
+      documentId: "document-active-recall",
+      userName: "Learner",
+      model: "local-session-fallback",
+      confidence: 2.4,
+      conceptIds: [
+        "concept-active-recall",
+        "concept-active-recall",
+        "concept-active-recall",
+      ],
+      summary:
+        "The learner practiced active recall and tied the answer to verified evidence.",
+      metadata: { generationPath: "memory_orchestrator" },
+    },
+    13580,
+  );
+
+  assert.equal(artifact.status, "ready");
+  assert.equal(artifact.bookId, "book-single-concept");
+  assert.equal(artifact.conceptId, "concept-active-recall");
+  assert.deepEqual(artifact.sourceIds, [
+    "entry-single-concept",
+    "conversation-single-concept",
+    "book-single-concept",
+    "chapter-active-recall",
+    "document-active-recall",
+    "concept-active-recall",
+  ]);
+  assert.deepEqual(artifact.metadata.conceptIds, ["concept-active-recall"]);
+  assert.equal(artifact.metadata.confidence, 1);
+  assert.equal(artifact.metadata.bookTitle, "Active Recall Notes");
+  assert.equal(artifact.metadata.chapterTitle, "Evidence-Gated Recall");
+  assert.equal(citation.metadata.confidence, 1);
+  assert.deepEqual(citation.metadata.conceptIds, ["concept-active-recall"]);
 });
 
 test("generated note source spans compact document context into local anchors", () => {

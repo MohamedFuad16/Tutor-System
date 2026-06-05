@@ -48,6 +48,21 @@ test("runtime settings normalization clamps local tuning controls", () => {
   assert.ok(WEB_SEARCH_POLICIES.includes("source_first"));
   assert.ok(WEB_SEARCH_POLICIES.includes("manual_only"));
   assert.ok(WEB_SEARCH_POLICIES.includes("auto_freshness"));
+
+  assert.deepEqual(
+    normalizeBrainRuntimeSettings({
+      activityRefreshMs: "4500",
+      memoryConceptLimit: 7.6,
+      toolIterationLimit: "not-a-number",
+      webSearchPolicy: "not-a-policy",
+    }),
+    {
+      activityRefreshMs: 4500,
+      memoryConceptLimit: 8,
+      toolIterationLimit: DEFAULT_BRAIN_RUNTIME_SETTINGS.toolIterationLimit,
+      webSearchPolicy: DEFAULT_BRAIN_RUNTIME_SETTINGS.webSearchPolicy,
+    },
+  );
 });
 
 test("system activity exposes runtime tuning defaults", async (t) => {

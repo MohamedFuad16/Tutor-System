@@ -20,13 +20,20 @@ export function AnimatedScrollText({
   onRevealComplete,
 }: AnimatedScrollTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const words = text.split(" ");
+  const onRevealCompleteRef = useRef(onRevealComplete);
+  const normalizedText = text.trim();
+  const words = normalizedText ? normalizedText.split(/\s+/) : [];
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    onRevealCompleteRef.current = onRevealComplete;
+  }, [onRevealComplete]);
+
+  useEffect(() => {
     const scroller = scrollContainerRef?.current;
-    if (!scroller || !containerRef.current) return;
+    const container = containerRef.current;
+    if (!scroller || !container) return;
 
     let startPosition = 0;
     let containerHeight = 0;
@@ -48,7 +55,7 @@ export function AnimatedScrollText({
       { threshold: [0], root: scroller },
     );
 
-    observer.observe(containerRef.current);
+    observer.observe(container);
 
     const handleScroll = () => {
       if (!isVisible || !containerRef.current) return;
@@ -56,24 +63,19 @@ export function AnimatedScrollText({
       const elementTop = startPosition - currentScroll;
       const visibleHeight = scroller.clientHeight - elementTop;
 
-      const progress =
-        (visibleHeight - containerHeight) /
-        (fullRevealDistance - containerHeight);
+      const revealRange = Math.max(1, fullRevealDistance - containerHeight);
+      const progress = (visibleHeight - containerHeight) / revealRange;
       const clampedProgress = Math.max(0, Math.min(1, progress));
       setScrollProgress(clampedProgress);
 
-      if (onRevealComplete) {
-        onRevealComplete(clampedProgress >= 1);
-      }
+      onRevealCompleteRef.current?.(clampedProgress >= 1);
     };
 
     scroller.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       scroller.removeEventListener("scroll", handleScroll);
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
-      }
+      observer.unobserve(container);
     };
   }, [scrollContainerRef, fullRevealDistance, isVisible]);
 
@@ -87,18 +89,20 @@ export function AnimatedScrollText({
         const opacity = initialOpacity + (1 - initialOpacity) * progress;
 
         return (
-          <span
-            key={index}
-            style={{
-              display: "inline-block",
-              marginRight: "0.25em",
-              filter: `blur(${blurAmount}px)`,
-              opacity: opacity,
-              transition: "filter 0.2s ease-out, opacity 0.2s ease-out",
-            }}
-          >
-            {word}
-          </span>
+          <React.Fragment key={index}>
+            <span
+              style={{
+                display: "inline-block",
+                marginRight: "0.25em",
+                filter: `blur(${blurAmount}px)`,
+                opacity: opacity,
+                transition: "filter 0.2s ease-out, opacity 0.2s ease-out",
+              }}
+            >
+              {word}
+            </span>
+            {index < words.length - 1 ? " " : null}
+          </React.Fragment>
         );
       })}
     </div>

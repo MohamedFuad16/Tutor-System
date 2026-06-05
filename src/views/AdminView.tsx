@@ -678,7 +678,7 @@ export function AdminView() {
 
     let cancelled = false;
     let inFlight = false;
-    const loadActivity = async (showLoading: boolean) => {
+    const loadActivity = async (showLoading: boolean): Promise<void> => {
       if (inFlight) return;
       inFlight = true;
       if (showLoading) setActivityStatus("loading");
@@ -721,7 +721,7 @@ export function AdminView() {
 
     void loadActivity(true);
     const interval = window.setInterval(
-      () => void loadActivity(false),
+      (): void => void loadActivity(false),
       brainRuntimeSettings.activityRefreshMs,
     );
 

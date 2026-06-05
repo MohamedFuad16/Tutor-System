@@ -69,6 +69,7 @@ export function PdfViewer() {
     y: number;
     color: string;
     rects: any[];
+    text: string;
   } | null>(null);
   const [voiceVisualFocus, setVoiceVisualFocus] = useState<{
     query: string;
@@ -78,6 +79,16 @@ export function PdfViewer() {
   } | null>(null);
   const [noteText, setNoteText] = useState("");
   const [pageInputValue, setPageInputValue] = useState<string | null>(null);
+  const boundedPdfTotalPages = Math.max(1, pdfTotalPages || 1);
+  const clampPdfPage = (page: number) =>
+    Math.min(boundedPdfTotalPages, Math.max(1, page));
+  const commitPageInput = () => {
+    const val = parseInt(pageInputValue || "");
+    if (!isNaN(val)) {
+      setPdfPage(clampPdfPage(val));
+    }
+    setPageInputValue(null);
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -278,14 +289,14 @@ export function PdfViewer() {
       )
         return;
       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        setPdfPage(Math.min(pdfTotalPages, pdfPage + 1));
+        setPdfPage(clampPdfPage(pdfPage + 1));
       } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        setPdfPage(Math.max(1, pdfPage - 1));
+        setPdfPage(clampPdfPage(pdfPage - 1));
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [pdfPage, pdfTotalPages, setPdfPage]);
+  }, [boundedPdfTotalPages, pdfPage, setPdfPage]);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     const currentState = useStore.getState();
@@ -426,6 +437,7 @@ export function PdfViewer() {
         y: selectionTooltip.y,
         color,
         rects: normalizedRects,
+        text: selectionTooltip.text,
       });
       setSelectionTooltip(null);
       return;
@@ -454,7 +466,7 @@ export function PdfViewer() {
       documentId: activeDocumentId || undefined,
       pageNumber: pdfPage,
       rects: draftNote.rects,
-      text: selectionTooltip?.text || "",
+      text: draftNote.text,
       color: draftNote.color,
       type: "sticky",
       note: noteText,
@@ -495,7 +507,7 @@ export function PdfViewer() {
 
   const defaultWidth = isFitWidth ? availWidth : Math.floor(794 * fitScale);
   const widthVal = isFitWidth ? availWidth : undefined;
-  const heightVal = undefined;
+  const heightVal: number | undefined = undefined;
 
   const renderedScale = pdfScale;
 
@@ -624,7 +636,9 @@ export function PdfViewer() {
           </div>
 
           <button
-            onClick={() => setPdfPage(Math.max(1, pdfPage - 1))}
+            type="button"
+            aria-label="Previous PDF page"
+            onClick={() => setPdfPage(clampPdfPage(pdfPage - 1))}
             className="relative z-10 p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors flex items-center justify-center shrink-0 w-8 h-8 focus:outline-none"
           >
             <ChevronLeft size={16} />
@@ -633,23 +647,16 @@ export function PdfViewer() {
           <div className="relative z-10 flex flex-col items-center justify-center px-4 min-w-[80px]">
             <span className="text-[14px] font-mono font-bold text-white tracking-widest flex items-center">
               <input
+                aria-label="PDF page number"
                 type="text"
                 value={pageInputValue !== null ? pageInputValue : pdfPage}
                 onChange={(e) => setPageInputValue(e.target.value)}
                 onBlur={() => {
-                  const val = parseInt(pageInputValue || "");
-                  if (!isNaN(val) && val >= 1 && val <= pdfTotalPages) {
-                    setPdfPage(val);
-                  }
-                  setPageInputValue(null);
+                  commitPageInput();
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    const val = parseInt(pageInputValue || "");
-                    if (!isNaN(val) && val >= 1 && val <= pdfTotalPages) {
-                      setPdfPage(val);
-                    }
-                    setPageInputValue(null);
+                    commitPageInput();
                   }
                 }}
                 className="w-7 bg-transparent text-center text-white focus:outline-none focus:bg-white/20 hover:bg-white/10 rounded transition-colors"
@@ -660,7 +667,9 @@ export function PdfViewer() {
           </div>
 
           <button
-            onClick={() => setPdfPage(Math.min(pdfTotalPages, pdfPage + 1))}
+            type="button"
+            aria-label="Next PDF page"
+            onClick={() => setPdfPage(clampPdfPage(pdfPage + 1))}
             className="relative z-10 p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors flex items-center justify-center shrink-0 w-8 h-8 focus:outline-none"
           >
             <ChevronRight size={16} />
@@ -669,6 +678,9 @@ export function PdfViewer() {
           <div className="relative z-10 w-px h-5 bg-white/10 mx-1" />
 
           <button
+            type="button"
+            aria-label={t("fit_height")}
+            aria-pressed={!isFitWidth}
             onClick={() => setIsFitWidth(false)}
             className={`relative z-10 p-2 rounded-full transition-colors w-8 h-8 flex items-center justify-center focus:outline-none ${!isFitWidth ? "text-white shadow-[0_2px_10px_rgba(0,0,0,0.5)] bg-white/10 border border-white/10 mix-blend-screen" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
             title={t("fit_height")}
@@ -676,6 +688,9 @@ export function PdfViewer() {
             <Minimize size={14} />
           </button>
           <button
+            type="button"
+            aria-label={t("fit_width")}
+            aria-pressed={isFitWidth}
             onClick={() => setIsFitWidth(true)}
             className={`relative z-10 p-2 rounded-full transition-colors w-8 h-8 flex items-center justify-center focus:outline-none ${isFitWidth ? "text-white shadow-[0_2px_10px_rgba(0,0,0,0.5)] bg-white/10 border border-white/10 mix-blend-screen" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
             title={t("fit_width")}
@@ -855,6 +870,8 @@ export function PdfViewer() {
 
                 <div className="flex gap-1 pr-1.5 border-r border-white/10 relative z-10">
                   <button
+                    type="button"
+                    aria-label={t("highlight")}
                     onClick={() =>
                       addSelectionAnnotation("highlight", "#fde047")
                     } // yellow
@@ -864,6 +881,8 @@ export function PdfViewer() {
                     <Highlighter size={14} />
                   </button>
                   <button
+                    type="button"
+                    aria-label={t("underline")}
                     onClick={() =>
                       addSelectionAnnotation("underline", "#3b82f6")
                     } // blue
@@ -873,6 +892,8 @@ export function PdfViewer() {
                     <Underline size={14} />
                   </button>
                   <button
+                    type="button"
+                    aria-label={t("strikethrough")}
                     onClick={() =>
                       addSelectionAnnotation("strikethrough", "#ef4444")
                     } // red
@@ -882,6 +903,8 @@ export function PdfViewer() {
                     <Strikethrough size={14} />
                   </button>
                   <button
+                    type="button"
+                    aria-label={t("sticky_note")}
                     onClick={() => addSelectionAnnotation("sticky", "#fde047")} // yellow
                     className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-yellow-400"
                     title={t("sticky_note")}
@@ -890,6 +913,7 @@ export function PdfViewer() {
                   </button>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     if (selectionTooltip) {
                       setSelectedTextContext(selectionTooltip.text);
@@ -933,6 +957,8 @@ export function PdfViewer() {
                     {t("sticky_note")}
                   </div>
                   <button
+                    type="button"
+                    aria-label="Close sticky note editor"
                     onClick={() => setDraftNote(null)}
                     className="text-zinc-500 hover:text-white transition-colors"
                   >
@@ -965,12 +991,14 @@ export function PdfViewer() {
                 </div>
                 <div className="px-3 py-2 bg-[#1A1A1E]/50 border-t border-[#2A2A30] flex justify-end gap-2">
                   <button
+                    type="button"
                     onClick={() => setDraftNote(null)}
                     className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
                   >
                     {t("cancel")}
                   </button>
                   <button
+                    type="button"
                     onClick={saveStickyNote}
                     className="px-3 py-1.5 text-xs font-semibold bg-yellow-400/10 text-yellow-400 hover:bg-yellow-400/20 border border-yellow-400/20 rounded pl-2 pr-3 flex items-center gap-1 transition-colors"
                   >

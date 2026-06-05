@@ -76,7 +76,10 @@ export const StatusBadge = ({
 // SVG Components matching the vector images
 
 export const PendingIcon = () => (
-  <div className="relative w-[22px] h-[22px] flex items-center justify-center">
+  <div
+    aria-hidden="true"
+    className="relative w-[22px] h-[22px] flex items-center justify-center"
+  >
     <svg
       width="24"
       height="22"
@@ -127,6 +130,7 @@ export const PendingIcon = () => (
 
 export const ProgressIcon = () => (
   <svg
+    aria-hidden="true"
     width="22"
     height="22"
     viewBox="0 0 48 48"
@@ -147,6 +151,7 @@ export const ProgressIcon = () => (
 
 export const SubmittedIcon = () => (
   <svg
+    aria-hidden="true"
     width="22"
     height="22"
     viewBox="0 0 48 48"
@@ -164,7 +169,10 @@ export const SubmittedIcon = () => (
 );
 
 export const ReviewIcon = () => (
-  <div className="relative w-[22px] h-[22px] flex items-center justify-center">
+  <div
+    aria-hidden="true"
+    className="relative w-[22px] h-[22px] flex items-center justify-center"
+  >
     <svg
       width="22"
       height="22"
@@ -212,7 +220,10 @@ export const ReviewIcon = () => (
 );
 
 export const SuccessIcon = () => (
-  <div className="relative w-[22px] h-[22px] flex items-center justify-center scale-[0.8]">
+  <div
+    aria-hidden="true"
+    className="relative w-[22px] h-[22px] flex items-center justify-center scale-[0.8]"
+  >
     <svg
       width="24"
       height="24"
@@ -249,7 +260,10 @@ export const SuccessIcon = () => (
 );
 
 export const FailedIcon = () => (
-  <div className="relative w-[22px] h-[22px] flex items-center justify-center">
+  <div
+    aria-hidden="true"
+    className="relative w-[22px] h-[22px] flex items-center justify-center"
+  >
     <svg
       width="24"
       height="24"
@@ -286,6 +300,7 @@ export const FailedIcon = () => (
 
 export const ExpiredIcon = () => (
   <svg
+    aria-hidden="true"
     width="22"
     height="22"
     viewBox="0 0 55 55"

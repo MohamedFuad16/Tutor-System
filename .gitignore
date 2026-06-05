@@ -8,6 +8,8 @@ coverage/
 .env*
 !.env.example
 server.mjs
+.workflow/**/chrome-profile/
+.workflow/**/chrome-test-profile/
 graphify-out/cache/
 graphify-out/memory/
 graphify-out/.graphify_root

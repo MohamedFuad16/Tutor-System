@@ -19,8 +19,8 @@ export class LearnerModel {
 
     let currentConcept = undefined;
     let scaffold_level = 5;
-    let prerequisite_gaps = [];
-    let illusion_flags = [];
+    let prerequisite_gaps: string[] = [];
+    const illusion_flags: string[] = [];
 
     if (currentConceptId) {
       currentConcept = await db.concepts.get(currentConceptId);
@@ -80,7 +80,7 @@ export class LearnerModel {
       struggle_state: "unknown",
       illusion_flags,
       calibration_state: "neutral",
-      transfer_gaps: [],
+      transfer_gaps: [] as string[],
     };
   }
 

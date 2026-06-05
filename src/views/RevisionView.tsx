@@ -2071,8 +2071,16 @@ const StoredAudioOverview = ({
     audioElement.playbackRate = playbackRate;
     if (audioElement.ended) audioElement.currentTime = 0;
     if (audioElement.readyState === 0) audioElement.load();
-    await audioElement.play();
-    retryPlaybackAttemptsRef.current = 0;
+    const playPromise = audioElement.play();
+    pendingPlayRef.current = playPromise;
+    try {
+      await playPromise;
+      retryPlaybackAttemptsRef.current = 0;
+    } finally {
+      if (pendingPlayRef.current === playPromise) {
+        pendingPlayRef.current = null;
+      }
+    }
     setError("");
     setAudioIssue("");
   };
@@ -2161,6 +2169,7 @@ const StoredAudioOverview = ({
           <button
             type="button"
             onClick={togglePlayback}
+            aria-label={`${isPlaying ? "Pause" : "Play"} ${overview.title}`}
             className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-800"
           >
             {isPlaying ? <Pause size={15} /> : <Play size={15} />}
@@ -2171,6 +2180,8 @@ const StoredAudioOverview = ({
               key={rate}
               type="button"
               onClick={() => setPlaybackRate(rate)}
+              aria-pressed={playbackRate === rate}
+              aria-label={`Set chapter audio speed to ${rate}x`}
               className={`rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${
                 playbackRate === rate
                   ? "border-blue-500 bg-blue-50 text-blue-700"
@@ -2233,6 +2244,7 @@ const StoredAudioOverview = ({
             if (audioIssue === "playback") schedulePlaybackRetry();
           }}
           onError={() => {
+            setIsPlaying(false);
             setAudioIssue("media");
             setError("Audio guide is unavailable in this build.");
           }}
@@ -2569,10 +2581,12 @@ const createBuiltInBookConcept = (book: BuiltInBook): PersistentConcept => ({
 const LongPressWrapper = ({
   onLongPress,
   onClick,
+  ariaLabel,
   children,
 }: {
   onLongPress: () => void;
   onClick: () => void;
+  ariaLabel?: string;
   children: (pressing: boolean) => React.ReactNode;
 }) => {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -2617,6 +2631,15 @@ const LongPressWrapper = ({
           onClick();
         }
       }}
+      onKeyDown={(event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        clearPress();
+        onClick();
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={ariaLabel}
       className="relative cursor-pointer select-none"
     >
       {children(pressing)}
@@ -2633,21 +2656,31 @@ const FlashcardUI = React.memo(
     onReview: (quality: number) => void;
   }) => {
     const [flipped, setFlipped] = useState(false);
+    const toggleCard = React.useCallback(() => {
+      setFlipped((value) => !value);
+    }, []);
+    const onToggleKeyDown = React.useCallback(
+      (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        toggleCard();
+      },
+      [toggleCard],
+    );
 
     return (
       <div className="w-full max-w-sm mx-auto mb-8 h-[240px] relative perspective-[1000px]">
         <div
-          className="w-full h-full relative cursor-pointer"
+          className="w-full h-full relative"
           style={{
             transform: `rotateY(${flipped ? 180 : 0}deg)`,
             transformStyle: "preserve-3d",
             transition: "transform 420ms cubic-bezier(0.16, 1, 0.3, 1)",
           }}
-          onClick={() => setFlipped(!flipped)}
         >
           {/* Front */}
           <div
-            className="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-6 bg-[#0A0A0B] border border-white/10 rounded-2xl shadow-xl"
+            className="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-6 bg-[#0A0A0B] border border-white/10 rounded-2xl shadow-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-[#0A0A0B]"
             style={{
               opacity: flipped ? 0 : 1,
               transition: `opacity 120ms ease ${flipped ? "0ms" : "100ms"}`,
@@ -2655,6 +2688,12 @@ const FlashcardUI = React.memo(
               WebkitBackfaceVisibility: "hidden",
               pointerEvents: flipped ? "none" : "auto",
             }}
+            role="button"
+            tabIndex={flipped ? -1 : 0}
+            aria-label="Show flashcard answer"
+            aria-pressed={flipped}
+            onClick={toggleCard}
+            onKeyDown={onToggleKeyDown}
           >
             <div className="text-center overflow-y-auto">
               <span className="text-xs font-mono text-zinc-500 mb-4 block">
@@ -2677,7 +2716,15 @@ const FlashcardUI = React.memo(
             }}
           >
             <div className="flex-1 flex items-center justify-center text-center mb-4 overflow-y-auto w-full">
-              <div className="w-full">
+              <div
+                className="w-full cursor-pointer rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-[#0A0A0B]"
+                role="button"
+                tabIndex={flipped ? 0 : -1}
+                aria-label="Show flashcard question"
+                aria-pressed={flipped}
+                onClick={toggleCard}
+                onKeyDown={onToggleKeyDown}
+              >
                 <span className="text-xs font-mono text-zinc-500 mb-2 block">
                   ANSWER
                 </span>
@@ -2799,11 +2846,11 @@ export function RevisionView() {
     [libraryRevision],
   );
 
-  const learningBooks =
-    useLiveQuery(
-      () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
-      [],
-    ) || [];
+  const queriedLearningBooks = useLiveQuery(
+    () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
+    [],
+  );
+  const learningBooks = queriedLearningBooks || [];
   const visibleLearningBooks = React.useMemo(() => {
     const general =
       learningBooks.find((book) => book.id === GENERAL_STUDY_BOOK_ID) ||
@@ -2822,27 +2869,31 @@ export function RevisionView() {
     });
     return result;
   }, [learningBooks]);
-  const learningBookConcepts =
-    useLiveQuery(
-      () => db.learningBookConcepts.orderBy("updatedAt").reverse().toArray(),
-      [],
-    ) || [];
-  const learningEntries =
-    useLiveQuery(
-      () =>
-        db.learningEntries.orderBy("timestamp").reverse().limit(50).toArray(),
-      [],
-    ) || [];
+  const queriedLearningBookConcepts = useLiveQuery(
+    () => db.learningBookConcepts.orderBy("updatedAt").reverse().toArray(),
+    [],
+  );
+  const learningBookConcepts = queriedLearningBookConcepts || [];
+  const queriedLearningEntries = useLiveQuery(
+    () => db.learningEntries.orderBy("timestamp").reverse().limit(50).toArray(),
+    [],
+  );
+  const learningEntries = queriedLearningEntries || [];
 
-  const flashcards =
-    useLiveQuery(async () => {
-      try {
-        return await db.flashcards.toArray();
-      } catch (error) {
-        console.warn("[RevisionView] Flashcards unavailable:", error);
-        return [];
-      }
-    }, []) || [];
+  const queriedFlashcards = useLiveQuery(async () => {
+    try {
+      return await db.flashcards.toArray();
+    } catch (error) {
+      console.warn("[RevisionView] Flashcards unavailable:", error);
+      return [];
+    }
+  }, []);
+  const flashcards = queriedFlashcards || [];
+  const isLibraryLoading =
+    queriedLearningBooks === undefined ||
+    queriedLearningBookConcepts === undefined ||
+    queriedLearningEntries === undefined ||
+    queriedFlashcards === undefined;
 
   const conceptsByBookId = React.useMemo(() => {
     const map = new Map<string, typeof learningBookConcepts>();
@@ -3503,6 +3554,7 @@ export function RevisionView() {
                       className="opacity-0"
                     >
                       <LongPressWrapper
+                        ariaLabel={`Open learning book ${book.title}`}
                         onLongPress={() =>
                           setDeleteTarget({
                             id: book.id,
@@ -3562,16 +3614,27 @@ export function RevisionView() {
           )}
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-            {visibleLearningBooks.length === 0 && concepts.length === 0 && (
-              <div className="col-span-full h-64 flex items-center justify-center text-zinc-500 border border-white/10 border-dashed rounded-3xl">
-                No books discovered yet. Start chatting to learn new concepts.
-              </div>
-            )}
+            {visibleLearningBooks.length === 0 &&
+              concepts.length === 0 &&
+              (isLibraryLoading ? (
+                <div
+                  className="col-span-full h-64 flex items-center justify-center text-zinc-500 border border-white/10 border-dashed rounded-3xl"
+                  role="status"
+                  aria-live="polite"
+                >
+                  Loading revision library...
+                </div>
+              ) : (
+                <div className="col-span-full h-64 flex items-center justify-center text-zinc-500 border border-white/10 border-dashed rounded-3xl">
+                  No books discovered yet. Start chatting to learn new concepts.
+                </div>
+              ))}
             {concepts.map((concept, index) => {
               const theme = themes[index % themes.length];
               return (
                 <LongPressWrapper
                   key={concept.id}
+                  ariaLabel={`Open built-in book ${concept.name}`}
                   onLongPress={() =>
                     setDeleteTarget({
                       id: concept.id,
@@ -3592,6 +3655,7 @@ export function RevisionView() {
                       SvgComponent={theme.SvgComponent}
                       bloomColor={theme.bloom}
                       bloomOpacity={theme.bloomOpacity}
+                      interactive={false}
                       isPressing={pressing}
                       pressDotColor={
                         theme.text.includes("1f1f1f") ? "#ff6e00" : "#fefefe"

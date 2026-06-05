@@ -18,6 +18,7 @@ import {
   PersistentConcept,
   ConversationInteraction,
   LearningBook,
+  LearningChapter,
   LearningBookConcept,
   LearningDocument,
 } from "./longterm.memory";
@@ -245,7 +246,7 @@ export class MemoryOrchestrator {
     }
     const storedBook = await db.learningBooks
       .get(storedBookId)
-      .catch(() => undefined);
+      .catch((): undefined => undefined);
     if (!storedBook) {
       announceActiveLearningBook(book);
     }
@@ -283,7 +284,9 @@ export class MemoryOrchestrator {
     const safeUserName = userName.trim() || "Learner";
     const safeTitle = title.trim() || "General Study";
     const bookId = this.sessionBookId(safeUserName);
-    const existing = await db.learningBooks.get(bookId).catch(() => undefined);
+    const existing = await db.learningBooks
+      .get(bookId)
+      .catch((): undefined => undefined);
     if (existing) {
       if (existing.sessionId === this.currentSessionId) return existing;
       const nextBook = { ...existing, sessionId: this.currentSessionId };
@@ -361,7 +364,9 @@ export class MemoryOrchestrator {
       compactText(title, "General Study")
         .replace(/[^a-zA-Z0-9 .:;,_-]/g, "")
         .trim() || "General Study";
-    const existing = await db.learningBooks.get(bookId).catch(() => undefined);
+    const existing = await db.learningBooks
+      .get(bookId)
+      .catch((): undefined => undefined);
     const base =
       existing ||
       (await this.upsertSessionLearningBook(userName, "General Study"));
@@ -622,7 +627,9 @@ export class MemoryOrchestrator {
     const apiKey = input.apiKey || getStoredOpenRouterKey();
     const userName = (input.userName || "Learner").trim() || "Learner";
     const selectedBook = input.activeBookId
-      ? await db.learningBooks.get(input.activeBookId).catch(() => undefined)
+      ? await db.learningBooks
+          .get(input.activeBookId)
+          .catch((): undefined => undefined)
       : undefined;
     const sessionBook =
       selectedBook ||
@@ -630,13 +637,13 @@ export class MemoryOrchestrator {
     const bookId = sessionBook.id;
     const existingSessionBook = await db.learningBooks
       .get(bookId)
-      .catch(() => sessionBook);
+      .catch((): LearningBook => sessionBook);
     const recentBooks = await db.learningBooks
       .orderBy("updatedAt")
       .reverse()
       .limit(12)
       .toArray()
-      .catch(() => []);
+      .catch((): LearningBook[] => []);
     let update: any = null;
 
     if (apiKey) {
@@ -843,7 +850,7 @@ export class MemoryOrchestrator {
     );
     const chapterTitle = compactText(update.chapterTitle, title) || title;
     const chapterId = `${bookId}:chapter:${slugify(chapterTitle)}`;
-    const existingChapters = existingBook?.chapters || [];
+    const existingChapters: LearningChapter[] = existingBook?.chapters || [];
     const chapterIndex = existingChapters.findIndex(
       (chapter) =>
         chapter.id === chapterId ||
@@ -883,7 +890,7 @@ export class MemoryOrchestrator {
     };
     const chapters =
       chapterIndex >= 0
-        ? existingChapters.map((chapter, index) =>
+        ? existingChapters.map((chapter: LearningChapter, index: number) =>
             index === chapterIndex ? nextChapter : chapter,
           )
         : [...existingChapters, nextChapter];

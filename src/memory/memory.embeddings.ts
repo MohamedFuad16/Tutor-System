@@ -40,7 +40,7 @@ function normalize(vector: number[]) {
   return vector.map((value) => value / magnitude);
 }
 
-export async function initEmbeddings() {
+export async function initEmbeddings(): Promise<void> {
   return undefined;
 }
 

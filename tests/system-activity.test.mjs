@@ -6,6 +6,12 @@ import { WebSocket } from "ws";
 
 import { createTutorServerApp } from "../.tmp-test/server.mjs";
 
+const originalFetch = globalThis.fetch;
+
+test.afterEach(() => {
+  globalThis.fetch = originalFetch;
+});
+
 const startApp = async () => {
   const { app } = await createTutorServerApp({ serveClient: false });
   const server = app.listen(0);
@@ -31,13 +37,23 @@ const startVoiceApp = async () => {
 };
 
 const readActivity = async (baseUrl, headers = {}) => {
-  const response = await fetch(`${baseUrl}/api/debug/system-activity`, {
+  const response = await originalFetch(`${baseUrl}/api/debug/system-activity`, {
     cache: "no-store",
     headers,
   });
   assert.equal(response.status, 200);
   return response.json();
 };
+
+const parseSseEvents = (streamText) =>
+  streamText
+    .split("\n\n")
+    .map((chunk) => chunk.trim())
+    .filter(Boolean)
+    .map((chunk) => {
+      assert.match(chunk, /^data: /);
+      return JSON.parse(chunk.replace(/^data: /, ""));
+    });
 
 const startMisoHealthServer = async () => {
   const server = http.createServer((req, res) => {
@@ -136,11 +152,13 @@ test("system activity uses a browser-provided MisoTTS API URL override", async (
 test("blocked chat requests are recorded without live model calls", async (t) => {
   const { server, baseUrl } = await startApp();
   t.after(() => server.close());
+  const requestId = "chat-blocked-sse-test-1";
 
   const response = await fetch(`${baseUrl}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+      requestId,
       messages: [{ role: "user", content: "Explain local observability." }],
       aiModel: "deepseek/deepseek-v4-flash",
     }),
@@ -152,6 +170,16 @@ test("blocked chat requests are recorded without live model calls", async (t) =>
   assert.match(streamText, /"type":"model_run"/);
   assert.match(streamText, /"status":"blocked"/);
   assert.match(streamText, /"requestedModel":"deepseek\/deepseek-v4-flash"/);
+  const events = parseSseEvents(streamText);
+  assert.deepEqual(
+    events.map((event) => event.type),
+    ["model_run", "error"],
+  );
+  assert.equal(events[0].requestId, requestId);
+  assert.equal(events[0].status, "blocked");
+  assert.equal(events[0].metadata.messageCount, 1);
+  assert.equal(events[1].requestId, requestId);
+  assert.match(events[1].error, /^OpenRouter API key is required/);
 
   const body = await readActivity(baseUrl);
   assert.ok(
@@ -161,6 +189,23 @@ test("blocked chat requests are recorded without live model calls", async (t) =>
         event.status === "blocked" &&
         event.title === "Chat request blocked",
     ),
+  );
+  const blockedEvent = body.events.find(
+    (event) =>
+      event.kind === "model" &&
+      event.status === "blocked" &&
+      event.title === "Chat request blocked",
+  );
+  assert.equal(blockedEvent.requestId, requestId);
+  assert.equal(blockedEvent.metadata.messageCount, 1);
+  assert.equal(
+    body.events.some(
+      (event) =>
+        event.kind === "model" &&
+        event.status === "started" &&
+        event.requestId === requestId,
+    ),
+    false,
   );
 });
 
@@ -178,6 +223,20 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
     if (ws.readyState === WebSocket.OPEN) ws.close();
   });
   await once(ws, "open");
+
+  const settingsApplied = new Promise((resolve, reject) => {
+    const timeout = setTimeout(
+      () => reject(new Error("SettingsApplied was not received.")),
+      1000,
+    );
+    ws.on("message", (data) => {
+      const parsed = JSON.parse(data.toString());
+      if (parsed.type === "SettingsApplied") {
+        clearTimeout(timeout);
+        resolve(parsed);
+      }
+    });
+  });
 
   const functionRequest = new Promise((resolve, reject) => {
     const timeout = setTimeout(
@@ -225,6 +284,7 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
     }),
   );
 
+  await settingsApplied;
   const request = await functionRequest;
   ws.send(Buffer.from(new Int16Array([180, -120, 90, -60]).buffer));
   const toolNames = request.functions.map((fn) => fn.name).sort();
@@ -389,6 +449,98 @@ test("blocked voice web search writes correlated system activity", async (t) => 
         event.title === "Voice web search blocked" &&
         event.requestId === "voice-web-test-1" &&
         event.toolName === "web_search",
+    ),
+  );
+});
+
+test("voice web search route uses a stubbed Serper fetch and records returned sources", async (t) => {
+  const { server, baseUrl } = await startApp();
+  t.after(() => server.close());
+  const seenRequests = [];
+  globalThis.fetch = async (url, init = {}) => {
+    const target = String(url);
+    if (!target.includes("google.serper.dev")) {
+      throw new Error(`Unexpected fetch: ${target}`);
+    }
+    seenRequests.push({
+      url: target,
+      apiKey: init.headers?.["X-API-KEY"],
+      body: JSON.parse(init.body),
+    });
+    return Response.json({
+      organic: [
+        {
+          title: "Stubbed Voice Source",
+          link: "https://example.com/voice-source?utm_source=test#proof",
+          snippet: "A stubbed source for the local voice tool route.",
+          position: 1,
+        },
+      ],
+      images: [
+        {
+          title: "Stubbed Voice Diagram",
+          link: "https://example.com/voice-diagram",
+          imageUrl: "https://cdn.example.com/voice-diagram.png",
+          thumbnailUrl: "https://cdn.example.com/voice-diagram-thumb.png",
+          source: "Example Images",
+        },
+      ],
+    });
+  };
+
+  const response = await originalFetch(`${baseUrl}/api/voice-web-search`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-serper-api-key": "stub-serper-key",
+    },
+    body: JSON.stringify({
+      requestId: "voice-web-stub-test-1",
+      query: "stubbed voice diagram source",
+      mode: "search",
+      maxResults: 4,
+    }),
+  });
+
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.requestId, "voice-web-stub-test-1");
+  assert.equal(payload.sources.length, 2);
+  assert.equal(payload.sources[0].title, "Stubbed Voice Source");
+  assert.equal(payload.sources[0].url, "https://example.com/voice-source");
+  assert.equal(payload.sources[1].sourceType, "image");
+  assert.equal(
+    payload.sources[1].thumbnailUrl,
+    "https://cdn.example.com/voice-diagram-thumb.png",
+  );
+  assert.deepEqual(seenRequests, [
+    {
+      url: "https://google.serper.dev/search",
+      apiKey: "stub-serper-key",
+      body: { q: "stubbed voice diagram source", num: 4 },
+    },
+  ]);
+
+  const body = await readActivity(baseUrl);
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "web" &&
+        event.status === "started" &&
+        event.title === "Voice web search started" &&
+        event.requestId === "voice-web-stub-test-1" &&
+        event.metadata?.mode === "search",
+    ),
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "web" &&
+        event.status === "completed" &&
+        event.title === "Voice web search completed" &&
+        event.requestId === "voice-web-stub-test-1" &&
+        event.metadata?.sourceCount === 2 &&
+        event.metadata?.domains?.includes("example.com"),
     ),
   );
 });

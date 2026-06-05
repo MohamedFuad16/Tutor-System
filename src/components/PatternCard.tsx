@@ -59,6 +59,7 @@ export const PatternCard = ({
   animateDots = true,
   pressDotColor,
   pressRingColor,
+  interactive = true,
   onDragOver,
   onDragLeave,
   onDrop,
@@ -75,6 +76,7 @@ export const PatternCard = ({
   animateDots?: boolean;
   pressDotColor?: string;
   pressRingColor?: string;
+  interactive?: boolean;
   onDragOver?: (e: React.DragEvent) => void;
   onDragLeave?: () => void;
   onDrop?: (e: React.DragEvent) => void;
@@ -107,6 +109,12 @@ export const PatternCard = ({
       duration: scale < 1 ? 0.14 : 0.28,
       ease: "power3.out",
     });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    onClick();
   };
 
   useEffect(() => {
@@ -154,7 +162,10 @@ export const PatternCard = ({
   return (
     <div
       ref={cardRef}
-      onClick={onClick}
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onClick={interactive ? onClick : undefined}
+      onKeyDown={interactive ? handleKeyDown : undefined}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => animateCardScale(1.02)}
       onMouseLeave={() => animateCardScale(1)}

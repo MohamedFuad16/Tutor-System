@@ -12,7 +12,9 @@ export function Navigation() {
   const navContainerRef = useRef<HTMLDivElement>(null);
   const activePillRef = useRef<HTMLDivElement>(null);
   const borderSpinRef = useRef<HTMLDivElement>(null);
-  const buttonRefs = useRef<Partial<Record<ViewState, HTMLButtonElement | null>>>({});
+  const buttonRefs = useRef<
+    Partial<Record<ViewState, HTMLButtonElement | null>>
+  >({});
   const [spotlight, setSpotlight] = useState({
     x: 0,
     y: 0,
@@ -171,6 +173,7 @@ export function Navigation() {
                 buttonRefs.current[item.id] = node;
               }}
               onClick={() => setActiveView(item.id)}
+              aria-label={item.label}
               className={`relative z-10 flex min-w-0 flex-1 transform-gpu select-none items-center justify-center gap-1 rounded-full px-1.5 py-1.5 text-[9.5px] font-medium transition-colors focus:outline-none sm:min-w-[4.35rem] sm:flex-none sm:gap-[0.3125rem] sm:px-[0.5625rem] sm:py-1.5 sm:text-[10.5px] ${
                 isActive
                   ? "text-white"

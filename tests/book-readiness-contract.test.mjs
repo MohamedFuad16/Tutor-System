@@ -98,6 +98,20 @@ test("MisoTTS read-aloud boundary is documented across architecture books", () =
   );
 });
 
+test("architecture book text keeps Graphify local and defines the Chapter 2 flowchart style", () => {
+  const toolsChapter = tutorBook[2].content;
+  const userBrainLedgerChapter = userBrainBookSource.match(
+    /title: "Chapter 2: The Learner Brain Ledger",\n    content: `([\s\S]*?)`,\n  \}/,
+  )?.[1];
+
+  assert.ok(userBrainLedgerChapter, "User Brain Chapter 2 should exist");
+  assert.doesNotMatch(toolsChapter, /\|\s*Graphify\s*\|[^\n]*GitHub Actions/);
+  assert.match(toolsChapter, /AGENTS\.md, local Graphify CLI/);
+  assert.match(userBrainLedgerChapter, /## Ledger Flowchart Style/);
+  assert.match(userBrainLedgerChapter, /flowchart LR/);
+  assert.match(userBrainLedgerChapter, /Evidence gate/);
+});
+
 test("audio overview contract keeps one visible player and 3-4 minute guides", () => {
   assert.match(revisionViewSource, /const StoredAudioOverview/);
   assert.match(revisionViewSource, /const resolveAudioOverviewSrc/);

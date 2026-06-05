@@ -1679,11 +1679,13 @@ const persistBookChatThread = async (
   bookTitle: string,
   items: Message[],
   proofAttemptId?: string,
-) => {
+): Promise<BookChatThread | null> => {
   if (!bookId) return null;
   const now = Date.now();
   const id = chatThreadIdForBook(bookId);
-  const existing = await db.bookChatThreads.get(id).catch(() => undefined);
+  const existing = await db.bookChatThreads
+    .get(id)
+    .catch((): undefined => undefined);
   const thread: BookChatThread = {
     id,
     bookId,
@@ -5509,7 +5511,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       processor.connect(audioContext.destination);
 
       const voiceContextPayload = await buildVoiceStudyContext().catch(
-        (error) => {
+        (error: unknown): null => {
           console.warn("[ChatPanel] Voice study context failed:", error);
           recordVoiceAgentEvent({
             type: "context_attached",
@@ -7491,6 +7493,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
 
                 {/* Dismiss */}
                 <button
+                  type="button"
+                  aria-label="Clear selected PDF context"
                   onClick={() => setSelectedTextContext("")}
                   className="shrink-0 p-1.5 rounded-full text-zinc-500 hover:text-zinc-200 hover:bg-white/10 transition-colors focus:outline-none mt-0.5"
                 >
@@ -7611,6 +7615,8 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               <div className="absolute top-2 left-4 flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-md text-[10px] font-bold uppercase tracking-wider z-20">
                 <Search size={10} strokeWidth={3} /> Web Search
                 <button
+                  type="button"
+                  aria-label="Remove web search tool"
                   onClick={() => setIsSearchSkillActive(false)}
                   className="ml-1 hover:text-white transition-colors"
                 >
@@ -7626,10 +7632,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
               transition={{ duration: 0.2 }}
               value={input}
-              onChange={(e) => handleInputChange(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                handleInputChange(e.target.value)
+              }
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   handleSend();
@@ -7780,7 +7788,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   if (isActive) audio.playHover();
                 }}
                 onMouseLeave={() => setIsHovered(false)}
-                onPointerDown={(e) => {
+                onPointerDown={(e: React.PointerEvent<HTMLButtonElement>) => {
                   e.preventDefault();
                   handleSend();
                 }}

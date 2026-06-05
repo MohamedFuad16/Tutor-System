@@ -99,7 +99,12 @@ export function SiriLiquidGlass({
   }, [isActive, isHovered, shouldAnimate]);
 
   return (
-    <div className="absolute inset-0 overflow-hidden mix-blend-screen blur-[4px]">
+    <div
+      aria-hidden="true"
+      data-active={isActive}
+      data-valid={isValid}
+      className="absolute inset-0 overflow-hidden mix-blend-screen blur-[4px]"
+    >
       {/* Apple iOS Siri Orbs for Liquid Glass Effect */}
       <div
         ref={rotorRef}

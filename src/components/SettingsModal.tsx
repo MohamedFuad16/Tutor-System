@@ -782,6 +782,8 @@ export function SettingsButton() {
   return (
     <>
       <button
+        type="button"
+        aria-label={t("app_settings")}
         onClick={() => setIsOpen(true)}
         className="fixed right-4 top-[4.35rem] z-50 flex h-[42px] w-[42px] items-center justify-center overflow-visible rounded-full p-[1px] transition-[color,background-color,border-color,box-shadow,transform,opacity] focus:outline-none group sm:right-8 sm:top-8 sm:h-[46px] sm:w-[46px]"
         style={{
@@ -850,6 +852,8 @@ export function SettingsButton() {
                   {t("app_settings")}
                 </h2>
                 <button
+                  type="button"
+                  aria-label="Close settings"
                   onClick={() => {
                     if (!isValidating) setIsOpen(false);
                   }}
@@ -904,6 +908,7 @@ export function SettingsButton() {
                   className="pointer-events-none absolute left-0 top-0 z-10 rounded-full border border-white/10 bg-white/[0.09] opacity-0 shadow-[0_10px_24px_rgba(0,0,0,0.25)]"
                 />
                 <button
+                  type="button"
                   ref={(node) => {
                     settingsTabButtonRefs.current.general = node;
                   }}
@@ -917,6 +922,7 @@ export function SettingsButton() {
                   {t("general")}
                 </button>
                 <button
+                  type="button"
                   ref={(node) => {
                     settingsTabButtonRefs.current.usage = node;
                   }}
@@ -930,6 +936,7 @@ export function SettingsButton() {
                   {t("usage")}
                 </button>
                 <button
+                  type="button"
                   ref={(node) => {
                     settingsTabButtonRefs.current.persona = node;
                   }}
@@ -952,11 +959,15 @@ export function SettingsButton() {
                     className="flex flex-col gap-5"
                   >
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                      <label
+                        htmlFor="settings-language"
+                        className="text-sm font-medium text-zinc-300 flex items-center gap-2"
+                      >
                         <Globe2 size={14} className="text-zinc-400" />
                         {t("language")}
                       </label>
                       <select
+                        id="settings-language"
                         value={inputLanguage}
                         onChange={(e) => setInputLanguage(e.target.value)}
                         disabled={isValidating}
@@ -969,11 +980,15 @@ export function SettingsButton() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+                      <label
+                        htmlFor="settings-learner-name"
+                        className="text-sm font-medium text-zinc-300 flex items-center gap-2"
+                      >
                         <UserRound size={14} className="text-zinc-400" />
                         {t("learner_name")}
                       </label>
                       <input
+                        id="settings-learner-name"
                         type="text"
                         value={inputLearnerName}
                         onChange={(e) => setInputLearnerName(e.target.value)}
@@ -1140,6 +1155,8 @@ export function SettingsButton() {
                       </label>
                       <button
                         type="button"
+                        aria-label="Toggle animations"
+                        aria-pressed={inputAnimations}
                         onClick={() => setInputAnimations(!inputAnimations)}
                         className={`w-11 h-6 rounded-full transition-colors relative ${inputAnimations ? "bg-[#ff6e00]" : "bg-zinc-700"}`}
                       >
@@ -1231,6 +1248,7 @@ export function SettingsButton() {
                           className="flex-1 bg-[#121214] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-[#ff6e00]/45 transition-[color,background-color,border-color,box-shadow,transform,opacity]"
                         />
                         <button
+                          type="button"
                           onClick={async () => {
                             if (!personaDesc.trim()) return;
                             setIsGeneratingPersona(true);
@@ -1299,6 +1317,7 @@ export function SettingsButton() {
 
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <button
+                  type="button"
                   onClick={() => setIsOpen(false)}
                   disabled={isValidating}
                   className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
@@ -1306,6 +1325,7 @@ export function SettingsButton() {
                   {t("cancel")}
                 </button>
                 <button
+                  type="button"
                   onClick={handleSave}
                   disabled={isValidating}
                   className="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-medium bg-white text-black hover:bg-zinc-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)] disabled:opacity-50"

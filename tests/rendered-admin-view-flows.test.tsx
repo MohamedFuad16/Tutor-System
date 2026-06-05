@@ -1,0 +1,364 @@
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { DEFAULT_BRAIN_RUNTIME_SETTINGS } from "../src/lib/brainRuntimeSettings";
+import { db } from "../src/memory/longterm.memory";
+import { useStore } from "../src/store";
+import { AdminView } from "../src/views/AdminView";
+
+const { recordStoredAudioOverviewArtifactsMock } = vi.hoisted(() => ({
+  recordStoredAudioOverviewArtifactsMock: vi.fn(async () => []),
+}));
+
+vi.mock("../src/memory/artifact.records", async () => {
+  const actual = await vi.importActual<
+    typeof import("../src/memory/artifact.records")
+  >("../src/memory/artifact.records");
+
+  return {
+    ...actual,
+    recordStoredAudioOverviewArtifacts: recordStoredAudioOverviewArtifactsMock,
+  };
+});
+
+const systemActivityPayload = {
+  generatedAt: "2026-06-05T10:00:00.000Z",
+  localOnly: true,
+  retention: { limit: 250, strategy: "ring-buffer" },
+  summary: {
+    total: 2,
+    byKind: { model: 1, memory: 1 },
+    byStatus: { completed: 2 },
+    latestError: null as Record<string, unknown> | null,
+    latestEventAt: Date.parse("2026-06-05T10:00:00.000Z"),
+    retentionLimit: 250,
+  },
+  meters: {
+    providers: {
+      openRouter: true,
+      openRouterByok: false,
+      deepgram: false,
+    },
+    graph: { status: "ready" },
+    tuning: { activityRefreshMs: 5000 },
+  },
+  events: [
+    {
+      id: "activity:model",
+      timestamp: Date.parse("2026-06-05T10:00:00.000Z"),
+      kind: "model",
+      status: "completed",
+      title: "Tutor reply completed",
+      requestId: "request:rendered-admin",
+      model: "test-model",
+      durationMs: 42,
+    },
+    {
+      id: "activity:memory",
+      timestamp: Date.parse("2026-06-05T09:59:59.000Z"),
+      kind: "memory",
+      status: "completed",
+      title: "Learning memory saved",
+      requestId: "request:rendered-admin",
+    },
+  ],
+};
+
+type FetchMock = ReturnType<
+  typeof vi.fn<
+    (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+  >
+>;
+
+const activityResponse = () =>
+  new Response(JSON.stringify(systemActivityPayload), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+
+const deferred = <T,>() => {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, reject, resolve };
+};
+
+class MockWebSocket {
+  static instances: MockWebSocket[] = [];
+
+  readonly url: string;
+  onopen: ((event: Event) => void) | null = null;
+  onmessage: ((event: MessageEvent<string>) => void) | null = null;
+  onerror: ((event: Event) => void) | null = null;
+  onclose: ((event: CloseEvent) => void) | null = null;
+
+  constructor(url: string | URL) {
+    this.url = String(url);
+    MockWebSocket.instances.push(this);
+  }
+
+  close = vi.fn(() => {
+    this.onclose?.(new CloseEvent("close"));
+  });
+
+  open() {
+    this.onopen?.(new Event("open"));
+  }
+
+  message(data: string) {
+    this.onmessage?.(new MessageEvent("message", { data }));
+  }
+}
+
+let fetchMock: FetchMock;
+
+const resetAdminStore = () => {
+  useStore.setState({
+    accessMode: "admin",
+    activeBetaProofAttemptId: null,
+    activeLearningBookId: null,
+    activeProject: "Rendered Admin QA",
+    activeView: "admin",
+    animationsEnabled: false,
+    betaProofTrafficApproval: null,
+    brainRuntimeSettings: { ...DEFAULT_BRAIN_RUNTIME_SETTINGS },
+    misoTtsApiUrl: "",
+    voiceAgentEvents: [],
+    webSearchEvents: [],
+  });
+};
+
+const renderAdmin = () => render(<AdminView />);
+
+const clickTab = (name: string) => {
+  fireEvent.click(screen.getByRole("button", { name }));
+};
+
+const activityRequest = () =>
+  fetchMock.mock.calls.find(([input]) =>
+    String(input).includes("/api/debug/system-activity"),
+  );
+
+beforeEach(async () => {
+  localStorage.clear();
+  await db.delete();
+  await db.open();
+  resetAdminStore();
+  MockWebSocket.instances = [];
+  fetchMock = vi.fn(async () => activityResponse());
+  vi.stubGlobal("fetch", fetchMock);
+  vi.stubGlobal("WebSocket", MockWebSocket);
+});
+
+afterEach(async () => {
+  cleanup();
+  vi.unstubAllGlobals();
+  await db.delete();
+});
+
+describe("rendered AdminView page flows", () => {
+  it("shows the activity loading state before a successful local response", async () => {
+    const pending = deferred<Response>();
+    fetchMock.mockImplementationOnce(() => pending.promise);
+
+    renderAdmin();
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "System Activity" }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("Loading")).toBeInTheDocument();
+
+    await act(async () => {
+      pending.resolve(activityResponse());
+      await pending.promise;
+    });
+
+    expect(await screen.findByText("Live")).toBeInTheDocument();
+    expect(screen.getAllByText("Tutor reply completed").length).toBeGreaterThan(
+      0,
+    );
+  });
+
+  it("renders an actionable activity error when the debug route fails", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response("offline", { status: 503, statusText: "Unavailable" }),
+    );
+
+    renderAdmin();
+
+    expect(
+      await screen.findByText("System activity unavailable (503)"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Offline")).toBeInTheDocument();
+  });
+
+  it("adds the local debug token and Miso endpoint to activity requests", async () => {
+    localStorage.setItem("tutor_debug_token", "rendered-debug-token");
+    useStore.setState({ misoTtsApiUrl: "http://127.0.0.1:8080/" });
+
+    renderAdmin();
+
+    await waitFor(() => expect(activityRequest()).toBeDefined());
+    const request = activityRequest();
+    const headers = new Headers(request?.[1]?.headers);
+
+    expect(headers.get("X-Debug-Token")).toBe("rendered-debug-token");
+    expect(headers.get("x-miso-tts-api-url")).toBe("http://127.0.0.1:8080/");
+    expect(String(request?.[0])).toMatch(/\/api\/debug\/system-activity$/);
+  });
+
+  it("omits the debug-token header when no local token is stored", async () => {
+    renderAdmin();
+
+    await waitFor(() => expect(activityRequest()).toBeDefined());
+    const headers = new Headers(activityRequest()?.[1]?.headers);
+
+    expect(headers.has("X-Debug-Token")).toBe(false);
+    expect(
+      fetchMock.mock.calls.every(
+        ([input]) => !/openrouter|deepgram|serpapi|serper/i.test(String(input)),
+      ),
+    ).toBe(true);
+  });
+
+  it("manually refreshes the activity request from the polling control", async () => {
+    renderAdmin();
+
+    expect(await screen.findByText("Live")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: /Auto-refresh 5s/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  });
+
+  it("navigates among model, memory, and evidence admin tabs", async () => {
+    renderAdmin();
+    await screen.findByText("Live");
+
+    clickTab("Model Runs");
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Model Runs" }),
+    ).toBeInTheDocument();
+
+    clickTab("Memory Events");
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Memory Events" }),
+    ).toBeInTheDocument();
+
+    clickTab("Evidence Ledger");
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Evidence Ledger" }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders the local beta diagnostics snapshot surface", async () => {
+    renderAdmin();
+    await screen.findByText("Live");
+
+    clickTab("Beta Diagnostics");
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Beta Diagnostics" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: "Diagnostic snapshot and export",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /it does not sync to AWS or claim cloud-beta readiness/i,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("exports diagnostics through a browser-local JSON download", async () => {
+    const createObjectUrl = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:rendered-admin-diagnostics");
+    const revokeObjectUrl = vi.spyOn(URL, "revokeObjectURL");
+    const anchorClick = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => undefined);
+
+    renderAdmin();
+    await screen.findByText("Live");
+    clickTab("Beta Diagnostics");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Export diagnostics JSON" }),
+    );
+
+    expect(createObjectUrl).toHaveBeenCalledTimes(1);
+    expect(anchorClick).toHaveBeenCalledTimes(1);
+    expect(revokeObjectUrl).toHaveBeenCalledWith(
+      "blob:rendered-admin-diagnostics",
+    );
+    expect(
+      screen.getByText(/Prepared local diagnostics export with \d+ rows\./),
+    ).toBeInTheDocument();
+  });
+
+  it("routes Back to Library through the Zustand view state", async () => {
+    renderAdmin();
+    await screen.findByText("Live");
+
+    fireEvent.click(screen.getByRole("button", { name: "Back to Library" }));
+
+    expect(useStore.getState().activeView).toBe("study");
+  });
+
+  it("opens the debug WebSocket after health succeeds and renders log events", async () => {
+    renderAdmin();
+    await screen.findByText("Live");
+
+    clickTab("Server Console");
+
+    await waitFor(() => expect(MockWebSocket.instances).toHaveLength(1));
+    const socket = MockWebSocket.instances[0];
+    expect(socket.url).toMatch(/\/ws\/debug$/);
+
+    act(() => socket.open());
+    expect(screen.getByText("Connected")).toBeInTheDocument();
+
+    act(() => {
+      socket.message(
+        JSON.stringify({
+          type: "info",
+          msg: "Rendered console event",
+          timestamp: Date.parse("2026-06-05T10:00:00.000Z"),
+        }),
+      );
+    });
+
+    expect(screen.getByText("Rendered console event")).toBeInTheDocument();
+  });
+
+  it("shows the offline console message when the backend health check fails", async () => {
+    fetchMock
+      .mockResolvedValueOnce(activityResponse())
+      .mockRejectedValueOnce(new Error("backend unavailable"));
+
+    renderAdmin();
+    await screen.findByText("Live");
+    clickTab("Server Console");
+
+    expect(
+      await screen.findByText(
+        "Server console is offline. Start the Tutor backend to stream live logs.",
+      ),
+    ).toBeInTheDocument();
+    expect(MockWebSocket.instances).toHaveLength(0);
+  });
+});

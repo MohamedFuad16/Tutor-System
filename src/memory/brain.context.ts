@@ -463,7 +463,7 @@ export const buildBrainContextPacket = async (
   if (activeBookId) {
     const book = await db.learningBooks
       .get(activeBookId)
-      .catch(() => undefined);
+      .catch((): undefined => undefined);
     if (book) {
       activeBookTitle = book.title || activeBookTitle;
       const bookConcepts = await db.learningBookConcepts
@@ -471,7 +471,7 @@ export const buildBrainContextPacket = async (
         .equals(book.id)
         .limit(input.runtimeSettings.memoryConceptLimit)
         .toArray()
-        .catch(() => []);
+        .catch((): LearningBookConcept[] => []);
       activeBookContext = buildActiveBookContext(book, bookConcepts);
     }
   }

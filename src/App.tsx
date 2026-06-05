@@ -4,6 +4,7 @@ import { Navigation } from "./components/Navigation";
 import { SettingsButton } from "./components/SettingsModal";
 import { StudyView } from "./views/StudyView";
 import { gsap } from "gsap";
+import { useMotionPreference } from "./hooks/useMotionPreference";
 
 const AnalyticsView = React.lazy(() =>
   import("./views/AnalyticsView").then((module) => ({
@@ -33,10 +34,12 @@ function GsapRouteFrame({
   children,
   routeKey,
   variant,
+  motionEnabled,
 }: {
   children: React.ReactNode;
   routeKey: string;
   variant: "rise" | "scale" | "slide" | "admin";
+  motionEnabled: boolean;
 }) {
   const frameRef = useRef<HTMLDivElement | null>(null);
 
@@ -60,7 +63,7 @@ function GsapRouteFrame({
       x: 0,
       y: 0,
       scale: 1,
-      duration: 0.3,
+      duration: motionEnabled ? 0.3 : 0,
       ease: "power3.out",
     });
     const visibilityFallback = window.setTimeout(() => {
@@ -73,7 +76,7 @@ function GsapRouteFrame({
       window.clearTimeout(visibilityFallback);
       tween.kill();
     };
-  }, [routeKey, variant]);
+  }, [motionEnabled, routeKey, variant]);
 
   return (
     <div ref={frameRef} className="absolute inset-0">
@@ -86,6 +89,7 @@ export default function App() {
   const activeView = useStore((state) => state.activeView);
   const setActiveView = useStore((state) => state.setActiveView);
   const accessMode = useStore((state) => state.accessMode);
+  const motionEnabled = useMotionPreference();
 
   useEffect(() => {
     if (!VALID_VIEWS.has(activeView as string)) {
@@ -133,26 +137,46 @@ export default function App() {
 
       <main className="h-full w-full relative overflow-hidden">
         {activeView === "study" && (
-          <GsapRouteFrame key="study" routeKey="study" variant="rise">
+          <GsapRouteFrame
+            key="study"
+            routeKey="study"
+            variant="rise"
+            motionEnabled={motionEnabled}
+          >
             <StudyView />
           </GsapRouteFrame>
         )}
         {activeView === "analytics" && (
-          <GsapRouteFrame key="analytics" routeKey="analytics" variant="scale">
+          <GsapRouteFrame
+            key="analytics"
+            routeKey="analytics"
+            variant="scale"
+            motionEnabled={motionEnabled}
+          >
             <Suspense fallback={<RouteFallback />}>
               <AnalyticsView />
             </Suspense>
           </GsapRouteFrame>
         )}
         {activeView === "revision" && (
-          <GsapRouteFrame key="revision" routeKey="revision" variant="slide">
+          <GsapRouteFrame
+            key="revision"
+            routeKey="revision"
+            variant="slide"
+            motionEnabled={motionEnabled}
+          >
             <Suspense fallback={<RouteFallback />}>
               <RevisionView />
             </Suspense>
           </GsapRouteFrame>
         )}
         {activeView === "admin" && (
-          <GsapRouteFrame key="admin" routeKey="admin" variant="admin">
+          <GsapRouteFrame
+            key="admin"
+            routeKey="admin"
+            variant="admin"
+            motionEnabled={motionEnabled}
+          >
             <Suspense fallback={<RouteFallback />}>
               <AdminView />
             </Suspense>

@@ -450,7 +450,7 @@ export const useStore = create<AppState>()(
         localStorage.setItem("learner_name", cleanName);
         set({ learnerName: cleanName });
       },
-      pdfUrl: null,
+      pdfUrl: null as string | null,
       setPdfUrl: (url) => set({ pdfUrl: url }),
       pdfScale: 1,
       setPdfScale: (scale) => set({ pdfScale: scale }),
@@ -468,7 +468,7 @@ export const useStore = create<AppState>()(
         set({ activeDocumentId: documentId });
       },
 
-      annotations: [],
+      annotations: [] as Annotation[],
       addAnnotation: (ann) =>
         set((state) => ({ annotations: [...state.annotations, ann] })),
       setAnnotations: (annotations) => set({ annotations }),
@@ -479,7 +479,7 @@ export const useStore = create<AppState>()(
           ),
         })),
 
-      concepts: [],
+      concepts: [] as Concept[],
       setConcepts: (concepts) => set({ concepts }),
       addConcept: (concept) =>
         set((state) => ({ concepts: [...state.concepts, concept] })),
@@ -756,7 +756,7 @@ export const useStore = create<AppState>()(
           };
         }),
       webSourceCache: {},
-      webSearchEvents: [],
+      webSearchEvents: [] as WebSearchEvent[],
       recordWebSearchEvent: (event) =>
         set((state) => ({
           webSearchEvents: [
@@ -776,7 +776,7 @@ export const useStore = create<AppState>()(
           });
           return { webSourceCache };
         }),
-      voiceAgentEvents: [],
+      voiceAgentEvents: [] as VoiceAgentEvent[],
       recordVoiceAgentEvent: (event) =>
         set((state) => ({
           voiceAgentEvents: [

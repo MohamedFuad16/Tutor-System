@@ -1,10 +1,5 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useLayoutEffect, useMemo, useRef } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import {
   ResponsiveContainer,
   BarChart,
@@ -17,15 +12,14 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import {
-  db,
-} from "../memory/longterm.memory";
+import { db, type PersistentConcept } from "../memory/longterm.memory";
 import { gsap } from "gsap";
 import { useTranslation } from "../lib/translations";
 import { useMotionPreference } from "../hooks/useMotionPreference";
 
 const COLORS = ["#3b82f6", "#a855f7", "#f97316"];
 const MAX_VISIBLE_CONCEPTS = 12;
+const UNTITLED_CONCEPT_LABEL = "Untitled concept";
 
 type ConceptAnalyticsRecord = {
   id: string;
@@ -35,23 +29,80 @@ type ConceptAnalyticsRecord = {
   lastReviewedAt: number;
 };
 
+type ConceptAnalyticsSource = Partial<
+  Pick<
+    PersistentConcept,
+    "id" | "name" | "mastery" | "confidence" | "p_learn" | "lastReviewedAt"
+  >
+>;
+
+type AnalyticsSnapshot = {
+  status: "ready" | "error";
+  concepts: ConceptAnalyticsRecord[];
+  interactionCount: number;
+  sessionCount: number;
+  error?: string;
+};
+
+function clampUnitInterval(value: number | undefined, fallback = 0) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return fallback;
+  return Math.min(1, Math.max(0, numericValue));
+}
+
+function clampPercent(value: number) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return 0;
+  return Math.min(100, Math.max(0, numericValue));
+}
+
 function formatPercent(value: number) {
-  return `${Math.round(Number(value) || 0)}%`;
+  return `${Math.round(clampPercent(value))}%`;
 }
 
 function shortConceptName(name: string) {
-  return name.length > 18 ? `${name.slice(0, 16)}...` : name;
+  const displayName = name.trim() || UNTITLED_CONCEPT_LABEL;
+  return displayName.length > 18
+    ? `${displayName.slice(0, 16)}...`
+    : displayName;
+}
+
+function normalizeConceptForAnalytics(
+  concept: ConceptAnalyticsSource,
+): ConceptAnalyticsRecord {
+  const id = String(concept.id || concept.name || UNTITLED_CONCEPT_LABEL);
+  const name = String(concept.name || id).trim() || UNTITLED_CONCEPT_LABEL;
+  const mastery = clampUnitInterval(
+    concept.p_learn,
+    clampUnitInterval(concept.mastery),
+  );
+  const confidence = clampUnitInterval(concept.confidence, mastery);
+  const reviewedAt = Number(concept.lastReviewedAt);
+
+  return {
+    id,
+    name,
+    mastery,
+    confidence,
+    lastReviewedAt: Number.isFinite(reviewedAt) ? reviewedAt : 0,
+  };
 }
 
 function ChartMessage({
   title,
   detail,
+  role = "status",
 }: {
   title: string;
   detail: string;
+  role?: "status" | "alert";
 }) {
   return (
-    <div className="flex h-full min-h-[17rem] flex-col items-center justify-center px-6 text-center">
+    <div
+      role={role}
+      aria-live={role === "alert" ? "assertive" : "polite"}
+      className="flex h-full min-h-[17rem] flex-col items-center justify-center px-6 text-center"
+    >
       <p className="text-sm font-medium text-zinc-200">{title}</p>
       <p className="mt-2 max-w-sm text-xs leading-5 text-zinc-500">{detail}</p>
     </div>
@@ -70,7 +121,7 @@ function InfoDot({
       type="button"
       aria-describedby={describedBy}
       aria-label={label}
-      className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-zinc-600 text-[10px] leading-none text-zinc-500 transition-colors hover:border-zinc-400 hover:text-zinc-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+      className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-zinc-600 text-[10px] leading-none text-zinc-500 motion-safe:transition-colors hover:border-zinc-400 hover:text-zinc-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
     >
       i
     </button>
@@ -81,53 +132,36 @@ export function AnalyticsView() {
   const { t, language } = useTranslation();
   const motionEnabled = useMotionPreference();
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const [concepts, setConcepts] = useState<ConceptAnalyticsRecord[]>([]);
-  const [interactionCount, setInteractionCount] = useState(0);
-  const [sessionCount, setSessionCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchData = async () => {
+  const analyticsSnapshot =
+    useLiveQuery(async (): Promise<AnalyticsSnapshot> => {
       try {
-        const [conceptList, interactionTotal, sessionTotal] = await Promise.all([
-          db.concepts.toArray(),
-          db.interactions.count(),
-          db.sessions.count(),
-        ]);
-
-        if (cancelled) return;
-        setConcepts(
-          conceptList.map(
-            ({ id, name, mastery, confidence, lastReviewedAt }) => ({
-              id,
-              name,
-              mastery,
-              confidence,
-              lastReviewedAt,
-            }),
-          ),
+        const [conceptList, interactionTotal, sessionTotal] = await Promise.all(
+          [db.concepts.toArray(), db.interactions.count(), db.sessions.count()],
         );
-        setInteractionCount(interactionTotal);
-        setSessionCount(sessionTotal);
-        setLoadError(null);
+
+        return {
+          status: "ready",
+          concepts: conceptList.map(normalizeConceptForAnalytics),
+          interactionCount: interactionTotal,
+          sessionCount: sessionTotal,
+        };
       } catch (error) {
-        if (cancelled) return;
         console.error("Failed to load analytics data", error);
-        setLoadError("Analytics data could not be loaded.");
-      } finally {
-        if (!cancelled) setIsLoading(false);
+        return {
+          status: "error",
+          concepts: [],
+          interactionCount: 0,
+          sessionCount: 0,
+          error: "Analytics data could not be loaded.",
+        };
       }
-    };
-
-    fetchData();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    }, []);
+  const concepts = analyticsSnapshot?.concepts ?? [];
+  const interactionCount = analyticsSnapshot?.interactionCount ?? 0;
+  const sessionCount = analyticsSnapshot?.sessionCount ?? 0;
+  const isLoading = analyticsSnapshot === undefined;
+  const loadError =
+    analyticsSnapshot?.status === "error" ? analyticsSnapshot.error : null;
 
   useLayoutEffect(() => {
     const content = contentRef.current;
@@ -189,8 +223,7 @@ export function AnalyticsView() {
       noConceptsDetail:
         "문서를 학습하거나 튜터와 개념을 논의하면 이 차트가 채워집니다.",
       noDistribution: "아직 숙련도 분포가 없습니다",
-      noDistributionDetail:
-        "하나 이상의 개념이 추적되면 분포가 표시됩니다.",
+      noDistributionDetail: "하나 이상의 개념이 추적되면 분포가 표시됩니다.",
     },
   }[language];
 
@@ -238,27 +271,63 @@ export function AnalyticsView() {
   const hasConceptData = masteryData.length > 0;
   const hasDistributionData = pieData.some((entry) => entry.value > 0);
   const chartMessage = isLoading
-    ? { title: emptyCopy.loading, detail: emptyCopy.loadingDetail }
+    ? {
+        title: emptyCopy.loading,
+        detail: emptyCopy.loadingDetail,
+        role: "status" as const,
+      }
     : loadError
-      ? { title: emptyCopy.error, detail: emptyCopy.errorDetail }
-      : { title: emptyCopy.noConcepts, detail: emptyCopy.noConceptsDetail };
+      ? {
+          title: emptyCopy.error,
+          detail: emptyCopy.errorDetail,
+          role: "alert" as const,
+        }
+      : {
+          title: emptyCopy.noConcepts,
+          detail: emptyCopy.noConceptsDetail,
+          role: "status" as const,
+        };
   const distributionMessage = isLoading
-    ? { title: emptyCopy.loading, detail: emptyCopy.loadingDetail }
+    ? {
+        title: emptyCopy.loading,
+        detail: emptyCopy.loadingDetail,
+        role: "status" as const,
+      }
     : loadError
-      ? { title: emptyCopy.error, detail: emptyCopy.errorDetail }
+      ? {
+          title: emptyCopy.error,
+          detail: emptyCopy.errorDetail,
+          role: "alert" as const,
+        }
       : {
           title: emptyCopy.noDistribution,
           detail: emptyCopy.noDistributionDetail,
+          role: "status" as const,
         };
+  const masteryChartSummary = masteryData
+    .map(
+      (concept) =>
+        `${concept.fullName}: ${masteryLabel} ${formatPercent(
+          concept.mastery,
+        )}, ${confidenceLabel} ${formatPercent(concept.confidence)}`,
+    )
+    .join("; ");
+  const distributionSummary = pieData
+    .filter((entry) => entry.value > 0)
+    .map((entry) => `${entry.name}: ${entry.value}`)
+    .join("; ");
 
   return (
-    <div className="w-full h-full bg-[#030303] overflow-y-auto custom-scroll pt-24 px-4 md:px-8 pb-12 text-white">
-      <div
-        ref={contentRef}
-        className="max-w-6xl mx-auto space-y-12"
-      >
+    <div
+      className="w-full h-full bg-[#030303] overflow-y-auto custom-scroll pt-24 px-4 md:px-8 pb-12 text-white"
+      aria-busy={isLoading}
+    >
+      <div ref={contentRef} className="max-w-6xl mx-auto space-y-12">
         <header>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2 text-white">
+          <h1
+            id="analytics-heading"
+            className="text-3xl font-semibold tracking-tight mb-2 text-white"
+          >
             {t("cognitive_analytics")}
           </h1>
           <p className="text-zinc-400 text-sm">
@@ -269,7 +338,7 @@ export function AnalyticsView() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl relative group min-w-0">
             <h3
-              className="text-sm font-medium text-zinc-400 mb-1 cursor-help flex items-center gap-1"
+              className="text-sm font-medium text-zinc-400 mb-1 cursor-help flex min-w-0 flex-wrap items-center gap-1"
               title={t("total_concepts_desc")}
             >
               {t("total_concepts")}{" "}
@@ -278,20 +347,20 @@ export function AnalyticsView() {
                 label={t("total_concepts_desc")}
               />
             </h3>
-            <p className="text-4xl font-semibold text-white">
+            <p className="break-words text-4xl font-semibold tabular-nums text-white">
               {concepts.length}
             </p>
             <div
               id="analytics-total-concepts-help"
               role="tooltip"
-              className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none z-10 w-48 shadow-2xl"
+              className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 motion-safe:transition-opacity pointer-events-none z-10 w-48 shadow-2xl"
             >
               {t("total_concepts_desc")}
             </div>
           </div>
           <div className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl relative group min-w-0">
             <h3
-              className="text-sm font-medium text-zinc-400 mb-1 cursor-help flex items-center gap-1"
+              className="text-sm font-medium text-zinc-400 mb-1 cursor-help flex min-w-0 flex-wrap items-center gap-1"
               title={t("interactions_desc")}
             >
               {t("interactions")}{" "}
@@ -300,20 +369,20 @@ export function AnalyticsView() {
                 label={t("interactions_desc")}
               />
             </h3>
-            <p className="text-4xl font-semibold text-[#a855f7]">
+            <p className="break-words text-4xl font-semibold tabular-nums text-[#a855f7]">
               {interactionCount}
             </p>
             <div
               id="analytics-interactions-help"
               role="tooltip"
-              className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none z-10 w-48 shadow-2xl"
+              className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 motion-safe:transition-opacity pointer-events-none z-10 w-48 shadow-2xl"
             >
               {t("interactions_desc")}
             </div>
           </div>
           <div className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl relative group min-w-0">
             <h3
-              className="text-sm font-medium text-zinc-400 mb-1 cursor-help flex items-center gap-1"
+              className="text-sm font-medium text-zinc-400 mb-1 cursor-help flex min-w-0 flex-wrap items-center gap-1"
               title={t("study_sessions_desc")}
             >
               {t("study_sessions")}{" "}
@@ -322,13 +391,13 @@ export function AnalyticsView() {
                 label={t("study_sessions_desc")}
               />
             </h3>
-            <p className="text-4xl font-semibold text-[#3b82f6]">
+            <p className="break-words text-4xl font-semibold tabular-nums text-[#3b82f6]">
               {sessionCount}
             </p>
             <div
               id="analytics-study-sessions-help"
               role="tooltip"
-              className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none z-10 w-48 shadow-2xl"
+              className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 motion-safe:transition-opacity pointer-events-none z-10 w-48 shadow-2xl"
             >
               {t("study_sessions_desc")}
             </div>
@@ -336,84 +405,111 @@ export function AnalyticsView() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl min-h-[24rem] min-w-0">
-            <h3 className="text-sm font-medium text-white mb-6">
+          <div
+            className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl min-h-[24rem] min-w-0"
+            role="region"
+            aria-labelledby="analytics-mastery-chart-title"
+            aria-describedby={
+              hasConceptData ? "analytics-mastery-chart-summary" : undefined
+            }
+          >
+            <h3
+              id="analytics-mastery-chart-title"
+              className="text-sm font-medium text-white mb-6"
+            >
               {t("concept_mastery_levels")}
             </h3>
             <div className="h-[300px] w-full min-w-0">
               {hasConceptData ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={masteryData}
-                    barCategoryGap="24%"
-                    margin={{ top: 10, right: 8, left: 0, bottom: 12 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="#222"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="name"
-                      stroke="#71717a"
-                      fontSize={10}
-                      angle={-35}
-                      textAnchor="end"
-                      height={68}
-                      interval={
-                        masteryData.length > 7 ? "preserveStartEnd" : 0
-                      }
-                      tickLine={false}
-                    />
-                    <YAxis
-                      domain={[0, 100]}
-                      stroke="#71717a"
-                      fontSize={10}
-                      tickFormatter={formatPercent}
-                      width={36}
-                    />
-                    <RechartsTooltip
-                      formatter={(value, name) => [
-                        formatPercent(Number(value)),
-                        name,
-                      ]}
-                      labelFormatter={(_label, payload) =>
-                        payload?.[0]?.payload?.fullName || _label
-                      }
-                      contentStyle={{
-                        backgroundColor: "#111",
-                        borderColor: "#333",
-                        borderRadius: 8,
-                      }}
-                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                    />
-                    <Bar
-                      dataKey="mastery"
-                      name={masteryLabel}
-                      fill="#3b82f6"
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={36}
-                      isAnimationActive={motionEnabled}
-                    />
-                    <Bar
-                      dataKey="confidence"
-                      name={confidenceLabel}
-                      fill="#a855f7"
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={36}
-                      isAnimationActive={motionEnabled}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+                <>
+                  <p id="analytics-mastery-chart-summary" className="sr-only">
+                    {masteryChartSummary}
+                  </p>
+                  <div className="h-full" aria-hidden="true">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={masteryData}
+                        barCategoryGap="24%"
+                        margin={{ top: 10, right: 8, left: 0, bottom: 12 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="#222"
+                          vertical={false}
+                        />
+                        <XAxis
+                          dataKey="name"
+                          stroke="#71717a"
+                          fontSize={10}
+                          angle={-35}
+                          textAnchor="end"
+                          height={68}
+                          interval={
+                            masteryData.length > 7 ? "preserveStartEnd" : 0
+                          }
+                          tickLine={false}
+                        />
+                        <YAxis
+                          domain={[0, 100]}
+                          stroke="#71717a"
+                          fontSize={10}
+                          tickFormatter={formatPercent}
+                          width={36}
+                        />
+                        <RechartsTooltip
+                          formatter={(value, name) => [
+                            formatPercent(Number(value)),
+                            name,
+                          ]}
+                          labelFormatter={(_label, payload) =>
+                            payload?.[0]?.payload?.fullName || _label
+                          }
+                          contentStyle={{
+                            backgroundColor: "#111",
+                            borderColor: "#333",
+                            borderRadius: 8,
+                          }}
+                          cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                        />
+                        <Bar
+                          dataKey="mastery"
+                          name={masteryLabel}
+                          fill="#3b82f6"
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={36}
+                          isAnimationActive={motionEnabled}
+                        />
+                        <Bar
+                          dataKey="confidence"
+                          name={confidenceLabel}
+                          fill="#a855f7"
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={36}
+                          isAnimationActive={motionEnabled}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </>
               ) : (
                 <ChartMessage {...chartMessage} />
               )}
             </div>
           </div>
 
-          <div className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl min-h-[24rem] min-w-0 flex flex-col relative group">
+          <div
+            className="bg-[#0A0A0B] border border-white/5 p-6 rounded-2xl shadow-xl min-h-[24rem] min-w-0 flex flex-col relative group"
+            role="region"
+            aria-labelledby="analytics-distribution-chart-title"
+            aria-describedby={
+              hasDistributionData
+                ? "analytics-distribution-chart-summary"
+                : undefined
+            }
+          >
             <h3
-              className="text-sm font-medium text-white mb-6 cursor-help flex items-center gap-1 w-fit"
+              id="analytics-distribution-chart-title"
+              className="text-sm font-medium text-white mb-6 cursor-help flex min-w-0 flex-wrap items-center gap-1 w-fit"
               title={t("mastery_distribution_desc")}
             >
               {t("mastery_distribution")}{" "}
@@ -425,38 +521,46 @@ export function AnalyticsView() {
             <div
               id="analytics-mastery-distribution-help"
               role="tooltip"
-              className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none z-10 w-64 shadow-2xl"
+              className="absolute top-14 left-6 bg-[#111] text-xs text-zinc-300 p-2 rounded border border-white/10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 motion-safe:transition-opacity pointer-events-none z-10 w-64 shadow-2xl"
             >
               {t("mastery_distribution_desc")}
             </div>
             <div className="w-full min-w-0 flex-1">
               {hasDistributionData ? (
                 <>
+                  <p
+                    id="analytics-distribution-chart-summary"
+                    className="sr-only"
+                  >
+                    {distributionSummary}
+                  </p>
                   <div className="h-[250px] min-w-0">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={pieData}
-                          innerRadius="48%"
-                          outerRadius="76%"
-                          paddingAngle={5}
-                          dataKey="value"
-                          stroke="none"
-                          isAnimationActive={motionEnabled}
-                        >
-                          {pieData.map((entry) => (
-                            <Cell key={entry.name} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <RechartsTooltip
-                          contentStyle={{
-                            backgroundColor: "#111",
-                            borderColor: "#333",
-                            borderRadius: 8,
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <div className="h-full" aria-hidden="true">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={pieData}
+                            innerRadius="48%"
+                            outerRadius="76%"
+                            paddingAngle={5}
+                            dataKey="value"
+                            stroke="none"
+                            isAnimationActive={motionEnabled}
+                          >
+                            {pieData.map((entry) => (
+                              <Cell key={entry.name} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip
+                            contentStyle={{
+                              backgroundColor: "#111",
+                              borderColor: "#333",
+                              borderRadius: 8,
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 gap-2 pt-4 sm:grid-cols-3">
                     {pieData.map((entry) => (

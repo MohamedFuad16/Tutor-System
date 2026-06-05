@@ -3,300 +3,175 @@ const userBrainArchitectureBook = [
     title: "Chapter 1: The Whole Shape",
     content: `# The Whole Shape
 
-LearningAI should feel like one attentive tutor, not a bundle of separate tools.
-
-The learner sees a calm foreground tutor. Behind that tutor, the app keeps a local learner brain, retrieves relevant context, generates study artifacts, records source state, and updates learning books. The important boundary is simple: fast teaching signals can adapt the conversation immediately, but durable learner-brain changes need evidence, typed records, and a visible audit trail.
-
-The architecture has three layers:
-
-| Layer | Plain meaning | What it owns |
-| --- | --- | --- |
-| Foreground tutor | The visible teacher | Explains, asks checks, handles voice/text timing, and keeps the lesson coherent. |
-| Learner brain | The local memory ledger | Stores books, concepts, entries, evidence, mastery deltas, corrections, artifacts, and retrieval traces. |
-| Background workers | Bounded helpers | Retrieve sources, generate artifacts, summarize conversations, evaluate answers, and propose updates. |
+The learner brain is the app's local, auditable learning state. It is not a model's hidden memory and it is not Graphify.
 
 ~~~interaction-runtime
 user-brain-runtime
 ~~~
 
-The system is inspired by continuous interaction-model work, but LearningAI is app-native. It uses existing models, local state, job ledgers, and UI contracts instead of training a custom foundation model.
+| Layer | Responsibility |
+| --- | --- |
+| Foreground tutor | Teach, ask, listen, and adapt the current interaction. |
+| Learner brain | Store books, concepts, evidence, mastery, artifacts, corrections, and traces. |
+| Background workers | Retrieve, summarize, generate, and propose bounded updates. |
 
-## Current Local Implementation
+LearningAI is app-native: existing models operate through app contracts, local records, tools, and UI. It does not train a custom foundation model after each conversation.
 
-- Chat and Study can capture local document context.
-- Memory writes generated learning books, concepts, entries, model-summary evidence, memory events, retrieval events, and artifact provenance into Dexie.
-- Study can now add one PDF or several PDFs in the same file selection/drop. Each file is saved as a local active-book document before extraction starts, so the visible document rail, chat context, and voice context all see the same book-level PDF set.
-- Typed chat and live voice now build one shared brain-context packet from semantic memory, active-book summary, an active-book PDF manifest, balanced excerpts from multiple ready PDFs, and interaction timing state before handing context to the chat stream or voice realtime agent. Retrieval also receives a compact active-book PDF hint that names the active PDF and companion PDFs, so memory lookup does not collapse to only the visible page. The packet records added, ready, excerpted, pending/failed, and omitted ready PDF counts so Admin can verify whether chat and voice saw the wider book context, not only the PDF on screen. Voice prioritizes book/document context before long memory when its live prompt is compacted.
-- Typed chat requests now carry a browser request id through retrieval, injected context, the SSE server stream, model runs, tool jobs, and Admin request timelines; live voice uses the voice session id for the same local correlation.
-- Background learner-memory writes now carry the same request metadata, so chat and voice learning-book, interaction, and graph update rows can be grouped with the foreground request in Admin. Interaction-memory capture, learning-book updates, and graph-concept updates also write durable local background-job state with queued, running, completed, retry-scheduled, and dead-letter statuses.
-- Validated flashcard reviews and evaluated learner answers linked to real concepts now move BKT mastery and durable learner confidence with capped recall-evidence deltas, while storing the confidence before/after values, score/rubric fields, and request anchors in evidence metadata.
-- Every validated mastery attempt now carries a stable audit id and recognized evidence contract. The concept mutation, verified evidence event, and linked mastery delta commit in one Dexie transaction; ledger failure rolls the whole attempt back, and duplicate replay does not move mastery twice.
-- Typed chat and live voice can now call \`evaluate_answer\` for quiz or active-recall turns; when the payload uses a stored learning-book concept id, the browser promotes that concept into the BKT \`concepts\` table before recording, and unresolved ids still stay \`missing_concept\`.
-- Validated incorrect evaluated answers now create or consolidate source-linked misconception candidates. Learner-model retrieval scopes active candidates to the active book, and Admin Evidence shows the candidate/evidence trail. Candidates can shape Socratic follow-up but cannot mutate mastery by themselves.
-- Voice can now call the local \`look_at_current_page\` tool for current-page, visible-diagram, screen, and source-material questions by sending the rendered PDF page image through a local server vision bridge and recording Admin/tool activity.
-- Voice can now call the local \`web_search\` tool for explicit web/freshness requests, records the search in Admin/system activity, and stores returned source cards with citation-state provenance.
-- Admin exposes model runs, tool jobs, background job retry/dead-letter rows, voice-agent lifecycle events, memory/retrieval events, evidence, misconception candidates, atomic mastery-ledger integrity, correction requests, runtime tuning, beta diagnostics, source artifacts, and citation states.
-- Beta Diagnostics now includes a local brain-flow coverage verifier for chat context injection, voice context injection, chat and voice multi-PDF context evidence, request correlation, chat and voice foreground tool calls, chat and voice evaluated mastery evidence, chat and voice transcript persistence, background learner-memory writes, and the model-observation evidence gate on those background writes. Each signal now surfaces compact live request anchors, row sources, latest timestamps, and context PDF ids when the live ledger has proof.
-- Admin now shows a top-level brain architecture readiness percentage in Beta Diagnostics and exports it in the local diagnostics JSON. It reaches 100% only when the local-live coherent proof and mastery-ledger integrity are ready; it reaches 99% only for the final provider-proof binding gap while mastery integrity is ready, and it keeps AWS/cloud readiness deferred.
-- Admin can start a local proof attempt before the manual provider-key chat and voice run. That start action writes a local lifecycle memory event, chat and voice context, retrieval, transcript, model/tool, evidence, and background-memory metadata carry the same attempt id, and coherent proof requires the durable start row plus shared book, thread, and multi-PDF anchors.
-- Coherent provider-key proof now separates completed model rows from provider-ready evidence: typed chat must include a completed OpenRouter-backed row for the selected request, live voice must include the server-side Deepgram \`Voice provider ready\` system-activity row, and both provider evidence rows must carry the same Admin proof attempt id as the selected chat and voice rows. The local \`Mock voice provider ready\` row stays visible for debugging but does not satisfy provider-key proof.
-- Voice websocket system-activity rows now preserve the same proof attempt id, voice mode, and voice-realtime agent layer across auth, context injection, provider readiness, tool requests, tool completions, and close events.
-- Live voice latches the selected proof attempt id when a session starts, so context injection, websocket auth, model rows, tool rows, transcript turns, and background learner-memory writes keep one attempt identity even if Admin selection changes mid-session.
-- Admin also exposes a local live-proof drill packet for that provider-key run: setup checklist, ordered sequence, exact typed-chat and live-voice prompts, expected context/retrieval/model/tool/mastery/transcript/background rows, blockers, and export instructions. It makes the proof runnable without Admin secretly calling providers or beginning AWS/cloud work.
-- Admin Beta Diagnostics can also run a deterministic synthetic wiring rehearsal through the shared multi-PDF context helpers, typed-chat and live-voice tool definitions, matching shared tool schemas, the intentional voice-only study-context tool boundary, and the same thirteen-signal verifier. It stays in memory only and cannot raise live beta readiness.
-- Generated learning-book notes now run an initial local provenance check when Memory writes them, so coherent note rows move from \`not_checked\` to \`verified\` immediately while remaining limited to ledger traceability. When document text is available, they also carry compact source-span preview anchors and must pass a local summary-preview to source-preview lexical-support check.
-- Generated flashcards and stored chapter audio guides still leave explicit \`not_checked\` artifact provenance until a scoped local verifier runs.
-- Admin can locally verify generated flashcard provenance when the batch links back to saved card ids, a message or batch anchor, local-only metadata, and no external fetch.
-- Admin can locally verify generated learning-note provenance when the note links back to a learning entry, local book or conversation, local-only metadata, and no external fetch.
-- Admin can locally verify stored audio-guide manifest integrity when the guide links back to its checked-in MP3 path, book/chapter anchors, transcript metadata, voice, measured 3-4 minute duration seconds, stored date, and no external fetch.
-- Revision shows this book in a shorter reader path and can play a saved Deepgram chapter audio guide for every chapter.
-- Every built-in Library chapter guide is now a long-form, plain-language, 3-4 minute stored explainer across Tutor System Architecture, User Brain Architecture, and App Design Language.
-- A local audio-guide manifest now covers every built-in Library book, with checked-in MP3 assets and Deepgram \`aura-2-odysseus-en\` regeneration at speed \`1\` when \`DEEPGRAM_API_KEY\` is available.
+## Status Boundary
 
-## What This Is Not
+- **Implemented:** the current local-beta runtime, Dexie ledgers, evidence-gated mastery, and Admin inspection.
+- **Target:** tighter verification and broader local-beta proof.
+- **Deferred:** AWS sync, tenant isolation, cloud storage, and production operations.
 
-- Not silent fine-tuning after every conversation.
-- Not a claim that model summaries can change mastery or durable learner confidence by themselves.
-- Not cloud production architecture yet. AWS and tenant isolation remain deferred until beta testing.`,
+Graphify describes repository architecture for maintainers. The learner brain describes learner state inside the product.`,
   },
   {
     title: "Chapter 2: The Learner Brain Ledger",
     content: `# The Learner Brain Ledger
 
-The learner brain is a ledger, not a vague memory blob.
+The learner brain is a ledger: every durable change should state what changed, why, what evidence supports it, and how it can be reviewed or corrected.
 
-Every durable row should answer four questions:
-
-1. What changed?
-2. Why did it change?
-3. What source or evidence supports it?
-4. How can the learner or developer inspect, correct, or reverse it?
-
-Core local tables:
-
-| Table family | Purpose |
+| Record family | Meaning |
 | --- | --- |
-| \`learningBooks\`, \`learningEntries\`, \`learningBookConcepts\` | Saved study notebook and concept summaries. |
-| \`evidenceEvents\`, \`masteryDeltas\` | Source-linked evidence and BKT movement. |
-| \`misconceptions\` | Source-linked candidate hypotheses for Socratic repair; never mastery mutations by themselves. |
-| \`memoryEvents\`, \`retrievalEvents\`, \`modelRuns\`, \`toolJobs\` | Behind-the-scenes observability. |
-| \`artifactRecords\`, \`citationStates\` | Source cards, generated artifacts, and verification state. |
-| \`correctionEvents\` | Non-destructive mark-wrong, deletion-review, supersede, dismiss, and block intents. |
+| \`learningBooks\`, entries, concepts | Reusable learner material. |
+| \`evidenceEvents\`, \`masteryDeltas\` | Validated learner evidence and resulting state changes. |
+| Artifacts and citation states | Generated material plus its verification scope. |
+| Model, tool, memory, retrieval, and job rows | Local runtime traceability. |
+| Corrections and misconceptions | Reviewable hypotheses and non-destructive repair. |
 
-The local beta rule is intentionally conservative: generated notes, flashcards, stored chapter audio guides, charts, code, images, and websites can be useful study artifacts, but they are not verified evidence just because they exist.
+## Ledger Flowchart Style
 
-## Current Enforcement
+Use a readable left-to-right chart with one explicit evidence gate.
 
-- Model summaries can add evidence rows, but cannot raise mastery or durable learner confidence; background memory rows must label them with the \`model_observation_v1\` contract, non-verified status, and no-mutation gates.
-- Flashcard reviews and evaluated learner answers can write BKT evidence only when a real concept id and explicit correct/incorrect evaluation exist; learning-book concept ids are promoted into persistent BKT concepts only when the stored book concept exists, and those validated attempts can also move durable learner confidence with conservative capped deltas.
-- Validated mastery attempts are fail-closed: a recognized evidence contract and audit id are required, and the concept, evidence event, and mastery delta commit atomically with duplicate replay protection.
-- Incorrect evaluated answers can create or consolidate active-book misconception candidates with bounded source/request/evaluator context. Those candidates are audit-only learner-state hypotheses and cannot move mastery.
-- Generated learning notes write \`ArtifactRecord\` rows, save source-span preview anchors when document context is present, and immediately run the local generated-note provenance verifier when the entry/book/conversation anchors are coherent. Notes with saved spans must also show local lexical support between their saved summary claims and source previews.
-- Generated flashcards and built-in chapter audio guide manifests write \`ArtifactRecord\` rows with \`not_checked\` citation states until Admin or another local caller runs their verifier.
-- Admin's local verifier mutates \`source_card\` artifacts, generated flashcard provenance, generated learning-note provenance and preview-level lexical support, and stored audio-guide manifest integrity when the local ledger links are coherent; charts, code, images, and websites remain explicitly unsupported until real verifiers exist.
-- Flashcard provenance verification proves saved card ids, batch/message anchors, local-only metadata, and no-external-fetch status. It does not prove the card answer is factually correct.
-- Correction propagation marks related rows stale, skipped, unsupported, conflicting, or unverified instead of hard-deleting history.
-- Concept-level corrections now quarantine durable learner state locally: mark-wrong, deletion-review, and supersede requests clear confidence, cap mastery/BKT knowledge, and preserve before/after values in \`correctionState\`.`,
+~~~mermaid
+flowchart LR
+  action["Learner action"] --> capture["Capture local row"]
+  capture --> gate{"Evidence gate"}
+  gate -->|validated| mastery["Mastery update"]
+  gate -->|not validated| audit["Audit-only record"]
+  mastery --> review["Admin review + correction"]
+  audit --> review
+~~~
+
+## Current Contract
+
+Validated evidence is the only basis for mastery increases. A linked flashcard review or evaluated answer may pass the gate when it has a real concept and explicit outcome. Model summaries, generated artifacts, traces, and misconception candidates may shape teaching or support review, but they cannot raise mastery by themselves.
+
+Accepted mastery writes are recorded atomically with evidence and a mastery delta. Local traces make the decision inspectable; they do not prove factual truth.`,
   },
   {
     title: "Chapter 3: Teaching Loop And State",
     content: `# Teaching Loop And State
 
-The tutor should adapt like a human teacher while preserving machine-checkable state.
+The tutor may adapt the live lesson quickly while changing durable learner state cautiously.
 
-Useful teaching states:
+~~~text
+Explain -> demonstrate -> ask -> evaluate -> adapt -> schedule recall
+~~~
 
-| State | Tutor move | Durable evidence? |
-| --- | --- | --- |
-| Explain concept | Give a clear explanation with local context first. | Exposure or interaction row. |
-| Show example | Demonstrate with code, chart, analogy, or page reference. | Artifact row if generated. |
-| Check understanding | Ask a short recall or transfer question. | Possible evaluated-answer evidence event. |
-| Detect misconception | Compare answer to known weak spots. | Misconception candidate with source context. |
-| Repair explanation | Re-teach in a different style. | Remediation event. |
-| Schedule recall | Prepare flashcards or review prompts. | Flashcard rows and due dates. |
-| Update mastery/confidence | Change durable learner score. | Only from validated evidence. |
+Soft signals such as hesitation, repeated questions, selected text, or voice timing can change the next explanation. They are interaction context, not durable truth.
 
-Soft signals can shape the live lesson: hesitation, repeated questions, selected page context, voice state, or confusion markers can change the next explanation. They should not silently become permanent truth.
+A mastery increase requires validated evidence linked to a real concept. Incorrect evaluated answers may create a misconception candidate for Socratic repair, but that candidate does not lower or raise mastery on its own.
 
-## Practical Rule
-
-If the tutor wants to become more helpful immediately, it can adapt style. If it wants to change durable memory or mastery, it needs an auditable row.`,
+**Implemented:** local teaching context and evidence-gated review attempts. **Target:** stronger evaluation quality and more reviewable teaching policies.`,
   },
   {
     title: "Chapter 4: Retrieval, Artifacts, And Citations",
     content: `# Retrieval, Artifacts, And Citations
 
-Source grounding is the main trust boundary.
+Retrieval should follow the learner's question:
 
-Questions about the current page, uploaded document, selected text, or saved learning book should use local source material first. Web search is for current external facts or explicit web-search requests.
+- Use the current page, selected text, uploaded documents, and active learning book first for source-material questions.
+- Use web search for explicit or freshness-sensitive external questions.
 
-Artifact states:
+Generated notes, flashcards, audio guides, charts, code, images, and websites are artifacts. Their local rows can prove where they came from, which request created them, and whether a scoped verifier ran. That is traceability, not factual truth.
 
-| State | Meaning |
+| Citation state | Meaning |
 | --- | --- |
-| \`draft\` | Created but not ready to show. |
-| \`ready\` | Available to the learner. |
-| \`failed\` | Attempt failed and may be retried. |
-| \`stale\` | Superseded or invalidated by correction. |
+| \`verified\` | A named verifier passed for its limited scope. |
+| \`not_checked\` | Provenance exists, but no verifier has passed. |
+| \`unsupported\` or \`unavailable\` | The current verifier cannot support the claim. |
+| \`conflicting\` | Saved source or claim fields disagree. |
 
-Citation states:
-
-| State | Meaning |
-| --- | --- |
-| \`verified\` | A verifier for that scope passed. |
-| \`checking\` | Verification is in progress. |
-| \`not_checked\` | Local provenance exists, but no verifier has run. |
-| \`unavailable\` | The source cannot support the claim. |
-| \`conflicting\` | Saved source fields or claims disagree. |
-| \`unsupported\` | The local verifier cannot assess this artifact kind yet. |
-
-Current local implementation verifies source-card structure without fetching external pages. It checks saved links, URL shape, domain consistency, source ids, and artifact/citation linkage. Generated learning notes have a separate local provenance check for entry id, book/conversation anchors, local-only metadata, no external fetch, saved summary preview, and saved source-span anchors when document context exists. When spans exist, the note verifier splits the saved summary into compact claim previews, normalizes meaningful terms, records the best local overlap per claim, and requires every saved claim preview to have lexical support before the scoped local check passes. Memory runs that check immediately for newly written learning-entry artifacts. Generated flashcards have their own provenance check for saved card ids, batch/message anchors, local-only metadata, and no external fetch, but they still start \`not_checked\` until Admin or another local caller runs it. Stored chapter audio guides have a local manifest-integrity check for the MP3 path, overview id, book/chapter anchors, transcript length, summary, voice, measured \`durationSeconds\` inside the 180-245 second local beta window, stored date, and no-external-fetch provenance. Evaluated learner answers have a separate local evidence contract that requires a real concept id plus score or explicit correct/incorrect outcome before BKT can move; active-book concept ids are promoted into persistent BKT concepts only when a matching stored learning-book concept exists. Validated mastery writes use an atomic concept/evidence/delta transaction, while incorrect evaluated answers can write a separate source-linked misconception candidate that never moves mastery by itself. Those checks prove local traceability for their scope. Preview-level lexical overlap is not semantic entailment, factual truth, document-wide grounding, flashcard answer correctness, evaluated-answer rubric quality, or audio-content transcription accuracy.`,
+**Implemented:** local provenance and scoped checks for selected artifact kinds. **Target:** semantic entailment, document-wide grounding, and broader artifact verification.`,
   },
   {
     title: "Chapter 5: Admin And Runtime Tuning",
     content: `# Admin And Runtime Tuning
 
-Admin is the operating room for local beta.
+Admin is the local-beta inspection surface. It follows request ids across model, tool, voice, retrieval, memory, evidence, artifact, correction, and background-job rows.
 
-It should answer:
+Admin can answer:
 
-- What happened during one tutor request?
-- Which model ran, fell back, failed, or was blocked?
-- Which tools were called and with what status?
-- Which background jobs are queued, retrying, completed, or dead-lettered?
-- Which retrieval and memory rows were written?
-- Which evidence or mastery rows changed?
-- Which source artifacts and citation states exist?
-- Which corrections are pending or propagated?
-- Which runtime settings shape the next request?
+- What did the app record for this request?
+- Which local contract passed or failed?
+- Did validated evidence change mastery?
+- Which work is queued, retrying, complete, or dead-lettered?
+- Which correction or verifier still needs review?
 
-Implemented Admin surfaces:
+Admin cannot reveal private model internals or turn a trace into factual truth. Runtime tuning changes future app behavior; it does not rewrite past evidence.
 
-| Surface | What it proves locally |
-| --- | --- |
-| System Activity | Request timelines, brain-context injections, retrieval injections, and backend event summaries. |
-| Model Runs | Provider/model selection, fallbacks, token/cost metadata, failures. |
-| Tool Jobs | Tool lifecycle visibility. |
-| Background Jobs | Local interaction, learning-book, and graph-concept memory-worker state, retry scheduling, and dead-letter review. |
-| Voice Agent Timeline | Local voice websocket lifecycle, Deepgram settings, speaking/listening state, barge-in, transcript turns, current-page vision calls, web-search tool calls, and errors. |
-| Memory/Retrieval Events | Learner-brain writes, shared brain-context packet injection, and context selection. |
-| Evidence Ledger | Evidence rows, BKT deltas, misconception candidates, and atomic mastery-ledger integrity. |
-| Source Artifacts | Source cards plus generated learning-note integrity checks, generated flashcard provenance, and chapter audio guide provenance. |
-| Correction Requests | Non-destructive review and propagation state. |
-| Runtime Tuning | Local knobs for source-vs-web, memory context, tool budget, and refresh cadence. |
-| Beta Diagnostics | Capped local export, top-level brain architecture readiness percentage, readiness gate summary, live brain-flow coverage for chat, voice, both foreground tool layers, retrieval, model, both evaluated mastery layers, background memory evidence, model-observation gates, provider-key drill prompts with expected rows, attempt-bound real provider-ready row proof, and background job dead-letter blocking. Each live signal shows compact request/source/PDF anchors when evidence exists. The tab also includes a clearly separated in-memory synthetic wiring rehearsal that checks shared chat/voice tool schemas without counting toward live readiness. |
-
-The key boundary: Admin reports recorded system state. It must not pretend to know private model internals beyond saved traces, summaries, tool rows, voice lifecycle events, and artifacts.`,
+**Implemented:** local diagnostics, correction paths, and exportable proof. **Target:** complete the remaining real-provider local-beta drill and verifier gaps. **Deferred:** cloud monitoring and production operations.`,
   },
   {
     title: "Chapter 6: Voice, Audio, And Timing",
     content: `# Voice, Audio, And Timing
 
-Voice is useful only when it respects timing.
+Voice should start quickly, stop when interrupted, keep spoken explanations compact, and preserve the same learner-brain boundaries as text chat. Speech and transcript rows are interaction traces, not mastery evidence.
 
-Good voice behavior means:
+Read Aloud is a separate audio path from live voice. The app can send existing assistant text to the optional \`miso-tts-8b\` service through \`/api/tts\`. Settings stores a \`MisoTTS API URL\`, and the server can use \`MISO_TTS_API_URL\`; realtime voice still uses the Deepgram voice-agent websocket.
 
-- start quickly;
-- stop quickly when interrupted;
-- keep explanations shorter in voice mode;
-- preserve learner state when voice falls back to text;
-- record voice costs and failures;
-- show voice lifecycle and interruption state in Admin;
-- let voice inspect the currently rendered PDF page for current-page, screen, visible-diagram, and reading-context questions;
-- let voice call live web search only for explicit web or freshness questions, while keeping current-page, selected-text, document, and active-book questions source-first;
-- avoid pretending live speech is evidence.
+Built-in Library chapters use stored audio guides. They are generated ahead of time and played as local assets, so reading a chapter does not require a live model or TTS request.
 
-Read Aloud is a separate audio path from live voice. The app can now send assistant-message text through the optional \`miso-tts-8b\` provider on \`/api/tts\`. Settings stores a \`MisoTTS API URL\` for a local Vast tunnel or any compatible endpoint, the server can fall back to \`MISO_TTS_API_URL\`, and Admin System Activity probes the selected endpoint. This keeps the frontend ready even when the current Vast disk is too small to preload the 8B weights. It also keeps the trust boundary plain: MisoTTS is read-aloud audio for existing text, while realtime voice still uses the Deepgram voice-agent websocket.
-
-For Library books, the better pattern is stored audio guide, not live read-aloud. A chapter guide should be written as a prepared explanation, generated once, stored as an asset, and played from the browser with one visible player. The target is a simple 3-4 minute explanation for each built-in chapter, long enough to teach the idea without turning into a lecture. The visible controls include play, pause, speed, and seek; the hidden audio element handles bounded retry playback inside the same player when the browser blocks scripted play, so learners do not see fallback controls or a second play button. That keeps playback fast and prevents the app from sending chapter text to a live TTS route every time the learner presses play.
-
-This phase extends that long-form stored-asset pattern to every built-in Library chapter: Tutor System Architecture, User Brain Architecture, and App Design Language. \`src/lib/chapterAudioOverviews.json\` holds the chapter scripts, target filenames, provider metadata, local MP3 manifest, and measured \`durationSeconds\` for each guide. \`npm run audio:overview:dry-run\` verifies which assets are checked in and prints their manifest duration evidence, while the local test suite can compare checked-in MP3 durations against that manifest when \`ffprobe\` or \`afinfo\` is available. \`npm run audio:overview:generate -- --provider deepgram --overwrite\` regenerates them with Deepgram when \`DEEPGRAM_API_KEY\` is available. The reader uses the stored assets directly, so playback is instant and does not depend on a live model call.`,
+**Implemented:** realtime voice, read-aloud routing, stored chapter guides, and local voice traces. **Target:** finish the real-provider local-beta proof. Voice activity alone never increases mastery.`,
   },
   {
     title: "Chapter 7: Local Beta Roadmap",
     content: `# Local Beta Roadmap
 
-Local beta should prove behavior before AWS/cloud work starts.
+## Implemented Now
 
-Implemented now:
+- App-native foreground tutor, local learner-brain ledger, and bounded background work.
+- Source-first chat and voice context, local artifacts, corrections, and runtime traces.
+- Validated flashcard and evaluated-answer evidence as the only basis for mastery increases.
+- Admin diagnostics for local workflow and evidence inspection.
 
-- built-in architecture books and a shorter User Brain Architecture reader path;
-- local interaction context;
-- evidence-gated BKT machinery;
-- durable evidence and mastery ledgers;
-- durable model/tool/memory/retrieval observability rows;
-- request-correlated retrieval, model-run, tool-job, server-activity, and voice-session timelines;
-- multi-file PDF intake into one active local learning book;
-- active-book PDF manifest metadata for shared chat/voice brain-context injections;
-- local voice current-page vision parity with typed chat for rendered PDF page questions;
-- local voice web-search tool parity with typed chat for explicit live-web/freshness questions;
-- runtime tuning controls;
-- correction request ledger and non-destructive propagation overlays;
-- source artifact and citation-state ledger;
-- local source-card integrity verifier;
-- generated flashcard and generated learning-note provenance;
-- local generated flashcard provenance verifier;
-- local generated learning-note provenance verifier;
-- local stored audio-guide manifest-integrity verifier;
-- capped beta diagnostics export;
-- top-level local brain architecture readiness percentage in Admin and diagnostics export;
-- Admin-started local proof attempt ids and lifecycle memory rows for provider-key chat+voice beta proof;
-- voice proof-attempt metadata in local websocket system-activity rows;
-- latched live-voice proof attempt ids across voice context, model, tool, transcript, and background-memory rows;
-- deterministic in-memory dual-agent wiring rehearsal that cannot count toward live beta readiness;
-- optional MisoTTS 8B read-aloud endpoint selection, server proxying, and Admin provider-health meters, ready for a local Vast tunnel or compatible API endpoint;
-- stored audio guide UI for every built-in Library chapter;
-- chapter-by-chapter stored-audio manifest, checked-in MP3 assets, dry-run report, and Deepgram \`aura-2-odysseus-en\` regeneration path.
-- long-form 3-4 minute stored audio explainers for every built-in Library chapter, with measured manifest durations in the 180-245 second range.
+## Target Before Local Beta Is Complete
 
-Still local beta work:
+- Finish one coherent real-provider typed-chat and live-voice proof.
+- Strengthen semantic grounding and add verifiers for unsupported artifact kinds.
+- Review or quarantine historical rows that do not satisfy current evidence contracts.
 
-- real provider-key typed chat plus live Deepgram voice drill against one active multi-PDF book and proof attempt;
-- stronger semantic source-span matching beyond the current generated-note preview-level lexical support;
-- generated-artifact verifiers for charts, code snippets, images, websites, previews, and other unsupported artifact kinds;
-- document-wide grounding and entailment checks for generated learning notes beyond compact saved previews;
-- audio-content transcript matching beyond the current stored-manifest integrity check;
-- broader scheduler controls for remaining background workers beyond the current interaction, learning-book, and graph-concept queue coverage;
-- review or quarantine any historical pre-contract mastery rows if the new Admin integrity gate detects an orphan.
+## Deferred Until After Beta
 
-Deferred until after beta:
+- AWS sync and cloud system of record.
+- Tenant isolation, cloud backups, cross-device memory, production queues, alerts, and dashboards.
 
-- AWS sync;
-- tenant-scoped relational/vector/blob/queue/log architecture;
-- cloud backups and cross-device memory;
-- production alerting and operational dashboards.`,
+Local beta is the current product phase. Synthetic rehearsals and local traces help find wiring problems, but they do not replace live provider proof or factual verification.`,
   },
   {
     title: "Chapter 8: Sources And Glossary",
     content: `# Sources And Glossary
 
-## Glossary
-
 | Term | Meaning |
 | --- | --- |
-| Learner brain | The local state system that stores concepts, books, evidence, mastery, artifacts, corrections, and retrieval traces. |
-| Evidence event | A row that says a learner did something observable enough to support a memory or mastery decision. |
-| Mastery delta | A BKT-style change in concept mastery linked to evidence. |
-| Artifact record | A local row for a source card, flashcards, notes, chart, code snippet, image, website, preview, or other generated object. |
-| Citation state | The verification state attached to an artifact or claim. |
-| Correction overlay | A non-destructive status update that marks related rows stale, skipped, unsupported, conflicting, or unverified. |
-| Interaction runtime | The app-native coordination layer between foreground tutor, local brain, retrieval, tools, and background workers. |
-| Chapter audio guide | A pre-generated chapter explanation asset played locally instead of live read-aloud. |
+| Learner brain | Local product state for learning, evidence, artifacts, corrections, and retrieval. |
+| Graphify | Repository architecture graph for maintainers; not the learner brain. |
+| Evidence event | A validated learner action that may support a durable state change. |
+| Mastery delta | An evidence-linked change to concept mastery. |
+| Artifact | Generated or retrieved material stored for use or review. |
+| Trace | A record of app activity that supports inspection, not factual truth. |
+| App-native runtime | Coordination implemented in the application around existing models. |
 
-## Trusted References
+## Reference Families
 
-- [OpenAI Responses API](https://developers.openai.com/api/docs/guides/responses)
-- [OpenAI Realtime](https://developers.openai.com/api/docs/guides/realtime)
-- [OpenAI voice agents](https://developers.openai.com/api/docs/guides/voice-agents)
-- [OpenAI safety best practices](https://developers.openai.com/api/docs/guides/safety-best-practices)
-- [OpenAI evals](https://developers.openai.com/api/docs/guides/evals)
-- [Thinking Machines interaction models](https://thinkingmachines.ai/blog/interaction-models/)
-- [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html)
-- [AWS KMS](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html)
-- [PostgreSQL row security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
-- [Bayesian Knowledge Tracing survey](https://arxiv.org/abs/2412.14337)
-- [Knowledge Tracing Machines](https://arxiv.org/abs/2104.06529)
-- [Deep Knowledge Tracing](https://papers.nips.cc/paper_files/paper/2015/hash/bac9162b47c56fc8a4d2a519803d51b3-Abstract.html)`,
+- OpenAI Responses, Realtime, voice-agent, safety, and eval guidance.
+- Deepgram voice and audio-provider guidance.
+- Bayesian knowledge-tracing research.
+- IndexedDB/Dexie local-storage contracts.
+- AWS Well-Architected, KMS, and PostgreSQL row-security guidance for deferred cloud design.
+
+References inform the architecture; current behavior is established by the live source, tests, and validated runtime evidence.`,
   },
 ];
 

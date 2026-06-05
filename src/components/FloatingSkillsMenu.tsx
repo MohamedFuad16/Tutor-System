@@ -70,69 +70,66 @@ export function FloatingSkillsMenu({
   }, [displayedItems.length, isFetching, isOpen, motionEnabled]);
 
   return (
-      isOpen && (
-        <div
-          ref={menuRef}
-          className="absolute bottom-full mb-4 left-0 w-[280px] sm:w-[320px] max-w-[calc(100vw-32px)] bg-[#fdfdfd] text-[#050505] dark:bg-[#121214] dark:text-zinc-100 rounded-3xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/10 overflow-hidden z-50 origin-bottom-left"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold tracking-tight">
-              Skills
-            </h3>
-            <button
-              onClick={onClose}
-              className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors text-zinc-400"
-            >
-              <Minus size={14} strokeWidth={2.5} />
-            </button>
-          </div>
-
-          {/* List Area */}
-          <div className="relative min-h-[160px]">
-              {isFetching ? (
-                <div
-                  ref={listRef}
-                  key="skeleton"
-                  className="flex flex-col gap-3 pt-2"
-                >
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full bg-black/5 dark:bg-white/5 animate-pulse" />
-                      <div
-                        className="h-3 bg-black/5 dark:bg-white/5 rounded-full w-3/4 animate-pulse"
-                        style={{ animationDelay: `${i * 100}ms` }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div
-                  ref={listRef}
-                  key="content"
-                  className="flex flex-col gap-1"
-                >
-                    {displayedItems.map((item) => (
-                      <button
-                        key={item}
-                        onClick={() => {
-                          if (onSelectSkill) onSelectSkill(item);
-                          onClose();
-                        }}
-                        className="flex items-center gap-3 text-left p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
-                      >
-                        <div className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
-                          <Sparkles size={12} />
-                        </div>
-                        <span className="text-[13px] font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors">
-                          {item}
-                        </span>
-                      </button>
-                    ))}
-                </div>
-              )}
-          </div>
+    isOpen && (
+      <div
+        ref={menuRef}
+        className="absolute bottom-full mb-4 left-0 w-[280px] sm:w-[320px] max-w-[calc(100vw-32px)] bg-[#fdfdfd] text-[#050505] dark:bg-[#121214] dark:text-zinc-100 rounded-3xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)] border border-black/5 dark:border-white/10 overflow-hidden z-50 origin-bottom-left"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold tracking-tight">Skills</h3>
+          <button
+            type="button"
+            aria-label="Close skills menu"
+            onClick={onClose}
+            className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors text-zinc-400"
+          >
+            <Minus size={14} strokeWidth={2.5} />
+          </button>
         </div>
-      )
+
+        {/* List Area */}
+        <div className="relative min-h-[160px]">
+          {isFetching ? (
+            <div
+              ref={listRef}
+              key="skeleton"
+              className="flex flex-col gap-3 pt-2"
+            >
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-black/5 dark:bg-white/5 animate-pulse" />
+                  <div
+                    className="h-3 bg-black/5 dark:bg-white/5 rounded-full w-3/4 animate-pulse"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div ref={listRef} key="content" className="flex flex-col gap-1">
+              {displayedItems.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => {
+                    if (onSelectSkill) onSelectSkill(item);
+                    onClose();
+                  }}
+                  className="flex items-center gap-3 text-left p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
+                >
+                  <div className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
+                    <Sparkles size={12} />
+                  </div>
+                  <span className="text-[13px] font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors">
+                    {item}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    )
   );
 }

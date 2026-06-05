@@ -141,7 +141,7 @@ export const ensurePersistentConceptForLearningBookConceptId = async (
 
   const learningBookConcept = await db.learningBookConcepts
     .get(normalizedConceptId)
-    .catch(() => null);
+    .catch((): null => null);
   return ensurePersistentConceptForLearningBookConcept(
     learningBookConcept || undefined,
   );
@@ -158,7 +158,7 @@ export const createFlashcardForStorage = async (
           .where("bookId")
           .equals(context.bookId)
           .toArray()
-          .catch(() => [])
+          .catch((): LearningBookConcept[] => [])
       : []);
   const resolution = chooseFlashcardConcept(card, learningBookConcepts);
   await ensurePersistentConceptForLearningBookConcept(resolution.linkedConcept);

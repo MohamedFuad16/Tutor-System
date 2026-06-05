@@ -69,3 +69,18 @@ test("StudyView mobile shell stays height-bound and scrollable", () => {
     /relative flex min-h-\[100dvh\] w-full flex-col gap-3 overflow-y-auto/,
   );
 });
+
+test("StudyView preserves the active PDF when removing a different document", () => {
+  assert.match(
+    studyViewSource,
+    /const removedActiveDocument = documentId === activeDocumentId;/,
+  );
+  assert.match(
+    studyViewSource,
+    /remainingDocuments\.find\(\(item\) => item\.id === activeDocumentId\)/,
+  );
+  assert.doesNotMatch(
+    studyViewSource,
+    /const nextDocument = remainingDocuments\[0\] \|\| null;/,
+  );
+});
