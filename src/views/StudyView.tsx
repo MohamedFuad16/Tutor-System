@@ -1096,35 +1096,37 @@ export function StudyView() {
             <div
               role="toolbar"
               aria-label="PDF documents"
-              className="relative flex h-8 shrink-0 items-center gap-1 border-b border-white/10 bg-[#0A0A0B] px-1.5 md:px-2"
+              data-testid="pdf-document-toolbar"
+              className="relative z-0 flex h-7 shrink-0 items-center gap-1 border-b border-white/[0.07] bg-[#080809] px-1 shadow-none"
             >
-              <div className="flex min-w-0 max-w-[calc(100%-2rem)] flex-none gap-1 overflow-x-auto pr-0.5 custom-scroll">
+              <div className="flex min-w-0 max-w-[calc(100%-1.75rem)] flex-none gap-1 overflow-x-auto pr-0.5 custom-scroll">
                 {orderedDocuments.map((document) => (
                   <div
                     key={document.id}
-                    className={`group flex h-6 max-w-[8.5rem] shrink-0 items-center rounded-md border pr-0.5 shadow-none transition-colors md:max-w-[10rem] ${
+                    data-testid="pdf-document-chip"
+                    className={`group flex h-5 max-w-[7.5rem] shrink-0 items-center rounded-[5px] border pr-px shadow-none transition-colors md:max-w-[9rem] ${
                       document.id === activeDocumentId
                         ? "border-white bg-white text-black"
-                        : "border-zinc-200 bg-white text-black hover:border-white"
+                        : "border-zinc-300 bg-white text-black hover:border-white"
                     }`}
                   >
                     <button
                       type="button"
                       onClick={() => void selectDocument(document)}
-                      className="flex h-full min-w-0 flex-1 items-center gap-1 pl-1 pr-0.5 text-left focus:outline-none"
+                      className="flex h-full min-w-0 flex-1 items-center gap-1 pl-1 pr-px text-left focus:outline-none"
                       title={document.title}
                     >
                       <span
-                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
+                        className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full ${
                           document.id === activeDocumentId
                             ? "bg-black text-white"
                             : "bg-zinc-100 text-zinc-700"
                         }`}
                       >
-                        <FileText size={9} strokeWidth={2.2} />
+                        <FileText size={8} strokeWidth={2.2} />
                       </span>
                       <span className="min-w-0">
-                        <span className="block truncate text-[0.65rem] font-semibold leading-none tracking-normal">
+                        <span className="block truncate text-[0.625rem] font-semibold leading-none tracking-normal">
                           {document.title}
                         </span>
                       </span>
@@ -1134,9 +1136,9 @@ export function StudyView() {
                       onClick={() => void removeDocument(document.id)}
                       aria-label={`Remove ${document.title}`}
                       title={`Remove ${document.title}`}
-                      className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-zinc-700 focus:outline-none"
+                      className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-zinc-400 shadow-none transition-colors hover:bg-zinc-200 hover:text-zinc-800 focus:outline-none"
                     >
-                      <X size={10} strokeWidth={2.5} />
+                      <X size={9} strokeWidth={2.5} />
                     </button>
                   </div>
                 ))}
@@ -1146,9 +1148,9 @@ export function StudyView() {
                 onClick={openFilePicker}
                 aria-label="Add PDF"
                 title="Add PDF"
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-dashed border-zinc-400 bg-transparent text-zinc-400 shadow-none transition-colors hover:border-zinc-200 hover:bg-white hover:text-zinc-700 focus:outline-none"
+                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-dashed border-zinc-500 bg-transparent text-zinc-400 shadow-none transition-colors hover:border-zinc-200 hover:bg-white hover:text-zinc-800 focus:outline-none"
               >
-                <Plus size={14} strokeWidth={1.9} />
+                <Plus size={12} strokeWidth={1.9} />
               </button>
             </div>
             <input
@@ -1159,7 +1161,10 @@ export function StudyView() {
               className="hidden"
               onChange={handleFileChange}
             />
-            <div className="relative min-h-0 flex-1 overflow-hidden">
+            <div
+              data-testid="pdf-reader-region"
+              className="relative z-0 min-h-0 flex-1 overflow-hidden"
+            >
               <PdfViewer />
             </div>
           </>

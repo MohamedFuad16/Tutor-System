@@ -320,6 +320,23 @@ describe("rendered StudyView flows", () => {
     expect(useStore.getState().activeDocumentId).toBe(documents[0].id);
   });
 
+  it("keeps the compact PDF document toolbar outside the reader region", async () => {
+    await seedStudyBook(["Compact document"]);
+
+    renderStudyView();
+    await waitForPdfView();
+
+    const toolbar = screen.getByTestId("pdf-document-toolbar");
+    const readerRegion = screen.getByTestId("pdf-reader-region");
+
+    expect(toolbar).toHaveClass("h-7", "shrink-0", "shadow-none");
+    expect(readerRegion).toHaveClass("min-h-0", "flex-1", "overflow-hidden");
+    expect(
+      toolbar.compareDocumentPosition(readerRegion) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("uploads a PDF through the picker and completes mocked ingestion", async () => {
     const { book } = await seedStudyBook([]);
     useStore.setState({ selectedTextContext: "clear on upload" });

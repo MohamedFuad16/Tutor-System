@@ -23,7 +23,7 @@
       "npm run test: passed",
       "npm run build: passed",
       "browser QA desktop/mobile: passed, zero console errors, zero horizontal overflow",
-      "compact PDF toolbar QA: passed at 1280x720 and 390x844, zero PDF overlap",
+      "compact PDF toolbar QA: 28px rail and 20px controls passed at 1280x800 and 390x844, zero PDF overlap, overflow, or console issues",
       "README review: passed",
       "git commit: pending",
       "git push: pending"

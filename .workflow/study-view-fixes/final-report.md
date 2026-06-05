@@ -29,12 +29,14 @@ Implemented the Study/Revision/Chat synchronization upgrade end to end.
 ## Verification Evidence
 
 - `npm run lint`: passed.
-- Focused Study test command: passed, including 255 node tests and 13 rendered StudyView tests.
+- Focused Study test command: passed with 14 rendered StudyView tests.
+- Full test suite: passed with 255 node tests and 585 rendered DOM tests.
 - `npm run build`: passed.
 - Browser QA at `http://127.0.0.1:3100`: passed on desktop and mobile with zero console errors and zero horizontal overflow.
 - Browser QA validated: PDF upload, second PDF add, PDF switch, current PDF removal, Python book chat restore after refresh, switch back to General Study chat, mobile viewport.
-- Compact PDF toolbar follow-up: passed focused Study tests, lint, build, and live geometry checks at 1280x720 and 390x844.
-- Compact PDF toolbar measurements: 32px rail, 24px chip/add control, white background, black text, no computed shadow, and zero overlap with the PDF region.
+- Compact PDF toolbar follow-up: passed focused Study tests, full tests, lint, build, and live geometry checks at 1280x800 and 390x844.
+- Compact PDF toolbar measurements: 28px rail, 20px chip/add control, white background, black text, no computed shadow, and zero overlap with the PDF region.
+- The in-app Browser inspection timed out on this large Study page, so the final rendered geometry and screenshots were captured with the bundled Playwright runtime and system Chrome.
 
 ## Screenshots
 
