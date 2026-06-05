@@ -23,6 +23,7 @@
       "npm run test: passed",
       "npm run build: passed",
       "browser QA desktop/mobile: passed, zero console errors, zero horizontal overflow",
+      "compact PDF toolbar QA: passed at 1280x720 and 390x844, zero PDF overlap",
       "README review: passed",
       "git commit: pending",
       "git push: pending"
@@ -35,7 +36,9 @@
       ".workflow/study-view-fixes/results/qa-cdp-clean2-after-remove-python-pdf.png",
       ".workflow/study-view-fixes/results/qa-cdp-clean2-python-thread-restored.png",
       ".workflow/study-view-fixes/results/qa-cdp-clean2-general-thread-after-switch.png",
-      ".workflow/study-view-fixes/results/qa-cdp-clean2-mobile-study.png"
+      ".workflow/study-view-fixes/results/qa-cdp-clean2-mobile-study.png",
+      ".workflow/study-view-fixes/results/qa-pdf-toolbar-compact-desktop.jpg",
+      ".workflow/study-view-fixes/results/qa-pdf-toolbar-compact-mobile.jpg"
     ]
   }
 }
