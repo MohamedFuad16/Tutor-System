@@ -15,6 +15,16 @@ user-brain-runtime
 | Learner brain | Store books, concepts, evidence, mastery, artifacts, corrections, and traces. |
 | Background workers | Retrieve, summarize, generate, and propose bounded updates. |
 
+## Beginner Map
+
+~~~mermaid
+flowchart LR
+  Action[Learner action] --> Context[Local context]
+  Context --> Tutor[Foreground tutor]
+  Tutor --> Ledger[Learner brain ledger]
+  Ledger --> Next[Next lesson or review]
+~~~
+
 LearningAI is app-native: existing models operate through app contracts, local records, tools, and UI. It does not train a custom foundation model after each conversation.
 
 ## Status Boundary
@@ -63,10 +73,15 @@ Accepted mastery writes are recorded atomically with evidence and a mastery delt
     title: "Chapter 3: Teaching Loop And State",
     content: `# Teaching Loop And State
 
-The tutor may adapt the live lesson quickly while changing durable learner state cautiously.
+The tutor may adapt the live lesson quickly while changing durable learner state cautiously. Think of this as two lanes: fast teaching feedback and slow durable memory.
 
-~~~text
-Explain -> demonstrate -> ask -> evaluate -> adapt -> schedule recall
+~~~mermaid
+flowchart LR
+  Explain[Explain] --> Demo[Demonstrate]
+  Demo --> Ask[Ask]
+  Ask --> Evaluate[Evaluate]
+  Evaluate --> Adapt[Adapt next explanation]
+  Evaluate --> Recall[Schedule recall when evidence is valid]
 ~~~
 
 Soft signals such as hesitation, repeated questions, selected text, or voice timing can change the next explanation. They are interaction context, not durable truth.
@@ -84,6 +99,16 @@ Retrieval should follow the learner's question:
 - Use the current page, selected text, uploaded documents, and active learning book first for source-material questions.
 - Use web search for explicit or freshness-sensitive external questions.
 
+~~~mermaid
+flowchart LR
+  Question[Learner question] --> Local{About current material?}
+  Local -->|yes| Sources[Page, selection, book, PDF]
+  Local -->|no or current external fact| Search[Web search]
+  Sources --> Answer[Grounded answer]
+  Search --> Answer
+  Answer --> Artifact[Optional artifact row]
+~~~
+
 Generated notes, flashcards, audio guides, charts, code, images, and websites are artifacts. Their local rows can prove where they came from, which request created them, and whether a scoped verifier ran. That is traceability, not factual truth.
 
 | Citation state | Meaning |
@@ -100,6 +125,16 @@ Generated notes, flashcards, audio guides, charts, code, images, and websites ar
     content: `# Admin And Runtime Tuning
 
 Admin is the local-beta inspection surface. It follows request ids across model, tool, voice, retrieval, memory, evidence, artifact, correction, and background-job rows.
+
+~~~mermaid
+flowchart LR
+  Request[Request id] --> Logs[Main runtime logs]
+  Request --> Evidence[Evidence and mastery rows]
+  Request --> Jobs[Background jobs]
+  Logs --> Admin[Admin review]
+  Evidence --> Admin
+  Jobs --> Admin
+~~~
 
 Admin can answer:
 

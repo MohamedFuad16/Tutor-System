@@ -244,6 +244,10 @@ test("settings store sanitizes plan, access, and runtime preferences", async () 
     plan_tier: "enterprise",
     brain_runtime_settings: JSON.stringify({
       activityRefreshMs: 500,
+      bktGuessProbability: 0.9,
+      bktSlipProbability: 0,
+      bktTransitProbability: 0.2,
+      masteryEvidencePolicy: "review_required",
       memoryConceptLimit: 99,
       toolIterationLimit: 4,
       webSearchPolicy: "not-real",
@@ -255,6 +259,10 @@ test("settings store sanitizes plan, access, and runtime preferences", async () 
   assert.equal(state.planTier, "free");
   assert.deepEqual(state.brainRuntimeSettings, {
     activityRefreshMs: 3000,
+    bktGuessProbability: 0.35,
+    bktSlipProbability: 0.01,
+    bktTransitProbability: 0.2,
+    masteryEvidencePolicy: "review_required",
     memoryConceptLimit: 24,
     toolIterationLimit: 4,
     webSearchPolicy: "source_first",
@@ -264,6 +272,8 @@ test("settings store sanitizes plan, access, and runtime preferences", async () 
   state.setPlanTier("pro");
   state.setBrainRuntimeSettings({
     activityRefreshMs: 4200,
+    bktTransitProbability: 0.185,
+    masteryEvidencePolicy: "validated_only",
     toolIterationLimit: 99,
     webSearchPolicy: "auto_freshness",
   });
@@ -273,6 +283,10 @@ test("settings store sanitizes plan, access, and runtime preferences", async () 
   assert.equal(state.planTier, "pro");
   assert.deepEqual(state.brainRuntimeSettings, {
     activityRefreshMs: 4200,
+    bktGuessProbability: 0.35,
+    bktSlipProbability: 0.01,
+    bktTransitProbability: 0.19,
+    masteryEvidencePolicy: "validated_only",
     memoryConceptLimit: 24,
     toolIterationLimit: 8,
     webSearchPolicy: "auto_freshness",
@@ -281,6 +295,10 @@ test("settings store sanitizes plan, access, and runtime preferences", async () 
   assert.equal(storage.getItem("plan_tier"), "pro");
   assert.deepEqual(JSON.parse(storage.getItem("brain_runtime_settings")), {
     activityRefreshMs: 4200,
+    bktGuessProbability: 0.35,
+    bktSlipProbability: 0.01,
+    bktTransitProbability: 0.19,
+    masteryEvidencePolicy: "validated_only",
     memoryConceptLimit: 24,
     toolIterationLimit: 8,
     webSearchPolicy: "auto_freshness",
@@ -289,6 +307,10 @@ test("settings store sanitizes plan, access, and runtime preferences", async () 
   state.resetBrainRuntimeSettings();
   assert.deepEqual(useStore.getState().brainRuntimeSettings, {
     activityRefreshMs: 5000,
+    bktGuessProbability: 0.2,
+    bktSlipProbability: 0.1,
+    bktTransitProbability: 0.1,
+    masteryEvidencePolicy: "validated_only",
     memoryConceptLimit: 12,
     toolIterationLimit: 5,
     webSearchPolicy: "source_first",

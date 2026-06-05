@@ -4,6 +4,7 @@ import { once } from "node:events";
 
 import {
   DEFAULT_BRAIN_RUNTIME_SETTINGS,
+  MASTERY_EVIDENCE_POLICIES,
   WEB_SEARCH_POLICIES,
   createTutorServerApp,
   normalizeBrainRuntimeSettings,
@@ -36,18 +37,28 @@ test("runtime settings normalization clamps local tuning controls", () => {
       memoryConceptLimit: 99,
       toolIterationLimit: -4,
       webSearchPolicy: "manual_only",
+      masteryEvidencePolicy: "review_required",
+      bktTransitProbability: 0.99,
+      bktSlipProbability: -1,
+      bktGuessProbability: 0.123,
     }),
     {
       activityRefreshMs: 3000,
       memoryConceptLimit: 24,
       toolIterationLimit: 2,
       webSearchPolicy: "manual_only",
+      masteryEvidencePolicy: "review_required",
+      bktTransitProbability: 0.35,
+      bktSlipProbability: 0.01,
+      bktGuessProbability: 0.12,
     },
   );
 
   assert.ok(WEB_SEARCH_POLICIES.includes("source_first"));
   assert.ok(WEB_SEARCH_POLICIES.includes("manual_only"));
   assert.ok(WEB_SEARCH_POLICIES.includes("auto_freshness"));
+  assert.ok(MASTERY_EVIDENCE_POLICIES.includes("validated_only"));
+  assert.ok(MASTERY_EVIDENCE_POLICIES.includes("review_required"));
 
   assert.deepEqual(
     normalizeBrainRuntimeSettings({
@@ -55,12 +66,21 @@ test("runtime settings normalization clamps local tuning controls", () => {
       memoryConceptLimit: 7.6,
       toolIterationLimit: "not-a-number",
       webSearchPolicy: "not-a-policy",
+      masteryEvidencePolicy: "not-a-policy",
+      bktTransitProbability: "0.185",
+      bktSlipProbability: "not-a-number",
+      bktGuessProbability: "0.214",
     }),
     {
       activityRefreshMs: 4500,
       memoryConceptLimit: 8,
       toolIterationLimit: DEFAULT_BRAIN_RUNTIME_SETTINGS.toolIterationLimit,
       webSearchPolicy: DEFAULT_BRAIN_RUNTIME_SETTINGS.webSearchPolicy,
+      masteryEvidencePolicy:
+        DEFAULT_BRAIN_RUNTIME_SETTINGS.masteryEvidencePolicy,
+      bktTransitProbability: 0.19,
+      bktSlipProbability: DEFAULT_BRAIN_RUNTIME_SETTINGS.bktSlipProbability,
+      bktGuessProbability: 0.21,
     },
   );
 });
@@ -83,6 +103,22 @@ test("system activity exposes runtime tuning defaults", async (t) => {
     body.meters.tuning.webSearchPolicyDefault,
     DEFAULT_BRAIN_RUNTIME_SETTINGS.webSearchPolicy,
   );
+  assert.equal(
+    body.meters.tuning.masteryEvidencePolicyDefault,
+    DEFAULT_BRAIN_RUNTIME_SETTINGS.masteryEvidencePolicy,
+  );
+  assert.equal(
+    body.meters.tuning.bktTransitProbabilityDefault,
+    DEFAULT_BRAIN_RUNTIME_SETTINGS.bktTransitProbability,
+  );
+  assert.equal(
+    body.meters.tuning.bktSlipProbabilityDefault,
+    DEFAULT_BRAIN_RUNTIME_SETTINGS.bktSlipProbability,
+  );
+  assert.equal(
+    body.meters.tuning.bktGuessProbabilityDefault,
+    DEFAULT_BRAIN_RUNTIME_SETTINGS.bktGuessProbability,
+  );
 });
 
 test("blocked chat activity records normalized runtime settings", async (t) => {
@@ -100,6 +136,10 @@ test("blocked chat activity records normalized runtime settings", async (t) => {
         memoryConceptLimit: 2,
         toolIterationLimit: 88,
         webSearchPolicy: "manual_only",
+        masteryEvidencePolicy: "review_required",
+        bktTransitProbability: 1,
+        bktSlipProbability: 0,
+        bktGuessProbability: 0.2,
       },
     }),
   });
@@ -123,5 +163,9 @@ test("blocked chat activity records normalized runtime settings", async (t) => {
     memoryConceptLimit: 4,
     toolIterationLimit: 8,
     webSearchPolicy: "manual_only",
+    masteryEvidencePolicy: "review_required",
+    bktTransitProbability: 0.35,
+    bktSlipProbability: 0.01,
+    bktGuessProbability: 0.2,
   });
 });

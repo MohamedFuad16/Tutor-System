@@ -19,6 +19,7 @@ import {
 import {
   BRAIN_RUNTIME_SETTING_LIMITS,
   DEFAULT_BRAIN_RUNTIME_SETTINGS,
+  MASTERY_EVIDENCE_POLICIES,
   WEB_SEARCH_POLICIES,
   normalizeBrainRuntimeSettings,
   type BrainRuntimeSettings,
@@ -29,6 +30,7 @@ import { VOICE_AGENT_TOOL_DEFINITIONS } from "./src/lib/voiceAgentTools.js";
 export {
   BRAIN_RUNTIME_SETTING_LIMITS,
   DEFAULT_BRAIN_RUNTIME_SETTINGS,
+  MASTERY_EVIDENCE_POLICIES,
   WEB_SEARCH_POLICIES,
   normalizeBrainRuntimeSettings,
 };
@@ -461,9 +463,13 @@ const compactBrainContextMetadata = (value: unknown) => {
 
 const compactRuntimeSettings = (settings: BrainRuntimeSettings) => ({
   webSearchPolicy: settings.webSearchPolicy,
+  masteryEvidencePolicy: settings.masteryEvidencePolicy,
   toolIterationLimit: settings.toolIterationLimit,
   memoryConceptLimit: settings.memoryConceptLimit,
   activityRefreshMs: settings.activityRefreshMs,
+  bktTransitProbability: settings.bktTransitProbability,
+  bktSlipProbability: settings.bktSlipProbability,
+  bktGuessProbability: settings.bktGuessProbability,
 });
 
 const stripWebSearchSystemPrefix = (text: string) =>
@@ -862,6 +868,18 @@ export async function createTutorServerApp(
           webSearchPolicyDefault:
             DEFAULT_BRAIN_RUNTIME_SETTINGS.webSearchPolicy,
           webSearchPolicies: WEB_SEARCH_POLICIES.join(", "),
+          masteryEvidencePolicyDefault:
+            DEFAULT_BRAIN_RUNTIME_SETTINGS.masteryEvidencePolicy,
+          masteryEvidencePolicies: MASTERY_EVIDENCE_POLICIES.join(", "),
+          bktTransitProbabilityDefault:
+            DEFAULT_BRAIN_RUNTIME_SETTINGS.bktTransitProbability,
+          bktTransitProbabilityRange: `${BRAIN_RUNTIME_SETTING_LIMITS.bktTransitProbability.min}-${BRAIN_RUNTIME_SETTING_LIMITS.bktTransitProbability.max}`,
+          bktSlipProbabilityDefault:
+            DEFAULT_BRAIN_RUNTIME_SETTINGS.bktSlipProbability,
+          bktSlipProbabilityRange: `${BRAIN_RUNTIME_SETTING_LIMITS.bktSlipProbability.min}-${BRAIN_RUNTIME_SETTING_LIMITS.bktSlipProbability.max}`,
+          bktGuessProbabilityDefault:
+            DEFAULT_BRAIN_RUNTIME_SETTINGS.bktGuessProbability,
+          bktGuessProbabilityRange: `${BRAIN_RUNTIME_SETTING_LIMITS.bktGuessProbability.min}-${BRAIN_RUNTIME_SETTING_LIMITS.bktGuessProbability.max}`,
           websocketDebugPath: "/ws/debug",
         },
       },
@@ -2325,7 +2343,17 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       systemInstruction += `\n\nADMIN RUNTIME TUNING:
 - Web search policy: ${runtimeSettings.webSearchPolicy}
 - Tool iteration budget: ${runtimeSettings.toolIterationLimit}
-- Memory concept budget supplied by client: ${runtimeSettings.memoryConceptLimit}`;
+- Memory concept budget supplied by client: ${runtimeSettings.memoryConceptLimit}
+- Mastery evidence policy: ${runtimeSettings.masteryEvidencePolicy}
+- BKT priors for staged evidence review: transit ${runtimeSettings.bktTransitProbability}, slip ${runtimeSettings.bktSlipProbability}, guess ${runtimeSettings.bktGuessProbability}`;
+
+      if (runtimeSettings.masteryEvidencePolicy === "review_required") {
+        systemInstruction +=
+          "\n- Evaluated-answer tool calls should be staged for human/Admin review unless the learner's answer has an explicit rubric score or clear correct/incorrect outcome tied to a real concept id.";
+      } else {
+        systemInstruction +=
+          "\n- Evaluated-answer tool calls must stay validated-only: use them only for explicit quiz, active-recall, or self-check answers with a real concept id and clear scoring/correctness evidence.";
+      }
 
       if (
         runtimeSettings.webSearchPolicy === "manual_only" &&
@@ -2938,6 +2966,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                   toolCallId: toolCall.id,
                   agentLayer: "chat_stream",
                   mode: "chat",
+                  runtimeSettings: runtimeSettingsSnapshot,
                 },
               };
               evaluatedAnswers.push(evaluation);
@@ -2960,6 +2989,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                   toolCallId: toolCall.id,
                   conceptId: args?.conceptId,
                   evidenceType: args?.evidenceType || "generation",
+                  runtimeSettings: runtimeSettingsSnapshot,
                   hasScore:
                     Number.isFinite(Number(args?.score)) &&
                     Number.isFinite(Number(args?.maxScore)),
@@ -2978,6 +3008,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                   toolCallId: toolCall.id,
                   conceptId: args?.conceptId,
                   evidenceContract: "evaluated_answer_v1",
+                  runtimeSettings: runtimeSettingsSnapshot,
                   score: args?.score,
                   maxScore: args?.maxScore,
                   correct: args?.correct,

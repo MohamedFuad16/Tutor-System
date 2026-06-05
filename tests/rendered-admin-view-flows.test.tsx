@@ -262,6 +262,42 @@ describe("rendered AdminView page flows", () => {
     ).toBeInTheDocument();
   });
 
+  it("keeps learner-brain logic controls visible and updates local BKT runtime knobs", async () => {
+    renderAdmin();
+    await screen.findByText("Live");
+
+    expect(screen.getByText("Learner-brain logic")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Tune brain logic" }));
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Runtime Tuning" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        level: 3,
+        name: "Evidence and BKT controls",
+      }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Review Required/i }));
+    fireEvent.change(screen.getByLabelText("BKT transit prior"), {
+      target: { value: "0.18" },
+    });
+    fireEvent.change(screen.getByLabelText("BKT slip prior"), {
+      target: { value: "0.07" },
+    });
+    fireEvent.change(screen.getByLabelText("BKT guess prior"), {
+      target: { value: "0.24" },
+    });
+
+    expect(useStore.getState().brainRuntimeSettings).toMatchObject({
+      masteryEvidencePolicy: "review_required",
+      bktTransitProbability: 0.18,
+      bktSlipProbability: 0.07,
+      bktGuessProbability: 0.24,
+    });
+  });
+
   it("renders the local beta diagnostics snapshot surface", async () => {
     renderAdmin();
     await screen.findByText("Live");
@@ -282,6 +318,33 @@ describe("rendered AdminView page flows", () => {
         /it does not sync to AWS or claim cloud-beta readiness/i,
       ),
     ).toBeInTheDocument();
+  });
+
+  it("runs the local brain wiring rehearsal without provider traffic", async () => {
+    renderAdmin();
+    await screen.findByText("Live");
+    clickTab("Beta Diagnostics");
+    expect(
+      await screen.findByRole("heading", {
+        level: 2,
+        name: "Diagnostic snapshot and export",
+      }),
+    ).toBeInTheDocument();
+
+    const callsBeforeRehearsal = fetchMock.mock.calls.length;
+    fireEvent.click(
+      screen.getByRole("button", { name: "Run local rehearsal" }),
+    );
+
+    expect(await screen.findByText("synthetic ready")).toBeInTheDocument();
+    expect(screen.getByText("no durable rows")).toBeInTheDocument();
+    expect(screen.getByText("excluded from live coverage")).toBeInTheDocument();
+    expect(fetchMock.mock.calls).toHaveLength(callsBeforeRehearsal);
+    expect(
+      fetchMock.mock.calls.every(
+        ([input]) => !/openrouter|deepgram|serpapi|serper/i.test(String(input)),
+      ),
+    ).toBe(true);
   });
 
   it("exports diagnostics through a browser-local JSON download", async () => {

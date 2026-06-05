@@ -76,7 +76,9 @@ import {
 import {
   BRAIN_RUNTIME_SETTING_LIMITS,
   DEFAULT_BRAIN_RUNTIME_SETTINGS,
+  MASTERY_EVIDENCE_POLICIES,
   type BrainRuntimeSettings,
+  type MasteryEvidencePolicy,
   type BrainWebSearchPolicy,
 } from "../lib/brainRuntimeSettings";
 import { builtInBookAudioOverviewEntries } from "../lib/chapterAudioOverviews";
@@ -97,6 +99,8 @@ type AdminTab =
   | "console";
 type ActivityStatus = "idle" | "loading" | "ready" | "error";
 const TRACE_PAGE_SIZE = 100;
+const MAIN_ACTIVITY_EVENT_LIMIT = 12;
+const MAIN_REQUEST_TIMELINE_LIMIT = 5;
 
 type SystemActivityEvent = {
   id: string;
@@ -208,6 +212,27 @@ const webSearchPolicyOptions: {
     description: "Allow freshness-sensitive web retrieval when detected.",
   },
 ];
+
+const masteryEvidencePolicyDetails: Record<
+  MasteryEvidencePolicy,
+  { label: string; description: string }
+> = {
+  validated_only: {
+    label: "Validated Only",
+    description:
+      "Only explicit scored recall or quiz evidence can stage mastery updates.",
+  },
+  review_required: {
+    label: "Review Required",
+    description:
+      "Allow staged evaluated-answer rows, but keep Admin review visible before trust increases.",
+  },
+};
+
+const masteryEvidencePolicyOptions = MASTERY_EVIDENCE_POLICIES.map((id) => ({
+  id,
+  ...masteryEvidencePolicyDetails[id],
+}));
 
 const artifactTypeBuckets: ArtifactRecord["artifactType"][] = [
   "source_card",
@@ -1247,7 +1272,7 @@ export function AdminView() {
   ).length;
   const systemEvents = activityPayload?.events || [];
   const systemSummary = activityPayload?.summary;
-  const recentSystemEvents = systemEvents.slice(0, 40);
+  const recentSystemEvents = systemEvents.slice(0, MAIN_ACTIVITY_EVENT_LIMIT);
   const requestTimelines = useMemo<AdminRequestTimeline[]>(() => {
     const timelines = new Map<string, AdminRequestTimeline>();
 
@@ -1394,7 +1419,7 @@ export function AdminView() {
         ),
       }))
       .sort((a, b) => b.latestAt - a.latestAt)
-      .slice(0, 12);
+      .slice(0, MAIN_REQUEST_TIMELINE_LIMIT);
   }, [
     backgroundJobs,
     memoryEvents,
@@ -1450,7 +1475,15 @@ export function AdminView() {
     brainRuntimeSettings.toolIterationLimit ===
       DEFAULT_BRAIN_RUNTIME_SETTINGS.toolIterationLimit &&
     brainRuntimeSettings.webSearchPolicy ===
-      DEFAULT_BRAIN_RUNTIME_SETTINGS.webSearchPolicy;
+      DEFAULT_BRAIN_RUNTIME_SETTINGS.webSearchPolicy &&
+    brainRuntimeSettings.masteryEvidencePolicy ===
+      DEFAULT_BRAIN_RUNTIME_SETTINGS.masteryEvidencePolicy &&
+    brainRuntimeSettings.bktTransitProbability ===
+      DEFAULT_BRAIN_RUNTIME_SETTINGS.bktTransitProbability &&
+    brainRuntimeSettings.bktSlipProbability ===
+      DEFAULT_BRAIN_RUNTIME_SETTINGS.bktSlipProbability &&
+    brainRuntimeSettings.bktGuessProbability ===
+      DEFAULT_BRAIN_RUNTIME_SETTINGS.bktGuessProbability;
 
   const recordCorrectionRequest = async (input: {
     action: CorrectionEvent["action"];
@@ -2017,10 +2050,11 @@ export function AdminView() {
                             Behind-the-scenes activity
                           </h2>
                           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 font-serif">
-                            Local logs for model calls, tools, retrieval, voice,
-                            memory writes, jobs, and errors. Use this to see
-                            what happened; Graphify still maps code, not the
-                            learner brain.
+                            Required local logs for model calls, tool jobs,
+                            background jobs, retrieval, voice, memory writes,
+                            and errors. Deeper ledgers stay in their focused
+                            tabs; Graphify still maps code, not the learner
+                            brain.
                           </p>
                         </div>
                         <button
@@ -2098,6 +2132,49 @@ export function AdminView() {
                           </div>
                         </div>
                       </div>
+
+                      <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+                        <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
+                          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-blue-600">
+                            <BrainCircuit size={13} /> Learner-brain logic
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-mono text-blue-800">
+                            <span className="rounded-full border border-blue-200 bg-white/80 px-2 py-0.5">
+                              evidence{" "}
+                              {brainRuntimeSettings.masteryEvidencePolicy.replace(
+                                /_/g,
+                                " ",
+                              )}
+                            </span>
+                            <span className="rounded-full border border-blue-200 bg-white/80 px-2 py-0.5">
+                              transit{" "}
+                              {brainRuntimeSettings.bktTransitProbability.toFixed(
+                                2,
+                              )}
+                            </span>
+                            <span className="rounded-full border border-blue-200 bg-white/80 px-2 py-0.5">
+                              slip{" "}
+                              {brainRuntimeSettings.bktSlipProbability.toFixed(
+                                2,
+                              )}
+                            </span>
+                            <span className="rounded-full border border-blue-200 bg-white/80 px-2 py-0.5">
+                              guess{" "}
+                              {brainRuntimeSettings.bktGuessProbability.toFixed(
+                                2,
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("tuning")}
+                          className="inline-flex items-center justify-center gap-2 rounded-full border border-blue-200 bg-white px-4 py-2 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                        >
+                          <SlidersHorizontal size={13} />
+                          Tune brain logic
+                        </button>
+                      </div>
                     </section>
 
                     <section className="min-w-0 rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
@@ -2107,14 +2184,13 @@ export function AdminView() {
                             Request timelines
                           </h3>
                           <p className="mt-1 text-sm text-zinc-500 font-serif">
-                            Groups local server events, saved transcript memory
-                            rows, retrieval injections, durable model runs, tool
-                            jobs, and background jobs by request id so one tutor
-                            turn can be inspected without hopping between tabs.
+                            Shows only the newest request groups for quick
+                            triage. Focused tabs keep the full local ledgers
+                            available when a turn needs deeper inspection.
                           </p>
                         </div>
                         <div className="w-fit max-w-full rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-mono text-zinc-500">
-                          {requestTimelines.length} grouped
+                          {requestTimelines.length} recent
                         </div>
                       </div>
 
@@ -2490,7 +2566,8 @@ export function AdminView() {
                               Event stream
                             </h3>
                             <p className="mt-1 text-sm text-zinc-500 font-serif">
-                              Newest first, redacted server-side, retained in
+                              Newest {MAIN_ACTIVITY_EVENT_LIMIT} required
+                              events, redacted server-side and retained in
                               memory for this local backend process.
                             </p>
                           </div>
@@ -7389,7 +7466,7 @@ export function AdminView() {
                         </button>
                       </div>
 
-                      <div className="grid gap-3 md:grid-cols-4">
+                      <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-7">
                         {[
                           [
                             "Web Policy",
@@ -7410,6 +7487,23 @@ export function AdminView() {
                             "Admin Refresh",
                             `${Math.round(brainRuntimeSettings.activityRefreshMs / 1000)}s`,
                           ],
+                          [
+                            "Evidence",
+                            brainRuntimeSettings.masteryEvidencePolicy.replace(
+                              /_/g,
+                              " ",
+                            ),
+                          ],
+                          [
+                            "BKT Transit",
+                            brainRuntimeSettings.bktTransitProbability.toFixed(
+                              2,
+                            ),
+                          ],
+                          [
+                            "BKT Slip/Guess",
+                            `${brainRuntimeSettings.bktSlipProbability.toFixed(2)} / ${brainRuntimeSettings.bktGuessProbability.toFixed(2)}`,
+                          ],
                         ].map(([label, value]) => (
                           <div
                             key={label}
@@ -7423,6 +7517,130 @@ export function AdminView() {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    </section>
+
+                    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="mb-5">
+                        <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                          <BrainCircuit size={13} /> Learner-Brain Logic
+                        </div>
+                        <h3 className="mt-2 text-xl font-serif font-medium text-zinc-900">
+                          Evidence and BKT controls
+                        </h3>
+                        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-500 font-serif">
+                          These local settings travel with chat tool metadata
+                          and guide when the tutor may stage evaluated-answer
+                          evidence. The current mastery engine still commits
+                          against persisted concept BKT fields.
+                        </p>
+                      </div>
+
+                      <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+                        <div className="rounded-[24px] border border-zinc-200 bg-zinc-50 p-4">
+                          <h4 className="m-0 text-sm font-semibold text-zinc-900">
+                            Mastery evidence policy
+                          </h4>
+                          <div className="mt-3 grid gap-3">
+                            {masteryEvidencePolicyOptions.map((option) => (
+                              <button
+                                key={option.id}
+                                type="button"
+                                onClick={() =>
+                                  updateRuntimeSetting(
+                                    "masteryEvidencePolicy",
+                                    option.id,
+                                  )
+                                }
+                                className={`rounded-2xl border p-4 text-left transition-colors ${
+                                  brainRuntimeSettings.masteryEvidencePolicy ===
+                                  option.id
+                                    ? "border-blue-200 bg-blue-50 text-blue-900 shadow-sm"
+                                    : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
+                                }`}
+                              >
+                                <div className="text-sm font-semibold">
+                                  {option.label}
+                                </div>
+                                <div className="mt-1 text-xs leading-relaxed text-zinc-500 font-serif">
+                                  {option.description}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="rounded-[24px] border border-zinc-200 bg-zinc-50 p-4">
+                          <h4 className="m-0 text-sm font-semibold text-zinc-900">
+                            BKT prior knobs
+                          </h4>
+                          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                            {[
+                              {
+                                key: "bktTransitProbability",
+                                label: "BKT transit prior",
+                                help: "Chance of learning between attempts.",
+                              },
+                              {
+                                key: "bktSlipProbability",
+                                label: "BKT slip prior",
+                                help: "Chance of a wrong answer despite knowing.",
+                              },
+                              {
+                                key: "bktGuessProbability",
+                                label: "BKT guess prior",
+                                help: "Chance of a correct guess while unlearned.",
+                              },
+                            ].map(({ key, label, help }) => {
+                              const settingKey = key as keyof Pick<
+                                BrainRuntimeSettings,
+                                | "bktTransitProbability"
+                                | "bktSlipProbability"
+                                | "bktGuessProbability"
+                              >;
+                              const limits =
+                                BRAIN_RUNTIME_SETTING_LIMITS[settingKey];
+                              const updateProbability = (
+                                event: React.FormEvent<HTMLInputElement>,
+                              ) =>
+                                updateRuntimeSetting(
+                                  settingKey,
+                                  Number(event.currentTarget.value),
+                                );
+                              return (
+                                <label
+                                  key={key}
+                                  className="block rounded-2xl border border-zinc-200 bg-white p-4"
+                                >
+                                  <div className="flex items-center justify-between gap-3">
+                                    <span className="text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                      {label}
+                                    </span>
+                                    <span className="text-sm font-semibold tabular-nums text-zinc-900">
+                                      {brainRuntimeSettings[settingKey].toFixed(
+                                        2,
+                                      )}
+                                    </span>
+                                  </div>
+                                  <input
+                                    aria-label={label}
+                                    type="range"
+                                    min={limits.min}
+                                    max={limits.max}
+                                    step={limits.step}
+                                    value={brainRuntimeSettings[settingKey]}
+                                    onInput={updateProbability}
+                                    onChange={updateProbability}
+                                    className="mt-3 w-full accent-blue-600"
+                                  />
+                                  <div className="mt-2 text-xs text-zinc-500 font-serif">
+                                    {help}
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
                     </section>
 
@@ -7612,6 +7830,14 @@ export function AdminView() {
                               brainRuntimeSettings.webSearchPolicy,
                             ],
                             [
+                              "Evidence policy",
+                              brainRuntimeSettings.masteryEvidencePolicy,
+                            ],
+                            [
+                              "BKT priors",
+                              `${brainRuntimeSettings.bktTransitProbability.toFixed(2)} / ${brainRuntimeSettings.bktSlipProbability.toFixed(2)} / ${brainRuntimeSettings.bktGuessProbability.toFixed(2)}`,
+                            ],
+                            [
                               "Settings source",
                               "localStorage brain_runtime_settings",
                             ],
@@ -7642,7 +7868,8 @@ export function AdminView() {
                           </div>
                           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                             The server normalizes bounds before applying tool
-                            iteration and web-search policy controls.
+                            iteration, web-search policy, evidence policy, and
+                            BKT prior controls.
                           </div>
                           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                             AWS/cloud rollout remains deferred; this is a local

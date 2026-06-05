@@ -1,0 +1,90 @@
+{
+  "id": "codex-multi-agent-ui-test-plan-extended",
+  "status": "phase_7_page_rendered_expansion_complete",
+  "cwd": "/Users/mfuad16/Documents/LearningAI",
+  "goalStatus": "active",
+  "graphify": {
+    "mcpStatus": "stale-or-wrong-project",
+    "localGraph": "graphify-out/graph.json",
+    "localGraphUsed": true,
+    "graphRegenerationRequested": false
+  },
+  "testHarness": {
+    "runner": "node:test plus vitest/jsdom",
+    "prebundle": "esbuild via npm test",
+    "vitestConfigured": true,
+    "testingLibraryConfigured": true,
+    "fakeIndexedDbConfigured": true,
+    "playwrightConfigured": false
+  },
+  "packets": [
+    { "id": "P01", "name": "Study lead", "status": "completed_phase_1" },
+    { "id": "P02", "name": "Analytics lead", "status": "completed_phase_1" },
+    { "id": "P03", "name": "Revision lead", "status": "completed_phase_1" },
+    { "id": "P04", "name": "Admin API lead", "status": "completed_phase_1" },
+    {
+      "id": "P05",
+      "name": "Component element lead",
+      "status": "completed_phase_1"
+    },
+    { "id": "P06", "name": "Data state lead", "status": "completed_phase_1" },
+    {
+      "id": "P07",
+      "name": "Build Graphify lead",
+      "status": "completed_phase_1"
+    },
+    {
+      "id": "P08",
+      "name": "Component render plan",
+      "status": "completed_plan"
+    },
+    { "id": "P09", "name": "Dexie hooks plan", "status": "completed_plan" },
+    {
+      "id": "P10",
+      "name": "Rendered DOM harness",
+      "status": "completed_phase_2"
+    },
+    {
+      "id": "P11",
+      "name": "Analytics live Dexie and rendered expansion",
+      "status": "completed_phase_3"
+    },
+    {
+      "id": "P12",
+      "name": "TypeScript no implicit any",
+      "status": "completed_phase_4"
+    },
+    {
+      "id": "P13",
+      "name": "ChatPanel and PdfViewer rendered expansion",
+      "status": "completed_phase_5"
+    },
+    {
+      "id": "P14",
+      "name": "Reusable components, Revision, extraction, and runtime parity",
+      "status": "completed_phase_6"
+    },
+    {
+      "id": "P15",
+      "name": "App shell, StudyView, and AdminView rendered expansion",
+      "status": "completed_phase_7"
+    },
+    {
+      "id": "P16",
+      "name": "Per-component 40-50 rendered case expansion",
+      "status": "in_progress"
+    }
+  ],
+  "verification": {
+    "focused": "passed",
+    "npmTest": "passed_253_of_253",
+    "npmRunTestDom": "passed_115_of_115",
+    "lint": "passed",
+    "build": "passed",
+    "formatCheck": "passed",
+    "browser": "passed_dev_production_desktop_mobile_parity_phase_6",
+    "noImplicitAnyAudit": "passed_enforced_by_lint"
+  },
+  "remainingApprovalGate": "40-50 rendered cases per reusable component plus real PDF/voice browser flows",
+  "updatedAt": "2026-06-05T02:21:00+09:00"
+}

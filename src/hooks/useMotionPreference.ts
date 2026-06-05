@@ -3,7 +3,11 @@ import { useStore } from "../store";
 
 export function useMotionPreference() {
   const animationsEnabled = useStore((state) => state.animationsEnabled);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window === "undefined") return false;
+    if (!window.matchMedia) return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
 
   useEffect(() => {
     if (!window.matchMedia) return;
