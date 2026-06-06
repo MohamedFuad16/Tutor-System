@@ -56,3 +56,19 @@ test("Admin beta diagnostics are built from the same local activity rows shown i
     /Graphify remains the separate code architecture/,
   );
 });
+
+test("Admin learner brain overview exposes the local selector and proof path", () => {
+  assert.match(adminViewSource, /admin-brain-control-room/);
+  assert.match(adminViewSource, /admin-learner-algorithm-selector/);
+  assert.match(adminViewSource, /admin-brain-proof-path/);
+  assert.match(adminViewSource, /Automatic local selector is active/);
+  assert.match(adminViewSource, /learnerAlgorithmDetailsFromMetadata/);
+  assert.match(adminViewSource, /conservative_threshold/);
+  assert.match(adminViewSource, /bayesian_knowledge_tracing/);
+  assert.match(adminViewSource, /decay_sensitive_bkt/);
+  assert.match(adminViewSource, /Typed chat - book memory - retrieval/);
+  assert.doesNotMatch(
+    adminViewSource,
+    /automatic model choice is not yet active/i,
+  );
+});

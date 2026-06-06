@@ -83,6 +83,7 @@ import {
 } from "../lib/brainRuntimeSettings";
 import { builtInBookAudioOverviewEntries } from "../lib/chapterAudioOverviews";
 import { summarizeChatThreadPersistence } from "../lib/chatThreadUtils";
+import type { LearnerAlgorithmId } from "../memory/learner.algorithm";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
 type AdminTab =
@@ -355,6 +356,68 @@ const stringListMetadataValue = (
         .map((value) => value.trim())
         .filter(Boolean)
     : [];
+
+const learnerAlgorithmIds: LearnerAlgorithmId[] = [
+  "conservative_threshold",
+  "bayesian_knowledge_tracing",
+  "decay_sensitive_bkt",
+];
+
+const learnerAlgorithmLabels: Record<LearnerAlgorithmId, string> = {
+  conservative_threshold: "Conservative evidence threshold",
+  bayesian_knowledge_tracing: "Bayesian Knowledge Tracing",
+  decay_sensitive_bkt: "Decay-sensitive BKT",
+};
+
+const learnerAlgorithmShortLabels: Record<LearnerAlgorithmId, string> = {
+  conservative_threshold: "Conservative",
+  bayesian_knowledge_tracing: "BKT",
+  decay_sensitive_bkt: "Decay BKT",
+};
+
+const isLearnerAlgorithmId = (value: unknown): value is LearnerAlgorithmId =>
+  value === "conservative_threshold" ||
+  value === "bayesian_knowledge_tracing" ||
+  value === "decay_sensitive_bkt";
+
+const learnerAlgorithmDetailsFromMetadata = (
+  metadata: Record<string, unknown> | undefined,
+) => {
+  const selection = objectRecord(metadata?.learningAlgorithmSelection);
+  const directAlgorithm = metadata?.learningAlgorithm;
+  const selectedAlgorithm = selection?.selectedAlgorithm;
+  const algorithm = isLearnerAlgorithmId(directAlgorithm)
+    ? directAlgorithm
+    : isLearnerAlgorithmId(selectedAlgorithm)
+      ? selectedAlgorithm
+      : null;
+  if (!algorithm) return null;
+
+  const metadataLabel = stringMetadataValue(metadata, "learningAlgorithmLabel");
+  const selectedLabel =
+    typeof selection?.selectedLabel === "string"
+      ? selection.selectedLabel.trim()
+      : "";
+  const metadataReason = stringMetadataValue(
+    metadata,
+    "learningAlgorithmReason",
+  );
+  const selectedReason =
+    typeof selection?.selectionReason === "string"
+      ? selection.selectionReason.trim()
+      : "";
+  const confidence = Number(selection?.selectionConfidence);
+
+  return {
+    algorithm,
+    label: metadataLabel || selectedLabel || learnerAlgorithmLabels[algorithm],
+    reason: metadataReason || selectedReason,
+    confidence:
+      Number.isFinite(confidence) && confidence > 0
+        ? Math.round(confidence * 100)
+        : null,
+  };
+};
 
 const generatedNoteClaimSpanCoverageFor = (record: ArtifactRecord) => {
   if (record.artifactType !== "notes") return null;
@@ -1294,6 +1357,64 @@ export function AdminView() {
   const activeBookThreadSummary = activeBookThread
     ? summarizeChatThreadPersistence(activeBookThread.messages)
     : null;
+  const learnerAlgorithmLedgerRows = useMemo(() => {
+    const evidenceRows = evidenceEvents.flatMap((event) => {
+      const details = learnerAlgorithmDetailsFromMetadata(event.metadata);
+      if (!details) return [];
+      return [
+        {
+          id: event.id,
+          timestamp: event.timestamp,
+          source: "Evidence",
+          conceptId: event.conceptId || "concept pending",
+          verified: event.verified,
+          evidenceType: event.evidenceType,
+          ...details,
+        },
+      ];
+    });
+    const deltaRows = masteryDeltas.flatMap((delta) => {
+      const details = learnerAlgorithmDetailsFromMetadata(delta.metadata);
+      if (!details) return [];
+      return [
+        {
+          id: delta.id,
+          timestamp: delta.timestamp,
+          source: "Mastery",
+          conceptId: delta.conceptId,
+          verified: delta.verified,
+          evidenceType: delta.evidenceType,
+          ...details,
+        },
+      ];
+    });
+
+    return [...evidenceRows, ...deltaRows].sort(
+      (a, b) => b.timestamp - a.timestamp,
+    );
+  }, [evidenceEvents, masteryDeltas]);
+  const recentLearnerAlgorithmRows = learnerAlgorithmLedgerRows.slice(0, 4);
+  const learnerAlgorithmCounts = learnerAlgorithmIds.map((algorithm) => ({
+    algorithm,
+    label: learnerAlgorithmLabels[algorithm],
+    shortLabel: learnerAlgorithmShortLabels[algorithm],
+    count: learnerAlgorithmLedgerRows.filter(
+      (row) => row.algorithm === algorithm,
+    ).length,
+  }));
+  const activeLearnerAlgorithmCount = learnerAlgorithmCounts.filter(
+    (entry) => entry.count > 0,
+  ).length;
+  const proofSpotlightChecks =
+    betaDiagnosticsSnapshot.coherentLiveProof.checks.filter((check) =>
+      [
+        "typed_chat_request_bundle",
+        "live_voice_request_bundle",
+        "shared_multi_pdf_context",
+        "shared_book_thread",
+        "provider_evidence_attempt_bound",
+      ].includes(check.id),
+    );
   const brainLoopSteps = [
     {
       label: "Capture",
@@ -1319,9 +1440,18 @@ export function AdminView() {
     },
     {
       label: "Adapt",
-      title: "Teaching responds to memory and BKT",
+      title: "Teaching responds to selected learner model",
       detail:
-        "BKT is active today; automatic selection across multiple learner algorithms is still future work.",
+        learnerAlgorithmLedgerRows.length > 0
+          ? `${learnerAlgorithmLedgerRows.length} selector decision${learnerAlgorithmLedgerRows.length === 1 ? "" : "s"} chose across ${activeLearnerAlgorithmCount} local algorithm path${activeLearnerAlgorithmCount === 1 ? "" : "s"}.`
+          : "The selector is wired; the first validated attempt will record which local learner algorithm was chosen.",
+    },
+    {
+      label: "Prove",
+      title: "Admin checks typed chat and live voice",
+      detail: betaDiagnosticsSnapshot.coherentLiveProof.ready
+        ? "Typed chat and live voice share the same book, thread, provider, and multi-PDF proof bundle."
+        : `${betaDiagnosticsSnapshot.coherentLiveProof.readyChecks}/${betaDiagnosticsSnapshot.coherentLiveProof.totalChecks} proof checks are ready.`,
     },
   ];
   const systemEvents = activityPayload?.events || [];
@@ -1808,7 +1938,7 @@ export function AdminView() {
   ]);
 
   return (
-    <div className="w-full h-full bg-[#faf9f6] text-zinc-900 flex flex-col overflow-x-hidden overflow-y-auto custom-scroll pt-20 md:pt-0 relative font-serif">
+    <div className="w-full h-full bg-[#faf9f6] text-zinc-900 flex flex-col overflow-x-hidden overflow-y-auto custom-scroll scroll-pt-32 pt-20 md:pt-0 relative font-serif">
       {/* Subtle Paper Texture Overlay */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.03]"
@@ -2112,22 +2242,26 @@ export function AdminView() {
                     className="flex flex-col gap-8 font-sans"
                     data-testid="admin-brain-overview"
                   >
-                    <section className="rounded-lg border border-blue-100 bg-blue-50/60 p-5">
+                    <section
+                      className="scroll-mt-32 rounded-lg border border-blue-100 bg-blue-50/60 p-5"
+                      data-testid="admin-brain-control-room"
+                    >
                       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-600/75">
                             <BrainCircuit size={13} /> Learner Brain
                           </div>
                           <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
-                            The loop you described is the right target
+                            Learner-brain control room
                           </h2>
                           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-zinc-600 font-serif">
-                            Chat, voice, PDFs, flashcards, and evaluated answers
-                            create local learner memory. Validated evidence
-                            moves mastery. The tutor receives a context packet
-                            from that memory so it can teach with the active
-                            book, active PDFs, concepts, scores, and recent
-                            struggles.
+                            The product goal is exactly the loop you described:
+                            chat, voice, PDFs, flashcards, and evaluated answers
+                            become local learner memory; validated evidence
+                            updates mastery; the tutor receives that active book
+                            context and adjusts how it teaches. This page shows
+                            what is wired, what was recorded, and what is still
+                            missing for beta proof.
                           </p>
                         </div>
                         <div className="shrink-0 rounded-lg border border-blue-100 bg-white px-5 py-4 text-left">
@@ -2171,8 +2305,8 @@ export function AdminView() {
                           },
                           {
                             label: "Adaptive model",
-                            value: "BKT",
-                            detail: `Transit ${brainRuntimeSettings.bktTransitProbability.toFixed(2)}, slip ${brainRuntimeSettings.bktSlipProbability.toFixed(2)}, guess ${brainRuntimeSettings.bktGuessProbability.toFixed(2)}`,
+                            value: "Selector",
+                            detail: `${learnerAlgorithmLedgerRows.length} local decision${learnerAlgorithmLedgerRows.length === 1 ? "" : "s"} across ${learnerAlgorithmIds.length} algorithm paths`,
                           },
                         ].map((item) => (
                           <article
@@ -2192,7 +2326,7 @@ export function AdminView() {
                         ))}
                       </div>
 
-                      <div className="mt-5 grid gap-3 lg:grid-cols-5">
+                      <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                         {brainLoopSteps.map((step, index) => (
                           <article
                             key={step.label}
@@ -2263,16 +2397,19 @@ export function AdminView() {
                         <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
                           <SlidersHorizontal size={13} /> Learning Algorithm
                         </div>
-                        <h3 className="mt-2 text-xl font-serif font-medium text-zinc-900">
-                          BKT is active; automatic model choice is not yet
-                          active
+                        <h3
+                          className="mt-2 text-xl font-serif font-medium text-zinc-900"
+                          data-testid="admin-learner-algorithm-selector"
+                        >
+                          Automatic local selector is active
                         </h3>
                         <p className="mt-2 text-sm leading-relaxed text-zinc-600 font-serif">
-                          The current learner model is Bayesian Knowledge
-                          Tracing with validated-only mastery updates. The
-                          planned direction is automatic strategy selection, but
-                          the app should not claim that until multiple learner
-                          models exist and Admin can compare them.
+                          Validated attempts can choose conservative evidence
+                          thresholding, Bayesian Knowledge Tracing, or
+                          decay-sensitive BKT. AKT-style neural tracing and
+                          remote learner-model competition are still future
+                          work, so Admin only claims the local selector that the
+                          runtime records today.
                         </p>
                         <div className="mt-4 grid gap-2 sm:grid-cols-3">
                           {[
@@ -2284,15 +2421,12 @@ export function AdminView() {
                               ),
                             ],
                             [
-                              "Memory limit",
-                              brainRuntimeSettings.memoryConceptLimit,
+                              "Selector rows",
+                              learnerAlgorithmLedgerRows.length,
                             ],
                             [
-                              "Web policy",
-                              brainRuntimeSettings.webSearchPolicy.replace(
-                                /_/g,
-                                " ",
-                              ),
+                              "Active paths",
+                              `${activeLearnerAlgorithmCount}/${learnerAlgorithmIds.length}`,
                             ],
                           ].map(([label, value]) => (
                             <div
@@ -2308,14 +2442,99 @@ export function AdminView() {
                             </div>
                           ))}
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab("tuning")}
-                          className="mt-4 inline-flex items-center justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
-                        >
-                          <SlidersHorizontal size={13} />
-                          Open tuning
-                        </button>
+
+                        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                          {learnerAlgorithmCounts.map((entry) => (
+                            <div
+                              key={entry.algorithm}
+                              className={`rounded-lg border p-3 ${
+                                entry.count > 0
+                                  ? "border-green-200 bg-green-50"
+                                  : "border-zinc-200 bg-zinc-50"
+                              }`}
+                            >
+                              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                {entry.shortLabel}
+                              </div>
+                              <div className="mt-1 text-sm font-semibold text-zinc-900">
+                                {entry.count} decision
+                                {entry.count === 1 ? "" : "s"}
+                              </div>
+                              <p className="mt-1 text-[11px] leading-relaxed text-zinc-500 font-serif">
+                                {entry.label}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                            Recent selector choices
+                          </div>
+                          {recentLearnerAlgorithmRows.length > 0 ? (
+                            <div className="mt-3 space-y-2">
+                              {recentLearnerAlgorithmRows.map((row) => (
+                                <div
+                                  key={`${row.source}-${row.id}`}
+                                  className="rounded-md border border-white bg-white px-3 py-2"
+                                >
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <span className="text-xs font-semibold text-zinc-900">
+                                      {row.label}
+                                    </span>
+                                    <span
+                                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                                        row.verified
+                                          ? "border-green-200 bg-green-50 text-green-700"
+                                          : "border-orange-200 bg-orange-50 text-orange-700"
+                                      }`}
+                                    >
+                                      {row.verified ? "verified" : "watch"}
+                                    </span>
+                                  </div>
+                                  <p className="mt-1 text-[11px] leading-relaxed text-zinc-500 font-serif">
+                                    {row.source} | {row.evidenceType} |{" "}
+                                    {row.conceptId}
+                                    {row.confidence !== null
+                                      ? ` | ${row.confidence}% confidence`
+                                      : ""}
+                                  </p>
+                                  {row.reason && (
+                                    <p className="mt-1 text-[11px] leading-relaxed text-zinc-500 font-serif">
+                                      {row.reason}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="mt-3 text-sm leading-relaxed text-zinc-600 font-serif">
+                              No selector rows have been recorded yet. The next
+                              validated recall, generated answer, or transfer
+                              attempt will write the selected local algorithm
+                              into evidence and mastery metadata.
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab("tuning")}
+                            className="inline-flex items-center justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                          >
+                            <SlidersHorizontal size={13} />
+                            Open tuning
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab("evidence")}
+                            className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-100"
+                          >
+                            <BrainCircuit size={13} />
+                            Open evidence
+                          </button>
+                        </div>
                       </article>
                     </section>
 
@@ -2337,6 +2556,69 @@ export function AdminView() {
                           <ShieldCheck size={13} />
                           Open proof details
                         </button>
+                      </div>
+
+                      <div
+                        className="mb-4 rounded-lg border border-blue-100 bg-blue-50/50 p-4"
+                        data-testid="admin-brain-proof-path"
+                      >
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-blue-600">
+                              Beta proof path
+                            </div>
+                            <h4 className="mt-1 text-base font-semibold text-zinc-900">
+                              Typed chat - book memory - retrieval - evidence -
+                              live voice
+                            </h4>
+                            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-600 font-serif">
+                              A pass means the learner brain can prove one typed
+                              chat and one live voice run shared the same active
+                              book, local thread, multi-PDF context,
+                              provider-backed rows, and scored evidence.
+                            </p>
+                          </div>
+                          <div className="shrink-0 rounded-lg border border-blue-100 bg-white px-4 py-3">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              Coherent proof
+                            </div>
+                            <div className="mt-1 text-2xl font-semibold tabular-nums text-zinc-900">
+                              {
+                                betaDiagnosticsSnapshot.coherentLiveProof
+                                  .completionPercent
+                              }
+                              %
+                            </div>
+                            <span
+                              className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(betaDiagnosticsSnapshot.coherentLiveProof.status)}`}
+                            >
+                              {betaDiagnosticsSnapshot.coherentLiveProof.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+                          {proofSpotlightChecks.map((check) => (
+                            <article
+                              key={check.id}
+                              className="rounded-lg border border-white bg-white/90 p-3"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                                  {check.title}
+                                </div>
+                                <span
+                                  className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(check.status)}`}
+                                >
+                                  {check.ready ? "ready" : check.status}
+                                </span>
+                              </div>
+                              <p className="mt-2 line-clamp-4 text-[11px] leading-relaxed text-zinc-500 font-serif">
+                                {check.summary}
+                              </p>
+                            </article>
+                          ))}
+                        </div>
                       </div>
 
                       <div className="grid gap-3 lg:grid-cols-3">

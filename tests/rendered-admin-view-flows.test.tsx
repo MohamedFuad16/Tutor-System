@@ -184,10 +184,11 @@ describe("rendered AdminView page flows", () => {
     expect(
       await screen.findByTestId("admin-brain-overview"),
     ).toBeInTheDocument();
+    expect(screen.getByTestId("admin-brain-control-room")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: "The loop you described is the right target",
+        name: "Learner-brain control room",
       }),
     ).toBeInTheDocument();
     expect(screen.getByText("Capture")).toBeInTheDocument();
@@ -195,12 +196,22 @@ describe("rendered AdminView page flows", () => {
     expect(screen.getByText("Score")).toBeInTheDocument();
     expect(screen.getByText("Inject")).toBeInTheDocument();
     expect(screen.getByText("Adapt")).toBeInTheDocument();
+    expect(screen.getByText("Prove")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-brain-proof-path")).toHaveTextContent(
+      "Typed chat - book memory - retrieval - evidence - live voice",
+    );
     expect(
-      screen.getByRole("heading", {
-        level: 3,
-        name: "BKT is active; automatic model choice is not yet active",
-      }),
+      screen.getByTestId("admin-learner-algorithm-selector"),
+    ).toHaveTextContent("Automatic local selector is active");
+    expect(
+      screen.getByText("Conservative evidence threshold"),
     ).toBeInTheDocument();
+    expect(
+      screen.getAllByText("Bayesian Knowledge Tracing").length,
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText("Decay-sensitive BKT").length).toBeGreaterThan(
+      0,
+    );
   });
 
   it("shows the activity loading state before a successful local response", async () => {
