@@ -86,6 +86,7 @@ import { summarizeChatThreadPersistence } from "../lib/chatThreadUtils";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
 type AdminTab =
+  | "brain"
   | "activity"
   | "models"
   | "memory"
@@ -644,9 +645,11 @@ export function AdminView() {
   const [activityRefreshKey, setActivityRefreshKey] = useState(0);
   const consoleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<AdminTab>("activity");
+  const [activeTab, setActiveTab] = useState<AdminTab>("brain");
   const shouldLoadActivityPayload =
-    activeTab === "activity" || activeTab === "diagnostics";
+    activeTab === "brain" ||
+    activeTab === "activity" ||
+    activeTab === "diagnostics";
   const [correctionAction, setCorrectionAction] =
     useState<CorrectionEvent["action"]>("mark_wrong");
   const [correctionTargetType, setCorrectionTargetType] =
@@ -1268,6 +1271,59 @@ export function AdminView() {
   const tracedBookCount = learningBooks.filter(
     (book) => (conceptsByBook[book.id] || []).length > 0,
   ).length;
+  const activeLearningBook = activeLearningBookId
+    ? learningBooks.find((book) => book.id === activeLearningBookId)
+    : undefined;
+  const activeBookDocuments = activeLearningBookId
+    ? learningDocuments.filter(
+        (document) => document.bookId === activeLearningBookId,
+      )
+    : [];
+  const activeBookReadyDocuments = activeBookDocuments.filter(
+    (document) => document.processingStatus === "ready",
+  );
+  const readyLearningDocuments = learningDocuments.filter(
+    (document) => document.processingStatus === "ready",
+  );
+  const activeBookConceptCount = activeLearningBookId
+    ? (conceptsByBook[activeLearningBookId] || []).length
+    : 0;
+  const activeBookThread = activeLearningBookId
+    ? bookChatThreads.find((thread) => thread.bookId === activeLearningBookId)
+    : undefined;
+  const activeBookThreadSummary = activeBookThread
+    ? summarizeChatThreadPersistence(activeBookThread.messages)
+    : null;
+  const brainLoopSteps = [
+    {
+      label: "Capture",
+      title: "Chat, voice, PDFs, and revision activity",
+      detail: `${memoryEventCount} memory rows and ${learningDocuments.length} PDF source${learningDocuments.length === 1 ? "" : "s"} are stored locally.`,
+    },
+    {
+      label: "Understand",
+      title: "Book context and retrieval packets",
+      detail: `${retrievalEventCount} retrieval event${retrievalEventCount === 1 ? "" : "s"} can explain what context was assembled for the tutor.`,
+    },
+    {
+      label: "Score",
+      title: "Validated evidence updates mastery",
+      detail: `${verifiedEvidenceCount} verified evidence row${verifiedEvidenceCount === 1 ? "" : "s"} and ${masteryDeltaCount} mastery delta${masteryDeltaCount === 1 ? "" : "s"} feed BKT.`,
+    },
+    {
+      label: "Inject",
+      title: "The tutor receives the active learner packet",
+      detail: activeLearningBook
+        ? `${activeLearningBook.title} is the active book context.`
+        : "General Study is used until a learning book is selected.",
+    },
+    {
+      label: "Adapt",
+      title: "Teaching responds to memory and BKT",
+      detail:
+        "BKT is active today; automatic selection across multiple learner algorithms is still future work.",
+    },
+  ];
   const systemEvents = activityPayload?.events || [];
   const systemSummary = activityPayload?.summary;
   const recentSystemEvents = systemEvents.slice(0, MAIN_ACTIVITY_EVENT_LIMIT);
@@ -1778,6 +1834,13 @@ export function AdminView() {
 
           <nav className="flex flex-col gap-1">
             <button
+              onClick={() => setActiveTab("brain")}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "brain" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+            >
+              <BrainCircuit size={16} />
+              <span className="line-clamp-1 leading-snug">Brain Overview</span>
+            </button>
+            <button
               onClick={() => setActiveTab("activity")}
               className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "activity" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
             >
@@ -1890,16 +1953,20 @@ export function AdminView() {
               {/* Admin Center Preface */}
               <div className="mb-12">
                 <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-3">
-                  Admin Center
+                  {activeTab === "brain"
+                    ? "Brain Architecture"
+                    : "Admin Center"}
                 </h1>
                 <p className="text-zinc-600 leading-relaxed max-w-2xl text-sm font-serif">
-                  Track models, tools, memory, retrieval, voice, and beta
-                  readiness.
+                  {activeTab === "brain"
+                    ? "See how chat, voice, PDFs, evidence, and BKT scoring become learner memory that the tutor can use."
+                    : "Track models, tools, memory, retrieval, voice, and beta readiness."}
                 </p>
               </div>
 
               <div className="mb-8 grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm sm:grid-cols-3 lg:hidden">
                 {[
+                  { id: "brain", label: "Brain", icon: BrainCircuit },
                   { id: "activity", label: "Activity", icon: Gauge },
                   { id: "models", label: "Models", icon: Cpu },
                   { id: "memory", label: "Memory", icon: Network },
@@ -1938,51 +2005,55 @@ export function AdminView() {
               <div className="mb-10 border-b border-zinc-200 pb-8 pt-4 font-sans cursor-default">
                 <span className="text-[11px] uppercase tracking-[0.2em] font-mono text-zinc-400 mb-6 block font-medium">
                   <span className="text-blue-500 mr-2">#</span>
-                  {activeTab === "activity"
-                    ? "Observability"
-                    : activeTab === "models"
-                      ? "Model Behavior"
-                      : activeTab === "memory"
-                        ? "Memory Audit"
-                        : activeTab === "corrections"
-                          ? "Memory Control"
-                          : activeTab === "artifacts"
-                            ? "Source Grounding"
-                            : activeTab === "diagnostics"
-                              ? "Beta Readiness"
-                              : activeTab === "retrieval"
-                                ? "Retrieval Audit"
-                                : activeTab === "evidence"
-                                  ? "Learner Evidence"
-                                  : activeTab === "tuning"
-                                    ? "Runtime Controls"
-                                    : activeTab === "traces"
-                                      ? "Diagnostics"
-                                      : "Runtime Environment"}
+                  {activeTab === "brain"
+                    ? "Learner Brain"
+                    : activeTab === "activity"
+                      ? "Observability"
+                      : activeTab === "models"
+                        ? "Model Behavior"
+                        : activeTab === "memory"
+                          ? "Memory Audit"
+                          : activeTab === "corrections"
+                            ? "Memory Control"
+                            : activeTab === "artifacts"
+                              ? "Source Grounding"
+                              : activeTab === "diagnostics"
+                                ? "Beta Readiness"
+                                : activeTab === "retrieval"
+                                  ? "Retrieval Audit"
+                                  : activeTab === "evidence"
+                                    ? "Learner Evidence"
+                                    : activeTab === "tuning"
+                                      ? "Runtime Controls"
+                                      : activeTab === "traces"
+                                        ? "Diagnostics"
+                                        : "Runtime Environment"}
                 </span>
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-2 font-serif leading-[1.15]">
-                    {activeTab === "activity"
-                      ? "System Activity"
-                      : activeTab === "models"
-                        ? "Model Runs"
-                        : activeTab === "memory"
-                          ? "Memory Events"
-                          : activeTab === "corrections"
-                            ? "Correction Requests"
-                            : activeTab === "artifacts"
-                              ? "Artifacts & Citations"
-                              : activeTab === "diagnostics"
-                                ? "Beta Diagnostics"
-                                : activeTab === "retrieval"
-                                  ? "Retrieval Events"
-                                  : activeTab === "evidence"
-                                    ? "Evidence Ledger"
-                                    : activeTab === "tuning"
-                                      ? "Runtime Tuning"
-                                      : activeTab === "traces"
-                                        ? "DeepSeek Trace Ledger"
-                                        : "Live Server Console"}
+                    {activeTab === "brain"
+                      ? "Memory, scoring, and adaptation"
+                      : activeTab === "activity"
+                        ? "System Activity"
+                        : activeTab === "models"
+                          ? "Model Runs"
+                          : activeTab === "memory"
+                            ? "Memory Events"
+                            : activeTab === "corrections"
+                              ? "Correction Requests"
+                              : activeTab === "artifacts"
+                                ? "Artifacts & Citations"
+                                : activeTab === "diagnostics"
+                                  ? "Beta Diagnostics"
+                                  : activeTab === "retrieval"
+                                    ? "Retrieval Events"
+                                    : activeTab === "evidence"
+                                      ? "Evidence Ledger"
+                                      : activeTab === "tuning"
+                                        ? "Runtime Tuning"
+                                        : activeTab === "traces"
+                                          ? "DeepSeek Trace Ledger"
+                                          : "Live Server Console"}
                   </h1>
                   {activeTab === "activity" && (
                     <div
@@ -2036,7 +2107,331 @@ export function AdminView() {
               </div>
 
               <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 selection:bg-blue-200 selection:text-zinc-900">
-                {activeTab === "activity" ? (
+                {activeTab === "brain" ? (
+                  <div
+                    className="flex flex-col gap-8 font-sans"
+                    data-testid="admin-brain-overview"
+                  >
+                    <section className="rounded-lg border border-blue-100 bg-blue-50/60 p-5">
+                      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-600/75">
+                            <BrainCircuit size={13} /> Learner Brain
+                          </div>
+                          <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
+                            The loop you described is the right target
+                          </h2>
+                          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-zinc-600 font-serif">
+                            Chat, voice, PDFs, flashcards, and evaluated answers
+                            create local learner memory. Validated evidence
+                            moves mastery. The tutor receives a context packet
+                            from that memory so it can teach with the active
+                            book, active PDFs, concepts, scores, and recent
+                            struggles.
+                          </p>
+                        </div>
+                        <div className="shrink-0 rounded-lg border border-blue-100 bg-white px-5 py-4 text-left">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                            Local beta proof
+                          </div>
+                          <div className="mt-1 text-3xl font-semibold tabular-nums text-zinc-900">
+                            {
+                              betaDiagnosticsSnapshot.brainArchitectureReadiness
+                                .localBetaPercent
+                            }
+                            %
+                          </div>
+                          <span
+                            className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(betaDiagnosticsSnapshot.brainArchitectureReadiness.status)}`}
+                          >
+                            {betaDiagnosticsSnapshot.brainArchitectureReadiness.stage.replace(
+                              /_/g,
+                              " ",
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                        {[
+                          {
+                            label: "Stored memory",
+                            value: memoryEventCount,
+                            detail: `${bookChatThreadCount} book threads, ${learningBooks.length} books`,
+                          },
+                          {
+                            label: "Study context",
+                            value: readyLearningDocuments.length,
+                            detail: `${learningDocuments.length} PDFs stored, ${retrievalEventCount} retrieval rows`,
+                          },
+                          {
+                            label: "Validated scoring",
+                            value: verifiedEvidenceCount,
+                            detail: `${masteryDeltaCount} mastery deltas, ${activeMisconceptions.length} open misconceptions`,
+                          },
+                          {
+                            label: "Adaptive model",
+                            value: "BKT",
+                            detail: `Transit ${brainRuntimeSettings.bktTransitProbability.toFixed(2)}, slip ${brainRuntimeSettings.bktSlipProbability.toFixed(2)}, guess ${brainRuntimeSettings.bktGuessProbability.toFixed(2)}`,
+                          },
+                        ].map((item) => (
+                          <article
+                            key={item.label}
+                            className="rounded-lg border border-white/80 bg-white/90 p-4"
+                          >
+                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                              {item.label}
+                            </div>
+                            <div className="mt-2 truncate text-2xl font-semibold tabular-nums text-zinc-900">
+                              {item.value}
+                            </div>
+                            <p className="mt-2 text-xs leading-relaxed text-zinc-500 font-serif">
+                              {item.detail}
+                            </p>
+                          </article>
+                        ))}
+                      </div>
+
+                      <div className="mt-5 grid gap-3 lg:grid-cols-5">
+                        {brainLoopSteps.map((step, index) => (
+                          <article
+                            key={step.label}
+                            className="rounded-lg border border-blue-100 bg-white p-4"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-blue-600">
+                                {step.label}
+                              </div>
+                              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-[10px] font-bold tabular-nums text-blue-700">
+                                {index + 1}
+                              </span>
+                            </div>
+                            <h3 className="mt-3 text-sm font-semibold leading-snug text-zinc-900">
+                              {step.title}
+                            </h3>
+                            <p className="mt-2 text-xs leading-relaxed text-zinc-500 font-serif">
+                              {step.detail}
+                            </p>
+                          </article>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+                      <article className="rounded-lg border border-zinc-200 bg-white p-5">
+                        <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                          <BookOpen size={13} /> Active Learning Context
+                        </div>
+                        <h3 className="mt-2 text-xl font-serif font-medium text-zinc-900">
+                          {activeLearningBook?.title ||
+                            activeProject ||
+                            "General Study"}
+                        </h3>
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          {[
+                            ["Book id", activeLearningBookId || "not selected"],
+                            ["Ready PDFs", activeBookReadyDocuments.length],
+                            ["Mapped concepts", activeBookConceptCount],
+                            [
+                              "Saved thread",
+                              activeBookThreadSummary
+                                ? `${activeBookThreadSummary.meaningfulMessageCount} messages`
+                                : "not started",
+                            ],
+                          ].map(([label, value]) => (
+                            <div
+                              key={label}
+                              className="rounded-lg border border-zinc-200 bg-zinc-50 p-3"
+                            >
+                              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                {label}
+                              </div>
+                              <div className="mt-1 truncate text-sm font-semibold text-zinc-900">
+                                {value}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm leading-relaxed text-zinc-600 font-serif">
+                          {activeBookReadyDocuments.length > 0
+                            ? `The active book has ${activeBookReadyDocuments.length} ready PDF context source${activeBookReadyDocuments.length === 1 ? "" : "s"} available for tutor injection.`
+                            : "The active book does not yet have a ready PDF source for tutor injection."}
+                        </div>
+                      </article>
+
+                      <article className="rounded-lg border border-zinc-200 bg-white p-5">
+                        <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                          <SlidersHorizontal size={13} /> Learning Algorithm
+                        </div>
+                        <h3 className="mt-2 text-xl font-serif font-medium text-zinc-900">
+                          BKT is active; automatic model choice is not yet
+                          active
+                        </h3>
+                        <p className="mt-2 text-sm leading-relaxed text-zinc-600 font-serif">
+                          The current learner model is Bayesian Knowledge
+                          Tracing with validated-only mastery updates. The
+                          planned direction is automatic strategy selection, but
+                          the app should not claim that until multiple learner
+                          models exist and Admin can compare them.
+                        </p>
+                        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                          {[
+                            [
+                              "Evidence",
+                              brainRuntimeSettings.masteryEvidencePolicy.replace(
+                                /_/g,
+                                " ",
+                              ),
+                            ],
+                            [
+                              "Memory limit",
+                              brainRuntimeSettings.memoryConceptLimit,
+                            ],
+                            [
+                              "Web policy",
+                              brainRuntimeSettings.webSearchPolicy.replace(
+                                /_/g,
+                                " ",
+                              ),
+                            ],
+                          ].map(([label, value]) => (
+                            <div
+                              key={label}
+                              className="rounded-lg border border-zinc-200 bg-zinc-50 p-3"
+                            >
+                              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                {label}
+                              </div>
+                              <div className="mt-1 truncate text-sm font-semibold text-zinc-900">
+                                {value}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("tuning")}
+                          className="mt-4 inline-flex items-center justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                        >
+                          <SlidersHorizontal size={13} />
+                          Open tuning
+                        </button>
+                      </article>
+                    </section>
+
+                    <section className="rounded-lg border border-zinc-200 bg-white p-5">
+                      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-500/70">
+                            <ShieldCheck size={13} /> Brain Readiness
+                          </div>
+                          <h3 className="mt-2 text-xl font-serif font-medium text-zinc-900">
+                            What is proven right now
+                          </h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("diagnostics")}
+                          className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-100"
+                        >
+                          <ShieldCheck size={13} />
+                          Open proof details
+                        </button>
+                      </div>
+
+                      <div className="grid gap-3 lg:grid-cols-3">
+                        {[
+                          {
+                            title: "Brain-flow ledger",
+                            status: betaDiagnosticsSnapshot.brainFlow.status,
+                            detail: `${betaDiagnosticsSnapshot.brainFlow.coveragePercent}% coverage across chat, voice, retrieval, tools, memory, and evidence.`,
+                          },
+                          {
+                            title: "Provider proof",
+                            status:
+                              betaDiagnosticsSnapshot.coherentLiveProof.status,
+                            detail: betaDiagnosticsSnapshot.coherentLiveProof
+                              .ready
+                              ? "OpenRouter chat and Deepgram voice share one local proof bundle."
+                              : "A shared typed-chat and voice provider bundle is still needed.",
+                          },
+                          {
+                            title: "Mastery integrity",
+                            status: masteryIntegrity.status,
+                            detail: masteryIntegrity.ready
+                              ? "Validated evidence rows and mastery deltas are linked."
+                              : "Some mastery evidence links need review.",
+                          },
+                        ].map((item) => (
+                          <article
+                            key={item.title}
+                            className="rounded-lg border border-zinc-200 bg-zinc-50 p-4"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                                {item.title}
+                              </div>
+                              <span
+                                className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${statusTone(item.status)}`}
+                              >
+                                {item.status}
+                              </span>
+                            </div>
+                            <p className="mt-3 text-sm leading-relaxed text-zinc-600 font-serif">
+                              {item.detail}
+                            </p>
+                          </article>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                      {[
+                        {
+                          label: "Memory",
+                          tab: "memory" as AdminTab,
+                          detail: "Stored chat, voice, and learner updates.",
+                          icon: Network,
+                        },
+                        {
+                          label: "Evidence",
+                          tab: "evidence" as AdminTab,
+                          detail: "Validated answers, flashcards, and mastery.",
+                          icon: BrainCircuit,
+                        },
+                        {
+                          label: "Retrieval",
+                          tab: "retrieval" as AdminTab,
+                          detail: "What gets injected into tutor context.",
+                          icon: Search,
+                        },
+                        {
+                          label: "Models",
+                          tab: "models" as AdminTab,
+                          detail: "Provider calls and tutor outputs.",
+                          icon: Cpu,
+                        },
+                      ].map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.label}
+                            type="button"
+                            onClick={() => setActiveTab(item.tab)}
+                            className="min-w-0 rounded-lg border border-zinc-200 bg-white p-4 text-left transition-colors hover:bg-zinc-50"
+                          >
+                            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-blue-500/70">
+                              <Icon size={13} /> {item.label}
+                            </div>
+                            <p className="mt-2 text-sm leading-relaxed text-zinc-600 font-serif">
+                              {item.detail}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </section>
+                  </div>
+                ) : activeTab === "activity" ? (
                   <div className="flex flex-col gap-8 font-sans">
                     <section className="min-w-0 rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
                       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

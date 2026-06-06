@@ -172,11 +172,43 @@ afterEach(async () => {
 });
 
 describe("rendered AdminView page flows", () => {
+  it("opens with a learner-brain overview that explains the adaptive tutoring loop", async () => {
+    renderAdmin();
+
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Memory, scoring, and adaptation",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("admin-brain-overview"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: "The loop you described is the right target",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Capture")).toBeInTheDocument();
+    expect(screen.getByText("Understand")).toBeInTheDocument();
+    expect(screen.getByText("Score")).toBeInTheDocument();
+    expect(screen.getByText("Inject")).toBeInTheDocument();
+    expect(screen.getByText("Adapt")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        level: 3,
+        name: "BKT is active; automatic model choice is not yet active",
+      }),
+    ).toBeInTheDocument();
+  });
+
   it("shows the activity loading state before a successful local response", async () => {
     const pending = deferred<Response>();
     fetchMock.mockImplementationOnce(() => pending.promise);
 
     renderAdmin();
+    clickTab("System Activity");
 
     expect(
       screen.getByRole("heading", { level: 1, name: "System Activity" }),
@@ -200,6 +232,7 @@ describe("rendered AdminView page flows", () => {
     );
 
     renderAdmin();
+    clickTab("System Activity");
 
     expect(
       await screen.findByText("System activity unavailable (503)"),
@@ -238,6 +271,7 @@ describe("rendered AdminView page flows", () => {
 
   it("manually refreshes the activity request from the polling control", async () => {
     renderAdmin();
+    clickTab("System Activity");
 
     expect(await screen.findByText("Live")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -249,7 +283,7 @@ describe("rendered AdminView page flows", () => {
 
   it("navigates among model, memory, and evidence admin tabs", async () => {
     renderAdmin();
-    await screen.findByText("Live");
+    await screen.findByTestId("admin-brain-overview");
 
     clickTab("Model Runs");
     expect(
@@ -269,10 +303,10 @@ describe("rendered AdminView page flows", () => {
 
   it("keeps learner-brain logic controls visible and updates local BKT runtime knobs", async () => {
     renderAdmin();
-    await screen.findByText("Live");
+    await screen.findByTestId("admin-brain-overview");
 
-    expect(screen.getByText("Learner-brain logic")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Tune brain logic" }));
+    expect(screen.getByText("Learning Algorithm")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open tuning" }));
 
     expect(
       screen.getByRole("heading", { level: 1, name: "Runtime Tuning" }),
@@ -305,7 +339,7 @@ describe("rendered AdminView page flows", () => {
 
   it("renders the local beta diagnostics snapshot surface", async () => {
     renderAdmin();
-    await screen.findByText("Live");
+    await screen.findByTestId("admin-brain-overview");
 
     clickTab("Beta Diagnostics");
 
@@ -332,7 +366,7 @@ describe("rendered AdminView page flows", () => {
     useStore.setState({ apiKey: "", deepgramApiKey: "" });
 
     renderAdmin();
-    await screen.findByText("Live");
+    await screen.findByTestId("admin-brain-overview");
     clickTab("Beta Diagnostics");
 
     expect(await screen.findByText("chat key missing")).toBeInTheDocument();
@@ -342,7 +376,7 @@ describe("rendered AdminView page flows", () => {
 
   it("runs the local brain wiring rehearsal without provider traffic", async () => {
     renderAdmin();
-    await screen.findByText("Live");
+    await screen.findByTestId("admin-brain-overview");
     clickTab("Beta Diagnostics");
     expect(
       await screen.findByRole("heading", {
@@ -377,7 +411,7 @@ describe("rendered AdminView page flows", () => {
       .mockImplementation(() => undefined);
 
     renderAdmin();
-    await screen.findByText("Live");
+    await screen.findByTestId("admin-brain-overview");
     clickTab("Beta Diagnostics");
     fireEvent.click(
       screen.getByRole("button", { name: "Export diagnostics JSON" }),
@@ -395,7 +429,7 @@ describe("rendered AdminView page flows", () => {
 
   it("routes Back to Library through the Zustand view state", async () => {
     renderAdmin();
-    await screen.findByText("Live");
+    await screen.findByTestId("admin-brain-overview");
 
     fireEvent.click(screen.getByRole("button", { name: "Back to Library" }));
 
@@ -404,7 +438,7 @@ describe("rendered AdminView page flows", () => {
 
   it("opens the debug WebSocket after health succeeds and renders log events", async () => {
     renderAdmin();
-    await screen.findByText("Live");
+    await screen.findByTestId("admin-brain-overview");
 
     clickTab("Server Console");
 
@@ -434,7 +468,7 @@ describe("rendered AdminView page flows", () => {
       .mockRejectedValueOnce(new Error("backend unavailable"));
 
     renderAdmin();
-    await screen.findByText("Live");
+    await screen.findByTestId("admin-brain-overview");
     clickTab("Server Console");
 
     expect(
