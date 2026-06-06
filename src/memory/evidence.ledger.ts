@@ -100,6 +100,7 @@ export const createMasteryDeltaRecords = (
     delta: clamp01(input.nextMastery, 0) - clamp01(input.previousMastery, 0),
     correct: input.correct,
     reason: compactSummary(input.summary),
+    metadata: input.metadata,
   };
 
   return { event, delta };

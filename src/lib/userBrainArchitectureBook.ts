@@ -67,7 +67,7 @@ flowchart LR
 
 Validated evidence is the only basis for mastery increases. A linked flashcard review or evaluated answer may pass the gate when it has a real concept and explicit outcome. Model summaries, generated artifacts, traces, and misconception candidates may shape teaching or support review, but they cannot raise mastery by themselves.
 
-Accepted mastery writes are recorded atomically with evidence and a mastery delta. Local traces make the decision inspectable; they do not prove factual truth.`,
+Accepted mastery writes are recorded atomically with evidence, a mastery delta, and the selected local learner algorithm. Local traces make the decision inspectable; they do not prove factual truth.`,
   },
   {
     title: "Chapter 3: Teaching Loop And State",
@@ -88,7 +88,9 @@ Soft signals such as hesitation, repeated questions, selected text, or voice tim
 
 A mastery increase requires validated evidence linked to a real concept. Incorrect evaluated answers may create a misconception candidate for Socratic repair, but that candidate does not lower or raise mastery on its own.
 
-**Implemented:** local teaching context and evidence-gated review attempts. **Target:** stronger evaluation quality and more reviewable teaching policies.`,
+The runtime chooses a local learner algorithm for every validated mastery attempt. Current supported strategies are conservative evidence-threshold updates for sparse first attempts, Bayesian Knowledge Tracing for tuned or stable concepts, and decay-sensitive BKT for concepts with prior attempts after a review gap. Neural sequence models such as AKT are not claimed as implemented.
+
+**Implemented:** local teaching context, evidence-gated review attempts, and inspectable learner-algorithm selection. **Target:** stronger evaluation quality, more reviewable teaching policies, and future richer learner-model families.`,
   },
   {
     title: "Chapter 4: Retrieval, Artifacts, And Citations",
@@ -109,7 +111,7 @@ flowchart LR
   Answer --> Artifact[Optional artifact row]
 ~~~
 
-Generated notes, flashcards, audio guides, charts, code, images, and websites are artifacts the schema can represent. Current local provenance and verifier helpers are narrower: source cards, generated flashcards, generated learning notes, and stored audio guides have the strongest scoped support. Rows can prove where supported artifacts came from, which request created them, and whether a scoped verifier ran. That is traceability, not factual truth.
+Generated notes, flashcards, audio guides, charts, code, images, and websites are artifacts the schema can represent. Current local provenance and verifier helpers cover source cards; generated charts, code, images, and websites; generated flashcards; generated learning notes; and stored audio guides. Rows can prove where supported artifacts came from, which request created them, and whether a scoped verifier ran. That is traceability, not factual truth.
 
 | Citation state | Meaning |
 | --- | --- |
@@ -118,7 +120,7 @@ Generated notes, flashcards, audio guides, charts, code, images, and websites ar
 | \`unsupported\` or \`unavailable\` | The current verifier cannot support the claim. |
 | \`conflicting\` | Saved source or claim fields disagree. |
 
-**Implemented:** local provenance and scoped checks for selected artifact kinds. **Target:** semantic entailment, document-wide grounding, and broader artifact verification.`,
+**Implemented:** local provenance and scoped checks for the primary generated artifact kinds. **Target:** semantic entailment, document-wide grounding, and deeper artifact-specific verification.`,
   },
   {
     title: "Chapter 5: Admin And Runtime Tuning",
@@ -174,7 +176,7 @@ Built-in Library chapters use stored audio guides. They are generated ahead of t
 ## Target Before Local Beta Is Complete
 
 - Finish one coherent real-provider typed-chat and live-voice proof.
-- Strengthen semantic grounding and add verifiers for unsupported artifact kinds.
+- Strengthen semantic grounding and add deeper artifact-specific verifiers beyond local provenance.
 - Review or quarantine historical rows that do not satisfy current evidence contracts.
 
 ## Deferred Until After Beta

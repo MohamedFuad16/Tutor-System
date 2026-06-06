@@ -25,6 +25,10 @@ export interface PersistentConcept {
     evidenceEventId?: string;
     masteryDeltaId?: string;
     evidenceContract?: "evaluated_answer_v1" | "flashcard_review_v1";
+    learningAlgorithm?:
+      | "bayesian_knowledge_tracing"
+      | "decay_sensitive_bkt"
+      | "conservative_threshold";
   }[];
   decay_factor: number;
 
@@ -249,6 +253,7 @@ export interface MasteryDelta {
   delta: number;
   correct: boolean;
   reason: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface MemoryEvent {

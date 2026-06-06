@@ -213,6 +213,11 @@ test("BKTEngine commits record the resolved Admin BKT parameters", async () => {
   assert.equal(result.mastery, 0.85);
   const event = [...state.evidenceEvents.values()][0];
   assert.equal(event.metadata.bktRuntimeSettingsApplied, true);
+  assert.equal(event.metadata.learningAlgorithm, "bayesian_knowledge_tracing");
+  assert.equal(
+    event.metadata.learningAlgorithmSelection.selectedAlgorithm,
+    "bayesian_knowledge_tracing",
+  );
   assert.deepEqual(event.metadata.bktParameters, {
     p_learn: 0.2,
     p_transit: 0.35,
@@ -221,6 +226,14 @@ test("BKTEngine commits record the resolved Admin BKT parameters", async () => {
   });
   assert.ok(event.metadata.posterior > 0.97);
   assert.equal(event.metadata.cappedPosterior, 0.85);
+  assert.equal(
+    [...state.masteryDeltas.values()][0].metadata.learningAlgorithm,
+    "bayesian_knowledge_tracing",
+  );
+  assert.equal(
+    result.attempt_history[0].learningAlgorithm,
+    "bayesian_knowledge_tracing",
+  );
 });
 
 test("validated mastery commit rolls back all rows when the ledger fails", async () => {

@@ -172,6 +172,10 @@ export type CitationIntegrityResult = {
     normalizedDomain?: string;
     claimCheck:
       | "artifact_level_source_card"
+      | "generated_chart_provenance"
+      | "generated_code_provenance"
+      | "generated_image_provenance"
+      | "generated_website_provenance"
       | "generated_flashcard_provenance"
       | "generated_learning_note_provenance"
       | "generated_learning_note_preview_lexical_support"
@@ -423,6 +427,10 @@ export const supportsLocalCitationIntegrityArtifact = (
   artifact?: Pick<ArtifactRecord, "artifactType"> | null,
 ) =>
   artifact?.artifactType === "source_card" ||
+  artifact?.artifactType === "chart" ||
+  artifact?.artifactType === "code" ||
+  artifact?.artifactType === "image" ||
+  artifact?.artifactType === "website" ||
   artifact?.artifactType === "flashcards" ||
   artifact?.artifactType === "notes" ||
   artifact?.artifactType === "audio_overview";
@@ -683,6 +691,11 @@ export const verifyLocalCitationIntegrity = (input: {
   const generatedFlashcardsArtifact = artifact?.artifactType === "flashcards";
   const generatedNoteArtifact = artifact?.artifactType === "notes";
   const audioOverviewArtifact = artifact?.artifactType === "audio_overview";
+  const genericGeneratedArtifact =
+    artifact?.artifactType === "chart" ||
+    artifact?.artifactType === "code" ||
+    artifact?.artifactType === "image" ||
+    artifact?.artifactType === "website";
   const generatedNoteClaimSpanCoverage = generatedNoteArtifact
     ? createGeneratedNoteClaimSpanCoverage(
         artifact?.metadata?.summaryPreview || artifact?.summary,
@@ -802,7 +815,15 @@ export const verifyLocalCitationIntegrity = (input: {
           ? generatedNoteClaimSpanCoverage?.state === "not_required"
             ? "generated_learning_note_provenance"
             : "generated_learning_note_preview_lexical_support"
-          : "artifact_level_source_card",
+          : artifact?.artifactType === "chart"
+            ? "generated_chart_provenance"
+            : artifact?.artifactType === "code"
+              ? "generated_code_provenance"
+              : artifact?.artifactType === "image"
+                ? "generated_image_provenance"
+                : artifact?.artifactType === "website"
+                  ? "generated_website_provenance"
+                  : "artifact_level_source_card",
     generatedNoteClaimSpanCoverage,
   };
   const result = (
@@ -833,7 +854,7 @@ export const verifyLocalCitationIntegrity = (input: {
   if (!supportsLocalCitationIntegrityArtifact(artifact)) {
     return result(
       "unsupported",
-      "The local verifier currently supports source-card, generated flashcard, generated learning-note, and stored audio-guide citation rows only.",
+      "The local verifier supports source-card, generated chart/code/image/website, generated flashcard, generated learning-note, and stored audio-guide citation rows only.",
     );
   }
 
@@ -1458,6 +1479,71 @@ export const verifyLocalCitationIntegrity = (input: {
     }
 
     return result("verified");
+  }
+
+  if (genericGeneratedArtifact) {
+    const artifactMetadata = artifact.metadata || {};
+    const citationMetadata = citation.metadata || {};
+    const sourceRef = compact(citation.sourceRef);
+    const artifactType = artifact.artifactType;
+
+    if (
+      artifactMetadata.localOnly !== true ||
+      citationMetadata.localOnly !== true
+    ) {
+      return result(
+        "unavailable",
+        `Generated ${artifactType} provenance is not marked local-only.`,
+      );
+    }
+
+    if (
+      artifactMetadata.externalContentFetched !== false ||
+      citationMetadata.externalContentFetched !== false
+    ) {
+      return result(
+        "unavailable",
+        `Generated ${artifactType} provenance does not prove that no external content was fetched.`,
+      );
+    }
+
+    if (artifactMetadata.generatedArtifact !== true) {
+      return result(
+        "unavailable",
+        `Generated ${artifactType} metadata is missing the generated-artifact marker.`,
+      );
+    }
+
+    if (compact(artifactMetadata.artifactType) !== artifactType) {
+      return result(
+        "unavailable",
+        `Generated ${artifactType} metadata does not match the artifact type.`,
+      );
+    }
+
+    if (!sourceRef || isPlaceholderSourceRef(sourceRef)) {
+      return result(
+        "unavailable",
+        `Generated ${artifactType} citation is missing a local source reference.`,
+      );
+    }
+
+    if (!artifact.sourceIds.includes(sourceRef)) {
+      return result(
+        "conflicting",
+        `Generated ${artifactType} artifact sourceIds do not include the citation source reference.`,
+      );
+    }
+
+    if (
+      !compact(artifact.summary) &&
+      !compact(artifactMetadata.summaryPreview)
+    ) {
+      return result(
+        "unavailable",
+        `Generated ${artifactType} has no saved summary preview to inspect locally.`,
+      );
+    }
   }
 
   if (citation.url && artifact.url && !sameUrl(citation.url, artifact.url)) {

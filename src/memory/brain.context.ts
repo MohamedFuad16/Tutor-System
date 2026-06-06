@@ -207,7 +207,11 @@ export const buildBrainDocumentContextReport = (
   const readyDocumentIds = readyDocuments
     .map((document) => document.id)
     .filter(Boolean);
-  const contextDocuments = readyDocuments.slice(0, options.maxDocuments || 6);
+  const maxContextDocuments =
+    typeof options.maxDocuments === "number"
+      ? Math.max(0, Math.floor(options.maxDocuments))
+      : readyDocuments.length;
+  const contextDocuments = readyDocuments.slice(0, maxContextDocuments);
   const contextDocumentIds = contextDocuments
     .map((document) => document.id)
     .filter(Boolean);
@@ -232,13 +236,19 @@ export const buildBrainDocumentContextReport = (
     };
   }
 
-  const excerptBudget = contextDocuments.length === 1 ? 5000 : 5200;
+  const excerptBudget =
+    contextDocuments.length === 1
+      ? 5000
+      : Math.min(
+          14000,
+          Math.max(5200, 5200 + Math.max(0, contextDocuments.length - 6) * 600),
+        );
   const perDocumentExcerptChars =
     contextDocuments.length === 0
       ? 0
       : contextDocuments.length === 1
         ? excerptBudget
-        : Math.max(700, Math.floor(excerptBudget / contextDocuments.length));
+        : Math.max(400, Math.floor(excerptBudget / contextDocuments.length));
   const manifestDocuments = orderedDocuments.slice(0, 12);
   const documentManifest = [
     "### Active Book Document Manifest",

@@ -666,9 +666,25 @@ test("stored audio overviews become not-checked artifact records with local prov
   assert.equal(citation.metadata.externalContentFetched, false);
 });
 
-test("local citation verifier supports flashcard, note, audio, and source-card rows", () => {
+test("local citation verifier supports generated artifact provenance rows", () => {
   assert.equal(
     supportsLocalCitationIntegrityArtifact({ artifactType: "source_card" }),
+    true,
+  );
+  assert.equal(
+    supportsLocalCitationIntegrityArtifact({ artifactType: "chart" }),
+    true,
+  );
+  assert.equal(
+    supportsLocalCitationIntegrityArtifact({ artifactType: "code" }),
+    true,
+  );
+  assert.equal(
+    supportsLocalCitationIntegrityArtifact({ artifactType: "image" }),
+    true,
+  );
+  assert.equal(
+    supportsLocalCitationIntegrityArtifact({ artifactType: "website" }),
     true,
   );
   assert.equal(
@@ -1332,14 +1348,22 @@ test("local citation verifier treats query and hash differences as URL conflicts
   assert.match(result.failureReason || "", /URL/);
 });
 
-test("local citation verifier reports unsupported artifact kinds explicitly", () => {
+test("local citation verifier verifies generic generated chart provenance", () => {
   const artifact = createArtifactRecord(
     {
       id: "artifact-chart",
       artifactType: "chart",
       title: "Generated chart",
+      summary: "A saved chart generated from the local conversation.",
       sourceIds: ["source-1"],
       citationStateIds: ["citation-chart"],
+      metadata: {
+        artifactType: "chart",
+        generatedArtifact: true,
+        localOnly: true,
+        externalContentFetched: false,
+        summaryPreview: "A saved chart generated from local learner context.",
+      },
     },
     100,
   );
@@ -1350,6 +1374,10 @@ test("local citation verifier reports unsupported artifact kinds explicitly", ()
       claimId: "artifact-chart",
       sourceRef: "source-1",
       artifactId: "artifact-chart",
+      metadata: {
+        localOnly: true,
+        externalContentFetched: false,
+      },
     },
     100,
   );
@@ -1360,12 +1388,52 @@ test("local citation verifier reports unsupported artifact kinds explicitly", ()
     timestamp: 500,
   });
 
-  assert.equal(result.state, "unsupported");
-  assert.equal(result.artifactVerificationState, "unavailable");
-  assert.match(
-    result.failureReason || "",
-    /source-card, generated flashcard, generated learning-note, and stored audio-guide/,
+  assert.equal(result.state, "verified");
+  assert.equal(result.artifactVerificationState, "verified");
+  assert.equal(result.metadata.claimCheck, "generated_chart_provenance");
+  assert.equal(result.metadata.sourceKind, "local_source_ref");
+});
+
+test("local citation verifier keeps generic generated artifacts unavailable without local markers", () => {
+  const artifact = createArtifactRecord(
+    {
+      id: "artifact-code",
+      artifactType: "code",
+      title: "Generated code",
+      summary: "A code snippet.",
+      sourceIds: ["source-code"],
+      citationStateIds: ["citation-code"],
+      metadata: {
+        artifactType: "code",
+        generatedArtifact: true,
+      },
+    },
+    100,
   );
+  const citation = createCitationStateRecord(
+    {
+      id: "citation-code",
+      state: "checking",
+      claimId: "artifact-code",
+      sourceRef: "source-code",
+      artifactId: "artifact-code",
+      metadata: {
+        localOnly: true,
+        externalContentFetched: false,
+      },
+    },
+    100,
+  );
+
+  const result = verifyLocalCitationIntegrity({
+    artifact,
+    citation,
+    timestamp: 500,
+  });
+
+  assert.equal(result.state, "unavailable");
+  assert.equal(result.metadata.claimCheck, "generated_code_provenance");
+  assert.match(result.failureReason || "", /not marked local-only/);
 });
 
 test("artifact verification state derives conservatively from citation states", () => {

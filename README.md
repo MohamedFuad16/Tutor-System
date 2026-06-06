@@ -149,6 +149,22 @@ graph TD
     H -.->|Dependency and impact context| C
 ```
 
+### Learner Algorithm Selection
+
+Validated mastery attempts now pass through a local learner-algorithm selector
+before the mastery row is written:
+
+- `conservative_threshold` handles sparse first attempts without overfitting a
+  probabilistic trace.
+- `bayesian_knowledge_tracing` remains the default stable/tuned mastery model
+  and honors Admin runtime BKT settings.
+- `decay_sensitive_bkt` handles concepts with prior attempts after a meaningful
+  review gap.
+
+The selected algorithm, candidate scores, and reason are saved into the evidence
+and mastery metadata. Neural tracing families such as AKT are still future work;
+the app does not claim to train or run them locally.
+
 ## Book-Scoped Study Workflow
 
 Tutor treats a learning book as the durable unit of context:
@@ -176,11 +192,11 @@ Study books can now hold more than one PDF:
 3. The document rail lets you switch between PDFs without replacing the book.
 4. Removing a PDF deletes that document record and its document-scoped
    annotations without deleting the learning book notes.
-5. The active book's PDFs are summarized as a manifest, then ready document
-   extracts are indexed, balanced across multiple PDFs, and injected alongside
-   memory and book summaries when Chat or Voice builds a tutor request. Pending,
-   failed, ready, excerpted, and omitted PDFs stay visible in packet metadata
-   instead of disappearing.
+5. The active book's PDFs are summarized as a manifest, then every ready PDF gets
+   a bounded excerpt by default when Chat or Voice builds a tutor request.
+   Callers can still request a smaller explicit document cap for tight prompts.
+   Pending, failed, ready, excerpted, and intentionally omitted PDFs stay visible
+   in packet metadata instead of disappearing.
 6. Each chat request builds a shared brain-context packet from memory, active
    book, document, and interaction state, then carries the browser request id
    through memory retrieval, `/api/chat`, model/tool ledgers, and Admin request

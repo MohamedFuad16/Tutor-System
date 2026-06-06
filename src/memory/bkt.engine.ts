@@ -16,6 +16,11 @@ import {
   normalizeBrainRuntimeSettings,
   type BrainRuntimeSettings,
 } from "../lib/brainRuntimeSettings";
+import {
+  calculateLearnerAlgorithmPosterior,
+  selectLearnerAlgorithm,
+  type LearnerAlgorithmSelection,
+} from "./learner.algorithm";
 
 export type ValidatedMasteryEvidenceContract =
   | "evaluated_answer_v1"
@@ -204,11 +209,17 @@ export const commitValidatedMasteryAttempt = async (
     calculatePosterior: (
       concept: PersistentConcept,
       isCorrect: boolean,
+      algorithmSelection?: LearnerAlgorithmSelection,
     ) => number;
+    selectAlgorithm?: (
+      concept: PersistentConcept,
+      isCorrect: boolean,
+    ) => LearnerAlgorithmSelection;
     posteriorMetadata?: (
       concept: PersistentConcept,
       isCorrect: boolean,
       posterior: number,
+      algorithmSelection?: LearnerAlgorithmSelection,
     ) => Record<string, unknown>;
     timestamp?: number;
   },
@@ -262,15 +273,36 @@ export const commitValidatedMasteryAttempt = async (
 
     const previousMastery = concept.mastery;
     const previousPLearn = concept.p_learn;
-    const posterior = input.calculatePosterior(concept, input.isCorrect);
+    const algorithmSelection = input.selectAlgorithm?.(
+      concept,
+      input.isCorrect,
+    );
+    const posterior = input.calculatePosterior(
+      concept,
+      input.isCorrect,
+      algorithmSelection,
+    );
     const posteriorMetadata =
-      input.posteriorMetadata?.(concept, input.isCorrect, posterior) || {};
+      input.posteriorMetadata?.(
+        concept,
+        input.isCorrect,
+        posterior,
+        algorithmSelection,
+      ) || {};
     const confidenceUpdate = buildBKTConfidenceUpdate(
       concept.confidence,
       input.type,
       input.isCorrect,
     );
     const cappedPosterior = masteryFromEvidenceAttempt(input.type, posterior);
+    const algorithmMetadata = algorithmSelection
+      ? {
+          learningAlgorithm: algorithmSelection.selectedAlgorithm,
+          learningAlgorithmLabel: algorithmSelection.selectedLabel,
+          learningAlgorithmReason: algorithmSelection.selectionReason,
+          learningAlgorithmSelection: algorithmSelection,
+        }
+      : {};
     const records = createMasteryDeltaRecords(
       {
         attemptId,
@@ -289,6 +321,7 @@ export const commitValidatedMasteryAttempt = async (
           }`,
         metadata: {
           ...input.options.metadata,
+          ...algorithmMetadata,
           evidenceContract: input.options.evidenceContract,
           masteryAttemptId: attemptId,
           posterior,
@@ -315,6 +348,9 @@ export const commitValidatedMasteryAttempt = async (
           evidenceEventId: records.event.id,
           masteryDeltaId: records.delta.id,
           evidenceContract: input.options.evidenceContract,
+          ...(algorithmSelection
+            ? { learningAlgorithm: algorithmSelection.selectedAlgorithm }
+            : {}),
         },
       ],
       lastReviewedAt: timestamp,
@@ -367,6 +403,9 @@ export class BKTEngine {
     store: MasteryCommitStore = dexieMasteryCommitStore,
   ) {
     const parameterOverrides = bktParameterOverridesFromOptions(options);
+    const explicitBktTuning = Boolean(
+      parameterOverrides || options.runtimeSettings || options.bktParameters,
+    );
 
     return await commitValidatedMasteryAttempt(
       {
@@ -374,11 +413,39 @@ export class BKTEngine {
         isCorrect,
         type,
         options,
-        calculatePosterior: (concept, correct) =>
-          this.calculatePosterior(concept, correct, parameterOverrides),
-        posteriorMetadata: (concept) => ({
+        selectAlgorithm: (concept, correct) =>
+          selectLearnerAlgorithm({
+            concept,
+            isCorrect: correct,
+            evidenceType: type,
+            evidenceContract: options.evidenceContract,
+            explicitBktTuning,
+          }),
+        calculatePosterior: (concept, correct, algorithmSelection) =>
+          calculateLearnerAlgorithmPosterior({
+            concept,
+            isCorrect: correct,
+            evidenceType: type,
+            selection:
+              algorithmSelection ||
+              selectLearnerAlgorithm({
+                concept,
+                isCorrect: correct,
+                evidenceType: type,
+                evidenceContract: options.evidenceContract,
+                explicitBktTuning,
+              }),
+            calculateBktPosterior: (candidateConcept) =>
+              this.calculatePosterior(
+                candidateConcept,
+                correct,
+                parameterOverrides,
+              ),
+          }),
+        posteriorMetadata: (concept, _correct, _posterior, selection) => ({
           bktParameters: resolveBKTParameters(concept, parameterOverrides),
           bktRuntimeSettingsApplied: Boolean(parameterOverrides),
+          learningAlgorithm: selection?.selectedAlgorithm,
         }),
       },
       store,

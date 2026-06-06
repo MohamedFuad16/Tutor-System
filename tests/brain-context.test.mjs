@@ -185,6 +185,39 @@ test("brain document context report distinguishes added, ready, excerpted, and o
   assert.doesNotMatch(report.context, /paper-8/);
 });
 
+test("brain document context includes every ready PDF by default with bounded excerpts", () => {
+  const documents = Array.from({ length: 8 }, (_, index) => ({
+    id: `doc-all-${index + 1}`,
+    title: `All Paper ${index + 1}`,
+    bookId: "book-1",
+    mimeType: "application/pdf",
+    size: 10,
+    processingStatus: "ready",
+    extractedText: `all-paper-${index + 1} `.repeat(500),
+    classification: "native_text_pdf",
+    extractionMode: "pymupdf4llm",
+    createdAt: 1,
+    updatedAt: 2,
+  }));
+
+  const report = buildBrainDocumentContextReport(documents, {
+    activeDocumentId: "doc-all-4",
+  });
+
+  assert.equal(report.documentCount, 8);
+  assert.equal(report.readyDocumentCount, 8);
+  assert.equal(report.contextDocumentIds.length, 8);
+  assert.equal(report.contextDocumentIds[0], "doc-all-4");
+  assert.equal(report.omittedReadyDocumentCount, 0);
+  assert.match(report.context, /PDFs with excerpts in this prompt: 8/);
+
+  for (const document of documents) {
+    assert.match(report.context, new RegExp(`Document ID: ${document.id}`));
+  }
+  assert.match(report.context, /all-paper-8/);
+  assert.ok(report.context.length < 16000);
+});
+
 test("brain document context keeps a manifest when no PDF has extracted text yet", () => {
   const report = buildBrainDocumentContextReport([
     {
