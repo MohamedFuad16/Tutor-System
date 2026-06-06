@@ -99,6 +99,134 @@ test("system activity endpoint exposes local ledger metadata", async (t) => {
   assert.equal(body.meters.providerDetails.misoTts.configured, true);
 });
 
+test("public health reports server provider readiness without exposing keys", async (t) => {
+  const previousOpenRouterKey = process.env.OPENROUTER_API_KEY;
+  const previousOpenRouterFallback =
+    process.env.ALLOW_SERVER_OPENROUTER_FALLBACK;
+  const previousDeepgramKey = process.env.DEEPGRAM_API_KEY;
+  const previousDeepgramFallback = process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  process.env.OPENROUTER_API_KEY = "openrouter-health-secret";
+  process.env.ALLOW_SERVER_OPENROUTER_FALLBACK = "true";
+  process.env.DEEPGRAM_API_KEY = "deepgram-health-secret";
+  process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK = "true";
+  t.after(() => {
+    if (previousOpenRouterKey === undefined) {
+      delete process.env.OPENROUTER_API_KEY;
+    } else {
+      process.env.OPENROUTER_API_KEY = previousOpenRouterKey;
+    }
+    if (previousOpenRouterFallback === undefined) {
+      delete process.env.ALLOW_SERVER_OPENROUTER_FALLBACK;
+    } else {
+      process.env.ALLOW_SERVER_OPENROUTER_FALLBACK = previousOpenRouterFallback;
+    }
+    if (previousDeepgramKey === undefined) {
+      delete process.env.DEEPGRAM_API_KEY;
+    } else {
+      process.env.DEEPGRAM_API_KEY = previousDeepgramKey;
+    }
+    if (previousDeepgramFallback === undefined) {
+      delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+    } else {
+      process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK = previousDeepgramFallback;
+    }
+  });
+
+  const { server, baseUrl } = await startApp();
+  t.after(() => server.close());
+
+  const response = await originalFetch(`${baseUrl}/api/health`);
+  assert.equal(response.status, 200);
+  const responseText = await response.text();
+  const body = JSON.parse(responseText);
+
+  assert.equal(body.providers.openRouter, true);
+  assert.equal(body.providers.openRouterByok, true);
+  assert.equal(body.providers.deepgram, true);
+  assert.doesNotMatch(responseText, /openrouter-health-secret/);
+  assert.doesNotMatch(responseText, /deepgram-health-secret/);
+});
+
+test("public health keeps server provider keys disabled without explicit sharing flags", async (t) => {
+  const previousOpenRouterKey = process.env.OPENROUTER_API_KEY;
+  const previousOpenRouterFallback =
+    process.env.ALLOW_SERVER_OPENROUTER_FALLBACK;
+  const previousDeepgramKey = process.env.DEEPGRAM_API_KEY;
+  const previousDeepgramFallback = process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  process.env.OPENROUTER_API_KEY = "openrouter-disabled-secret";
+  process.env.DEEPGRAM_API_KEY = "deepgram-disabled-secret";
+  delete process.env.ALLOW_SERVER_OPENROUTER_FALLBACK;
+  delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  t.after(() => {
+    if (previousOpenRouterKey === undefined)
+      delete process.env.OPENROUTER_API_KEY;
+    else process.env.OPENROUTER_API_KEY = previousOpenRouterKey;
+    if (previousOpenRouterFallback === undefined) {
+      delete process.env.ALLOW_SERVER_OPENROUTER_FALLBACK;
+    } else {
+      process.env.ALLOW_SERVER_OPENROUTER_FALLBACK = previousOpenRouterFallback;
+    }
+    if (previousDeepgramKey === undefined) delete process.env.DEEPGRAM_API_KEY;
+    else process.env.DEEPGRAM_API_KEY = previousDeepgramKey;
+    if (previousDeepgramFallback === undefined) {
+      delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+    } else {
+      process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK = previousDeepgramFallback;
+    }
+  });
+
+  const { server, baseUrl } = await startApp();
+  t.after(() => server.close());
+
+  const response = await originalFetch(`${baseUrl}/api/health`);
+  const body = await response.json();
+
+  assert.equal(body.providers.openRouter, false);
+  assert.equal(body.providers.deepgram, false);
+});
+
+test("Deepgram server fallback and query keys stay disabled without explicit sharing", async (t) => {
+  const previousDeepgramKey = process.env.DEEPGRAM_API_KEY;
+  const previousDeepgramFallback = process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  process.env.DEEPGRAM_API_KEY = "deepgram-disabled-secret";
+  delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  let providerCalled = false;
+  globalThis.fetch = async () => {
+    providerCalled = true;
+    throw new Error("Provider fetch must stay blocked");
+  };
+  t.after(() => {
+    if (previousDeepgramKey === undefined) delete process.env.DEEPGRAM_API_KEY;
+    else process.env.DEEPGRAM_API_KEY = previousDeepgramKey;
+    if (previousDeepgramFallback === undefined) {
+      delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+    } else {
+      process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK = previousDeepgramFallback;
+    }
+  });
+
+  const { server, baseUrl } = await startApp();
+  t.after(() => server.close());
+
+  const response = await originalFetch(
+    `${baseUrl}/api/tts?deepgramKey=query-secret`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: "This must stay offline.",
+        voice: "aura-asteria-en",
+      }),
+    },
+  );
+  const responseText = await response.text();
+
+  assert.equal(response.status, 500);
+  assert.match(responseText, /Deepgram API Key is missing/);
+  assert.equal(providerCalled, false);
+  assert.doesNotMatch(responseText, /deepgram-disabled-secret|query-secret/);
+});
+
 test("system activity marks MisoTTS reachable when the local API health endpoint responds", async (t) => {
   const previousMisoUrl = process.env.MISO_TTS_API_URL;
   const miso = await startMisoHealthServer();
@@ -387,6 +515,23 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         hasVoiceProofMetadata(event),
     ),
   );
+});
+
+test("voice websocket rejects a non-auth first frame before starting a provider", async (t) => {
+  const { server, wsUrl } = await startVoiceApp();
+  t.after(() => server.close());
+  const ws = new WebSocket(wsUrl);
+  t.after(() => {
+    if (ws.readyState === WebSocket.OPEN) ws.close();
+  });
+  await once(ws, "open");
+
+  const closed = once(ws, "close");
+  ws.send(Buffer.from(new Int16Array([180, -120]).buffer));
+  const [code, reason] = await closed;
+
+  assert.equal(code, 1008);
+  assert.match(reason.toString(), /authentication must be the first message/i);
 });
 
 test("blocked voice current-page vision writes correlated system activity", async (t) => {

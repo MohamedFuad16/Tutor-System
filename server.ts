@@ -63,6 +63,7 @@ const PCM16_MONO_48K_BYTES_PER_SECOND = 48000 * 2;
 const DEFAULT_CHAT_MODEL = "deepseek/deepseek-v4-flash";
 const LEARNING_AGENT_MODEL = "deepseek/deepseek-v4-flash";
 const OPENROUTER_SERVER_FALLBACK_FLAG = "ALLOW_SERVER_OPENROUTER_FALLBACK";
+const DEEPGRAM_SERVER_FALLBACK_FLAG = "ALLOW_SERVER_DEEPGRAM_FALLBACK";
 const MAX_DOCUMENT_UPLOAD_MB = 50;
 const MAX_DOCUMENT_UPLOAD_BYTES = MAX_DOCUMENT_UPLOAD_MB * 1024 * 1024;
 
@@ -228,6 +229,11 @@ const getOpenRouterServerFallbackKey = () =>
     ? sanitizeApiKey(process.env.OPENROUTER_API_KEY)
     : "";
 
+const getDeepgramServerFallbackKey = () =>
+  isTruthyEnv(process.env[DEEPGRAM_SERVER_FALLBACK_FLAG])
+    ? sanitizeApiKey(process.env.DEEPGRAM_API_KEY)
+    : "";
+
 const resolveOpenRouterApiKey = (headers: IncomingHttpHeaders) =>
   sanitizeApiKey(tokenFromAuthorization(firstHeader(headers.authorization))) ||
   getOpenRouterServerFallbackKey();
@@ -295,14 +301,9 @@ const compactVoiceStudyContext = (value: unknown) => {
   return `${compact.slice(0, VOICE_STUDY_CONTEXT_LIMIT - 68)}\n\n[Local voice context truncated by the server.]`;
 };
 
-const deepgramKeyFromRequest = (request: {
-  headers: IncomingHttpHeaders;
-  query?: Record<string, unknown>;
-}) =>
+const deepgramKeyFromRequest = (request: { headers: IncomingHttpHeaders }) =>
   sanitizeApiKey(
-    request.headers["x-deepgram-key"] ||
-      request.headers["x-voice-key"] ||
-      request.query?.deepgramKey,
+    request.headers["x-deepgram-key"] || request.headers["x-voice-key"],
   );
 
 const normalizeModelPricing = (raw: any): OpenRouterPricing => {
@@ -805,7 +806,7 @@ export async function createTutorServerApp(
         openRouter: Boolean(getOpenRouterServerFallbackKey()),
         openRouterByok: true,
         serper: Boolean(sanitizeApiKey(process.env.SERPER_API_KEY)),
-        deepgram: Boolean(sanitizeApiKey(process.env.DEEPGRAM_API_KEY)),
+        deepgram: Boolean(getDeepgramServerFallbackKey()),
       },
     });
   });
@@ -843,7 +844,7 @@ export async function createTutorServerApp(
           openRouter: Boolean(getOpenRouterServerFallbackKey()),
           openRouterByok: true,
           serper: Boolean(sanitizeApiKey(process.env.SERPER_API_KEY)),
-          deepgram: Boolean(sanitizeApiKey(process.env.DEEPGRAM_API_KEY)),
+          deepgram: Boolean(getDeepgramServerFallbackKey()),
           misoTts: misoTtsHealth.reachable,
         },
         providerDetails: {
@@ -1569,17 +1570,17 @@ CRITICAL RULES:
   });
 
   // API Route for chat TTS
-  app.get("/api/tts", async (req, res) => {
+  app.post("/api/tts", async (req, res) => {
     try {
       console.log(`[TTS] Request received for speech generation`);
 
-      const text = req.query.text as string;
+      const text = typeof req.body?.text === "string" ? req.body.text : "";
       if (!text) {
         return res.status(400).json({ error: "Text is required." });
       }
       const requestedVoice =
-        typeof req.query.voice === "string"
-          ? req.query.voice
+        typeof req.body?.voice === "string"
+          ? req.body.voice
           : "aura-asteria-en";
       const ttsModel =
         requestedVoice === MISO_TTS_8B_VOICE
@@ -1686,7 +1687,7 @@ CRITICAL RULES:
       const ttsModelForDeepgram =
         ttsModel === "gpt-4o-mini-tts" ? "aura-asteria-en" : ttsModel;
       const deepgramKey =
-        deepgramKeyFromRequest(req) || process.env.DEEPGRAM_API_KEY;
+        deepgramKeyFromRequest(req) || getDeepgramServerFallbackKey();
       if (!deepgramKey) throw new Error("Deepgram API Key is missing");
 
       const response = await fetch(
@@ -3205,7 +3206,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
     console.log(`[SYS] WebSocket trace broadcaster active on /ws/debug`);
 
     // WebSocket Servers
-    const wss = new WebSocketServer({ noServer: true });
+    const wss = new WebSocketServer({ noServer: true, maxPayload: 256 * 1024 });
 
     server.on("upgrade", (request, socket, head) => {
       const pathname = new URL(
@@ -3251,6 +3252,11 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       let voiceRequestId = `voice_${voiceStartedAt}`;
       let voiceProofAttemptId = "";
       let voiceInputSampleRate = 48000;
+      const authDeadline = setTimeout(() => {
+        if (!isVoiceSessionStarted && ws.readyState === ws.OPEN) {
+          ws.close(1008, "Voice authentication timed out");
+        }
+      }, 5000);
 
       const voiceProofActivityMetadata = () => ({
         proofAttemptId: voiceProofAttemptId || undefined,
@@ -3414,7 +3420,6 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
       };
 
       const startVoiceSession = (
-        providedOpenRouterKey: string,
         selectedLanguage: string,
         providedDeepgramKey = "",
         studyContext = "",
@@ -3427,25 +3432,8 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           providedInputSampleRate,
         );
 
-        const openRouterKey =
-          sanitizeApiKey(providedOpenRouterKey) ||
-          getOpenRouterServerFallbackKey();
-        if (!openRouterKey && !useMockVoiceProvider) {
-          recordSystemActivity({
-            kind: "voice",
-            status: "blocked",
-            title: "Voice auth blocked",
-            detail: openRouterRequiredMessage,
-            requestId: voiceRequestId,
-            phase: "auth",
-          });
-          ws.close(1008, openRouterRequiredMessage);
-          return false;
-        }
-
         const deepgramKey =
-          sanitizeApiKey(providedDeepgramKey) ||
-          sanitizeApiKey(process.env.DEEPGRAM_API_KEY);
+          sanitizeApiKey(providedDeepgramKey) || getDeepgramServerFallbackKey();
         if (!deepgramKey && !useMockVoiceProvider) {
           recordSystemActivity({
             kind: "voice",
@@ -3903,6 +3891,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         if (!isVoiceSessionStarted) {
           const authPayload = parseVoiceAuth(data, isBinary);
           if (authPayload) {
+            clearTimeout(authDeadline);
             const clientRequestId = normalizeClientRequestId(
               authPayload.voiceSessionId || authPayload.requestId,
             );
@@ -3919,7 +3908,6 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               voiceProofAttemptId = proofAttemptId;
             }
             startVoiceSession(
-              sanitizeApiKey(authPayload.openRouterKey),
               authPayload.language || language,
               sanitizeApiKey(authPayload.deepgramKey),
               compactVoiceStudyContext(authPayload.studyContext),
@@ -3996,14 +3984,16 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             return;
           }
 
-          const started = startVoiceSession("", language);
-          if (!started) return;
+          clearTimeout(authDeadline);
+          ws.close(1008, "Voice authentication must be the first message");
+          return;
         }
 
         forwardClientMessage(data, isBinary);
       });
 
       ws.on("close", () => {
+        clearTimeout(authDeadline);
         if (usageInterval) clearInterval(usageInterval);
         if (keepAliveInterval) {
           clearInterval(keepAliveInterval);

@@ -3671,6 +3671,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     "idle",
   );
   const [isPlayingTTS, setIsPlayingTTS] = useState<string | null>(null);
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsObjectUrlRef = useRef<string | null>(null);
+  const ttsAbortRef = useRef<AbortController | null>(null);
+  const ttsRequestIdRef = useRef(0);
   const [thinkingStep, setThinkingStep] = useState(0);
   const [serverOpenRouterReady, setServerOpenRouterReady] = useState(false);
   const [serverDeepgramReady, setServerDeepgramReady] = useState(false);
@@ -3693,14 +3697,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     let cancelled = false;
     const refreshProviderMeters = async () => {
       try {
-        const response = await fetch("/api/debug/system-activity");
+        const response = await fetch("/api/health");
         if (!response.ok) return;
         const payload = await response.json();
         if (cancelled) return;
-        setServerOpenRouterReady(
-          Boolean(payload?.meters?.providers?.openRouter),
-        );
-        setServerDeepgramReady(Boolean(payload?.meters?.providers?.deepgram));
+        setServerOpenRouterReady(Boolean(payload?.providers?.openRouter));
+        setServerDeepgramReady(Boolean(payload?.providers?.deepgram));
       } catch {
         if (!cancelled) {
           setServerOpenRouterReady(false);
@@ -4256,17 +4258,23 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     messages,
   ]);
 
-  useEffect(() => {
-    return () => {
-      // @ts-ignore
-      if (window.currentAudio) {
-        // @ts-ignore
-        window.currentAudio.pause();
-        // @ts-ignore
-        window.currentAudio = null;
-      }
-    };
+  const stopReadAloud = useCallback(() => {
+    ttsRequestIdRef.current += 1;
+    ttsAbortRef.current?.abort();
+    ttsAbortRef.current = null;
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.onended = null;
+      ttsAudioRef.current.onerror = null;
+      ttsAudioRef.current.pause();
+      ttsAudioRef.current = null;
+    }
+    if (ttsObjectUrlRef.current) {
+      URL.revokeObjectURL(ttsObjectUrlRef.current);
+      ttsObjectUrlRef.current = null;
+    }
   }, []);
+
+  useEffect(() => stopReadAloud, [stopReadAloud]);
 
   const isProjectDropdownOpenState = useState(false);
   const isProjectDropdownOpen = isProjectDropdownOpenState[0];
@@ -5273,9 +5281,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   );
 
   const startVoice = async () => {
-    if (!hasOpenRouterRuntimeKey) {
+    if (!hasDeepgramRuntimeKey) {
       alert(
-        "Please configure your OpenRouter API Key in settings or expose the local server fallback before using Voice features.",
+        "Please configure your Deepgram API Key in settings or expose the local server fallback before using Voice features.",
       );
       return;
     }
@@ -5581,7 +5589,6 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             voiceSessionId: sessionId,
             requestId: sessionId,
             proofAttemptId,
-            openRouterKey: apiKey,
             deepgramKey: deepgramApiKey,
             inputSampleRate,
             language,
@@ -5970,28 +5977,16 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   }, []);
 
   const handleTTS = async (msgId: string, text: string) => {
-    // @ts-ignore
     if (isPlayingTTS === msgId) {
-      // @ts-ignore
-      if (window.currentAudio) {
-        // @ts-ignore
-        window.currentAudio.pause();
-        // @ts-ignore
-        window.currentAudio = null;
-      }
+      stopReadAloud();
       setIsPlayingTTS(null);
       return;
     }
 
-    // @ts-ignore
-    if (window.currentAudio) {
-      // @ts-ignore
-      window.currentAudio.pause();
-      // @ts-ignore
-      if (window.currentAudio.src) URL.revokeObjectURL(window.currentAudio.src);
-      // @ts-ignore
-      window.currentAudio = null;
-    }
+    stopReadAloud();
+    const requestId = ttsRequestIdRef.current;
+    const controller = new AbortController();
+    ttsAbortRef.current = controller;
 
     try {
       setIsPlayingTTS(msgId);
@@ -6015,14 +6010,18 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       if (ttsVoice === "miso-tts-8b" && misoTtsApiUrl.trim()) {
         ttsHeaders["x-miso-tts-api-url"] = misoTtsApiUrl.trim();
       }
-      const res = await fetch(
-        `/api/tts?text=${encodeURIComponent(safeText)}&voice=${encodeURIComponent(ttsVoice || "aura-asteria-en")}`,
-        Object.keys(ttsHeaders).length
-          ? {
-              headers: ttsHeaders,
-            }
-          : undefined,
-      );
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...ttsHeaders,
+        },
+        body: JSON.stringify({
+          text: safeText,
+          voice: ttsVoice || "aura-asteria-en",
+        }),
+        signal: controller.signal,
+      });
       if (!res.ok) {
         const err = await res
           .json()
@@ -6045,29 +6044,35 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       });
 
       const blob = await res.blob();
+      if (controller.signal.aborted || requestId !== ttsRequestIdRef.current) {
+        return;
+      }
+      ttsAbortRef.current = null;
       const objectUrl = URL.createObjectURL(blob);
       const audioObj = new Audio(objectUrl);
-
-      // @ts-ignore
-      window.currentAudio = audioObj;
+      ttsObjectUrlRef.current = objectUrl;
+      ttsAudioRef.current = audioObj;
 
       audioObj.onended = () => {
+        if (ttsAudioRef.current !== audioObj) return;
+        stopReadAloud();
         setIsPlayingTTS(null);
-        // @ts-ignore
-        window.currentAudio = null;
-        URL.revokeObjectURL(objectUrl);
       };
 
       audioObj.onerror = () => {
+        if (ttsAudioRef.current !== audioObj) return;
+        stopReadAloud();
         setIsPlayingTTS(null);
-        // @ts-ignore
-        window.currentAudio = null;
-        URL.revokeObjectURL(objectUrl);
       };
 
       await audioObj.play();
     } catch (err) {
-      console.error(err);
+      if (!(err instanceof DOMException && err.name === "AbortError")) {
+        console.error(err);
+      }
+      if (requestId === ttsRequestIdRef.current) {
+        stopReadAloud();
+      }
       setIsPlayingTTS(null);
     }
   };
@@ -7067,10 +7072,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       {/* Dynamic Header */}
       <div
         data-tutor-chat-header
-        className="absolute top-0 w-full px-6 py-4 pt-6 shrink-0 z-40 border-b border-zinc-200/70 bg-[rgba(253,253,253,0.98)] shadow-[0_12px_36px_rgba(255,255,255,0.92)] backdrop-blur-xl flex items-center justify-between pointer-events-none"
+        className="absolute top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-zinc-200/70 bg-[rgba(253,253,253,0.98)] px-3 py-3 pt-4 shadow-[0_12px_36px_rgba(255,255,255,0.92)] backdrop-blur-xl pointer-events-none sm:px-6 sm:py-4 sm:pt-6"
       >
-        <div className="flex items-center gap-4 pointer-events-auto">
-          <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2 pointer-events-auto sm:gap-4">
+          <div className="hidden items-center gap-3 sm:flex">
             <div className="w-8 h-8 rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.08)] bg-white border border-black/5 flex items-center justify-center">
               <Sparkles size={14} className="text-zinc-600" />
             </div>
@@ -7079,14 +7084,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             </span>
           </div>
 
-          <div className="h-4 w-px bg-black/10" />
+          <div className="hidden h-4 w-px bg-black/10 sm:block" />
 
           {/* Context/Project Pill */}
-          <div className="relative flex-shrink-0">
+          <div className="relative min-w-0 flex-1 sm:flex-initial">
             <button
               type="button"
               onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-zinc-50 border border-black/10 text-zinc-800 transition-colors group focus:outline-none shadow-[0_2px_8px_rgba(0,0,0,0.06)] font-medium"
+              className="group flex max-w-full items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-colors hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30"
             >
               <Folder
                 size={12}
@@ -7098,7 +7103,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   initial={animationsEnabled ? { opacity: 0, y: 5 } : undefined}
                   animate={animationsEnabled ? { opacity: 1, y: 0 } : undefined}
                   exit={animationsEnabled ? { opacity: 0, y: -5 } : undefined}
-                  className="text-xs font-medium whitespace-nowrap inline-block"
+                  className="inline-block min-w-0 truncate whitespace-nowrap text-xs font-medium"
                 >
                   {activeLearningBook?.title || activeProject}
                 </gsapMotion.span>
@@ -7260,7 +7265,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           </div>
         </div>
 
-        <div className="flex gap-2 pointer-events-auto">
+        <div className="flex shrink-0 gap-1 pointer-events-auto sm:gap-2">
           <button
             type="button"
             onClick={() => {
@@ -7280,7 +7285,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               }
             }}
             title="Clear Chat History"
-            className="p-1.5 rounded-full hover:bg-black/5 text-[#9a9a9f] hover:text-zinc-800 transition-colors focus:outline-none"
+            className="rounded-full p-1.5 text-[#9a9a9f] transition-colors hover:bg-black/5 hover:text-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30"
           >
             <RotateCcw size={15} />
           </button>
@@ -7291,7 +7296,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               onClick={onClose}
               aria-label="Close tutor chat"
               title="Close tutor chat"
-              className="p-1.5 rounded-full hover:bg-black/5 text-zinc-400 hover:text-zinc-600 transition-colors focus:outline-none"
+              className="rounded-full p-1.5 text-zinc-400 transition-colors hover:bg-black/5 hover:text-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30"
             >
               <Minus size={16} />
             </button>
@@ -7654,8 +7659,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   ? "Type to talk to Aria..."
                   : isSearchSkillActive
                     ? "Search the web..."
-                    : "Ask about the document..."
+                    : "Ask..."
               }
+              aria-label="Ask tutor question"
               className={`custom-scroll z-10 w-full resize-none border-none bg-transparent px-4 text-[15px] leading-[1.42] text-zinc-100 outline-none transition-[height] duration-200 ease-out caret-white placeholder:text-zinc-500 ${isSearchSkillActive ? "pt-8 pb-3" : "py-[18px]"}`}
               rows={1}
             />
@@ -7794,10 +7800,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   if (isActive) audio.playHover();
                 }}
                 onMouseLeave={() => setIsHovered(false)}
-                onPointerDown={(e: React.PointerEvent<HTMLButtonElement>) => {
-                  e.preventDefault();
-                  handleSend();
-                }}
+                onClick={handleSend}
                 whileHover="hover"
                 whileTap="tap"
                 animate={sendState}

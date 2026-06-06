@@ -42,6 +42,12 @@ const splitCardTitle = (title: string) => {
 };
 
 const documentObjectUrlCache = new Map<string, string>();
+const MOBILE_STUDY_MEDIA_QUERY = "(max-width: 767px)";
+
+const isMobileStudyViewport = () =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia(MOBILE_STUDY_MEDIA_QUERY).matches;
 
 const getCachedDocumentObjectUrl = (document: LearningDocument) => {
   const cachedUrl = documentObjectUrlCache.get(document.id);
@@ -584,7 +590,13 @@ export function StudyView() {
   const askTutorQuery = useStore((state) => state.askTutorQuery);
   const [isDragging, setIsDragging] = useState(false);
   const [isIngesting, setIsIngesting] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(Boolean(pdfUrl));
+  const [isMobileViewport, setIsMobileViewport] = useState(
+    isMobileStudyViewport,
+  );
+  const [isChatOpen, setIsChatOpen] = useState(
+    () => Boolean(pdfUrl) || isMobileStudyViewport(),
+  );
+  const [isMobilePdfOpen, setIsMobilePdfOpen] = useState(false);
   const [introCardStep, setIntroCardStep] = useState(0);
   const [introHeadlineIndex, setIntroHeadlineIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -622,6 +634,23 @@ export function StudyView() {
   const activeDocument =
     orderedDocuments.find((document) => document.id === activeDocumentId) ||
     null;
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const mediaQuery = window.matchMedia(MOBILE_STUDY_MEDIA_QUERY);
+    const syncMobileViewport = () => {
+      setIsMobileViewport(mediaQuery.matches);
+      if (mediaQuery.matches) {
+        setIsChatOpen(true);
+      } else {
+        setIsMobilePdfOpen(false);
+      }
+    };
+
+    syncMobileViewport();
+    mediaQuery.addEventListener("change", syncMobileViewport);
+    return () => mediaQuery.removeEventListener("change", syncMobileViewport);
+  }, []);
 
   useEffect(() => {
     if (activeLearningBookId) return;
@@ -983,6 +1012,7 @@ export function StudyView() {
     setActiveDocumentId(activeUploadedDocumentId || null);
     setSelectedTextContext("");
     setIsChatOpen(true);
+    setIsMobilePdfOpen(false);
     documentRecords.forEach((documentRecord, index) => {
       void ingestDocument(pdfFiles[index], documentRecord, book);
     });
@@ -1038,10 +1068,36 @@ export function StudyView() {
       setPdfUrl(null);
       setPdfPage(1);
       setPdfTotalPages(0);
+      setIsMobilePdfOpen(false);
     }
   };
 
   const shouldRenderChatSurface = isChatOpen;
+  const documentSurfaceLayout = pdfUrl
+    ? isMobilePdfOpen
+      ? "flex min-h-0 flex-1 md:min-h-[42dvh]"
+      : "hidden md:flex md:min-h-[42dvh]"
+    : isChatOpen
+      ? "hidden md:flex md:min-h-[46dvh]"
+      : "flex min-h-[calc(100dvh-5rem)]";
+
+  const openMobilePdf = () => {
+    setIsMobilePdfOpen(true);
+    setIsChatOpen(true);
+  };
+
+  const returnToMobileChat = () => {
+    setIsMobilePdfOpen(false);
+    setIsChatOpen(true);
+  };
+
+  const closeChat = () => {
+    if (isMobileViewport && pdfUrl) {
+      setIsMobilePdfOpen(true);
+      return;
+    }
+    setIsChatOpen(false);
+  };
 
   useLayoutEffect(() => {
     if (!shouldRenderChatSurface || !chatSurfaceRef.current) return;
@@ -1077,23 +1133,19 @@ export function StudyView() {
   useEffect(() => {
     if (askTutorQuery.trim()) {
       setIsChatOpen(true);
+      setIsMobilePdfOpen(false);
     }
   }, [askTutorQuery]);
 
   return (
-    <div className="relative flex h-full w-full flex-col gap-3 overflow-y-auto bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:h-[100dvh] xl:flex-row xl:gap-8 xl:overflow-hidden xl:px-8 xl:pb-8 xl:pt-24">
+    <div className="relative flex h-full w-full flex-col gap-3 overflow-hidden bg-[#030303] px-3 pb-3 pt-16 md:gap-5 md:overflow-y-auto md:px-5 md:pb-6 md:pt-20 xl:h-[100dvh] xl:flex-row xl:gap-8 xl:overflow-hidden xl:px-8 xl:pb-8 xl:pt-24">
       <div
-        className={`relative flex w-full flex-1 shrink flex-col overflow-hidden shadow-none transition-[flex-basis,width,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] xl:h-full xl:min-h-0 ${
+        data-testid="study-document-surface"
+        className={`relative w-full shrink flex-col overflow-hidden shadow-none transition-[flex-basis,width,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] xl:h-full xl:min-h-0 ${
           pdfUrl
             ? "gap-1 rounded-none border border-transparent bg-transparent"
             : "rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B]"
-        } ${
-          pdfUrl
-            ? "min-h-[42dvh]"
-            : isChatOpen
-              ? "min-h-[46dvh]"
-              : "min-h-[calc(100dvh-5rem)]"
-        }`}
+        } ${documentSurfaceLayout}`}
       >
         {pdfUrl ? (
           <>
@@ -1129,7 +1181,8 @@ export function StudyView() {
                       <button
                         type="button"
                         onClick={() => void selectDocument(document)}
-                        className="flex h-full min-w-0 flex-1 items-center gap-1.5 pl-0.5 pr-1 text-left focus:outline-none"
+                        aria-pressed={document.id === activeDocumentId}
+                        className="flex h-full min-w-0 flex-1 items-center gap-1.5 pl-0.5 pr-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40"
                         title={document.title}
                       >
                         <span
@@ -1152,7 +1205,7 @@ export function StudyView() {
                         onClick={() => void removeDocument(document.id)}
                         aria-label={`Remove ${document.title}`}
                         title={`Remove ${document.title}`}
-                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-zinc-500 shadow-none [box-shadow:none] transition-colors hover:bg-zinc-200 hover:text-zinc-900 focus:outline-none"
+                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-zinc-500 shadow-none [box-shadow:none] transition-colors hover:bg-zinc-200 hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40"
                       >
                         <X size={13} strokeWidth={2.2} />
                       </button>
@@ -1164,9 +1217,18 @@ export function StudyView() {
                   onClick={openFilePicker}
                   aria-label="Add PDF"
                   title="Add PDF"
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-dashed border-zinc-500 bg-transparent text-zinc-400 shadow-none [box-shadow:none] transition-colors hover:border-zinc-200 hover:bg-white hover:text-zinc-800 focus:outline-none"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-dashed border-zinc-500 bg-transparent text-zinc-400 shadow-none [box-shadow:none] transition-colors hover:border-zinc-200 hover:bg-white hover:text-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                 >
                   <Plus size={17} strokeWidth={1.9} />
+                </button>
+                <button
+                  type="button"
+                  onClick={returnToMobileChat}
+                  aria-label="Return to tutor chat"
+                  className="flex h-7 shrink-0 items-center gap-1 rounded-full border border-zinc-500 bg-transparent px-2 text-[0.66rem] font-semibold text-zinc-300 shadow-none [box-shadow:none] transition-colors hover:border-zinc-200 hover:bg-white hover:text-zinc-800 focus:outline-none md:hidden"
+                >
+                  <MessageSquare size={12} strokeWidth={2} />
+                  Chat
                 </button>
                 {!isChatOpen && (
                   <button
@@ -1231,14 +1293,94 @@ export function StudyView() {
       {shouldRenderChatSurface && (
         <aside
           ref={chatSurfaceRef}
-          className="flex min-h-[320px] max-h-[54dvh] w-full flex-none origin-bottom-right flex-col gap-2 md:min-h-[360px] md:gap-3 xl:h-[calc(100%-0.5rem)] xl:max-h-none xl:min-h-0 xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center"
+          data-testid="study-chat-surface"
+          className={`${isMobilePdfOpen ? "hidden md:flex" : "flex"} h-full min-h-0 max-h-none w-full flex-1 origin-bottom-right flex-col gap-2 md:h-auto md:min-h-[360px] md:max-h-[54dvh] md:flex-none md:gap-3 xl:h-[calc(100%-0.5rem)] xl:max-h-none xl:min-h-0 xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center`}
         >
+          {pdfUrl && (
+            <section
+              aria-label="Attached PDF context"
+              data-testid="mobile-pdf-context"
+              className="mr-10 flex shrink-0 flex-col gap-2 rounded-lg border border-white/10 bg-[#0A0A0B] p-2 md:mr-0 md:hidden"
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-black">
+                  <FileText size={13} strokeWidth={2.1} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[0.62rem] font-semibold uppercase text-zinc-500">
+                    Attached PDF
+                  </p>
+                  <p className="truncate text-xs font-medium text-zinc-100">
+                    {activeDocument?.title || "Study document"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={openMobilePdf}
+                  className="h-8 shrink-0 rounded-md border border-white/15 bg-white px-3 text-xs font-semibold text-black transition-colors hover:bg-zinc-200 focus:outline-none"
+                >
+                  View PDF
+                </button>
+              </div>
+              {orderedDocuments.length > 1 && (
+                <div
+                  aria-label="Switch attached PDF"
+                  className="flex min-w-0 gap-1.5 overflow-x-auto custom-scroll"
+                >
+                  {orderedDocuments.map((document) => (
+                    <button
+                      key={`mobile-context-${document.id}`}
+                      type="button"
+                      aria-label={`Use ${document.title} as attached PDF context`}
+                      aria-pressed={document.id === activeDocumentId}
+                      onClick={() => void selectDocument(document)}
+                      className={`h-7 max-w-[10rem] shrink-0 truncate rounded-md border px-2 text-[0.68rem] font-medium transition-colors ${
+                        document.id === activeDocumentId
+                          ? "border-white bg-white text-black"
+                          : "border-white/10 bg-white/5 text-zinc-300 hover:border-white/25 hover:bg-white/10"
+                      }`}
+                    >
+                      {document.title}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+          {!pdfUrl && (
+            <section
+              aria-label="Attach PDF context"
+              data-testid="mobile-pdf-attach"
+              className="mr-10 flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-[#0A0A0B] p-2 md:mr-0 md:hidden"
+            >
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-black">
+                <FileText size={13} strokeWidth={2.1} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[0.62rem] font-semibold uppercase text-zinc-500">
+                  Study context
+                </p>
+                <p className="truncate text-xs font-medium text-zinc-100">
+                  Ask freely or attach PDFs
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={openFilePicker}
+                aria-label="Attach PDF"
+                className="flex h-8 shrink-0 items-center gap-1 rounded-md border border-white/15 bg-white px-3 text-xs font-semibold text-black transition-colors hover:bg-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              >
+                <Plus size={13} strokeWidth={2.2} />
+                Attach
+              </button>
+            </section>
+          )}
           <div
             key="chat-panel"
             ref={chatPanelFrameRef}
             className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-black/5 bg-[#fdfdfd] text-[#050505] shadow-[0_20px_60px_rgba(0,0,0,0.15)] origin-bottom"
           >
-            <ChatPanel onClose={() => setIsChatOpen(false)} />
+            <ChatPanel onClose={closeChat} />
           </div>
         </aside>
       )}

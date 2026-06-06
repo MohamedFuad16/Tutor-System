@@ -213,14 +213,12 @@ beforeEach(async () => {
 
   fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
-    if (url.includes("/api/debug/system-activity")) {
+    if (url.includes("/api/health")) {
       return Response.json({
-        meters: {
-          providers: {
-            deepgram: true,
-            openRouter: true,
-            openRouterByok: true,
-          },
+        providers: {
+          deepgram: true,
+          openRouter: true,
+          openRouterByok: true,
         },
       });
     }
@@ -294,9 +292,7 @@ describe("rendered ChatPanel flows", () => {
     );
 
     expect(screen.queryByText("Web Search")).toBeNull();
-    expect(
-      screen.getByPlaceholderText("Ask about the document..."),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Ask...")).toBeInTheDocument();
   });
 
   it("does not send on Shift+Enter, then streams a selected-context chat request on Enter", async () => {
@@ -306,7 +302,7 @@ describe("rendered ChatPanel flows", () => {
     renderChatPanel();
     await settleChatPanelEffects();
 
-    const input = screen.getByPlaceholderText("Ask about the document...");
+    const input = screen.getByPlaceholderText("Ask...");
     fireEvent.change(input, { target: { value: "Explain this passage" } });
 
     fireEvent.keyDown(input, { key: "Enter", shiftKey: true });
@@ -348,7 +344,7 @@ describe("rendered ChatPanel flows", () => {
       screen.getByRole("button", { name: "Send message" }),
     ).toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText("Ask about the document..."), {
+    fireEvent.change(screen.getByPlaceholderText("Ask..."), {
       target: { value: "Explain ∑ notation" },
     });
 

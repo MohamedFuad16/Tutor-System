@@ -155,6 +155,22 @@ const waitForPdfView = async () => {
   expect(await screen.findByTestId("pdf-viewer")).toBeInTheDocument();
 };
 
+const useMobileStudyViewport = () => {
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn((query: string) => ({
+      matches: query === "(max-width: 767px)",
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  );
+};
+
 beforeEach(async () => {
   await db.delete();
   await db.open();
@@ -249,6 +265,70 @@ describe("rendered StudyView flows", () => {
     expect(screen.getByTestId("chat-panel")).toBeInTheDocument();
   });
 
+  it("opens mobile Study directly into a full-height tutor surface", async () => {
+    useMobileStudyViewport();
+    await seedStudyBook([]);
+
+    renderStudyView();
+
+    expect(await screen.findByTestId("chat-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("study-chat-surface")).toHaveClass(
+      "flex",
+      "h-full",
+      "min-h-0",
+      "flex-1",
+    );
+    expect(screen.getByTestId("study-document-surface")).toHaveClass(
+      "hidden",
+      "md:flex",
+    );
+    expect(
+      screen.getByRole("button", { name: "Attach PDF" }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps mobile PDFs as attached chat context until explicitly viewed", async () => {
+    useMobileStudyViewport();
+    const user = userEvent.setup();
+    const { documents } = await seedStudyBook([
+      "Alpha context",
+      "Beta context",
+    ]);
+
+    renderStudyView();
+    await waitForPdfView();
+
+    const chatSurface = screen.getByTestId("study-chat-surface");
+    const documentSurface = screen.getByTestId("study-document-surface");
+    const betaContextButton = screen.getByRole("button", {
+      name: "Use Beta context as attached PDF context",
+    });
+
+    expect(chatSurface).toHaveClass("flex", "h-full", "flex-1");
+    expect(documentSurface).toHaveClass("hidden", "md:flex");
+    expect(screen.getByTestId("mobile-pdf-context")).toHaveTextContent(
+      "Alpha context",
+    );
+
+    await user.click(betaContextButton);
+    await waitFor(() => {
+      expect(useStore.getState().activeDocumentId).toBe(documents[1].id);
+      expect(betaContextButton).toHaveAttribute("aria-pressed", "true");
+    });
+    expect(chatSurface).toHaveClass("flex");
+    expect(documentSurface).toHaveClass("hidden");
+
+    await user.click(screen.getByRole("button", { name: "View PDF" }));
+    expect(documentSurface).toHaveClass("flex", "min-h-0", "flex-1");
+    expect(chatSurface).toHaveClass("hidden", "md:flex");
+
+    await user.click(
+      screen.getByRole("button", { name: "Return to tutor chat" }),
+    );
+    expect(chatSurface).toHaveClass("flex");
+    expect(documentSurface).toHaveClass("hidden", "md:flex");
+  });
+
   it("closes and reopens tutor chat while a document remains active", async () => {
     const user = userEvent.setup();
     await seedStudyBook(["Chat document"]);
@@ -277,6 +357,30 @@ describe("rendered StudyView flows", () => {
     });
 
     expect(await screen.findByTestId("chat-panel")).toBeInTheDocument();
+  });
+
+  it("returns from the mobile PDF surface when Ask Tutor context arrives", async () => {
+    useMobileStudyViewport();
+    const user = userEvent.setup();
+    await seedStudyBook(["Ask Tutor context"]);
+    renderStudyView();
+    await waitForPdfView();
+
+    await user.click(screen.getByRole("button", { name: "View PDF" }));
+    expect(screen.getByTestId("study-chat-surface")).toHaveClass("hidden");
+
+    act(() => {
+      useStore.setState({
+        askTutorQuery: "Explain the highlighted passage.",
+        selectedTextContext: "Highlighted passage.",
+      });
+    });
+
+    expect(screen.getByTestId("study-chat-surface")).toHaveClass("flex");
+    expect(screen.getByTestId("study-document-surface")).toHaveClass(
+      "hidden",
+      "md:flex",
+    );
   });
 
   it("switches documents and hands selection, page state, and book links forward", async () => {

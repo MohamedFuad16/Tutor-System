@@ -68,6 +68,19 @@ test("chat read-aloud control surfaces the selected MisoTTS voice", () => {
   assert.match(chatPanelSource, /Live Voice still uses Deepgram/);
 });
 
+test("chat read-aloud keeps text out of URLs and cancels superseded playback", () => {
+  assert.match(chatPanelSource, /fetch\("\/api\/tts", \{/);
+  assert.match(chatPanelSource, /method: "POST"/);
+  assert.match(chatPanelSource, /body: JSON\.stringify\(\{\s+text: safeText,/s);
+  assert.match(chatPanelSource, /const controller = new AbortController\(\);/);
+  assert.match(chatPanelSource, /ttsAbortRef\.current\?\.abort\(\);/);
+  assert.match(
+    chatPanelSource,
+    /URL\.revokeObjectURL\(ttsObjectUrlRef\.current\)/,
+  );
+  assert.doesNotMatch(chatPanelSource, /\/api\/tts\?text=/);
+});
+
 test("TTS route proxies the MisoTTS voice to the local tunneled API", async (t) => {
   const miso = await startMisoStub();
   t.after(() => miso.server.close());
@@ -85,11 +98,14 @@ test("TTS route proxies the MisoTTS voice to the local tunneled API", async (t) 
   const { server, baseUrl } = await startTutorApp();
   t.after(() => server.close());
 
-  const response = await fetch(
-    `${baseUrl}/api/tts?voice=miso-tts-8b&text=${encodeURIComponent(
-      "Explain active recall in one sentence.",
-    )}`,
-  );
+  const response = await fetch(`${baseUrl}/api/tts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      voice: "miso-tts-8b",
+      text: "Explain active recall in one sentence.",
+    }),
+  });
 
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") || "", /audio\/wav/);
@@ -127,16 +143,17 @@ test("TTS route accepts a browser-provided MisoTTS API URL override", async (t) 
   const { server, baseUrl } = await startTutorApp();
   t.after(() => server.close());
 
-  const response = await fetch(
-    `${baseUrl}/api/tts?voice=miso-tts-8b&text=${encodeURIComponent(
-      "Use the configured Miso endpoint.",
-    )}`,
-    {
-      headers: {
-        "x-miso-tts-api-url": miso.baseUrl,
-      },
+  const response = await fetch(`${baseUrl}/api/tts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-miso-tts-api-url": miso.baseUrl,
     },
-  );
+    body: JSON.stringify({
+      voice: "miso-tts-8b",
+      text: "Use the configured Miso endpoint.",
+    }),
+  });
 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("X-Usage-Provider"), "misotts");

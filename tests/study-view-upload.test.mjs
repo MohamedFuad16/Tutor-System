@@ -59,14 +59,37 @@ test("StudyView file inputs expose multi-PDF selection", () => {
   assert.equal(fileInputs.length, 2);
 });
 
-test("StudyView mobile shell stays height-bound and scrollable", () => {
+test("StudyView mobile shell stays height-bound with chat-first overflow", () => {
   assert.match(
     studyViewSource,
-    /className="relative flex h-full w-full flex-col gap-3 overflow-y-auto/,
+    /className="relative flex h-full w-full flex-col gap-3 overflow-hidden/,
   );
+  assert.match(studyViewSource, /md:gap-5 md:overflow-y-auto/);
   assert.doesNotMatch(
     studyViewSource,
     /relative flex min-h-\[100dvh\] w-full flex-col gap-3 overflow-y-auto/,
+  );
+});
+
+test("StudyView reuses PDF object URLs across mobile chat and reader toggles", () => {
+  assert.match(studyViewSource, /const documentObjectUrlCache = new Map/);
+  assert.match(
+    studyViewSource,
+    /const cachedUrl = documentObjectUrlCache\.get\(document\.id\);/,
+  );
+  assert.match(studyViewSource, /if \(cachedUrl\) return cachedUrl;/);
+  assert.match(studyViewSource, /isMobilePdfOpen \? "hidden md:flex" : "flex"/);
+});
+
+test("StudyView keeps mobile context switches on one mounted chat surface", () => {
+  assert.match(studyViewSource, /const shouldRenderChatSurface = isChatOpen;/);
+  assert.match(
+    studyViewSource,
+    /setIsMobilePdfOpen\(false\);\s+setIsChatOpen\(true\);/,
+  );
+  assert.match(
+    studyViewSource,
+    /data-testid="study-chat-surface"[\s\S]*isMobilePdfOpen \? "hidden md:flex" : "flex"/,
   );
 });
 

@@ -53,7 +53,8 @@ test("ChatPanel latches active beta proof attempt for each live voice session", 
     startVoiceSource,
     /const proofAttemptId = getVoiceProofAttemptId\(\);\s+ws\.send/s,
   );
-  assert.match(startVoiceSource, /proofAttemptId,\s+openRouterKey/s);
+  assert.match(startVoiceSource, /proofAttemptId,\s+deepgramKey/s);
+  assert.doesNotMatch(startVoiceSource, /openRouterKey:/);
   assert.match(
     startVoiceSource,
     /studyContextMetadata: \{[\s\S]*?proofAttemptId,/,

@@ -383,14 +383,12 @@ beforeEach(async () => {
 
   fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
-    if (url.includes("/api/debug/system-activity")) {
+    if (url.includes("/api/health")) {
       return Response.json({
-        meters: {
-          providers: {
-            deepgram: true,
-            openRouter: true,
-            openRouterByok: true,
-          },
+        providers: {
+          deepgram: true,
+          openRouter: true,
+          openRouterByok: true,
         },
       });
     }
@@ -460,9 +458,7 @@ describe("rendered ChatPanel expanded suite", () => {
     renderChatPanel();
     await settleChatPanelEffects();
 
-    expect(
-      screen.getByPlaceholderText("Ask about the document..."),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Ask...")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Start voice input" }),
     ).toBeInTheDocument();
@@ -494,18 +490,14 @@ describe("rendered ChatPanel expanded suite", () => {
     useStore.setState({ askTutorQuery: "Explain the margin note." });
     renderChatPanel();
 
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
     await waitFor(() => expect(input).toHaveValue("Explain the margin note."));
     expect(useStore.getState().askTutorQuery).toBe("");
   });
 
   it("clears a draft when a new PDF selection arrives", async () => {
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
 
     fireEvent.change(input, { target: { value: "Draft before selection" } });
     expect(input).toHaveValue("Draft before selection");
@@ -537,14 +529,12 @@ describe("rendered ChatPanel expanded suite", () => {
     fetchMock.mockImplementation(
       async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
-        if (url.includes("/api/debug/system-activity")) {
+        if (url.includes("/api/health")) {
           return Response.json({
-            meters: {
-              providers: {
-                deepgram: true,
-                openRouter: false,
-                openRouterByok: true,
-              },
+            providers: {
+              deepgram: true,
+              openRouter: false,
+              openRouterByok: true,
             },
           });
         }
@@ -575,9 +565,7 @@ describe("rendered ChatPanel expanded suite", () => {
   it("shows the loaded proof prompt badge while the proof text is in the input", async () => {
     useStore.setState({ activeBetaProofAttemptId: "proof:expanded" });
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
 
     fireEvent.change(input, {
       target: { value: "Provider-key proof turn: verify chat row." },
@@ -1036,8 +1024,13 @@ describe("rendered ChatPanel expanded suite", () => {
 
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringMatching(/^\/api\/tts\?/),
-        undefined,
+        "/api/tts",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.stringContaining(
+            '"text":"Spaced retrieval improves durable recall."',
+          ),
+        }),
       ),
     );
     expect(
@@ -1047,12 +1040,10 @@ describe("rendered ChatPanel expanded suite", () => {
 
   it("does not send whitespace-only input", async () => {
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
 
     fireEvent.change(input, { target: { value: "   " } });
-    fireEvent.pointerDown(screen.getByRole("button", { name: "Send message" }));
+    fireEvent.click(screen.getByRole("button", { name: "Send message" }));
 
     await settleChatPanelEffects();
     expect(chatRequestBodies).toHaveLength(0);
@@ -1060,9 +1051,7 @@ describe("rendered ChatPanel expanded suite", () => {
 
   it("plays hover audio for a valid active send button without validation copy", async () => {
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
 
     fireEvent.change(input, { target: { value: "Explain recall" } });
     fireEvent.mouseEnter(screen.getByRole("button", { name: "Send message" }));
@@ -1073,9 +1062,7 @@ describe("rendered ChatPanel expanded suite", () => {
 
   it("surfaces special-character validation for invalid input", async () => {
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
 
     fireEvent.change(input, { target: { value: "Explain ∑ notation" } });
 
@@ -1089,9 +1076,7 @@ describe("rendered ChatPanel expanded suite", () => {
 
   it("sends on Enter, clears the textarea, and plays click audio", async () => {
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
     await settleChatPanelEffects();
 
     fireEvent.change(input, { target: { value: "Explain retrieval" } });
@@ -1106,9 +1091,7 @@ describe("rendered ChatPanel expanded suite", () => {
 
   it("does not send on Shift+Enter", async () => {
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
 
     fireEvent.change(input, { target: { value: "Line one" } });
     fireEvent.keyDown(input, { key: "Enter", shiftKey: true });
@@ -1141,9 +1124,7 @@ describe("rendered ChatPanel expanded suite", () => {
       selectedTextContext: "Selected retrieval paragraph.",
     });
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
 
     fireEvent.change(input, { target: { value: "Explain this" } });
     fireEvent.keyDown(input, { key: "Enter" });
@@ -1198,9 +1179,7 @@ describe("rendered ChatPanel expanded suite", () => {
       },
     ]);
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
     await settleChatPanelEffects();
 
     fireEvent.change(input, { target: { value: "Stream please" } });
@@ -1244,9 +1223,8 @@ describe("rendered ChatPanel expanded suite", () => {
       { type: "done", content: "Source-backed answer.", sources: [sourceOne] },
     ]);
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
+    await settleChatPanelEffects();
 
     fireEvent.change(input, { target: { value: "Find sources" } });
     fireEvent.keyDown(input, { key: "Enter" });
@@ -1282,9 +1260,7 @@ describe("rendered ChatPanel expanded suite", () => {
       { type: "done", content: "Tool-backed answer." },
     ]);
     renderChatPanel();
-    const input = await screen.findByPlaceholderText(
-      "Ask about the document...",
-    );
+    const input = await screen.findByPlaceholderText("Ask...");
 
     fireEvent.change(input, { target: { value: "Use a tool" } });
     fireEvent.keyDown(input, { key: "Enter" });
@@ -1319,9 +1295,8 @@ describe("rendered ChatPanel expanded suite", () => {
       chatResponseFactory = () =>
         Response.json({ error: "Expanded HTTP failure." }, { status: 503 });
       renderChatPanel();
-      const input = await screen.findByPlaceholderText(
-        "Ask about the document...",
-      );
+      const input = await screen.findByPlaceholderText("Ask...");
+      await settleChatPanelEffects();
 
       fireEvent.change(input, { target: { value: "Break gracefully" } });
       fireEvent.keyDown(input, { key: "Enter" });
@@ -1347,9 +1322,8 @@ describe("rendered ChatPanel expanded suite", () => {
           body: null,
         }) as Response;
       renderChatPanel();
-      const input = await screen.findByPlaceholderText(
-        "Ask about the document...",
-      );
+      const input = await screen.findByPlaceholderText("Ask...");
+      await settleChatPanelEffects();
 
       fireEvent.change(input, { target: { value: "No body please" } });
       fireEvent.keyDown(input, { key: "Enter" });

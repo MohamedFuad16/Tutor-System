@@ -40,9 +40,9 @@
 ---
 
 > [!TIP]
-> Tutor is built around a Bring Your Own Key model. Connect your own OpenRouter,
-> Deepgram, and Serper keys for streaming tutoring, voice, search, and local
-> concept mapping.
+> Tutor supports browser BYOK for local development and explicit server-side
+> OpenRouter/Deepgram fallbacks for trusted deployments. Shared server keys stay
+> disabled until their matching `ALLOW_SERVER_*_FALLBACK` flag is enabled.
 
 ## Overview
 
@@ -71,10 +71,10 @@ or evaluated answers linked to real concepts, may increase mastery.
 Admin exists to make the system inspectable during local beta. It groups model
 runs, tool jobs, retrieval, memory, voice, evidence, artifacts, corrections, and
 background jobs by request/proof ids. Synthetic rehearsals can check wiring, but
-the local beta gate is based on real provider rows: the current ADQ proof
-captured an approved OpenRouter typed-chat row and Deepgram voice row tied to
-the same book, thread, multi-PDF context, and local approval evidence. AWS/cloud
-work remains deferred until after local beta review.
+the local beta gate is based on real provider rows tied to the same book,
+thread, multi-PDF context, and approval evidence. Mock and fallback rows do not
+count as real provider proof. AWS/cloud work remains deferred until after local
+beta review.
 
 ## Core Surfaces
 
@@ -85,7 +85,7 @@ paper reading style for revision.
   <tr>
     <td width="50%" valign="top">
       <h3>Study Workspace</h3>
-      <p>Interactive multi-PDF study surface using <code>react-pdf</code>. Each learning book can store multiple PDFs, switch between them, preserve viewed pages, and feed balanced extracted document context into chat and voice.</p>
+      <p>Interactive multi-PDF study surface using <code>react-pdf</code>. Desktop keeps the reader and tutor side by side; mobile opens chat first and represents PDFs as compact, switchable attached context until the learner chooses <code>View PDF</code>.</p>
     </td>
     <td width="50%" valign="top">
       <h3>Streaming Chat Panel</h3>
@@ -190,6 +190,8 @@ Study books can now hold more than one PDF:
 2. Add one PDF or several PDFs at once from Study. Each PDF is saved as a
    `learningDocuments` record linked to the active book.
 3. The document rail lets you switch between PDFs without replacing the book.
+   On mobile, the tutor remains the primary surface and the active PDF appears
+   as a compact attachment with explicit `View PDF` and return-to-chat actions.
 4. Removing a PDF deletes that document record and its document-scoped
    annotations without deleting the learning book notes.
 5. The active book's PDFs are summarized as a manifest, then every ready PDF gets
@@ -265,12 +267,15 @@ Create a `.env` file:
 OPENROUTER_API_KEY=your_openrouter_key_here
 ALLOW_SERVER_OPENROUTER_FALLBACK=false
 DEEPGRAM_API_KEY=your_deepgram_key_here
+ALLOW_SERVER_DEEPGRAM_FALLBACK=false
 SERPER_API_KEY=your_serper_key_here
 ```
 
-Leave `ALLOW_SERVER_OPENROUTER_FALLBACK=false` when users should provide their
-own OpenRouter keys. Set it to `true` only for deployments where the owner
-intentionally pays for unauthenticated chat fallback.
+Leave both fallback flags `false` when users should provide their own keys. Set
+a flag to `true` only when the owner intentionally allows visitors to consume
+that server-side provider quota. The current fallback routes do not replace
+application authentication, per-user quotas, or deployment rate limiting, so
+do not expose shared keys on an untrusted public deployment.
 
 ### 4. Run
 
@@ -300,6 +305,35 @@ before network synthesis if `DEEPGRAM_API_KEY` is missing. The generated MP3s
 are saved under `public/audio-overviews/` and played directly by the browser.
 
 Open `http://localhost:3000`.
+
+## Provider And Compatibility Notes
+
+- Vite documents that `VITE_*` values are bundled into client code, so provider
+  secrets use server-only environment names:
+  [Vite environment variables](https://vite.dev/guide/env-and-mode.html).
+- OpenRouter recommends environment variables, protected keys, and optional
+  credit limits:
+  [OpenRouter API authentication](https://openrouter.ai/docs/api-keys).
+- Deepgram Voice Agent supports API keys or temporary tokens. This app keeps
+  the server fallback behind an explicit opt-in and requires an auth frame
+  before accepting browser audio:
+  [Deepgram Voice Agent authentication](https://developers.deepgram.com/reference/voice-agent/voice-agent).
+- Chat read-aloud uses `POST /api/tts` so tutor text is not placed in request
+  URLs. Pending audio requests are aborted and blob URLs are revoked when
+  playback stops or the panel unmounts.
+- The live microphone capture compatibility path still uses the deprecated
+  `createScriptProcessor()` API. It should move to `AudioWorkletNode` in a
+  dedicated voice-browser migration:
+  [MDN createScriptProcessor](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createScriptProcessor).
+
+## Verification
+
+```bash
+npm run test
+npm run lint
+npm run build
+npm run format:check
+```
 
 ## Design System
 

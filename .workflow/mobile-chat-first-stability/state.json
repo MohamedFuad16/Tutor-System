@@ -1,0 +1,51 @@
+{
+  "title": "Mobile chat first stability",
+  "slug": "mobile-chat-first-stability",
+  "created_at": "2026-06-06T23:12:00+00:00",
+  "status": "completed_with_approval_gate",
+  "approval": {
+    "required": true,
+    "granted": false,
+    "notes": "Pending approval for shared visitor consumption of server-side OpenRouter and Deepgram quotas. No secrets or live provider traffic before approval."
+  },
+  "packets": [
+    {
+      "id": "mobile-study-chat-first",
+      "status": "completed",
+      "ownership": ["src/views/StudyView.tsx", "StudyView-focused tests"]
+    },
+    {
+      "id": "provider-security-routing",
+      "status": "completed",
+      "ownership": [
+        "read-only provider routing audit",
+        "provider-security-routing.md"
+      ]
+    },
+    {
+      "id": "dependency-cleanup-audit",
+      "status": "completed",
+      "ownership": [
+        "read-only connected-code audit",
+        "dependency-cleanup-audit.md"
+      ]
+    },
+    {
+      "id": "qa-regression",
+      "status": "completed",
+      "ownership": ["read-only test and UI QA audit", "qa-regression.md"]
+    }
+  ],
+  "verification": {
+    "status": "passed",
+    "checks": [
+      "npm test: 271 node + 589 DOM passed",
+      "npm run lint passed",
+      "npm run build passed",
+      "npm run format:check passed",
+      "npm run brain:postchange passed",
+      "npm audit zero vulnerabilities",
+      "mobile and desktop live browser checks passed"
+    ]
+  }
+}
