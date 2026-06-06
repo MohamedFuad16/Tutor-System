@@ -9,7 +9,7 @@
     "notes": "User authorized local implementation slices, subagents, Graphify regeneration, verification, commit, and push. AWS/cloud parts are deferred."
   },
   "current_status": {
-    "updated_at": "2026-06-06T00:49:00Z",
+    "updated_at": "2026-06-06T01:45:00Z",
     "status": "verified_ready_for_publication",
     "estimate_percent": 99,
     "summary": "Local architecture docs, diagnostics, provider-proof preflight, Study PDF rail UI, dev-server alternate-port startup, real local-live provider proof, the final post-proof full gate, and the requirement-by-requirement completion audit are verified. Packet ADQ captured one coherent approved proof attempt with real OpenRouter typed-chat and real Deepgram voice rows tied to the same active book, conversation thread, multi-PDF context, approval evidence, and fresh local ledger window. This state is ready for the final Git commit/push publication step; branch, commit, and remote evidence are reported in the final response.",
@@ -80,6 +80,23 @@
         "ChatPanel builds chat and voice brain context from the active book, active document, and ordered book documents.",
         "RevisionView selects learning books into the same activeLearningBookId/activeProject state and deletes book-linked documents/chat threads together.",
         "Tests cover multi-PDF context balancing, Study/Chat handoff metadata, multi-PDF upload/removal, rendered book switching, PDF chip toolbar layout, ADQ diagnostics proof contracts, and the full post-proof gate."
+      ]
+    },
+    "last_dependency_audit": {
+      "status": "passed",
+      "checked_at": "2026-06-06T01:45:00Z",
+      "commands": [
+        "npm audit --json",
+        "npm install -D vitest@4.1.8",
+        "npm audit --audit-level=moderate",
+        "npx vitest run --config vitest.config.ts tests/rendered-animated-scroll-text.test.tsx",
+        "npm run brain:postchange -- --reason vitest-audit-fix --full"
+      ],
+      "evidence": [
+        "Initial GitHub push warning mapped to npm audit findings in the Vitest/Vite/esbuild dev-test chain.",
+        "Vitest upgraded to 4.1.8 and the constructable IntersectionObserver test mock was adjusted for Vitest 4.",
+        "npm audit --audit-level=moderate reports 0 vulnerabilities.",
+        "Full postchange gate passed after the dependency update: format check, lint/typecheck, production build, diff whitespace check, 258 node tests, 585 rendered DOM tests, and graphify-out scratch scan."
       ]
     },
     "remaining_before_completion": []
@@ -2177,11 +2194,12 @@
     "npm run brain:postchange -- --reason dev-server-alternate-port-startup-rerun --full passed for Packet ADP, including format check, lint/typecheck, production build, diff whitespace check, 258 node tests, 585 rendered DOM tests, and graphify-out scratch scan",
     "Packet ADQ completed the explicitly approved real OpenRouter typed-chat plus real Deepgram voice provider proof with sourceReadyForBeta=true, proofComplete=true, two provider captures, and one shared proof attempt/book/thread/multi-PDF context",
     "npm run brain:postchange -- --reason real-provider-proof-final --full passed after ADQ, including format check, lint/typecheck, production build, diff whitespace check, 258 node tests, 585 rendered DOM tests, and graphify-out scratch scan",
-    "Completion audit passed for book-scoped chat, active book/document restoration, Study/Revision/Chat sync, multi-PDF upload/switch/remove/injection, provider proof, docs, UI QA, and final gates"
+    "Completion audit passed for book-scoped chat, active book/document restoration, Study/Revision/Chat sync, multi-PDF upload/switch/remove/injection, provider proof, docs, UI QA, and final gates",
+    "Dependency audit follow-up fixed the pushed Vitest/Vite/esbuild vulnerability warning by upgrading Vitest to 4.1.8, adjusting the constructable IntersectionObserver test mock, confirming npm audit reports 0 vulnerabilities, and rerunning the full postchange gate successfully"
   ],
   "brainArchitectureProgress": {
     "estimatePercent": 99,
     "basis": "Local docs, diagnostics, provider-proof preflight, Study PDF rail UI, dev-server alternate-port startup, the real approved local-live provider proof, full verification, and requirement audit are green. The final Git publication step is executed after this state file is staged so the final response can report branch, commit, and remote evidence. AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-06T00:49:00Z"
+    "updatedAt": "2026-06-06T01:45:00Z"
   }
 }

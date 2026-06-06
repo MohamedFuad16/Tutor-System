@@ -7845,6 +7845,35 @@ Remaining risks:
   id is created after this report is staged.
 - AWS/cloud synchronization remains intentionally deferred.
 
+# Latest Addendum: Dependency Audit Follow-up
+
+After the first GitHub push, GitHub reported dependency vulnerabilities on the
+default branch. The warning mapped to `npm audit` findings in the dev-only
+Vitest/Vite/esbuild test-runner chain.
+
+Implementation:
+
+- Upgraded `vitest` from `^2.1.9` to `^4.1.8`.
+- Updated the `AnimatedScrollText` rendered test's `IntersectionObserver` mock
+  from an arrow implementation to a constructable function, matching the app's
+  `new IntersectionObserver(...)` usage under Vitest 4.
+
+Verification evidence:
+
+- `npm audit --audit-level=moderate`: passed with `found 0 vulnerabilities`.
+- `npx vitest run --config vitest.config.ts tests/rendered-animated-scroll-text.test.tsx`:
+  passed 50 tests.
+- `npm run brain:postchange -- --reason vitest-audit-fix --full`: passed
+  format check, lint/typecheck, production build, diff whitespace check, 258
+  Node tests, 585 rendered DOM tests, and graphify-out scratch scan.
+
+Remaining risks:
+
+- The local shell used for the install reported Node 20.11 engine warnings for
+  packages that recommend newer Node 20 or Node 22; the README already
+  recommends Node.js 22 for local development.
+- AWS/cloud synchronization remains intentionally deferred.
+
 # Latest Addendum: Completion Audit
 
 The requirement-by-requirement audit passed after the ADQ proof and post-proof

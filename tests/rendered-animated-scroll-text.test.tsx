@@ -160,12 +160,12 @@ beforeEach(() => {
   observers.length = 0;
   vi.stubGlobal(
     "IntersectionObserver",
-    vi.fn(
-      (
-        callback: IntersectionObserverCallback,
-        options?: IntersectionObserverInit,
-      ) => createObserver(callback, options),
-    ),
+    vi.fn(function MockIntersectionObserver(
+      callback: IntersectionObserverCallback,
+      options?: IntersectionObserverInit,
+    ) {
+      return createObserver(callback, options);
+    }),
   );
 });
 
