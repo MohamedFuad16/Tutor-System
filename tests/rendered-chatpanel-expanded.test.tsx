@@ -529,6 +529,49 @@ describe("rendered ChatPanel expanded suite", () => {
     expect(screen.getByText("OpenRouter key set")).toBeInTheDocument();
   });
 
+  it("does not treat OpenRouter BYOK support as a configured runtime key", async () => {
+    useStore.setState({
+      activeBetaProofAttemptId: "proof:byok-only",
+      apiKey: "",
+    });
+    fetchMock.mockImplementation(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes("/api/debug/system-activity")) {
+          return Response.json({
+            meters: {
+              providers: {
+                deepgram: true,
+                openRouter: false,
+                openRouterByok: true,
+              },
+            },
+          });
+        }
+        if (url === "/api/pricing") {
+          return Response.json({
+            openRouter: { models: {}, fetchedAt: new Date(now).toISOString() },
+            deepgram: {},
+          });
+        }
+        if (url === "/api/chat") {
+          chatRequestBodies.push(String(init?.body || ""));
+          return chatResponseFactory();
+        }
+        return Response.json({});
+      },
+    );
+
+    renderChatPanel();
+
+    expect(
+      await screen.findByText("OpenRouter key missing"),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("Deepgram server fallback"),
+    ).toBeInTheDocument();
+  });
+
   it("shows the loaded proof prompt badge while the proof text is in the input", async () => {
     useStore.setState({ activeBetaProofAttemptId: "proof:expanded" });
     renderChatPanel();
@@ -1208,10 +1251,8 @@ describe("rendered ChatPanel expanded suite", () => {
     fireEvent.change(input, { target: { value: "Find sources" } });
     fireEvent.keyDown(input, { key: "Enter" });
 
-    expect(
-      await screen.findByText("Source-backed answer."),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Reviewed 1 sources")).toBeInTheDocument();
+    await expectRenderedText("Source-backed answer.");
+    await expectRenderedText("Reviewed 1 sources");
     fireEvent.click(screen.getByRole("button", { name: /Reasoning trace/ }));
     expect(
       await screen.findByText("Retrieval Practice Guide"),

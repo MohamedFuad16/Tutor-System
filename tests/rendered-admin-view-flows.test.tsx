@@ -151,6 +151,11 @@ const activityRequest = () =>
 
 beforeEach(async () => {
   localStorage.clear();
+  Object.assign(systemActivityPayload.meters.providers, {
+    openRouter: true,
+    openRouterByok: false,
+    deepgram: false,
+  });
   await db.delete();
   await db.open();
   resetAdminStore();
@@ -318,6 +323,21 @@ describe("rendered AdminView page flows", () => {
         /it does not sync to AWS or claim cloud-beta readiness/i,
       ),
     ).toBeInTheDocument();
+  });
+
+  it("keeps the provider drill locked when OpenRouter only advertises BYOK support", async () => {
+    systemActivityPayload.meters.providers.openRouter = false;
+    systemActivityPayload.meters.providers.openRouterByok = true;
+    systemActivityPayload.meters.providers.deepgram = true;
+    useStore.setState({ apiKey: "", deepgramApiKey: "" });
+
+    renderAdmin();
+    await screen.findByText("Live");
+    clickTab("Beta Diagnostics");
+
+    expect(await screen.findByText("chat key missing")).toBeInTheDocument();
+    expect(screen.getByText("voice key seen")).toBeInTheDocument();
+    expect(screen.getByText("keys/setup needed")).toBeInTheDocument();
   });
 
   it("runs the local brain wiring rehearsal without provider traffic", async () => {

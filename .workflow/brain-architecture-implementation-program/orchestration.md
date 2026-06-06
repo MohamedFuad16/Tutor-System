@@ -58,6 +58,8 @@
   `packets/ADE-completion-claim-audit.md`.
 - Packet ADF: See `packets/ADF-local-postchange-preflight.md`.
 - Packet ADG: See `packets/ADG-readiness-gap-groups.md`.
+- Packet ADP: See `packets/ADP-dev-server-alternate-port-startup.md`.
+- Packet ADQ: See `packets/ADQ-real-provider-proof-run.mjs`.
 
 ## Completion Audit
 
@@ -68,4 +70,11 @@
 - Required gates pass or failures are plainly documented.
 - Browser QA evidence recorded.
 - Graphify artifacts regenerated and queryable.
-- Commit and push complete, with unrelated work excluded.
+- Packet ADQ real provider proof recorded in
+  `results/ADQ-real-provider-proof-run.json` with a ready
+  `local_live_ledger` receipt, real OpenRouter typed-chat capture, real
+  Deepgram voice capture, one shared proof attempt/book/thread, and two shared
+  PDF document ids.
+- Final post-proof gates pass.
+- Commit and push complete, with unrelated work preserved and no intentional
+  reverts.

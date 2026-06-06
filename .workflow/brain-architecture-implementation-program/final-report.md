@@ -2,17 +2,295 @@
 
 ## Outcome
 
+Local architecture, docs, diagnostics, current UI gates, and the hard
+provider-key proof are now in a verified local-beta state. Packet ADQ used the
+explicit approval to run one real OpenRouter typed-chat turn and one real
+Deepgram voice turn under the same local proof attempt, active book,
+conversation thread, multi-PDF context, durable approval row, and fresh local
+ledger window.
+
+This report is staged with the verified work. The final Git publication step
+follows this report so the final response can carry branch, commit, and remote
+evidence after push.
+
 ## Accepted Results
+
+- Rewrote the public and source-facing architecture docs into leaner guides:
+  `README.md` and `TUTOR_ARCHITECTURE.md` now separate the learner brain from
+  Graphify, describe book-scoped chat and multi-PDF study flow, and keep
+  AWS/cloud work deferred.
+- Hardened local learner-brain evidence rules: validated answer/flashcard
+  evidence can move mastery, while model summaries, generated artifacts, voice
+  transcripts, web results, and misconception candidates remain audit-only until
+  validated.
+- Tightened Admin/Beta Diagnostics around real proof requirements: synthetic,
+  fallback, seeded, stale, mixed-attempt, and missing-approval rows cannot satisfy
+  final provider readiness.
+- Added the final provider-proof handoff/runbook path without spending provider
+  traffic: the app can prepare a proof attempt, approval row, ready PDFs, and
+  exact typed-chat/live-voice proof prompts, then stops before Send, microphone,
+  websocket voice, or provider calls.
+- Fixed the Study PDF document rail so the PDF title chip is readable,
+  compact, shadowless, and outside the PDF reader surface.
+- Completed the approved real provider-proof run. The ADQ receipt is
+  `ready`, `sourceReadyForBeta=true`, `proofComplete=true`, and records real
+  OpenRouter chat plus Deepgram voice provider captures under one shared proof
+  attempt.
 
 ## Rejected Results
 
+- BYOK capability, server fallback availability, dummy browser keys, seeded QA
+  ledgers, and synthetic rehearsals are intentionally rejected as final provider
+  proof.
+- AWS/cloud synchronization remains out of scope until the local beta proof is
+  complete.
+
 ## Conflicts Resolved
+
+- Older packet notes that mentioned 99% are superseded by the current
+  conservative post-ADQ 99% status in `state.json`; 100% remains reserved for
+  post-proof gates plus commit/push completion.
+- The previous `ADN` approval blocker is resolved by Packet ADQ. The final
+  open work is verification and publication, not provider/microphone approval.
+- Graphify remains the code architecture graph; the learner brain is the local
+  product ledger in Dexie/IndexedDB.
 
 ## Verification Evidence
 
+- `APP_URL=http://127.0.0.1:3100 node .workflow/brain-architecture-implementation-program/packets/ADQ-real-provider-proof-run.mjs`:
+  passed with receipt schema `tutor.live-provider-proof-receipt.v1`, status
+  `ready`, `sourceKind=local_live_ledger`, two provider captures, request ids
+  `chat-1780748516683-bc22819b-b7fb-4919-9edf-945b986ded01` and
+  `voice-1780748523114`, shared proof attempt `beta-mq2bosdm-b513ffd2`, shared
+  book `adq-live-provider-1780748513113:book`, shared conversation
+  `thread:adq-live-provider-1780748513113:book`, and two shared document ids.
+- ADQ screenshots:
+  `.workflow/brain-architecture-implementation-program/results/ADQ-real-provider-proof-desktop.png`
+  and
+  `.workflow/brain-architecture-implementation-program/results/ADQ-real-provider-proof-mobile.png`.
+- `npm run brain:postchange -- --reason study-chip-and-provider-runbook-current-state --full`
+  passed format check, lint/typecheck, production build, diff whitespace check,
+  257 node tests, 585 rendered DOM tests, and graphify-out scratch scan.
+- In-app Browser QA on `http://127.0.0.1:3100` verified the Study PDF rail on
+  desktop and mobile with no toolbar/PDF overlap, no horizontal overflow, zero
+  warning/error console logs, and working chip interaction.
+- `state.json` validates as JSON and records a top-level `current_status`,
+  `ADM`, `ADO`, `ADP`, and `ADQ` with the current 99% conservative progress
+  basis.
+
 ## Remaining Risks
 
+- The ADQ receipt is a local beta receipt, not a cloud sync, AWS deployment, or
+  production data-plane proof.
+- Git publication evidence is reported in the final response because the commit
+  id is created after this report is staged.
+
 ## Reusable Follow-up
+
+- Use `ADQ-real-provider-proof-run.mjs` for future local-live provider proof
+  reruns. It intentionally rejects fallback chat rows and mock voice rows as
+  provider-key proof.
+- Before any further broad reads, route through Graphify around `ChatPanel`,
+  `AdminView`, `beta.diagnostics`, `StudyView`, `longterm.memory`, and
+  `memory.orchestrator`.
+- After any source change, use `npm run brain:postchange -- --reason <reason>`;
+  use `--full` when shared state, diagnostics, or UI surfaces are touched.
+
+# 2026-06-06 Addendum: Dev-Server Alternate-Port Startup
+
+## Status
+
+Completed as Packet ADP. This fixes a local run blocker found during Study UI
+QA: passing `--host` and `--port` to `npm run dev` previously did not change the
+direct server listener, so a second local app could still collide with an
+occupied `3000` port.
+
+## Accepted Results
+
+- `server.ts` now parses direct startup `--host`, `--host=`, `--port`, and
+  `--port=` arguments before calling `app.listen()`.
+- The default remains `0.0.0.0:3000`, but
+  `npm run dev -- --host 127.0.0.1 --port 3100` now binds
+  `127.0.0.1:3100`.
+- `tests/runtime-settings.test.mjs` covers CLI override, environment fallback,
+  and invalid-port fallback.
+- `README.md` now documents the alternate-port command for local runs.
+
+## Verification Evidence
+
+- `./node_modules/.bin/esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=.tmp-test/server.mjs && node --test tests/runtime-settings.test.mjs`:
+  passed 4 tests.
+- `npm run dev -- --host 127.0.0.1 --port 3100`: started successfully and
+  logged `http://127.0.0.1:3100`.
+- `curl -sS -I http://127.0.0.1:3100/`: returned `HTTP/1.1 200 OK`.
+- The temporary dev server was stopped after verification.
+- First full postchange run found one transient DOM assertion miss in
+  `rendered-chatpanel-expanded`. The isolated HTTP-error test, the full
+  ChatPanel expanded file, and `npm run test:dom` passed on rerun without source
+  changes.
+- `npm run brain:postchange -- --reason dev-server-alternate-port-startup-rerun --full`:
+  passed format check, lint/typecheck, production build, diff whitespace check,
+  258 node tests, 585 rendered DOM tests, and graphify-out scratch scan.
+
+## Remaining Risks
+
+- The full brain-architecture objective is still not complete without explicit
+  approval for the real OpenRouter typed-chat plus real Deepgram
+  live-voice/microphone provider-proof run.
+
+# 2026-06-06 Addendum: No-Provider Handoff Preflight
+
+## Status
+
+In progress for the full brain-architecture goal. This slice rechecked the final
+provider-proof handoff lane without calling OpenRouter, Deepgram, microphone, or
+voice websocket traffic.
+
+## Accepted Results
+
+- Added `ADN-real-provider-proof-operator-runbook.md`, an explicit safety-gated
+  runbook for the final OpenRouter plus Deepgram proof.
+- The ADN runbook converts current diagnostics requirements into a concrete
+  evidence matrix: durable proof attempt, durable provider-traffic approval,
+  OpenRouter provider capture, Deepgram provider-ready row, shared proof attempt
+  IDs, multi-PDF context, book/thread scoping, request-correlated rows, mastery
+  evidence, freshness, and `local_live_ledger` source kind.
+- Added a diagnostics contract test that reads the ADN runbook and verifies it
+  preserves the hard safety gate, evidence matrix, receipt schema, receipt
+  fields, OpenRouter/Deepgram provider captures, and seeded/fallback/mock
+  exclusions required by the code.
+- Phase 74 typed-chat proof handoff passed on desktop and mobile against
+  `http://127.0.0.1:3001` with dummy browser keys. The proof HUD showed a fresh
+  attempt, durable provider-traffic approval, two ready PDFs, prompt loaded,
+  browser OpenRouter/Deepgram runtime labels, focused textarea, and no overflow.
+- Phase 75 live-voice script handoff passed on desktop and mobile with the same
+  no-provider boundary. The proof HUD showed the fresh attempt, durable approval,
+  two ready PDFs, voice script loaded, the "start voice first" guard, browser
+  OpenRouter/Deepgram runtime labels, focused textarea, and no overflow.
+- The scripts were inspected before running. They stop at local approval and
+  prompt/script loading; they do not click Send, start the microphone, connect
+  the voice websocket, or submit provider traffic.
+- `.env` readiness was checked without exposing values: `OPENROUTER_API_KEY` and
+  `DEEPGRAM_API_KEY` are present, while `ALLOW_SERVER_OPENROUTER_FALLBACK` is not
+  set.
+
+## Verification Evidence
+
+- `ADN-real-provider-proof-operator-runbook.md`: added as workflow-only
+  documentation; no provider traffic, microphone, or source behavior changes.
+- `node --test tests/beta-diagnostics.test.mjs`: passed, 32 tests including the
+  new ADN runbook contract.
+- `npm run test:node`: passed, 257 node tests.
+- `npm run format:check`: passed.
+- `npm run brain:postchange -- --reason final-provider-handoff-preflight --full`:
+  passed format, lint/typecheck, production build, whitespace check, 256 node
+  tests, 585 rendered DOM tests, and graphify-out scratch scan.
+- `APP_URL=http://127.0.0.1:3001 node .workflow/brain-architecture-implementation-program/packets/phase74-live-proof-prompt-handoff-qa.mjs`:
+  passed desktop and mobile, wrote
+  `phase74-live-proof-prompt-handoff-qa.json`, and refreshed
+  `ACQ-live-proof-prompt-handoff-{desktop,mobile}.png`.
+- `APP_URL=http://127.0.0.1:3001 node .workflow/brain-architecture-implementation-program/packets/phase75-live-voice-script-handoff-qa.mjs`:
+  passed desktop and mobile, wrote
+  `phase75-live-voice-script-handoff-qa.json`, and refreshed
+  `ACR-live-voice-script-handoff-{desktop,mobile}.png`.
+
+## Remaining Risks
+
+- The final beta-proof requirement is still incomplete until an explicitly
+  approved real OpenRouter typed-chat run and real Deepgram live-voice run are
+  captured under the same proof attempt, book, thread, multi-PDF context,
+  approval row, and fresh local ledger window.
+- AWS/cloud synchronization remains deferred until local beta proof is complete.
+
+# 2026-06-06 Addendum: Current-State Full Gate After Study Rail Tightening
+
+## Status
+
+In progress for the full brain-architecture goal. This checkpoint verifies the
+current dirty worktree after the smaller Study PDF document rail and the
+provider-proof runbook hardening. It does not call OpenRouter, Deepgram,
+microphone, or voice websocket traffic.
+
+## Accepted Results
+
+- The Study PDF document rail is now a transparent 18px sibling above the PDF
+  reader, with 15px document chips, no backdrop, no card shadow, and no
+  absolute/fixed/sticky positioning over the PDF.
+- The focused rendered StudyView contract now checks that the PDF toolbar is
+  outside the reader region, shadowless, backdrop-free, and ordered before the
+  reader in the same parent.
+- In-app Browser QA against `http://127.0.0.1:3100` confirmed desktop and
+  mobile Study layouts have no toolbar/PDF overlap, no horizontal overflow, no
+  warning/error console logs, and a working active document chip click.
+
+## Verification Evidence
+
+- `npm test -- tests/rendered-study-view-flows.test.tsx`: passed 257 node tests
+  and the focused 14-test rendered StudyView slice.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run format:check`: passed.
+- `git diff --check`: passed.
+- `npm run brain:postchange -- --reason study-chip-and-provider-runbook-current-state --full`:
+  passed format check, lint/typecheck, production build, diff whitespace check,
+  257 node tests, 585 rendered DOM tests, and graphify-out scratch scan.
+- In-app Browser screenshots were saved outside the repo as
+  `/tmp/learningai-study-chip-desktop.png` and
+  `/tmp/learningai-study-chip-mobile.png`.
+
+## Remaining Risks
+
+- The final beta-proof requirement remains incomplete until the operator
+  explicitly approves and completes the real OpenRouter typed-chat run plus real
+  Deepgram live-voice run under the same proof attempt, book, thread, multi-PDF
+  context, approval row, and fresh local ledger window.
+- AWS/cloud synchronization remains deferred until local beta proof is complete.
+
+# 2026-06-05 Addendum: Lean Architecture Docs And Provider-Key Boundary
+
+## Status
+
+In progress for the full brain-architecture goal. This slice made the
+architecture docs leaner, fixed a provider-readiness overclaim, and tightened the
+Study PDF rail UI. It does not claim the final real-provider beta proof.
+
+## Accepted Results
+
+- `README.md` overview now describes the app, book-scoped study model, learner
+  brain ledger, evidence gate, Admin diagnostics, and local-beta boundary without
+  the previous proof-ledger dump.
+- `TUTOR_ARCHITECTURE.md` is now a concise source-facing guide with explicit
+  Graphify-vs-learner-brain separation, runtime stack, provider boundaries, local
+  data model, context/tool contracts, Admin readiness, and safe-change checks.
+- ChatPanel and Admin no longer treat `openRouterByok` as a configured
+  OpenRouter runtime key. BYOK capability stays separate from actual browser or
+  server runtime key proof.
+- The Study PDF document rail is smaller, transparent, shadowless, and keeps the
+  minimized chat action out of the PDF canvas.
+- The User Brain Architecture book now separates schema-level artifact coverage
+  from the narrower current local verifier support, and its stored-audio
+  transcript no longer claims native browser controls.
+
+## Verification Evidence
+
+- `npm run test:node -- tests/book-readiness-contract.test.mjs tests/beta-diagnostics.test.mjs`:
+  passed through the node runner, 255 tests.
+- `npm run test:dom -- tests/rendered-admin-view-flows.test.tsx tests/rendered-chatpanel-expanded.test.tsx tests/rendered-study-view-flows.test.tsx`:
+  passed, 72 rendered tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run brain:postchange -- --reason architecture-doc-provider-boundary-pdf-rail --full`:
+  passed format, lint/typecheck, production build, 256 node tests, 585 rendered
+  DOM tests, whitespace check, and graphify-out scratch scan.
+- Live browser smoke at `http://localhost:3100/`: Revision desktop 1280px and
+  mobile 390px rendered the User Brain Architecture card with the new
+  learner-brain description, zero warning/error console logs, and no horizontal
+  overflow.
+
+## Remaining Risks
+
+- The deliberate real OpenRouter plus Deepgram provider-key run is still pending.
+- AWS/cloud synchronization remains deferred until local beta proof is complete.
 
 # Packet ACX: Book Readiness Contract
 
@@ -7491,3 +7769,121 @@ Current conservative implementation estimate remains 98%. ADK fixes the local
 voice visual-stage layout and page-focus behavior, but the coherent real
 OpenRouter plus Deepgram provider drill remains open. AWS/cloud work remains
 deferred.
+
+# Latest Addendum: Approved Real Provider-Proof Run
+
+Packet ADQ completes the previously blocked local-live provider proof after the
+user explicitly approved real provider traffic.
+
+Implementation:
+
+- Added `ADQ-real-provider-proof-run.mjs`, a sanitized Playwright runner that
+  seeds one local proof book, one durable thread, two ready PDF documents, and a
+  local concept, then drives Admin/Chat proof flow through real OpenRouter chat
+  and real Deepgram voice capture.
+- The runner records screenshots, a fake microphone wav used for deterministic
+  browser audio input, and a sanitized JSON receipt. It does not print provider
+  secrets.
+- The proof prompt avoids external web-search requests so source-local policy
+  blocks do not satisfy or poison the provider-key proof.
+- The voice proof turn avoids stop/end language so the Deepgram websocket stays
+  alive long enough to capture provider-ready, tool, memory, retrieval, and
+  model-observation evidence.
+
+Verification evidence:
+
+- `APP_URL=http://127.0.0.1:3100 node .workflow/brain-architecture-implementation-program/packets/ADQ-real-provider-proof-run.mjs`:
+  passed.
+- Receipt status: `ready`.
+- Receipt source: `local_live_ledger`.
+- `sourceReadyForBeta=true`, `proofComplete=true`, `providerCaptureCount=2`.
+- Shared proof attempt: `beta-mq2bosdm-b513ffd2`.
+- Shared book: `adq-live-provider-1780748513113:book`.
+- Shared conversation: `thread:adq-live-provider-1780748513113:book`.
+- Shared PDFs:
+  `adq-live-provider-1780748513113:doc:active` and
+  `adq-live-provider-1780748513113:doc:companion`.
+- Provider request ids:
+  `chat-1780748516683-bc22819b-b7fb-4919-9edf-945b986ded01` and
+  `voice-1780748523114`.
+- Provider captures include OpenRouter `openai/gpt-4.1-mini`, Deepgram Voice
+  Agent, and a Deepgram `Voice provider ready` system-activity row.
+- Checklist status: `ready`, `completionPercent=100`, 16 of 16 ready checks,
+  no missing checks, and no failed rows.
+- Result JSON:
+  `.workflow/brain-architecture-implementation-program/results/ADQ-real-provider-proof-run.json`.
+- Screenshots:
+  `.workflow/brain-architecture-implementation-program/results/ADQ-real-provider-proof-desktop.png`
+  and
+  `.workflow/brain-architecture-implementation-program/results/ADQ-real-provider-proof-mobile.png`.
+
+Remaining risks:
+
+- This is local beta proof only. It is not AWS/cloud sync proof, production
+  deployment proof, or cross-device synchronization proof.
+- Git publication evidence is reported in the final response because the commit
+  id is created after this report is staged.
+
+# Latest Addendum: Post-Proof Final Gate
+
+After recording the ADQ provider-proof evidence in the workflow state and docs,
+the full postchange gate was rerun against the current worktree.
+
+Verification evidence:
+
+- `npm run brain:postchange -- --reason real-provider-proof-final --full`:
+  passed.
+- Included checks: format check, lint/typecheck, production build, diff
+  whitespace check, full Node tests, full rendered DOM tests, and graphify-out
+  scratch scan.
+- Node tests: 258 passed.
+- Rendered DOM tests: 585 passed across 20 files.
+
+Remaining risks:
+
+- Git publication evidence is reported in the final response because the commit
+  id is created after this report is staged.
+- AWS/cloud synchronization remains intentionally deferred.
+
+# Latest Addendum: Completion Audit
+
+The requirement-by-requirement audit passed after the ADQ proof and post-proof
+full gate.
+
+Audit findings:
+
+- Book-scoped chat: `ChatPanel` uses `thread:<bookId>` for exactly one durable
+  chat thread per active learning book, persists the previous book before
+  switching, and loads the selected book thread on active-book changes.
+- Refresh restoration: Zustand persists `activeLearningBookId`, `activeProject`,
+  and `activeDocumentId` while excluding transient message hydration; Study
+  restores the active book, active document, object URL, page, scale, and total
+  pages from local stores.
+- Study/Revision sync: Revision selects learning books by writing
+  `activeLearningBookId` and `activeProject`; deleting a book removes linked
+  documents and chat threads and clears active state if needed.
+- Multi-PDF study: Study accepts multiple PDFs in one upload action, stores them
+  as `learningDocuments`, links them back to the book, supports active document
+  switching, removes inactive or active PDFs cleanly, and clears stale selected
+  context only when appropriate.
+- Chat and voice context: ChatPanel passes the active book id, active document
+  id, and ordered book documents into chat and voice brain-context packets and
+  request payloads.
+- PDF rail UI: rendered tests and Browser QA prove the compact white/black chip,
+  X button, dashed add button, no card shadow, no backdrop, and no overlay over
+  the PDF surface.
+- Provider proof: ADQ produced a ready `local_live_ledger` receipt with real
+  OpenRouter and Deepgram provider captures under one proof attempt/book/thread
+  and two PDF document ids.
+- Docs: `README.md` and `TUTOR_ARCHITECTURE.md` describe the learner brain,
+  book-scoped chat, multi-PDF workflow, Graphify separation, provider proof
+  boundary, and deferred AWS/cloud scope.
+- Verification: final post-proof gate passed format, lint/typecheck, production
+  build, diff whitespace check, 258 Node tests, 585 DOM tests, and graphify-out
+  scratch scan.
+
+Remaining risks:
+
+- Git publication evidence is reported in the final response because the commit
+  id is created after this report is staged.
+- AWS/cloud synchronization remains intentionally deferred.

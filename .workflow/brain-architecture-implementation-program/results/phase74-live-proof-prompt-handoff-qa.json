@@ -10,11 +10,14 @@
     "hasBook": true,
     "hasPromptLoaded": true,
     "hasReadyPdfs": true,
-    "hasOpenRouterKey": true,
-    "hasDeepgramKey": true,
+    "hasTrafficApproved": true,
+    "hasOpenRouterRuntime": true,
+    "hasDeepgramRuntime": true,
+    "openRouterMode": "browser_key",
+    "deepgramMode": "browser_key",
     "textareaHasPrompt": true,
     "textareaFocused": true,
-    "hudSnippet": "Live proof captureChat and voice rows will save under attempt beta-mpyu7a23-a95e31bd for ACQ Proof Prompt Book.Ready PDFs 2Chat capture onProof prompt loadedVoice capture readyOpenRouter key setDeepgram key setProvider-key proof turn. Use the active learning book and all ready PDFs, not only the visible page. Compare one concept that appears across at least two PDFs, cite the source/page anchors you used, run a visib",
+    "hudSnippet": "Live proof captureChat and voice rows will save under attempt beta-mq1ej496-18d02bd9 for ACQ Proof Prompt Book.Ready PDFs 2Chat capture onProvider traffic approvedProof prompt loadedVoice capture readyOpenRouter key setDeepgram key setProvider-key proof turn. Use the active learning book and all ready PDFs, not only the visible page. Compare one concept that appears across at least two PDFs, cite the source/page anch",
     "consoleLogs": []
   },
   {
@@ -28,11 +31,14 @@
     "hasBook": true,
     "hasPromptLoaded": true,
     "hasReadyPdfs": true,
-    "hasOpenRouterKey": true,
-    "hasDeepgramKey": true,
+    "hasTrafficApproved": true,
+    "hasOpenRouterRuntime": true,
+    "hasDeepgramRuntime": true,
+    "openRouterMode": "browser_key",
+    "deepgramMode": "browser_key",
     "textareaHasPrompt": true,
     "textareaFocused": true,
-    "hudSnippet": "Live proof captureChat and voice rows will save under attempt beta-mpyu7cf8-437c878a for ACQ Proof Prompt Book.Ready PDFs 2Chat capture onProof prompt loadedVoice capture readyOpenRouter key setDeepgram key setProvider-key proof turn. Use the active learning book and all ready PDFs, not only the visible page. Compare one concept that appears across at least two PDFs, cite the source/page anchors you used, run a visib",
+    "hudSnippet": "Live proof captureChat and voice rows will save under attempt beta-mq1ej701-755cd659 for ACQ Proof Prompt Book.Ready PDFs 2Chat capture onProvider traffic approvedProof prompt loadedVoice capture readyOpenRouter key setDeepgram key setProvider-key proof turn. Use the active learning book and all ready PDFs, not only the visible page. Compare one concept that appears across at least two PDFs, cite the source/page anch",
     "consoleLogs": []
   }
 ]

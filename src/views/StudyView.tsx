@@ -1083,7 +1083,11 @@ export function StudyView() {
   return (
     <div className="relative flex h-full w-full flex-col gap-3 overflow-y-auto bg-[#030303] px-3 pb-4 pt-16 md:gap-5 md:px-5 md:pb-6 md:pt-20 xl:h-[100dvh] xl:flex-row xl:gap-8 xl:overflow-hidden xl:px-8 xl:pb-8 xl:pt-24">
       <div
-        className={`relative flex w-full flex-1 shrink flex-col overflow-hidden rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B] shadow-none transition-[flex-basis,width,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] xl:h-full xl:min-h-0 ${
+        className={`relative flex w-full flex-1 shrink flex-col overflow-hidden shadow-none transition-[flex-basis,width,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] xl:h-full xl:min-h-0 ${
+          pdfUrl
+            ? "gap-1 rounded-none border border-transparent bg-transparent"
+            : "rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B]"
+        } ${
           pdfUrl
             ? "min-h-[42dvh]"
             : isChatOpen
@@ -1093,66 +1097,6 @@ export function StudyView() {
       >
         {pdfUrl ? (
           <>
-            <div
-              role="toolbar"
-              aria-label="PDF documents"
-              data-testid="pdf-document-toolbar"
-              className="relative z-0 flex h-7 shrink-0 items-center gap-1 border-b border-white/[0.07] bg-[#080809] px-1 shadow-none"
-            >
-              <div className="flex min-w-0 max-w-[calc(100%-1.75rem)] flex-none gap-1 overflow-x-auto pr-0.5 custom-scroll">
-                {orderedDocuments.map((document) => (
-                  <div
-                    key={document.id}
-                    data-testid="pdf-document-chip"
-                    className={`group flex h-5 max-w-[7.5rem] shrink-0 items-center rounded-[5px] border pr-px shadow-none transition-colors md:max-w-[9rem] ${
-                      document.id === activeDocumentId
-                        ? "border-white bg-white text-black"
-                        : "border-zinc-300 bg-white text-black hover:border-white"
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => void selectDocument(document)}
-                      className="flex h-full min-w-0 flex-1 items-center gap-1 pl-1 pr-px text-left focus:outline-none"
-                      title={document.title}
-                    >
-                      <span
-                        className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full ${
-                          document.id === activeDocumentId
-                            ? "bg-black text-white"
-                            : "bg-zinc-100 text-zinc-700"
-                        }`}
-                      >
-                        <FileText size={8} strokeWidth={2.2} />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-[0.625rem] font-semibold leading-none tracking-normal">
-                          {document.title}
-                        </span>
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void removeDocument(document.id)}
-                      aria-label={`Remove ${document.title}`}
-                      title={`Remove ${document.title}`}
-                      className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-zinc-400 shadow-none transition-colors hover:bg-zinc-200 hover:text-zinc-800 focus:outline-none"
-                    >
-                      <X size={9} strokeWidth={2.5} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={openFilePicker}
-                aria-label="Add PDF"
-                title="Add PDF"
-                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-dashed border-zinc-500 bg-transparent text-zinc-400 shadow-none transition-colors hover:border-zinc-200 hover:bg-white hover:text-zinc-800 focus:outline-none"
-              >
-                <Plus size={12} strokeWidth={1.9} />
-              </button>
-            </div>
             <input
               type="file"
               accept="application/pdf"
@@ -1163,9 +1107,84 @@ export function StudyView() {
             />
             <div
               data-testid="pdf-reader-region"
-              className="relative z-0 min-h-0 flex-1 overflow-hidden"
+              className="relative z-0 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-[#1a1a1a] bg-[#0A0A0B] shadow-none"
             >
-              <PdfViewer />
+              <div
+                role="toolbar"
+                aria-label="PDF documents"
+                data-testid="pdf-document-toolbar"
+                className="relative z-0 flex min-h-9 shrink-0 items-center gap-2 border-b border-white/10 bg-[#0A0A0B] py-1 pl-2 pr-12 shadow-none md:pr-2"
+              >
+                <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pr-1 custom-scroll">
+                  {orderedDocuments.map((document) => (
+                    <div
+                      key={document.id}
+                      data-testid="pdf-document-chip"
+                      className={`group flex h-7 max-w-[9.5rem] shrink-0 items-center rounded-full border px-1 shadow-none [box-shadow:none] md:max-w-[11rem] ${
+                        document.id === activeDocumentId
+                          ? "border-white bg-white text-black"
+                          : "border-zinc-200 bg-white/95 text-black hover:border-white hover:bg-white"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => void selectDocument(document)}
+                        className="flex h-full min-w-0 flex-1 items-center gap-1.5 pl-0.5 pr-1 text-left focus:outline-none"
+                        title={document.title}
+                      >
+                        <span
+                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
+                            document.id === activeDocumentId
+                              ? "bg-black text-white"
+                              : "bg-zinc-100 text-zinc-700"
+                          }`}
+                        >
+                          <FileText size={9} strokeWidth={2.1} />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-[0.66rem] font-semibold leading-none tracking-normal">
+                            {document.title}
+                          </span>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void removeDocument(document.id)}
+                        aria-label={`Remove ${document.title}`}
+                        title={`Remove ${document.title}`}
+                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-zinc-500 shadow-none [box-shadow:none] transition-colors hover:bg-zinc-200 hover:text-zinc-900 focus:outline-none"
+                      >
+                        <X size={13} strokeWidth={2.2} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={openFilePicker}
+                  aria-label="Add PDF"
+                  title="Add PDF"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-dashed border-zinc-500 bg-transparent text-zinc-400 shadow-none [box-shadow:none] transition-colors hover:border-zinc-200 hover:bg-white hover:text-zinc-800 focus:outline-none"
+                >
+                  <Plus size={17} strokeWidth={1.9} />
+                </button>
+                {!isChatOpen && (
+                  <button
+                    ref={minimizedChatButtonRef}
+                    type="button"
+                    onClick={() => setIsChatOpen(true)}
+                    aria-label="Open tutor chat"
+                    data-testid="pdf-toolbar-chat-button"
+                    title="Open tutor chat"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-transparent text-zinc-400 shadow-none [box-shadow:none] transition-colors hover:border-zinc-200 hover:bg-white hover:text-zinc-800 focus:outline-none"
+                  >
+                    <MessageSquare size={13} strokeWidth={2} />
+                  </button>
+                )}
+              </div>
+              <div data-testid="pdf-viewer-frame" className="min-h-0 flex-1">
+                <PdfViewer />
+              </div>
             </div>
           </>
         ) : (
@@ -1186,7 +1205,7 @@ export function StudyView() {
           />
         )}
 
-        {!isChatOpen && (
+        {!isChatOpen && !pdfUrl && (
           <button
             ref={minimizedChatButtonRef}
             type="button"

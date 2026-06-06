@@ -8,6 +8,82 @@
     "granted": true,
     "notes": "User authorized local implementation slices, subagents, Graphify regeneration, verification, commit, and push. AWS/cloud parts are deferred."
   },
+  "current_status": {
+    "updated_at": "2026-06-06T00:49:00Z",
+    "status": "verified_ready_for_publication",
+    "estimate_percent": 99,
+    "summary": "Local architecture docs, diagnostics, provider-proof preflight, Study PDF rail UI, dev-server alternate-port startup, real local-live provider proof, the final post-proof full gate, and the requirement-by-requirement completion audit are verified. Packet ADQ captured one coherent approved proof attempt with real OpenRouter typed-chat and real Deepgram voice rows tied to the same active book, conversation thread, multi-PDF context, approval evidence, and fresh local ledger window. This state is ready for the final Git commit/push publication step; branch, commit, and remote evidence are reported in the final response.",
+    "completed_recent_packets": ["ADM", "ADO", "ADP", "ADQ"],
+    "blocked_packet": null,
+    "blocking_condition": null,
+    "last_full_gate": {
+      "command": "npm run brain:postchange -- --reason real-provider-proof-final --full",
+      "status": "passed",
+      "node_tests": 258,
+      "rendered_dom_tests": 585,
+      "included": [
+        "format check",
+        "lint/typecheck",
+        "production build",
+        "diff whitespace check",
+        "graphify-out scratch scan"
+      ]
+    },
+    "last_browser_qa": {
+      "url": "http://127.0.0.1:3100",
+      "surface": "Study PDF document rail",
+      "desktop_mobile_passed": true,
+      "notes": "No toolbar/PDF overlap, no horizontal overflow, zero warning/error console logs, and active document chip click worked."
+    },
+    "last_runtime_qa": {
+      "command": "npm run dev -- --host 127.0.0.1 --port 3100",
+      "status": "passed",
+      "notes": "Direct dev startup honored CLI host/port overrides, served HTTP 200 on 127.0.0.1:3100, and avoided the occupied default 3000 listener."
+    },
+    "last_real_provider_proof": {
+      "packet": "ADQ",
+      "command": "APP_URL=http://127.0.0.1:3100 node .workflow/brain-architecture-implementation-program/packets/ADQ-real-provider-proof-run.mjs",
+      "status": "passed",
+      "result_path": ".workflow/brain-architecture-implementation-program/results/ADQ-real-provider-proof-run.json",
+      "run_id": "adq-live-provider-1780748513113",
+      "proof_attempt_id": "beta-mq2bosdm-b513ffd2",
+      "source_kind": "local_live_ledger",
+      "source_ready_for_beta": true,
+      "proof_complete": true,
+      "provider_capture_count": 2,
+      "selected_request_ids": [
+        "chat-1780748516683-bc22819b-b7fb-4919-9edf-945b986ded01",
+        "voice-1780748523114"
+      ],
+      "shared_book_ids": ["adq-live-provider-1780748513113:book"],
+      "shared_conversation_ids": ["thread:adq-live-provider-1780748513113:book"],
+      "shared_document_ids": [
+        "adq-live-provider-1780748513113:doc:active",
+        "adq-live-provider-1780748513113:doc:companion"
+      ],
+      "screenshots": {
+        "desktop": ".workflow/brain-architecture-implementation-program/results/ADQ-real-provider-proof-desktop.png",
+        "mobile": ".workflow/brain-architecture-implementation-program/results/ADQ-real-provider-proof-mobile.png"
+      },
+      "warnings": [
+        "Local beta receipt only; not a cloud sync or production deployment artifact.",
+        "Fallback chat rows and mock voice provider rows do not satisfy provider-key proof."
+      ]
+    },
+    "last_completion_audit": {
+      "status": "passed",
+      "checked_at": "2026-06-06T00:44:00Z",
+      "evidence": [
+        "ChatPanel persists one book chat thread per book via thread:<bookId> and loads that thread on active book changes.",
+        "Zustand persists activeLearningBookId, activeProject, and activeDocumentId while excluding transient messages from store hydration.",
+        "StudyView bootstraps/restores General Study, resolves the active document from the book, restores page/scale/totals, uploads multiple PDFs, switches documents, and removes PDFs without stale context.",
+        "ChatPanel builds chat and voice brain context from the active book, active document, and ordered book documents.",
+        "RevisionView selects learning books into the same activeLearningBookId/activeProject state and deletes book-linked documents/chat threads together.",
+        "Tests cover multi-PDF context balancing, Study/Chat handoff metadata, multi-PDF upload/removal, rendered book switching, PDF chip toolbar layout, ADQ diagnostics proof contracts, and the full post-proof gate."
+      ]
+    },
+    "remaining_before_completion": []
+  },
   "packets": [
     {
       "id": "A",
@@ -764,6 +840,34 @@
       "owner": "main agent + read-only sidecars Hubble, Ohm, Turing",
       "status": "completed",
       "write_scope": "src/components/ChatPanel.tsx, src/components/PdfViewer.tsx, server.ts, src/lib/voiceAgentTools.ts, tests, workflow evidence"
+    },
+    {
+      "id": "ADM",
+      "name": "Final provider-proof readiness audit",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "ChatPanel/Admin provider-key boundary, phase74/75 handoff QA packets, README, TUTOR_ARCHITECTURE.md, focused tests, workflow evidence"
+    },
+    {
+      "id": "ADN",
+      "name": "Real provider proof operator runbook",
+      "owner": "main agent",
+      "status": "blocked",
+      "write_scope": "workflow packet/result and diagnostics contract test only until explicit real provider/microphone approval"
+    },
+    {
+      "id": "ADO",
+      "name": "Study PDF rail and current-state gate",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "src/views/StudyView.tsx, tests/rendered-study-view-flows.test.tsx, workflow evidence"
+    },
+    {
+      "id": "ADP",
+      "name": "Dev-server alternate-port startup",
+      "owner": "main agent",
+      "status": "completed",
+      "write_scope": "server.ts, tests/runtime-settings.test.mjs, workflow evidence"
     }
   ],
   "verification": {
@@ -2059,11 +2163,25 @@
     "npm run test passed for Packet ADK, 203 tests",
     "npm run build passed for Packet ADK",
     "npm run brain:postchange -- --reason voice-stage-visual-reliability --full passed for Packet ADK, including format check, lint, build, 203 tests, diff whitespace check, and graphify-out scratch scan",
-    "In-app Browser QA for Packet ADK confirmed the chat Mermaid surface still rendered and visible text did not include forbidden voice-stage copy; synthetic voice-stage screenshot injection was blocked by Browser security policy"
+    "In-app Browser QA for Packet ADK confirmed the chat Mermaid surface still rendered and visible text did not include forbidden voice-stage copy; synthetic voice-stage screenshot injection was blocked by Browser security policy",
+    "Packet ADM fixed the final handoff preflight so phase74/75 can prepare a fresh proof attempt, durable local approval, two ready PDFs, and prompt/script loading without sending provider traffic or starting the microphone",
+    "Packet ADN added an operator-safe real provider proof runbook and diagnostics contract coverage for the hard safety gate, evidence matrix, local_live_ledger receipt, OpenRouter/Deepgram provider captures, and seeded/fallback/mock exclusions",
+    "Packet ADO tightened the Study PDF document rail into a transparent 18px sibling above the PDF reader with 15px chips, no backdrop, no card shadow, no absolute/fixed/sticky overlay, and no PDF overlap",
+    "In-app Browser QA for Packet ADO on http://127.0.0.1:3100 confirmed desktop and mobile Study layouts have no toolbar/PDF overlap, no horizontal overflow, zero warning/error console logs, and a working active document chip click",
+    "npm test -- tests/rendered-study-view-flows.test.tsx passed with 257 node tests and the focused 14-test StudyView rendered slice",
+    "npm run brain:postchange -- --reason study-chip-and-provider-runbook-current-state --full passed, including format check, lint/typecheck, production build, diff whitespace check, 257 node tests, 585 rendered DOM tests, and graphify-out scratch scan",
+    "Packet ADP fixed direct dev-server startup so npm run dev -- --host 127.0.0.1 --port 3100 honors CLI host/port overrides instead of colliding with the default 3000 listener",
+    "Packet ADP focused runtime-settings test passed after bundling server.ts and importing parseServerStartOptions from .tmp-test/server.mjs",
+    "Packet ADP live startup probe passed: npm run dev -- --host 127.0.0.1 --port 3100 served HTTP 200 on 127.0.0.1:3100 and was stopped afterward",
+    "Packet ADP investigated a transient full-gate DOM miss in rendered-chatpanel-expanded; the single failing test, the whole ChatPanel expanded file, and the full DOM suite passed on rerun without source changes",
+    "npm run brain:postchange -- --reason dev-server-alternate-port-startup-rerun --full passed for Packet ADP, including format check, lint/typecheck, production build, diff whitespace check, 258 node tests, 585 rendered DOM tests, and graphify-out scratch scan",
+    "Packet ADQ completed the explicitly approved real OpenRouter typed-chat plus real Deepgram voice provider proof with sourceReadyForBeta=true, proofComplete=true, two provider captures, and one shared proof attempt/book/thread/multi-PDF context",
+    "npm run brain:postchange -- --reason real-provider-proof-final --full passed after ADQ, including format check, lint/typecheck, production build, diff whitespace check, 258 node tests, 585 rendered DOM tests, and graphify-out scratch scan",
+    "Completion audit passed for book-scoped chat, active book/document restoration, Study/Revision/Chat sync, multi-PDF upload/switch/remove/injection, provider proof, docs, UI QA, and final gates"
   ],
   "brainArchitectureProgress": {
-    "estimatePercent": 98,
-    "basis": "Conservative local implementation estimate after Packet ADK. Packets ADI-ADK improve the local voice input, voice visual stage, Mermaid focus tour, web/image metadata, and current-page PDF outline behavior, but they do not complete the real approved OpenRouter typed-chat plus live Deepgram provider drill. That coherent proof attempt remains required before renewing a 99% or 100% claim. AWS/cloud synchronization remains out of scope.",
-    "updatedAt": "2026-06-04T15:03:00Z"
+    "estimatePercent": 99,
+    "basis": "Local docs, diagnostics, provider-proof preflight, Study PDF rail UI, dev-server alternate-port startup, the real approved local-live provider proof, full verification, and requirement audit are green. The final Git publication step is executed after this state file is staged so the final response can report branch, commit, and remote evidence. AWS/cloud synchronization remains out of scope.",
+    "updatedAt": "2026-06-06T00:49:00Z"
   }
 }

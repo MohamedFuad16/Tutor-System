@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const {
@@ -766,6 +767,74 @@ test("provider-key proof checklist requires keys and complete live ledger anchor
   assert.deepEqual(finalPreflight.attemptAudit.providerProofAttemptIds, [
     PROOF_ATTEMPT_ID,
   ]);
+});
+
+test("real provider proof operator runbook preserves diagnostics completion gates", () => {
+  const runbook = readFileSync(
+    new URL(
+      "../.workflow/brain-architecture-implementation-program/packets/ADN-real-provider-proof-operator-runbook.md",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const readyChecklist = buildProviderKeyProofChecklist({
+    brainFlow: completeBrainFlow,
+    coherentLiveProof: completeCoherentLiveProof,
+    providerKeys: {
+      chatModelKeyConfigured: true,
+      voiceRealtimeKeyConfigured: true,
+    },
+  });
+  const receipt = readyChecklist.liveProofReceipt;
+
+  assert.match(runbook, /## Hard Safety Gate/);
+  assert.match(runbook, /explicitly\s+approves/);
+  assert.match(runbook, /real OpenRouter key/);
+  assert.match(runbook, /real Deepgram key/);
+  assert.match(runbook, /open the microphone/);
+  assert.match(runbook, /multi-PDF context/);
+  assert.match(runbook, /provider-capture rows/);
+  assert.match(runbook, /not final proof/);
+
+  assert.match(runbook, /## Evidence Matrix/);
+  for (const requiredEvidence of [
+    "beta_proof_attempt_started",
+    "beta_provider_traffic_approved",
+    "source=chat_stream",
+    "provider=openrouter",
+    "Voice provider ready",
+    "brain_context_injected",
+    "book_chat_thread_saved",
+    "non-`model_summary`",
+    "local_live_ledger",
+    "local_qa_seed",
+    "synthetic",
+    "fallback",
+    "mock",
+  ]) {
+    assert.ok(
+      runbook.includes(requiredEvidence),
+      `runbook missing ${requiredEvidence}`,
+    );
+  }
+
+  for (const receiptField of [
+    receipt.schema,
+    `sourceKind: ${receipt.sourceKind}`,
+    `sourceReadyForBeta: ${String(receipt.sourceReadyForBeta)}`,
+    `proofComplete: ${String(receipt.proofComplete)}`,
+    `providerCaptureCount: ${receipt.providerCaptureCount}`,
+  ]) {
+    assert.ok(
+      runbook.includes(receiptField),
+      `runbook missing ${receiptField}`,
+    );
+  }
+
+  assert.deepEqual(
+    receipt.providerCaptures.map((capture) => capture.provider),
+    ["openrouter", "deepgram"],
+  );
 });
 
 test("live beta proof preflight requires approval, active attempt, and multiple ready PDFs before provider traffic", () => {

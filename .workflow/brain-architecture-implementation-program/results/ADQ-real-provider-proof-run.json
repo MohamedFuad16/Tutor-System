@@ -1,0 +1,172 @@
+{
+  "status": "passed",
+  "runId": "adq-live-provider-1780748513113",
+  "bookId": "adq-live-provider-1780748513113:book",
+  "threadId": "thread:adq-live-provider-1780748513113:book",
+  "documentIds": [
+    "adq-live-provider-1780748513113:doc:active",
+    "adq-live-provider-1780748513113:doc:companion"
+  ],
+  "conceptId": "adq-live-provider-1780748513113:book:concept:instantaneous-rate",
+  "appUrl": "http://127.0.0.1:3100",
+  "generatedAt": "2026-06-06T12:22:19.531Z",
+  "providerKeysConfigured": {
+    "openrouter": true,
+    "deepgram": true,
+    "serper": true
+  },
+  "activeProofAttemptId": "beta-mq2bosdm-b513ffd2",
+  "chatProviderRun": {
+    "requestId": "chat-1780748516683-bc22819b-b7fb-4919-9edf-945b986ded01",
+    "requestedModel": "openai/gpt-4.1-mini",
+    "usedModel": "openai/gpt-4.1-mini",
+    "provider": "openrouter",
+    "source": "chat_stream"
+  },
+  "chatLedgerRows": {
+    "toolJobs": 1,
+    "evidenceEvents": 1,
+    "memoryEvents": 4,
+    "retrievalEvents": 1
+  },
+  "voiceProviderReady": {
+    "requestId": "voice-1780748523114",
+    "title": "Voice provider ready",
+    "status": "completed",
+    "phase": "settings"
+  },
+  "modelObservationGateRows": {
+    "gatedRows": 4,
+    "ungatedRows": 0,
+    "eventTypes": [
+      "learning_book_updated",
+      "learning_concept_updated"
+    ]
+  },
+  "diagnostics": {
+    "activeProofAttemptId": "beta-mq2bosdm-b513ffd2",
+    "checklist": {
+      "status": "ready",
+      "completionPercent": 100,
+      "proofComplete": true,
+      "betaProofReady": true,
+      "sourceReadyForBeta": true,
+      "readyChecks": 16,
+      "totalChecks": 16,
+      "missingChecks": [],
+      "summary": "Provider-key chat and voice proof is complete from real local-live provider rows."
+    },
+    "receipt": {
+      "schema": "tutor.live-provider-proof-receipt.v1",
+      "status": "ready",
+      "ready": true,
+      "sourceKind": "local_live_ledger",
+      "sourceReadyForBeta": true,
+      "proofComplete": true,
+      "providerCaptureCount": 2,
+      "selectedRequestIds": [
+        "chat-1780748516683-bc22819b-b7fb-4919-9edf-945b986ded01",
+        "voice-1780748523114"
+      ],
+      "sharedProofAttemptIds": [
+        "beta-mq2bosdm-b513ffd2"
+      ],
+      "sharedBookIds": [
+        "adq-live-provider-1780748513113:book"
+      ],
+      "sharedConversationIds": [
+        "thread:adq-live-provider-1780748513113:book"
+      ],
+      "sharedDocumentIds": [
+        "adq-live-provider-1780748513113:doc:active",
+        "adq-live-provider-1780748513113:doc:companion"
+      ],
+      "chatRequestId": "chat-1780748516683-bc22819b-b7fb-4919-9edf-945b986ded01",
+      "voiceRequestId": "voice-1780748523114",
+      "warnings": [
+        "Local beta receipt only; not a cloud sync or production deployment artifact.",
+        "Fallback chat rows and mock voice provider rows do not satisfy provider-key proof."
+      ],
+      "summary": "Receipt is ready: the selected chat and voice requests share one local proof attempt, book/thread, multi-PDF context, and real provider capture evidence."
+    },
+    "coherent": {
+      "ready": true,
+      "status": "ready",
+      "chatRequestId": "chat-1780748516683-bc22819b-b7fb-4919-9edf-945b986ded01",
+      "voiceRequestId": "voice-1780748523114",
+      "sharedProofAttemptIds": [
+        "beta-mq2bosdm-b513ffd2"
+      ],
+      "sharedBookIds": [
+        "adq-live-provider-1780748513113:book"
+      ],
+      "sharedConversationIds": [
+        "thread:adq-live-provider-1780748513113:book"
+      ],
+      "sharedDocumentIds": [
+        "adq-live-provider-1780748513113:doc:active",
+        "adq-live-provider-1780748513113:doc:companion"
+      ],
+      "missingChecks": [],
+      "failedRows": 0
+    },
+    "counts": {
+      "memoryEvents": 20,
+      "retrievalEvents": 2,
+      "modelRuns": 4,
+      "toolJobs": 3,
+      "evidenceEvents": 5,
+      "masteryDeltas": 2,
+      "learningBooks": 2,
+      "learningDocuments": 2,
+      "bookChatThreads": 1,
+      "systemActivityEvents": 139
+    },
+    "attemptRows": {
+      "memoryEvents": 18,
+      "retrievalEvents": 2,
+      "modelRuns": 4,
+      "toolJobs": 3,
+      "evidenceEvents": 5,
+      "systemActivityEvents": 17
+    },
+    "activeProviderCaptures": [
+      {
+        "layer": "chat",
+        "provider": "openrouter",
+        "requestedModel": "openai/gpt-4.1-mini",
+        "usedModel": "openai/gpt-4.1-mini",
+        "source": "chat_stream",
+        "requestId": "chat-1780748516683-bc22819b-b7fb-4919-9edf-945b986ded01"
+      },
+      {
+        "layer": "voice",
+        "provider": "deepgram",
+        "requestedModel": "Deepgram Voice Agent",
+        "usedModel": "Deepgram Voice Agent",
+        "source": "voice_agent",
+        "requestId": "voice-1780748523114"
+      },
+      {
+        "layer": "voice",
+        "provider": "deepgram",
+        "source": "system_activity",
+        "requestId": "voice-1780748523114",
+        "title": "Voice provider ready",
+        "phase": "settings"
+      }
+    ],
+    "failedRowSummaries": [],
+    "generatedAt": "2026-06-06T12:22:19.332Z"
+  },
+  "screenshots": {
+    "desktop": ".workflow/brain-architecture-implementation-program/results/ADQ-real-provider-proof-desktop.png",
+    "mobile": ".workflow/brain-architecture-implementation-program/results/ADQ-real-provider-proof-mobile.png"
+  },
+  "consoleLogs": [
+    {
+      "type": "warning",
+      "text": "The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead. (https://bit.ly/audio-worklet)"
+    }
+  ]
+}

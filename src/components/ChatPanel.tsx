@@ -3698,8 +3698,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         const payload = await response.json();
         if (cancelled) return;
         setServerOpenRouterReady(
-          Boolean(payload?.meters?.providers?.openRouter) ||
-            Boolean(payload?.meters?.providers?.openRouterByok),
+          Boolean(payload?.meters?.providers?.openRouter),
         );
         setServerDeepgramReady(Boolean(payload?.meters?.providers?.deepgram));
       } catch {

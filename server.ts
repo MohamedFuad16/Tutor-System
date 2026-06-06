@@ -35,6 +35,11 @@ export {
   normalizeBrainRuntimeSettings,
 };
 
+type ServerStartOptions = {
+  host: string;
+  port: number;
+};
+
 const DEEPGRAM_PRICING = {
   voiceAgentPerMinute: 0.075,
   aura1Per1kCharacters: 0.015,
@@ -4028,14 +4033,57 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
   return { app, attachWebSockets };
 }
 
+const parseServerStartOptions = (
+  argv = process.argv.slice(2),
+  env: NodeJS.ProcessEnv = process.env,
+): ServerStartOptions => {
+  let portValue = env.PORT || "3000";
+  let host = env.HOST || "0.0.0.0";
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--port" || arg === "-p") {
+      portValue = argv[index + 1] || portValue;
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--port=")) {
+      portValue = arg.slice("--port=".length) || portValue;
+      continue;
+    }
+    if (arg === "--host" || arg === "-H") {
+      host = argv[index + 1] || host;
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--host=")) {
+      host = arg.slice("--host=".length) || host;
+    }
+  }
+
+  const parsedPort = Number(portValue);
+  const port =
+    Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort <= 65535
+      ? parsedPort
+      : 3000;
+
+  return {
+    host: host.trim() || "0.0.0.0",
+    port,
+  };
+};
+
+export { parseServerStartOptions };
+
 async function startServer() {
-  const PORT = Number(process.env.PORT || 3000);
+  const { host, port } = parseServerStartOptions();
   const { app, attachWebSockets } = await createTutorServerApp({
     serveClient: true,
   });
 
-  const server = app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[SYS] Server running on http://localhost:${PORT}`);
+  const server = app.listen(port, host, () => {
+    const displayHost = host === "0.0.0.0" ? "localhost" : host;
+    console.log(`[SYS] Server running on http://${displayHost}:${port}`);
   });
   attachWebSockets(server);
 }

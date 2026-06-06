@@ -30,14 +30,20 @@ const storageSeed = {
   documentIds: DOCUMENT_IDS,
   dummyPdfUrl: DUMMY_PDF_URL,
   title: "ACQ Proof Prompt Book",
+  useServerFallback: process.env.QA_USE_SERVER_FALLBACK === "1",
 };
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function setupLocalStorage(seed) {
   localStorage.setItem("access_mode", "admin");
-  localStorage.setItem("openrouter_api_key", "handoff-openrouter-key");
-  localStorage.setItem("deepgram_api_key", "handoff-deepgram-key");
+  if (seed.useServerFallback) {
+    localStorage.removeItem("openrouter_api_key");
+    localStorage.removeItem("deepgram_api_key");
+  } else {
+    localStorage.setItem("openrouter_api_key", "handoff-openrouter-key");
+    localStorage.setItem("deepgram_api_key", "handoff-deepgram-key");
+  }
   localStorage.setItem("active_project", seed.title);
   localStorage.setItem("active_learning_book_id", seed.bookId);
   localStorage.setItem("active_document_id", seed.documentIds[0]);
@@ -233,6 +239,13 @@ async function runHandoffCheck(browser, label, viewport) {
   );
   const expectedProofAttemptId = await proofAttemptId.jsonValue();
 
+  await page
+    .locator("button", { hasText: "Approve provider traffic" })
+    .first()
+    .click();
+  await waitForText("traffic approved");
+  await waitForText("approval event");
+
   await page.locator("button", { hasText: "Load in chat" }).first().click();
   await waitForText("Live proof capture");
   await page.waitForFunction(() =>
@@ -241,6 +254,16 @@ async function runHandoffCheck(browser, label, viewport) {
         .querySelector("textarea")
         ?.value.includes("Provider-key proof turn"),
     ),
+  );
+  await waitForText(
+    storageSeed.useServerFallback
+      ? "OpenRouter server fallback"
+      : "OpenRouter key set",
+  );
+  await waitForText(
+    storageSeed.useServerFallback
+      ? "Deepgram server fallback"
+      : "Deepgram key set",
   );
   await sleep(400);
 
@@ -260,8 +283,19 @@ async function runHandoffCheck(browser, label, viewport) {
       hasBook: lower.includes("acq proof prompt book"),
       hasPromptLoaded: lower.includes("proof prompt loaded"),
       hasReadyPdfs: lower.includes("ready pdfs 2"),
-      hasOpenRouterKey: lower.includes("openrouter key set"),
-      hasDeepgramKey: lower.includes("deepgram key set"),
+      hasTrafficApproved: lower.includes("provider traffic approved"),
+      hasOpenRouterRuntime:
+        lower.includes("openrouter key set") ||
+        lower.includes("openrouter server fallback"),
+      hasDeepgramRuntime:
+        lower.includes("deepgram key set") ||
+        lower.includes("deepgram server fallback"),
+      openRouterMode: lower.includes("openrouter server fallback")
+        ? "server_fallback"
+        : "browser_key",
+      deepgramMode: lower.includes("deepgram server fallback")
+        ? "server_fallback"
+        : "browser_key",
       textareaHasPrompt: Boolean(
         textarea?.value.includes("Provider-key proof turn"),
       ),
@@ -279,8 +313,9 @@ async function runHandoffCheck(browser, label, viewport) {
     !snapshot.hasBook ||
     !snapshot.hasPromptLoaded ||
     !snapshot.hasReadyPdfs ||
-    !snapshot.hasOpenRouterKey ||
-    !snapshot.hasDeepgramKey ||
+    !snapshot.hasTrafficApproved ||
+    !snapshot.hasOpenRouterRuntime ||
+    !snapshot.hasDeepgramRuntime ||
     !snapshot.textareaHasPrompt ||
     !snapshot.textareaFocused
   ) {

@@ -8,6 +8,7 @@ import {
   WEB_SEARCH_POLICIES,
   createTutorServerApp,
   normalizeBrainRuntimeSettings,
+  parseServerStartOptions,
 } from "../.tmp-test/server.mjs";
 
 const startApp = async () => {
@@ -25,6 +26,32 @@ const readActivity = async (baseUrl) => {
   assert.equal(response.status, 200);
   return response.json();
 };
+
+test("server startup options honor CLI host and port overrides", () => {
+  assert.deepEqual(
+    parseServerStartOptions(["--host", "127.0.0.1", "--port", "3100"], {}),
+    {
+      host: "127.0.0.1",
+      port: 3100,
+    },
+  );
+
+  assert.deepEqual(
+    parseServerStartOptions(["--port=4100", "--host=localhost"], {
+      PORT: "3000",
+      HOST: "0.0.0.0",
+    }),
+    {
+      host: "localhost",
+      port: 4100,
+    },
+  );
+
+  assert.deepEqual(parseServerStartOptions(["--port", "nope"], {}), {
+    host: "0.0.0.0",
+    port: 3000,
+  });
+});
 
 test("runtime settings normalization clamps local tuning controls", () => {
   assert.deepEqual(normalizeBrainRuntimeSettings(null), {

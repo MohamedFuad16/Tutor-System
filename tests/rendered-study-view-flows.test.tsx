@@ -258,6 +258,9 @@ describe("rendered StudyView flows", () => {
 
     await user.click(screen.getByRole("button", { name: "Close tutor chat" }));
     expect(screen.queryByTestId("chat-panel")).toBeNull();
+    expect(screen.getByTestId("pdf-toolbar-chat-button")).toHaveClass(
+      "shadow-none",
+    );
 
     await user.click(screen.getByRole("button", { name: "Open tutor chat" }));
     expect(screen.getByTestId("chat-panel")).toBeInTheDocument();
@@ -320,7 +323,7 @@ describe("rendered StudyView flows", () => {
     expect(useStore.getState().activeDocumentId).toBe(documents[0].id);
   });
 
-  it("keeps the compact PDF document toolbar outside the reader region", async () => {
+  it("keeps the compact PDF document toolbar in reader chrome before the PDF content", async () => {
     await seedStudyBook(["Compact document"]);
 
     renderStudyView();
@@ -328,11 +331,44 @@ describe("rendered StudyView flows", () => {
 
     const toolbar = screen.getByTestId("pdf-document-toolbar");
     const readerRegion = screen.getByTestId("pdf-reader-region");
+    const viewerFrame = screen.getByTestId("pdf-viewer-frame");
 
-    expect(toolbar).toHaveClass("h-7", "shrink-0", "shadow-none");
-    expect(readerRegion).toHaveClass("min-h-0", "flex-1", "overflow-hidden");
+    expect(toolbar).toHaveClass(
+      "min-h-9",
+      "shrink-0",
+      "border-b",
+      "bg-[#0A0A0B]",
+      "shadow-none",
+    );
+    expect(toolbar.className).not.toMatch(/\b(absolute|fixed|sticky)\b/);
+    expect(toolbar.className).not.toMatch(/\bbackdrop-/);
+
+    expect(screen.getByTestId("pdf-document-chip")).toHaveClass(
+      "h-7",
+      "rounded-full",
+      "bg-white",
+      "text-black",
+      "shadow-none",
+      "[box-shadow:none]",
+    );
+    expect(screen.getByRole("button", { name: "Add PDF" })).toHaveClass(
+      "h-7",
+      "w-7",
+      "border-dashed",
+      "shadow-none",
+    );
+    expect(readerRegion).toHaveClass(
+      "min-h-0",
+      "flex-1",
+      "flex-col",
+      "overflow-hidden",
+      "rounded-2xl",
+      "shadow-none",
+    );
+    expect(toolbar.parentElement).toBe(readerRegion);
+    expect(viewerFrame.parentElement).toBe(readerRegion);
     expect(
-      toolbar.compareDocumentPosition(readerRegion) &
+      toolbar.compareDocumentPosition(viewerFrame) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });

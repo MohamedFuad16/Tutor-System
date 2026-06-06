@@ -2527,7 +2527,7 @@ const builtInBooks: BuiltInBook[] = [
     id: "user-brain-architecture",
     name: "User Brain Architecture",
     description:
-      "A consolidated book for the adaptive learner brain, OpenAI support guidance, interaction-model strategy, beta gates, and citations.",
+      "A plain guide to the local learner-brain ledger, evidence gates, runtime traces, audio boundaries, and deferred cloud work.",
     hiddenKey: "user_brain_architecture_book_hidden",
     chapters: userBrainArchitectureBook.map((chapter, index) => ({
       ...chapter,

@@ -46,92 +46,35 @@
 
 ## Overview
 
-Tutor is a high-fidelity learning environment for reading papers and textbooks,
-asking source-aware tutor questions, building a persistent learning library, and
-reviewing knowledge over time. It combines a PDF study surface, streaming AI
-chat, voice tutoring, web search, revision notebooks, analytics, admin
-diagnostics, built-in architecture/design-language books, and a Graphify-backed
-repository architecture graph for maintainers.
+Tutor is a local-first learning environment for reading papers and textbooks,
+asking a source-aware tutor questions, speaking with a realtime voice tutor, and
+turning useful moments into review material. The app combines Study, Chat,
+Revision, Analytics, Admin diagnostics, built-in architecture books, and a
+Graphify repository architecture graph for maintainers.
 
-The Study, Chat, and Revision surfaces share one book-scoped context model. Each
-learning book owns exactly one durable chat thread, one active PDF selection, and
-any number of stored PDF documents. Switching books switches the visible chat,
-document rail, active-book PDF manifest, balanced multi-PDF brain context, and
-revision notebook together.
-Typed chat and live voice sessions also share request-level observability:
-browser-generated request ids connect the shared brain-context packet, memory
-retrieval, server activity, model runs, and tool jobs in Admin.
-Background learner-memory writes now carry the same request metadata, so Admin
-timelines can group the foreground answer and the MemoryOrchestrator book,
-interaction, and graph rows together.
-Interaction-memory capture, learning-book updates, and graph-concept updates
-are also recorded as durable local background job state with queued, running,
-completed, retry-scheduled, and dead-letter statuses, so Admin can show whether
-behind-the-scenes memory capture, note generation, and graph updates actually
-finished.
-Admin Beta Diagnostics now includes a local brain-flow coverage verifier that
-checks whether chat context injection, voice context injection, chat and voice
-multi-PDF context evidence, request correlation, chat and voice foreground tool
-calls, chat and voice evaluated mastery evidence, transcript persistence,
-background learner-memory writes, and model-observation evidence gates all have
-durable local evidence before broader beta claims. Each signal can show compact
-live request/source/timestamp/PDF anchors when proof exists.
-Admin can start a local proof attempt before the manual chat and voice run; that
-attempt writes a local memory-event lifecycle row, the id is carried through
-chat/voice metadata, and coherent provider-key proof now requires the selected
-rows to share it in addition to book, thread, and multi-PDF anchors.
-The same coherent proof now separates completed model rows from provider-ready
-rows: typed chat must have a completed OpenRouter-backed row for the selected
-request, and live voice must have the server-side `Voice provider ready`
-Deepgram row. The local mock voice provider row is visible for debugging but
-does not count as provider-key proof.
-Voice websocket system-activity rows also preserve that proof attempt id with
-voice-mode and voice-realtime agent-layer metadata across auth, context, tool,
-provider, and close events.
-Live voice also latches the selected proof attempt when the session starts, so
-context, model, tool, transcript, and background-memory rows remain tied to one
-attempt even if Admin selection changes mid-session.
-The provider-key panel also exposes a local live-proof drill packet: setup
-checklist, ordered run sequence, exact typed-chat and live-voice prompts,
-expected ledger rows, blockers, and export instructions. It helps beta operators
-run the proof deliberately without the Admin screen auto-calling providers or
-starting cloud/AWS work.
-The same Admin panel can run a deterministic synthetic wiring rehearsal through
-the shared multi-PDF context helpers, typed-chat and live-voice tool
-definitions, matching shared tool schemas, and the thirteen-signal verifier.
-Rehearsal rows stay in memory only: they never write Dexie, call providers,
-enter exports, or raise live beta coverage.
-Background memory updates now keep model-summary mastery and learner-confidence
-proposals observational: accepted values, `model_observation_v1`, non-verified
-status, and no-mutation gates are written to local evidence/memory metadata,
-but those learner-state fields do not rise without validated evidence.
-Validated flashcard reviews and evaluated learner answers linked to real
-concepts now supply that local evidence path: BKT mastery and durable learner
-confidence move together with capped recall-evidence deltas, and Admin evidence
-metadata can show the confidence before/after values, score, rubric, and request
-anchors.
-Those validated attempts now commit the concept mutation, verified evidence
-event, and linked mastery delta atomically under one stable attempt id. Ledger
-failure rolls the attempt back, duplicate replay does not move mastery twice,
-and Admin blocks the architecture readiness claim when it detects orphan or
-mismatched mastery audit rows.
-Typed chat and live voice now expose an `evaluate_answer` tool that can write
-that evidence from quiz or active-recall turns, while the local recorder still
-skips invented concept ids or unevaluated answers.
-When the tool uses an active learning-book concept id, the browser first
-resolves it from `learningBookConcepts` and promotes it into `concepts`; BKT
-still reports a missing concept instead of faking mastery when no stored concept
-exists.
-Validated incorrect evaluated answers also create or consolidate bounded,
-source-linked misconception candidates. The learner model scopes active
-candidates to the current book for Socratic follow-up, while Admin Evidence
-shows their audit trail and makes clear that candidates never mutate mastery by
-themselves.
-Admin correction requests now protect stale learner state too: mark-wrong,
-deletion-review, or supersede requests that target a concept, or a corrected
-row with a concept id, quarantine the concept score locally by clearing durable
-confidence and capping mastery/BKT knowledge while preserving the previous
-values in `correctionState`.
+The core unit is a learning book. Each book owns one durable chat thread, one
+active PDF selection, any number of stored PDF documents, and its own revision
+material. Switching books switches the visible chat, PDF rail, injected context,
+and revision notebook together, so a Python book does not leak into General
+Study or another book.
+
+The learner brain is the local ledger behind that experience. It stores books,
+documents, concepts, evidence, mastery changes, artifacts, corrections, and
+runtime traces in browser-local Dexie/IndexedDB records. It is not hidden model
+memory and it is not Graphify.
+
+Durable learning changes are evidence-gated. Model summaries, generated notes,
+tool traces, voice transcripts, and misconception candidates can help teaching
+or review, but only validated learner evidence, such as scored flashcard reviews
+or evaluated answers linked to real concepts, may increase mastery.
+
+Admin exists to make the system inspectable during local beta. It groups model
+runs, tool jobs, retrieval, memory, voice, evidence, artifacts, corrections, and
+background jobs by request/proof ids. Synthetic rehearsals can check wiring, but
+the local beta gate is based on real provider rows: the current ADQ proof
+captured an approved OpenRouter typed-chat row and Deepgram voice row tied to
+the same book, thread, multi-PDF context, and local approval evidence. AWS/cloud
+work remains deferred until after local beta review.
 
 ## Core Surfaces
 
@@ -317,6 +260,12 @@ intentionally pays for unauthenticated chat fallback.
 
 ```bash
 npm run dev
+```
+
+If `3000` is already in use, pass an explicit host and port:
+
+```bash
+npm run dev -- --host 127.0.0.1 --port 3100
 ```
 
 ### 5. Generate Stored Chapter Audio

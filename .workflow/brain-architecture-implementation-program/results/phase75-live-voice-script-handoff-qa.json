@@ -11,11 +11,14 @@
     "hasVoiceScriptLoaded": true,
     "hasStartVoiceFirst": true,
     "hasReadyPdfs": true,
-    "hasOpenRouterKey": true,
-    "hasDeepgramKey": true,
+    "hasTrafficApproved": true,
+    "hasOpenRouterRuntime": true,
+    "hasDeepgramRuntime": true,
+    "openRouterMode": "browser_key",
+    "deepgramMode": "browser_key",
     "textareaHasPrompt": true,
     "textareaFocused": true,
-    "hudSnippet": "Live proof captureChat and voice rows will save under attempt beta-mpyuj8s4-92415207 for ACR Voice Script Book.Ready PDFs 2Chat capture onVoice script loadedStart voice firstVoice capture readyOpenRouter key setDeepgram key setProvider-key voice proof turn. On this same active book and proof attempt, use all ready PDFs in context. Ask me one short active-recall question that connects two PDFs, then evaluate my spoken",
+    "hudSnippet": "Live proof captureChat and voice rows will save under attempt beta-mq1ej4ag-a78f07aa for ACR Voice Script Book.Ready PDFs 2Chat capture onProvider traffic approvedVoice script loadedStart voice firstVoice capture readyOpenRouter key setDeepgram key setProvider-key voice proof turn. On this same active book and proof attempt, use all ready PDFs in context. When explaining the relevant concept, render a local Mermaid f",
     "consoleLogs": []
   },
   {
@@ -30,11 +33,14 @@
     "hasVoiceScriptLoaded": true,
     "hasStartVoiceFirst": true,
     "hasReadyPdfs": true,
-    "hasOpenRouterKey": true,
-    "hasDeepgramKey": true,
+    "hasTrafficApproved": true,
+    "hasOpenRouterRuntime": true,
+    "hasDeepgramRuntime": true,
+    "openRouterMode": "browser_key",
+    "deepgramMode": "browser_key",
     "textareaHasPrompt": true,
     "textareaFocused": true,
-    "hudSnippet": "Live proof captureChat and voice rows will save under attempt beta-mpyujb3q-e19004b1 for ACR Voice Script Book.Ready PDFs 2Chat capture onVoice script loadedStart voice firstVoice capture readyOpenRouter key setDeepgram key setProvider-key voice proof turn. On this same active book and proof attempt, use all ready PDFs in context. Ask me one short active-recall question that connects two PDFs, then evaluate my spoken",
+    "hudSnippet": "Live proof captureChat and voice rows will save under attempt beta-mq1ejafm-2bd6641c for ACR Voice Script Book.Ready PDFs 2Chat capture onProvider traffic approvedVoice script loadedStart voice firstVoice capture readyOpenRouter key setDeepgram key setProvider-key voice proof turn. On this same active book and proof attempt, use all ready PDFs in context. When explaining the relevant concept, render a local Mermaid f",
     "consoleLogs": []
   }
 ]

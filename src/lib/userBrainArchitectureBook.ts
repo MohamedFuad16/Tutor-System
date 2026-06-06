@@ -29,7 +29,7 @@ LearningAI is app-native: existing models operate through app contracts, local r
 
 ## Status Boundary
 
-- **Implemented:** the current local-beta runtime, Dexie ledgers, evidence-gated mastery, and Admin inspection.
+- **Implemented:** local runtime surfaces, readiness gates, Dexie ledgers, evidence-gated mastery, and Admin inspection.
 - **Target:** tighter verification and broader local-beta proof.
 - **Deferred:** AWS sync, tenant isolation, cloud storage, and production operations.
 
@@ -109,7 +109,7 @@ flowchart LR
   Answer --> Artifact[Optional artifact row]
 ~~~
 
-Generated notes, flashcards, audio guides, charts, code, images, and websites are artifacts. Their local rows can prove where they came from, which request created them, and whether a scoped verifier ran. That is traceability, not factual truth.
+Generated notes, flashcards, audio guides, charts, code, images, and websites are artifacts the schema can represent. Current local provenance and verifier helpers are narrower: source cards, generated flashcards, generated learning notes, and stored audio guides have the strongest scoped support. Rows can prove where supported artifacts came from, which request created them, and whether a scoped verifier ran. That is traceability, not factual truth.
 
 | Citation state | Meaning |
 | --- | --- |

@@ -112,6 +112,36 @@ test("architecture book text keeps Graphify local and defines the Chapter 2 flow
   assert.match(userBrainLedgerChapter, /Evidence gate/);
 });
 
+test("user brain book keeps artifact and audio control scope accurate", () => {
+  const retrievalChapter = userBrainBookSource.match(
+    /title: "Chapter 4: Retrieval, Artifacts, And Citations",\n    content: `([\s\S]*?)`,\n  \}/,
+  )?.[1];
+  const voiceAudioOverview = audioOverviewManifest.find(
+    (overview) =>
+      overview.bookId === "user-brain-architecture" &&
+      overview.chapterTitle === "Chapter 6: Voice, Audio, And Timing",
+  );
+
+  assert.ok(retrievalChapter, "User Brain artifact chapter should exist");
+  assert.match(retrievalChapter, /schema can represent/);
+  assert.match(
+    retrievalChapter,
+    /Current local provenance and verifier helpers/,
+  );
+  assert.match(retrievalChapter, /source cards/);
+  assert.match(retrievalChapter, /stored audio guides/);
+  assert.ok(voiceAudioOverview, "User Brain voice audio overview should exist");
+  assert.match(voiceAudioOverview.transcript, /custom controls/);
+  assert.match(
+    voiceAudioOverview.transcript,
+    /native audio element stays hidden/,
+  );
+  assert.doesNotMatch(
+    voiceAudioOverview.transcript,
+    /native browser controls/i,
+  );
+});
+
 test("audio overview contract keeps one visible player and 3-4 minute guides", () => {
   assert.match(revisionViewSource, /const StoredAudioOverview/);
   assert.match(revisionViewSource, /const resolveAudioOverviewSrc/);
