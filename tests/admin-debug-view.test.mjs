@@ -29,7 +29,7 @@ test("Admin debug tabs keep system activity, beta diagnostics, traces, and conso
 test("Admin activity views fetch the local debug ledger with token-aware headers", () => {
   assert.match(
     adminViewSource,
-    /activeTab === "activity" \|\| activeTab === "diagnostics"/,
+    /activeTab === "brain" \|\|\s+activeTab === "activity" \|\|\s+activeTab === "diagnostics"/,
   );
   assert.match(
     adminViewSource,

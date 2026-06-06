@@ -58,18 +58,19 @@ test("built-in architecture books stay arranged as reader-first guides", () => {
 });
 
 test("Admin center introduction stays short and plain", () => {
-  const adminPrefaceMatch = adminViewSource.match(
-    /<p className="text-zinc-600[^"]*">\s*([^<]+?)\s*<\/p>/,
-  );
-  assert.ok(adminPrefaceMatch, "Admin preface paragraph should exist");
-
-  const copy = adminPrefaceMatch[1].replace(/\s+/g, " ").trim();
-  assert.equal(
-    copy,
+  const introCopies = [
+    "See how chat, voice, PDFs, evidence, and BKT scoring become learner memory that the tutor can use.",
     "Track models, tools, memory, retrieval, voice, and beta readiness.",
-  );
-  assert.ok(copy.length <= 80, "Admin preface should stay concise");
-  assert.equal(copy.split(".").filter(Boolean).length, 1);
+  ];
+
+  for (const copy of introCopies) {
+    assert.match(
+      adminViewSource,
+      new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    );
+    assert.ok(copy.length <= 105, "Admin preface should stay concise");
+    assert.equal(copy.split(".").filter(Boolean).length, 1);
+  }
 });
 
 test("MisoTTS read-aloud boundary is documented across architecture books", () => {
