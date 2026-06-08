@@ -33,6 +33,7 @@ const startVoiceApp = async () => {
     server,
     baseUrl: `http://127.0.0.1:${port}`,
     wsUrl: `ws://127.0.0.1:${port}/api/voice-agent?language=en`,
+    brokerWsUrl: `ws://127.0.0.1:${port}/api/voice-broker?language=en`,
   };
 };
 
@@ -60,6 +61,27 @@ const startMisoHealthServer = async () => {
     if (req.url === "/health") {
       res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify({ ok: true, modelLoaded: true }));
+      return;
+    }
+    res.statusCode = 404;
+    res.end("not found");
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const { port } = server.address();
+  return { server, baseUrl: `http://127.0.0.1:${port}` };
+};
+
+const startMisoSpeechServer = async () => {
+  const server = http.createServer((req, res) => {
+    if (req.url === "/health") {
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ ok: true, modelLoaded: true }));
+      return;
+    }
+    if (req.url === "/v1/audio/speech" && req.method === "POST") {
+      res.setHeader("Content-Type", "audio/wav");
+      res.end(Buffer.from("RIFFmock-wav"));
       return;
     }
     res.statusCode = 404;
@@ -225,6 +247,70 @@ test("Deepgram server fallback and query keys stay disabled without explicit sha
   assert.match(responseText, /Deepgram API Key is missing/);
   assert.equal(providerCalled, false);
   assert.doesNotMatch(responseText, /deepgram-disabled-secret|query-secret/);
+});
+
+test("OpenRouter server fallback routes the environment key upstream without exposing it", async (t) => {
+  const previousOpenRouterKey = process.env.OPENROUTER_API_KEY;
+  const previousOpenRouterFallback =
+    process.env.ALLOW_SERVER_OPENROUTER_FALLBACK;
+  process.env.OPENROUTER_API_KEY = "openrouter-shared-secret";
+  process.env.ALLOW_SERVER_OPENROUTER_FALLBACK = "true";
+  const upstreamRequests = [];
+  globalThis.fetch = async (url, init = {}) => {
+    const target = String(url);
+    if (!target.includes("openrouter.ai/api/v1/chat/completions")) {
+      throw new Error(`Unexpected fetch: ${target}`);
+    }
+    upstreamRequests.push({
+      url: target,
+      authorization: new Headers(init.headers).get("authorization"),
+    });
+    return new Response(
+      [
+        'data: {"id":"chatcmpl-local","choices":[{"index":0,"delta":{"content":"Shared fallback works."},"finish_reason":null}]}',
+        'data: {"id":"chatcmpl-local","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":3,"completion_tokens":4}}',
+        "data: [DONE]",
+        "",
+      ].join("\n\n"),
+      {
+        status: 200,
+        headers: { "Content-Type": "text/event-stream" },
+      },
+    );
+  };
+  t.after(() => {
+    if (previousOpenRouterKey === undefined)
+      delete process.env.OPENROUTER_API_KEY;
+    else process.env.OPENROUTER_API_KEY = previousOpenRouterKey;
+    if (previousOpenRouterFallback === undefined) {
+      delete process.env.ALLOW_SERVER_OPENROUTER_FALLBACK;
+    } else {
+      process.env.ALLOW_SERVER_OPENROUTER_FALLBACK = previousOpenRouterFallback;
+    }
+  });
+
+  const { server, baseUrl } = await startApp();
+  t.after(() => server.close());
+
+  const response = await originalFetch(`${baseUrl}/api/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      requestId: "chat-shared-fallback-test",
+      messages: [{ role: "user", content: "Use the shared server fallback." }],
+      aiModel: "deepseek/deepseek-v4-flash",
+    }),
+  });
+  const responseText = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.match(responseText, /Shared fallback works\./);
+  assert.equal(upstreamRequests.length, 1);
+  assert.equal(
+    upstreamRequests[0].authorization,
+    "Bearer openrouter-shared-secret",
+  );
+  assert.doesNotMatch(responseText, /openrouter-shared-secret/);
 });
 
 test("system activity marks MisoTTS reachable when the local API health endpoint responds", async (t) => {
@@ -513,6 +599,563 @@ test("mock voice websocket records a local tool-call loop", async (t) => {
         event.metadata?.contextDocumentIds?.includes("doc:voice-test") &&
         event.metadata?.documentIds?.includes("doc:voice-supplement") &&
         hasVoiceProofMetadata(event),
+    ),
+  );
+});
+
+test("local voice broker stages brain context and background jobs without provider traffic", async (t) => {
+  const previousDeepgramKey = process.env.DEEPGRAM_API_KEY;
+  const previousDeepgramFallback = process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  delete process.env.DEEPGRAM_API_KEY;
+  delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  t.after(() => {
+    if (previousDeepgramKey === undefined) delete process.env.DEEPGRAM_API_KEY;
+    else process.env.DEEPGRAM_API_KEY = previousDeepgramKey;
+    if (previousDeepgramFallback === undefined) {
+      delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+    } else {
+      process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK = previousDeepgramFallback;
+    }
+  });
+
+  const { server, baseUrl, brokerWsUrl } = await startVoiceApp();
+  t.after(() => server.close());
+  const proofAttemptId = "beta-proof-voice-broker-test";
+  const ws = new WebSocket(brokerWsUrl);
+  t.after(() => {
+    if (ws.readyState === WebSocket.OPEN) ws.close();
+  });
+  await once(ws, "open");
+
+  const waitForMessageType = (type, predicate = () => true) =>
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error(`${type} was not received.`)),
+        1000,
+      );
+      const onMessage = (data) => {
+        const parsed = JSON.parse(data.toString());
+        if (parsed.type === type && predicate(parsed)) {
+          clearTimeout(timeout);
+          ws.off("message", onMessage);
+          resolve(parsed);
+        }
+      };
+      ws.on("message", onMessage);
+    });
+
+  const settingsApplied = waitForMessageType("SettingsApplied");
+  const brokerReady = waitForMessageType("VoiceBrokerReady");
+  ws.send(
+    JSON.stringify({
+      type: "voice_auth",
+      voiceSessionId: "voice-broker-test-session-1",
+      requestId: "voice-broker-test-session-1",
+      proofAttemptId,
+      inputSampleRate: 48000,
+      language: "en",
+      voiceBrokerMode: "custom",
+      foregroundModel: "openai/gpt-4o-mini",
+      backgroundModel: "openai/gpt-5.5",
+      ttsModel: "aura-2-thalia-en",
+      studyContext:
+        "Previous conversation: the learner likes Pokemon examples. Active book: Voice Brain Architecture.",
+      activeBookId: "book:voice-brain",
+      activeBookTitle: "Voice Brain Architecture",
+      activeDocumentId: "doc:voice-brain",
+      documentIds: ["doc:voice-brain", "doc:latency"],
+      documentCount: 2,
+      readyDocumentIds: ["doc:voice-brain", "doc:latency"],
+      readyDocumentCount: 2,
+      contextDocumentIds: ["doc:voice-brain"],
+      unreadyDocumentCount: 0,
+      omittedReadyDocumentCount: 1,
+      studyContextChars: 90,
+      studyContextMetadata: {
+        proofAttemptId,
+        mode: "voice",
+        agentLayer: "voice_realtime",
+        voiceBrokerMode: "custom",
+        rawContextChars: 420,
+        memoryContextChars: 120,
+        activeBookContextChars: 160,
+        documentContextChars: 140,
+        contextCompacted: false,
+      },
+    }),
+  );
+
+  await settingsApplied;
+  const ready = await brokerReady;
+  assert.equal(ready.foregroundModel, "openai/gpt-4o-mini");
+  assert.equal(ready.backgroundModel, "openai/gpt-5.5");
+  assert.equal(ready.ttsModel, "aura-2-thalia-en");
+  assert.equal(ready.ttsProvider, "miso");
+  assert.equal(ready.sttModel, "nova-3");
+
+  const backgroundStarted = waitForMessageType("BackgroundJobStarted");
+  const backgroundResult = waitForMessageType("BackgroundJobResult");
+  const assistantTurn = waitForMessageType("ConversationText");
+  ws.send(
+    JSON.stringify({
+      type: "InjectUserMessage",
+      content:
+        "Tell me about Pikachu and also look up the current Nvidia price.",
+    }),
+  );
+
+  const background = await backgroundStarted;
+  assert.equal(background.model, "openai/gpt-5.5");
+  assert.match(background.query, /Nvidia price/i);
+  const result = await backgroundResult;
+  assert.equal(result.status, "pending_provider_key");
+  const assistant = await assistantTurn;
+  assert.equal(assistant.role, "assistant");
+  assert.match(assistant.content, /local learning book/i);
+  assert.match(assistant.content, /GPT-5\.5 background layer/i);
+
+  const genericBackgroundStarted = waitForMessageType(
+    "BackgroundJobStarted",
+    (message) => /code error|PDF summary/i.test(message.query || ""),
+  );
+  ws.send(
+    JSON.stringify({
+      type: "InjectUserMessage",
+      content:
+        "Also review this code error in the background and create a PDF summary.",
+    }),
+  );
+  const genericStarted = await genericBackgroundStarted;
+  assert.equal(genericStarted.model, "openai/gpt-5.5");
+  assert.ok(genericStarted.tools.includes("inspect_code"));
+  assert.ok(genericStarted.tools.includes("create_pdf"));
+  const genericBackgroundResult = waitForMessageType(
+    "BackgroundJobResult",
+    (message) => message.jobId === genericStarted.jobId,
+  );
+  const genericResult = await genericBackgroundResult;
+  assert.equal(genericResult.status, "pending_provider_key");
+
+  const body = await waitForActivity(baseUrl, (activity) =>
+    activity.events.some(
+      (event) =>
+        event.title === "Voice broker foreground reply emitted" &&
+        event.requestId === "voice-broker-test-session-1",
+    ),
+  );
+
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "voice" &&
+        event.status === "started" &&
+        event.title === "Local voice broker accepted" &&
+        event.metadata?.brokerMode === "custom_local_ready" &&
+        event.metadata?.foregroundModel === "openai/gpt-4o-mini" &&
+        event.metadata?.backgroundModel === "openai/gpt-5.5" &&
+        event.metadata?.ttsModel === "aura-2-thalia-en" &&
+        event.metadata?.ttsProvider === "miso" &&
+        event.metadata?.proofAttemptId === proofAttemptId,
+    ),
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "retrieval" &&
+        event.title === "Voice broker brain context attached" &&
+        event.metadata?.memoryContextChars === 120 &&
+        event.metadata?.activeBookContextChars === 160 &&
+        event.metadata?.documentContextChars === 140 &&
+        event.metadata?.contextDocumentIds?.includes("doc:voice-brain"),
+    ),
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.kind === "tool" &&
+        event.status === "blocked" &&
+        event.title === "Voice broker background job waiting for provider key",
+    ),
+  );
+});
+
+test("local voice broker refuses non-loopback MisoTTS endpoints", async (t) => {
+  const previousDeepgramKey = process.env.DEEPGRAM_API_KEY;
+  const previousDeepgramFallback = process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  delete process.env.DEEPGRAM_API_KEY;
+  delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  const upstreamRequests = [];
+  globalThis.fetch = async (target, init) => {
+    upstreamRequests.push({ target: String(target), init });
+    throw new Error(`Unexpected external fetch: ${target}`);
+  };
+  t.after(() => {
+    if (previousDeepgramKey === undefined) delete process.env.DEEPGRAM_API_KEY;
+    else process.env.DEEPGRAM_API_KEY = previousDeepgramKey;
+    if (previousDeepgramFallback === undefined) {
+      delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+    } else {
+      process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK = previousDeepgramFallback;
+    }
+    globalThis.fetch = originalFetch;
+  });
+
+  const { server, baseUrl, brokerWsUrl } = await startVoiceApp();
+  t.after(() => server.close());
+  const ws = new WebSocket(brokerWsUrl);
+  t.after(() => {
+    if (ws.readyState === WebSocket.OPEN) ws.close();
+  });
+  await once(ws, "open");
+
+  const waitForMessageType = (type) =>
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error(`${type} was not received.`)),
+        1000,
+      );
+      const onMessage = (data, isBinary) => {
+        if (isBinary) return;
+        const parsed = JSON.parse(data.toString());
+        if (parsed.type === type) {
+          clearTimeout(timeout);
+          ws.off("message", onMessage);
+          resolve(parsed);
+        }
+      };
+      ws.on("message", onMessage);
+    });
+
+  const ready = waitForMessageType("VoiceBrokerReady");
+  ws.send(
+    JSON.stringify({
+      type: "voice_auth",
+      voiceSessionId: "voice-broker-hostile-miso-session",
+      requestId: "voice-broker-hostile-miso-session",
+      inputSampleRate: 48000,
+      misoTtsApiUrl: "http://169.254.169.254/latest/meta-data",
+      studyContext: "Hostile endpoint test.",
+    }),
+  );
+  await ready;
+
+  const assistantTurn = waitForMessageType("ConversationText");
+  ws.send(
+    JSON.stringify({
+      type: "InjectUserMessage",
+      content: "Teach me one sentence about variables.",
+    }),
+  );
+  await assistantTurn;
+
+  const body = await waitForActivity(baseUrl, (activity) =>
+    activity.events.some(
+      (event) =>
+        event.title === "Voice broker MisoTTS unavailable" &&
+        event.requestId === "voice-broker-hostile-miso-session",
+    ),
+  );
+
+  assert.equal(
+    upstreamRequests.some((request) =>
+      request.target.includes("169.254.169.254"),
+    ),
+    false,
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.title === "Voice broker MisoTTS unavailable" &&
+        /loopback host/i.test(event.detail || ""),
+    ),
+  );
+});
+
+test("local voice broker delegates foreground and background web search through OpenRouter", async (t) => {
+  const previousDeepgramKey = process.env.DEEPGRAM_API_KEY;
+  const previousDeepgramFallback = process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  delete process.env.DEEPGRAM_API_KEY;
+  delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  t.after(() => {
+    if (previousDeepgramKey === undefined) delete process.env.DEEPGRAM_API_KEY;
+    else process.env.DEEPGRAM_API_KEY = previousDeepgramKey;
+    if (previousDeepgramFallback === undefined) {
+      delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+    } else {
+      process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK = previousDeepgramFallback;
+    }
+  });
+
+  const originalFetch = globalThis.fetch;
+  const upstreamRequests = [];
+  const miso = await startMisoSpeechServer();
+  t.after(() => miso.server.close());
+  const headerValue = (headers, name) =>
+    headers?.get?.(name) ||
+    headers?.get?.(name.toLowerCase()) ||
+    headers?.[name] ||
+    headers?.[name.toLowerCase()] ||
+    "";
+  globalThis.fetch = async (target, init = {}) => {
+    const url = String(target);
+    if (url.includes("openrouter.ai/api/v1/chat/completions")) {
+      const body = JSON.parse(String(init.body || "{}"));
+      upstreamRequests.push({
+        type: "openrouter",
+        model: body.model,
+        authorization: headerValue(init.headers, "Authorization"),
+        tools: body.tools || [],
+        messages: body.messages || [],
+      });
+      const isBackground = body.model === "openai/gpt-5.5";
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: isBackground
+                  ? "Background check: **Apple** (AAPL) stock price is around USD 234.56 according to the background web search."
+                  : "Okay, I'll search that and let you know. In Python, variables are names that point to values.",
+                annotations: isBackground
+                  ? [
+                      {
+                        type: "url_citation",
+                        url_citation: {
+                          url: "https://finance.yahoo.com/quote/AAPL",
+                          title: "Apple Inc. (AAPL) Stock Price",
+                          content: "Mock current Apple price result.",
+                        },
+                      },
+                    ]
+                  : [],
+              },
+            },
+          ],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    if (url.includes("google.serper.dev/search")) {
+      throw new Error("Voice broker background layer must not call Serper.");
+    }
+    if (url.includes("query1.finance.yahoo.com/v8/finance/chart/")) {
+      throw new Error(
+        "Voice broker background layer must not call a local stock quote shortcut.",
+      );
+    }
+    if (url === `${miso.baseUrl}/v1/audio/speech`) {
+      upstreamRequests.push({ type: "miso" });
+      return new Response(Buffer.from("RIFFmock-wav"), {
+        status: 200,
+        headers: { "Content-Type": "audio/wav" },
+      });
+    }
+    return originalFetch(target, init);
+  };
+  t.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const { server, baseUrl, brokerWsUrl } = await startVoiceApp();
+  t.after(() => server.close());
+  const ws = new WebSocket(brokerWsUrl);
+  t.after(() => {
+    if (ws.readyState === WebSocket.OPEN) ws.close();
+  });
+  await once(ws, "open");
+  const receivedTextFrames = [];
+  ws.on("message", (data, isBinary) => {
+    if (isBinary) return;
+    try {
+      const parsed = JSON.parse(data.toString());
+      receivedTextFrames.push({
+        type: parsed.type,
+        source: parsed.source || "",
+        jobId: parsed.jobId || "",
+      });
+    } catch {}
+  });
+
+  const waitForMessageType = (type, predicate = () => true) =>
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error(`${type} was not received.`)),
+        1000,
+      );
+      const onMessage = (data, isBinary) => {
+        if (isBinary) return;
+        const parsed = JSON.parse(data.toString());
+        if (parsed.type === type && predicate(parsed)) {
+          clearTimeout(timeout);
+          ws.off("message", onMessage);
+          resolve(parsed);
+        }
+      };
+      ws.on("message", onMessage);
+    });
+
+  const waitForBinary = () =>
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error("binary audio was not received.")),
+        1000,
+      );
+      const onMessage = (data, isBinary) => {
+        if (!isBinary) return;
+        clearTimeout(timeout);
+        ws.off("message", onMessage);
+        resolve(Buffer.from(data));
+      };
+      ws.on("message", onMessage);
+    });
+
+  const ready = waitForMessageType("VoiceBrokerReady");
+  ws.send(
+    JSON.stringify({
+      type: "voice_auth",
+      voiceSessionId: "voice-broker-configured-session",
+      requestId: "voice-broker-configured-session",
+      inputSampleRate: 48000,
+      language: "en",
+      openRouterKey: "openrouter-session-secret",
+      misoTtsApiUrl: miso.baseUrl,
+      studyContext:
+        "Previous conversation: use Pokemon analogies. Active book: Voice Brain Architecture.",
+      studyContextMetadata: {
+        mode: "voice",
+        agentLayer: "voice_realtime",
+      },
+    }),
+  );
+  await ready;
+
+  const backgroundResult = waitForMessageType("BackgroundJobResult");
+  const assistantTurn = waitForMessageType(
+    "ConversationText",
+    (message) => message.source !== "background",
+  );
+  const backgroundInsertion = waitForMessageType(
+    "ConversationText",
+    (message) => message.source === "background",
+  );
+  const audio = waitForBinary();
+  ws.send(
+    JSON.stringify({
+      type: "InjectUserMessage",
+      content:
+        "Teach me about Python variables and search the web for the current Apple stock price.",
+    }),
+  );
+
+  const assistant = await assistantTurn;
+  assert.match(assistant.content, /I'll search that and let you know/i);
+  assert.match(assistant.content, /Python.*variables/i);
+  assert.doesNotMatch(assistant.content, /focus on Python first/i);
+  const binary = await audio;
+  assert.equal(binary.slice(0, 4).toString("utf8"), "RIFF");
+  const background = await backgroundResult;
+  assert.equal(background.status, "completed");
+  assert.match(
+    background.summary,
+    /^(Also,|By the way,|Quick update:|One more thing:|I found it:)/i,
+  );
+  assert.match(background.summary, /Apple/i);
+  assert.match(background.summary, /234\.56/i);
+  assert.doesNotMatch(background.summary, /\*\*/);
+  assert.doesNotMatch(background.summary, /Background check:/i);
+  assert.equal(background.sources.length, 1);
+  assert.ok(
+    background.tools.some(
+      (tool) =>
+        tool.name === "openrouter:web_search" && tool.status === "delegated",
+    ),
+  );
+  const inserted = await backgroundInsertion;
+  assert.equal(inserted.source, "background");
+  assert.equal(inserted.displayMode, "paced");
+  assert.ok(Number(inserted.estimatedSpeechMs) >= 1600);
+  assert.match(
+    inserted.content,
+    /^(Also,|By the way,|Quick update:|One more thing:|I found it:)/i,
+  );
+  assert.match(inserted.content, /Apple|AAPL/i);
+  assert.match(inserted.content, /234\.56/i);
+  assert.doesNotMatch(inserted.content, /\*\*/);
+  assert.doesNotMatch(inserted.content, /Background check:/i);
+  const foregroundTextIndex = receivedTextFrames.findIndex(
+    (frame) =>
+      frame.type === "ConversationText" && frame.source !== "background",
+  );
+  const backgroundResultIndex = receivedTextFrames.findIndex(
+    (frame) => frame.type === "BackgroundJobResult",
+  );
+  const backgroundTextIndex = receivedTextFrames.findIndex(
+    (frame) =>
+      frame.type === "ConversationText" && frame.source === "background",
+  );
+  assert.ok(foregroundTextIndex >= 0);
+  assert.ok(backgroundResultIndex > foregroundTextIndex);
+  assert.ok(backgroundTextIndex > foregroundTextIndex);
+
+  assert.ok(
+    upstreamRequests.some(
+      (request) =>
+        request.type === "openrouter" &&
+        request.model === "openai/gpt-4o-mini" &&
+        request.authorization === "Bearer openrouter-session-secret",
+    ),
+  );
+  const foregroundRequest = upstreamRequests.find(
+    (request) =>
+      request.type === "openrouter" && request.model === "openai/gpt-4o-mini",
+  );
+  assert.ok(foregroundRequest);
+  assert.match(
+    foregroundRequest.messages.map((message) => message.content).join("\n"),
+    /Okay, I'll search that and let you know|Okay, I'll check that in the background/i,
+  );
+  assert.match(
+    foregroundRequest.messages.map((message) => message.content).join("\n"),
+    /Never say 'let's focus on Python first'/i,
+  );
+  assert.ok(
+    upstreamRequests.some(
+      (request) =>
+        request.type === "openrouter" &&
+        request.model === "openai/gpt-5.5" &&
+        request.authorization === "Bearer openrouter-session-secret" &&
+        request.tools.some((tool) => tool.type === "openrouter:web_search"),
+    ),
+  );
+  assert.equal(
+    upstreamRequests.some((request) => request.type === "serper"),
+    false,
+  );
+  assert.equal(
+    upstreamRequests.some((request) => request.type === "stock_quote"),
+    false,
+  );
+  assert.ok(upstreamRequests.some((request) => request.type === "miso"));
+
+  const body = await waitForActivity(baseUrl, (activity) =>
+    activity.events.some(
+      (event) =>
+        event.title === "Voice broker background result inserted" &&
+        event.requestId === "voice-broker-configured-session",
+    ),
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.title === "Voice broker foreground model completed" &&
+        event.model === "openai/gpt-4o-mini",
+    ),
+  );
+  assert.ok(
+    body.events.some(
+      (event) =>
+        event.title === "Voice broker background job completed" &&
+        event.model === "openai/gpt-5.5",
     ),
   );
 });

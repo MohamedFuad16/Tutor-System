@@ -41,7 +41,10 @@ const splitCardTitle = (title: string) => {
   );
 };
 
-const documentObjectUrlCache = new Map<string, string>();
+const documentObjectUrlCache = new Map<
+  string,
+  { blob: Blob; url: string }
+>();
 const MOBILE_STUDY_MEDIA_QUERY = "(max-width: 767px)";
 
 const isMobileStudyViewport = () =>
@@ -50,19 +53,20 @@ const isMobileStudyViewport = () =>
   window.matchMedia(MOBILE_STUDY_MEDIA_QUERY).matches;
 
 const getCachedDocumentObjectUrl = (document: LearningDocument) => {
-  const cachedUrl = documentObjectUrlCache.get(document.id);
-  if (cachedUrl) return cachedUrl;
   const sourceBlob = document.blob instanceof Blob ? document.blob : null;
   if (!sourceBlob) return null;
+  const cached = documentObjectUrlCache.get(document.id);
+  if (cached?.blob === sourceBlob) return cached.url;
+  if (cached) URL.revokeObjectURL(cached.url);
   const url = URL.createObjectURL(sourceBlob);
-  documentObjectUrlCache.set(document.id, url);
+  documentObjectUrlCache.set(document.id, { blob: sourceBlob, url });
   return url;
 };
 
 const revokeCachedDocumentObjectUrl = (documentId: string) => {
-  const cachedUrl = documentObjectUrlCache.get(documentId);
-  if (!cachedUrl) return;
-  URL.revokeObjectURL(cachedUrl);
+  const cached = documentObjectUrlCache.get(documentId);
+  if (!cached) return;
+  URL.revokeObjectURL(cached.url);
   documentObjectUrlCache.delete(documentId);
 };
 
@@ -579,6 +583,7 @@ export function StudyView() {
   );
   const activeProject = useStore((state) => state.activeProject);
   const setActiveProject = useStore((state) => state.setActiveProject);
+  const learnerName = useStore((state) => state.learnerName);
   const activeDocumentId = useStore((state) => state.activeDocumentId);
   const setActiveDocumentId = useStore((state) => state.setActiveDocumentId);
   const removeAnnotationsForDocument = useStore(
@@ -596,6 +601,7 @@ export function StudyView() {
   const [isChatOpen, setIsChatOpen] = useState(
     () => Boolean(pdfUrl) || isMobileStudyViewport(),
   );
+  const [isChatFullscreen, setIsChatFullscreen] = useState(false);
   const [isMobilePdfOpen, setIsMobilePdfOpen] = useState(false);
   const [introCardStep, setIntroCardStep] = useState(0);
   const [introHeadlineIndex, setIntroHeadlineIndex] = useState(0);
@@ -608,6 +614,7 @@ export function StudyView() {
   const chatSurfaceRef = useRef<HTMLElement | null>(null);
   const chatPanelFrameRef = useRef<HTMLDivElement | null>(null);
   const minimizedChatButtonRef = useRef<HTMLButtonElement | null>(null);
+  const fullscreenReturnFocusRef = useRef<HTMLElement | null>(null);
   const documentObjectUrlRef = useRef<string | null>(null);
   const documentObjectUrlIdRef = useRef<string | null>(null);
 
@@ -656,7 +663,7 @@ export function StudyView() {
     if (activeLearningBookId) return;
     let cancelled = false;
     void brainOrchestrator
-      .ensureSessionLearningBook("Learner", "General Study")
+      .ensureSessionLearningBook(learnerName || "Learner", "General Study")
       .then((book) => {
         if (cancelled) return;
         setActiveLearningBookId(book.id);
@@ -668,7 +675,12 @@ export function StudyView() {
     return () => {
       cancelled = true;
     };
-  }, [activeLearningBookId, setActiveLearningBookId, setActiveProject]);
+  }, [
+    activeLearningBookId,
+    learnerName,
+    setActiveLearningBookId,
+    setActiveProject,
+  ]);
 
   useEffect(() => {
     if (!areBookDocumentsLoaded) return;
@@ -819,6 +831,21 @@ export function StudyView() {
     [pdfUrl, scheduleIntro],
   );
 
+  useEffect(() => {
+    if (!isChatFullscreen) return;
+    fullscreenReturnFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const frame = chatSurfaceRef.current;
+    const focusTimer = window.setTimeout(() => frame?.focus(), 0);
+    return () => {
+      window.clearTimeout(focusTimer);
+      fullscreenReturnFocusRef.current?.focus?.();
+      fullscreenReturnFocusRef.current = null;
+    };
+  }, [isChatFullscreen]);
+
   const openFilePicker = useCallback(() => {
     const input = fileInputRef.current;
     if (!input) return;
@@ -864,7 +891,7 @@ export function StudyView() {
       if (existing) return existing;
     }
     const book = await brainOrchestrator.ensureSessionLearningBook(
-      "Learner",
+      learnerName || "Learner",
       activeProject || "General Study",
     );
     setActiveLearningBookId(book.id);
@@ -947,7 +974,7 @@ export function StudyView() {
       if (data.content && data.content.trim()) {
         const updatedBook =
           await brainOrchestrator.updateLearningBookFromConversation({
-            userName: "Learner",
+            userName: book.userName || learnerName || "Learner",
             activeProject: book.title,
             activeBookId: book.id,
             activeDocumentId: documentRecord.id,
@@ -1092,6 +1119,7 @@ export function StudyView() {
   };
 
   const closeChat = () => {
+    setIsChatFullscreen(false);
     if (isMobileViewport && pdfUrl) {
       setIsMobilePdfOpen(true);
       return;
@@ -1294,7 +1322,21 @@ export function StudyView() {
         <aside
           ref={chatSurfaceRef}
           data-testid="study-chat-surface"
-          className={`${isMobilePdfOpen ? "hidden md:flex" : "flex"} h-full min-h-0 max-h-none w-full flex-1 origin-bottom-right flex-col gap-2 md:h-auto md:min-h-[360px] md:max-h-[54dvh] md:flex-none md:gap-3 xl:h-[calc(100%-0.5rem)] xl:max-h-none xl:min-h-0 xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center`}
+          role={isChatFullscreen ? "dialog" : undefined}
+          aria-modal={isChatFullscreen ? "true" : undefined}
+          aria-label={isChatFullscreen ? "Fullscreen tutor chat" : undefined}
+          tabIndex={isChatFullscreen ? -1 : undefined}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && isChatFullscreen) {
+              event.stopPropagation();
+              setIsChatFullscreen(false);
+            }
+          }}
+          className={`${
+            isChatFullscreen
+              ? "fixed inset-0 z-[90] flex bg-[#030303] p-3 md:p-6"
+              : `${isMobilePdfOpen ? "hidden md:flex" : "flex"} h-full max-h-none w-full flex-1 md:h-auto md:max-h-[54dvh] md:flex-none xl:h-[calc(100%-0.5rem)] xl:max-h-none xl:w-[36%] xl:max-w-[560px] xl:flex-none xl:self-center`
+          } min-h-0 origin-bottom-right flex-col gap-2 md:min-h-[360px] md:gap-3`}
         >
           {pdfUrl && (
             <section
@@ -1378,9 +1420,17 @@ export function StudyView() {
           <div
             key="chat-panel"
             ref={chatPanelFrameRef}
-            className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-black/5 bg-[#fdfdfd] text-[#050505] shadow-[0_20px_60px_rgba(0,0,0,0.15)] origin-bottom"
+            className={`min-h-0 flex-1 overflow-hidden border border-black/5 bg-[#fdfdfd] text-[#050505] shadow-[0_20px_60px_rgba(0,0,0,0.15)] origin-bottom ${
+              isChatFullscreen ? "rounded-2xl" : "rounded-3xl"
+            }`}
           >
-            <ChatPanel onClose={closeChat} />
+            <ChatPanel
+              onClose={closeChat}
+              isFullscreen={isChatFullscreen}
+              onToggleFullscreen={() =>
+                setIsChatFullscreen((fullscreen) => !fullscreen)
+              }
+            />
           </div>
         </aside>
       )}

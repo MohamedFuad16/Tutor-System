@@ -7,12 +7,12 @@ const adminViewSource = readFileSync(
   "utf8",
 );
 
-test("Admin debug tabs keep system activity, beta diagnostics, traces, and console routes wired", () => {
+test("Admin keeps four primary operator views and advanced debug routes wired", () => {
   for (const tab of [
+    { id: "learners", label: "Learners" },
     { id: "activity", label: "Activity" },
-    { id: "diagnostics", label: "Beta" },
-    { id: "traces", label: "Traces" },
-    { id: "console", label: "Console" },
+    { id: "evidence", label: "Evidence" },
+    { id: "diagnostics", label: "Readiness" },
   ]) {
     assert.match(
       adminViewSource,
@@ -22,6 +22,9 @@ test("Admin debug tabs keep system activity, beta diagnostics, traces, and conso
 
   assert.match(adminViewSource, /System Activity/);
   assert.match(adminViewSource, /Beta Diagnostics/);
+  assert.match(adminViewSource, /Advanced debugging/);
+  assert.match(adminViewSource, /DeepSeek Trace/);
+  assert.match(adminViewSource, /Server Console/);
   assert.match(adminViewSource, /Activity Events/);
   assert.match(adminViewSource, /Server console is offline/);
 });
@@ -29,7 +32,7 @@ test("Admin debug tabs keep system activity, beta diagnostics, traces, and conso
 test("Admin activity views fetch the local debug ledger with token-aware headers", () => {
   assert.match(
     adminViewSource,
-    /activeTab === "brain" \|\|\s+activeTab === "activity" \|\|\s+activeTab === "diagnostics"/,
+    /activeTab === "learners" \|\|\s+activeTab === "brain" \|\|\s+activeTab === "activity" \|\|\s+activeTab === "diagnostics"/,
   );
   assert.match(
     adminViewSource,

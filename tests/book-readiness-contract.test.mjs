@@ -14,6 +14,9 @@ const audioOverviewManifest = JSON.parse(
 const userBrainBookSource = readSource("src/lib/userBrainArchitectureBook.ts");
 const adminViewSource = readSource("src/views/AdminView.tsx");
 const revisionViewSource = readSource("src/views/RevisionView.tsx");
+const memoryOrchestratorSource = readSource(
+  "src/memory/memory.orchestrator.ts",
+);
 const architectureDoc = readSource("TUTOR_ARCHITECTURE.md");
 
 const userBrainChapterTitles = [
@@ -24,43 +27,43 @@ test("built-in architecture books stay arranged as reader-first guides", () => {
   assert.deepEqual(
     tutorBook.map((chapter) => chapter.title),
     [
-      "Chapter 0: How To Read This Book",
-      "Chapter 1: Product Map",
-      "Chapter 2: Tools In Plain English",
-      "Chapter 3: Frontend Flow",
-      "Chapter 4: Study And Document Ingestion",
-      "Chapter 5: Chat And Tutor Tools",
-      "Chapter 6: Memory, Dexie, And The Library",
-      "Chapter 7: Revision And Active Recall",
-      "Chapter 8: Analytics And Admin",
-      "Chapter 9: A Background Workflow Example",
-      "Chapter 10: Model And Provider Map",
-      "Chapter 11: Graphify, Debugging, And Safety",
-      "Chapter 12: Maintenance Boundaries",
+      "Chapter 0: How To Use This Architecture Guide",
+      "Chapter 1: The Product And Its Learning Loop",
+      "Chapter 2: Technology And Service Map",
+      "Chapter 3: Frontend Ownership And State",
+      "Chapter 4: Study, PDFs, And Source Context",
+      "Chapter 5: Foreground Teaching And Tool Delegation",
+      "Chapter 6: Local Memory And The Learner Ledger",
+      "Chapter 7: Revision Books And Active Recall",
+      "Chapter 8: Admin, Learners, And Interpretation",
+      "Chapter 9: One Complete Background Workflow",
+      "Chapter 10: Models, Voice, And Provider Boundaries",
+      "Chapter 11: What Is Completed And What Is Not",
+      "Chapter 12: Maintenance, Safety, And Release Gates",
     ],
   );
 
   assert.deepEqual(userBrainChapterTitles, [
-    "Chapter 1: The Whole Shape",
-    "Chapter 2: The Learner Brain Ledger",
-    "Chapter 3: Teaching Loop And State",
-    "Chapter 4: Retrieval, Artifacts, And Citations",
-    "Chapter 5: Admin And Runtime Tuning",
-    "Chapter 6: Voice, Audio, And Timing",
-    "Chapter 7: Local Beta Roadmap",
-    "Chapter 8: Sources And Glossary",
+    "Chapter 1: What The Learner Brain Is",
+    "Chapter 2: The Data Model For One Learner",
+    "Chapter 3: From Conversation To Adaptation",
+    "Chapter 4: Context, Retrieval, And Sources",
+    "Chapter 5: Learning Books And Revision Material",
+    "Chapter 6: Voice And Asynchronous Tools",
+    "Chapter 7: Admin And Multi-Learner Oversight",
+    "Chapter 8: Current Status, Glossary, And References",
   ]);
 
   assert.match(revisionViewSource, /Wireframe Connections/);
   assert.match(revisionViewSource, /Theme System/);
   assert.match(revisionViewSource, /UI Component Snapshots/);
-  assert.match(revisionViewSource, /Local Beta Control Patterns/);
+  assert.match(revisionViewSource, /Operator Controls And Why They Exist/);
 });
 
 test("Admin center introduction stays short and plain", () => {
   const introCopies = [
-    "See how chat, voice, PDFs, evidence, and BKT scoring become learner memory that the tutor can use.",
-    "Track models, tools, memory, retrieval, voice, and beta readiness.",
+    "Select a learner, inspect their knowledge map, and follow the evidence behind each interpretation.",
+    "Inspect the few operational signals needed to explain behavior and judge local readiness.",
   ];
 
   for (const copy of introCopies) {
@@ -73,49 +76,38 @@ test("Admin center introduction stays short and plain", () => {
   }
 });
 
-test("MisoTTS read-aloud boundary is documented across architecture books", () => {
+test("Deepgram voice boundary is documented across architecture books", () => {
   const chapterTools = tutorBook[2].content;
   const chapterProviders = tutorBook[10].content;
 
-  assert.match(chapterTools, /MisoTTS 8B/);
-  assert.match(chapterTools, /\/api\/tts/);
-  assert.match(chapterTools, /live voice remains Deepgram-based/);
-  assert.match(chapterProviders, /Assistant Read Aloud/);
-  assert.match(chapterProviders, /MISO_TTS_API_URL/);
-  assert.match(
-    chapterProviders,
-    /does not replace the live Deepgram websocket/,
-  );
-
-  assert.match(userBrainBookSource, /Read Aloud is a separate audio path/);
-  assert.match(userBrainBookSource, /miso-tts-8b/);
-  assert.match(userBrainBookSource, /MisoTTS API URL/);
-  assert.match(userBrainBookSource, /realtime voice still uses the Deepgram/);
-
-  assert.match(architectureDoc, /MisoTTS read-aloud/);
-  assert.match(
-    architectureDoc,
-    /local\s+Vast tunnel at `http:\/\/127\.0\.0\.1:8080`/,
-  );
+  assert.match(chapterTools, /Deepgram Nova and Aura/);
+  assert.match(chapterTools, /one TTS WebSocket per conversation/);
+  assert.match(chapterProviders, /Streaming speech-to-text/);
+  assert.match(chapterProviders, /Streaming text-to-speech/);
+  assert.match(chapterProviders, /universal sub-200 ms response/);
+  assert.match(userBrainBookSource, /Deepgram provides streaming speech/);
+  assert.match(userBrainBookSource, /one WebSocket per conversation/);
+  assert.match(userBrainBookSource, /MisoTTS is not treated as the live path/);
+  assert.match(architectureDoc, /Deepgram/i);
 });
 
 test("architecture book text keeps Graphify local and defines the Chapter 2 flowchart style", () => {
   const toolsChapter = tutorBook[2].content;
   const userBrainLedgerChapter = userBrainBookSource.match(
-    /title: "Chapter 2: The Learner Brain Ledger",\n    content: `([\s\S]*?)`,\n  \}/,
+    /title: "Chapter 2: The Data Model For One Learner",\n    content: `([\s\S]*?)`,\n  \}/,
   )?.[1];
 
   assert.ok(userBrainLedgerChapter, "User Brain Chapter 2 should exist");
-  assert.doesNotMatch(toolsChapter, /\|\s*Graphify\s*\|[^\n]*GitHub Actions/);
-  assert.match(toolsChapter, /AGENTS\.md, local Graphify CLI/);
-  assert.match(userBrainLedgerChapter, /## Ledger Flowchart Style/);
+  assert.match(toolsChapter, /\|\s*Graphify\s*\|/);
+  assert.match(toolsChapter, /not learner data/);
+  assert.match(userBrainLedgerChapter, /Learner identity/);
   assert.match(userBrainLedgerChapter, /flowchart LR/);
-  assert.match(userBrainLedgerChapter, /Evidence gate/);
+  assert.match(userBrainLedgerChapter, /tenant isolation/);
 });
 
 test("user brain book keeps artifact and audio control scope accurate", () => {
   const retrievalChapter = userBrainBookSource.match(
-    /title: "Chapter 4: Retrieval, Artifacts, And Citations",\n    content: `([\s\S]*?)`,\n  \}/,
+    /title: "Chapter 4: Context, Retrieval, And Sources",\n    content: `([\s\S]*?)`,\n  \}/,
   )?.[1];
   const voiceAudioOverview = audioOverviewManifest.find(
     (overview) =>
@@ -124,13 +116,9 @@ test("user brain book keeps artifact and audio control scope accurate", () => {
   );
 
   assert.ok(retrievalChapter, "User Brain artifact chapter should exist");
-  assert.match(retrievalChapter, /schema can represent/);
-  assert.match(
-    retrievalChapter,
-    /Current local provenance and verifier helpers/,
-  );
-  assert.match(retrievalChapter, /source cards/);
-  assert.match(retrievalChapter, /stored audio guides/);
+  assert.match(retrievalChapter, /Artifacts store provenance/);
+  assert.match(retrievalChapter, /traceable/);
+  assert.match(retrievalChapter, /semantic claim-to-source entailment/);
   assert.ok(voiceAudioOverview, "User Brain voice audio overview should exist");
   assert.match(voiceAudioOverview.transcript, /custom controls/);
   assert.match(
@@ -140,6 +128,56 @@ test("user brain book keeps artifact and audio control scope accurate", () => {
   assert.doesNotMatch(
     voiceAudioOverview.transcript,
     /native browser controls/i,
+  );
+});
+
+test("rewritten built-in books do not overclaim stored audio coverage", () => {
+  const tutorStatusChapter = tutorBook[11].content;
+  const userBrainStatusChapter = userBrainBookSource.match(
+    /title: "Chapter 8: Current Status, Glossary, And References",\n    content: `([\s\S]*?)`,\n  \}/,
+  )?.[1];
+
+  assert.ok(userBrainStatusChapter, "User Brain status chapter should exist");
+  assert.match(
+    tutorStatusChapter,
+    /play stored audio only when an audio manifest title matches the current chapter title/,
+  );
+  assert.match(
+    tutorStatusChapter,
+    /regenerated, title-matched MP3 audio guides/,
+  );
+  assert.match(userBrainStatusChapter, /title-matched stored audio/);
+  assert.match(userBrainBookSource, /regenerated audio guides/);
+  assert.match(tutorStatusChapter, /before audio coverage is complete again/i);
+  assert.doesNotMatch(tutorStatusChapter, /audio coverage is complete\./i);
+  assert.doesNotMatch(userBrainStatusChapter, /audio coverage is complete\./i);
+});
+
+test("generated revision-book summaries preserve Markdown structure", () => {
+  assert.match(memoryOrchestratorSource, /const compactMarkdownText/);
+  assert.match(
+    memoryOrchestratorSource,
+    /replace\(\s*\/\\r\\n\/g,\s*"\\n"\s*\)/,
+  );
+  assert.match(
+    memoryOrchestratorSource,
+    /replace\(\s*\/\\n\{4,\}\/g,\s*"\\n\\n\\n"\s*\)/,
+  );
+  assert.match(
+    memoryOrchestratorSource,
+    /proposedChapterSummary = compactMarkdownText/,
+  );
+  assert.match(
+    memoryOrchestratorSource,
+    /proposedConversationSummary = compactMarkdownText/,
+  );
+  assert.match(
+    memoryOrchestratorSource,
+    /proposedKnowledgeSummary = compactMarkdownText/,
+  );
+  assert.doesNotMatch(
+    memoryOrchestratorSource,
+    /proposedChapterSummary = compactText/,
   );
 });
 

@@ -4,12 +4,17 @@ import {
   fireEvent,
   render,
   screen,
+  within,
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DEFAULT_BRAIN_RUNTIME_SETTINGS } from "../src/lib/brainRuntimeSettings";
-import { db } from "../src/memory/longterm.memory";
+import {
+  db,
+  type LearningBook,
+  type LearningBookConcept,
+} from "../src/memory/longterm.memory";
 import { useStore } from "../src/store";
 import { AdminView } from "../src/views/AdminView";
 
@@ -141,7 +146,7 @@ const resetAdminStore = () => {
 const renderAdmin = () => render(<AdminView />);
 
 const clickTab = (name: string) => {
-  fireEvent.click(screen.getByRole("button", { name }));
+  fireEvent.click(screen.getAllByRole("button", { name })[0]);
 };
 
 const activityRequest = () =>
@@ -172,46 +177,29 @@ afterEach(async () => {
 });
 
 describe("rendered AdminView page flows", () => {
-  it("opens with a learner-brain overview that explains the adaptive tutoring loop", async () => {
+  it("opens with a per-learner knowledge overview and interpretation guide", async () => {
     renderAdmin();
 
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Memory, scoring, and adaptation",
+        name: "Knowledge, evidence, and learning patterns",
       }),
     ).toBeInTheDocument();
     expect(
       await screen.findByTestId("admin-brain-overview"),
     ).toBeInTheDocument();
-    expect(screen.getByTestId("admin-brain-control-room")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: "Learner-brain control room",
+        name: "Start with a learner, then inspect the evidence",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Capture")).toBeInTheDocument();
-    expect(screen.getByText("Understand")).toBeInTheDocument();
-    expect(screen.getByText("Score")).toBeInTheDocument();
-    expect(screen.getByText("Inject")).toBeInTheDocument();
-    expect(screen.getByText("Adapt")).toBeInTheDocument();
-    expect(screen.getByText("Prove")).toBeInTheDocument();
-    expect(screen.getByTestId("admin-brain-proof-path")).toHaveTextContent(
-      "Typed chat - book memory - retrieval - evidence - live voice",
-    );
-    expect(
-      screen.getByTestId("admin-learner-algorithm-selector"),
-    ).toHaveTextContent("Automatic local selector is active");
-    expect(
-      screen.getByText("Conservative evidence threshold"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getAllByText("Bayesian Knowledge Tracing").length,
-    ).toBeGreaterThan(0);
-    expect(screen.getAllByText("Decay-sensitive BKT").length).toBeGreaterThan(
-      0,
-    );
+    expect(screen.getByLabelText("Learner")).toBeInTheDocument();
+    expect(screen.getByText("Mapped concepts")).toBeInTheDocument();
+    expect(screen.getByText("Verified evidence")).toBeInTheDocument();
+    expect(screen.getByText("Learner concept graph")).toBeInTheDocument();
+    expect(screen.getByText("Local identity boundary")).toBeInTheDocument();
   });
 
   it("shows the activity loading state before a successful local response", async () => {
@@ -296,6 +284,10 @@ describe("rendered AdminView page flows", () => {
     renderAdmin();
     await screen.findByTestId("admin-brain-overview");
 
+    expect(
+      screen.getAllByText("Advanced debugging").length,
+    ).toBeGreaterThanOrEqual(2);
+
     clickTab("Model Runs");
     expect(
       screen.getByRole("heading", { level: 1, name: "Model Runs" }),
@@ -312,9 +304,67 @@ describe("rendered AdminView page flows", () => {
     ).toBeInTheDocument();
   });
 
+  it("keeps the learner graph canvas tall enough and exposes node values to assistive tech", async () => {
+    const now = Date.now();
+    const book: LearningBook = {
+      id: "book:learner-graph-rendered",
+      sessionId: "session:learner-graph-rendered",
+      title: "Learner Graph Rendered",
+      userName: "Learner",
+      source: "chat" as const,
+      overview: "Graph test",
+      summary: "Graph test",
+      knowledgeSummary: "Graph test",
+      chapters: [],
+      conceptIds: Array.from({ length: 12 }, (_, index) => `concept:${index}`),
+      conversationCount: 1,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await db.learningBooks.put(book);
+    await db.learningBookConcepts.bulkPut(
+      Array.from(
+        { length: 12 },
+        (_, index): LearningBookConcept => ({
+          id: `concept:${index}`,
+          bookId: book.id,
+          name: `Concept ${index + 1}`,
+          summary: `Concept ${index + 1} summary`,
+          mastery: index / 12,
+          confidence: 0.5,
+          parentConcepts: index > 0 ? [`Concept ${index}`] : [],
+          childConcepts: index < 11 ? [`Concept ${index + 2}`] : [],
+          evidence: [],
+          firstSeenAt: now,
+          updatedAt: now,
+        }),
+      ),
+    );
+
+    renderAdmin();
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Concept 12").length).toBeGreaterThan(0),
+    );
+    const graph = screen.getByRole("img", {
+      name: /Learner learner concept graph/i,
+    });
+    expect(within(graph).getByText("Concept 12")).toBeInTheDocument();
+    expect(graph.querySelector("svg")).toHaveAttribute(
+      "viewBox",
+      "0 0 850 430",
+    );
+    expect(
+      within(graph)
+        .getAllByText(/Concept 12: mastery 92 percent, confidence 50 percent/i)
+        .some((node) => Boolean(node.closest(".sr-only"))),
+    ).toBe(true);
+  });
+
   it("keeps learner-brain logic controls visible and updates local BKT runtime knobs", async () => {
     renderAdmin();
     await screen.findByTestId("admin-brain-overview");
+    clickTab("Brain Overview");
 
     expect(screen.getByText("Learning Algorithm")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Open tuning" }));

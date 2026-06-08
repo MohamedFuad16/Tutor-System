@@ -17,17 +17,18 @@ const {
   userBrainAudioOverviewPlan,
 } = await import("../scripts/user-brain-audio-overview-plan.mjs");
 
-const userBrainBookSource = readFileSync(
-  `${repoRoot}/src/lib/userBrainArchitectureBook.ts`,
-  "utf8",
-);
 const revisionViewSource = readFileSync(
   `${repoRoot}/src/views/RevisionView.tsx`,
   "utf8",
 );
-const userBrainChapterTitles = [
-  ...userBrainBookSource.matchAll(/title: "([^"]+)"/g),
-].map((match) => match[1]);
+const tutorBookSource = readFileSync(
+  `${repoRoot}/src/lib/tutorBook.json`,
+  "utf8",
+);
+const userBrainBookSource = readFileSync(
+  `${repoRoot}/src/lib/userBrainArchitectureBook.ts`,
+  "utf8",
+);
 const ffprobeAvailable =
   spawnSync("which", ["ffprobe"], { encoding: "utf8" }).status === 0;
 const afinfoAvailable =
@@ -62,20 +63,20 @@ const measuredAudioDurationSeconds = (filePath) => {
   return Math.round(Number(durationMatch[1]));
 };
 
-const tutorBook = JSON.parse(
-  readFileSync(`${repoRoot}/src/lib/tutorBook.json`, "utf8"),
-);
-
 const expectedBooks = [
   {
     bookId: "tutor-book",
     bookTitle: "Tutor System Architecture",
-    titles: tutorBook.map((chapter) => chapter.title),
+    titles: builtInBookAudioOverviewPlan
+      .filter((entry) => entry.bookId === "tutor-book")
+      .map((entry) => entry.chapterTitle),
   },
   {
     bookId: "user-brain-architecture",
     bookTitle: "User Brain Architecture",
-    titles: userBrainChapterTitles,
+    titles: builtInBookAudioOverviewPlan
+      .filter((entry) => entry.bookId === "user-brain-architecture")
+      .map((entry) => entry.chapterTitle),
   },
   {
     bookId: "app-design-language",
@@ -89,7 +90,7 @@ const expectedBooks = [
   },
 ];
 
-test("audio overview plan covers every built-in book chapter", () => {
+test("stored audio overview plan remains internally consistent", () => {
   assert.equal(AUDIO_OVERVIEW_DEEPGRAM_MODEL, "aura-2-odysseus-en");
   assert.equal(AUDIO_OVERVIEW_DEEPGRAM_SPEED, 1);
   assert.equal(userBrainAudioOverviewPlan.length, 8);
@@ -145,6 +146,16 @@ test("audio overview plan covers every built-in book chapter", () => {
 
   assert.equal(outputFiles.size, expectedTotal);
   assert.equal(overviewIds.size, expectedTotal);
+  assert.match(
+    revisionViewSource,
+    /chapterTitle ===\s+chapter\.title/,
+    "Rewritten chapters must only attach audio from the same chapter edition",
+  );
+  assert.match(tutorBookSource, /regenerated audio guides/);
+  assert.match(userBrainBookSource, /regenerated audio guides/);
+  assert.match(tutorBookSource, /before audio coverage is complete again/i);
+  assert.doesNotMatch(tutorBookSource, /audio coverage is complete\./i);
+  assert.doesNotMatch(userBrainBookSource, /audio coverage is complete\./i);
 });
 
 test("audio overview dry run report distinguishes stored and missing assets", () => {

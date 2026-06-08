@@ -7,6 +7,12 @@ import { fileURLToPath } from "node:url";
 
 import { createTutorServerApp } from "../.tmp-test/server.mjs";
 
+const originalFetch = globalThis.fetch;
+
+test.afterEach(() => {
+  globalThis.fetch = originalFetch;
+});
+
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const settingsSource = readFileSync(
   `${repoRoot}/src/components/SettingsModal.tsx`,
@@ -65,7 +71,7 @@ test("chat read-aloud control surfaces the selected MisoTTS voice", () => {
   assert.match(chatPanelSource, /Read aloud with/);
   assert.match(chatPanelSource, /misoTtsApiUrl/);
   assert.match(chatPanelSource, /x-miso-tts-api-url/);
-  assert.match(chatPanelSource, /Live Voice still uses Deepgram/);
+  assert.match(chatPanelSource, /Deepgram Aura streaming TTS when configured/);
 });
 
 test("chat read-aloud keeps text out of URLs and cancels superseded playback", () => {
@@ -79,6 +85,66 @@ test("chat read-aloud keeps text out of URLs and cancels superseded playback", (
     /URL\.revokeObjectURL\(ttsObjectUrlRef\.current\)/,
   );
   assert.doesNotMatch(chatPanelSource, /\/api\/tts\?text=/);
+});
+
+test("Deepgram server fallback routes the environment key upstream without exposing it", async (t) => {
+  const previousDeepgramKey = process.env.DEEPGRAM_API_KEY;
+  const previousDeepgramFallback = process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+  process.env.DEEPGRAM_API_KEY = "deepgram-shared-secret";
+  process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK = "true";
+  const upstreamRequests = [];
+  globalThis.fetch = async (url, init = {}) => {
+    const target = String(url);
+    if (!target.includes("api.deepgram.com/v1/speak")) {
+      throw new Error(`Unexpected fetch: ${target}`);
+    }
+    upstreamRequests.push({
+      url: target,
+      authorization: new Headers(init.headers).get("authorization"),
+      body: JSON.parse(init.body),
+    });
+    return new Response(Buffer.from("ID3stubbed-deepgram-audio"), {
+      status: 200,
+      headers: { "Content-Type": "audio/mpeg" },
+    });
+  };
+  t.after(() => {
+    if (previousDeepgramKey === undefined) delete process.env.DEEPGRAM_API_KEY;
+    else process.env.DEEPGRAM_API_KEY = previousDeepgramKey;
+    if (previousDeepgramFallback === undefined) {
+      delete process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK;
+    } else {
+      process.env.ALLOW_SERVER_DEEPGRAM_FALLBACK = previousDeepgramFallback;
+    }
+  });
+
+  const { server, baseUrl } = await startTutorApp();
+  t.after(() => server.close());
+
+  const response = await originalFetch(`${baseUrl}/api/tts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      voice: "aura-asteria-en",
+      text: "Use the shared Deepgram fallback.",
+    }),
+  });
+  const responseBuffer = Buffer.from(await response.arrayBuffer());
+
+  assert.equal(response.status, 200);
+  assert.equal(upstreamRequests.length, 1);
+  assert.equal(
+    upstreamRequests[0].authorization,
+    "Token deepgram-shared-secret",
+  );
+  assert.deepEqual(upstreamRequests[0].body, {
+    text: "Use the shared Deepgram fallback.",
+  });
+  assert.match(responseBuffer.toString("utf8"), /^ID3stubbed/);
+  assert.doesNotMatch(
+    responseBuffer.toString("utf8"),
+    /deepgram-shared-secret/,
+  );
 });
 
 test("TTS route proxies the MisoTTS voice to the local tunneled API", async (t) => {

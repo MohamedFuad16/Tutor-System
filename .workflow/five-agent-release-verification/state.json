@@ -1,0 +1,54 @@
+{
+  "title": "Five-agent release verification",
+  "slug": "five-agent-release-verification",
+  "status": "complete",
+  "approval": {
+    "agents": true,
+    "commit": true,
+    "push": true,
+    "force_push": false
+  },
+  "packets": [
+    {
+      "id": "architecture",
+      "status": "completed",
+      "agentId": "019ea65e-7413-7953-b284-a3ecc6bb02e7",
+      "decision": "accepted-openrouter-background-model-slug-fix"
+    },
+    {
+      "id": "ui-ux",
+      "status": "agent_failed_integrated_locally",
+      "agentId": "019ea65e-7546-7483-b7f0-95e0cd59e1a7",
+      "decision": "codex-runtime-404-noted-browser-smoke-passed"
+    },
+    {
+      "id": "performance",
+      "status": "completed",
+      "agentId": "019ea65e-77a2-7481-9934-ffa167ec283c",
+      "decision": "accepted-backpressure-dexie-limit-object-url-deadline-fixes"
+    },
+    {
+      "id": "revision-books",
+      "status": "completed",
+      "agentId": "019ea65e-76a8-72e0-956a-933e1283a0fa",
+      "decision": "accepted-stale-audio-wording-fix"
+    },
+    {
+      "id": "tests-docs",
+      "status": "integrated_locally",
+      "agentId": "019ea65e-78eb-7ec2-b273-3f062e0dfb33",
+      "decision": "readme-updated-and-release-gates-passed"
+    }
+  ],
+  "integration": "complete",
+  "verification": {
+    "format": "passed",
+    "lint": "passed",
+    "test": "passed",
+    "build": "passed",
+    "postchange": "passed",
+    "diffCheck": "passed",
+    "browserSmoke": "passed"
+  },
+  "push": "pending"
+}

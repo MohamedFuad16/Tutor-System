@@ -46,6 +46,8 @@ import {
   Image as ImageIcon,
   Code2,
   Clock,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { gsap } from "gsap";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -585,8 +587,11 @@ type VoiceCaption = {
   text: string;
 } | null;
 type VoiceSessionTurn = {
+  id: string;
   role: "user" | "assistant";
   content: string;
+  finalContent?: string;
+  isRevealing?: boolean;
 };
 type VoiceStudyContextPayload = {
   requestId?: string;
@@ -612,6 +617,13 @@ type NormalizedVoiceTranscript = {
   content: string;
   rawType: string;
   sourceField: string;
+};
+
+type PacedVoiceTurn = {
+  turnId: string;
+  fullText: string;
+  startedAt: number;
+  durationMs: number;
 };
 
 const voiceTranscriptTypePattern =
@@ -3229,7 +3241,7 @@ const getReadAloudVoiceLabel = (voice?: string) => {
 const getReadAloudVoiceTooltip = (voice?: string) => {
   const label = getReadAloudVoiceLabel(voice);
   if (voice === "miso-tts-8b") {
-    return "Read Aloud voice: MisoTTS 8B via local HTTP TTS. Live Voice still uses Deepgram.";
+    return "Read Aloud voice: MisoTTS 8B via local HTTP TTS. Custom Live Voice uses Deepgram Aura streaming TTS when configured.";
   }
   return `Read Aloud voice: ${label}.`;
 };
@@ -3601,7 +3613,15 @@ const MessageItem = React.memo(
   },
 );
 
-export function ChatPanel({ onClose }: { onClose?: () => void }) {
+export function ChatPanel({
+  onClose,
+  isFullscreen = false,
+  onToggleFullscreen,
+}: {
+  onClose?: () => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
+}) {
   const { t } = useTranslation();
   const language = useStore((state) => state.language);
   const apiKey = useStore((state) => state.apiKey);
@@ -3678,6 +3698,17 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const [thinkingStep, setThinkingStep] = useState(0);
   const [serverOpenRouterReady, setServerOpenRouterReady] = useState(false);
   const [serverDeepgramReady, setServerDeepgramReady] = useState(false);
+  const voiceBrokerMode =
+    import.meta.env.VITE_VOICE_BROKER_MODE === "custom" ? "custom" : "deepgram";
+  const usesCustomVoiceBroker = voiceBrokerMode === "custom";
+  const voiceBrokerTtsModel =
+    import.meta.env.VITE_VOICE_BROKER_TTS_MODEL || "aura-2-thalia-en";
+  const usesBrowserVoiceTts =
+    usesCustomVoiceBroker &&
+    import.meta.env.VITE_VOICE_BROKER_BROWSER_TTS === "true";
+  const voiceBrokerTtsProviderRef = useRef<
+    "deepgram" | "browser" | "miso" | "deepgram_voice_agent"
+  >(usesCustomVoiceBroker ? "deepgram" : "deepgram_voice_agent");
   const hasOpenRouterRuntimeKey =
     Boolean(apiKey.trim()) || serverOpenRouterReady;
   const hasDeepgramRuntimeKey =
@@ -3777,6 +3808,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const nextPlayTimeRef = useRef<number>(0);
   const activeAudioNodesRef = useRef<AudioBufferSourceNode[]>([]);
+  const browserVoiceUtteranceRef = useRef<SpeechSynthesisUtterance | null>(
+    null,
+  );
   const outputGainRef = useRef<GainNode | null>(null);
   const outputAnalyserRef = useRef<AnalyserNode | null>(null);
   const outputRafRef = useRef<number | null>(null);
@@ -3799,6 +3833,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   const voiceStageReturnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const pacedVoiceRevealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const pacedVoiceTurnRef = useRef<PacedVoiceTurn | null>(null);
   const getVoiceProofAttemptId = useCallback(() => {
     return (
       voiceStudyContextRef.current?.proofAttemptId ||
@@ -3906,6 +3944,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     setIsVoiceActive(voiceState !== "idle" || isPlayingTTS !== null);
   }, [voiceState, isPlayingTTS, setIsVoiceActive]);
   const lastVoiceUserMessageRef = useRef("");
+  const pendingVoiceUserMessagesRef = useRef<string[]>([]);
   const learningBooks =
     useLiveQuery(
       () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
@@ -4383,15 +4422,70 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     }
   };
 
-  const appendVoiceTurn = (role: "user" | "assistant", content: string) => {
+  const updateDisplayedVoiceTurn = (
+    turnId: string,
+    role: "user" | "assistant",
+    content: string,
+    options: { finalContent?: string; isRevealing?: boolean } = {},
+  ) => {
     const cleanContent = content.trim();
     const sessionId = voiceSessionIdRef.current;
-    if (!sessionId || !cleanContent) return;
+    if (!sessionId || !turnId || !cleanContent) return;
+    setMessages((prev) => {
+      const index = prev.findIndex((message) => message.id === sessionId);
+      if (index === -1) return prev;
+      const session = prev[index].voiceSession || {
+        turns: [],
+        startedAt: Date.now(),
+        durationSeconds: 0,
+      };
+      const nextTurn = {
+        id: turnId,
+        role,
+        content: cleanContent,
+        finalContent: options.finalContent,
+        isRevealing: options.isRevealing,
+      };
+      const existingIndex = session.turns.findIndex(
+        (turn) => turn.id === turnId,
+      );
+      const turns =
+        existingIndex === -1
+          ? [...session.turns, nextTurn]
+          : session.turns.map((turn, turnIndex) =>
+              turnIndex === existingIndex ? { ...turn, ...nextTurn } : turn,
+            );
+      const copy = [...prev];
+      copy[index] = {
+        ...copy[index],
+        voiceSession: {
+          ...session,
+          turns,
+          durationSeconds: Math.max(
+            session.durationSeconds,
+            Math.round((Date.now() - session.startedAt) / 1000),
+          ),
+        },
+      };
+      return copy;
+    });
+  };
+
+  const appendVoiceTurn = (
+    role: "user" | "assistant",
+    content: string,
+    turnId = Date.now().toString() + Math.random(),
+  ) => {
+    const cleanContent = content.trim();
+    const sessionId = voiceSessionIdRef.current;
+    if (!sessionId || !cleanContent) return "";
     const last = voiceTurnsRef.current[voiceTurnsRef.current.length - 1];
-    if (last && last.role === role && last.content === cleanContent) return;
+    if (last && last.role === role && last.content === cleanContent) {
+      return last.id;
+    }
     voiceTurnsRef.current = [
       ...voiceTurnsRef.current,
-      { role, content: cleanContent },
+      { id: turnId, role, content: cleanContent },
     ];
     setMessages((prev) => {
       const index = prev.findIndex((message) => message.id === sessionId);
@@ -4409,7 +4503,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
           turns: [
             ...session.turns,
             {
-              id: Date.now().toString() + Math.random(),
+              id: turnId,
               role,
               content: cleanContent,
             },
@@ -4422,7 +4516,112 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
       };
       return copy;
     });
+    return turnId;
   };
+
+  const clearPacedVoiceReveal = useCallback(() => {
+    if (pacedVoiceRevealTimerRef.current) {
+      clearTimeout(pacedVoiceRevealTimerRef.current);
+      pacedVoiceRevealTimerRef.current = null;
+    }
+  }, []);
+
+  const visibleVoicePrefix = (text: string, charCount: number) => {
+    const target = text.slice(0, Math.max(1, charCount));
+    const naturalBreak = Math.max(
+      target.lastIndexOf(" "),
+      target.lastIndexOf(","),
+      target.lastIndexOf("."),
+      target.lastIndexOf(";"),
+    );
+    const value =
+      naturalBreak > 18 && naturalBreak < text.length - 1
+        ? target.slice(0, naturalBreak)
+        : target;
+    return value.trim() || text.slice(0, Math.min(text.length, charCount));
+  };
+
+  const finalizePacedVoiceTurn = useCallback(
+    (showCaption = true) => {
+      const paced = pacedVoiceTurnRef.current;
+      clearPacedVoiceReveal();
+      if (!paced) return;
+      updateDisplayedVoiceTurn(paced.turnId, "assistant", paced.fullText, {
+        finalContent: paced.fullText,
+        isRevealing: false,
+      });
+      if (showCaption) {
+        setVoiceCaption({ role: "assistant", text: paced.fullText });
+      }
+      pacedVoiceTurnRef.current = null;
+    },
+    [clearPacedVoiceReveal],
+  );
+
+  const startPacedAssistantTurn = useCallback(
+    (content: string, options: { turnId?: string; durationMs?: number }) => {
+      const fullText = content.trim();
+      if (!fullText) return "";
+      clearPacedVoiceReveal();
+      const turnId =
+        options.turnId || `voice-assistant-${Date.now()}-${Math.random()}`;
+      const durationMs = Math.min(
+        24_000,
+        Math.max(
+          1_800,
+          Number(options.durationMs || 0) ||
+            fullText.split(/\s+/).filter(Boolean).length * 340,
+        ),
+      );
+      pacedVoiceTurnRef.current = {
+        turnId,
+        fullText,
+        startedAt: Date.now(),
+        durationMs,
+      };
+      const existingTurn = voiceTurnsRef.current.find(
+        (turn) => turn.id === turnId,
+      );
+      if (!existingTurn) {
+        voiceTurnsRef.current = [
+          ...voiceTurnsRef.current,
+          { id: turnId, role: "assistant", content: fullText },
+        ];
+      }
+      const tick = () => {
+        const paced = pacedVoiceTurnRef.current;
+        if (!paced || paced.turnId !== turnId) return;
+        const elapsed = Date.now() - paced.startedAt;
+        const progress = Math.min(1, elapsed / paced.durationMs);
+        const visibleLength = Math.max(
+          12,
+          Math.ceil(paced.fullText.length * progress),
+        );
+        const visibleText =
+          progress >= 1
+            ? paced.fullText
+            : `${visibleVoicePrefix(paced.fullText, visibleLength)}...`;
+        updateDisplayedVoiceTurn(turnId, "assistant", visibleText, {
+          finalContent: paced.fullText,
+          isRevealing: progress < 1,
+        });
+        setVoiceCaption({ role: "assistant", text: visibleText });
+        if (progress >= 1) {
+          pacedVoiceTurnRef.current = null;
+          pacedVoiceRevealTimerRef.current = null;
+          if (activeAudioNodesRef.current.length === 0 && !endingRef.current) {
+            scheduleVoiceStageReturn();
+            setVoiceState("listening");
+          }
+          return;
+        }
+        pacedVoiceRevealTimerRef.current = setTimeout(tick, 120);
+      };
+      tick();
+      return turnId;
+    },
+    [clearPacedVoiceReveal, scheduleVoiceStageReturn],
+  );
 
   const appendVoiceVisualFocus = (
     focus: Omit<VoiceVisualFocus, "timestamp">,
@@ -4503,11 +4702,79 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     });
   };
 
+  const cancelBrowserVoiceSpeech = useCallback(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      browserVoiceUtteranceRef.current = null;
+      return;
+    }
+    try {
+      window.speechSynthesis.cancel();
+    } catch {}
+    browserVoiceUtteranceRef.current = null;
+  }, []);
+
+  const speakBrowserVoiceText = useCallback(
+    (text: string) => {
+      const safeText = compactVoiceEventText(text, 1200);
+      if (
+        !usesBrowserVoiceTts ||
+        !safeText ||
+        typeof window === "undefined" ||
+        !("speechSynthesis" in window) ||
+        typeof window.SpeechSynthesisUtterance === "undefined"
+      ) {
+        return false;
+      }
+
+      cancelBrowserVoiceSpeech();
+      const utterance = new window.SpeechSynthesisUtterance(safeText);
+      utterance.rate = 1.08;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      browserVoiceUtteranceRef.current = utterance;
+      utterance.onstart = () => {
+        setVoiceState("speaking");
+        recordVoiceAgentEvent({
+          type: "agent_started_speaking",
+          status: "running",
+          sessionId: voiceSessionIdRef.current || undefined,
+          summary: "Browser realtime TTS started speaking.",
+          metadata: {
+            voiceBrokerMode,
+            proofAttemptId: getVoiceProofAttemptId(),
+            characterCount: safeText.length,
+          },
+        });
+      };
+      utterance.onend = () => {
+        if (browserVoiceUtteranceRef.current === utterance) {
+          browserVoiceUtteranceRef.current = null;
+          scheduleVoiceStageReturn();
+        }
+      };
+      utterance.onerror = () => {
+        if (browserVoiceUtteranceRef.current === utterance) {
+          browserVoiceUtteranceRef.current = null;
+        }
+      };
+      window.speechSynthesis.speak(utterance);
+      return true;
+    },
+    [
+      cancelBrowserVoiceSpeech,
+      getVoiceProofAttemptId,
+      scheduleVoiceStageReturn,
+      usesBrowserVoiceTts,
+      voiceBrokerMode,
+    ],
+  );
+
   const stopVoice = () => {
     if (endTimerRef.current) {
       clearTimeout(endTimerRef.current);
       endTimerRef.current = null;
     }
+    cancelBrowserVoiceSpeech();
     clearVoiceStageReturnTimer();
     endingRef.current = false;
     if (outputRafRef.current !== null) {
@@ -4536,6 +4803,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     window.dispatchEvent(new CustomEvent("mic-volume", { detail: 0 }));
     window.dispatchEvent(new CustomEvent("tts-volume", { detail: 0 }));
     setVoiceCaption(null);
+    finalizePacedVoiceTurn(false);
 
     const sessionId = voiceSessionIdRef.current;
     if (sessionId) {
@@ -4602,7 +4870,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         const transcript = turns
           .map(
             (turn) =>
-              `${turn.role === "user" ? "Student" : "Tutor"}: ${turn.content}`,
+              `${turn.role === "user" ? "Student" : "Tutor"}: ${turn.finalContent || turn.content}`,
           )
           .join("\n");
         void generateVoiceTitle(sessionId, transcript);
@@ -4618,6 +4886,9 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     voiceSessionCountedRef.current = false;
     voiceSessionErrorRef.current = null;
     voiceTurnsRef.current = [];
+    pendingVoiceUserMessagesRef.current = [];
+    clearPacedVoiceReveal();
+    pacedVoiceTurnRef.current = null;
     setVoiceStageFocus(null);
     setDismissedVoiceStageFocusId(null);
     setVoiceState("idle");
@@ -4629,6 +4900,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
     if (!trimmed || !ws || ws.readyState !== WebSocket.OPEN) return;
     appendVoiceTurn("user", trimmed);
     lastVoiceUserMessageRef.current = trimmed;
+    pendingVoiceUserMessagesRef.current.push(trimmed);
     setVoiceCaption({ role: "user", text: trimmed });
     recordVoiceAgentEvent({
       type: "user_turn",
@@ -5281,7 +5553,7 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
   );
 
   const startVoice = async () => {
-    if (!hasDeepgramRuntimeKey) {
+    if (!usesCustomVoiceBroker && !hasDeepgramRuntimeKey) {
       alert(
         "Please configure your Deepgram API Key in settings or expose the local server fallback before using Voice features.",
       );
@@ -5312,11 +5584,14 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         type: "session_started",
         status: "started",
         sessionId,
-        summary: `Voice session starting for ${activeLearningBookTitle}.`,
+        summary: usesCustomVoiceBroker
+          ? `Local voice broker session starting for ${activeLearningBookTitle}.`
+          : `Voice session starting for ${activeLearningBookTitle}.`,
         metadata: {
           language,
           bookId: canonicalActiveBookId,
           documentId: activeDocumentId,
+          voiceBrokerMode,
           proofAttemptId: getVoiceProofAttemptId(),
         },
       });
@@ -5492,7 +5767,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   node.stop();
                 } catch {}
               });
+              cancelBrowserVoiceSpeech();
               activeAudioNodesRef.current = [];
+              clearPacedVoiceReveal();
+              pacedVoiceTurnRef.current = null;
               if (audioContextRef.current) {
                 nextPlayTimeRef.current = audioContextRef.current.currentTime;
               }
@@ -5576,12 +5854,19 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         });
       }
 
-      const wsUrl = `${voiceServerWsUrl()}/api/voice-agent?language=${encodeURIComponent(language)}`;
+      const voiceSocketPath = usesCustomVoiceBroker
+        ? "/api/voice-broker"
+        : "/api/voice-agent";
+      const wsUrl = `${voiceServerWsUrl()}${voiceSocketPath}?language=${encodeURIComponent(language)}`;
       ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log("Connected to Deepgram proxy");
+        console.log(
+          usesCustomVoiceBroker
+            ? "Connected to local voice broker"
+            : "Connected to Deepgram proxy",
+        );
         const proofAttemptId = getVoiceProofAttemptId();
         ws.send(
           JSON.stringify({
@@ -5590,8 +5875,20 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             requestId: sessionId,
             proofAttemptId,
             deepgramKey: deepgramApiKey,
+            foregroundApiKey: apiKey,
+            backgroundApiKey: apiKey,
+            ...(usesCustomVoiceBroker ? {} : { serperApiKey }),
             inputSampleRate,
             language,
+            voiceBrokerMode,
+            foregroundModel: "openai/gpt-4o-mini",
+            backgroundModel: "openai/gpt-5.5",
+            ttsModel: voiceBrokerTtsModel,
+            browserTts: usesBrowserVoiceTts,
+            misoTtsApiUrl:
+              usesCustomVoiceBroker && misoTtsApiUrl.trim()
+                ? misoTtsApiUrl.trim()
+                : "",
             studyContext: voiceContextPayload?.studyContext || "",
             activeBookId: canonicalActiveBookId || "",
             activeBookTitle: activeLearningBookTitle || activeProject,
@@ -5609,6 +5906,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             studyContextMetadata: {
               mode: "voice",
               agentLayer: "voice_realtime",
+              voiceBrokerMode,
+              foregroundModel: "openai/gpt-4o-mini",
+              backgroundModel: "openai/gpt-5.5",
+              ttsModel: voiceBrokerTtsModel,
               proofAttemptId,
               documentIds: voiceContextPayload?.documentIds || [],
               readyDocumentIds: voiceContextPayload?.readyDocumentIds || [],
@@ -5652,14 +5953,81 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               }
               recordVoiceUsage(msg.usage);
             } else if (msg.type === "SettingsApplied") {
-              console.log("Deepgram SettingsApplied");
+              console.log(
+                usesCustomVoiceBroker
+                  ? "Local voice broker settings applied"
+                  : "Deepgram SettingsApplied",
+              );
               recordVoiceAgentEvent({
                 type: "settings_applied",
                 status: "completed",
                 sessionId: voiceSessionIdRef.current || undefined,
-                summary: "Deepgram voice-agent settings applied.",
+                summary: usesCustomVoiceBroker
+                  ? "Local voice broker settings applied."
+                  : "Deepgram voice-agent settings applied.",
                 metadata: {
                   language,
+                  voiceBrokerMode,
+                  proofAttemptId,
+                },
+              });
+            } else if (msg.type === "VoiceBrokerReady") {
+              const brokerTtsProvider =
+                msg.ttsProvider === "browser" ||
+                msg.ttsProvider === "miso" ||
+                msg.ttsProvider === "deepgram"
+                  ? msg.ttsProvider
+                  : "deepgram";
+              voiceBrokerTtsProviderRef.current = brokerTtsProvider;
+              recordVoiceAgentEvent({
+                type: "broker_ready",
+                status: "completed",
+                sessionId: voiceSessionIdRef.current || undefined,
+                summary:
+                  "Local voice broker is ready with foreground, TTS, and background model adapters staged.",
+                metadata: {
+                  provider: msg.provider,
+                  foregroundModel: msg.foregroundModel,
+                  backgroundModel: msg.backgroundModel,
+                  ttsModel: msg.ttsModel,
+                  ttsProvider: brokerTtsProvider,
+                  sttModel: msg.sttModel,
+                  contextChars: msg.contextChars,
+                  language: msg.language || language,
+                  voiceBrokerMode,
+                  proofAttemptId,
+                },
+              });
+            } else if (msg.type === "BackgroundJobStarted") {
+              recordVoiceAgentEvent({
+                type: "background_job",
+                status: "running",
+                sessionId: voiceSessionIdRef.current || undefined,
+                summary: `Background ${msg.model || "model"} job staged: ${compactVoiceEventText(String(msg.query || msg.intent || "tool task"), 120)}`,
+                metadata: {
+                  jobId: msg.jobId,
+                  model: msg.model,
+                  intent: msg.intent,
+                  voiceBrokerMode,
+                  proofAttemptId,
+                },
+              });
+            } else if (msg.type === "BackgroundJobResult") {
+              recordVoiceAgentEvent({
+                type: "background_job",
+                status:
+                  msg.status === "pending_provider_key"
+                    ? "failed"
+                    : "completed",
+                sessionId: voiceSessionIdRef.current || undefined,
+                summary: compactVoiceEventText(
+                  String(msg.summary || "Background job update received."),
+                  180,
+                ),
+                metadata: {
+                  jobId: msg.jobId,
+                  status: msg.status,
+                  voiceBrokerMode,
                   proofAttemptId,
                 },
               });
@@ -5672,35 +6040,63 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 });
               }
               if (transcriptEvent.role === "user") {
-                lastVoiceUserMessageRef.current = transcriptContent;
-                appendVoiceTurn("user", transcriptContent);
-                recordVoiceAgentEvent({
-                  type: "user_turn",
-                  status: "running",
-                  sessionId: voiceSessionIdRef.current || undefined,
-                  summary: `Student said: ${compactVoiceEventText(transcriptContent)}`,
-                  metadata: {
-                    source: "microphone",
-                    characterCount: transcriptContent.length,
-                    rawType: transcriptEvent.rawType,
-                    sourceField: transcriptEvent.sourceField,
-                    proofAttemptId,
-                  },
-                });
-                if (!endingRef.current && detectEndIntent(transcriptContent)) {
+                const isInterimTranscript = /InterimTranscript/i.test(
+                  transcriptEvent.rawType,
+                );
+                if (!isInterimTranscript) {
+                  lastVoiceUserMessageRef.current = transcriptContent;
+                  pendingVoiceUserMessagesRef.current.push(transcriptContent);
+                  appendVoiceTurn("user", transcriptContent);
+                  recordVoiceAgentEvent({
+                    type: "user_turn",
+                    status: "running",
+                    sessionId: voiceSessionIdRef.current || undefined,
+                    summary: `Student said: ${compactVoiceEventText(transcriptContent)}`,
+                    metadata: {
+                      source: "microphone",
+                      characterCount: transcriptContent.length,
+                      rawType: transcriptEvent.rawType,
+                      sourceField: transcriptEvent.sourceField,
+                      proofAttemptId,
+                    },
+                  });
+                }
+                if (
+                  !isInterimTranscript &&
+                  !endingRef.current &&
+                  detectEndIntent(transcriptContent)
+                ) {
                   endingRef.current = true;
                   activeAudioNodesRef.current.forEach((node) => {
                     try {
                       node.stop();
                     } catch {}
                   });
+                  cancelBrowserVoiceSpeech();
                   activeAudioNodesRef.current = [];
                   setVoiceCaption(null);
                   endTimerRef.current = setTimeout(() => stopVoice(), 250);
                   return;
                 }
               } else if (transcriptEvent.role === "assistant") {
-                appendVoiceTurn("assistant", transcriptContent);
+                const pacedDisplay =
+                  msg.displayMode === "paced" ||
+                  Number(msg.estimatedSpeechMs || 0) > 0;
+                if (pacedDisplay) {
+                  startPacedAssistantTurn(transcriptContent, {
+                    turnId:
+                      typeof msg.turnId === "string" ? msg.turnId : undefined,
+                    durationMs: Number(msg.estimatedSpeechMs || 0),
+                  });
+                } else {
+                  appendVoiceTurn("assistant", transcriptContent);
+                }
+                const shouldUseBrowserVoiceTts =
+                  usesBrowserVoiceTts &&
+                  voiceBrokerTtsProviderRef.current === "browser";
+                const browserTtsStarted = shouldUseBrowserVoiceTts
+                  ? speakBrowserVoiceText(transcriptContent)
+                  : false;
                 recordVoiceAgentEvent({
                   type: "assistant_turn",
                   status: "completed",
@@ -5710,12 +6106,22 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                     characterCount: transcriptContent.length,
                     rawType: transcriptEvent.rawType,
                     sourceField: transcriptEvent.sourceField,
+                    displayMode: msg.displayMode,
+                    turnId: msg.turnId,
+                    ttsProvider: voiceBrokerTtsProviderRef.current,
+                    browserTtsStarted,
                     proofAttemptId,
                   },
                 });
-                if (lastVoiceUserMessageRef.current && transcriptContent) {
-                  const userMessage = lastVoiceUserMessageRef.current;
-                  lastVoiceUserMessageRef.current = "";
+                if (
+                  msg.source !== "background" &&
+                  pendingVoiceUserMessagesRef.current.length > 0 &&
+                  transcriptContent
+                ) {
+                  const userMessage =
+                    pendingVoiceUserMessagesRef.current.shift() || "";
+                  lastVoiceUserMessageRef.current =
+                    pendingVoiceUserMessagesRef.current[0] || "";
                   brainOrchestrator.trackInteraction(
                     userMessage,
                     transcriptContent,
@@ -5778,7 +6184,10 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                   node.stop();
                 } catch (e) {}
               });
+              cancelBrowserVoiceSpeech();
               activeAudioNodesRef.current = [];
+              clearPacedVoiceReveal();
+              pacedVoiceTurnRef.current = null;
               if (audioContextRef.current) {
                 nextPlayTimeRef.current = audioContextRef.current.currentTime;
               }
@@ -5800,7 +6209,20 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               msg.type === "AgentFinishedSpeaking" ||
               msg.type === "AgentAudioDone"
             ) {
-              scheduleVoiceStageReturn();
+              const browserSpeechActive =
+                usesBrowserVoiceTts &&
+                voiceBrokerTtsProviderRef.current === "browser" &&
+                Boolean(browserVoiceUtteranceRef.current);
+              const brokerAudioActive = activeAudioNodesRef.current.length > 0;
+              const pacedDisplayActive = Boolean(pacedVoiceTurnRef.current);
+              if (
+                !browserSpeechActive &&
+                !brokerAudioActive &&
+                !pacedDisplayActive
+              ) {
+                scheduleVoiceStageReturn();
+                setVoiceState("listening");
+              }
               recordVoiceAgentEvent({
                 type: "agent_finished_speaking",
                 status: "completed",
@@ -5808,10 +6230,12 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
                 summary: "Aria finished speaking; listening resumed.",
                 metadata: {
                   rawType: msg.type,
+                  ttsProvider: voiceBrokerTtsProviderRef.current,
+                  activeAudioNodes: activeAudioNodesRef.current.length,
+                  pacedDisplayActive,
                   proofAttemptId,
                 },
               });
-              setVoiceState("listening");
             } else if (msg.type === "Error") {
               console.error("Deepgram Error", msg);
               voiceSessionErrorRef.current = compactVoiceEventText(
@@ -5833,21 +6257,32 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
             console.log("Non-JSON message from Deepgram:", event.data);
           }
         } else if (event.data instanceof Blob) {
-          // It's binary playing back from TTS
+          // Binary playback can be raw PCM from Deepgram or WAV from the local Miso broker.
           const arrayBuffer = await event.data.arrayBuffer();
-          const buffer = new Int16Array(arrayBuffer);
-          const float32Data = new Float32Array(buffer.length);
-          for (let i = 0; i < buffer.length; i++) {
-            float32Data[i] = buffer[i] / 0x7fff;
-          }
-
           if (audioContextRef.current) {
-            const audioBuffer = audioContextRef.current.createBuffer(
-              1,
-              float32Data.length,
-              48000,
-            );
-            audioBuffer.copyToChannel(float32Data, 0);
+            const header = new Uint8Array(arrayBuffer.slice(0, 4));
+            const isWav =
+              header[0] === 0x52 &&
+              header[1] === 0x49 &&
+              header[2] === 0x46 &&
+              header[3] === 0x46;
+            let audioBuffer: AudioBuffer;
+            if (isWav) {
+              audioBuffer =
+                await audioContextRef.current.decodeAudioData(arrayBuffer);
+            } else {
+              const buffer = new Int16Array(arrayBuffer);
+              const float32Data = new Float32Array(buffer.length);
+              for (let i = 0; i < buffer.length; i++) {
+                float32Data[i] = buffer[i] / 0x7fff;
+              }
+              audioBuffer = audioContextRef.current.createBuffer(
+                1,
+                float32Data.length,
+                48000,
+              );
+              audioBuffer.copyToChannel(float32Data, 0);
+            }
 
             const source = audioContextRef.current.createBufferSource();
             source.buffer = audioBuffer;
@@ -5860,6 +6295,13 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
               activeAudioNodesRef.current = activeAudioNodesRef.current.filter(
                 (n) => n !== source,
               );
+              if (
+                activeAudioNodesRef.current.length === 0 &&
+                !endingRef.current
+              ) {
+                scheduleVoiceStageReturn();
+                setVoiceState("listening");
+              }
             };
 
             if (
@@ -7266,6 +7708,25 @@ export function ChatPanel({ onClose }: { onClose?: () => void }) {
         </div>
 
         <div className="flex shrink-0 gap-1 pointer-events-auto sm:gap-2">
+          {onToggleFullscreen && (
+            <button
+              type="button"
+              onClick={onToggleFullscreen}
+              aria-label={
+                isFullscreen
+                  ? "Exit fullscreen tutor chat"
+                  : "Open fullscreen tutor chat"
+              }
+              title={
+                isFullscreen
+                  ? "Exit fullscreen tutor chat"
+                  : "Open fullscreen tutor chat"
+              }
+              className="rounded-full p-1.5 text-[#9a9a9f] transition-colors hover:bg-black/5 hover:text-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30"
+            >
+              {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {

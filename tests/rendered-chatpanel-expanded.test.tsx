@@ -1009,7 +1009,7 @@ describe("rendered ChatPanel expanded suite", () => {
 
     expect(readButton).toHaveAttribute(
       "title",
-      "Read Aloud voice: MisoTTS 8B via local HTTP TTS. Live Voice still uses Deepgram.",
+      "Read Aloud voice: MisoTTS 8B via local HTTP TTS. Custom Live Voice uses Deepgram Aura streaming TTS when configured.",
     );
     expect(screen.getAllByText("MisoTTS 8B").length).toBeGreaterThanOrEqual(1);
   });

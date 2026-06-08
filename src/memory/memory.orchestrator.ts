@@ -130,6 +130,36 @@ const compactText = (value: unknown, fallback = "") => {
   return text.replace(/\s+/g, " ").slice(0, 1800);
 };
 
+const compactMarkdownText = (value: unknown, fallback = "", limit = 6000) => {
+  const text = String(value || fallback || "").trim();
+  return text
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{4,}/g, "\n\n\n")
+    .slice(0, limit)
+    .trim();
+};
+
+const inferFallbackChapterTopic = (
+  userMessage: string,
+  assistantMessage: string,
+) => {
+  const combined = compactText(`${userMessage} ${assistantMessage}`, "");
+  const explicit =
+    combined.match(
+      /\b(?:about|teach me|explain|learn|study|review|understand)\s+([A-Z0-9][A-Za-z0-9_ -]{2,64})/i,
+    )?.[1] ||
+    combined.match(
+      /\b(Python variables|variables|functions|classes|loops|arrays|promises|async await|React state|TypeScript types|PDF ingestion|document extraction|voice broker|learner brain|knowledge graph)\b/i,
+    )?.[1] ||
+    "Tutor Session Notes";
+  return explicit
+    .replace(/[.!?].*$/, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 56);
+};
+
 const memoryTraceMetadata = (context?: MemoryTraceContext) => ({
   ...(context?.requestId ? { requestId: context.requestId } : {}),
   ...(context?.proofAttemptId
@@ -625,12 +655,13 @@ export class MemoryOrchestrator {
     const traceMetadata = memoryTraceMetadata(input);
 
     const apiKey = input.apiKey || getStoredOpenRouterKey();
-    const userName = (input.userName || "Learner").trim() || "Learner";
+    const requestedUserName = (input.userName || "Learner").trim() || "Learner";
     const selectedBook = input.activeBookId
       ? await db.learningBooks
           .get(input.activeBookId)
           .catch((): undefined => undefined)
       : undefined;
+    const userName = selectedBook?.userName || requestedUserName;
     const sessionBook =
       selectedBook ||
       (await this.upsertSessionLearningBook(userName, "General Study"));
@@ -696,6 +727,12 @@ export class MemoryOrchestrator {
     if (!update) {
       const fallbackTitle =
         existingSessionBook?.title || input.activeProject || "Study Session";
+      const nextFallbackChapterNumber =
+        (existingSessionBook?.chapters?.length || 0) + 1;
+      const fallbackChapterTopic = inferFallbackChapterTopic(
+        userMessage,
+        assistantMessage,
+      );
       const fallbackStudyNote = buildStudyNoteFallback(
         userMessage,
         assistantMessage,
@@ -707,7 +744,7 @@ export class MemoryOrchestrator {
         overview:
           existingSessionBook?.overview ||
           `A continuous learning book for this tutor session.`,
-        chapterTitle: fallbackTitle,
+        chapterTitle: `Chapter ${nextFallbackChapterNumber}: ${fallbackChapterTopic}`,
         chapterSummary: fallbackStudyNote,
         conversationSummary: fallbackStudyNote,
         knowledgeSummary: existingSessionBook?.knowledgeSummary
@@ -860,15 +897,15 @@ export class MemoryOrchestrator {
       userMessage,
       assistantMessage,
     );
-    const proposedChapterSummary = compactText(
+    const proposedChapterSummary = compactMarkdownText(
       update.chapterSummary || update.conversationSummary,
       existingChapters[chapterIndex]?.summary || "",
     );
-    const proposedConversationSummary = compactText(
+    const proposedConversationSummary = compactMarkdownText(
       update.conversationSummary || update.chapterSummary,
       existingBook?.summary || "",
     );
-    const proposedKnowledgeSummary = compactText(
+    const proposedKnowledgeSummary = compactMarkdownText(
       update.knowledgeSummary,
       existingBook?.knowledgeSummary || "",
     );

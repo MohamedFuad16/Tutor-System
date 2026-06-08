@@ -1,355 +1,139 @@
-<div align="center">
+# LearningAI Tutor
 
-  <h1>Tutor: Cognitive Learning Interface</h1>
+LearningAI Tutor is a local-first study workspace for reading PDFs, talking to a source-aware tutor, saving learner memory, and turning useful sessions into revision books. It is built for local beta proof first: the app should teach, remember, explain what it recorded, and show its limits before cloud infrastructure is treated as complete.
 
-  <p><strong>A high-fidelity learning system powered by source-aware tutoring, real-time audio, local learner memory, and Graphify architecture navigation.</strong></p>
+## What Is In This Repo
 
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="public/banner.png">
-    <img alt="Tutor System Architecture Banner" src="public/banner.png" width="100%" style="border-radius: 8px; margin-top: 10px; margin-bottom: 20px;" />
-  </picture>
+- `Study` renders PDFs, extracted context, annotations, and a book-scoped chat surface.
+- `ChatPanel` streams tutor answers, handles tool output, records voice turns, and updates the learner ledger.
+- `Revision` renders built-in architecture books and generated learning books with diagrams, code blocks, flashcards, and title-matched stored audio when the checked-in audio manifest matches the current chapter title.
+- `Admin` shows the operational view: learner selection, learner-brain graph, evidence, memory, retrieval, voice, tools, model runs, artifacts, corrections, and beta readiness.
+- `server.ts` is the local Express broker for chat, voice, web search, TTS, document extraction, and diagnostics.
+- `Graphify` is the repository architecture graph for maintainers. It is not the learner brain.
 
-  <p>
-    <a href="https://github.com/MohamedFuad16/Tutor-System-Architecture-/blob/main/LICENSE">
-      <img src="https://img.shields.io/badge/License-MIT-3B82F6?style=for-the-badge&logo=github&logoColor=white" alt="License MIT" />
-    </a>
-    <a href="https://react.dev/">
-      <img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
-    </a>
-    <a href="https://www.typescriptlang.org/">
-      <img src="https://img.shields.io/badge/TypeScript_5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 5.8" />
-    </a>
-    <a href="https://openrouter.ai/">
-      <img src="https://img.shields.io/badge/LLM_Broker-OpenRouter-8B5CF6?style=for-the-badge&logo=openrouter&logoColor=white" alt="OpenRouter Broker" />
-    </a>
-    <a href="https://deepgram.com/">
-      <img src="https://img.shields.io/badge/Voice_TTS-Deepgram-F97316?style=for-the-badge&logo=deepgram&logoColor=white" alt="Deepgram Voice" />
-    </a>
-  </p>
-
-  <p align="center">
-    <a href="#core-surfaces">Core Surfaces</a> •
-    <a href="#system-architecture">System Architecture</a> •
-    <a href="#graphify-architecture-layer">Graphify Architecture Layer</a> •
-    <a href="#getting-started">Getting Started</a> •
-    <a href="#design-system">Design System</a>
-  </p>
-
-</div>
-
----
-
-> [!TIP]
-> Tutor supports browser BYOK for local development and explicit server-side
-> OpenRouter/Deepgram fallbacks for trusted deployments. Shared server keys stay
-> disabled until their matching `ALLOW_SERVER_*_FALLBACK` flag is enabled.
-
-## Overview
-
-Tutor is a local-first learning environment for reading papers and textbooks,
-asking a source-aware tutor questions, speaking with a realtime voice tutor, and
-turning useful moments into review material. The app combines Study, Chat,
-Revision, Analytics, Admin diagnostics, built-in architecture books, and a
-Graphify repository architecture graph for maintainers.
-
-The core unit is a learning book. Each book owns one durable chat thread, one
-active PDF selection, any number of stored PDF documents, and its own revision
-material. Switching books switches the visible chat, PDF rail, injected context,
-and revision notebook together, so a Python book does not leak into General
-Study or another book.
-
-The learner brain is the local ledger behind that experience. It stores books,
-documents, concepts, evidence, mastery changes, artifacts, corrections, and
-runtime traces in browser-local Dexie/IndexedDB records. It is not hidden model
-memory and it is not Graphify.
-
-Durable learning changes are evidence-gated. Model summaries, generated notes,
-tool traces, voice transcripts, and misconception candidates can help teaching
-or review, but only validated learner evidence, such as scored flashcard reviews
-or evaluated answers linked to real concepts, may increase mastery.
-
-Admin exists to make the system inspectable during local beta. It groups model
-runs, tool jobs, retrieval, memory, voice, evidence, artifacts, corrections, and
-background jobs by request/proof ids. Synthetic rehearsals can check wiring, but
-the local beta gate is based on real provider rows tied to the same book,
-thread, multi-PDF context, and approval evidence. Mock and fallback rows do not
-count as real provider proof. AWS/cloud work remains deferred until after local
-beta review.
-
-## Core Surfaces
-
-Tutor transitions between a dark Cosmic Obsidian study workspace and a clean
-paper reading style for revision.
-
-<table width="100%">
-  <tr>
-    <td width="50%" valign="top">
-      <h3>Study Workspace</h3>
-      <p>Interactive multi-PDF study surface using <code>react-pdf</code>. Desktop keeps the reader and tutor side by side; mobile opens chat first and represents PDFs as compact, switchable attached context until the learner chooses <code>View PDF</code>.</p>
-    </td>
-    <td width="50%" valign="top">
-      <h3>Streaming Chat Panel</h3>
-      <p>SSE tutor responses with custom Markdown, Mermaid diagrams, code rendering, TTS audio, source-material-first search, and one persistent conversation thread per learning book.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>Active Recall Library</h3>
-      <p>Paper-style generated learning books, concept notes, active recall cards, and built-in architecture/design-language references.</p>
-    </td>
-    <td width="50%" valign="top">
-      <h3>Three-Dimensional Brain Graph</h3>
-      <p>A learner-facing concept matrix that maps books, prerequisites, and concepts into a local knowledge graph.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>BKT Analytics Matrix</h3>
-      <p>Charts for mastery, confidence, interactions, study sessions, and retention signals.</p>
-    </td>
-    <td width="50%" valign="top">
-      <h3>Admin Diagnostics Console</h3>
-      <p>Inspect request timelines, model runs, tool jobs, memory/retrieval injections, voice events, DeepSeek trace entries, and live backend logs from the server console.</p>
-    </td>
-  </tr>
-</table>
-
-## System Architecture
-
-Tutor integrates browser-heavy learning surfaces with a local Express proxy for
-model, search, document-ingestion, voice, and telemetry routes.
-
-```text
-Upload
-  -> Document Classifier
-     -> Native/Text PDF: PyMuPDF4LLM
-     -> Scanned PDF / Images: bounded OCR + vision parsing
-     -> Mixed Documents: PyMuPDF4LLM + page-image vision context
-```
+## Architecture
 
 ```mermaid
-graph TD
-    A[Study Workspace PDF Selection]
-    B[AI Streaming Chat & Voice Engine]
-    C[Express Server API Broker]
-    D[(Local Dexie NeuralNestBrain DB)]
-    E[OpenRouter Core LLMs]
-    F[Deepgram Audio STT/TTS]
-    G[Serper Web Search Index]
-    H[Graphify Architecture Graph]
+flowchart LR
+  User["Learner"]
+  Study["Study + PDF Context"]
+  Chat["Foreground Tutor"]
+  Broker["Local Express Broker"]
+  Background["Background Tool Model"]
+  Voice["Deepgram STT/TTS or Custom Voice Broker"]
+  Memory["Dexie Learner Ledger"]
+  Revision["Revision Books"]
+  Admin["Admin Diagnostics"]
+  Graphify["Graphify Repo Map"]
 
-    A -->|Text annotations and page selection| B
-    A -->|Stored PDFs and extracted text| D
-    B <-->|Book-scoped chat, documents, and learner memory| D
-    B -->|Streaming SSE prompts and voice streams| C
-    C <-->|Federated query dispatch| E
-    C <-->|Low-latency audio synthesis| F
-    C -->|Fresh web search requests| G
-    H -.->|Agent architecture navigation| A
-    H -.->|Dependency and impact context| C
+  User --> Study
+  Study --> Chat
+  Chat <--> Broker
+  Broker <--> Background
+  Broker <--> Voice
+  Chat --> Memory
+  Memory --> Revision
+  Memory --> Admin
+  Graphify -. developer navigation .-> Broker
 ```
 
-### Learner Algorithm Selection
+The learner brain is stored locally in Dexie/IndexedDB. It records books, documents, concepts, entries, evidence, mastery changes, artifacts, corrections, and runtime traces. Mastery is evidence-gated: model summaries can propose learning material, but durable mastery changes require learner evidence linked to concepts.
 
-Validated mastery attempts now pass through a local learner-algorithm selector
-before the mastery row is written:
+## Voice Modes
 
-- `conservative_threshold` handles sparse first attempts without overfitting a
-  probabilistic trace.
-- `bayesian_knowledge_tracing` remains the default stable/tuned mastery model
-  and honors Admin runtime BKT settings.
-- `decay_sensitive_bkt` handles concepts with prior attempts after a meaningful
-  review gap.
+- `deepgram` mode uses the Deepgram Voice Agent path.
+- `custom` mode opens a browser WebSocket to the local broker. The broker sends foreground teaching to an OpenRouter-compatible `VOICE_FOREGROUND_MODEL` and delegates web/code/PDF/tool work to `VOICE_BACKGROUND_MODEL`.
+- Background answers are cleaned before insertion so raw markdown such as `**Apple**` is not read aloud.
+- MisoTTS is optional and experimental. The local broker only accepts loopback Miso URLs such as `http://127.0.0.1:8080`.
+- No route should claim a universal sub-200 ms guarantee. Report latency as measured p50, p95, failure rate, route, provider, region, and hardware.
 
-The selected algorithm, candidate scores, and reason are saved into the evidence
-and mastery metadata. Neural tracing families such as AKT are still future work;
-the app does not claim to train or run them locally.
+## Requirements
 
-## Book-Scoped Study Workflow
+- Node.js 22
+- npm
+- Python 3 for document extraction helpers
+- Optional provider keys: OpenRouter, Deepgram, Serper
 
-Tutor treats a learning book as the durable unit of context:
-
-- `General Study` has its own persistent chat thread.
-- Every generated or saved learning book has exactly one persistent chat thread.
-- Switching books in Chat or opening a generated book in Revision updates the
-  shared active book ID.
-- The chat transcript, active PDF, selected document context, flashcards, and
-  learning entries stay scoped to that book.
-- Refresh restores the last active book, then reloads that book's chat thread
-  and active PDF from local Dexie/IndexedDB state.
-
-This avoids cross-book leakage. A Python book loads the Python conversation and
-document context; General Study loads only the General Study conversation and
-context.
-
-## Multi-PDF Books
-
-Study books can now hold more than one PDF:
-
-1. Select or create the book context in Chat or Revision.
-2. Add one PDF or several PDFs at once from Study. Each PDF is saved as a
-   `learningDocuments` record linked to the active book.
-3. The document rail lets you switch between PDFs without replacing the book.
-   On mobile, the tutor remains the primary surface and the active PDF appears
-   as a compact attachment with explicit `View PDF` and return-to-chat actions.
-4. Removing a PDF deletes that document record and its document-scoped
-   annotations without deleting the learning book notes.
-5. The active book's PDFs are summarized as a manifest, then every ready PDF gets
-   a bounded excerpt by default when Chat or Voice builds a tutor request.
-   Callers can still request a smaller explicit document cap for tight prompts.
-   Pending, failed, ready, excerpted, and intentionally omitted PDFs stay visible
-   in packet metadata instead of disappearing.
-6. Each chat request builds a shared brain-context packet from memory, active
-   book, document, and interaction state, then carries the browser request id
-   through memory retrieval, `/api/chat`, model/tool ledgers, and Admin request
-   timelines. Voice uses the voice session id for the same local packet,
-   prioritizes book/document context before voice compaction, and reports the
-   added, ready, excerpted, pending/failed, and omitted document counts in local
-   telemetry.
-7. Voice can call the local `look_at_current_page` bridge for current-page,
-   visible-diagram, screen, and source-material questions from the rendered PDF
-   canvas.
-8. Voice can call the local `web_search` bridge for explicit web or freshness
-   questions, with Admin recording the voice tool status and source cards.
-
-PDF blobs, extracted text, active document ID, page position, and zoom are stored
-locally in the browser. Large scanned documents may still be bounded by browser
-storage quota and the server-side document extraction limits.
-
-## Graphify Architecture Layer
-
-Graphify replaces the old custom repository architecture runtime. Architecture
-artifacts live in `graphify-out/`.
-
-Useful local commands:
+Install local dependencies:
 
 ```bash
-npm run graphify:query -- "how does chat streaming work?"
-npm run graphify:path -- "ChatPanel" "server.ts"
-npm run graphify:tree
+npm ci
+pip install -r requirements.txt
 ```
 
-Graph rebuild policy:
+Create `.env` from `.env.example` and fill only the providers you need.
 
-- Graphify artifacts are refreshed only by explicit local or agent-requested
-  maintenance; there is no GitHub Actions graph refresh on push or pull request.
-- When Graphify maintenance is requested, run `graphify update .` and
-  `npm run graphify:tree`, then commit the changed `graphify-out` artifacts.
-- Run `npm run lint` and `npm run build` locally before pushing or opening pull
-  requests.
-- Local agents should use Graphify queries before broad code reads, but should
-  not run watch-mode or commit/checkout hooks in this repo.
+## Environment
 
-## Getting Started
+| Variable                           | Purpose                                                                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `OPENROUTER_API_KEY`               | Server-side OpenRouter key for chat and custom voice broker when fallback is enabled.                               |
+| `ALLOW_SERVER_OPENROUTER_FALLBACK` | Must be `true` before browser requests may use the server OpenRouter key.                                           |
+| `DEEPGRAM_API_KEY`                 | Deepgram STT/TTS key.                                                                                               |
+| `ALLOW_SERVER_DEEPGRAM_FALLBACK`   | Must be `true` before browser requests may use the server Deepgram key.                                             |
+| `SERPER_API_KEY`                   | Legacy typed-chat web search key. Custom voice background search uses OpenRouter tools instead.                     |
+| `VITE_VOICE_BROKER_MODE`           | `deepgram` or `custom`.                                                                                             |
+| `VOICE_FOREGROUND_MODEL`           | Fast teaching model, for example `openai/gpt-4o-mini`.                                                              |
+| `VOICE_BACKGROUND_MODEL`           | Provider-valid background model id for web/search/code/PDF/tool work. This is not the Codex runtime model selector. |
+| `VOICE_BROKER_STT_MODEL`           | Deepgram STT model, default `nova-3`.                                                                               |
+| `VOICE_BROKER_TTS_MODEL`           | Deepgram Aura TTS model.                                                                                            |
+| `MISO_TTS_API_URL`                 | Optional loopback-only local Miso endpoint.                                                                         |
 
-### 1. Prerequisites
-
-- Node.js 22 recommended.
-- OpenRouter key for chat intelligence. Each user can bring their own key in
-  Settings; a deployment-wide OpenRouter key is optional and must be explicitly
-  enabled as a shared fallback.
-- Deepgram key for voice, TTS, and stored built-in chapter audio generation.
-- Serper key for live web search.
-
-### 2. Install
-
-```bash
-git clone https://github.com/MohamedFuad16/Tutor-System-Architecture-.git
-cd Tutor-System-Architecture-
-npm install
-```
-
-### 3. Configure Environment
-
-Create a `.env` file:
-
-```ini
-OPENROUTER_API_KEY=your_openrouter_key_here
-ALLOW_SERVER_OPENROUTER_FALLBACK=false
-DEEPGRAM_API_KEY=your_deepgram_key_here
-ALLOW_SERVER_DEEPGRAM_FALLBACK=false
-SERPER_API_KEY=your_serper_key_here
-```
-
-Leave both fallback flags `false` when users should provide their own keys. Set
-a flag to `true` only when the owner intentionally allows visitors to consume
-that server-side provider quota. The current fallback routes do not replace
-application authentication, per-user quotas, or deployment rate limiting, so
-do not expose shared keys on an untrusted public deployment.
-
-### 4. Run
+## Run
 
 ```bash
 npm run dev
 ```
 
-If `3000` is already in use, pass an explicit host and port:
+If port `3000` is busy:
 
 ```bash
 npm run dev -- --host 127.0.0.1 --port 3100
 ```
 
-### 5. Generate Stored Chapter Audio
+## Graphify Workflow
 
-Built-in Library books use checked-in 3-4 minute MP3 assets for every chapter
-guide, with measured duration seconds in the manifest, so playback is local and
-does not call the live read-aloud route.
+Use Graphify before broad code reads:
+
+```bash
+graphify query "how does the voice broker connect to ChatPanel?" --budget 2000 --graph graphify-out/graph.json
+graphify path "ChatPanel" "server.ts" --graph graphify-out/graph.json
+npm run graphify:tree
+```
+
+Do not regenerate `graphify-out` automatically after ordinary edits. Refresh Graphify artifacts only when graph maintenance is explicitly requested.
+
+## Stored Chapter Audio
+
+Checked-in audio guides live under `public/audio-overviews/`. Rewritten built-in chapters only attach stored audio when the manifest chapter title exactly matches the current chapter title, so old MP3s cannot silently play for a new chapter edition. Regenerate audio after chapter-title rewrites:
 
 ```bash
 npm run audio:overview:dry-run
 DEEPGRAM_API_KEY=your_deepgram_key npm run audio:overview:generate -- --provider deepgram --overwrite
 ```
 
-The default generator uses Deepgram `aura-2-odysseus-en` at speed `1` and exits
-before network synthesis if `DEEPGRAM_API_KEY` is missing. The generated MP3s
-are saved under `public/audio-overviews/` and played directly by the browser.
-
-Open `http://localhost:3000`.
-
-## Provider And Compatibility Notes
-
-- Vite documents that `VITE_*` values are bundled into client code, so provider
-  secrets use server-only environment names:
-  [Vite environment variables](https://vite.dev/guide/env-and-mode.html).
-- OpenRouter recommends environment variables, protected keys, and optional
-  credit limits:
-  [OpenRouter API authentication](https://openrouter.ai/docs/api-keys).
-- Deepgram Voice Agent supports API keys or temporary tokens. This app keeps
-  the server fallback behind an explicit opt-in and requires an auth frame
-  before accepting browser audio:
-  [Deepgram Voice Agent authentication](https://developers.deepgram.com/reference/voice-agent/voice-agent).
-- Chat read-aloud uses `POST /api/tts` so tutor text is not placed in request
-  URLs. Pending audio requests are aborted and blob URLs are revoked when
-  playback stops or the panel unmounts.
-- The live microphone capture compatibility path still uses the deprecated
-  `createScriptProcessor()` API. It should move to `AudioWorkletNode` in a
-  dedicated voice-browser migration:
-  [MDN createScriptProcessor](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createScriptProcessor).
-
 ## Verification
 
+Run the complete local gate before pushing:
+
 ```bash
-npm run test
-npm run lint
-npm run build
 npm run format:check
+npm run lint
+npm test
+npm run build
+npm run brain:postchange -- --reason five-agent-release-verification
 ```
 
-## Design System
+For UI changes, also open the running app in the browser and smoke-test Study, fullscreen chat, Revision, and Admin at desktop and mobile widths.
 
-- Cosmic Obsidian for Study, Graph, Settings, and Admin: ultra-dark surfaces,
-  neon violet/blue/orange accents, glass panels, liquid details, and motion.
-- Paper Reading Style for Revision and Trace views: `#faf9f6`, serif type, soft
-  borders, and quiet reading density.
-- App Design Language Library: live wireframes, theme tokens, and interactive
-  component previews.
+## Current Local-Beta Boundaries
 
-## Contributing
-
-1. Use Graphify graph traversal before broad repository reads.
-2. Run `npm run lint` and `npm run build` before opening a pull request.
-3. Refresh `graphify-out` only when Graphify maintenance is explicitly in scope.
+- Local learner records are not authenticated multi-tenant cloud records.
+- Admin can inspect per-learner local data, but production tenancy, backups, retention, and organization administration are deferred.
+- Voice provider combinations need measured real-key proof before any latency promise is made.
+- Citation and artifact checks record provenance and local consistency; they do not prove every generated claim is factually true.
+- AWS deployment is intentionally deferred until local beta behavior is repeatable and inspectable.
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for details.
+MIT.

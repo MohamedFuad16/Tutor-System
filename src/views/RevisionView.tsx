@@ -2447,19 +2447,36 @@ const AppDesignLanguagePage = ({ chapterIndex }: { chapterIndex: number }) => {
           "Exports are capped, local-only, and explicit about deferred cloud readiness, correction overlays, and out-of-scope automation.",
       },
     ];
+    const visibleControlPatterns = controlPatterns.filter((pattern) =>
+      [
+        "Request timelines",
+        "Brain context packet",
+        "Provider-ready proof",
+        "Voice agent timeline",
+        "Correction overlays",
+        "Diagnostics export",
+      ].includes(pattern.title),
+    );
 
     return (
       <div className="font-sans text-zinc-900">
         <div className="rounded-[34px] border border-zinc-200 bg-white/80 p-6 shadow-[0_24px_70px_rgba(46,36,22,0.12)]">
           <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-500/70">
-            Local beta control surfaces
+            Operator controls
           </div>
           <h3 className="mt-3 max-w-2xl text-3xl font-serif font-medium leading-tight">
-            Operational UI should show what changed, why it changed, and how to
-            review it without hiding the learner workspace.
+            These controls exist to prove the learning loop before cloud
+            deployment.
           </h3>
+          <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-600">
+            Learners do not need these controls during ordinary study. They let
+            an operator follow one request, inspect the context given to the
+            tutor, confirm that real providers ran, review corrections, and
+            export a bounded local-beta report. Once production observability
+            exists, several of these local proof controls can be retired.
+          </p>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
-            {controlPatterns.map((pattern) => (
+            {visibleControlPatterns.map((pattern) => (
               <div
                 key={pattern.title}
                 className="rounded-[24px] border border-zinc-200 bg-zinc-50 p-4"
@@ -2520,7 +2537,11 @@ const builtInBooks: BuiltInBook[] = [
     hiddenKey: "tutor_book_hidden",
     chapters: tutorBook.map((chapter, index) => ({
       ...chapter,
-      audioOverview: builtInBookAudioOverviews["tutor-book"]?.[index],
+      audioOverview:
+        builtInBookAudioOverviews["tutor-book"]?.[index]?.chapterTitle ===
+        chapter.title
+          ? builtInBookAudioOverviews["tutor-book"]?.[index]
+          : undefined,
     })),
   },
   {
@@ -2531,7 +2552,10 @@ const builtInBooks: BuiltInBook[] = [
     hiddenKey: "user_brain_architecture_book_hidden",
     chapters: userBrainArchitectureBook.map((chapter, index) => ({
       ...chapter,
-      audioOverview: userBrainChapterAudioOverviews[index],
+      audioOverview:
+        userBrainChapterAudioOverviews[index]?.chapterTitle === chapter.title
+          ? userBrainChapterAudioOverviews[index]
+          : undefined,
     })),
   },
   {
@@ -2544,10 +2568,14 @@ const builtInBooks: BuiltInBook[] = [
       { title: "Wireframe Connections" },
       { title: "Theme System" },
       { title: "UI Component Snapshots" },
-      { title: "Local Beta Control Patterns" },
+      { title: "Operator Controls And Why They Exist" },
     ].map((chapter, index) => ({
       ...chapter,
-      audioOverview: builtInBookAudioOverviews["app-design-language"]?.[index],
+      audioOverview:
+        builtInBookAudioOverviews["app-design-language"]?.[index]
+          ?.chapterTitle === chapter.title
+          ? builtInBookAudioOverviews["app-design-language"]?.[index]
+          : undefined,
     })),
     renderChapter: (chapterIndex) => (
       <AppDesignLanguagePage chapterIndex={chapterIndex} />
@@ -3137,13 +3165,46 @@ export function RevisionView() {
         ? conceptsForChapter
             .map(
               (concept) =>
-                `### ${concept.name}\n${cleanRevisionNote(concept.summary) || "Summary pending."}`,
+                `### ${concept.name}\n${cleanRevisionNote(concept.summary) || "A fuller explanation will be added after the next supported lesson."}`,
             )
             .join("\n\n")
-        : "No mapped concepts yet.";
-      return `## Chapter ${index + 1}: ${chapter.title}\n\n${note}\n\n## Concepts To Revise\n\n${conceptText}\n\n## Review Check\n\nExplain the key idea in your own words, name the mechanism that makes it work, and apply it to one fresh example.`;
+        : "This chapter has not yet separated its main idea into smaller concepts.";
+      const chapterEntries = (entriesByBookId.get(book.id) || []).filter(
+        (entry) =>
+          entry.learnedConcepts.some((conceptId) =>
+            chapterConceptIds.has(conceptId),
+          ),
+      );
+      const example =
+        cleanRevisionNote(
+          chapterEntries[0]?.assistantSummary ||
+            chapterEntries[0]?.conversationSummary,
+        ) ||
+        "Create a new example that uses the chapter's main mechanism in a different situation.";
+      const diagramNodes = conceptsForChapter.slice(0, 6);
+      const diagram = diagramNodes.length
+        ? [
+            "```mermaid",
+            "flowchart LR",
+            `  idea["${chapter.title.replace(/"/g, "'")}"]`,
+            ...diagramNodes.map(
+              (concept, conceptIndex) =>
+                `  concept${conceptIndex}["${concept.name.replace(/"/g, "'")}"]`,
+            ),
+            ...diagramNodes.map(
+              (_, conceptIndex) => `  idea --> concept${conceptIndex}`,
+            ),
+            "```",
+          ].join("\n")
+        : "";
+      return `## The Big Idea\n\n${note}\n\n## How The Ideas Connect\n\n${conceptText}\n\n${diagram ? `## Visual Map\n\n${diagram}\n\n` : ""}## Worked Example\n\n${example}\n\n## Check Your Understanding\n\nExplain the main idea without looking back. Then name the mechanism that makes it work and apply it to one fresh example. If this is a programming chapter, write or modify a short code sample and predict its output before running it.`;
     },
-    [cleanRevisionNote, conceptsByBookId, learningBookMarkdown],
+    [
+      cleanRevisionNote,
+      conceptsByBookId,
+      entriesByBookId,
+      learningBookMarkdown,
+    ],
   );
   const isBuiltInBook = Boolean(activeBuiltInBook);
   const activeTitle = activeLearningBook?.title || activeConcept?.name || "";

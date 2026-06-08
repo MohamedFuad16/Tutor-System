@@ -45,6 +45,11 @@ Backend:
 - WebSocket log broadcaster at `/ws/debug`.
 - OpenAI SDK against OpenRouter-compatible routes.
 - Deepgram realtime voice and speech routes.
+- Optional local voice broker at `/api/voice-broker` behind
+  `VITE_VOICE_BROKER_MODE=custom`; it connects Deepgram STT, GPT-4o-mini,
+  Deepgram Aura streaming TTS, and GPT-5.5/Serper background adapters when
+  session keys/endpoints are provided, and otherwise stays in a provider-safe
+  staged mode. Browser speech is an explicit fallback only.
 - Optional MisoTTS read-aloud through `/api/tts`, `MISO_TTS_API_URL`, the
   Settings endpoint field, or a local Vast tunnel at `http://127.0.0.1:8080`.
 - Serper web search for explicit external/freshness questions.
@@ -55,18 +60,20 @@ Backend:
 Providers are adapters behind app contracts. The app should be clear about what
 each adapter proves.
 
-| Job                       | Local-beta route                                                         | Boundary                                                                |
-| ------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| Tutor and background text | OpenRouter-compatible chat routes                                        | Model output is a proposal until grounded, verified, or validated.      |
-| PDF title and page vision | OpenRouter-compatible vision routes                                      | Uses uploaded or rendered study material.                               |
-| Live voice                | Deepgram voice-agent websocket                                           | Speech and transcripts are interaction traces, not mastery evidence.    |
-| Assistant Read Aloud      | `/api/tts`, Deepgram/OpenAI-compatible speech, or optional `miso-tts-8b` | Reads existing assistant text; it does not replace live voice.          |
-| Web search                | Serper route                                                             | Used for explicit web/freshness requests, not current-source questions. |
-| Stored chapter audio      | Checked-in MP3 assets                                                    | Playback is local and does not call live TTS.                           |
+| Job                       | Local-beta route                                                                 | Boundary                                                                                           |
+| ------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Tutor foreground text     | OpenRouter-compatible chat routes, target GPT-4o-mini for voice broker           | Model output is a proposal until grounded, verified, or validated.                                 |
+| Background tool reasoning | GPT-5.5/tool queue target behind the voice broker                                | Runs asynchronously; results must be inserted with source/proof context.                           |
+| PDF title and page vision | OpenRouter-compatible vision routes                                              | Uses uploaded or rendered study material.                                                          |
+| Live voice fallback       | Deepgram voice-agent websocket                                                   | Speech and transcripts are interaction traces, not mastery evidence.                               |
+| Local voice broker target | `/api/voice-broker`: Deepgram STT, GPT-4o-mini, Deepgram Aura TTS, GPT-5.5 queue | Real adapter path when configured; provider-safe staging when not.                                 |
+| Assistant Read Aloud      | `/api/tts`, Deepgram/OpenAI-compatible speech, or optional `miso-tts-8b`         | Reads existing assistant text; Miso stays async/read-aloud until true streaming latency is proven. |
+| Web search                | Serper route                                                                     | Used for explicit web/freshness requests, not current-source questions.                            |
+| Stored chapter audio      | Checked-in MP3 assets                                                            | Playback is local and does not call live TTS.                                                      |
 
-The server supports a deployment OpenRouter fallback only when
-`ALLOW_SERVER_OPENROUTER_FALLBACK=true`. BYOK support means the UI can accept a
-browser key; it is not proof that a runtime key is configured.
+The server supports deployment OpenRouter, Deepgram, and Serper fallback keys
+only behind explicit fallback flags. BYOK support means the UI can provide
+session keys; it is not proof that a shared runtime key is configured.
 
 ## 4. Local Data Model
 
@@ -124,6 +131,17 @@ chat and live voice. It combines:
 - balanced excerpts from ready PDFs in that book;
 - selected text, current page context, interaction timing, and semantic memory;
 - request id and proof-attempt metadata for Admin correlation.
+
+Voice broker context uses the same packet, but prioritizes active book and
+document context ahead of long memory so the foreground tutor can remember the
+previous learning thread without burying the live question. Background GPT-5.5
+jobs receive request-correlated context packets and return results through the
+same Admin-inspectable trace family rather than silently changing mastery. Live
+broker speech now streams `ConversationText` through a per-conversation
+Deepgram Aura TTS websocket. Browser speech is a fallback when Deepgram is not
+configured, and MisoTTS remains a read-aloud or async/high-quality path until a
+true local streaming model proves the latency target. The existing Deepgram
+voice-agent websocket remains the fallback route.
 
 Tools follow source boundaries:
 

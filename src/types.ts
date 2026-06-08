@@ -31,6 +31,8 @@ export type Message = {
       id: string;
       role: "user" | "assistant";
       content: string;
+      finalContent?: string;
+      isRevealing?: boolean;
     }[];
     visualFocuses?: {
       id: string;

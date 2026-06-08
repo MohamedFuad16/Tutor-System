@@ -7,6 +7,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useEffect, useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { StudyView } from "../src/views/StudyView";
@@ -18,9 +19,13 @@ import {
 import { useStore } from "../src/store";
 
 const {
+  chatPanelMountMock,
+  chatPanelUnmountMock,
   ensureSessionLearningBookMock,
   updateLearningBookFromConversationMock,
 } = vi.hoisted(() => ({
+  chatPanelMountMock: vi.fn(),
+  chatPanelUnmountMock: vi.fn(),
   ensureSessionLearningBookMock: vi.fn(),
   updateLearningBookFromConversationMock: vi.fn(),
 }));
@@ -30,14 +35,42 @@ vi.mock("../src/components/PdfViewer", () => ({
 }));
 
 vi.mock("../src/components/ChatPanel", () => ({
-  ChatPanel: ({ onClose }: { onClose?: () => void }) => (
-    <section data-testid="chat-panel">
-      Mock tutor chat
-      <button type="button" onClick={onClose}>
-        Close tutor chat
-      </button>
-    </section>
-  ),
+  ChatPanel: ({
+    onClose,
+    isFullscreen,
+    onToggleFullscreen,
+  }: {
+    onClose?: () => void;
+    isFullscreen?: boolean;
+    onToggleFullscreen?: () => void;
+  }) => {
+    const [draft, setDraft] = useState("");
+    useEffect(() => {
+      chatPanelMountMock();
+      return () => chatPanelUnmountMock();
+    }, []);
+    return (
+      <section data-testid="chat-panel">
+        Mock tutor chat
+        <label>
+          Draft
+          <input
+            aria-label="Tutor draft"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+          />
+        </label>
+        <button type="button" onClick={onClose}>
+          Close tutor chat
+        </button>
+        <button type="button" onClick={onToggleFullscreen}>
+          {isFullscreen
+            ? "Exit fullscreen tutor chat"
+            : "Open fullscreen tutor chat"}
+        </button>
+      </section>
+    );
+  },
 }));
 
 vi.mock("../src/memory/memory.orchestrator", () => ({
@@ -109,11 +142,12 @@ const seedStudyBook = async (
   titles: string[],
   options: {
     activeIndex?: number;
+    bookOverrides?: Partial<LearningBook>;
     setStoreActive?: boolean;
     documentOverrides?: Array<Partial<LearningDocument>>;
   } = {},
 ) => {
-  const book = createBook();
+  const book = createBook(options.bookOverrides);
   const documents = titles.map((title, index) =>
     createDocument(book.id, title, options.documentOverrides?.[index]),
   );
@@ -195,6 +229,8 @@ beforeEach(async () => {
   ensureSessionLearningBookMock.mockReset();
   updateLearningBookFromConversationMock.mockReset();
   updateLearningBookFromConversationMock.mockResolvedValue(undefined);
+  chatPanelMountMock.mockReset();
+  chatPanelUnmountMock.mockReset();
 
   Object.defineProperty(URL, "createObjectURL", {
     configurable: true,
@@ -225,6 +261,42 @@ describe("rendered StudyView flows", () => {
     expect(screen.queryByTestId("chat-panel")).toBeNull();
     expect(
       screen.getByRole("button", { name: "Open tutor chat" }),
+    ).toBeInTheDocument();
+  });
+
+  it("expands chat to fullscreen without requiring a PDF", async () => {
+    const user = userEvent.setup();
+    await seedStudyBook([]);
+
+    renderStudyView();
+    await user.click(screen.getByRole("button", { name: "Open tutor chat" }));
+    await user.click(
+      screen.getByRole("button", { name: "Open fullscreen tutor chat" }),
+    );
+
+    expect(screen.getByTestId("study-chat-surface")).toHaveClass(
+      "fixed",
+      "inset-0",
+    );
+    expect(screen.getByTestId("study-chat-surface")).toHaveAttribute(
+      "role",
+      "dialog",
+    );
+    expect(screen.getByTestId("study-chat-surface")).toHaveAttribute(
+      "aria-modal",
+      "true",
+    );
+    expect(
+      screen.getByRole("button", { name: "Exit fullscreen tutor chat" }),
+    ).toBeInTheDocument();
+
+    fireEvent.keyDown(screen.getByTestId("study-chat-surface"), {
+      key: "Escape",
+    });
+
+    expect(screen.getByTestId("study-chat-surface")).not.toHaveClass("fixed");
+    expect(
+      screen.getByRole("button", { name: "Open fullscreen tutor chat" }),
     ).toBeInTheDocument();
   });
 
@@ -327,6 +399,33 @@ describe("rendered StudyView flows", () => {
     );
     expect(chatSurface).toHaveClass("flex");
     expect(documentSurface).toHaveClass("hidden", "md:flex");
+  });
+
+  it("keeps mobile PDF toggles mounted without recreating context or losing a draft", async () => {
+    useMobileStudyViewport();
+    const user = userEvent.setup();
+    await seedStudyBook(["Performance context"]);
+
+    renderStudyView();
+    await waitForPdfView();
+    const draft = screen.getByRole("textbox", { name: "Tutor draft" });
+    await user.type(draft, "Keep this unsent question");
+    const initialObjectUrlCalls = vi.mocked(URL.createObjectURL).mock.calls
+      .length;
+
+    for (let index = 0; index < 3; index += 1) {
+      await user.click(screen.getByRole("button", { name: "View PDF" }));
+      await user.click(
+        screen.getByRole("button", { name: "Return to tutor chat" }),
+      );
+    }
+
+    expect(screen.getByRole("textbox", { name: "Tutor draft" })).toHaveValue(
+      "Keep this unsent question",
+    );
+    expect(chatPanelMountMock).toHaveBeenCalledTimes(1);
+    expect(chatPanelUnmountMock).not.toHaveBeenCalled();
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(initialObjectUrlCalls);
   });
 
   it("closes and reopens tutor chat while a document remains active", async () => {
@@ -478,7 +577,10 @@ describe("rendered StudyView flows", () => {
   });
 
   it("uploads a PDF through the picker and completes mocked ingestion", async () => {
-    const { book } = await seedStudyBook([]);
+    const { book } = await seedStudyBook([], {
+      bookOverrides: { userName: "Maya" },
+    });
+    useStore.setState({ learnerName: "Maya" });
     useStore.setState({ selectedTextContext: "clear on upload" });
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -525,6 +627,12 @@ describe("rendered StudyView flows", () => {
       expect.objectContaining({ method: "POST" }),
     );
     expect(updateLearningBookFromConversationMock).toHaveBeenCalledOnce();
+    expect(updateLearningBookFromConversationMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activeBookId: book.id,
+        userName: "Maya",
+      }),
+    );
     expect(await screen.findByTestId("chat-panel")).toBeInTheDocument();
   });
 

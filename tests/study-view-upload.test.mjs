@@ -75,9 +75,12 @@ test("StudyView reuses PDF object URLs across mobile chat and reader toggles", (
   assert.match(studyViewSource, /const documentObjectUrlCache = new Map/);
   assert.match(
     studyViewSource,
-    /const cachedUrl = documentObjectUrlCache\.get\(document\.id\);/,
+    /const cached = documentObjectUrlCache\.get\(document\.id\);/,
   );
-  assert.match(studyViewSource, /if \(cachedUrl\) return cachedUrl;/);
+  assert.match(
+    studyViewSource,
+    /if \(cached\?\.blob === sourceBlob\) return cached\.url;/,
+  );
   assert.match(studyViewSource, /isMobilePdfOpen \? "hidden md:flex" : "flex"/);
 });
 

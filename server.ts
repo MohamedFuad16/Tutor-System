@@ -62,6 +62,92 @@ const PRICING_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PCM16_MONO_48K_BYTES_PER_SECOND = 48000 * 2;
 const DEFAULT_CHAT_MODEL = "deepseek/deepseek-v4-flash";
 const LEARNING_AGENT_MODEL = "deepseek/deepseek-v4-flash";
+const VOICE_FOREGROUND_MODEL =
+  process.env.VOICE_FOREGROUND_MODEL || "openai/gpt-4o-mini";
+const VOICE_BACKGROUND_MODEL =
+  process.env.VOICE_BACKGROUND_MODEL ||
+  process.env.GPT55_MODEL ||
+  "openai/gpt-5.5";
+const VOICE_BROKER_FAST_ACK = /^(1|true|yes|on)$/i.test(
+  String(process.env.VOICE_BROKER_FAST_ACK || "").trim(),
+);
+const VOICE_BROKER_FAST_ACK_TEXT =
+  process.env.VOICE_BROKER_FAST_ACK_TEXT || "Okay.";
+const VOICE_BROKER_FAST_ACK_FILE = process.env.VOICE_BROKER_FAST_ACK_FILE || "";
+const VOICE_BROKER_TTS_DEADLINE_MS = Math.max(
+  50,
+  Number(process.env.VOICE_BROKER_TTS_DEADLINE_MS || 180),
+);
+const VOICE_BROKER_STT_MODEL = process.env.VOICE_BROKER_STT_MODEL || "nova-3";
+const VOICE_BROKER_TTS_MODEL =
+  process.env.VOICE_BROKER_TTS_MODEL || "aura-2-thalia-en";
+const VOICE_BROKER_TTS_SAMPLE_RATE = Math.max(
+  8000,
+  Number(process.env.VOICE_BROKER_TTS_SAMPLE_RATE || 48000),
+);
+const VOICE_BACKGROUND_TOOL_DEFINITIONS = [
+  {
+    name: "openrouter:web_search",
+    description:
+      "Delegate current web research to the GPT-5.5 background model through OpenRouter's hosted web search tool.",
+    parameters: {
+      type: "object",
+      properties: {
+        task: {
+          type: "string",
+          description:
+            "The learner's current/search/background request in natural language.",
+        },
+      },
+      required: ["task"],
+    },
+  },
+  {
+    name: "create_pdf",
+    description:
+      "Delegate PDF creation or extraction work to the GPT-5.5 background model.",
+    parameters: {
+      type: "object",
+      properties: {
+        task: {
+          type: "string",
+          description: "The requested PDF task.",
+        },
+      },
+      required: ["task"],
+    },
+  },
+  {
+    name: "inspect_code",
+    description:
+      "Delegate code reading, bug fixing, or analysis work to the GPT-5.5 background model.",
+    parameters: {
+      type: "object",
+      properties: {
+        task: {
+          type: "string",
+          description: "The code task to inspect.",
+        },
+      },
+      required: ["task"],
+    },
+  },
+  {
+    name: "analyze_request",
+    description:
+      "Delegate slow analysis, planning, file work, and non-teaching background tasks while the foreground tutor keeps speaking.",
+    parameters: {
+      type: "object",
+      properties: {
+        task: {
+          type: "string",
+          description: "The background work to perform.",
+        },
+      },
+      required: ["task"],
+    },
+  },
+] as const;
 const OPENROUTER_SERVER_FALLBACK_FLAG = "ALLOW_SERVER_OPENROUTER_FALLBACK";
 const DEEPGRAM_SERVER_FALLBACK_FLAG = "ALLOW_SERVER_DEEPGRAM_FALLBACK";
 const MAX_DOCUMENT_UPLOAD_MB = 50;
@@ -84,11 +170,24 @@ const ttsCostForModel = (model: string, characters: number) => {
 
 const MISO_TTS_8B_VOICE = "miso-tts-8b";
 const MISO_TTS_HEALTH_TIMEOUT_MS = 800;
+const VOICE_WS_BUFFER_HIGH_WATER_BYTES = 1_000_000;
+const VOICE_AGENT_MESSAGE_BUFFER_LIMIT = 80;
 
 const readMisoTtsApiUrlOverride = (headers: IncomingHttpHeaders) => {
   const raw = headers["x-miso-tts-api-url"];
   if (Array.isArray(raw)) return raw[0] || "";
   return typeof raw === "string" ? raw : "";
+};
+
+const isLoopbackHostnameValue = (hostname: string) => {
+  const normalized = hostname.trim().toLowerCase();
+  return (
+    normalized === "localhost" ||
+    normalized.endsWith(".localhost") ||
+    normalized === "::1" ||
+    normalized === "[::1]" ||
+    /^127(?:\.\d{1,3}){3}$/.test(normalized)
+  );
 };
 
 const misoTtsApiBaseUrl = (overrideUrl = "") => {
@@ -100,6 +199,11 @@ const misoTtsApiBaseUrl = (overrideUrl = "") => {
   const parsed = new URL(raw);
   if (!["http:", "https:"].includes(parsed.protocol)) {
     throw new Error("MisoTTS API URL must use http or https.");
+  }
+  if (!isLoopbackHostnameValue(parsed.hostname)) {
+    throw new Error(
+      "MisoTTS API URL must point to a loopback host such as localhost or 127.0.0.1.",
+    );
   }
   return parsed.toString().replace(/\/+$/, "");
 };
@@ -171,6 +275,118 @@ const compactActivityText = (value: unknown, maxLength = 180) => {
     : `${compact.slice(0, maxLength - 3)}...`;
 };
 
+const extractSpeechTextFromStructuredValue = (value: unknown): string => {
+  if (typeof value === "string") return value;
+  if (!value || typeof value !== "object") return "";
+  const record = value as Record<string, unknown>;
+  const preferredFields = [
+    "spoken",
+    "speech",
+    "answer",
+    "summary",
+    "content",
+    "text",
+    "result",
+    "message",
+  ];
+  for (const field of preferredFields) {
+    const extracted = extractSpeechTextFromStructuredValue(record[field]);
+    if (extracted) return extracted;
+  }
+  const firstString = Object.values(record).find(
+    (entry) => typeof entry === "string" && entry.trim().length > 0,
+  );
+  return typeof firstString === "string" ? firstString : "";
+};
+
+const normalizeSpokenMarkdown = (value: string) =>
+  value
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
+    .replace(/(\*\*|__)(.*?)\1/g, "$2")
+    .replace(/(\*|_)(.*?)\1/g, "$2")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/^[-*]\s+/gm, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const backgroundTransitionFor = (text: string) => {
+  const value = text.toLowerCase();
+  if (/\b(stock|share|ticker|market|quote|price|prices)\b/.test(value)) {
+    return "Also";
+  }
+  if (/\b(code|debug|bug|error|repo|repository|fix|implement)\b/.test(value)) {
+    return "One more thing";
+  }
+  if (/\b(pdf|file|document|create|generate|download)\b/.test(value)) {
+    return "Quick update";
+  }
+  if (
+    /\b(source|sources|web|search|latest|current|news|research)\b/.test(value)
+  ) {
+    return "I found it";
+  }
+  let hash = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    hash = ((hash << 5) - hash + text.charCodeAt(index)) | 0;
+  }
+  return ["Also", "By the way", "Quick update", "One more thing"][
+    Math.abs(hash) % 4
+  ];
+};
+
+const normalizeBackgroundSpokenInsertion = (value: unknown) => {
+  let text = typeof value === "string" ? value.trim() : "";
+  if (!text) return "";
+  text = text
+    .replace(/^```(?:json|markdown|text)?\s*/i, "")
+    .replace(/```$/i, "")
+    .trim();
+  if (/^[{[]/.test(text)) {
+    try {
+      const extracted = extractSpeechTextFromStructuredValue(JSON.parse(text));
+      if (extracted) text = extracted;
+    } catch {
+      // Fall through to the text cleanup path.
+    }
+  }
+  text = text
+    .replace(/^["'`]+|["'`]+$/g, "")
+    .replace(
+      /\b(?:foreground|background|tool|function)\s*(?:result|call)\s*:\s*/gi,
+      "",
+    )
+    .replace(
+      /\b(?:background\s+check|background\s+update|summary|answer)\s*:\s*/gi,
+      "",
+    )
+    .replace(/\[(?:source|citation|ref|reference)\s*\d+\]/gi, "")
+    .replace(/\[[0-9,\s]+\]/g, "")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+  text = normalizeSpokenMarkdown(text);
+  if (!text) return "";
+  if (
+    /^(by the way|also|quick note|quick update|one more thing|i found it)\b/i.test(
+      text,
+    )
+  ) {
+    return compactActivityText(text, 1400);
+  }
+  const transition = backgroundTransitionFor(text);
+  const separator = /^(quick update|one more thing|i found it)$/i.test(
+    transition,
+  )
+    ? ": "
+    : ", ";
+  return compactActivityText(`${transition}${separator}${text}`, 1400);
+};
+
+const estimateSpokenTextMs = (text: string) => {
+  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+  return Math.min(24_000, Math.max(1_600, wordCount * 340));
+};
+
 const sanitizeApiKey = (value: unknown) => {
   const raw = Array.isArray(value) ? value[0] : value;
   const key = typeof raw === "string" ? raw.trim() : "";
@@ -202,12 +418,7 @@ const hostNameFromHeader = (host: string | string[] | undefined) => {
 
 const isLoopbackHost = (host: string | string[] | undefined) => {
   const hostname = hostNameFromHeader(host);
-  return (
-    hostname === "localhost" ||
-    hostname.endsWith(".localhost") ||
-    hostname === "::1" ||
-    hostname === "127.0.0.1"
-  );
+  return isLoopbackHostnameValue(hostname);
 };
 
 const isLoopbackAddress = (address?: string | null) => {
@@ -270,6 +481,16 @@ const isAuthorizedDebugRequest = (request: RequestLike) => {
     isLoopbackAddress(request.socket.remoteAddress)
   );
 };
+
+const isAuthorizedLocalVoiceBrokerRequest = (request: RequestLike) =>
+  isAuthorizedDebugRequest(request);
+
+const wsCanSend = (socket: WSWebSocket | null | undefined) =>
+  Boolean(
+    socket &&
+    socket.readyState === WSWebSocket.OPEN &&
+    socket.bufferedAmount < VOICE_WS_BUFFER_HIGH_WATER_BYTES,
+  );
 
 const redactSensitiveUrl = (url: string) =>
   url.replace(
@@ -573,7 +794,7 @@ const fallbackLearningUpdate = (body: any) => {
         evidence: [userMessage.slice(0, 160)].filter(Boolean),
       },
     ],
-    model: `${LEARNING_AGENT_MODEL} (local fallback)`,
+    model: "local-session-fallback",
   };
 };
 
@@ -1294,8 +1515,8 @@ Schema:
   "bookSource": "chat|pdf|library|mixed",
   "overview": "stable overview of the whole session learning book",
   "chapterTitle": "short chapter title for this conversation",
-  "chapterSummary": "dense study notes for this conversation: 4-8 sentences that capture definitions, mechanisms, examples, mistakes, and how to apply the idea",
-  "conversationSummary": "notebook-quality learning note, not a chat recap: write the actual takeaways a learner would review later",
+  "chapterSummary": "a self-contained revision chapter in Markdown with a clear explanation, mechanism, distinctions, and a worked example; include a fenced Mermaid flowchart for processes and a fenced language-specific code sample when code was actually taught",
+  "conversationSummary": "notebook-quality learning material, not a chat recap: preserve definitions, reasoning, examples, mistakes, and application steps without greetings or tool chatter",
   "knowledgeSummary": "cumulative notes on what the learner now appears to know, including precise concept relationships",
   "conceptsLearned": ["plain names of concepts learned or practiced"],
   "risks": ["misconceptions or weak spots"],
@@ -1315,7 +1536,10 @@ Schema:
 Maintain one learning book for the current session. Use bookTitle as the broad session title (e.g. "Python Programming"). 
 CRITICAL RULES:
 - You MUST dynamically generate a specific, highly relevant \`chapterTitle\` based strictly on what the user actually asked about in this message (e.g. "List Comprehensions", "Promises and Async/Await", "Calculus Integrals"). DO NOT use generic chapter titles like "Conversation Notes".
-- The summaries must be substantial study notes. Avoid one-line summaries. Capture the actual learning, key distinctions, worked examples, misconceptions, and next review hooks.
+- The summaries must be substantial study material. Avoid one-line summaries and headings such as "Concepts to revise". Capture the actual learning, key distinctions, worked examples, misconceptions, and next review hooks.
+- Write for a capable teenager: clear and direct, but never childish.
+- If the lesson explains a process, include a small \`\`\`mermaid flowchart. If it teaches code, include a runnable fenced code example in the correct language. Do not invent a diagram or code sample for subjects where it would add noise.
+- Never include raw tool JSON, provider metadata, hidden prompts, greetings, or a transcript-style recap.
 - Each concept summary should be useful by itself when shown in the Revision library. Include how the concept works, not just that it was mentioned.
 - If the current book already exists, prefer continuing it and adding/refining chapters. Do not invent advanced concepts absent from the conversation.`,
           },
@@ -3214,7 +3438,16 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         `http://${request.headers.host}`,
       ).pathname;
 
-      if (pathname === "/api/voice-agent") {
+      if (pathname === "/api/voice-broker") {
+        if (!isAuthorizedLocalVoiceBrokerRequest(request)) {
+          socket.write("HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n");
+          socket.destroy();
+          return;
+        }
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          wss.emit("connection", ws, request);
+        });
+      } else if (pathname === "/api/voice-agent") {
         wss.handleUpgrade(request, socket, head, (ws) => {
           wss.emit("connection", ws, request);
         });
@@ -3235,6 +3468,1603 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
     wss.on("connection", (ws, req) => {
       const url = new URL(req.url || "", `http://${req.headers.host}`);
       let language = normalizeVoiceLanguage(url.searchParams.get("language"));
+      const isLocalVoiceBroker = url.pathname === "/api/voice-broker";
+
+      if (isLocalVoiceBroker) {
+        let isVoiceSessionStarted = false;
+        let voiceRequestId = `voice_broker_${Date.now()}`;
+        let voiceProofAttemptId = "";
+        let voiceInputSampleRate = 48000;
+        let clientInputBytes = 0;
+        let lastUsageAt = Date.now();
+        let lastUsageClientInputBytes = 0;
+        let hasRecordedClientAudioInput = false;
+        const voiceStartedAt = Date.now();
+        let usageInterval: ReturnType<typeof setInterval> | null = null;
+        let compactStudyContext = "";
+        let brokerOpenRouterApiKey = "";
+        let brokerBackgroundApiKey = "";
+        let brokerDeepgramApiKey = "";
+        let brokerMisoTtsApiUrl = "";
+        let brokerBrowserTtsEnabled = false;
+        let deepgramListenWs: WSWebSocket | null = null;
+        let deepgramSpeakWs: WSWebSocket | null = null;
+        let deepgramSpeakReady = false;
+        let deepgramOutputBytes = 0;
+        let lastUsageDeepgramOutputBytes = 0;
+        let pendingDeepgramSpeakFrames: string[] = [];
+        let pendingDeepgramSpeakFlushTimer: ReturnType<
+          typeof setTimeout
+        > | null = null;
+        let pendingDeepgramSpeakResolvers: Array<() => void> = [];
+        let pendingDeepgramTtsDoneResolvers: Array<() => void> = [];
+        let pendingDeepgramFinalTranscriptSegments: string[] = [];
+        let brokerTtsProvider: "deepgram" | "browser" | "miso" = "deepgram";
+        let assistantSpeechChain: Promise<void> = Promise.resolve();
+        let foregroundTurnChain: Promise<void> = Promise.resolve();
+        let backgroundJobChain: Promise<void> = Promise.resolve();
+        let brokerClosed = false;
+        const activeBrokerControllers = new Set<AbortController>();
+        const foregroundModel = VOICE_FOREGROUND_MODEL;
+        const backgroundModel = VOICE_BACKGROUND_MODEL;
+        const ttsModel = VOICE_BROKER_TTS_MODEL;
+
+        const brokerProofActivityMetadata = () => ({
+          proofAttemptId: voiceProofAttemptId || undefined,
+          mode: "voice",
+          agentLayer: "voice_realtime",
+          brokerMode: "custom_local_ready",
+          foregroundModel,
+          backgroundModel,
+          ttsModel,
+          ttsProvider: brokerTtsProvider,
+          liveTtsModel:
+            brokerTtsProvider === "browser"
+              ? "browser-speech-synthesis"
+              : brokerTtsProvider === "miso"
+                ? MISO_TTS_8B_VOICE
+                : ttsModel,
+        });
+
+        const sendBrokerJson = (payload: Record<string, unknown>) => {
+          if (wsCanSend(ws)) {
+            ws.send(JSON.stringify(payload));
+          }
+        };
+
+        const registerBrokerController = () => {
+          const controller = new AbortController();
+          activeBrokerControllers.add(controller);
+          return controller;
+        };
+
+        const releaseBrokerController = (controller: AbortController) => {
+          activeBrokerControllers.delete(controller);
+        };
+
+        const sendBrokerUsage = (sessions = 0) => {
+          const now = Date.now();
+          const deltaSeconds = Math.max(0, (now - lastUsageAt) / 1000);
+          const deltaInputBytes = Math.max(
+            0,
+            clientInputBytes - lastUsageClientInputBytes,
+          );
+          const deltaOutputBytes = Math.max(
+            0,
+            deepgramOutputBytes - lastUsageDeepgramOutputBytes,
+          );
+          lastUsageAt = now;
+          lastUsageClientInputBytes = clientInputBytes;
+          lastUsageDeepgramOutputBytes = deepgramOutputBytes;
+          sendBrokerJson({
+            type: "usage",
+            usage: {
+              provider: "local_voice_broker",
+              voiceAgentModel: "Tutor Voice Broker (local ready)",
+              listenModel: VOICE_BROKER_STT_MODEL,
+              foregroundModel,
+              backgroundModel,
+              speakModel:
+                brokerTtsProvider === "browser"
+                  ? "browser-speech-synthesis"
+                  : brokerTtsProvider === "miso"
+                    ? MISO_TTS_8B_VOICE
+                    : ttsModel,
+              ttsModel,
+              connectionSeconds: deltaSeconds,
+              inputAudioSeconds:
+                deltaInputBytes / Math.max(1, voiceInputSampleRate * 2),
+              outputAudioSeconds:
+                deltaOutputBytes /
+                Math.max(1, VOICE_BROKER_TTS_SAMPLE_RATE * 2),
+              cost: 0,
+              estimated: true,
+              sessions,
+            },
+          });
+        };
+
+        const parseVoiceAuth = (data: any, isBinary: boolean) => {
+          if (isBinary) return null;
+          const text = Buffer.isBuffer(data)
+            ? data.toString("utf8")
+            : String(data);
+          try {
+            const payload = JSON.parse(text);
+            return payload?.type === "voice_auth" ? payload : null;
+          } catch {
+            return null;
+          }
+        };
+
+        const authString = (
+          payload: Record<string, unknown>,
+          ...keys: string[]
+        ) => {
+          for (const key of keys) {
+            const value = sanitizeApiKey(payload[key]);
+            if (value) return value;
+          }
+          return "";
+        };
+
+        const stableVoiceSourceId = (value: string) => {
+          let hash = 0;
+          for (let i = 0; i < value.length; i += 1) {
+            hash = ((hash << 5) - hash + value.charCodeAt(i)) | 0;
+          }
+          return `voice_src_${Math.abs(hash).toString(36)}`;
+        };
+
+        const domainForVoiceSource = (url: string) => {
+          try {
+            return new URL(url).hostname.replace(/^www\./, "");
+          } catch {
+            return "source";
+          }
+        };
+
+        const faviconForSourceDomain = (domain: string) =>
+          `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
+
+        const extractOpenRouterWebSources = (
+          message: Record<string, any> | null | undefined,
+        ): NormalizedWebSource[] => {
+          const annotations = Array.isArray(message?.annotations)
+            ? message.annotations
+            : [];
+          const seen = new Set<string>();
+          return annotations
+            .map((annotation: any, index: number) => {
+              const citation =
+                annotation?.url_citation ||
+                annotation?.urlCitation ||
+                annotation?.citation ||
+                annotation;
+              const url = String(
+                citation?.url ||
+                  citation?.link ||
+                  citation?.source_url ||
+                  citation?.sourceUrl ||
+                  "",
+              ).trim();
+              if (!url || seen.has(url)) return null;
+              seen.add(url);
+              const domain = domainForVoiceSource(url);
+              const title = String(citation?.title || domain).trim();
+              const snippet = compactActivityText(
+                citation?.content ||
+                  citation?.snippet ||
+                  citation?.description ||
+                  citation?.text ||
+                  title,
+                260,
+              );
+              return {
+                id: stableVoiceSourceId(`openrouter:web:${url}`),
+                type: "search" as const,
+                sourceType: "web" as const,
+                title,
+                url,
+                domain,
+                faviconUrl: faviconForSourceDomain(domain),
+                snippet,
+                date: citation?.date || citation?.published_at || undefined,
+                position: index + 1,
+              };
+            })
+            .filter(Boolean) as NormalizedWebSource[];
+        };
+
+        const resolveDeepgramSpeakOpen = () => {
+          const resolvers = pendingDeepgramSpeakResolvers.splice(0);
+          resolvers.forEach((resolve) => resolve());
+        };
+
+        const resolveDeepgramTtsDone = () => {
+          const resolvers = pendingDeepgramTtsDoneResolvers.splice(0);
+          resolvers.forEach((resolve) => resolve());
+        };
+
+        const flushPendingDeepgramSpeakFrames = () => {
+          if (pendingDeepgramSpeakFlushTimer) {
+            clearTimeout(pendingDeepgramSpeakFlushTimer);
+            pendingDeepgramSpeakFlushTimer = null;
+          }
+          if (deepgramSpeakWs?.readyState !== WSWebSocket.OPEN) return;
+          while (
+            pendingDeepgramSpeakFrames.length > 0 &&
+            wsCanSend(deepgramSpeakWs)
+          ) {
+            const frame = pendingDeepgramSpeakFrames.shift();
+            if (frame) deepgramSpeakWs.send(frame);
+          }
+          if (pendingDeepgramSpeakFrames.length > 0) {
+            pendingDeepgramSpeakFlushTimer = setTimeout(
+              flushPendingDeepgramSpeakFrames,
+              25,
+            );
+          }
+        };
+
+        const queueDeepgramSpeakFrame = (frame: string) => {
+          if (pendingDeepgramSpeakFrames.length >= 40) {
+            pendingDeepgramSpeakFrames.shift();
+          }
+          pendingDeepgramSpeakFrames.push(frame);
+          if (!pendingDeepgramSpeakFlushTimer) {
+            pendingDeepgramSpeakFlushTimer = setTimeout(
+              flushPendingDeepgramSpeakFrames,
+              25,
+            );
+          }
+        };
+
+        const connectDeepgramSpeak = () => {
+          if (
+            !brokerDeepgramApiKey ||
+            deepgramSpeakWs?.readyState === WSWebSocket.OPEN ||
+            deepgramSpeakWs?.readyState === WSWebSocket.CONNECTING
+          ) {
+            return;
+          }
+          const params = new URLSearchParams({
+            model: ttsModel,
+            encoding: "linear16",
+            sample_rate: String(VOICE_BROKER_TTS_SAMPLE_RATE),
+          });
+          const startedAt = Date.now();
+          deepgramSpeakReady = false;
+          try {
+            deepgramSpeakWs = new WSWebSocket(
+              `wss://api.deepgram.com/v1/speak?${params.toString()}`,
+              {
+                headers: {
+                  Authorization: `Token ${brokerDeepgramApiKey}`,
+                },
+              },
+            );
+          } catch (error) {
+            recordSystemActivity({
+              kind: "voice",
+              status: "failed",
+              title: "Voice broker Deepgram TTS failed to start",
+              detail:
+                error instanceof Error
+                  ? error.message
+                  : "Could not open Deepgram Speak websocket.",
+              requestId: voiceRequestId,
+              model: ttsModel,
+              phase: "tts_connect",
+              metadata: brokerProofActivityMetadata(),
+            });
+            return;
+          }
+
+          deepgramSpeakWs.on("open", () => {
+            deepgramSpeakReady = true;
+            resolveDeepgramSpeakOpen();
+            flushPendingDeepgramSpeakFrames();
+            recordSystemActivity({
+              kind: "voice",
+              status: "started",
+              title: "Voice broker Deepgram TTS connected",
+              detail:
+                "Deepgram Aura streaming TTS is connected for this voice conversation.",
+              requestId: voiceRequestId,
+              model: ttsModel,
+              phase: "tts_connect",
+              durationMs: Date.now() - startedAt,
+              metadata: {
+                sampleRate: VOICE_BROKER_TTS_SAMPLE_RATE,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+          });
+
+          deepgramSpeakWs.on("message", (raw, isBinary) => {
+            if (isBinary) {
+              const audioBuffer = Buffer.isBuffer(raw)
+                ? raw
+                : Array.isArray(raw)
+                  ? Buffer.concat(raw)
+                  : Buffer.from(raw as any);
+              if (!wsCanSend(ws)) {
+                recordSystemActivity({
+                  kind: "voice",
+                  status: "blocked",
+                  title: "Voice broker dropped TTS audio under backpressure",
+                  detail:
+                    "The browser websocket buffer was full, so stale realtime audio was dropped.",
+                  requestId: voiceRequestId,
+                  model: ttsModel,
+                  phase: "tts_backpressure",
+                  metadata: brokerProofActivityMetadata(),
+                });
+                return;
+              }
+              deepgramOutputBytes += audioBuffer.length;
+              if (ws.readyState === WSWebSocket.OPEN) {
+                ws.send(audioBuffer);
+              }
+              return;
+            }
+
+            let payload: any = null;
+            try {
+              payload = JSON.parse(
+                Buffer.isBuffer(raw) ? raw.toString("utf8") : String(raw),
+              );
+            } catch {
+              return;
+            }
+            const payloadType = String(payload?.type || "");
+            if (/^(Flushed|Cleared)$/i.test(payloadType)) {
+              if (/^Flushed$/i.test(payloadType)) {
+                sendBrokerJson({ type: "AgentAudioDone" });
+              }
+              resolveDeepgramTtsDone();
+            } else if (/^(Warning|Error)$/i.test(payloadType)) {
+              sendBrokerJson({
+                type: payloadType,
+                message: compactActivityText(
+                  payload?.message || payload?.description || payloadType,
+                ),
+              });
+            }
+          });
+
+          deepgramSpeakWs.on("close", (code, reason) => {
+            deepgramSpeakReady = false;
+            deepgramSpeakWs = null;
+            resolveDeepgramSpeakOpen();
+            resolveDeepgramTtsDone();
+            recordSystemActivity({
+              kind: "voice",
+              status: code === 1000 ? "completed" : "blocked",
+              title: "Voice broker Deepgram TTS closed",
+              detail: compactActivityText(reason?.toString() || `code ${code}`),
+              requestId: voiceRequestId,
+              model: ttsModel,
+              phase: "tts_close",
+              metadata: {
+                code,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+          });
+
+          deepgramSpeakWs.on("error", (error) => {
+            deepgramSpeakReady = false;
+            recordSystemActivity({
+              kind: "voice",
+              status: "failed",
+              title: "Voice broker Deepgram TTS error",
+              detail:
+                error instanceof Error
+                  ? error.message
+                  : "Deepgram TTS websocket error.",
+              requestId: voiceRequestId,
+              model: ttsModel,
+              phase: "tts_error",
+              metadata: brokerProofActivityMetadata(),
+            });
+          });
+        };
+
+        const waitForDeepgramSpeakOpen = async () => {
+          if (
+            deepgramSpeakReady &&
+            deepgramSpeakWs?.readyState === WSWebSocket.OPEN
+          ) {
+            return;
+          }
+          connectDeepgramSpeak();
+          if (deepgramSpeakWs?.readyState === WSWebSocket.OPEN) return;
+          await new Promise<void>((resolve) => {
+            let resolver: (() => void) | null = null;
+            const settle = () => {
+              if (resolver) {
+                pendingDeepgramSpeakResolvers =
+                  pendingDeepgramSpeakResolvers.filter(
+                    (entry) => entry !== resolver,
+                  );
+              }
+              resolve();
+            };
+            const timeout = setTimeout(settle, VOICE_BROKER_TTS_DEADLINE_MS);
+            resolver = () => {
+              clearTimeout(timeout);
+              resolve();
+            };
+            pendingDeepgramSpeakResolvers.push(resolver);
+          });
+        };
+
+        const sendDeepgramSpeakControl = (payload: Record<string, unknown>) => {
+          const frame = JSON.stringify(payload);
+          if (deepgramSpeakWs?.readyState === WSWebSocket.OPEN) {
+            if (wsCanSend(deepgramSpeakWs)) {
+              deepgramSpeakWs.send(frame);
+              return;
+            }
+            queueDeepgramSpeakFrame(frame);
+            return;
+          }
+          queueDeepgramSpeakFrame(frame);
+          connectDeepgramSpeak();
+        };
+
+        const connectDeepgramListen = () => {
+          if (!brokerDeepgramApiKey || deepgramListenWs) return;
+          const params = new URLSearchParams({
+            model: VOICE_BROKER_STT_MODEL,
+            encoding: "linear16",
+            sample_rate: String(voiceInputSampleRate),
+            channels: "1",
+            interim_results: "true",
+            endpointing: "120",
+            vad_events: "true",
+            smart_format: "true",
+          });
+          const startedAt = Date.now();
+          try {
+            deepgramListenWs = new WSWebSocket(
+              `wss://api.deepgram.com/v1/listen?${params.toString()}`,
+              {
+                headers: {
+                  Authorization: `Token ${brokerDeepgramApiKey}`,
+                },
+              },
+            );
+          } catch (error) {
+            recordSystemActivity({
+              kind: "voice",
+              status: "failed",
+              title: "Voice broker Deepgram STT failed to start",
+              detail:
+                error instanceof Error
+                  ? error.message
+                  : "Could not open Deepgram STT websocket.",
+              requestId: voiceRequestId,
+              phase: "stt_connect",
+              metadata: brokerProofActivityMetadata(),
+            });
+            return;
+          }
+
+          deepgramListenWs.on("open", () => {
+            recordSystemActivity({
+              kind: "voice",
+              status: "started",
+              title: "Voice broker Deepgram STT connected",
+              detail:
+                "Browser PCM is now streaming to Deepgram listen for transcript turns.",
+              requestId: voiceRequestId,
+              model: `deepgram/${VOICE_BROKER_STT_MODEL}`,
+              phase: "stt_connect",
+              durationMs: Date.now() - startedAt,
+              metadata: {
+                inputSampleRate: voiceInputSampleRate,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+          });
+
+          deepgramListenWs.on("message", (raw) => {
+            let payload: any = null;
+            try {
+              payload = JSON.parse(
+                Buffer.isBuffer(raw) ? raw.toString("utf8") : String(raw),
+              );
+            } catch {
+              return;
+            }
+            if (/speechstarted/i.test(String(payload?.type || ""))) {
+              sendBrokerJson({ type: "UserStartedSpeaking" });
+              if (brokerTtsProvider === "deepgram") {
+                sendDeepgramSpeakControl({ type: "Clear" });
+              }
+              return;
+            }
+            const transcript = compactActivityText(
+              payload?.channel?.alternatives?.[0]?.transcript,
+              1200,
+            );
+            if (!transcript) return;
+            const isFinalSegment = Boolean(payload?.is_final);
+            const isSpeechFinal = Boolean(payload?.speech_final);
+            sendBrokerJson({
+              type: isFinalSegment ? "FinalTranscript" : "InterimTranscript",
+              role: "user",
+              transcript,
+              content: transcript,
+            });
+            if (isFinalSegment) {
+              pendingDeepgramFinalTranscriptSegments.push(transcript);
+            }
+            if (isSpeechFinal) {
+              const completeTranscript =
+                pendingDeepgramFinalTranscriptSegments.join(" ").trim() ||
+                transcript;
+              pendingDeepgramFinalTranscriptSegments = [];
+              foregroundTurnChain = foregroundTurnChain.then(() =>
+                handleUserTurnText(completeTranscript, "microphone"),
+              );
+              foregroundTurnChain = foregroundTurnChain.catch((error) => {
+                recordSystemActivity({
+                  kind: "error",
+                  status: "failed",
+                  title: "Voice broker user turn failed",
+                  detail:
+                    error instanceof Error
+                      ? error.message
+                      : "Foreground turn failed.",
+                  requestId: voiceRequestId,
+                  phase: "user_turn",
+                  metadata: brokerProofActivityMetadata(),
+                });
+              });
+            }
+          });
+
+          deepgramListenWs.on("close", (code, reason) => {
+            recordSystemActivity({
+              kind: "voice",
+              status: code === 1000 ? "completed" : "blocked",
+              title: "Voice broker Deepgram STT closed",
+              detail: compactActivityText(reason?.toString() || `code ${code}`),
+              requestId: voiceRequestId,
+              phase: "stt_close",
+              metadata: {
+                code,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+            deepgramListenWs = null;
+          });
+
+          deepgramListenWs.on("error", (error) => {
+            recordSystemActivity({
+              kind: "voice",
+              status: "failed",
+              title: "Voice broker Deepgram STT error",
+              detail:
+                error instanceof Error
+                  ? error.message
+                  : "Deepgram STT websocket error.",
+              requestId: voiceRequestId,
+              phase: "stt_error",
+              metadata: brokerProofActivityMetadata(),
+            });
+          });
+        };
+
+        const sendMisoSpeechAudio = async (
+          text: string,
+          options: {
+            phase: string;
+            maxAudioLengthMs: number;
+            timeoutMs?: number;
+          },
+        ) => {
+          const spokenText = compactActivityText(text, 1200);
+          if (!spokenText) return;
+          const controller = registerBrokerController();
+          const timeout = setTimeout(
+            () => controller.abort(),
+            options.timeoutMs || 60_000,
+          );
+          const startedAt = Date.now();
+          try {
+            const baseUrl = misoTtsApiBaseUrl(brokerMisoTtsApiUrl);
+            const response = await fetch(`${baseUrl}/v1/audio/speech`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              signal: controller.signal,
+              body: JSON.stringify({
+                text: spokenText,
+                speaker: 0,
+                max_audio_length_ms: options.maxAudioLengthMs,
+              }),
+            });
+            if (!response.ok) {
+              const errorBody = await response.text().catch(() => "");
+              throw new Error(
+                `MisoTTS error ${response.status}: ${compactActivityText(errorBody, 180)}`,
+              );
+            }
+            const audioBuffer = Buffer.from(await response.arrayBuffer());
+            const cacheStatus = response.headers.get("X-MisoTTS-Cache") || "";
+            if (wsCanSend(ws)) {
+              ws.send(audioBuffer);
+            }
+            recordSystemActivity({
+              kind: "voice",
+              status: "completed",
+              title: "Voice broker MisoTTS audio emitted",
+              detail: `${audioBuffer.length} audio bytes sent to browser playback${cacheStatus ? ` (${cacheStatus})` : ""}.`,
+              requestId: voiceRequestId,
+              model: ttsModel,
+              phase: options.phase,
+              durationMs: Date.now() - startedAt,
+              metadata: {
+                audioBytes: audioBuffer.length,
+                cacheStatus: cacheStatus || undefined,
+                maxAudioLengthMs: options.maxAudioLengthMs,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+          } catch (error) {
+            const isAbortError =
+              error instanceof Error && error.name === "AbortError";
+            recordSystemActivity({
+              kind: "voice",
+              status: "blocked",
+              title: isAbortError
+                ? "Voice broker MisoTTS unavailable before deadline"
+                : "Voice broker MisoTTS unavailable",
+              detail:
+                error instanceof Error
+                  ? error.message
+                  : "MisoTTS speech synthesis failed.",
+              requestId: voiceRequestId,
+              model: ttsModel,
+              phase: options.phase,
+              durationMs: Date.now() - startedAt,
+              metadata: brokerProofActivityMetadata(),
+            });
+            if (isAbortError) throw error;
+          } finally {
+            clearTimeout(timeout);
+            releaseBrokerController(controller);
+          }
+        };
+
+        const sendLocalFastAckAudio = () => {
+          const ackPath = VOICE_BROKER_FAST_ACK_FILE.trim();
+          if (!ackPath) return false;
+          const startedAt = Date.now();
+          try {
+            const audioBuffer = fs.readFileSync(ackPath);
+            if (ws.readyState === WSWebSocket.OPEN) {
+              ws.send(audioBuffer);
+            }
+            recordSystemActivity({
+              kind: "voice",
+              status: "completed",
+              title: "Voice broker local fast-ack audio emitted",
+              detail: `${audioBuffer.length} cached Miso audio bytes sent from local disk.`,
+              requestId: voiceRequestId,
+              model: ttsModel,
+              phase: "tts_fast_ack",
+              durationMs: Date.now() - startedAt,
+              metadata: {
+                audioBytes: audioBuffer.length,
+                cacheStatus: "local_file",
+                ackPath,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+            return true;
+          } catch (error) {
+            recordSystemActivity({
+              kind: "voice",
+              status: "blocked",
+              title: "Voice broker local fast-ack unavailable",
+              detail:
+                error instanceof Error
+                  ? error.message
+                  : "Could not read local fast-ack audio.",
+              requestId: voiceRequestId,
+              model: ttsModel,
+              phase: "tts_fast_ack",
+              durationMs: Date.now() - startedAt,
+              metadata: brokerProofActivityMetadata(),
+            });
+            return false;
+          }
+        };
+
+        const synthesizeBrokerSpeech = async (text: string) => {
+          const spokenText = compactActivityText(text, 1200);
+          if (!spokenText) return;
+          const startedAt = Date.now();
+          if (brokerTtsProvider === "deepgram") {
+            await waitForDeepgramSpeakOpen();
+            if (deepgramSpeakWs?.readyState !== WSWebSocket.OPEN) {
+              recordSystemActivity({
+                kind: "voice",
+                status: "blocked",
+                title: "Voice broker Deepgram TTS waiting for connection",
+                detail:
+                  "Deepgram Aura TTS did not open before the live deadline; the text turn still reached the browser.",
+                requestId: voiceRequestId,
+                model: ttsModel,
+                phase: "tts_audio",
+                durationMs: Date.now() - startedAt,
+                metadata: {
+                  liveDeadlineMs: VOICE_BROKER_TTS_DEADLINE_MS,
+                  ...brokerProofActivityMetadata(),
+                },
+              });
+              return;
+            }
+            let done = false;
+            const ttsDone = new Promise<void>((resolve) => {
+              let resolver: (() => void) | null = null;
+              const settle = () => {
+                if (resolver) {
+                  pendingDeepgramTtsDoneResolvers =
+                    pendingDeepgramTtsDoneResolvers.filter(
+                      (entry) => entry !== resolver,
+                    );
+                }
+                resolve();
+              };
+              const timeout = setTimeout(settle, 10_000);
+              resolver = () => {
+                clearTimeout(timeout);
+                done = true;
+                resolve();
+              };
+              pendingDeepgramTtsDoneResolvers.push(resolver);
+            });
+            sendDeepgramSpeakControl({ type: "Speak", text: spokenText });
+            sendDeepgramSpeakControl({ type: "Flush" });
+            await ttsDone;
+            recordSystemActivity({
+              kind: "voice",
+              status: done ? "completed" : "blocked",
+              title: done
+                ? "Voice broker Deepgram TTS audio emitted"
+                : "Voice broker Deepgram TTS completion timed out",
+              detail: done
+                ? `${deepgramOutputBytes} total Aura audio bytes streamed to browser playback.`
+                : "Aura audio may still be streaming, but no Flushed confirmation arrived before the safety timeout.",
+              requestId: voiceRequestId,
+              model: ttsModel,
+              phase: "tts_audio",
+              durationMs: Date.now() - startedAt,
+              metadata: {
+                outputBytes: deepgramOutputBytes,
+                sampleRate: VOICE_BROKER_TTS_SAMPLE_RATE,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+            return;
+          }
+          if (brokerTtsProvider === "browser") {
+            recordSystemActivity({
+              kind: "voice",
+              status: "completed",
+              title: "Voice broker browser TTS delegated",
+              detail:
+                "ConversationText was sent for local browser speech synthesis, keeping live first audio under the realtime deadline.",
+              requestId: voiceRequestId,
+              model: "browser-speech-synthesis",
+              phase: "tts_browser",
+              durationMs: Date.now() - startedAt,
+              metadata: {
+                liveDeadlineMs: VOICE_BROKER_TTS_DEADLINE_MS,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+            return;
+          }
+          if (VOICE_BROKER_FAST_ACK) {
+            const localAckSent = sendLocalFastAckAudio();
+            if (!localAckSent) {
+              void sendMisoSpeechAudio(VOICE_BROKER_FAST_ACK_TEXT, {
+                phase: "tts_fast_ack",
+                maxAudioLengthMs: 500,
+                timeoutMs: VOICE_BROKER_TTS_DEADLINE_MS,
+              });
+            }
+          }
+          try {
+            await sendMisoSpeechAudio(spokenText, {
+              phase: "tts_audio",
+              maxAudioLengthMs: Math.min(
+                30_000,
+                Math.max(500, spokenText.length * 70),
+              ),
+              timeoutMs: VOICE_BROKER_TTS_DEADLINE_MS,
+            });
+          } catch {
+            recordSystemActivity({
+              kind: "voice",
+              status: "blocked",
+              title: "Voice broker MisoTTS missed live deadline",
+              detail: `MisoTTS did not return audio within ${VOICE_BROKER_TTS_DEADLINE_MS}ms, so synthesis was aborted instead of continuing in the background.`,
+              requestId: voiceRequestId,
+              model: ttsModel,
+              phase: "tts_deadline",
+              durationMs: Date.now() - startedAt,
+              metadata: {
+                liveDeadlineMs: VOICE_BROKER_TTS_DEADLINE_MS,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+          }
+        };
+
+        const enqueueAssistantSpeechTurn = (options: {
+          content: string;
+          source: "foreground" | "background";
+          phase: string;
+          title: string;
+          model?: string;
+          jobId?: string;
+          metadata?: Record<string, unknown>;
+        }) => {
+          const spokenText = compactActivityText(options.content, 1600);
+          const speechSafeText = compactActivityText(
+            normalizeSpokenMarkdown(spokenText),
+            1600,
+          );
+          if (!speechSafeText) return assistantSpeechChain;
+          const runTurn = assistantSpeechChain.then(async () => {
+            const turnId =
+              options.jobId ||
+              `voice_${options.source}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            sendBrokerJson({
+              type: "AgentStartedSpeaking",
+              source: options.source,
+              jobId: options.jobId,
+              turnId,
+            });
+            sendBrokerJson({
+              type: "ConversationText",
+              role: "assistant",
+              content: speechSafeText,
+              source: options.source,
+              jobId: options.jobId,
+              turnId,
+              displayMode: "paced",
+              estimatedSpeechMs: estimateSpokenTextMs(speechSafeText),
+            });
+            await synthesizeBrokerSpeech(speechSafeText);
+            sendBrokerJson({
+              type: "AgentFinishedSpeaking",
+              source: options.source,
+              jobId: options.jobId,
+              turnId,
+            });
+            recordSystemActivity({
+              kind: options.source === "background" ? "tool" : "voice",
+              status: "completed",
+              title: options.title,
+              detail: speechSafeText,
+              requestId: voiceRequestId,
+              model: options.model,
+              phase: options.phase,
+              metadata: {
+                jobId: options.jobId,
+                ...(options.metadata || {}),
+                ...brokerProofActivityMetadata(),
+              },
+            });
+          });
+          assistantSpeechChain = runTurn.catch((error) => {
+            recordSystemActivity({
+              kind: "error",
+              status: "failed",
+              title: "Voice broker assistant speech turn failed",
+              detail:
+                error instanceof Error
+                  ? error.message
+                  : "Assistant speech turn failed.",
+              requestId: voiceRequestId,
+              phase: options.phase,
+              metadata: {
+                jobId: options.jobId,
+                source: options.source,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+          });
+          return runTurn;
+        };
+
+        const generateForegroundReply = async (
+          userText: string,
+          backgroundQueued: boolean,
+        ) => {
+          if (!brokerOpenRouterApiKey) {
+            return "I have the local learning book, previous context, and document memory loaded. I can answer the live part now, and any web, PDF, code, or pricing work is staged for the GPT-5.5 background layer once the provider key is connected.";
+          }
+          const startedAt = Date.now();
+          const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: brokerOpenRouterApiKey,
+          });
+          const response = await openai.chat.completions.create({
+            model: foregroundModel,
+            temperature: 0.35,
+            max_tokens: 180,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are Tutor's low-latency foreground voice teacher. Reply naturally in one or two short spoken paragraphs. Use the learner's active book, prior conversation, and document context when provided. If the user also asks for fresh web/tool work, acknowledge it warmly with a short phrase like 'Okay, I'll search that and let you know' or 'Okay, I'll check that in the background', then continue teaching the main topic. Never say 'let's focus on Python first', never imply the background request is a distraction, and do not use markdown formatting.",
+              },
+              {
+                role: "system",
+                content: compactStudyContext
+                  ? `Learner/context packet:\n${compactStudyContext.slice(0, 6000)}`
+                  : "No learner context packet was attached.",
+              },
+              {
+                role: "user",
+                content: backgroundQueued
+                  ? `${userText}\n\nA background tool job has been queued for any fresh/current/tool work in this request. In your spoken reply, acknowledge that delegated work first, then continue the teaching part naturally while the background result is pending.`
+                  : userText,
+              },
+            ],
+          });
+          const reply = compactActivityText(
+            response.choices[0]?.message?.content || "",
+            1600,
+          );
+          recordSystemActivity({
+            kind: "model",
+            status: "completed",
+            title: "Voice broker foreground model completed",
+            detail: reply || "Foreground model returned no text.",
+            requestId: voiceRequestId,
+            model: foregroundModel,
+            phase: "foreground_model",
+            durationMs: Date.now() - startedAt,
+            metadata: brokerProofActivityMetadata(),
+          });
+          return (
+            reply ||
+            "I am with you. The foreground tutor is connected, but it returned an empty response for that turn."
+          );
+        };
+
+        const runBackgroundJob = async (jobId: string, text: string) => {
+          const startedAt = Date.now();
+          let sources: NormalizedWebSource[] = [];
+          const delegatedTools = [
+            {
+              name: "openrouter:web_search",
+              status: "delegated",
+              summary:
+                "GPT-5.5 background model received OpenRouter's hosted web search server tool.",
+            },
+          ];
+          try {
+            if (!brokerBackgroundApiKey) {
+              throw new Error(
+                "Background GPT-5.5 provider key is missing; OpenRouter web search cannot run.",
+              );
+            }
+
+            const openai = new OpenAI({
+              baseURL: "https://openrouter.ai/api/v1",
+              apiKey: brokerBackgroundApiKey,
+            });
+            const modelResponse = await openai.chat.completions.create({
+              model: backgroundModel,
+              temperature: 0.18,
+              max_tokens: 420,
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are Tutor's asynchronous GPT-5.5 background layer. You handle every slow, current, search, stock-price, code, file, PDF, and analysis task that the low-latency foreground teacher delegates. Use OpenRouter web search when the answer needs current public information. Return only a concise spoken follow-up that can be stitched naturally into the same live lesson after the foreground reply. Start as a smooth aside, such as 'Also,', 'By the way,', 'Quick update:', 'One more thing:', or 'I found it:'. Include concrete facts, timestamps or caveats for prices/current data, and source names when available. Do not return JSON, tool-call syntax, markdown tables, code fences, bullet lists, raw citations, bold or italic markdown, or labels like 'summary:'.",
+                },
+                {
+                  role: "user",
+                  content: [
+                    `User request: ${text}`,
+                    `Delegated background capabilities: ${VOICE_BACKGROUND_TOOL_DEFINITIONS.map((tool) => tool.name).join(", ")}`,
+                    compactStudyContext
+                      ? `Learner context:\n${compactStudyContext.slice(0, 4000)}`
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join("\n\n"),
+                },
+              ],
+              tools: [
+                {
+                  type: "openrouter:web_search",
+                },
+              ],
+            } as any);
+            const responseMessage =
+              (modelResponse.choices[0]?.message as Record<string, any>) ||
+              null;
+            const rawSummary = compactActivityText(
+              responseMessage?.content || "",
+              1800,
+            );
+            const summary =
+              normalizeBackgroundSpokenInsertion(rawSummary) ||
+              "By the way, the GPT-5.5 background layer finished, but it did not return a spoken summary.";
+            sources = extractOpenRouterWebSources(responseMessage).slice(0, 8);
+
+            recordSystemActivity({
+              kind: sources.length ? "web" : "tool",
+              status: "completed",
+              title: "Voice broker background job completed",
+              detail: summary,
+              requestId: voiceRequestId,
+              model: backgroundModel,
+              phase: "background_job",
+              durationMs: Date.now() - startedAt,
+              metadata: {
+                jobId,
+                sourceCount: sources.length,
+                domains: sources.map((source) => source.domain).slice(0, 6),
+                delegatedTools: delegatedTools.map((tool) => tool.name),
+                ...brokerProofActivityMetadata(),
+              },
+            });
+            sendBrokerJson({
+              type: "BackgroundJobResult",
+              jobId,
+              status: "completed",
+              summary,
+              sources,
+              tools: delegatedTools,
+            });
+            await enqueueAssistantSpeechTurn({
+              content: summary,
+              source: "background",
+              phase: "background_insertion",
+              title: "Voice broker background result inserted",
+              model: backgroundModel,
+              jobId,
+              metadata: {
+                sourceCount: sources.length,
+                tools: delegatedTools.map((tool) => tool.name),
+              },
+            });
+          } catch (error) {
+            const detail =
+              error instanceof Error ? error.message : "Background job failed.";
+            recordSystemActivity({
+              kind: "tool",
+              status: "failed",
+              title: "Voice broker background job failed",
+              detail,
+              requestId: voiceRequestId,
+              model: brokerBackgroundApiKey ? backgroundModel : undefined,
+              phase: "background_job",
+              durationMs: Date.now() - startedAt,
+              metadata: {
+                jobId,
+                delegatedTools: delegatedTools.map((tool) => tool.name),
+                ...brokerProofActivityMetadata(),
+              },
+            });
+            sendBrokerJson({
+              type: "BackgroundJobResult",
+              jobId,
+              status: "failed",
+              summary: detail,
+              tools: delegatedTools.map((tool) => ({
+                ...tool,
+                status: "failed",
+              })),
+            });
+          }
+        };
+
+        const authDeadline = setTimeout(() => {
+          if (!isVoiceSessionStarted && ws.readyState === WSWebSocket.OPEN) {
+            ws.close(1008, "Voice authentication timed out");
+          }
+        }, 5000);
+
+        const startBrokerSession = (authPayload: any) => {
+          if (isVoiceSessionStarted) return;
+          const clientRequestId = normalizeClientRequestId(
+            authPayload.voiceSessionId || authPayload.requestId,
+          );
+          if (clientRequestId) voiceRequestId = clientRequestId;
+
+          const studyContextMetadata = objectMetadata(
+            authPayload.studyContextMetadata,
+          );
+          const proofAttemptId =
+            normalizeClientRequestId(authPayload.proofAttemptId) ||
+            normalizeClientRequestId(studyContextMetadata.proofAttemptId);
+          if (proofAttemptId) voiceProofAttemptId = proofAttemptId;
+
+          language = normalizeVoiceLanguage(authPayload.language || language);
+          voiceInputSampleRate = normalizeVoiceInputSampleRate(
+            authPayload.inputSampleRate,
+          );
+          compactStudyContext = compactVoiceStudyContext(
+            authPayload.studyContext,
+          );
+          brokerOpenRouterApiKey =
+            authString(
+              authPayload,
+              "openRouterKey",
+              "foregroundApiKey",
+              "apiKey",
+            ) || getOpenRouterServerFallbackKey();
+          brokerBackgroundApiKey =
+            authString(
+              authPayload,
+              "backgroundApiKey",
+              "gpt55ApiKey",
+              "openRouterKey",
+              "apiKey",
+            ) ||
+            sanitizeApiKey(process.env.GPT55_API_KEY) ||
+            getOpenRouterServerFallbackKey();
+          brokerDeepgramApiKey =
+            authString(authPayload, "deepgramKey", "sttApiKey") ||
+            getDeepgramServerFallbackKey();
+          brokerMisoTtsApiUrl = authString(authPayload, "misoTtsApiUrl");
+          brokerBrowserTtsEnabled = Boolean(authPayload.browserTts);
+          brokerTtsProvider = brokerDeepgramApiKey
+            ? "deepgram"
+            : brokerBrowserTtsEnabled
+              ? "browser"
+              : "miso";
+          const contextMetadata = {
+            activeBookId:
+              typeof authPayload.activeBookId === "string"
+                ? authPayload.activeBookId
+                : "",
+            activeBookTitle:
+              typeof authPayload.activeBookTitle === "string"
+                ? authPayload.activeBookTitle
+                : "",
+            activeDocumentId:
+              typeof authPayload.activeDocumentId === "string"
+                ? authPayload.activeDocumentId
+                : "",
+            proofAttemptId: proofAttemptId || undefined,
+            mode: "voice",
+            agentLayer: "voice_realtime",
+            documentIds: compactStringList(authPayload.documentIds),
+            documentCount: nonNegativeInteger(authPayload.documentCount),
+            readyDocumentIds: compactStringList(
+              authPayload.readyDocumentIds ||
+                studyContextMetadata.readyDocumentIds,
+            ),
+            readyDocumentCount: nonNegativeInteger(
+              authPayload.readyDocumentCount ??
+                studyContextMetadata.readyDocumentCount,
+            ),
+            contextDocumentIds: compactStringList(
+              authPayload.contextDocumentIds ||
+                studyContextMetadata.contextDocumentIds,
+            ),
+            unreadyDocumentCount: nonNegativeInteger(
+              authPayload.unreadyDocumentCount ??
+                studyContextMetadata.unreadyDocumentCount,
+            ),
+            omittedReadyDocumentCount: nonNegativeInteger(
+              authPayload.omittedReadyDocumentCount ??
+                studyContextMetadata.omittedReadyDocumentCount,
+            ),
+            clientStudyContextChars: nonNegativeInteger(
+              authPayload.studyContextChars,
+            ),
+            rawContextChars: nonNegativeInteger(
+              studyContextMetadata.rawContextChars,
+            ),
+            memoryContextChars: nonNegativeInteger(
+              studyContextMetadata.memoryContextChars,
+            ),
+            activeBookContextChars: nonNegativeInteger(
+              studyContextMetadata.activeBookContextChars,
+            ),
+            documentContextChars: nonNegativeInteger(
+              studyContextMetadata.documentContextChars,
+            ),
+            contextCompacted: Boolean(studyContextMetadata.contextCompacted),
+            inputSampleRate: voiceInputSampleRate,
+          };
+
+          isVoiceSessionStarted = true;
+          usageInterval = setInterval(() => sendBrokerUsage(0), 1000);
+          recordSystemActivity({
+            kind: "voice",
+            status: "started",
+            title: "Local voice broker accepted",
+            detail:
+              "Custom voice broker accepted local auth and is ready for Deepgram STT/TTS, GPT-4o-mini, and GPT-5.5 adapters.",
+            requestId: voiceRequestId,
+            phase: "broker_auth",
+            metadata: {
+              language,
+              studyContextChars: compactStudyContext.length,
+              ...contextMetadata,
+              ...brokerProofActivityMetadata(),
+            },
+          });
+
+          if (compactStudyContext) {
+            recordSystemActivity({
+              kind: "retrieval",
+              status: "completed",
+              title: "Voice broker brain context attached",
+              detail:
+                "Local learner memory, active book, prior conversation, and document context reached the custom broker.",
+              requestId: voiceRequestId,
+              phase: "voice_context",
+              metadata: {
+                studyContextChars: compactStudyContext.length,
+                ...contextMetadata,
+                ...brokerProofActivityMetadata(),
+              },
+            });
+          }
+
+          recordSystemActivity({
+            kind: "model",
+            status: brokerOpenRouterApiKey ? "started" : "blocked",
+            title: "Voice broker foreground model staged",
+            detail: brokerOpenRouterApiKey
+              ? "Foreground learner stream is ready to call OpenRouter GPT-4o-mini."
+              : "Foreground learner stream is staged; provider traffic is deferred until a key is supplied.",
+            requestId: voiceRequestId,
+            model: foregroundModel,
+            phase: "foreground_ready",
+            metadata: brokerProofActivityMetadata(),
+          });
+
+          recordSystemActivity({
+            kind: "tool",
+            status: brokerBackgroundApiKey ? "started" : "blocked",
+            title: "Voice broker background queue staged",
+            detail: brokerBackgroundApiKey
+              ? "Background GPT-5.5 queue is ready to use OpenRouter hosted web search plus delegated background analysis."
+              : "Background GPT-5.5 queue is staged for web/search/PDF/code tasks and waiting for the OpenRouter provider key.",
+            requestId: voiceRequestId,
+            model: backgroundModel,
+            phase: "background_ready",
+            metadata: brokerProofActivityMetadata(),
+          });
+          if (brokerDeepgramApiKey) {
+            connectDeepgramListen();
+            connectDeepgramSpeak();
+          } else {
+            recordSystemActivity({
+              kind: "voice",
+              status: "blocked",
+              title: "Voice broker Deepgram STT waiting for key",
+              detail:
+                "Typed voice-proof turns still work; microphone transcription starts when Deepgram is configured.",
+              requestId: voiceRequestId,
+              model: `deepgram/${VOICE_BROKER_STT_MODEL}`,
+              phase: "stt_ready",
+              metadata: brokerProofActivityMetadata(),
+            });
+          }
+
+          sendBrokerJson({ type: "SettingsApplied" });
+          sendBrokerJson({
+            type: "VoiceBrokerReady",
+            provider: "local_voice_broker",
+            foregroundModel,
+            backgroundModel,
+            ttsModel,
+            ttsProvider: brokerTtsProvider,
+            sttModel: VOICE_BROKER_STT_MODEL,
+            backgroundTools: VOICE_BACKGROUND_TOOL_DEFINITIONS.map(
+              (tool) => tool.name,
+            ),
+            contextChars: compactStudyContext.length,
+            language,
+          });
+        };
+
+        const emitPendingBackgroundProviderKey = (jobId: string) => {
+          setTimeout(() => {
+            if (brokerClosed) return;
+            recordSystemActivity({
+              kind: "tool",
+              status: "blocked",
+              title: "Voice broker background job waiting for provider key",
+              detail:
+                "GPT-5.5 background execution is staged locally and will run after the OpenRouter provider key is supplied.",
+              requestId: voiceRequestId,
+              model: backgroundModel,
+              phase: "background_job",
+              metadata: {
+                jobId,
+                reason: "provider_key_pending",
+                ...brokerProofActivityMetadata(),
+              },
+            });
+            sendBrokerJson({
+              type: "BackgroundJobResult",
+              jobId,
+              status: "pending_provider_key",
+              summary:
+                "Background GPT-5.5 execution is staged locally and waiting for the OpenRouter provider key.",
+            });
+          }, 25);
+        };
+
+        const maybeQueueBackgroundJob = (text: string) => {
+          const needsFreshExternalWork =
+            /\b(web|search|look up|lookup|browse|find|check|research|source|sources|latest|current|recent|today|news|price|prices|stock|share|ticker|market|nvidia|nvda|pdf|file|document|create|generate|download|code|repo|repository|debug|bug|error|crash|fix|review|inspect|implement|build|test|run|compare|summari[sz]e|analy[sz]e|analysis|tool|background)\b/i.test(
+              text,
+            ) ||
+            /\b(can you|could you|also|at the same time)\b.*\b(search|look|find|check|create|fix|debug|review|analy[sz]e|compare)\b/i.test(
+              text,
+            );
+          if (!needsFreshExternalWork) return "";
+
+          const jobId = `voice_bg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+          recordSystemActivity({
+            kind: "tool",
+            status: "started",
+            title: "Voice broker background job queued",
+            detail: compactActivityText(text, 220),
+            requestId: voiceRequestId,
+            model: backgroundModel,
+            phase: "background_job",
+            metadata: {
+              jobId,
+              intent: "async_tool_or_research",
+              ...brokerProofActivityMetadata(),
+            },
+          });
+          sendBrokerJson({
+            type: "BackgroundJobStarted",
+            jobId,
+            model: backgroundModel,
+            intent: "async_tool_or_research",
+            query: text.slice(0, 240),
+            tools: VOICE_BACKGROUND_TOOL_DEFINITIONS.map((tool) => tool.name),
+          });
+          return jobId;
+        };
+
+        const handleUserTurnText = async (
+          contentInput: unknown,
+          source: "typed" | "microphone" = "typed",
+        ) => {
+          const content = compactActivityText(contentInput, 800);
+          if (!content) return;
+          recordSystemActivity({
+            kind: "voice",
+            status: "progress",
+            title: "Voice broker user turn received",
+            detail: content,
+            requestId: voiceRequestId,
+            phase: "user_turn",
+            metadata: { source, ...brokerProofActivityMetadata() },
+          });
+          const backgroundJobId = maybeQueueBackgroundJob(content);
+          const backgroundQueued = Boolean(backgroundJobId);
+          let reply = "";
+          try {
+            reply = await generateForegroundReply(content, backgroundQueued);
+          } catch (error) {
+            reply =
+              "I am with you, but the foreground voice model could not complete that turn. I will keep the session open while you check the provider key.";
+            recordSystemActivity({
+              kind: "model",
+              status: "failed",
+              title: "Voice broker foreground model failed",
+              detail:
+                error instanceof Error
+                  ? error.message
+                  : "Foreground model failed.",
+              requestId: voiceRequestId,
+              model: foregroundModel,
+              phase: "foreground_model",
+              metadata: brokerProofActivityMetadata(),
+            });
+          }
+          await enqueueAssistantSpeechTurn({
+            content: reply,
+            source: "foreground",
+            phase: "foreground_reply",
+            title: "Voice broker foreground reply emitted",
+            model: foregroundModel,
+            metadata: { backgroundQueued },
+          });
+          if (backgroundJobId) {
+            backgroundJobChain = backgroundJobChain.then(async () => {
+              if (brokerClosed) return;
+              if (brokerBackgroundApiKey) {
+                await runBackgroundJob(backgroundJobId, content);
+                return;
+              }
+              emitPendingBackgroundProviderKey(backgroundJobId);
+            });
+            backgroundJobChain = backgroundJobChain.catch((error) => {
+              recordSystemActivity({
+                kind: "error",
+                status: "failed",
+                title: "Voice broker background queue failed",
+                detail:
+                  error instanceof Error
+                    ? error.message
+                    : "Background queue failed.",
+                requestId: voiceRequestId,
+                phase: "background_queue",
+                metadata: {
+                  jobId: backgroundJobId,
+                  ...brokerProofActivityMetadata(),
+                },
+              });
+            });
+          }
+        };
+
+        const handleInjectedUserMessage = (
+          payload: Record<string, unknown>,
+        ) => {
+          foregroundTurnChain = foregroundTurnChain.then(() =>
+            handleUserTurnText(payload.content, "typed"),
+          );
+          foregroundTurnChain = foregroundTurnChain.catch((error) => {
+            recordSystemActivity({
+              kind: "error",
+              status: "failed",
+              title: "Voice broker foreground queue failed",
+              detail:
+                error instanceof Error
+                  ? error.message
+                  : "Foreground queue failed.",
+              requestId: voiceRequestId,
+              phase: "foreground_queue",
+              metadata: brokerProofActivityMetadata(),
+            });
+          });
+        };
+
+        ws.on("message", (data, isBinary) => {
+          if (!isVoiceSessionStarted) {
+            const authPayload = parseVoiceAuth(data, isBinary);
+            if (authPayload) {
+              clearTimeout(authDeadline);
+              startBrokerSession(authPayload);
+              return;
+            }
+            clearTimeout(authDeadline);
+            ws.close(1008, "Voice authentication must be the first message");
+            return;
+          }
+
+          if (isBinary) {
+            clientInputBytes += rawByteLength(data);
+            if (
+              deepgramListenWs?.readyState === WSWebSocket.OPEN &&
+              wsCanSend(deepgramListenWs)
+            ) {
+              deepgramListenWs.send(data as any);
+            } else if (deepgramListenWs?.readyState === WSWebSocket.OPEN) {
+              recordSystemActivity({
+                kind: "voice",
+                status: "blocked",
+                title:
+                  "Voice broker dropped microphone frame under backpressure",
+                detail:
+                  "Deepgram STT websocket buffering crossed the realtime safety limit.",
+                requestId: voiceRequestId,
+                phase: "client_audio_backpressure",
+                metadata: brokerProofActivityMetadata(),
+              });
+            }
+            if (!hasRecordedClientAudioInput) {
+              hasRecordedClientAudioInput = true;
+              recordSystemActivity({
+                kind: "voice",
+                status: "progress",
+                title: "Voice broker input audio received",
+                detail: brokerDeepgramApiKey
+                  ? "Browser microphone PCM frames reached the custom voice broker and are being forwarded to Deepgram STT."
+                  : "Browser microphone PCM frames reached the custom voice broker.",
+                requestId: voiceRequestId,
+                phase: "client_audio",
+                metadata: {
+                  inputBytes: clientInputBytes,
+                  inputSampleRate: voiceInputSampleRate,
+                  ...brokerProofActivityMetadata(),
+                },
+              });
+            }
+            return;
+          }
+
+          const text = Buffer.isBuffer(data)
+            ? data.toString("utf8")
+            : String(data);
+          try {
+            const payload = JSON.parse(text);
+            if (payload?.type === "InjectUserMessage") {
+              handleInjectedUserMessage(payload);
+            }
+          } catch {
+            recordSystemActivity({
+              kind: "voice",
+              status: "blocked",
+              title: "Voice broker ignored malformed control frame",
+              detail: compactActivityText(text),
+              requestId: voiceRequestId,
+              phase: "control_frame",
+              metadata: brokerProofActivityMetadata(),
+            });
+          }
+        });
+
+        ws.on("close", () => {
+          brokerClosed = true;
+          clearTimeout(authDeadline);
+          if (usageInterval) clearInterval(usageInterval);
+          if (pendingDeepgramSpeakFlushTimer) {
+            clearTimeout(pendingDeepgramSpeakFlushTimer);
+            pendingDeepgramSpeakFlushTimer = null;
+          }
+          activeBrokerControllers.forEach((controller) => controller.abort());
+          activeBrokerControllers.clear();
+          pendingDeepgramSpeakFrames = [];
+          const speakResolvers = pendingDeepgramSpeakResolvers.splice(0);
+          speakResolvers.forEach((resolve) => resolve());
+          const ttsResolvers = pendingDeepgramTtsDoneResolvers.splice(0);
+          ttsResolvers.forEach((resolve) => resolve());
+          pendingDeepgramFinalTranscriptSegments = [];
+          if (deepgramListenWs) {
+            try {
+              deepgramListenWs.close(1000, "Tutor voice broker closed");
+            } catch {}
+            deepgramListenWs = null;
+          }
+          if (deepgramSpeakWs) {
+            try {
+              if (deepgramSpeakWs.readyState === WSWebSocket.OPEN) {
+                deepgramSpeakWs.send(JSON.stringify({ type: "Close" }));
+              }
+              deepgramSpeakWs.close(1000, "Tutor voice broker closed");
+            } catch {}
+            deepgramSpeakWs = null;
+          }
+          sendBrokerUsage(1);
+          recordSystemActivity({
+            kind: "voice",
+            status: "completed",
+            title: "Voice broker client closed",
+            detail: "Custom voice broker session cleanup ran locally.",
+            requestId: voiceRequestId,
+            phase: "client_close",
+            durationMs: Date.now() - voiceStartedAt,
+            metadata: {
+              inputBytes: clientInputBytes,
+              ...brokerProofActivityMetadata(),
+            },
+          });
+        });
+        return;
+      }
+
       let dgWs: WSWebSocket | null = null;
       let isDeepgramReady = false;
       let messageBuffer: Array<{ data: any; isBinary: boolean }> = [];
@@ -3263,6 +5093,26 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         mode: "voice",
         agentLayer: "voice_realtime",
       });
+
+      const queueVoiceAgentFrame = (data: any, isBinary: boolean) => {
+        if (messageBuffer.length >= VOICE_AGENT_MESSAGE_BUFFER_LIMIT) {
+          messageBuffer.shift();
+          recordSystemActivity({
+            kind: "voice",
+            status: "blocked",
+            title: "Voice agent dropped buffered client frame",
+            detail:
+              "Deepgram was not ready fast enough, so the oldest realtime frame was dropped to keep memory bounded.",
+            requestId: voiceRequestId,
+            phase: "client_buffer",
+            metadata: {
+              bufferLimit: VOICE_AGENT_MESSAGE_BUFFER_LIMIT,
+              ...voiceProofActivityMetadata(),
+            },
+          });
+        }
+        messageBuffer.push({ data, isBinary });
+      };
 
       const sendVoiceUsage = (sessions = 0) => {
         if (ws.readyState !== ws.OPEN) return;
@@ -3597,7 +5447,9 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               "Sending Deepgram settings config:",
               JSON.stringify(config, null, 2),
             );
-            dgWs?.send(JSON.stringify(config));
+            if (dgWs && wsCanSend(dgWs)) {
+              dgWs.send(JSON.stringify(config));
+            }
             recordSystemActivity({
               kind: "voice",
               status: "progress",
@@ -3616,7 +5468,11 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
 
             if (keepAliveInterval) clearInterval(keepAliveInterval);
             keepAliveInterval = setInterval(() => {
-              if (dgWs && dgWs.readyState === WSWebSocket.OPEN) {
+              if (
+                dgWs &&
+                dgWs.readyState === WSWebSocket.OPEN &&
+                wsCanSend(dgWs)
+              ) {
                 dgWs.send(JSON.stringify({ type: "KeepAlive" }));
               }
             }, 7000);
@@ -3664,7 +5520,20 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             if (ws.readyState === ws.OPEN) {
               if (isBinary) {
                 deepgramOutputBytes += rawByteLength(data);
-                ws.send(data);
+                if (wsCanSend(ws)) {
+                  ws.send(data);
+                } else {
+                  recordSystemActivity({
+                    kind: "voice",
+                    status: "blocked",
+                    title: "Voice provider audio dropped under backpressure",
+                    detail:
+                      "The browser websocket buffer was full, so stale realtime audio was dropped.",
+                    requestId: voiceRequestId,
+                    phase: "provider_backpressure",
+                    metadata: voiceProofActivityMetadata(),
+                  });
+                }
               } else {
                 const messageStr = data.toString();
                 try {
@@ -3698,17 +5567,22 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                         ...voiceProofActivityMetadata(),
                       },
                     });
-                    messageBuffer.forEach((msg) => {
-                      if (dgWs?.readyState === WSWebSocket.OPEN) {
+                    const bufferedFrames = messageBuffer.splice(0);
+                    bufferedFrames.forEach((msg) => {
+                      if (
+                        dgWs?.readyState === WSWebSocket.OPEN &&
+                        wsCanSend(dgWs)
+                      ) {
                         dgWs.send(
                           msg.isBinary ? msg.data : msg.data.toString(),
                           {
                             binary: msg.isBinary,
                           },
                         );
+                      } else {
+                        queueVoiceAgentFrame(msg.data, msg.isBinary);
                       }
                     });
-                    messageBuffer = [];
                   } else if (parsed.type === "FunctionCallRequest") {
                     const functions = Array.isArray(parsed.functions)
                       ? parsed.functions
@@ -3773,7 +5647,9 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
                     });
                   }
                 } catch (e) {}
-                ws.send(messageStr);
+                if (wsCanSend(ws)) {
+                  ws.send(messageStr);
+                }
               }
             }
           });
@@ -3880,10 +5756,15 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           } catch {}
         }
         // Proxy messages to Deepgram once ready
-        if (isDeepgramReady && dgWs && dgWs.readyState === dgWs.OPEN) {
+        if (
+          isDeepgramReady &&
+          dgWs &&
+          dgWs.readyState === dgWs.OPEN &&
+          wsCanSend(dgWs)
+        ) {
           dgWs.send(isBinary ? data : data.toString(), { binary: isBinary });
         } else {
-          messageBuffer.push({ data, isBinary });
+          queueVoiceAgentFrame(data, isBinary);
         }
       };
 

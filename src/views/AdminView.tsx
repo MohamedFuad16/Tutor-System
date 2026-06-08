@@ -87,6 +87,7 @@ import type { LearnerAlgorithmId } from "../memory/learner.algorithm";
 
 type ServerConsoleStatus = "idle" | "connecting" | "connected" | "unavailable";
 type AdminTab =
+  | "learners"
   | "brain"
   | "activity"
   | "models"
@@ -508,31 +509,46 @@ export function AdminView() {
   const totalTraceCount = useLiveQuery(() => db.traceLogs.count(), []) || 0;
   const learningBooks =
     useLiveQuery(
-      () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
+      () =>
+        db.learningBooks.orderBy("updatedAt").reverse().limit(500).toArray(),
       [],
     ) || [];
   const learningDocuments =
     useLiveQuery(
-      () => db.learningDocuments.orderBy("updatedAt").reverse().toArray(),
+      () =>
+        db.learningDocuments
+          .orderBy("updatedAt")
+          .reverse()
+          .limit(500)
+          .toArray(),
       [],
     ) || [];
   const learningBookConcepts =
     useLiveQuery(
-      () => db.learningBookConcepts.orderBy("updatedAt").reverse().toArray(),
+      () =>
+        db.learningBookConcepts
+          .orderBy("updatedAt")
+          .reverse()
+          .limit(500)
+          .toArray(),
       [],
     ) || [];
   const persistentConcepts =
-    useLiveQuery(() => db.concepts.toArray(), []) || [];
+    useLiveQuery(
+      () =>
+        db.concepts.orderBy("lastReviewedAt").reverse().limit(500).toArray(),
+      [],
+    ) || [];
   const learningEntries =
     useLiveQuery(
       () =>
-        db.learningEntries.orderBy("timestamp").reverse().limit(25).toArray(),
+        db.learningEntries.orderBy("timestamp").reverse().limit(500).toArray(),
       [],
     ) || [];
   const evidenceEvents =
     useLiveQuery(
       () =>
-        db.evidenceEvents.orderBy("timestamp").reverse().limit(50).toArray(),
+        db.evidenceEvents.orderBy("timestamp").reverse().limit(500).toArray(),
       [],
     ) || [];
   const misconceptions =
@@ -708,8 +724,12 @@ export function AdminView() {
   const [activityRefreshKey, setActivityRefreshKey] = useState(0);
   const consoleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<AdminTab>("brain");
+  const [activeTab, setActiveTab] = useState<AdminTab>("learners");
+  const [selectedLearnerName, setSelectedLearnerName] = useState(
+    learnerName || "Learner",
+  );
   const shouldLoadActivityPayload =
+    activeTab === "learners" ||
     activeTab === "brain" ||
     activeTab === "activity" ||
     activeTab === "diagnostics";
@@ -915,6 +935,72 @@ export function AdminView() {
     acc[concept.bookId].push(concept);
     return acc;
   }, {});
+  const learnerNames = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          [learnerName, ...learningBooks.map((book) => book.userName)]
+            .map((name) => String(name || "").trim())
+            .filter(Boolean),
+        ),
+      ).sort((a, b) => a.localeCompare(b)),
+    [learnerName, learningBooks],
+  );
+  useEffect(() => {
+    if (learnerNames.length === 0) return;
+    if (!learnerNames.includes(selectedLearnerName)) {
+      setSelectedLearnerName(learnerNames[0]);
+    }
+  }, [learnerNames, selectedLearnerName]);
+  const selectedLearnerBooks = learningBooks.filter(
+    (book) => book.userName === selectedLearnerName,
+  );
+  const selectedLearnerBookIds = new Set(
+    selectedLearnerBooks.map((book) => book.id),
+  );
+  const selectedLearnerConcepts = learningBookConcepts.filter((concept) =>
+    selectedLearnerBookIds.has(concept.bookId),
+  );
+  const selectedLearnerEvidence = evidenceEvents.filter(
+    (event) => event.bookId && selectedLearnerBookIds.has(event.bookId),
+  );
+  const selectedLearnerEntries = learningEntries.filter((entry) =>
+    selectedLearnerBookIds.has(entry.bookId),
+  );
+  const learnerGraphNodes = selectedLearnerConcepts
+    .slice(0, 12)
+    .map((concept, index) => ({
+      concept,
+      x: 110 + (index % 4) * 210,
+      y: 90 + Math.floor(index / 4) * 125,
+    }));
+  const learnerGraphNodeByName = new Map(
+    learnerGraphNodes.map((node) => [node.concept.name.toLowerCase(), node]),
+  );
+  const learnerGraphEdges = learnerGraphNodes.flatMap((node) =>
+    [...node.concept.parentConcepts, ...node.concept.childConcepts].flatMap(
+      (relatedName) => {
+        const related = learnerGraphNodeByName.get(relatedName.toLowerCase());
+        if (!related || related.concept.id === node.concept.id) return [];
+        return [
+          {
+            id: [node.concept.id, related.concept.id].sort().join(":"),
+            from: node,
+            to: related,
+          },
+        ];
+      },
+    ),
+  );
+  const uniqueLearnerGraphEdges = Array.from(
+    new Map(learnerGraphEdges.map((edge) => [edge.id, edge])).values(),
+  );
+  const strongestLearnerConcepts = [...selectedLearnerConcepts]
+    .sort((a, b) => b.mastery + b.confidence - (a.mastery + a.confidence))
+    .slice(0, 3);
+  const learnerConceptsToReview = [...selectedLearnerConcepts]
+    .sort((a, b) => a.mastery + a.confidence - (b.mastery + b.confidence))
+    .slice(0, 3);
   const latestEntryByBook = learningEntries.reduce<
     Record<string, (typeof learningEntries)[number]>
   >((acc, entry) => {
@@ -1964,11 +2050,11 @@ export function AdminView() {
 
           <nav className="flex flex-col gap-1">
             <button
-              onClick={() => setActiveTab("brain")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "brain" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+              onClick={() => setActiveTab("learners")}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "learners" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
             >
               <BrainCircuit size={16} />
-              <span className="line-clamp-1 leading-snug">Brain Overview</span>
+              <span className="line-clamp-1 leading-snug">Learners</span>
             </button>
             <button
               onClick={() => setActiveTab("activity")}
@@ -1978,36 +2064,11 @@ export function AdminView() {
               <span className="line-clamp-1 leading-snug">System Activity</span>
             </button>
             <button
-              onClick={() => setActiveTab("models")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "models" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
+              onClick={() => setActiveTab("evidence")}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "evidence" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
             >
-              <Cpu size={16} />
-              <span className="line-clamp-1 leading-snug">Model Runs</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("memory")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "memory" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
-            >
-              <Network size={16} />
-              <span className="line-clamp-1 leading-snug">Memory Events</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("corrections")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "corrections" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
-            >
-              <Flag size={16} />
-              <span className="line-clamp-1 leading-snug">
-                Correction Requests
-              </span>
-            </button>
-            <button
-              onClick={() => setActiveTab("artifacts")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "artifacts" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
-            >
-              <BookOpen size={16} />
-              <span className="line-clamp-1 leading-snug">
-                Source Artifacts
-              </span>
+              <BrainCircuit size={16} />
+              <span className="line-clamp-1 leading-snug">Evidence Ledger</span>
             </button>
             <button
               onClick={() => setActiveTab("diagnostics")}
@@ -2018,43 +2079,57 @@ export function AdminView() {
                 Beta Diagnostics
               </span>
             </button>
-            <button
-              onClick={() => setActiveTab("retrieval")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "retrieval" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
-            >
-              <Search size={16} />
-              <span className="line-clamp-1 leading-snug">
-                Retrieval Events
-              </span>
-            </button>
-            <button
-              onClick={() => setActiveTab("evidence")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "evidence" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
-            >
-              <BrainCircuit size={16} />
-              <span className="line-clamp-1 leading-snug">Evidence Ledger</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("tuning")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "tuning" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
-            >
-              <SlidersHorizontal size={16} />
-              <span className="line-clamp-1 leading-snug">Runtime Tuning</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("traces")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "traces" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
-            >
-              <Activity size={16} />
-              <span className="line-clamp-1 leading-snug">DeepSeek Trace</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("console")}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 flex items-center gap-2 ${activeTab === "console" ? "bg-blue-50 text-blue-700 font-medium shadow-sm border border-blue-100" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent"}`}
-            >
-              <Terminal size={16} />
-              <span className="line-clamp-1 leading-snug">Server Console</span>
-            </button>
+            <details className="mt-5 border-t border-zinc-200 pt-4">
+              <summary className="cursor-pointer px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400">
+                Advanced debugging
+              </summary>
+              <div className="mt-2 flex flex-col gap-1">
+                {[
+                  { id: "brain", label: "Brain Overview", icon: BrainCircuit },
+                  { id: "models", label: "Model Runs", icon: Cpu },
+                  { id: "memory", label: "Memory Events", icon: Network },
+                  {
+                    id: "corrections",
+                    label: "Correction Requests",
+                    icon: Flag,
+                  },
+                  {
+                    id: "artifacts",
+                    label: "Source Artifacts",
+                    icon: BookOpen,
+                  },
+                  {
+                    id: "retrieval",
+                    label: "Retrieval Events",
+                    icon: Search,
+                  },
+                  {
+                    id: "tuning",
+                    label: "Runtime Tuning",
+                    icon: SlidersHorizontal,
+                  },
+                  { id: "traces", label: "DeepSeek Trace", icon: Activity },
+                  { id: "console", label: "Server Console", icon: Terminal },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id as AdminTab)}
+                      className={`flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-colors ${
+                        activeTab === tab.id
+                          ? "border-blue-100 bg-blue-50 font-medium text-blue-700"
+                          : "border-transparent text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
+                      }`}
+                    >
+                      <Icon size={14} />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </details>
           </nav>
         </div>
 
@@ -2083,35 +2158,23 @@ export function AdminView() {
               {/* Admin Center Preface */}
               <div className="mb-12">
                 <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-3">
-                  {activeTab === "brain"
-                    ? "Brain Architecture"
+                  {activeTab === "learners"
+                    ? "Learner Administration"
                     : "Admin Center"}
                 </h1>
                 <p className="text-zinc-600 leading-relaxed max-w-2xl text-sm font-serif">
-                  {activeTab === "brain"
-                    ? "See how chat, voice, PDFs, evidence, and BKT scoring become learner memory that the tutor can use."
-                    : "Track models, tools, memory, retrieval, voice, and beta readiness."}
+                  {activeTab === "learners"
+                    ? "Select a learner, inspect their knowledge map, and follow the evidence behind each interpretation."
+                    : "Inspect the few operational signals needed to explain behavior and judge local readiness."}
                 </p>
               </div>
 
-              <div className="mb-8 grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm sm:grid-cols-3 lg:hidden">
+              <div className="mb-8 grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm lg:hidden">
                 {[
-                  { id: "brain", label: "Brain", icon: BrainCircuit },
+                  { id: "learners", label: "Learners", icon: BrainCircuit },
                   { id: "activity", label: "Activity", icon: Gauge },
-                  { id: "models", label: "Models", icon: Cpu },
-                  { id: "memory", label: "Memory", icon: Network },
-                  { id: "corrections", label: "Correct", icon: Flag },
-                  { id: "artifacts", label: "Sources", icon: BookOpen },
-                  { id: "diagnostics", label: "Beta", icon: ShieldCheck },
-                  { id: "retrieval", label: "Retrieval", icon: Search },
                   { id: "evidence", label: "Evidence", icon: BrainCircuit },
-                  {
-                    id: "tuning",
-                    label: "Tuning",
-                    icon: SlidersHorizontal,
-                  },
-                  { id: "traces", label: "Traces", icon: Activity },
-                  { id: "console", label: "Console", icon: Terminal },
+                  { id: "diagnostics", label: "Readiness", icon: ShieldCheck },
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -2132,58 +2195,102 @@ export function AdminView() {
                 })}
               </div>
 
+              <details className="mb-8 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm lg:hidden">
+                <summary className="cursor-pointer px-2 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400">
+                  Advanced debugging
+                </summary>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {[
+                    {
+                      id: "brain",
+                      label: "Brain Overview",
+                      icon: BrainCircuit,
+                    },
+                    { id: "models", label: "Model Runs", icon: Cpu },
+                    { id: "memory", label: "Memory Events", icon: Network },
+                    { id: "corrections", label: "Corrections", icon: Flag },
+                    { id: "artifacts", label: "Artifacts", icon: BookOpen },
+                    { id: "retrieval", label: "Retrieval", icon: Search },
+                    { id: "tuning", label: "Tuning", icon: SlidersHorizontal },
+                    { id: "traces", label: "Trace", icon: Activity },
+                    { id: "console", label: "Console", icon: Terminal },
+                  ].map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveTab(tab.id as AdminTab)}
+                        className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-colors ${
+                          activeTab === tab.id
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
+                        }`}
+                      >
+                        <Icon size={14} />
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </details>
+
               <div className="mb-10 border-b border-zinc-200 pb-8 pt-4 font-sans cursor-default">
                 <span className="text-[11px] uppercase tracking-[0.2em] font-mono text-zinc-400 mb-6 block font-medium">
                   <span className="text-blue-500 mr-2">#</span>
-                  {activeTab === "brain"
-                    ? "Learner Brain"
-                    : activeTab === "activity"
-                      ? "Observability"
-                      : activeTab === "models"
-                        ? "Model Behavior"
-                        : activeTab === "memory"
-                          ? "Memory Audit"
-                          : activeTab === "corrections"
-                            ? "Memory Control"
-                            : activeTab === "artifacts"
-                              ? "Source Grounding"
-                              : activeTab === "diagnostics"
-                                ? "Beta Readiness"
-                                : activeTab === "retrieval"
-                                  ? "Retrieval Audit"
-                                  : activeTab === "evidence"
-                                    ? "Learner Evidence"
-                                    : activeTab === "tuning"
-                                      ? "Runtime Controls"
-                                      : activeTab === "traces"
-                                        ? "Diagnostics"
-                                        : "Runtime Environment"}
+                  {activeTab === "learners"
+                    ? "Learner Knowledge"
+                    : activeTab === "brain"
+                      ? "Learner Brain"
+                      : activeTab === "activity"
+                        ? "Observability"
+                        : activeTab === "models"
+                          ? "Model Behavior"
+                          : activeTab === "memory"
+                            ? "Memory Audit"
+                            : activeTab === "corrections"
+                              ? "Memory Control"
+                              : activeTab === "artifacts"
+                                ? "Source Grounding"
+                                : activeTab === "diagnostics"
+                                  ? "Beta Readiness"
+                                  : activeTab === "retrieval"
+                                    ? "Retrieval Audit"
+                                    : activeTab === "evidence"
+                                      ? "Learner Evidence"
+                                      : activeTab === "tuning"
+                                        ? "Runtime Controls"
+                                        : activeTab === "traces"
+                                          ? "Diagnostics"
+                                          : "Runtime Environment"}
                 </span>
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl md:text-4xl lg:text-4xl font-medium tracking-tight text-zinc-900 mb-2 font-serif leading-[1.15]">
-                    {activeTab === "brain"
-                      ? "Memory, scoring, and adaptation"
-                      : activeTab === "activity"
-                        ? "System Activity"
-                        : activeTab === "models"
-                          ? "Model Runs"
-                          : activeTab === "memory"
-                            ? "Memory Events"
-                            : activeTab === "corrections"
-                              ? "Correction Requests"
-                              : activeTab === "artifacts"
-                                ? "Artifacts & Citations"
-                                : activeTab === "diagnostics"
-                                  ? "Beta Diagnostics"
-                                  : activeTab === "retrieval"
-                                    ? "Retrieval Events"
-                                    : activeTab === "evidence"
-                                      ? "Evidence Ledger"
-                                      : activeTab === "tuning"
-                                        ? "Runtime Tuning"
-                                        : activeTab === "traces"
-                                          ? "DeepSeek Trace Ledger"
-                                          : "Live Server Console"}
+                    {activeTab === "learners"
+                      ? "Knowledge, evidence, and learning patterns"
+                      : activeTab === "brain"
+                        ? "Memory, scoring, and adaptation"
+                        : activeTab === "activity"
+                          ? "System Activity"
+                          : activeTab === "models"
+                            ? "Model Runs"
+                            : activeTab === "memory"
+                              ? "Memory Events"
+                              : activeTab === "corrections"
+                                ? "Correction Requests"
+                                : activeTab === "artifacts"
+                                  ? "Artifacts & Citations"
+                                  : activeTab === "diagnostics"
+                                    ? "Beta Diagnostics"
+                                    : activeTab === "retrieval"
+                                      ? "Retrieval Events"
+                                      : activeTab === "evidence"
+                                        ? "Evidence Ledger"
+                                        : activeTab === "tuning"
+                                          ? "Runtime Tuning"
+                                          : activeTab === "traces"
+                                            ? "DeepSeek Trace Ledger"
+                                            : "Live Server Console"}
                   </h1>
                   {activeTab === "activity" && (
                     <div
@@ -2237,7 +2344,374 @@ export function AdminView() {
               </div>
 
               <div className="prose prose-zinc w-full max-w-none prose-sm md:prose-base font-serif prose-p:leading-[1.8] prose-p:text-zinc-800 prose-p:font-light prose-p:my-5 selection:bg-blue-200 selection:text-zinc-900">
-                {activeTab === "brain" ? (
+                {activeTab === "learners" ? (
+                  <div
+                    className="flex flex-col gap-8 font-sans"
+                    data-admin-default-view="learner-overview"
+                    data-testid="admin-brain-overview"
+                  >
+                    <section className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="max-w-3xl">
+                          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-blue-600">
+                            <BrainCircuit size={13} /> How to read this page
+                          </div>
+                          <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
+                            Start with a learner, then inspect the evidence
+                          </h2>
+                          <p className="mt-2 text-sm leading-6 text-zinc-600">
+                            The graph shows concepts saved in this learner's
+                            books. Mastery is an evidence-linked estimate,
+                            confidence describes the strength of local support,
+                            and a low value is a review signal rather than a
+                            grade or diagnosis.
+                          </p>
+                        </div>
+                        <label className="flex min-w-[240px] flex-col gap-2 text-xs font-semibold text-zinc-600">
+                          Learner
+                          <select
+                            value={selectedLearnerName}
+                            onChange={(event) =>
+                              setSelectedLearnerName(event.target.value)
+                            }
+                            data-testid="admin-learner-selector"
+                            className="h-11 rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm font-medium text-zinc-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                          >
+                            {learnerNames.map((name) => (
+                              <option key={name} value={name}>
+                                {name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                    </section>
+
+                    <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                      {[
+                        {
+                          label: "Learning books",
+                          value: selectedLearnerBooks.length,
+                          detail: "Subjects and study threads owned locally.",
+                        },
+                        {
+                          label: "Mapped concepts",
+                          value: selectedLearnerConcepts.length,
+                          detail: "Concept nodes across the learner's books.",
+                        },
+                        {
+                          label: "Verified evidence",
+                          value: selectedLearnerEvidence.filter(
+                            (event) => event.verified,
+                          ).length,
+                          detail:
+                            "Accepted learner actions, not model summaries.",
+                        },
+                        {
+                          label: "Learning notes",
+                          value: selectedLearnerEntries.length,
+                          detail: "Conversation-derived revision entries.",
+                        },
+                      ].map((metric) => (
+                        <div
+                          key={metric.label}
+                          className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
+                        >
+                          <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400">
+                            {metric.label}
+                          </div>
+                          <div className="mt-2 text-3xl font-semibold text-zinc-950">
+                            {metric.value}
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-zinc-500">
+                            {metric.detail}
+                          </p>
+                        </div>
+                      ))}
+                    </section>
+
+                    <section className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+                            Learner concept graph
+                          </div>
+                          <h2 className="mt-2 text-2xl font-serif font-medium text-zinc-900">
+                            What {selectedLearnerName} has been studying
+                          </h2>
+                        </div>
+                        <p className="max-w-md text-xs leading-5 text-zinc-500">
+                          Lines come from saved parent and child concept
+                          relationships. This is learner knowledge, not the
+                          Graphify source-code graph.
+                        </p>
+                      </div>
+
+                      {learnerGraphNodes.length > 0 ? (
+                        <div
+                          className="mt-6 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-950"
+                          role="img"
+                          aria-label={`${selectedLearnerName} learner concept graph`}
+                          aria-describedby="learner-concept-graph-node-list"
+                        >
+                          <svg
+                            viewBox="0 0 850 430"
+                            aria-hidden="true"
+                            className="h-auto min-h-[390px] min-w-[760px] w-full"
+                          >
+                            <title id="learner-concept-graph-title">
+                              {`${selectedLearnerName} learner concept graph`}
+                            </title>
+                            <desc id="learner-concept-graph-desc">
+                              {learnerGraphNodes
+                                .map(
+                                  ({ concept }) =>
+                                    `${concept.name}: mastery ${Math.round(
+                                      concept.mastery * 100,
+                                    )} percent, confidence ${Math.round(
+                                      concept.confidence * 100,
+                                    )} percent`,
+                                )
+                                .join("; ")}
+                            </desc>
+                            <defs>
+                              <pattern
+                                id="learner-graph-grid"
+                                width="28"
+                                height="28"
+                                patternUnits="userSpaceOnUse"
+                              >
+                                <path
+                                  d="M 28 0 L 0 0 0 28"
+                                  fill="none"
+                                  stroke="rgba(255,255,255,0.05)"
+                                  strokeWidth="1"
+                                />
+                              </pattern>
+                            </defs>
+                            <rect
+                              width="850"
+                              height="430"
+                              fill="url(#learner-graph-grid)"
+                            />
+                            {uniqueLearnerGraphEdges.map((edge) => (
+                              <line
+                                key={edge.id}
+                                x1={edge.from.x}
+                                y1={edge.from.y}
+                                x2={edge.to.x}
+                                y2={edge.to.y}
+                                stroke="rgba(96,165,250,0.42)"
+                                strokeWidth="2"
+                              />
+                            ))}
+                            {learnerGraphNodes.map(({ concept, x, y }) => {
+                              const signal = Math.max(
+                                concept.mastery,
+                                concept.confidence,
+                              );
+                              const fill =
+                                signal >= 0.7
+                                  ? "#22c55e"
+                                  : signal >= 0.4
+                                    ? "#3b82f6"
+                                    : "#f97316";
+                              const label =
+                                concept.name.length > 20
+                                  ? `${concept.name.slice(0, 18)}...`
+                                  : concept.name;
+                              return (
+                                <g key={concept.id}>
+                                  <circle
+                                    cx={x}
+                                    cy={y}
+                                    r="36"
+                                    fill={fill}
+                                    fillOpacity="0.18"
+                                    stroke={fill}
+                                    strokeWidth="2"
+                                  />
+                                  <circle cx={x} cy={y} r="7" fill={fill} />
+                                  <text
+                                    x={x}
+                                    y={y + 52}
+                                    textAnchor="middle"
+                                    fill="#f4f4f5"
+                                    fontSize="12"
+                                    fontWeight="600"
+                                  >
+                                    {label}
+                                  </text>
+                                  <text
+                                    x={x}
+                                    y={y + 68}
+                                    textAnchor="middle"
+                                    fill="#a1a1aa"
+                                    fontSize="10"
+                                  >
+                                    {`M ${Math.round(concept.mastery * 100)}% · C ${Math.round(concept.confidence * 100)}%`}
+                                  </text>
+                                </g>
+                              );
+                            })}
+                          </svg>
+                          <ul
+                            id="learner-concept-graph-node-list"
+                            className="sr-only"
+                          >
+                            {learnerGraphNodes.map(({ concept }) => (
+                              <li key={concept.id}>
+                                {concept.name}: mastery{" "}
+                                {Math.round(concept.mastery * 100)} percent,
+                                confidence{" "}
+                                {Math.round(concept.confidence * 100)} percent.
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : (
+                        <div className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-5 py-12 text-center">
+                          <BrainCircuit
+                            size={24}
+                            className="mx-auto text-zinc-400"
+                          />
+                          <p className="mt-3 text-sm font-medium text-zinc-700">
+                            No concept relationships have been saved for this
+                            learner yet.
+                          </p>
+                          <p className="mt-1 text-xs text-zinc-500">
+                            Complete a tutor lesson to create the first learning
+                            book and concept nodes.
+                          </p>
+                        </div>
+                      )}
+                    </section>
+
+                    <section className="grid gap-4 lg:grid-cols-3">
+                      <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+                        <h3 className="text-base font-semibold text-zinc-900">
+                          Strongest current signals
+                        </h3>
+                        <p className="mt-1 text-xs leading-5 text-zinc-500">
+                          Highest combined mastery and confidence. Verify the
+                          evidence before making a high-stakes decision.
+                        </p>
+                        <div className="mt-4 space-y-3">
+                          {strongestLearnerConcepts.length > 0 ? (
+                            strongestLearnerConcepts.map((concept) => (
+                              <div key={concept.id}>
+                                <div className="flex items-center justify-between gap-3 text-sm">
+                                  <span className="truncate font-medium text-zinc-800">
+                                    {concept.name}
+                                  </span>
+                                  <span className="font-mono text-xs text-green-700">
+                                    {Math.round(
+                                      Math.max(
+                                        concept.mastery,
+                                        concept.confidence,
+                                      ) * 100,
+                                    )}
+                                    %
+                                  </span>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-zinc-500">
+                              Waiting for concept evidence.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+                        <h3 className="text-base font-semibold text-zinc-900">
+                          Review opportunities
+                        </h3>
+                        <p className="mt-1 text-xs leading-5 text-zinc-500">
+                          Low signals suggest a useful follow-up question, not a
+                          failure label.
+                        </p>
+                        <div className="mt-4 space-y-3">
+                          {learnerConceptsToReview.length > 0 ? (
+                            learnerConceptsToReview.map((concept) => (
+                              <div key={concept.id}>
+                                <div className="flex items-center justify-between gap-3 text-sm">
+                                  <span className="truncate font-medium text-zinc-800">
+                                    {concept.name}
+                                  </span>
+                                  <span className="font-mono text-xs text-orange-700">
+                                    {Math.round(
+                                      Math.max(
+                                        concept.mastery,
+                                        concept.confidence,
+                                      ) * 100,
+                                    )}
+                                    %
+                                  </span>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-zinc-500">
+                              Waiting for concept evidence.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+                        <h3 className="text-base font-semibold text-zinc-900">
+                          Recent learning books
+                        </h3>
+                        <p className="mt-1 text-xs leading-5 text-zinc-500">
+                          These establish the subjects and document context
+                          behind the graph.
+                        </p>
+                        <div className="mt-4 space-y-3">
+                          {selectedLearnerBooks.slice(0, 3).map((book) => (
+                            <div key={book.id}>
+                              <div className="text-sm font-medium text-zinc-800">
+                                {book.title}
+                              </div>
+                              <div className="mt-0.5 text-xs text-zinc-500">
+                                {book.chapters?.length || 0} chapters ·{" "}
+                                {book.conversationCount} conversations
+                              </div>
+                            </div>
+                          ))}
+                          {selectedLearnerBooks.length === 0 && (
+                            <p className="text-sm text-zinc-500">
+                              No learning books saved yet.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="rounded-lg border border-blue-100 bg-blue-50/70 p-5">
+                      <div className="flex items-start gap-3">
+                        <ShieldCheck
+                          size={18}
+                          className="mt-0.5 shrink-0 text-blue-600"
+                        />
+                        <div>
+                          <h3 className="text-sm font-semibold text-zinc-900">
+                            Local identity boundary
+                          </h3>
+                          <p className="mt-1 text-sm leading-6 text-zinc-600">
+                            Learners are currently separated by the{" "}
+                            <code>userName</code> stored on local learning
+                            books. This supports local inspection, but it is not
+                            secure multi-tenant isolation. Authenticated user
+                            IDs and server-enforced access control remain cloud
+                            work.
+                          </p>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                ) : activeTab === "brain" ? (
                   <div
                     className="flex flex-col gap-8 font-sans"
                     data-testid="admin-brain-overview"
