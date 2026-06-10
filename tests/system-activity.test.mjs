@@ -243,8 +243,9 @@ test("Deepgram server fallback and query keys stay disabled without explicit sha
   );
   const responseText = await response.text();
 
-  assert.equal(response.status, 500);
+  assert.equal(response.status, 503);
   assert.match(responseText, /Deepgram API Key is missing/);
+  assert.match(responseText, /PROVIDER_KEY_MISSING/);
   assert.equal(providerCalled, false);
   assert.doesNotMatch(responseText, /deepgram-disabled-secret|query-secret/);
 });

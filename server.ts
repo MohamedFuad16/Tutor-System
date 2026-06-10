@@ -2123,7 +2123,13 @@ CRITICAL RULES:
         ttsModel === "gpt-4o-mini-tts" ? "aura-asteria-en" : ttsModel;
       const deepgramKey =
         deepgramKeyFromRequest(req) || getDeepgramServerFallbackKey();
-      if (!deepgramKey) throw new Error("Deepgram API Key is missing");
+      if (!deepgramKey) {
+        return res.status(503).json({
+          error: "Deepgram API Key is missing",
+          code: "PROVIDER_KEY_MISSING",
+          provider: "deepgram",
+        });
+      }
 
       const response = await fetch(
         `https://api.deepgram.com/v1/speak?model=${ttsModelForDeepgram}&encoding=mp3`,

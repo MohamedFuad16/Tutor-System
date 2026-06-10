@@ -1,9 +1,38 @@
-import Database from "better-sqlite3";
 import * as fs from "fs";
+import { createRequire } from "module";
 import path from "path";
 
 const DEFAULT_USER_ID = "local-default-user";
 const USER_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]{2,79}$/;
+
+declare const module: NodeJS.Module | undefined;
+
+type SqliteDatabase = import("better-sqlite3").Database;
+type SqliteConstructor = typeof import("better-sqlite3").default;
+
+let SqliteDatabaseCtor: SqliteConstructor | null = null;
+
+const loadSqliteDatabase = () => {
+  if (SqliteDatabaseCtor) return SqliteDatabaseCtor;
+  try {
+    const nodeRequire =
+      typeof module !== "undefined" && typeof module.require === "function"
+        ? module.require.bind(module)
+        : createRequire(import.meta.url);
+    const loaded = nodeRequire("better-sqlite3") as
+      | SqliteConstructor
+      | { default?: SqliteConstructor };
+    const ctor = typeof loaded === "function" ? loaded : loaded.default;
+    if (!ctor) throw new Error("better-sqlite3 did not export a constructor.");
+    SqliteDatabaseCtor = ctor;
+    return SqliteDatabaseCtor;
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Learner SQLite store is unavailable in this runtime: ${detail}`,
+    );
+  }
+};
 
 type LearnerStoreOptions = {
   rootDir?: string;
@@ -87,13 +116,15 @@ export const learnerUserIdFromHeaders = (
 export class LearnerStore {
   private readonly rootDir: string;
   private readonly usersDir: string;
-  private databases = new Map<string, Database.Database>();
+  private databases = new Map<string, SqliteDatabase>();
 
   constructor(options: LearnerStoreOptions = {}) {
     this.rootDir =
       options.rootDir ||
       process.env.LEARNINGAI_DATA_DIR ||
-      path.join(process.cwd(), "data");
+      (process.env.VERCEL
+        ? path.join("/tmp", "learningai-data")
+        : path.join(process.cwd(), "data"));
     this.usersDir = path.join(this.rootDir, "users");
     fs.mkdirSync(this.usersDir, { recursive: true });
   }
@@ -112,6 +143,7 @@ export class LearnerStore {
     const cached = this.databases.get(userId);
     if (cached) return cached;
     const dbPath = path.join(this.getUserDir(userId), "brain.sqlite");
+    const Database = loadSqliteDatabase();
     const db = new Database(dbPath);
     db.pragma("journal_mode = WAL");
     db.exec(`
