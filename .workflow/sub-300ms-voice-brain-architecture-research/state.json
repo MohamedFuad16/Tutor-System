@@ -1,0 +1,64 @@
+{
+  "title": "Sub 300ms Voice Brain Architecture Research",
+  "slug": "sub-300ms-voice-brain-architecture-research",
+  "created_at": "2026-06-07T12:11:03+00:00",
+  "status": "gpu_setup_verified_latency_caveat",
+  "approval": {
+    "required": [
+      "external provider keys before live traffic",
+      "Vast.ai GPU before remote deployment"
+    ],
+    "granted": null,
+    "notes": "Research, architecture context, configured broker adapters, and Vast GPU Miso service setup are verified. Live OpenRouter/Deepgram/Serper traffic still waits on user keys. Miso whole-utterance wrapper works but is not yet a 110ms streaming path."
+  },
+  "packets": [
+    {
+      "id": "P1",
+      "title": "External research",
+      "status": "completed"
+    },
+    {
+      "id": "P2",
+      "title": "Current architecture",
+      "status": "completed"
+    },
+    {
+      "id": "P3",
+      "title": "Target architecture",
+      "status": "completed"
+    },
+    {
+      "id": "P4",
+      "title": "Implementation readiness",
+      "status": "completed"
+    },
+    {
+      "id": "P5",
+      "title": "Local broker readiness slice",
+      "status": "verified_local"
+    },
+    {
+      "id": "P6",
+      "title": "Vast GPU Miso setup",
+      "status": "verified_latency_caveat"
+    }
+  ],
+  "verification": {
+    "status": "passed",
+    "checks": [
+      "graphify query completed before source reads",
+      "targeted source inspection completed",
+      "external sources checked",
+      "local /api/voice-broker staged without provider traffic",
+      "configured broker adapter test passed with mocked OpenRouter, Serper, and Miso",
+      "focused node tests passed: tests/system-activity.test.mjs tests/brain-context.test.mjs",
+      "Vast GPU cache layout written under /workspace",
+      "MisoTTS health verified through local tunnel with CUDA and loaded model",
+      "MisoTTS cold speech smoke passed in 87.77s",
+      "MisoTTS warm speech smoke passed in 6.13s through tunnel",
+      "npm run lint passed",
+      "npm run build passed",
+      "git diff --check passed"
+    ]
+  }
+}

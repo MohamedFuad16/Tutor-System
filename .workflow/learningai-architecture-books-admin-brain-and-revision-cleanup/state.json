@@ -1,0 +1,31 @@
+{
+  "title": "LearningAI architecture books admin brain and revision cleanup",
+  "slug": "learningai-architecture-books-admin-brain-and-revision-cleanup",
+  "created_at": "2026-06-08T06:15:58+00:00",
+  "status": "completed",
+  "approval": {
+    "required": true,
+    "granted": true,
+    "notes": "User requested broad cleanup. Ambiguous destructive deletions remain gated by evidence."
+  },
+  "packets": [
+    { "id": "books", "status": "completed" },
+    { "id": "admin", "status": "completed" },
+    { "id": "chat-learning-books", "status": "completed" },
+    { "id": "cleanup-qa", "status": "completed" }
+  ],
+  "verification": {
+    "status": "passed",
+    "checks": [
+      "Local Graphify queries identified the connected architecture surfaces.",
+      "Focused architecture, audio, Admin, Study, and Revision tests passed.",
+      "Full npm test passed: 275 Node tests and 591 DOM tests, 866 total.",
+      "npm run lint passed.",
+      "npm run build passed.",
+      "npm run brain:postchange -- --reason architecture-admin-revision-cleanup passed.",
+      "git diff --check passed.",
+      "Desktop and mobile Chrome rendering checks passed for the library, architecture chapters, learner Admin, component map, operator controls, and fullscreen no-PDF chat.",
+      "The local server returned HTTP 200 at http://127.0.0.1:3001/."
+    ]
+  }
+}
