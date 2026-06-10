@@ -1,37 +1,155 @@
-# LearningAI Tutor
+<div align="center">
 
-LearningAI Tutor is a local-first study workspace for reading PDFs, talking to a source-aware tutor, saving learner memory, and turning useful sessions into revision books. It is built for local beta proof first: the app should teach, remember, explain what it recorded, and show its limits before cloud infrastructure is treated as complete.
+  <h1>Tutor: Cognitive Learning Interface</h1>
 
-## What Is In This Repo
+  <p><strong>A local-first learning system for PDFs, source-aware tutoring, voice mode, learner memory, revision, and inspectable AI workflows.</strong></p>
 
-- `Study` renders PDFs, extracted context, annotations, and a book-scoped chat surface.
-- `ChatPanel` streams tutor answers, handles tool output, records voice turns, and updates the learner ledger.
-- `Revision` renders built-in architecture books and generated learning books with diagrams, code blocks, flashcards, and title-matched stored audio when the checked-in audio manifest matches the current chapter title.
-- `Admin` shows the operational view: learner selection, learner-brain graph, evidence, memory, retrieval, voice, tools, model runs, artifacts, corrections, and beta readiness.
-- `server.ts` is the local Express broker for chat, voice, web search, TTS, document extraction, learner profiles, learner storage, and diagnostics.
-- `Graphify` is the repository architecture graph for maintainers. It is not the learner brain.
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/banner.png">
+    <img alt="Tutor System Architecture Banner" src="public/banner.png" width="100%" />
+  </picture>
+
+  <p>
+    <a href="https://github.com/MohamedFuad16/Tutor-System/blob/main/LICENSE">
+      <img src="https://img.shields.io/badge/License-MIT-3B82F6?style=for-the-badge&logo=github&logoColor=white" alt="MIT License" />
+    </a>
+    <a href="https://react.dev/">
+      <img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
+    </a>
+    <a href="https://www.typescriptlang.org/">
+      <img src="https://img.shields.io/badge/TypeScript_5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 5.8" />
+    </a>
+    <a href="https://vite.dev/">
+      <img src="https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite 6" />
+    </a>
+    <a href="https://tailwindcss.com/">
+      <img src="https://img.shields.io/badge/Tailwind_4-0F172A?style=for-the-badge&logo=tailwindcss&logoColor=38BDF8" alt="Tailwind CSS 4" />
+    </a>
+  </p>
+
+  <p>
+    <a href="#overview">Overview</a> -
+    <a href="#technology-stack">Technology Stack</a> -
+    <a href="#core-surfaces">Core Surfaces</a> -
+    <a href="#architecture">Architecture</a> -
+    <a href="#getting-started">Getting Started</a> -
+    <a href="#license">License</a>
+  </p>
+
+</div>
+
+---
+
+> [!TIP]
+> Tutor supports browser BYOK for local development and explicit server-side
+> OpenRouter/Deepgram fallbacks for trusted deployments. Shared server keys stay
+> disabled until their matching `ALLOW_SERVER_*_FALLBACK` flag is enabled.
+
+## Overview
+
+Tutor is a local-first study workspace for reading papers and textbooks,
+asking a source-aware tutor questions, speaking with a realtime voice tutor, and
+turning useful sessions into revision books.
+
+The app is built around one clear product loop:
+
+1. Open a local learner profile.
+2. Upload one or more PDFs into a learning book.
+3. Ask questions by typed chat or voice.
+4. Build a user-scoped context packet from PDFs, selected text, current page,
+   prior discussion, semantic memory, and learner state.
+5. Answer immediately in the foreground tutor.
+6. Delegate slow work to request-correlated background tasks.
+7. Store evidence, artifacts, corrections, and revision material for the active
+   learner.
+
+The learner brain is not hidden model memory. It is an auditable local system of
+records: books, PDFs, concepts, evidence, BKT mastery, artifacts, corrections,
+model runs, retrievals, and background jobs. Graphify is separate: it is the
+repository architecture graph for developers and agents.
+
+## Technology Stack
+
+| Layer              | Technologies                                                               |
+| ------------------ | -------------------------------------------------------------------------- |
+| Frontend           | React 19, TypeScript 5.8, Vite 6, Tailwind CSS 4                           |
+| State              | Zustand for app state, Dexie over IndexedDB for browser cache/offline rows |
+| PDF and documents  | `react-pdf`, PDF.js worker, Python extraction helpers, PyMuPDF4LLM flow    |
+| Rich output        | React Markdown, Mermaid, Shiki, KaTeX, Recharts                            |
+| Backend            | Node.js, Express, Server-Sent Events, WebSocket routes                     |
+| Learner store      | Per-user local folders, SQLite, document/extracted-text/artifact files     |
+| AI routes          | OpenRouter-compatible chat/vision routes, tool contracts, background jobs  |
+| Voice              | Deepgram STT/TTS, custom local broker, optional MisoTTS read-aloud path    |
+| Search             | Serper for explicit web/freshness requests                                 |
+| Architecture graph | Graphify artifacts in `graphify-out/`                                      |
+
+<p>
+  <img src="https://img.shields.io/badge/Node.js-22-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js 22" />
+  <img src="https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white" alt="Express" />
+  <img src="https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="SQLite" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Dexie_IndexedDB-7C3AED?style=flat-square" alt="Dexie IndexedDB" />
+  <img src="https://img.shields.io/badge/Deepgram-13EF93?style=flat-square&logo=deepgram&logoColor=07111F" alt="Deepgram" />
+</p>
+
+## Core Surfaces
+
+<table width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Study Workspace</h3>
+      <p>Interactive multi-PDF study surface using <code>react-pdf</code>. Desktop keeps the reader and tutor side by side; mobile opens chat first and treats PDFs as attached context until the learner chooses to view the page.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>Streaming Chat Panel</h3>
+      <p>SSE tutor responses with Markdown, Mermaid diagrams, code rendering, TTS read-aloud, source-aware prompt context, and one persistent conversation thread per learning book.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Voice Mode</h3>
+      <p>Deepgram or custom local broker voice sessions. The foreground tutor keeps the conversation moving while slow work is delegated into background tasks.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>Learner Brain</h3>
+      <p>User-scoped memory for books, PDFs, concepts, semantic context, BKT evidence, mastery deltas, artifacts, and corrections.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Revision Library</h3>
+      <p>Paper-style generated learning books, built-in architecture books, active recall, flashcards, code blocks, diagrams, and title-matched stored audio guides.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>Admin Diagnostics</h3>
+      <p>Inspect request timelines, model runs, tool jobs, memory/retrieval injections, voice events, evidence rows, artifacts, corrections, and readiness checks.</p>
+    </td>
+  </tr>
+</table>
 
 ## Architecture
 
 ```mermaid
 flowchart LR
   User["Learner"]
+  Profile["Local Profile userId"]
   Study["Study + PDF Context"]
   Chat["Foreground Tutor"]
-  Broker["Local Express Broker"]
-  Background["Background Tool Model"]
-  Voice["Deepgram STT/TTS or Custom Voice Broker"]
-  ServerStore["Server Learner Store"]
-  Cache["IndexedDB Cache"]
-  Revision["Revision Books"]
-  Admin["Admin Diagnostics"]
-  Graphify["Graphify Repo Map"]
+  Broker["Express Broker"]
+  Voice["Voice Broker / Deepgram"]
+  Background["Background Tasks"]
+  ServerStore["Server Learner Store<br/>SQLite + files"]
+  Cache["IndexedDB Cache<br/>Dexie"]
+  Revision["Revision"]
+  Admin["Admin"]
+  Graphify["Graphify Repo Brain"]
 
-  User --> Study
+  User --> Profile
+  Profile --> Study
   Study --> Chat
   Chat <--> Broker
-  Broker <--> Background
   Broker <--> Voice
+  Broker <--> Background
   Broker --> ServerStore
   Chat --> Cache
   Cache <--> ServerStore
@@ -40,37 +158,63 @@ flowchart LR
   Graphify -. developer navigation .-> Broker
 ```
 
-The learner brain is now separated from the repository brain and scoped by local profile. Graphify remains the codebase map in `graphify-out/`. Learner data is keyed by `userId` and is stored durably on the local server under `data/users/<userId>/`, with SQLite and per-user document/artifact folders. Browser IndexedDB remains a cache and UI-state layer, not the long-term home for PDF blobs or full extracted text.
+The learner brain is scoped by `userId`. Durable learner data lives under:
 
-IndexedDB is the browser's built-in structured storage system. In this app, Dexie is the helper library that makes IndexedDB easier to query. Think of it as a local browser cache and offline staging area. SQLite is the server-side database file used for durable local learner records. It is a better bridge to future cloud storage because the server can later migrate those rows to Postgres/S3-style infrastructure.
+```text
+data/users/<userId>/
+  brain.sqlite
+  documents/
+  extracted-text/
+  artifacts/
+  exports/
+```
 
-The learner brain records books, documents, concepts, entries, evidence, mastery changes, artifacts, corrections, background jobs, and runtime traces. Mastery is evidence-gated: model summaries can propose learning material, but durable mastery changes require learner evidence linked to concepts.
+IndexedDB is the browser's built-in structured storage system. Tutor uses Dexie
+to work with it. In this repo, IndexedDB is a cache and UI-state layer: metadata,
+small previews, active document state, and non-destructive migration fallback.
+It is not the durable owner of full PDFs or full extracted text.
 
-## Learner Flow
+SQLite is the local server database file for durable learner rows. The app keeps
+`user_id` on rows even inside each per-user database so the same shape can move
+to cloud Postgres/object storage later.
 
-1. The app creates or loads a local profile and sends `X-LearningAI-User-Id` on HTTP requests.
-2. The learner opens Study, uploads one or more PDFs, and asks questions by typed chat or voice.
-3. PDFs are ingested by the server. Files and extracted text are stored in the active user's local server folder. IndexedDB keeps metadata, previews, and UI state.
-4. Chat and voice both build a shared brain context packet from the active user, active book, active PDFs, selected text/current page state, semantic memory, BKT state, and pending work.
-5. The foreground tutor answers immediately. Slow work such as source lookup, PDF/tool work, generated artifacts, or code-style tasks is recorded as request-correlated background work.
-6. Validated recall evidence, such as an evaluated answer or flashcard review, can update BKT mastery. Transcripts, summaries, tool results, and model observations stay audit-only unless they pass that evidence gate.
+## Learner Brain Rules
+
+- Local profiles provide stable user IDs; they are not production cloud auth.
+- Chat and voice share `src/memory/brain.context.ts` for user-scoped context
+  packets.
+- PDF files and extracted text are stored server-side; browser rows keep cache
+  metadata and previews.
+- Model summaries, transcripts, tool results, and artifacts are teaching/audit
+  context only.
+- BKT mastery changes require validated evidence such as evaluated answers or
+  flashcard reviews linked to real concepts.
+- Background tasks are request-correlated so Admin can follow one user action
+  across chat, voice, tools, retrieval, artifacts, and memory writes.
 
 ## Voice Modes
 
 - `deepgram` mode uses the Deepgram Voice Agent path.
-- `custom` mode opens a browser WebSocket to the local broker. The broker sends foreground teaching to an OpenRouter-compatible `VOICE_FOREGROUND_MODEL` and delegates web/code/PDF/tool work to `VOICE_BACKGROUND_MODEL`.
-- Background answers are cleaned before insertion so raw markdown such as `**Apple**` is not read aloud.
-- MisoTTS is optional and experimental. The local broker only accepts loopback Miso URLs such as `http://127.0.0.1:8080`.
-- No route should claim a universal sub-200 ms guarantee. Report latency as measured p50, p95, failure rate, route, provider, region, and hardware.
+- `custom` mode opens a browser WebSocket to the local broker. The broker sends
+  foreground teaching to an OpenRouter-compatible `VOICE_FOREGROUND_MODEL` and
+  delegates web/code/PDF/tool work to `VOICE_BACKGROUND_MODEL`.
+- Background answers are cleaned before insertion so raw markdown such as
+  `**Apple**` is not read aloud.
+- MisoTTS is optional and experimental. The local broker only accepts loopback
+  Miso URLs such as `http://127.0.0.1:8080`.
+- No route should claim a universal sub-200 ms guarantee. Report latency as
+  measured p50, p95, failure rate, route, provider, region, and hardware.
 
-## Requirements
+## Getting Started
+
+Requirements:
 
 - Node.js 22
 - npm
 - Python 3 for document extraction helpers
 - Optional provider keys: OpenRouter, Deepgram, Serper
 
-Install local dependencies:
+Install dependencies:
 
 ```bash
 npm ci
@@ -79,23 +223,7 @@ pip install -r requirements.txt
 
 Create `.env` from `.env.example` and fill only the providers you need.
 
-## Environment
-
-| Variable                           | Purpose                                                                                                             |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `OPENROUTER_API_KEY`               | Server-side OpenRouter key for chat and custom voice broker when fallback is enabled.                               |
-| `ALLOW_SERVER_OPENROUTER_FALLBACK` | Must be `true` before browser requests may use the server OpenRouter key.                                           |
-| `DEEPGRAM_API_KEY`                 | Deepgram STT/TTS key.                                                                                               |
-| `ALLOW_SERVER_DEEPGRAM_FALLBACK`   | Must be `true` before browser requests may use the server Deepgram key.                                             |
-| `SERPER_API_KEY`                   | Legacy typed-chat web search key. Custom voice background search uses OpenRouter tools instead.                     |
-| `VITE_VOICE_BROKER_MODE`           | `deepgram` or `custom`.                                                                                             |
-| `VOICE_FOREGROUND_MODEL`           | Fast teaching model, for example `openai/gpt-4o-mini`.                                                              |
-| `VOICE_BACKGROUND_MODEL`           | Provider-valid background model id for web/search/code/PDF/tool work. This is not the Codex runtime model selector. |
-| `VOICE_BROKER_STT_MODEL`           | Deepgram STT model, default `nova-3`.                                                                               |
-| `VOICE_BROKER_TTS_MODEL`           | Deepgram Aura TTS model.                                                                                            |
-| `MISO_TTS_API_URL`                 | Optional loopback-only local Miso endpoint.                                                                         |
-
-## Run
+Run locally:
 
 ```bash
 npm run dev
@@ -107,6 +235,28 @@ If port `3000` is busy:
 npm run dev -- --host 127.0.0.1 --port 3100
 ```
 
+## Environment
+
+| Variable                           | Purpose                                                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `OPENROUTER_API_KEY`               | Server-side OpenRouter key for chat and custom voice broker when fallback is enabled.           |
+| `ALLOW_SERVER_OPENROUTER_FALLBACK` | Must be `true` before browser requests may use the server OpenRouter key.                       |
+| `DEEPGRAM_API_KEY`                 | Deepgram STT/TTS key.                                                                           |
+| `ALLOW_SERVER_DEEPGRAM_FALLBACK`   | Must be `true` before browser requests may use the server Deepgram key.                         |
+| `SERPER_API_KEY`                   | Legacy typed-chat web search key. Custom voice background search uses OpenRouter tools instead. |
+| `VITE_VOICE_BROKER_MODE`           | `deepgram` or `custom`.                                                                         |
+| `VOICE_FOREGROUND_MODEL`           | Fast teaching model, for example `openai/gpt-4o-mini`.                                          |
+| `VOICE_BACKGROUND_MODEL`           | Provider-valid background model id for web/search/code/PDF/tool work.                           |
+| `VOICE_BROKER_STT_MODEL`           | Deepgram STT model, default `nova-3`.                                                           |
+| `VOICE_BROKER_TTS_MODEL`           | Deepgram Aura TTS model.                                                                        |
+| `MISO_TTS_API_URL`                 | Optional loopback-only local Miso endpoint.                                                     |
+
+## Architecture Docs
+
+- [System architecture](./TUTOR_ARCHITECTURE.md)
+- [Learner brain architecture](./docs/learner-brain-architecture.md)
+- [Agent workflow instructions](./AGENTS.md)
+
 ## Graphify Workflow
 
 Use Graphify before broad code reads:
@@ -117,21 +267,8 @@ graphify path "ChatPanel" "server.ts" --graph graphify-out/graph.json
 npm run graphify:tree
 ```
 
-Do not regenerate `graphify-out` automatically after ordinary edits. Refresh Graphify artifacts only when graph maintenance is explicitly requested.
-
-## Architecture Docs
-
-- [System architecture](./TUTOR_ARCHITECTURE.md)
-- [Learner brain architecture](./docs/learner-brain-architecture.md)
-
-## Stored Chapter Audio
-
-Checked-in audio guides live under `public/audio-overviews/`. Rewritten built-in chapters only attach stored audio when the manifest chapter title exactly matches the current chapter title, so old MP3s cannot silently play for a new chapter edition. Regenerate audio after chapter-title rewrites:
-
-```bash
-npm run audio:overview:dry-run
-DEEPGRAM_API_KEY=your_deepgram_key npm run audio:overview:generate -- --provider deepgram --overwrite
-```
+Do not regenerate `graphify-out` automatically after ordinary edits. Refresh
+Graphify artifacts only when graph maintenance is explicitly requested.
 
 ## Verification
 
@@ -142,20 +279,26 @@ npm run format:check
 npm run lint
 npm test
 npm run build
-npm run brain:postchange -- --reason five-agent-release-verification
+npm run brain:postchange -- --reason readme-update
 ```
 
-For UI changes, also open the running app in the browser and smoke-test Study, fullscreen chat, Revision, and Admin at desktop and mobile widths.
+For UI changes, also open the running app in the browser and smoke-test Study,
+fullscreen chat, Revision, and Admin at desktop and mobile widths.
 
-## Current Local-Beta Boundaries
+## Local-Beta Boundaries
 
-- Local profiles provide stable user IDs, but they are not real cloud authentication.
-- Durable local learner records live in server folders and SQLite. Production tenancy, backups, retention, and organization administration are deferred.
-- IndexedDB is still used for local cache/UI state and non-destructive migration fallback, but it should not be treated as the durable source for full PDFs or full extracted text.
-- Voice provider combinations need measured real-key proof before any latency promise is made.
-- Citation and artifact checks record provenance and local consistency; they do not prove every generated claim is factually true.
-- AWS deployment is intentionally deferred until local beta behavior is repeatable and inspectable.
+- Local profiles provide stable user IDs, but they are not real cloud
+  authentication.
+- Durable local learner records live in server folders and SQLite. Production
+  tenancy, backups, retention, and organization administration are deferred.
+- IndexedDB is still used for local cache/UI state and non-destructive migration
+  fallback, but it should not be treated as the durable source for full PDFs or
+  full extracted text.
+- Voice provider combinations need measured real-key proof before any latency
+  promise is made.
+- Citation and artifact checks record provenance and local consistency; they do
+  not prove every generated claim is factually true.
 
 ## License
 
-MIT.
+This project is licensed under the [MIT License](./LICENSE).
