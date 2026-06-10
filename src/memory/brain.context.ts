@@ -27,6 +27,7 @@ export type BrainContextInteractionInput = {
 };
 
 export type BrainContextPacketInput = {
+  userId?: string;
   requestId?: string;
   proofAttemptId?: string;
   mode: BrainContextMode;
@@ -37,6 +38,7 @@ export type BrainContextPacketInput = {
     pageNumber?: number,
     activeBookId?: string | null,
     options?: {
+      userId?: string;
       requestId?: string;
       proofAttemptId?: string;
       mode?: "chat" | "voice" | "revision" | "admin";
@@ -55,11 +57,18 @@ export type BrainContextPacketInput = {
 };
 
 export type BrainContextPacket = {
+  userId?: string;
   requestId?: string;
   proofAttemptId?: string;
   mode: BrainContextMode;
   agentLayer: BrainAgentLayer;
   querySummary: string;
+  scope: {
+    userId?: string;
+    activeBookId?: string;
+    activeBookTitle?: string;
+    activeDocumentId?: string;
+  };
   activeBookId?: string;
   activeBookTitle?: string;
   activeDocumentId?: string;
@@ -421,6 +430,7 @@ export const createBrainContextMemoryEventInput = (
   metadata: {
     requestId: packet.requestId,
     proofAttemptId: packet.proofAttemptId,
+    userId: packet.userId,
     mode: packet.mode,
     agentLayer: packet.agentLayer,
     activeBookTitle: packet.activeBookTitle,
@@ -448,6 +458,7 @@ export const buildBrainContextPacket = async (
   input: BrainContextPacketInput,
 ): Promise<BrainContextPacket> => {
   const activeBookId = input.activeBookId || undefined;
+  const userId = input.userId || undefined;
   const activeDocumentId = input.activeDocumentId || undefined;
   const documents = input.documents || [];
   const retrievalQuery = buildBrainRetrievalQuery(
@@ -460,6 +471,7 @@ export const buildBrainContextPacket = async (
     undefined,
     activeBookId,
     {
+      userId,
       requestId: input.requestId,
       proofAttemptId: input.proofAttemptId,
       mode: input.mode,
@@ -510,11 +522,18 @@ export const buildBrainContextPacket = async (
     input.mode,
   );
   const packet: BrainContextPacket = {
+    userId,
     requestId: input.requestId,
     proofAttemptId: input.proofAttemptId,
     mode: input.mode,
     agentLayer: input.agentLayer,
     querySummary: compact(input.query),
+    scope: {
+      userId,
+      activeBookId,
+      activeBookTitle,
+      activeDocumentId,
+    },
     activeBookId,
     activeBookTitle,
     activeDocumentId,

@@ -2865,6 +2865,8 @@ export function RevisionView() {
   const setActiveDocumentId = useStore((state) => state.setActiveDocumentId);
   const setActiveProject = useStore((state) => state.setActiveProject);
   const brainRuntimeSettings = useStore((state) => state.brainRuntimeSettings);
+  const activeUserId = useStore((state) => state.activeUserId);
+  const learnerName = useStore((state) => state.learnerName);
   const [libraryRevision, setLibraryRevision] = useState(0);
 
   const concepts = React.useMemo(
@@ -2880,24 +2882,36 @@ export function RevisionView() {
     [],
   );
   const learningBooks = queriedLearningBooks || [];
+  const scopedLearningBooks = React.useMemo(() => {
+    const matches = learningBooks.filter((book) =>
+      book.userId
+        ? book.userId === activeUserId
+        : book.userName === learnerName,
+    );
+    return matches.length > 0 ? matches : learningBooks;
+  }, [activeUserId, learnerName, learningBooks]);
   const visibleLearningBooks = React.useMemo(() => {
     const general =
-      learningBooks.find((book) => book.id === GENERAL_STUDY_BOOK_ID) ||
-      learningBooks.find((book) => /^general study$/i.test(book.title.trim()));
+      scopedLearningBooks.find((book) =>
+        book.id.startsWith(GENERAL_STUDY_BOOK_ID),
+      ) ||
+      scopedLearningBooks.find((book) =>
+        /^general study$/i.test(book.title.trim()),
+      );
     const seen = new Set<string>();
     const result: LearningBook[] = [];
     if (general) {
       result.push(general);
       seen.add(general.id);
     }
-    learningBooks.forEach((book) => {
+    scopedLearningBooks.forEach((book) => {
       if (seen.has(book.id)) return;
       if (/^general study$/i.test(book.title.trim())) return;
       result.push(book);
       seen.add(book.id);
     });
     return result;
-  }, [learningBooks]);
+  }, [scopedLearningBooks]);
   const queriedLearningBookConcepts = useLiveQuery(
     () => db.learningBookConcepts.orderBy("updatedAt").reverse().toArray(),
     [],
@@ -3021,6 +3035,7 @@ export function RevisionView() {
     });
     try {
       await recordFlashcardReviewEvidence(card, quality, {
+        userId: activeUserId,
         runtimeSettings: brainRuntimeSettings,
       });
     } catch (error) {
@@ -3044,7 +3059,7 @@ export function RevisionView() {
   const activeBuiltInBook = builtInBooks.find(
     (book) => book.id === activeConcept?.id,
   );
-  const activeLearningBook = learningBooks.find(
+  const activeLearningBook = scopedLearningBooks.find(
     (book) => book.id === activeConceptId,
   );
   const flashcardsForBook = React.useCallback(
@@ -3080,11 +3095,11 @@ export function RevisionView() {
     if (!pendingBookId) return;
     const canOpenBook =
       builtInBookIds.has(pendingBookId) ||
-      learningBooks.some((book) => book.id === pendingBookId);
+      scopedLearningBooks.some((book) => book.id === pendingBookId);
     if (!canOpenBook) return;
     setCurrentChapterIndex(0);
     setActiveConceptId(pendingBookId);
-    const generatedBook = learningBooks.find(
+    const generatedBook = scopedLearningBooks.find(
       (book) => book.id === pendingBookId,
     );
     if (generatedBook) {
@@ -3093,7 +3108,7 @@ export function RevisionView() {
     }
     scrollBookToTop("auto");
     localStorage.removeItem("revision_open_book_id");
-  }, [learningBooks, setActiveLearningBookId, setActiveProject]);
+  }, [scopedLearningBooks, setActiveLearningBookId, setActiveProject]);
 
   const cleanRevisionNote = React.useCallback(
     (value?: string) =>

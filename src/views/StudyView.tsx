@@ -21,10 +21,11 @@ import { gsap } from "gsap";
 import { useTranslation } from "../lib/translations";
 import { brainOrchestrator } from "../memory/memory.orchestrator";
 import { useMotionPreference } from "../hooks/useMotionPreference";
+import { learnerRequestHeaders } from "../lib/localLearnerProfile";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   db,
-  GENERAL_STUDY_BOOK_ID,
+  generalStudyBookIdForUser,
   type LearningBook,
   type LearningDocument,
 } from "../memory/longterm.memory";
@@ -41,10 +42,7 @@ const splitCardTitle = (title: string) => {
   );
 };
 
-const documentObjectUrlCache = new Map<
-  string,
-  { blob: Blob; url: string }
->();
+const documentObjectUrlCache = new Map<string, { blob: Blob; url: string }>();
 const MOBILE_STUDY_MEDIA_QUERY = "(max-width: 767px)";
 
 const isMobileStudyViewport = () =>
@@ -53,6 +51,7 @@ const isMobileStudyViewport = () =>
   window.matchMedia(MOBILE_STUDY_MEDIA_QUERY).matches;
 
 const getCachedDocumentObjectUrl = (document: LearningDocument) => {
+  if (document.fileUrl) return document.fileUrl;
   const sourceBlob = document.blob instanceof Blob ? document.blob : null;
   if (!sourceBlob) return null;
   const cached = documentObjectUrlCache.get(document.id);
@@ -584,6 +583,7 @@ export function StudyView() {
   const activeProject = useStore((state) => state.activeProject);
   const setActiveProject = useStore((state) => state.setActiveProject);
   const learnerName = useStore((state) => state.learnerName);
+  const activeUserId = useStore((state) => state.activeUserId);
   const activeDocumentId = useStore((state) => state.activeDocumentId);
   const setActiveDocumentId = useStore((state) => state.setActiveDocumentId);
   const removeAnnotationsForDocument = useStore(
@@ -622,8 +622,8 @@ export function StudyView() {
     () =>
       activeLearningBookId
         ? db.learningBooks.get(activeLearningBookId)
-        : db.learningBooks.get(GENERAL_STUDY_BOOK_ID),
-    [activeLearningBookId],
+        : db.learningBooks.get(generalStudyBookIdForUser(activeUserId)),
+    [activeLearningBookId, activeUserId],
   );
   const activeBookId = activeBook?.id || activeLearningBookId;
   const bookDocuments = useLiveQuery(
@@ -663,9 +663,16 @@ export function StudyView() {
     if (activeLearningBookId) return;
     let cancelled = false;
     void brainOrchestrator
-      .ensureSessionLearningBook(learnerName || "Learner", "General Study")
+      .ensureSessionLearningBook(
+        learnerName || "Learner",
+        "General Study",
+        activeUserId,
+      )
       .then((book) => {
         if (cancelled) return;
+        if (!book.userId) {
+          void db.learningBooks.update(book.id, { userId: activeUserId });
+        }
         setActiveLearningBookId(book.id);
         setActiveProject(book.title);
       })
@@ -678,6 +685,7 @@ export function StudyView() {
   }, [
     activeLearningBookId,
     learnerName,
+    activeUserId,
     setActiveLearningBookId,
     setActiveProject,
   ]);
@@ -763,6 +771,7 @@ export function StudyView() {
   }, [
     activeDocument?.id,
     activeDocument?.blob,
+    activeDocument?.fileUrl,
     activeDocument?.lastViewedPage,
     activeDocument?.scale,
     activeDocument?.totalPages,
@@ -883,17 +892,37 @@ export function StudyView() {
   };
 
   const ensureActiveBook = async (): Promise<LearningBook> => {
-    if (activeBook) return activeBook;
+    if (activeBook) {
+      if (!activeBook.userId) {
+        await db.learningBooks.update(activeBook.id, { userId: activeUserId });
+        return { ...activeBook, userId: activeUserId };
+      }
+      return activeBook;
+    }
     if (activeLearningBookId) {
       const existing = await db.learningBooks
         .get(activeLearningBookId)
         .catch((): undefined => undefined);
-      if (existing) return existing;
+      if (existing) {
+        if (!existing.userId) {
+          await db.learningBooks.update(existing.id, { userId: activeUserId });
+          return { ...existing, userId: activeUserId };
+        }
+        return existing;
+      }
     }
     const book = await brainOrchestrator.ensureSessionLearningBook(
       learnerName || "Learner",
       activeProject || "General Study",
+      activeUserId,
     );
+    if (!book.userId) {
+      await db.learningBooks.update(book.id, { userId: activeUserId });
+      const scopedBook = { ...book, userId: activeUserId };
+      setActiveLearningBookId(scopedBook.id);
+      setActiveProject(scopedBook.title);
+      return scopedBook;
+    }
     setActiveLearningBookId(book.id);
     setActiveProject(book.title);
     return book;
@@ -913,6 +942,7 @@ export function StudyView() {
       .catch((): LearningDocument[] => []);
     const documentIds = documents.map((document) => document.id);
     await db.learningBooks.update(bookId, {
+      userId: activeUserId,
       documentIds,
       activeDocumentId: documentId || undefined,
       updatedAt: Date.now(),
@@ -946,12 +976,18 @@ export function StudyView() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("documentId", documentRecord.id);
+      formData.append("bookId", book.id);
+      formData.append("title", documentRecord.title);
 
       const apiKey = useStore.getState().apiKey;
       const res = await fetch("/api/documents/ingest", {
         method: "POST",
         body: formData,
-        headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+        headers: learnerRequestHeaders(
+          useStore.getState().activeUserId,
+          apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+        ),
       });
 
       if (!res.ok) throw new Error(await res.text());
@@ -960,8 +996,15 @@ export function StudyView() {
       console.info("Document classification:", data.classification);
 
       const extractedText = String(data.content || "").trim();
+      const serverDocument = data.serverDocument || null;
       const nextDocument: Partial<LearningDocument> = {
-        extractedText,
+        userId: activeUserId,
+        storageProvider: serverDocument ? "server-local" : "indexeddb-cache",
+        fileUrl: serverDocument?.fileUrl,
+        textUrl: serverDocument?.textUrl,
+        textPreview: serverDocument?.textPreview || extractedText,
+        extractedText: serverDocument?.textPreview || extractedText,
+        blob: serverDocument ? undefined : documentRecord.blob,
         classification: data.classification,
         extractionMode: data.extractionMode,
         totalPages: data.totalPages,
@@ -974,6 +1017,7 @@ export function StudyView() {
       if (data.content && data.content.trim()) {
         const updatedBook =
           await brainOrchestrator.updateLearningBookFromConversation({
+            userId: activeUserId,
             userName: book.userName || learnerName || "Learner",
             activeProject: book.title,
             activeBookId: book.id,
@@ -1020,10 +1064,12 @@ export function StudyView() {
     const documentRecords = pdfFiles.map(
       (file, index): LearningDocument => ({
         id: `doc:${crypto.randomUUID()}`,
+        userId: activeUserId,
         bookId: book.id,
         title: file.name.replace(/\.pdf$/i, "").trim() || "Untitled PDF",
         mimeType: file.type || "application/pdf",
         size: file.size,
+        storageProvider: "indexeddb-cache",
         blob: file.slice(0, file.size, file.type || "application/pdf"),
         processingStatus: "processing",
         createdAt: now + index,

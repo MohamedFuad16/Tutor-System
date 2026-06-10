@@ -42,7 +42,7 @@ export const __analyticsViewTestUtils = {
     pluginBuild.onResolve(
       {
         filter:
-          /^(\.\.\/memory\/longterm\.memory|\.\.\/lib\/translations|\.\.\/hooks\/useMotionPreference|dexie-react-hooks|react|recharts|gsap)$/,
+          /^(\.\.\/memory\/longterm\.memory|\.\.\/lib\/translations|\.\.\/hooks\/useMotionPreference|\.\.\/store|dexie-react-hooks|react|recharts|gsap)$/,
       },
       (args) => ({
         path: args.path,
@@ -103,6 +103,9 @@ export const __analyticsViewTestUtils = {
               concepts: { toArray: async () => [] },
               interactions: { count: async () => 0 },
               sessions: { count: async () => 0 },
+              learningBooks: { toArray: async () => [] },
+              learningBookConcepts: { toArray: async () => [] },
+              learningEntries: { toArray: async () => [] },
             };
           `);
         }
@@ -113,6 +116,17 @@ export const __analyticsViewTestUtils = {
               language: "en",
               t: (key) => key,
             });
+          `);
+        }
+
+        if (args.path === "../store") {
+          return stubModule(`
+            const state = {
+              activeUserId: "local-default-user",
+              learnerName: "Learner",
+            };
+            export const useStore = (selector) =>
+              typeof selector === "function" ? selector(state) : state;
           `);
         }
 

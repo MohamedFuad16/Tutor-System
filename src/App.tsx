@@ -5,6 +5,7 @@ import { SettingsButton } from "./components/SettingsModal";
 import { StudyView } from "./views/StudyView";
 import { gsap } from "gsap";
 import { useMotionPreference } from "./hooks/useMotionPreference";
+import { syncLearnerProfileAndMigration } from "./memory/server.migration";
 
 const AnalyticsView = React.lazy(() =>
   import("./views/AnalyticsView").then((module) => ({
@@ -89,7 +90,23 @@ export default function App() {
   const activeView = useStore((state) => state.activeView);
   const setActiveView = useStore((state) => state.setActiveView);
   const accessMode = useStore((state) => state.accessMode);
+  const activeUserId = useStore((state) => state.activeUserId);
+  const learnerName = useStore((state) => state.learnerName);
   const motionEnabled = useMotionPreference();
+
+  useEffect(() => {
+    let cancelled = false;
+    void syncLearnerProfileAndMigration(activeUserId, learnerName).catch(
+      (error) => {
+        if (!cancelled) {
+          console.warn("[LearnerProfile] Server sync skipped:", error);
+        }
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [activeUserId, learnerName]);
 
   useEffect(() => {
     if (!VALID_VIEWS.has(activeView as string)) {

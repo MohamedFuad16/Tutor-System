@@ -97,6 +97,7 @@ import {
   meaningfulChatMessages,
   summarizeChatThreadPersistence,
 } from "../lib/chatThreadUtils";
+import { learnerRequestHeaders } from "../lib/localLearnerProfile";
 
 type MermaidApi = typeof import("mermaid").default;
 type VoiceVisualFocus = NonNullable<
@@ -594,6 +595,7 @@ type VoiceSessionTurn = {
   isRevealing?: boolean;
 };
 type VoiceStudyContextPayload = {
+  userId?: string;
   requestId?: string;
   proofAttemptId?: string;
   studyContext: string;
@@ -3628,6 +3630,7 @@ export function ChatPanel({
   const serperApiKey = useStore((state) => state.serperApiKey);
   const deepgramApiKey = useStore((state) => state.deepgramApiKey);
   const learnerName = useStore((state) => state.learnerName);
+  const activeUserId = useStore((state) => state.activeUserId);
   const askTutorQuery = useStore((state) => state.askTutorQuery);
   const setAskTutorQuery = useStore((state) => state.setAskTutorQuery);
   const activeProject = useStore((state) => state.activeProject);
@@ -3950,24 +3953,36 @@ export function ChatPanel({
       () => db.learningBooks.orderBy("updatedAt").reverse().toArray(),
       [],
     ) || [];
+  const scopedLearningBooks = React.useMemo(() => {
+    const matches = learningBooks.filter((book) =>
+      book.userId
+        ? book.userId === activeUserId
+        : book.userName === learnerName,
+    );
+    return matches.length > 0 ? matches : learningBooks;
+  }, [activeUserId, learnerName, learningBooks]);
   const dedupedLearningBooks = React.useMemo(() => {
     const general =
-      learningBooks.find((book) => book.id === GENERAL_STUDY_BOOK_ID) ||
-      learningBooks.find((book) => /^general study$/i.test(book.title.trim()));
+      scopedLearningBooks.find((book) =>
+        book.id.startsWith(GENERAL_STUDY_BOOK_ID),
+      ) ||
+      scopedLearningBooks.find((book) =>
+        /^general study$/i.test(book.title.trim()),
+      );
     const seen = new Set<string>();
     const result = [];
     if (general) {
       result.push(general);
       seen.add(general.id);
     }
-    learningBooks.forEach((book) => {
+    scopedLearningBooks.forEach((book) => {
       if (seen.has(book.id)) return;
       if (/^general study$/i.test(book.title.trim())) return;
       result.push(book);
       seen.add(book.id);
     });
     return result;
-  }, [learningBooks]);
+  }, [scopedLearningBooks]);
   const libraryContextBooks = React.useMemo(
     () =>
       dedupedLearningBooks.filter(
@@ -3976,7 +3991,9 @@ export function ChatPanel({
     [dedupedLearningBooks],
   );
   const generalStudyBook =
-    libraryContextBooks.find((book) => book.id === GENERAL_STUDY_BOOK_ID) ||
+    libraryContextBooks.find((book) =>
+      book.id.startsWith(GENERAL_STUDY_BOOK_ID),
+    ) ||
     libraryContextBooks.find(
       (book) => book.title.toLowerCase() === "general study",
     );
@@ -4004,12 +4021,50 @@ export function ChatPanel({
       a.id === activeDocumentId ? -1 : b.id === activeDocumentId ? 1 : 0,
     );
   }, [activeBookDocuments, activeDocumentId]);
+  const hydrateDocumentsForBrainContext = useCallback(
+    async (documents: LearningDocument[]) => {
+      if (typeof fetch !== "function") return documents;
+      return Promise.all(
+        documents.map(async (document) => {
+          if (document.extractedText?.trim() || !document.textUrl) {
+            return document;
+          }
+          try {
+            const response = await fetch(document.textUrl, {
+              headers: learnerRequestHeaders(activeUserId),
+            });
+            if (!response.ok) return document;
+            const extractedText = await response.text();
+            if (!extractedText.trim()) return document;
+            return {
+              ...document,
+              extractedText,
+              textPreview:
+                document.textPreview ||
+                extractedText.replace(/\s+/g, " ").slice(0, 6000),
+            };
+          } catch (error) {
+            console.warn(
+              "[ChatPanel] Server document text hydration failed:",
+              error,
+            );
+            return document;
+          }
+        }),
+      );
+    },
+    [activeUserId],
+  );
   const readyProofDocuments = React.useMemo(
     () =>
       orderedBookDocuments.filter(
         (document) =>
           document.processingStatus === "ready" &&
-          Boolean(document.extractedText?.trim()),
+          Boolean(
+            document.extractedText?.trim() ||
+            document.textPreview?.trim() ||
+            document.textUrl,
+          ),
       ),
     [orderedBookDocuments],
   );
@@ -4074,7 +4129,10 @@ export function ChatPanel({
       .filter(Boolean)
       .join("\n");
     const voiceRequestId = voiceSessionIdRef.current || undefined;
+    const hydratedDocuments =
+      await hydrateDocumentsForBrainContext(orderedBookDocuments);
     const packet = await buildBrainContextPacket({
+      userId: activeUserId,
       requestId: voiceRequestId,
       proofAttemptId:
         voiceProofAttemptIdRef.current || activeBetaProofAttemptId || undefined,
@@ -4087,7 +4145,7 @@ export function ChatPanel({
       activeBookTitle: activeLearningBookTitle || activeProject,
       activeProject,
       activeDocumentId,
-      documents: orderedBookDocuments,
+      documents: hydratedDocuments,
       runtimeSettings: brainRuntimeSettings,
       maxContextChars: VOICE_AGENT_CONTEXT_CHAR_LIMIT,
       interaction: {
@@ -4102,6 +4160,7 @@ export function ChatPanel({
       },
     });
     return {
+      userId: packet.userId,
       requestId: packet.requestId,
       proofAttemptId: packet.proofAttemptId,
       studyContext: packet.context,
@@ -4121,14 +4180,35 @@ export function ChatPanel({
     };
   }, [
     activeDocumentId,
+    activeUserId,
     activeBetaProofAttemptId,
     activeLearningBookTitle,
     activeProject,
     brainRuntimeSettings,
     canonicalActiveBookId,
+    hydrateDocumentsForBrainContext,
     orderedBookDocuments,
     selectedTextContext,
   ]);
+
+  const recordLearnerBackgroundTask = useCallback(
+    (payload: Record<string, unknown>) => {
+      void fetch("/api/learner/background-tasks", {
+        method: "POST",
+        headers: learnerRequestHeaders(activeUserId, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify(payload),
+      }).catch((error) => {
+        console.warn(
+          "[ChatPanel] Learner background task write failed:",
+          error,
+        );
+      });
+    },
+    [activeUserId],
+  );
+
   const visibleChatArchives = chatArchives.filter(
     (archive) =>
       archive.bookId === canonicalActiveBookId &&
@@ -5018,6 +5098,7 @@ export function ChatPanel({
               understandingDelta,
               undefined,
               {
+                userId: activeUserId,
                 requestId: sessionId,
                 proofAttemptId,
                 mode: "voice",
@@ -5092,6 +5173,7 @@ export function ChatPanel({
             };
           } else if (toolName === "evaluate_answer") {
             const results = await recordEvaluatedAnswerEvidenceBatch([args], {
+              userId: activeUserId,
               bookId: canonicalActiveBookId || undefined,
               bookTitle: activeLearningBookTitle || activeProject || undefined,
               conversationId: canonicalActiveBookId
@@ -5102,6 +5184,7 @@ export function ChatPanel({
               source: "voice_tool_evaluate_answer",
               evaluator: "model_rubric",
               metadata: {
+                userId: activeUserId,
                 toolCallId,
                 voiceSessionId: sessionId,
                 agentLayer: "voice_realtime",
@@ -5871,6 +5954,7 @@ export function ChatPanel({
         ws.send(
           JSON.stringify({
             type: "voice_auth",
+            userId: activeUserId,
             voiceSessionId: sessionId,
             requestId: sessionId,
             proofAttemptId,
@@ -5904,6 +5988,7 @@ export function ChatPanel({
               voiceContextPayload?.omittedReadyDocumentCount || 0,
             studyContextChars: voiceContextPayload?.studyContextChars || 0,
             studyContextMetadata: {
+              userId: activeUserId,
               mode: "voice",
               agentLayer: "voice_realtime",
               voiceBrokerMode,
@@ -5999,6 +6084,20 @@ export function ChatPanel({
                 },
               });
             } else if (msg.type === "BackgroundJobStarted") {
+              recordLearnerBackgroundTask({
+                taskId: msg.jobId,
+                requestId: voiceSessionIdRef.current || undefined,
+                source: "voice_broker",
+                taskType: "async_tool_or_research",
+                status: "running",
+                inputSummary: String(msg.query || msg.intent || "tool task"),
+                metadata: {
+                  model: msg.model,
+                  intent: msg.intent,
+                  voiceBrokerMode,
+                  proofAttemptId,
+                },
+              });
               recordVoiceAgentEvent({
                 type: "background_job",
                 status: "running",
@@ -6013,6 +6112,31 @@ export function ChatPanel({
                 },
               });
             } else if (msg.type === "BackgroundJobResult") {
+              recordLearnerBackgroundTask({
+                taskId: msg.jobId,
+                requestId: voiceSessionIdRef.current || undefined,
+                source: "voice_broker",
+                taskType: "async_tool_or_research",
+                status:
+                  msg.status === "pending_provider_key" ||
+                  msg.status === "failed"
+                    ? "failed"
+                    : "completed",
+                outputSummary: String(
+                  msg.summary || "Background job update received.",
+                ),
+                error:
+                  msg.status === "pending_provider_key" ||
+                  msg.status === "failed"
+                    ? String(msg.summary || msg.status)
+                    : undefined,
+                metadata: {
+                  jobId: msg.jobId,
+                  status: msg.status,
+                  voiceBrokerMode,
+                  proofAttemptId,
+                },
+              });
               recordVoiceAgentEvent({
                 type: "background_job",
                 status:
@@ -6127,6 +6251,7 @@ export function ChatPanel({
                     transcriptContent,
                     undefined,
                     {
+                      userId: activeUserId,
                       bookId: canonicalActiveBookId,
                       conversationId: canonicalActiveBookId
                         ? chatThreadIdForBook(canonicalActiveBookId)
@@ -6140,6 +6265,7 @@ export function ChatPanel({
                   );
                   void brainOrchestrator
                     .updateLearningBookFromConversation({
+                      userId: activeUserId,
                       userName: learnerName,
                       activeProject,
                       activeBookId: canonicalActiveBookId,
@@ -6550,6 +6676,7 @@ export function ChatPanel({
     setIsSearchSkillActive(false);
 
     const chatRequestId = createTutorRequestId("chat");
+    const chatTaskId = `chat:${chatRequestId}`;
     const newMessages = [
       ...messages,
       {
@@ -6583,6 +6710,25 @@ export function ChatPanel({
     isAutoScrollPaused.current = false;
     forceScrollToBottom("smooth");
     setIsTyping(true);
+    recordLearnerBackgroundTask({
+      taskId: chatTaskId,
+      requestId: chatRequestId,
+      source: "chat_stream",
+      taskType: "foreground_chat_completion",
+      status: "running",
+      inputSummary: userMsgContent.slice(0, 500),
+      metadata: {
+        userId: activeUserId,
+        bookId: canonicalActiveBookId || undefined,
+        conversationId: canonicalActiveBookId
+          ? chatThreadIdForBook(canonicalActiveBookId)
+          : undefined,
+        documentId: activeDocumentId || undefined,
+        proofAttemptId: activeBetaProofAttemptId || undefined,
+        agentLayer: "chat_stream",
+        mode: "chat",
+      },
+    });
 
     try {
       let currentPageImage = null;
@@ -6598,7 +6744,10 @@ export function ChatPanel({
         }
       }
 
+      const hydratedDocuments =
+        await hydrateDocumentsForBrainContext(orderedBookDocuments);
       const brainContextPacket = await buildBrainContextPacket({
+        userId: activeUserId,
         requestId: chatRequestId,
         proofAttemptId: activeBetaProofAttemptId || undefined,
         mode: "chat",
@@ -6610,7 +6759,7 @@ export function ChatPanel({
         activeBookTitle: activeLearningBook?.title || activeProject,
         activeProject,
         activeDocumentId,
-        documents: orderedBookDocuments,
+        documents: hydratedDocuments,
         runtimeSettings: brainRuntimeSettings,
         interaction: {
           mode: interactionMode === "idle" ? "submitted" : interactionMode,
@@ -6642,18 +6791,25 @@ export function ChatPanel({
 
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: {
+        headers: learnerRequestHeaders(activeUserId, {
           "Content-Type": "application/json",
           ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
           ...(serperApiKey ? { "X-Serper-API-Key": serperApiKey } : {}),
-        },
+        }),
         body: JSON.stringify({
           messages: flattenChatMessagesForPrompt(newMessages),
           requestId: chatRequestId,
           currentPageImage,
           memoryContext: requestMemoryContext,
           brainContextMetadata: {
+            userId: brainContextPacket.userId,
             proofAttemptId: brainContextPacket.proofAttemptId,
+            mode: brainContextPacket.mode,
+            agentLayer: brainContextPacket.agentLayer,
+            activeBookId: brainContextPacket.activeBookId,
+            activeBookTitle: brainContextPacket.activeBookTitle,
+            activeDocumentId: brainContextPacket.activeDocumentId,
+            scope: brainContextPacket.scope,
             documentIds: brainContextPacket.documentIds,
             readyDocumentIds: brainContextPacket.readyDocumentIds,
             contextDocumentIds: brainContextPacket.contextDocumentIds,
@@ -7082,6 +7238,35 @@ export function ChatPanel({
               )
                 ? data.evaluatedAnswers
                 : [];
+              recordLearnerBackgroundTask({
+                taskId: chatTaskId,
+                requestId: chatRequestId,
+                source: "chat_stream",
+                taskType: "foreground_chat_completion",
+                status: "completed",
+                inputSummary: userMsgContent.slice(0, 500),
+                outputSummary: String(data.content || "").slice(0, 500),
+                metadata: {
+                  userId: activeUserId,
+                  bookId: canonicalActiveBookId || undefined,
+                  conversationId: canonicalActiveBookId
+                    ? chatThreadIdForBook(canonicalActiveBookId)
+                    : undefined,
+                  documentId: activeDocumentId || undefined,
+                  proofAttemptId: activeBetaProofAttemptId || undefined,
+                  documentIds: brainContextPacket.documentIds,
+                  contextDocumentIds: brainContextPacket.contextDocumentIds,
+                  graphUpdates: Array.isArray(data.graphUpdates)
+                    ? data.graphUpdates.length
+                    : 0,
+                  flashcards: Array.isArray(data.flashcardsUpdates)
+                    ? data.flashcardsUpdates.length
+                    : 0,
+                  evaluatedAnswers: evaluatedAnswerPayloads.length,
+                  agentLayer: "chat_stream",
+                  mode: "chat",
+                },
+              });
               const finalSources = (data.sources ||
                 []) as NormalizedWebSource[];
               if (finalSources.length) cacheWebSources(finalSources);
@@ -7187,6 +7372,7 @@ export function ChatPanel({
                 data.content,
                 undefined,
                 {
+                  userId: activeUserId,
                   bookId: canonicalActiveBookId,
                   conversationId: canonicalActiveBookId
                     ? chatThreadIdForBook(canonicalActiveBookId)
@@ -7200,6 +7386,7 @@ export function ChatPanel({
               );
               void brainOrchestrator
                 .updateLearningBookFromConversation({
+                  userId: activeUserId,
                   userName: learnerName,
                   activeProject,
                   activeBookId: canonicalActiveBookId,
@@ -7238,6 +7425,7 @@ export function ChatPanel({
                     update.understandingDelta,
                     undefined,
                     {
+                      userId: activeUserId,
                       requestId: chatRequestId,
                       proofAttemptId: activeBetaProofAttemptId || undefined,
                       mode: "chat",
@@ -7257,6 +7445,7 @@ export function ChatPanel({
                 void recordEvaluatedAnswerEvidenceBatch(
                   evaluatedAnswerPayloads,
                   {
+                    userId: activeUserId,
                     bookId: canonicalActiveBookId || undefined,
                     bookTitle:
                       activeLearningBook?.title || activeProject || undefined,
@@ -7267,6 +7456,7 @@ export function ChatPanel({
                     source: "chat_tool_evaluate_answer",
                     evaluator: "model_rubric",
                     metadata: {
+                      userId: activeUserId,
                       agentLayer: "chat_stream",
                       mode: "chat",
                       proofAttemptId: activeBetaProofAttemptId || undefined,
@@ -7372,6 +7562,26 @@ export function ChatPanel({
       setInteractionMode("idle");
     } catch (err: any) {
       console.error(err);
+      recordLearnerBackgroundTask({
+        taskId: chatTaskId,
+        requestId: chatRequestId,
+        source: "chat_stream",
+        taskType: "foreground_chat_completion",
+        status: "failed",
+        inputSummary: userMsgContent.slice(0, 500),
+        error: err?.message || "Chat request failed",
+        metadata: {
+          userId: activeUserId,
+          bookId: canonicalActiveBookId || undefined,
+          conversationId: canonicalActiveBookId
+            ? chatThreadIdForBook(canonicalActiveBookId)
+            : undefined,
+          documentId: activeDocumentId || undefined,
+          proofAttemptId: activeBetaProofAttemptId || undefined,
+          agentLayer: "chat_stream",
+          mode: "chat",
+        },
+      });
       clearStreamingAssistant();
       setMessages((prev) =>
         prev.map((m) =>

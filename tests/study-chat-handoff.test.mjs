@@ -129,13 +129,15 @@ test("ChatPanel sends selected PDF context with active document metadata", () =>
   );
 
   assertInOrder(chatPanelSource, [
+    "const hydratedDocuments =",
+    "await hydrateDocumentsForBrainContext(orderedBookDocuments);",
     "const brainContextPacket = await buildBrainContextPacket({",
     'mode: "chat",',
     'agentLayer: "chat_stream",',
     "query: userMsgContent,",
     "activeBookId: canonicalActiveBookId,",
     "activeDocumentId,",
-    "documents: orderedBookDocuments,",
+    "documents: hydratedDocuments,",
     "selectedTextAttached: Boolean(selectedTextContext),",
   ]);
 
@@ -204,10 +206,10 @@ test("Store and long-term memory keep document-scoped study fields", () => {
   );
   assert.match(
     memorySource,
-    /learningBooks:\s+"id, sessionId, title, userName, source, activeDocumentId, updatedAt",/,
+    /learningBooks:\s+"id, userId, sessionId, title, userName, source, activeDocumentId, updatedAt",/,
   );
   assert.match(
     memorySource,
-    /learningDocuments: "id, bookId, title, mimeType, updatedAt, createdAt",/,
+    /learningDocuments:\s+"id, userId, bookId, title, mimeType, updatedAt, createdAt",/,
   );
 });

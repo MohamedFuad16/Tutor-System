@@ -20,6 +20,7 @@ export type AnswerEvidenceEngine = {
     options: {
       attemptId: string;
       evidenceContract: "evaluated_answer_v1";
+      userId?: string;
       source?: string;
       summary?: string;
       metadata?: Record<string, unknown>;
@@ -45,6 +46,7 @@ export type EvaluatedAnswerEvidenceInput = {
   conversationId?: string;
   requestId?: string;
   sourceId?: string;
+  userId?: string;
   evaluator?: "local_rubric" | "model_rubric" | "human_review";
   source?: string;
   metadata?: Record<string, unknown>;
@@ -57,6 +59,7 @@ export type EvaluatedAnswerEvidenceContext = Pick<
   | "conversationId"
   | "requestId"
   | "sourceId"
+  | "userId"
   | "source"
   | "evaluator"
 > & {
@@ -268,6 +271,7 @@ export const evaluatedAnswerMetadata = (
   evaluator: input.evaluator || "local_rubric",
   bookId: input.bookId,
   bookTitle: input.bookTitle,
+  userId: input.userId,
   conversationId: input.conversationId,
   requestId: input.requestId,
   sourceId: input.sourceId,
@@ -299,6 +303,7 @@ export const evaluatedAnswerMisconceptionCandidate = (
     conversationId: input.conversationId,
     requestId: input.requestId,
     sourceId: input.sourceId,
+    userId: input.userId,
     source: input.source || "evaluated_answer",
     evaluator: input.evaluator || "local_rubric",
     evidenceType: outcome.evidenceType,
@@ -306,6 +311,7 @@ export const evaluatedAnswerMisconceptionCandidate = (
     metadata: {
       candidateContract: "evaluated_answer_misconception_candidate_v1",
       evidenceContract: "evaluated_answer_v1",
+      userId: input.userId,
       question,
       learnerAnswerPreview: answer,
       evaluationThreshold: outcome.threshold,
@@ -343,6 +349,7 @@ export const normalizeEvaluatedAnswerEvidenceInput = (
       optionalString(record.conversationId) || context.conversationId,
     requestId: optionalString(record.requestId) || context.requestId,
     sourceId: optionalString(record.sourceId) || context.sourceId,
+    userId: optionalString(record.userId) || context.userId,
     evaluator: evaluatorValue(record.evaluator) || context.evaluator,
     source: optionalString(record.source) || context.source,
     metadata: {
@@ -395,6 +402,7 @@ export const recordEvaluatedAnswerEvidence = async (
     {
       attemptId: evaluatedAnswerMasteryAttemptId(input, conceptId),
       evidenceContract: "evaluated_answer_v1",
+      userId: input.userId,
       source: input.source || "evaluated_answer",
       summary: evaluatedAnswerSummary(input).slice(0, MAX_SUMMARY_TEXT + 80),
       metadata: {

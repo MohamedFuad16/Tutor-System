@@ -12,10 +12,15 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { db, type PersistentConcept } from "../memory/longterm.memory";
+import {
+  db,
+  type LearningBook,
+  type PersistentConcept,
+} from "../memory/longterm.memory";
 import { gsap } from "gsap";
 import { useTranslation } from "../lib/translations";
 import { useMotionPreference } from "../hooks/useMotionPreference";
+import { useStore } from "../store";
 
 const COLORS = ["#3b82f6", "#a855f7", "#f97316"];
 const MAX_VISIBLE_CONCEPTS = 12;
@@ -88,6 +93,15 @@ function normalizeConceptForAnalytics(
   };
 }
 
+function bookBelongsToActiveLearner(
+  book: Pick<LearningBook, "userId" | "userName">,
+  activeUserId: string,
+  learnerName: string,
+) {
+  if (book.userId) return book.userId === activeUserId;
+  return book.userName === learnerName;
+}
+
 function ChartMessage({
   title,
   detail,
@@ -131,19 +145,50 @@ function InfoDot({
 export function AnalyticsView() {
   const { t, language } = useTranslation();
   const motionEnabled = useMotionPreference();
+  const activeUserId = useStore((state) => state.activeUserId);
+  const learnerName = useStore((state) => state.learnerName);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const analyticsSnapshot =
     useLiveQuery(async (): Promise<AnalyticsSnapshot> => {
       try {
-        const [conceptList, interactionTotal, sessionTotal] = await Promise.all(
-          [db.concepts.toArray(), db.interactions.count(), db.sessions.count()],
+        const [
+          conceptList,
+          interactionTotal,
+          sessionTotal,
+          learningBooks,
+          learningBookConcepts,
+          learningEntries,
+        ] = await Promise.all([
+          db.concepts.toArray(),
+          db.interactions.count(),
+          db.sessions.count(),
+          db.learningBooks.toArray(),
+          db.learningBookConcepts.toArray(),
+          db.learningEntries.toArray(),
+        ]);
+        const scopedBooks = learningBooks.filter((book) =>
+          bookBelongsToActiveLearner(book, activeUserId, learnerName),
         );
+        const scopedBookIds = new Set(scopedBooks.map((book) => book.id));
+        const scopedConcepts =
+          scopedBookIds.size > 0
+            ? learningBookConcepts.filter((concept) =>
+                scopedBookIds.has(concept.bookId),
+              )
+            : conceptList;
+        const scopedInteractionCount =
+          scopedBookIds.size > 0
+            ? learningEntries.filter((entry) => scopedBookIds.has(entry.bookId))
+                .length
+            : interactionTotal;
+        const scopedSessionCount =
+          scopedBookIds.size > 0 ? scopedBooks.length : sessionTotal;
 
         return {
           status: "ready",
-          concepts: conceptList.map(normalizeConceptForAnalytics),
-          interactionCount: interactionTotal,
-          sessionCount: sessionTotal,
+          concepts: scopedConcepts.map(normalizeConceptForAnalytics),
+          interactionCount: scopedInteractionCount,
+          sessionCount: scopedSessionCount,
         };
       } catch (error) {
         console.error("Failed to load analytics data", error);
@@ -155,7 +200,7 @@ export function AnalyticsView() {
           error: "Analytics data could not be loaded.",
         };
       }
-    }, []);
+    }, [activeUserId, learnerName]);
   const concepts = analyticsSnapshot?.concepts ?? [];
   const interactionCount = analyticsSnapshot?.interactionCount ?? 0;
   const sessionCount = analyticsSnapshot?.sessionCount ?? 0;
@@ -333,6 +378,11 @@ export function AnalyticsView() {
           <p className="text-zinc-400 text-sm">
             {t("visualizing_learning_memory")}
           </p>
+          <div className="mt-3 inline-flex max-w-full items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-medium text-zinc-400">
+            <span className="truncate">
+              Active learner: {learnerName || "Learner"} · {activeUserId}
+            </span>
+          </div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

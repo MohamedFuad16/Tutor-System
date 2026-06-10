@@ -102,7 +102,9 @@ test("architecture book text keeps Graphify local and defines the Chapter 2 flow
   assert.match(toolsChapter, /not learner data/);
   assert.match(userBrainLedgerChapter, /Learner identity/);
   assert.match(userBrainLedgerChapter, /flowchart LR/);
-  assert.match(userBrainLedgerChapter, /tenant isolation/);
+  assert.match(userBrainLedgerChapter, /local profile also has a \\`userId\\`/);
+  assert.match(userBrainLedgerChapter, /server-owned learner store/);
+  assert.match(userBrainLedgerChapter, /brain\.sqlite/);
 });
 
 test("user brain book keeps artifact and audio control scope accurate", () => {

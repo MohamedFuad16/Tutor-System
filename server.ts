@@ -17,6 +17,11 @@ import {
   type WebSearchMode,
 } from "./server/web-search.js";
 import {
+  createLearnerStore,
+  learnerUserIdFromHeaders,
+  normalizeLearnerUserId,
+} from "./server/learner-store.js";
+import {
   BRAIN_RUNTIME_SETTING_LIMITS,
   DEFAULT_BRAIN_RUNTIME_SETTINGS,
   MASTERY_EVIDENCE_POLICIES,
@@ -670,7 +675,24 @@ const nonNegativeInteger = (value: unknown) => {
 
 const compactBrainContextMetadata = (value: unknown) => {
   const metadata = objectMetadata(value);
+  const scope = objectMetadata(metadata.scope);
   return {
+    userId: normalizeLearnerUserId(metadata.userId || scope.userId),
+    proofAttemptId: normalizeClientRequestId(metadata.proofAttemptId),
+    mode: compactActivityText(metadata.mode, 40),
+    agentLayer: compactActivityText(metadata.agentLayer, 60),
+    activeBookId: compactActivityText(
+      metadata.activeBookId || scope.activeBookId,
+      160,
+    ),
+    activeBookTitle: compactActivityText(
+      metadata.activeBookTitle || scope.activeBookTitle,
+      200,
+    ),
+    activeDocumentId: compactActivityText(
+      metadata.activeDocumentId || scope.activeDocumentId,
+      160,
+    ),
     documentIds: compactStringList(metadata.documentIds),
     readyDocumentIds: compactStringList(metadata.readyDocumentIds),
     contextDocumentIds: compactStringList(metadata.contextDocumentIds),
@@ -838,6 +860,7 @@ export async function createTutorServerApp(
       cb(null, true);
     },
   });
+  const learnerStore = createLearnerStore();
 
   const documentUpload: express.RequestHandler = (req, res, next) => {
     upload.single("file")(req, res, (error) => {
@@ -1000,7 +1023,7 @@ export async function createTutorServerApp(
     res.setHeader("Vary", "Origin");
     res.setHeader(
       "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Debug-Token, X-Admin-Token",
+      "Content-Type, Authorization, X-Debug-Token, X-Admin-Token, X-LearningAI-User-Id",
     );
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   };
@@ -1030,6 +1053,140 @@ export async function createTutorServerApp(
         deepgram: Boolean(getDeepgramServerFallbackKey()),
       },
     });
+  });
+
+  app.get("/api/learner/profile", (req, res) => {
+    const userId = learnerUserIdFromHeaders(req.headers);
+    const profile = learnerStore.ensureProfile(
+      userId,
+      typeof req.query.displayName === "string"
+        ? req.query.displayName
+        : "Learner",
+    );
+    res.json({
+      ok: true,
+      profile: {
+        userId: profile.userId,
+        displayName: profile.displayName,
+        storageProvider: "server-local-sqlite",
+      },
+    });
+  });
+
+  app.post("/api/learner/profile", (req, res) => {
+    const userId = normalizeLearnerUserId(
+      req.body?.userId || learnerUserIdFromHeaders(req.headers),
+    );
+    const profile = learnerStore.ensureProfile(
+      userId,
+      req.body?.displayName || "Learner",
+    );
+    recordSystemActivity({
+      kind: "memory",
+      status: "completed",
+      title: "Learner profile initialized",
+      detail:
+        "Local learner profile is mapped to a server-side SQLite brain folder.",
+      metadata: {
+        userId: profile.userId,
+        storageProvider: "server-local-sqlite",
+      },
+    });
+    res.json({
+      ok: true,
+      profile: {
+        userId: profile.userId,
+        displayName: profile.displayName,
+        storageProvider: "server-local-sqlite",
+      },
+    });
+  });
+
+  app.post("/api/learner/migrate", (req, res) => {
+    const userId = learnerUserIdFromHeaders(req.headers);
+    const records = Array.isArray(req.body?.records) ? req.body.records : [];
+    const safeRecords = records.slice(0, 2000).map((record: any) => ({
+      userId,
+      tableName: String(record?.tableName || "unknown"),
+      recordId: String(record?.recordId || record?.id || "record"),
+      record: record?.record ?? record,
+    }));
+    const result = learnerStore.copyMigrationRecords(safeRecords);
+    recordSystemActivity({
+      kind: "memory",
+      status: "completed",
+      title: "Learner cache migration snapshot copied",
+      detail: `${result.copied} local cache row${result.copied === 1 ? "" : "s"} copied to the server learner store.`,
+      metadata: {
+        userId,
+        copied: result.copied,
+        destructive: false,
+      },
+    });
+    res.json({ ok: true, ...result });
+  });
+
+  app.get("/api/learner/documents/:documentId/file", (req, res) => {
+    const userId = normalizeLearnerUserId(
+      req.query.userId || learnerUserIdFromHeaders(req.headers),
+    );
+    const document = learnerStore.getDocument(userId, req.params.documentId);
+    if (!document || !fs.existsSync(document.filePath)) {
+      return res.status(404).json({ error: "Document file not found." });
+    }
+    res.type(document.mimeType || "application/pdf");
+    res.sendFile(document.filePath);
+  });
+
+  app.get("/api/learner/documents/:documentId/text", (req, res) => {
+    const userId = normalizeLearnerUserId(
+      req.query.userId || learnerUserIdFromHeaders(req.headers),
+    );
+    const document = learnerStore.getDocument(userId, req.params.documentId);
+    if (!document) {
+      return res.status(404).json({ error: "Document text not found." });
+    }
+    res.type("text/plain");
+    res.send(learnerStore.readDocumentText(userId, req.params.documentId));
+  });
+
+  app.post("/api/learner/background-tasks", (req, res) => {
+    const userId = learnerUserIdFromHeaders(req.headers);
+    const taskId =
+      typeof req.body?.taskId === "string" && req.body.taskId.trim()
+        ? req.body.taskId.trim()
+        : `task_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const result = learnerStore.recordBackgroundTask({
+      userId,
+      taskId,
+      requestId: req.body?.requestId,
+      source: req.body?.source || "client",
+      taskType: req.body?.taskType || req.body?.jobName || "background_task",
+      status: req.body?.status || "queued",
+      inputSummary: req.body?.inputSummary,
+      outputSummary: req.body?.outputSummary,
+      error: req.body?.error,
+      metadata: req.body?.metadata,
+    });
+    recordSystemActivity({
+      kind: "tool",
+      status:
+        result.status === "failed"
+          ? "failed"
+          : result.status === "queued" || result.status === "running"
+            ? "started"
+            : "completed",
+      title: "Learner background task recorded",
+      detail: `${result.taskId} is ${result.status}.`,
+      requestId: req.body?.requestId,
+      phase: "background_task",
+      metadata: {
+        userId,
+        taskId: result.taskId,
+        status: result.status,
+      },
+    });
+    res.json({ ok: true, task: result });
   });
 
   app.options("/api/debug/system-activity", (req, res) => {
@@ -1143,6 +1300,13 @@ export async function createTutorServerApp(
       return res.status(400).json({ error: "No file uploaded" });
     }
     const filePath = req.file.path;
+    const userId = learnerUserIdFromHeaders(req.headers);
+    const documentId = normalizeClientRequestId(req.body?.documentId) || "";
+    const bookId = normalizeClientRequestId(req.body?.bookId) || "";
+    const documentTitle =
+      String(req.body?.title || req.file.originalname || "Untitled PDF")
+        .replace(/\.pdf$/i, "")
+        .trim() || "Untitled PDF";
     try {
       const { execFile } = await import("child_process");
       execFile(
@@ -1150,9 +1314,8 @@ export async function createTutorServerApp(
         ["scripts/classify_and_extract.py", filePath],
         { maxBuffer: 1024 * 1024 * 96, timeout: 120_000 },
         async (error, stdout, stderr) => {
-          // Clean up the uploaded file
-          fs.unlink(filePath, () => {});
           if (error) {
+            fs.unlink(filePath, () => {});
             console.error("Python Extraction Error:", stderr);
             return res
               .status(500)
@@ -1165,6 +1328,7 @@ export async function createTutorServerApp(
             const jsonStr = jsonMatch ? jsonMatch[0] : stdout;
             result = JSON.parse(jsonStr);
           } catch (e) {
+            fs.unlink(filePath, () => {});
             console.error("Failed to parse JSON from Python script:", stdout);
             return res
               .status(500)
@@ -1172,6 +1336,7 @@ export async function createTutorServerApp(
           }
 
           if (result.error) {
+            fs.unlink(filePath, () => {});
             return res.status(400).json({ error: result.error });
           }
 
@@ -1225,13 +1390,59 @@ export async function createTutorServerApp(
             }
           }
 
+          let serverDocument = null;
+          if (documentId && bookId) {
+            try {
+              serverDocument = learnerStore.storeDocument({
+                userId,
+                documentId,
+                bookId,
+                title: documentTitle,
+                mimeType: req.file?.mimetype || "application/pdf",
+                size: req.file?.size || 0,
+                sourcePath: filePath,
+                extractedText,
+                classification: result.classification,
+                extractionMode: result.extraction_mode,
+                totalPages: result.total_pages,
+                status: "ready",
+              });
+              recordSystemActivity({
+                kind: "memory",
+                status: "completed",
+                title: "Document persisted to learner store",
+                detail: `${documentTitle} is stored under the active local learner profile.`,
+                metadata: {
+                  userId,
+                  documentId,
+                  bookId,
+                  storageProvider: "server-local-sqlite",
+                  extractedTextChars: extractedText.length,
+                },
+              });
+            } catch (storeError) {
+              fs.unlink(filePath, () => {});
+              console.error("Learner document store error:", storeError);
+              return res.status(500).json({
+                error:
+                  storeError instanceof Error
+                    ? storeError.message
+                    : "Failed to store document.",
+              });
+            }
+          }
+
+          fs.unlink(filePath, () => {});
           res.json({
             classification: result.classification,
             extractionMode: result.extraction_mode,
             totalPages: result.total_pages,
             pagesWithText: result.pages_with_text,
             renderedImagePages: result.images?.length || 0,
-            content: extractedText,
+            content: serverDocument
+              ? serverDocument.textPreview
+              : extractedText,
+            serverDocument,
           });
         },
       );
@@ -3474,6 +3685,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
         let isVoiceSessionStarted = false;
         let voiceRequestId = `voice_broker_${Date.now()}`;
         let voiceProofAttemptId = "";
+        let voiceUserId = "local-default-user";
         let voiceInputSampleRate = 48000;
         let clientInputBytes = 0;
         let lastUsageAt = Date.now();
@@ -4456,6 +4668,19 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
             },
           ];
           try {
+            learnerStore.recordBackgroundTask({
+              userId: voiceUserId,
+              taskId: jobId,
+              requestId: voiceRequestId,
+              source: "voice_broker",
+              taskType: "async_tool_or_research",
+              status: "running",
+              inputSummary: text,
+              metadata: {
+                model: backgroundModel,
+                proofAttemptId: voiceProofAttemptId || undefined,
+              },
+            });
             if (!brokerBackgroundApiKey) {
               throw new Error(
                 "Background GPT-5.5 provider key is missing; OpenRouter web search cannot run.",
@@ -4506,6 +4731,21 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               normalizeBackgroundSpokenInsertion(rawSummary) ||
               "By the way, the GPT-5.5 background layer finished, but it did not return a spoken summary.";
             sources = extractOpenRouterWebSources(responseMessage).slice(0, 8);
+            learnerStore.recordBackgroundTask({
+              userId: voiceUserId,
+              taskId: jobId,
+              requestId: voiceRequestId,
+              source: "voice_broker",
+              taskType: "async_tool_or_research",
+              status: "completed",
+              inputSummary: text,
+              outputSummary: summary,
+              metadata: {
+                model: backgroundModel,
+                sourceCount: sources.length,
+                proofAttemptId: voiceProofAttemptId || undefined,
+              },
+            });
 
             recordSystemActivity({
               kind: sources.length ? "web" : "tool",
@@ -4547,6 +4787,20 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           } catch (error) {
             const detail =
               error instanceof Error ? error.message : "Background job failed.";
+            learnerStore.recordBackgroundTask({
+              userId: voiceUserId,
+              taskId: jobId,
+              requestId: voiceRequestId,
+              source: "voice_broker",
+              taskType: "async_tool_or_research",
+              status: "failed",
+              inputSummary: text,
+              error: detail,
+              metadata: {
+                model: brokerBackgroundApiKey ? backgroundModel : undefined,
+                proofAttemptId: voiceProofAttemptId || undefined,
+              },
+            });
             recordSystemActivity({
               kind: "tool",
               status: "failed",
@@ -4591,6 +4845,10 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           const studyContextMetadata = objectMetadata(
             authPayload.studyContextMetadata,
           );
+          voiceUserId = normalizeLearnerUserId(
+            authPayload.userId || studyContextMetadata.userId,
+          );
+          learnerStore.ensureProfile(voiceUserId);
           const proofAttemptId =
             normalizeClientRequestId(authPayload.proofAttemptId) ||
             normalizeClientRequestId(studyContextMetadata.proofAttemptId);
@@ -4631,6 +4889,7 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
               ? "browser"
               : "miso";
           const contextMetadata = {
+            userId: voiceUserId,
             activeBookId:
               typeof authPayload.activeBookId === "string"
                 ? authPayload.activeBookId
@@ -4820,6 +5079,19 @@ IMPORTANT TOOL USAGE INSTRUCTIONS:
           if (!needsFreshExternalWork) return "";
 
           const jobId = `voice_bg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+          learnerStore.recordBackgroundTask({
+            userId: voiceUserId,
+            taskId: jobId,
+            requestId: voiceRequestId,
+            source: "voice_broker",
+            taskType: "async_tool_or_research",
+            status: "queued",
+            inputSummary: text,
+            metadata: {
+              proofAttemptId: voiceProofAttemptId || undefined,
+              intent: "async_tool_or_research",
+            },
+          });
           recordSystemActivity({
             kind: "tool",
             status: "started",

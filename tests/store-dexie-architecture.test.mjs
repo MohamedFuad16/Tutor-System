@@ -99,11 +99,11 @@ test("Dexie schema exposes learner data tables needed by architecture tests", ()
 });
 
 test("Dexie latest migration indexes critical learning, event, and trace stores", () => {
-  const version14 = memorySource.match(
-    /this\.version\(14\)\.stores\(\{([\s\S]*?)\n    \}\);/,
+  const version16 = memorySource.match(
+    /this\.version\(16\)\.stores\(\{([\s\S]*?)\n    \}\);/,
   );
-  assert.ok(version14, "Expected latest Dexie version 14 stores block.");
-  const stores = version14[1];
+  assert.ok(version16, "Expected latest Dexie version 16 stores block.");
+  const stores = version16[1];
 
   for (const table of [
     "concepts",
@@ -129,11 +129,35 @@ test("Dexie latest migration indexes critical learning, event, and trace stores"
 
   assert.match(
     stores,
-    /learningDocuments: "id, bookId, title, mimeType, updatedAt, createdAt"/,
+    /concepts:\s+"id, userId, name, p_learn, lastReviewedAt"/,
+  );
+  assert.match(
+    stores,
+    /interactions:\s+"id, userId, sessionId, bookId, conversationId, timestamp"/,
+  );
+  assert.match(
+    stores,
+    /learningBooks:\s+"id, userId, sessionId, title, userName, source, activeDocumentId, updatedAt"/,
+  );
+  assert.match(
+    stores,
+    /learningEntries:\s+"id, userId, bookId, conversationId, timestamp, userName"/,
+  );
+  assert.match(
+    stores,
+    /learningDocuments:\s+"id, userId, bookId, title, mimeType, updatedAt, createdAt"/,
+  );
+  assert.match(
+    stores,
+    /evidenceEvents:\s+"id, userId, timestamp, conceptId, bookId, conversationId, evidenceType, verified"/,
+  );
+  assert.match(
+    stores,
+    /masteryDeltas:\s+"id, userId, timestamp, conceptId, evidenceEventId, evidenceType, verified"/,
   );
   assert.match(stores, /traceLogs: "id, timestamp, action"/);
   assert.match(
     stores,
-    /backgroundJobs: "id, timestamp, jobName, status, requestId, nextRunAt"/,
+    /backgroundJobs:\s+"id, userId, timestamp, jobName, status, requestId, nextRunAt"/,
   );
 });

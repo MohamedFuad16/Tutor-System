@@ -10,6 +10,7 @@ type RevisionEvidenceEngine = {
     options: {
       attemptId: string;
       evidenceContract: "flashcard_review_v1";
+      userId?: string;
       source?: string;
       summary?: string;
       metadata?: Record<string, unknown>;
@@ -19,6 +20,7 @@ type RevisionEvidenceEngine = {
 
 type RevisionEvidenceOptions = {
   engine?: RevisionEvidenceEngine;
+  userId?: string;
   runtimeSettings?: Partial<BrainRuntimeSettings> | null;
 };
 
@@ -80,12 +82,14 @@ export const recordFlashcardReviewEvidence = async (
     {
       attemptId: `flashcard-review:${card.id}:${Date.now()}`,
       evidenceContract: "flashcard_review_v1",
+      userId: options.userId,
       source: "revision_flashcard",
       summary: flashcardReviewSummary(card, quality),
       metadata: {
         flashcardId: card.id,
         bookId: card.bookId,
         bookTitle: card.bookTitle,
+        userId: options.userId,
         quality,
         runtimeSettings: options.runtimeSettings || undefined,
       },

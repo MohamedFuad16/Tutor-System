@@ -14,7 +14,7 @@ import {
 } from "./background.jobs";
 import {
   db,
-  GENERAL_STUDY_BOOK_ID,
+  generalStudyBookIdForUser,
   PersistentConcept,
   ConversationInteraction,
   LearningBook,
@@ -74,6 +74,7 @@ function getStoredLearnerName() {
 }
 
 export interface LearningBookUpdateInput {
+  userId?: string;
   userName: string;
   activeProject: string;
   activeBookId?: string | null;
@@ -93,6 +94,7 @@ export interface LearningBookUpdateInput {
 }
 
 type RelevantContextOptions = {
+  userId?: string;
   requestId?: string;
   proofAttemptId?: string;
   mode?: "chat" | "voice" | "revision" | "admin";
@@ -101,6 +103,7 @@ type RelevantContextOptions = {
 };
 
 type MemoryTraceContext = {
+  userId?: string;
   requestId?: string;
   proofAttemptId?: string;
   mode?: "chat" | "voice" | "revision" | "admin";
@@ -161,6 +164,7 @@ const inferFallbackChapterTopic = (
 };
 
 const memoryTraceMetadata = (context?: MemoryTraceContext) => ({
+  ...(context?.userId ? { userId: context.userId } : {}),
   ...(context?.requestId ? { requestId: context.requestId } : {}),
   ...(context?.proofAttemptId
     ? { proofAttemptId: context.proofAttemptId }
@@ -298,8 +302,16 @@ export class MemoryOrchestrator {
     }
   }
 
-  private sessionBookId(userName: string) {
-    return GENERAL_STUDY_BOOK_ID;
+  private sessionBookId(_userName: string, userId?: string) {
+    return generalStudyBookIdForUser(userId);
+  }
+
+  private persistentConceptId(name: string, userId?: string) {
+    const normalizedName = name.toLowerCase().trim();
+    const safeUserId = String(userId || "").trim();
+    return safeUserId
+      ? `concept:${safeUserId}:${slugify(normalizedName)}`
+      : normalizedName;
   }
 
   public getCurrentSessionId() {
@@ -309,23 +321,31 @@ export class MemoryOrchestrator {
   private async upsertSessionLearningBook(
     userName = "Learner",
     title = "General Study",
+    userId?: string,
   ) {
     const now = Date.now();
     const safeUserName = userName.trim() || "Learner";
     const safeTitle = title.trim() || "General Study";
-    const bookId = this.sessionBookId(safeUserName);
+    const bookId = this.sessionBookId(safeUserName, userId);
     const existing = await db.learningBooks
       .get(bookId)
       .catch((): undefined => undefined);
     if (existing) {
-      if (existing.sessionId === this.currentSessionId) return existing;
-      const nextBook = { ...existing, sessionId: this.currentSessionId };
+      if (existing.sessionId === this.currentSessionId && existing.userId) {
+        return existing;
+      }
+      const nextBook = {
+        ...existing,
+        userId: existing.userId || userId,
+        sessionId: this.currentSessionId,
+      };
       await db.learningBooks.put(nextBook);
       return nextBook;
     }
 
     const book: LearningBook = {
       id: bookId,
+      userId,
       sessionId: this.currentSessionId,
       title: safeTitle,
       userName: safeUserName,
@@ -348,9 +368,10 @@ export class MemoryOrchestrator {
   public async ensureSessionLearningBook(
     userName = "Learner",
     title = "General Study",
+    userId?: string,
   ) {
     await this.initialization;
-    return this.upsertSessionLearningBook(userName, title);
+    return this.upsertSessionLearningBook(userName, title, userId);
   }
 
   public async updateSessionBookTitle(
@@ -422,6 +443,7 @@ export class MemoryOrchestrator {
     assistantMessage: string,
     pageNumber?: number,
     context?: {
+      userId?: string;
       bookId?: string | null;
       conversationId?: string;
       documentId?: string | null;
@@ -492,6 +514,7 @@ export class MemoryOrchestrator {
 
         const interaction: ConversationInteraction = {
           id: interactionId,
+          userId: context?.userId,
           sessionId: this.currentSessionId,
           bookId: context?.bookId || undefined,
           conversationId: context?.conversationId,
@@ -662,9 +685,10 @@ export class MemoryOrchestrator {
           .catch((): undefined => undefined)
       : undefined;
     const userName = selectedBook?.userName || requestedUserName;
+    const userId = selectedBook?.userId || input.userId;
     const sessionBook =
       selectedBook ||
-      (await this.upsertSessionLearningBook(userName, "General Study"));
+      (await this.upsertSessionLearningBook(userName, "General Study", userId));
     const bookId = sessionBook.id;
     const existingSessionBook = await db.learningBooks
       .get(bookId)
@@ -933,6 +957,7 @@ export class MemoryOrchestrator {
         : [...existingChapters, nextChapter];
     const book: LearningBook = {
       id: bookId,
+      userId,
       sessionId: this.currentSessionId,
       title,
       userName,
@@ -967,6 +992,7 @@ export class MemoryOrchestrator {
     const learningEntryId = generateId();
     const learningEntry = {
       id: learningEntryId,
+      userId,
       bookId,
       conversationId,
       documentId: input.activeDocumentId || undefined,
@@ -1006,6 +1032,7 @@ export class MemoryOrchestrator {
       sourceSpans: generatedNoteSourceSpans,
       metadata: {
         ...traceMetadata,
+        userId,
         activeProject: input.activeProject || "General Study",
         fallback: book.agentModel === "local-session-fallback",
         generatedBy: "MemoryOrchestrator.updateLearningBookFromConversation",
@@ -1034,6 +1061,7 @@ export class MemoryOrchestrator {
       retentionPolicy: "local_indexeddb",
       metadata: modelObservationGateMetadata({
         ...traceMetadata,
+        userId,
         activeDocumentId: book.activeDocumentId,
         chapterCount: book.chapters.length,
         conceptCount: conceptIds.length,
@@ -1063,7 +1091,7 @@ export class MemoryOrchestrator {
     context?: MemoryTraceContext,
   ) {
     await this.initialization;
-    const conceptId = name.toLowerCase().trim();
+    const conceptId = this.persistentConceptId(name, context?.userId);
     const traceMetadata = memoryTraceMetadata(context);
     const source = context?.source || "chat_graph_update";
     const backgroundJobInput = {
@@ -1140,7 +1168,7 @@ export class MemoryOrchestrator {
     context?: MemoryTraceContext,
   ) {
     await this.initialization;
-    const id = name.toLowerCase().trim();
+    const id = this.persistentConceptId(name, context?.userId);
     const existing = await db.concepts.get(id);
     let savedConcept: PersistentConcept | null = null;
     let action: "created" | "updated" = "created";
@@ -1159,11 +1187,13 @@ export class MemoryOrchestrator {
       );
       existing.lastReviewedAt = Date.now();
       existing.revisionCount += 1;
+      existing.userId = existing.userId || context?.userId;
       if (sourcePage && !existing.sourcePages.includes(sourcePage)) {
         existing.sourcePages.push(sourcePage);
       }
       await db.concepts.put(existing);
       await recordModelSummaryEvidence({
+        userId: context?.userId,
         conceptId: id,
         bookId: context?.bookId || undefined,
         conversationId: context?.conversationId,
@@ -1184,6 +1214,7 @@ export class MemoryOrchestrator {
     } else {
       const newConcept: PersistentConcept = {
         id,
+        userId: context?.userId,
         name,
         description,
         mastery: 0,
@@ -1212,6 +1243,7 @@ export class MemoryOrchestrator {
       });
       await db.concepts.put(newConcept);
       await recordModelSummaryEvidence({
+        userId: context?.userId,
         conceptId: id,
         bookId: context?.bookId || undefined,
         conversationId: context?.conversationId,
@@ -1290,7 +1322,13 @@ export class MemoryOrchestrator {
             .reverse()
             .limit(100)
             .toArray();
-      const scoredInteractions = interactions
+      const scopedInteractions = interactions.filter(
+        (interaction) =>
+          !options.userId ||
+          !interaction.userId ||
+          interaction.userId === options.userId,
+      );
+      const scoredInteractions = scopedInteractions
         .filter((i) => i.embedding)
         .map((i) => ({
           i,
@@ -1300,11 +1338,18 @@ export class MemoryOrchestrator {
         .slice(0, 3);
 
       // Fetch concepts (optimized to active concepts)
-      const concepts = await db.concepts
-        .orderBy("lastReviewedAt")
-        .reverse()
-        .limit(200)
-        .toArray();
+      const concepts = (
+        await db.concepts
+          .orderBy("lastReviewedAt")
+          .reverse()
+          .limit(200)
+          .toArray()
+      ).filter(
+        (concept) =>
+          !options.userId ||
+          !concept.userId ||
+          concept.userId === options.userId,
+      );
       const scoredConcepts = concepts
         .filter((c) => c.embedding)
         .map((c) => ({
@@ -1359,7 +1404,7 @@ export class MemoryOrchestrator {
         activeBookId,
         pageNumber,
         durationMs: Date.now() - startedAt,
-        candidateInteractionCount: interactions.length,
+        candidateInteractionCount: scopedInteractions.length,
         candidateConceptCount: concepts.length,
         selectedInteractionIds: scoredInteractions.map(({ i }) => i.id),
         selectedConceptIds: scoredConcepts.map(({ c }) => c.id),
@@ -1370,6 +1415,7 @@ export class MemoryOrchestrator {
         tutorInstructionChars: tutorInstructions.length,
         metadata: {
           mode: options.mode,
+          userId: options.userId,
           requestId: options.requestId,
           proofAttemptId: options.proofAttemptId,
           activeDocumentId: options.activeDocumentId || undefined,
@@ -1401,6 +1447,7 @@ export class MemoryOrchestrator {
         error: e instanceof Error ? e.message : e,
         metadata: {
           mode: options.mode,
+          userId: options.userId,
           requestId: options.requestId,
           proofAttemptId: options.proofAttemptId,
           activeDocumentId: options.activeDocumentId || undefined,

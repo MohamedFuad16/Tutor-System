@@ -8,7 +8,7 @@ LearningAI Tutor is a local-first study workspace for reading PDFs, talking to a
 - `ChatPanel` streams tutor answers, handles tool output, records voice turns, and updates the learner ledger.
 - `Revision` renders built-in architecture books and generated learning books with diagrams, code blocks, flashcards, and title-matched stored audio when the checked-in audio manifest matches the current chapter title.
 - `Admin` shows the operational view: learner selection, learner-brain graph, evidence, memory, retrieval, voice, tools, model runs, artifacts, corrections, and beta readiness.
-- `server.ts` is the local Express broker for chat, voice, web search, TTS, document extraction, and diagnostics.
+- `server.ts` is the local Express broker for chat, voice, web search, TTS, document extraction, learner profiles, learner storage, and diagnostics.
 - `Graphify` is the repository architecture graph for maintainers. It is not the learner brain.
 
 ## Architecture
@@ -21,7 +21,8 @@ flowchart LR
   Broker["Local Express Broker"]
   Background["Background Tool Model"]
   Voice["Deepgram STT/TTS or Custom Voice Broker"]
-  Memory["Dexie Learner Ledger"]
+  ServerStore["Server Learner Store"]
+  Cache["IndexedDB Cache"]
   Revision["Revision Books"]
   Admin["Admin Diagnostics"]
   Graphify["Graphify Repo Map"]
@@ -31,13 +32,28 @@ flowchart LR
   Chat <--> Broker
   Broker <--> Background
   Broker <--> Voice
-  Chat --> Memory
-  Memory --> Revision
-  Memory --> Admin
+  Broker --> ServerStore
+  Chat --> Cache
+  Cache <--> ServerStore
+  ServerStore --> Revision
+  ServerStore --> Admin
   Graphify -. developer navigation .-> Broker
 ```
 
-The learner brain is stored locally in Dexie/IndexedDB. It records books, documents, concepts, entries, evidence, mastery changes, artifacts, corrections, and runtime traces. Mastery is evidence-gated: model summaries can propose learning material, but durable mastery changes require learner evidence linked to concepts.
+The learner brain is now separated from the repository brain and scoped by local profile. Graphify remains the codebase map in `graphify-out/`. Learner data is keyed by `userId` and is stored durably on the local server under `data/users/<userId>/`, with SQLite and per-user document/artifact folders. Browser IndexedDB remains a cache and UI-state layer, not the long-term home for PDF blobs or full extracted text.
+
+IndexedDB is the browser's built-in structured storage system. In this app, Dexie is the helper library that makes IndexedDB easier to query. Think of it as a local browser cache and offline staging area. SQLite is the server-side database file used for durable local learner records. It is a better bridge to future cloud storage because the server can later migrate those rows to Postgres/S3-style infrastructure.
+
+The learner brain records books, documents, concepts, entries, evidence, mastery changes, artifacts, corrections, background jobs, and runtime traces. Mastery is evidence-gated: model summaries can propose learning material, but durable mastery changes require learner evidence linked to concepts.
+
+## Learner Flow
+
+1. The app creates or loads a local profile and sends `X-LearningAI-User-Id` on HTTP requests.
+2. The learner opens Study, uploads one or more PDFs, and asks questions by typed chat or voice.
+3. PDFs are ingested by the server. Files and extracted text are stored in the active user's local server folder. IndexedDB keeps metadata, previews, and UI state.
+4. Chat and voice both build a shared brain context packet from the active user, active book, active PDFs, selected text/current page state, semantic memory, BKT state, and pending work.
+5. The foreground tutor answers immediately. Slow work such as source lookup, PDF/tool work, generated artifacts, or code-style tasks is recorded as request-correlated background work.
+6. Validated recall evidence, such as an evaluated answer or flashcard review, can update BKT mastery. Transcripts, summaries, tool results, and model observations stay audit-only unless they pass that evidence gate.
 
 ## Voice Modes
 
@@ -103,6 +119,11 @@ npm run graphify:tree
 
 Do not regenerate `graphify-out` automatically after ordinary edits. Refresh Graphify artifacts only when graph maintenance is explicitly requested.
 
+## Architecture Docs
+
+- [System architecture](./TUTOR_ARCHITECTURE.md)
+- [Learner brain architecture](./docs/learner-brain-architecture.md)
+
 ## Stored Chapter Audio
 
 Checked-in audio guides live under `public/audio-overviews/`. Rewritten built-in chapters only attach stored audio when the manifest chapter title exactly matches the current chapter title, so old MP3s cannot silently play for a new chapter edition. Regenerate audio after chapter-title rewrites:
@@ -128,8 +149,9 @@ For UI changes, also open the running app in the browser and smoke-test Study, f
 
 ## Current Local-Beta Boundaries
 
-- Local learner records are not authenticated multi-tenant cloud records.
-- Admin can inspect per-learner local data, but production tenancy, backups, retention, and organization administration are deferred.
+- Local profiles provide stable user IDs, but they are not real cloud authentication.
+- Durable local learner records live in server folders and SQLite. Production tenancy, backups, retention, and organization administration are deferred.
+- IndexedDB is still used for local cache/UI state and non-destructive migration fallback, but it should not be treated as the durable source for full PDFs or full extracted text.
 - Voice provider combinations need measured real-key proof before any latency promise is made.
 - Citation and artifact checks record provenance and local consistency; they do not prove every generated claim is factually true.
 - AWS deployment is intentionally deferred until local beta behavior is repeatable and inspectable.

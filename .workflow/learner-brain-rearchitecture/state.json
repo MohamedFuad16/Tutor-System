@@ -1,0 +1,53 @@
+{
+  "status": "completed",
+  "createdAt": "2026-06-10",
+  "approval": {
+    "storageTarget": "server local DB plus per-user folders",
+    "identityModel": "local profiles",
+    "cleanupPolicy": "audit then delete"
+  },
+  "packets": {
+    "A": "blocked-rate-limited-no-delete",
+    "B": "completed",
+    "C": "completed",
+    "D": "completed",
+    "E": "completed",
+    "F": "completed"
+  },
+  "verification": [
+    {
+      "command": "npm run lint",
+      "status": "passed"
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed",
+      "nodeTests": 281,
+      "domTests": 592
+    },
+    {
+      "command": "npm run build",
+      "status": "passed"
+    },
+    {
+      "command": "npm run brain:postchange -- --reason learner-brain-rearchitecture",
+      "status": "passed"
+    },
+    {
+      "command": "browser smoke http://localhost:3000",
+      "status": "passed",
+      "desktop": "loaded, no console warnings/errors, Study nav interaction passed",
+      "mobile": "390x844 loaded, no console warnings/errors",
+      "finalAnalyticsSmoke": "active learner scope rendered with no console warnings/errors"
+    },
+    {
+      "command": "curl /api/documents/ingest with X-LearningAI-User-Id",
+      "status": "passed",
+      "result": "serverDocument returned user-scoped fileUrl/textUrl"
+    }
+  ]
+}

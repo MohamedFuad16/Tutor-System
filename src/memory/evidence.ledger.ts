@@ -6,6 +6,7 @@ import {
 } from "./evidence.mastery";
 
 type ModelSummaryEvidenceInput = {
+  userId?: string;
   conceptId?: string;
   bookId?: string;
   conversationId?: string;
@@ -17,8 +18,12 @@ type ModelSummaryEvidenceInput = {
 };
 
 type MasteryDeltaInput = {
+  userId?: string;
   attemptId?: string;
   conceptId: string;
+  bookId?: string;
+  conversationId?: string;
+  sourceId?: string;
   evidenceType: Exclude<MasteryEvidenceType, "model_summary">;
   correct: boolean;
   previousMastery: number;
@@ -45,6 +50,7 @@ export const createModelSummaryEvidenceRecord = (
   timestamp = Date.now(),
 ): EvidenceEvent => ({
   id: createLedgerId("evidence", timestamp),
+  userId: input.userId,
   timestamp,
   source: input.source,
   evidenceType: "model_summary",
@@ -70,11 +76,15 @@ export const createMasteryDeltaRecords = (
       ? `evidence:mastery-attempt:${attemptId}`
       : createLedgerId("evidence", timestamp),
     timestamp,
+    userId: input.userId,
     attemptId,
     source: input.source,
     evidenceType: input.evidenceType,
     verified,
     conceptId: input.conceptId,
+    bookId: input.bookId,
+    conversationId: input.conversationId,
+    sourceId: input.sourceId,
     summary: compactSummary(input.summary),
     correct: input.correct,
     metadata: {
@@ -88,6 +98,7 @@ export const createMasteryDeltaRecords = (
       ? `mastery-delta:${attemptId}`
       : createLedgerId("mastery-delta", timestamp),
     timestamp,
+    userId: input.userId,
     attemptId,
     conceptId: input.conceptId,
     evidenceEventId: event.id,

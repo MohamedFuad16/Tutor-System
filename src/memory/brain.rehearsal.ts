@@ -233,10 +233,17 @@ const buildRehearsalPacket = ({
   });
 
   return {
+    userId: "local-rehearsal-user",
     requestId,
     mode,
     agentLayer,
     querySummary: "Explain retrieval practice",
+    scope: {
+      userId: "local-rehearsal-user",
+      activeBookId: "rehearsal-book",
+      activeBookTitle: "Local Brain Wiring Rehearsal",
+      activeDocumentId: "rehearsal-doc-active",
+    },
     activeBookId: "rehearsal-book",
     activeBookTitle: "Local Brain Wiring Rehearsal",
     activeDocumentId: "rehearsal-doc-active",

@@ -29,6 +29,7 @@ export type ValidatedMasteryEvidenceContract =
 export type BKTAttemptOptions = {
   attemptId: string;
   evidenceContract: ValidatedMasteryEvidenceContract;
+  userId?: string;
   source?: string;
   summary?: string;
   metadata?: Record<string, unknown>;
@@ -183,6 +184,20 @@ const validatedAttemptId = (options: BKTAttemptOptions) => {
   return attemptId;
 };
 
+const optionUserId = (options: BKTAttemptOptions) => {
+  const explicit = String(options.userId || "").trim();
+  if (explicit) return explicit;
+  const metadata = asRecord(options.metadata);
+  const metadataUserId = String(metadata?.userId || "").trim();
+  return metadataUserId || undefined;
+};
+
+const optionStringMetadata = (options: BKTAttemptOptions, key: string) => {
+  const metadata = asRecord(options.metadata);
+  const value = metadata?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+};
+
 const dexieMasteryCommitStore: MasteryCommitStore = {
   transaction: async <T>(operation: () => Promise<T>) =>
     await db.transaction(
@@ -226,6 +241,7 @@ export const commitValidatedMasteryAttempt = async (
   store: MasteryCommitStore = dexieMasteryCommitStore,
 ) => {
   const attemptId = validatedAttemptId(input.options);
+  const userId = optionUserId(input.options);
   const deltaId = `mastery-delta:${attemptId}`;
   const timestamp = input.timestamp ?? Date.now();
 
@@ -245,11 +261,15 @@ export const commitValidatedMasteryAttempt = async (
         !existingAttempt ||
         existingDelta.attemptId !== attemptId ||
         existingDelta.conceptId !== input.conceptId ||
+        (userId && existingDelta.userId && existingDelta.userId !== userId) ||
         existingDelta.evidenceType !== input.type ||
         existingDelta.correct !== input.isCorrect ||
         existingDelta.verified !== true ||
         existingEvidence.attemptId !== attemptId ||
         existingEvidence.conceptId !== input.conceptId ||
+        (userId &&
+          existingEvidence.userId &&
+          existingEvidence.userId !== userId) ||
         existingEvidence.evidenceType !== input.type ||
         existingEvidence.correct !== input.isCorrect ||
         existingEvidence.verified !== true ||
@@ -306,7 +326,11 @@ export const commitValidatedMasteryAttempt = async (
     const records = createMasteryDeltaRecords(
       {
         attemptId,
+        userId,
         conceptId: input.conceptId,
+        bookId: optionStringMetadata(input.options, "bookId"),
+        conversationId: optionStringMetadata(input.options, "conversationId"),
+        sourceId: optionStringMetadata(input.options, "sourceId"),
         evidenceType: input.type,
         correct: input.isCorrect,
         previousMastery,
@@ -335,6 +359,7 @@ export const commitValidatedMasteryAttempt = async (
     );
     const nextConcept: PersistentConcept = {
       ...concept,
+      userId: concept.userId || userId,
       p_learn: cappedPosterior,
       mastery: cappedPosterior,
       confidence: confidenceUpdate.nextConfidence,

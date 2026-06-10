@@ -24,9 +24,9 @@ flowchart LR
   Records --> Next[Next explanation or review]
 ~~~
 
-The goal is not to collect everything a learner says. The goal is to preserve useful learning state with enough evidence, source context, and correction history to make later teaching better.
+The goal is not to collect everything a learner says. The goal is to preserve useful learning state with enough evidence, source context, user ownership, and correction history to make later teaching better.
 
-**Completed locally:** the browser stores learner books and ledgers in Dexie. **Partly completed:** stable authenticated user identity. **Deferred:** cloud tenancy, synchronization, and organization administration.`,
+**Completed locally:** local profiles create stable user IDs; the server stores each user's durable brain under a per-user folder; Dexie/IndexedDB keeps browser cache and UI state. **Partly completed:** real authenticated cloud identity. **Deferred:** cloud tenancy, synchronization, and organization administration.`,
   },
   {
     title: "Chapter 2: The Data Model For One Learner",
@@ -55,9 +55,20 @@ flowchart LR
   mastery --> review["Revision and teaching"]
 ~~~
 
-Today, local books carry a \`userName\`, so Admin can group separate learners on one local database. This is useful for local testing, but a name is not a secure identity. Production multi-user support still requires authenticated user IDs and tenant isolation.
+Today, local books carry a \`userName\`, so Admin can group separate learners on one local database. Each local profile also has a \`userId\`. That \`userId\` is sent with HTTP requests and voice websocket auth, and new learner records carry it so books, PDFs, conversations, concepts, BKT evidence, mastery deltas, misconceptions, and background tasks do not blend across profiles.
 
-Dexie is a wrapper around browser IndexedDB; see the [official Dexie documentation](https://dexie.org/docs).`,
+Durable local records live in a server-owned learner store:
+
+\`\`\`text
+data/users/<userId>/
+  brain.sqlite
+  documents/
+  extracted-text/
+  artifacts/
+  exports/
+\`\`\`
+
+SQLite is a small database stored as a server-side file. In this app it is the local bridge to a future cloud database. Dexie is a wrapper around browser IndexedDB; IndexedDB is the browser's structured storage system. Tutor now treats IndexedDB as cache and offline staging, not as the permanent home for full PDF files or full extracted text. See the [official Dexie documentation](https://dexie.org/docs).`,
   },
   {
     title: "Chapter 3: From Conversation To Adaptation",
@@ -104,7 +115,9 @@ flowchart TD
   Normalize --> Answer
 ~~~
 
-Local source questions should prefer the active page, selected text, active learning book, and uploaded documents. Current facts such as prices, news, schedules, or recent research require web retrieval.
+Local source questions should prefer the active page, selected text, active learning book, and uploaded documents. Chat and voice use the same context packet, which carries the active user, book, document IDs, document manifest, excerpts, semantic memory, learner model state, and request/proof IDs. Current facts such as prices, news, schedules, or recent research require web retrieval.
+
+When an uploaded PDF has server-stored extracted text, the chat/voice surface hydrates that text before building the packet. This keeps the browser cache light while still giving the tutor the relevant book context.
 
 Artifacts store provenance: which request created an item, which source rows were available, and which limited verifier ran. Provenance makes a result traceable. It does not automatically prove that every sentence is true.
 
@@ -115,7 +128,7 @@ Artifacts store provenance: which request created an item, which source rows wer
 | \`unsupported\` or \`unavailable\` | The current verifier cannot evaluate the item. |
 | \`conflicting\` | Saved source and claim fields disagree. |
 
-**Completed locally:** provenance rows and scoped integrity checks for primary artifact types. **Partly completed:** semantic claim-to-source entailment and document-wide grounding.`,
+**Completed locally:** user-scoped context packets, server-backed PDF text hydration, provenance rows, and scoped integrity checks for primary artifact types. **Partly completed:** semantic claim-to-source entailment and document-wide grounding.`,
   },
   {
     title: "Chapter 5: Learning Books And Revision Material",
@@ -205,10 +218,12 @@ The concept graph resembles Graphify visually because both show nodes and relati
 
 ## Completed Locally
 
+- Local learner profiles with stable user IDs.
+- Server-side per-user folders, SQLite learner stores, PDF files, extracted text, and generated artifacts.
 - Local learner books, concepts, entries, documents, chat archives, and flashcards.
 - Evidence events, mastery deltas, BKT-backed updates, and correction overlays.
-- Source-first context packets for typed chat and voice.
-- Tool, model, retrieval, memory, artifact, and background-job ledgers.
+- User-scoped source-first context packets for typed chat and voice.
+- Tool, model, retrieval, memory, artifact, and background-job ledgers shared by chat and voice.
 - Revision books with diagrams, code rendering, flashcards, and title-matched stored audio only when current MP3 manifests match rewritten chapter titles.
 - Admin inspection and local-beta diagnostics.
 
@@ -217,7 +232,7 @@ The concept graph resembles Graphify visually because both show nodes and relati
 - Rich chapter generation from sparse conversations.
 - Semantic verification of every generated claim.
 - Real-provider typed-chat and live-voice proof across a repeatable test matrix.
-- Per-learner administration based on secure user IDs rather than local names.
+- Cloud authentication and secure production identity beyond local profiles.
 - Regenerated MP3 guides for rewritten built-in chapters whose old manifests no longer title-match.
 
 ## Deferred
@@ -231,7 +246,7 @@ The concept graph resembles Graphify visually because both show nodes and relati
 | Active book | The learning book whose documents, chat history, and summaries receive priority in the current context packet. |
 | Agent layer | The foreground chat or voice runtime responsible for one interaction path. |
 | Artifact | Generated or retrieved material such as notes, cards, code, audio, images, or source cards. |
-| Background job | Asynchronous work that can complete after the foreground tutor begins answering. |
+| Background job | Asynchronous or request-correlated work that can complete after, or alongside, the foreground tutor answer. |
 | Barge-in | The learner interrupting spoken output so playback stops and listening resumes. |
 | Bayesian Knowledge Tracing (BKT) | A probabilistic method that estimates whether a learner knows a skill from attempts, learning transitions, slips, and guesses. |
 | Citation state | The recorded result of a limited source-integrity check for an artifact. |
@@ -240,12 +255,12 @@ The concept graph resembles Graphify visually because both show nodes and relati
 | Correction overlay | A non-destructive record that marks data for review, quarantine, or replacement. |
 | Deepgram Nova | A Deepgram speech-to-text model family used for streaming transcription. |
 | Deepgram Aura | A Deepgram text-to-speech model family used for streamed audio output. |
-| Dexie | The JavaScript library used to work with browser IndexedDB. |
+| Dexie | The JavaScript library used to work with browser IndexedDB. Tutor uses it for cache, UI state, and offline fallback rows. |
 | Evidence contract | The exact conditions a learner action must satisfy before it can change durable mastery. |
 | Evidence event | A stored learner attempt and its validation result. |
 | Foreground tutor | The model and application path responsible for the immediate teaching conversation. |
 | Graphify | The generated repository architecture graph used by maintainers. |
-| Learner brain | Tutor's durable, auditable local record of learning material, evidence, estimates, and corrections. |
+| Learner brain | Tutor's durable, auditable local record of one user's learning material, evidence, estimates, and corrections. |
 | Learning book | A learner-owned collection of chapters, concepts, documents, and conversation-derived material. |
 | Mastery delta | The before-and-after learner-state change caused by accepted evidence. |
 | Misconception candidate | A reviewable hypothesis that a learner may hold an incorrect model; it is not automatically treated as fact. |
@@ -254,9 +269,11 @@ The concept graph resembles Graphify visually because both show nodes and relati
 | Request ID | A correlation identifier used to follow one interaction across model, tool, retrieval, and memory rows. |
 | Retrieval event | A record of context selected from local or external sources. |
 | Source span | A bounded excerpt anchor saved to help inspect support for generated notes. |
+| SQLite | The server-side local database file used for durable learner rows before cloud migration. |
 | Tenant isolation | Security rules that prevent one authenticated user's data from being read as another user's data. |
 | Tool job | A bounded capability request such as search, page inspection, code work, or artifact generation. |
 | Trace | An app activity record used for debugging; it is not proof of private model reasoning or factual truth. |
+| User ID | The local profile identifier used to keep learner books, documents, context, and evidence scoped to the active user. |
 | WebSocket | A persistent two-way network connection used for streaming events or audio. |
 
 # References

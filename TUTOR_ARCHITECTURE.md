@@ -6,6 +6,9 @@ claims are still local-beta only. The repository code graph is Graphify and
 lives in `graphify-out/`; it is separate from the learner brain shown in the
 product.
 
+For a plain-English learner-memory walkthrough, see
+`docs/learner-brain-architecture.md`.
+
 ## 1. Product Shape
 
 Tutor helps a learner read PDFs, ask a source-aware tutor questions, speak with
@@ -32,7 +35,8 @@ Frontend:
 
 - React 19, Vite 6, TypeScript 5.8, Tailwind CSS 4.
 - Zustand for live cross-screen state.
-- Dexie/IndexedDB for local learner and diagnostics records.
+- Dexie/IndexedDB for browser cache, UI state, offline fallback rows, and local
+  diagnostics views.
 - `react-pdf` for document rendering.
 - GSAP for route and control motion.
 - Mermaid, Shiki, KaTeX, React Markdown, and Recharts for rich tutor output and
@@ -43,6 +47,11 @@ Backend:
 - Express API in `server.ts`.
 - Server-Sent Events for `/api/chat`.
 - WebSocket log broadcaster at `/ws/debug`.
+- Local learner profile and store APIs for user-scoped records, PDF files,
+  extracted text, migration snapshots, and background tasks.
+- Per-user server folders under `data/users/<userId>/`, with SQLite for durable
+  learner rows and filesystem folders for PDFs, extracted text, artifacts, and
+  debug exports.
 - OpenAI SDK against OpenRouter-compatible routes.
 - Deepgram realtime voice and speech routes.
 - Optional local voice broker at `/api/voice-broker` behind
@@ -75,14 +84,35 @@ The server supports deployment OpenRouter, Deepgram, and Serper fallback keys
 only behind explicit fallback flags. BYOK support means the UI can provide
 session keys; it is not proof that a shared runtime key is configured.
 
-## 4. Local Data Model
+## 4. Local Data Model And Storage Boundary
 
 Zustand stores immediate UI state in `src/store/index.ts`: navigation, active
 book, active PDF, selected text, provider keys, proof attempts, voice settings,
-and usage controls.
+local learner profile, and usage controls.
 
-Dexie stores durable local state in `src/memory/longterm.memory.ts`. The main
-record families are:
+The durable learner store is server-owned and user-scoped. The current local
+profile layer creates or loads an `activeUserId`, sends it as
+`X-LearningAI-User-Id` for HTTP requests, and includes it in voice websocket
+auth. There is still no production login; local profiles are the bridge to
+future auth.
+
+Each user has a local server folder:
+
+```text
+data/users/<userId>/
+  brain.sqlite
+  documents/
+  extracted-text/
+  artifacts/
+  exports/
+```
+
+The server keeps `user_id` on rows even inside a per-user SQLite file. That
+looks redundant locally, but it makes a future move to Postgres/object storage
+much cleaner because the cloud database will need explicit user ownership.
+
+Dexie stores cache-friendly local state in `src/memory/longterm.memory.ts`. The
+main record families are:
 
 - learning books, entries, concepts, documents, and book-scoped chat threads;
 - evidence events, mastery deltas, answer evidence, flashcards, and BKT state;
@@ -90,9 +120,22 @@ record families are:
   background jobs;
 - artifacts, citation states, trace logs, misconceptions, and sessions.
 
+Dexie is a JavaScript wrapper around IndexedDB. IndexedDB is the browser's
+structured storage system; it is useful for cache, offline fallback, and fast UI
+queries, but it should not be the long-term owner of full PDF blobs or full
+extracted text. New PDF uploads store durable files and text server-side.
+IndexedDB keeps metadata, small previews, document IDs, UI state, and
+non-destructive migration rows.
+
 Each learning book owns exactly one persistent chat thread. Study can store more
 than one PDF per book. Switching books changes the chat, active PDF, injected
 book context, visible document rail, and revision context together.
+
+The current Dexie schema also indexes `userId` on the learner rows that are most
+likely to leak across profiles if left global: books, documents, entries,
+concepts, conversations, evidence events, mastery deltas, misconceptions, and
+background jobs. Legacy unscoped rows are still tolerated during migration, but
+new writes are scoped.
 
 ## 5. Learner Brain Contract
 
@@ -112,10 +155,11 @@ flowchart LR
 ```
 
 Only validated learner evidence can increase mastery. Flashcard reviews and
-evaluated answers may pass that gate when they are linked to a real concept and
-carry an explicit outcome. Model summaries, generated artifacts, tool traces,
-misconception candidates, voice transcripts, and web sources may help teaching
-or review, but they cannot raise mastery by themselves.
+evaluated answers may pass that gate when they are linked to a real concept,
+carry an explicit outcome, and are written for the active user. Model summaries,
+generated artifacts, tool traces, misconception candidates, voice transcripts,
+and web sources may help teaching or review, but they cannot raise mastery by
+themselves.
 
 Mastery writes are fail-closed: the concept mutation, verified evidence event,
 and mastery delta are committed together. Duplicate attempts are idempotent, and
@@ -126,22 +170,33 @@ broken audit links block readiness claims.
 `src/memory/brain.context.ts` builds the shared local context packet for typed
 chat and live voice. It combines:
 
+- active user/profile scope;
 - active learning-book summary;
 - active-book PDF manifest;
 - balanced excerpts from ready PDFs in that book;
 - selected text, current page context, interaction timing, and semantic memory;
+- learner model/BKT state and recent validated evidence;
+- pending request-correlated background work;
 - request id and proof-attempt metadata for Admin correlation.
+
+Chat and voice now share the same context assembly rule: start with the active
+user, active book, and active documents, then add previous semantic memory. When
+a document row points at server-stored extracted text, ChatPanel hydrates that
+text before building the packet. That keeps IndexedDB small while still giving
+the tutor access to full PDF context.
 
 Voice broker context uses the same packet, but prioritizes active book and
 document context ahead of long memory so the foreground tutor can remember the
 previous learning thread without burying the live question. Background GPT-5.5
 jobs receive request-correlated context packets and return results through the
-same Admin-inspectable trace family rather than silently changing mastery. Live
-broker speech now streams `ConversationText` through a per-conversation
-Deepgram Aura TTS websocket. Browser speech is a fallback when Deepgram is not
-configured, and MisoTTS remains a read-aloud or async/high-quality path until a
-true local streaming model proves the latency target. The existing Deepgram
-voice-agent websocket remains the fallback route.
+same Admin-inspectable trace family rather than silently changing mastery.
+Typed chat now records its foreground request lifecycle in the same learner
+background-task ledger, so chat and voice requests can be inspected with the
+same request IDs. Live broker speech now streams `ConversationText` through a
+per-conversation Deepgram Aura TTS websocket. Browser speech is a fallback when
+Deepgram is not configured, and MisoTTS remains a read-aloud or
+async/high-quality path until a true local streaming model proves the latency
+target. The existing Deepgram voice-agent websocket remains the fallback route.
 
 Tools follow source boundaries:
 

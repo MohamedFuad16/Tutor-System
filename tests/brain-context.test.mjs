@@ -331,11 +331,18 @@ test("brain retrieval query carries active and companion PDFs for chat and voice
 
 test("brain context memory event records request and agent-layer metadata", () => {
   const event = createBrainContextMemoryEventInput({
+    userId: "local-test-user",
     requestId: "chat-req-1",
     proofAttemptId: "beta-proof-1",
     mode: "chat",
     agentLayer: "chat_stream",
     querySummary: "Explain the current page",
+    scope: {
+      userId: "local-test-user",
+      activeBookId: "book-1",
+      activeBookTitle: "Learning Book",
+      activeDocumentId: "doc-1",
+    },
     activeBookId: "book-1",
     activeBookTitle: "Learning Book",
     activeDocumentId: "doc-1",
@@ -362,6 +369,7 @@ test("brain context memory event records request and agent-layer metadata", () =
   assert.equal(event.source, "brain_context_builder");
   assert.deepEqual(event.sourceIds, ["doc-1", "doc-2"]);
   assert.equal(event.metadata.requestId, "chat-req-1");
+  assert.equal(event.metadata.userId, "local-test-user");
   assert.equal(event.metadata.proofAttemptId, "beta-proof-1");
   assert.equal(event.metadata.agentLayer, "chat_stream");
   assert.deepEqual(event.metadata.documentIds, ["doc-1", "doc-2"]);

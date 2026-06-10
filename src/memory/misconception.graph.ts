@@ -20,11 +20,12 @@ const normalizedFingerprint = (
   );
 
 const uniqueEvidence = (rows: string[]) =>
-  Array.from(new Set(rows.map((row) => bounded(row, 800)).filter(Boolean))).slice(
-    -MAX_EVIDENCE_ROWS,
-  );
+  Array.from(
+    new Set(rows.map((row) => bounded(row, 800)).filter(Boolean)),
+  ).slice(-MAX_EVIDENCE_ROWS);
 
 export type MisconceptionCandidateInput = {
+  userId?: string;
   conceptId: string;
   description: string;
   evidence: string;
@@ -51,6 +52,7 @@ export const createMisconceptionCandidateRecord = (
 
   return {
     id,
+    userId: input.userId,
     concept_id: conceptId,
     description,
     evidence: uniqueEvidence([input.evidence]),
@@ -91,6 +93,7 @@ export const mergeMisconceptionCandidateRecord = (
 
   return {
     ...existing,
+    userId: existing.userId || input.userId,
     description: bounded(input.description || existing.description, 480),
     evidence,
     confidence: Math.min(
@@ -164,9 +167,7 @@ export class MisconceptionGraph {
       .filter(
         (misconception) =>
           !misconception.resolved &&
-          (!bookId ||
-            !misconception.bookId ||
-            misconception.bookId === bookId),
+          (!bookId || !misconception.bookId || misconception.bookId === bookId),
       )
       .toArray();
   }

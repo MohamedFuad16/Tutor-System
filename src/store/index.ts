@@ -7,6 +7,10 @@ import {
   normalizeBrainRuntimeSettings,
   type BrainRuntimeSettings,
 } from "../lib/brainRuntimeSettings";
+import {
+  getOrCreateLocalLearnerUserId,
+  persistLocalLearnerUserId,
+} from "../lib/localLearnerProfile";
 
 export type ViewState = "study" | "analytics" | "revision" | "admin";
 
@@ -313,6 +317,8 @@ interface AppState {
   setDeepgramApiKey: (key: string) => void;
   learnerName: string;
   setLearnerName: (name: string) => void;
+  activeUserId: string;
+  setActiveUserId: (userId: string) => void;
   activeView: ViewState;
   setActiveView: (view: ViewState) => void;
 
@@ -451,6 +457,10 @@ export const useStore = create<AppState>()(
         const cleanName = name.trim() || "Learner";
         localStorage.setItem("learner_name", cleanName);
         set({ learnerName: cleanName });
+      },
+      activeUserId: getOrCreateLocalLearnerUserId(),
+      setActiveUserId: (userId: string) => {
+        set({ activeUserId: persistLocalLearnerUserId(userId) });
       },
       pdfUrl: null as string | null,
       setPdfUrl: (url) => set({ pdfUrl: url }),
@@ -831,6 +841,7 @@ What would you like to learn today?`,
         activeProject: state.activeProject,
         activeLearningBookId: state.activeLearningBookId,
         activeDocumentId: state.activeDocumentId,
+        activeUserId: state.activeUserId,
         activeBetaProofAttemptId: state.activeBetaProofAttemptId,
         activeView: state.activeView,
         language: state.language,

@@ -472,6 +472,7 @@ const createBetaProofAttemptId = () => {
 export function AdminView() {
   const {
     setActiveView,
+    activeUserId,
     learnerName,
     chatUsage,
     voiceUsage,
@@ -2367,9 +2368,12 @@ export function AdminView() {
                             grade or diagnosis.
                           </p>
                         </div>
-                        <label className="flex min-w-[240px] flex-col gap-2 text-xs font-semibold text-zinc-600">
-                          Learner
+                        <div className="flex min-w-[240px] flex-col gap-2 text-xs font-semibold text-zinc-600">
+                          <label htmlFor="admin-learner-selector">
+                            Learner
+                          </label>
                           <select
+                            id="admin-learner-selector"
                             value={selectedLearnerName}
                             onChange={(event) =>
                               setSelectedLearnerName(event.target.value)
@@ -2383,7 +2387,10 @@ export function AdminView() {
                               </option>
                             ))}
                           </select>
-                        </label>
+                          <span className="truncate font-mono text-[10px] font-medium text-zinc-400">
+                            active user id: {activeUserId}
+                          </span>
+                        </div>
                       </div>
                     </section>
 
