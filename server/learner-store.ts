@@ -8,7 +8,10 @@ const USER_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]{2,79}$/;
 declare const module: NodeJS.Module | undefined;
 
 type SqliteDatabase = import("better-sqlite3").Database;
-type SqliteConstructor = typeof import("better-sqlite3").default;
+type SqliteConstructor = new (
+  filename: string,
+  options?: import("better-sqlite3").Options,
+) => SqliteDatabase;
 
 let SqliteDatabaseCtor: SqliteConstructor | null = null;
 

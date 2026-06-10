@@ -803,7 +803,7 @@ const fallbackLearningUpdate = (body: any) => {
     conversationSummary: `Revision note: ${cleanAssistant}\n\nReview check: explain the takeaway without looking, then apply it to a new example.`,
     knowledgeSummary: `Current learning focus: ${conceptName}. The learner should revise the core takeaway, the mechanism behind it, and one example application.`,
     conceptsLearned: [conceptName],
-    risks: [],
+    risks: [] as string[],
     confidence: 0.45,
     concepts: [
       {
@@ -811,8 +811,8 @@ const fallbackLearningUpdate = (body: any) => {
         summary: `Key idea: ${cleanAssistant}\n\nApplication: turn the answer into a short explanation and one test example.`,
         mastery: 0.35,
         confidence: 0.45,
-        parentConcepts: [],
-        childConcepts: [],
+        parentConcepts: [] as string[],
+        childConcepts: [] as string[],
         evidence: [userMessage.slice(0, 160)].filter(Boolean),
       },
     ],
@@ -2482,6 +2482,7 @@ CRITICAL RULES:
       webSources?: number;
       graphUpdates?: number;
       flashcards?: number;
+      evaluatedAnswers?: number;
       iterations?: number;
       error?: string;
       runtimeSettings?: Record<string, string | number>;

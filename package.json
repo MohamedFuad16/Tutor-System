@@ -4,13 +4,17 @@
   "version": "0.1.0",
   "description": "Local-first AI tutor with source-aware study, learner memory, voice, revision books, and Graphify architecture navigation.",
   "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "mkdir -p node_modules/.cache/learningai && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/learningai/server.mjs && node node_modules/.cache/learningai/server.mjs",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js server.mjs .tmp-test node_modules/.cache/learningai",
-    "lint": "tsc --noEmit --noImplicitAny && tsc --noEmit --noImplicitAny -p tsconfig.vitest.json",
+    "lint": "tsc --noEmit --noImplicitAny && npm run typecheck:server && tsc --noEmit --noImplicitAny -p tsconfig.vitest.json",
+    "typecheck:server": "tsc --noEmit --noImplicitAny --target ES2022 --module ESNext --moduleResolution bundler --allowJs --skipLibCheck --types node server.ts server/learner-store.ts server/web-search.ts",
     "brain:postchange": "node scripts/brain-postchange.mjs",
     "audio:overview:dry-run": "node scripts/generate-user-brain-audio-overviews.mjs --dry-run",
     "audio:overview:generate": "node scripts/generate-user-brain-audio-overviews.mjs",
