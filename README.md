@@ -35,6 +35,7 @@
 
   <p>
     <a href="#overview">Overview</a> -
+    <a href="#features">Features</a> -
     <a href="#technology-stack">Technology Stack</a> -
     <a href="#core-surfaces">Core Surfaces</a> -
     <a href="#architecture">Architecture</a> -
@@ -57,7 +58,9 @@ Tutor is a local-first study workspace for reading papers and textbooks,
 asking a source-aware tutor questions, speaking with a realtime voice tutor, and
 turning useful sessions into revision books.
 
-**🔗 Live:** <https://tutor-system-architecture.vercel.app/>
+**Live:** <https://tutor-system-architecture.vercel.app/>
+
+<img src="https://raw.githubusercontent.com/MohamedFuad16/portfolio-mine/32d8ec630d54e703e65db9dafb3224bcf7648e3c/public/media/projects/tutor-en.png" alt="Tutor study workspace asking the learner to upload a first document" width="100%" />
 
 The app is built around one clear product loop:
 
@@ -75,6 +78,23 @@ The learner brain is not hidden model memory. It is an auditable local system of
 records: books, PDFs, concepts, evidence, BKT mastery, artifacts, corrections,
 model runs, retrievals, and background jobs. Graphify is separate: it is the
 repository architecture graph for developers and agents.
+
+## Features
+
+- **Answers that keep their source**: each answer starts from the current page,
+  the selected text, the conversation history and the learner state, and cites
+  where it came from.
+- **Streaming chat**: Markdown, citations, Mermaid diagrams, math and code, with
+  optional read-aloud.
+- **Voice tutoring**: Deepgram speech through a local broker that shares context
+  with the chat, plus a switchable voice mode in Settings.
+- **Fast first, slow later**: quick answers come first, and slow retrieval or
+  tool work runs as request-correlated background tasks that stay traceable.
+- **Learner records you can inspect**: books, evidence, BKT mastery, artifacts
+  and corrections live in SQLite and files per user, with Dexie as a light
+  browser cache.
+- **Revision library and admin diagnostics** for reviewing what was learned and
+  how each answer was built.
 
 ## Technology Stack
 
@@ -238,7 +258,7 @@ Voice mode is a **runtime setting** in Settings (no rebuild required):
 
 Requirements:
 
-- Node.js 22
+- Node.js 20.19 or later (`engines` in `package.json`)
 - npm
 - Python 3 for document extraction helpers
 - Optional provider keys: OpenRouter, Deepgram, Serper
@@ -273,7 +293,10 @@ npm run dev -- --host 127.0.0.1 --port 3100
 | `DEEPGRAM_API_KEY`                 | Deepgram STT/TTS key.                                                                           |
 | `ALLOW_SERVER_DEEPGRAM_FALLBACK`   | Must be `true` before browser requests may use the server Deepgram key.                         |
 | `SERPER_API_KEY`                   | Legacy typed-chat web search key. Custom voice background search uses OpenRouter tools instead. |
-| `VITE_VOICE_BROKER_MODE`           | `deepgram` or `custom`.                                                                         |
+| `ALLOW_SERVER_SERPER_FALLBACK`     | Must be `true` before browser requests may use the server Serper key.                           |
+| `OPENAI_API_KEY`                   | Optional OpenAI key for the read-aloud TTS route and server-minted `openai-realtime` secrets.   |
+| `ALLOW_SERVER_OPENAI_FALLBACK`     | Must be `true` before browser requests may use the server OpenAI key.                           |
+| `VITE_VOICE_BROKER_MODE`           | Legacy build-time default: `deepgram` starts in `deepgram-agent`; otherwise `deepgram-duplex`.  |
 | `VOICE_FOREGROUND_MODEL`           | Fast teaching model, for example `openai/gpt-4o-mini`.                                          |
 | `VOICE_BACKGROUND_MODEL`           | Provider-valid background model id for web/search/code/PDF/tool work.                           |
 | `VOICE_BROKER_STT_MODEL`           | Deepgram STT model, default `nova-3`.                                                           |
@@ -331,3 +354,9 @@ fullscreen chat, Revision, and Admin at desktop and mobile widths.
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
+
+---
+
+<div align="center">
+Built by <a href="https://github.com/MohamedFuad16">Mohamed Fuad</a> · <a href="https://www.mohamedfuad.com">mohamedfuad.com</a>
+</div>
