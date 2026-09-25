@@ -17,6 +17,7 @@ import type { ChatMessage, StudyDocument } from "../../shared/types";
 const USER = "learner_integration01";
 const OTHER = "learner_integration02";
 let ctx: AppContext;
+let speech: ReturnType<typeof createMockSpeech>;
 let server: http.Server;
 let base = "";
 
@@ -71,7 +72,8 @@ beforeAll(async () => {
     accessCode: "",
     guide: { debounceMs: 30, maxPendingMessages: 50 },
   };
-  ctx = createContext(config, { llm: createMockLlm({ tokenDelayMs: 1 }), speech: createMockSpeech() });
+  speech = createMockSpeech();
+  ctx = createContext(config, { llm: createMockLlm({ tokenDelayMs: 1 }), speech });
   const app = await createApp(ctx, { serveClient: false });
   server = http.createServer(app);
   server.on("upgrade", (req, socket, head) => {
@@ -272,6 +274,56 @@ describe("API", () => {
     expect(thread.some((m) => m.channel === "voice" && m.role === "user")).toBe(true);
     expect(thread.some((m) => m.channel === "voice" && m.parts.some((p) => p.type === "diagram"))).toBe(true);
     expect(thread.some((m) => m.channel === "voice" && m.interrupted)).toBe(true);
+  });
+
+  it("speculates on EagerEndOfTurn, releases on EndOfTurn, cancels on TurnResumed", async () => {
+    const ticket = (await json<{ ticket: string; path: string }>("POST", "/voice/ticket")).data;
+    const ws = new WebSocket(`${base.replace("http", "ws")}${ticket.path}?ticket=${ticket.ticket}`);
+    const messages: any[] = [];
+    let audioFrames = 0;
+    ws.on("message", (data, isBinary) => {
+      if (isBinary) {
+        audioFrames += 1;
+        return;
+      }
+      const message = JSON.parse(String(data));
+      messages.push(message);
+      if (message.type === "segment") ws.send(JSON.stringify({ type: "playback", seq: message.seq, state: "start" }));
+      if (message.type === "segment_end")
+        setTimeout(() => ws.send(JSON.stringify({ type: "playback", seq: message.seq, state: "end" })), 5);
+    });
+    await new Promise((resolve) => ws.on("open", resolve));
+    ws.send(JSON.stringify({ type: "hello", bookId, language: "en", stt: "server", tts: "server", sampleRate: 16000 }));
+    await until(() => messages.some((m) => m.type === "ready"));
+    expect(messages.find((m) => m.type === "ready").stt).toBe("server");
+    const emit = speech.lastSession!.emit;
+
+    // Speculative start: generation begins, but no audio may play before the turn is confirmed.
+    emit({ type: "start_of_turn" });
+    emit({ type: "update", transcript: "what does chlorophyll do" });
+    emit({ type: "eager_end_of_turn", transcript: "what does chlorophyll do" });
+    await new Promise((r) => setTimeout(r, 300));
+    expect(audioFrames).toBe(0);
+    expect(messages.some((m) => m.type === "segment")).toBe(false);
+    emit({ type: "end_of_turn", transcript: "what does chlorophyll do" });
+    await until(() => messages.some((m) => m.type === "turn_end"));
+    expect(audioFrames).toBeGreaterThan(0);
+    const system = (await json<{ metrics: { counters: Record<string, number> } }>("GET", "/system")).data;
+    expect(system.metrics.counters["voice.speculation_hit"]).toBeGreaterThanOrEqual(1);
+
+    // Resumed turn: the speculative draft is discarded and the final transcript answered fresh.
+    const before = messages.length;
+    emit({ type: "start_of_turn" });
+    emit({ type: "eager_end_of_turn", transcript: "and what about" });
+    await new Promise((r) => setTimeout(r, 50));
+    emit({ type: "turn_resumed" });
+    emit({ type: "end_of_turn", transcript: "and what about the Calvin cycle" });
+    await until(() => messages.slice(before).some((m) => m.type === "turn_end"));
+    const finals = messages.slice(before).filter((m) => m.type === "user_final");
+    expect(finals.map((m) => m.text)).toEqual(["and what about the Calvin cycle"]);
+
+    ws.send(JSON.stringify({ type: "bye" }));
+    await new Promise((resolve) => ws.on("close", resolve));
   });
 
   it("refuses voice upgrades without a valid ticket", async () => {

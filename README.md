@@ -1,362 +1,149 @@
 <div align="center">
 
-  <h1>Tutor: Cognitive Learning Interface</h1>
+  <h1>Tutor</h1>
 
-  <p><strong>A local-first learning system for PDFs, source-aware tutoring, voice mode, learner memory, revision, and inspectable AI workflows.</strong></p>
+  <p><strong>Bring a document. Ask by typing or talking. Watch it get explained, drawn and turned into a living study guide.</strong></p>
 
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="public/banner.png">
-    <img alt="Tutor System Architecture Banner" src="public/banner.png" width="100%" />
-  </picture>
+  <img alt="Tutor banner" src="public/banner.png" width="100%" />
 
   <p>
-    <a href="https://tutor-system-architecture.vercel.app/">
-      <img src="https://img.shields.io/badge/Live_Demo-tutor--system--architecture.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" />
-    </a>
-  </p>
-
-  <p>
-    <a href="https://github.com/MohamedFuad16/Tutor-System/blob/main/LICENSE">
-      <img src="https://img.shields.io/badge/License-MIT-3B82F6?style=for-the-badge&logo=github&logoColor=white" alt="MIT License" />
-    </a>
-    <a href="https://react.dev/">
-      <img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
-    </a>
-    <a href="https://www.typescriptlang.org/">
-      <img src="https://img.shields.io/badge/TypeScript_5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 5.8" />
-    </a>
-    <a href="https://vite.dev/">
-      <img src="https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite 6" />
-    </a>
-    <a href="https://tailwindcss.com/">
-      <img src="https://img.shields.io/badge/Tailwind_4-0F172A?style=for-the-badge&logo=tailwindcss&logoColor=38BDF8" alt="Tailwind CSS 4" />
-    </a>
-  </p>
-
-  <p>
-    <a href="#overview">Overview</a> -
-    <a href="#features">Features</a> -
-    <a href="#technology-stack">Technology Stack</a> -
-    <a href="#core-surfaces">Core Surfaces</a> -
-    <a href="#architecture">Architecture</a> -
-    <a href="#getting-started">Getting Started</a> -
-    <a href="#license">License</a>
+    <img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Node_22-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node 22" />
+    <img src="https://img.shields.io/badge/Z.AI_GLM--5.3-111111?style=for-the-badge" alt="Z.AI GLM-5.3" />
+    <img src="https://img.shields.io/badge/Deepgram-13EF93?style=for-the-badge&logo=deepgram&logoColor=07111F" alt="Deepgram" />
+    <img src="https://img.shields.io/badge/License-MIT-3B82F6?style=for-the-badge" alt="MIT" />
   </p>
 
 </div>
 
 ---
 
-> [!TIP]
-> Tutor supports browser BYOK for local development and explicit server-side
-> OpenRouter/Deepgram fallbacks for trusted deployments. Shared server keys stay
-> disabled until their matching `ALLOW_SERVER_*_FALLBACK` flag is enabled.
+## What it does
 
-## Overview
+1. **Upload a PDF** into a notebook. Tutor reads every page (with OCR for
+   scanned pages) and indexes it for retrieval. English and Japanese/CJK both
+   work.
+2. **Ask questions** by typing or with voice. Answers are grounded in your
+   document, and every claim cites its page as a clickable chip that jumps the
+   reader there.
+3. **See it.** Processes become **Mermaid diagrams that draw themselves in**.
+   "Walk me through" narrates each node aloud while it is highlighted. Real
+   photos appear when a picture helps.
+4. **Talk it through.** Voice mode is a duplex "fast talker, slow thinker":
+   - GLM-5.3-Flash keeps the conversation flowing.
+   - GLM-5.3 works on diagrams and deep answers in the background, then
+     presents them with a narrated tour.
+   - You can interrupt at any time.
+5. **Learn for real.**
+   - The tutor checks understanding with quiz cards, which are graded on the
+     server.
+   - Mastery per concept follows Bayesian Knowledge Tracing.
+   - Flashcards are scheduled with SM-2.
+   - Explanations adapt to your level.
+6. **Revise from a living study guide** that writes itself in the background
+   from every conversation. It has a concept map (glass orbs coloured by
+   mastery), key points, diagrams, worked examples, common traps, a glossary
+   and flip-card self-checks.
+7. **Track progress** in Analytics: study time, activity, mastery
+   distribution, quiz accuracy, and concepts due for review.
 
-Tutor is a local-first study workspace for reading papers and textbooks,
-asking a source-aware tutor questions, speaking with a realtime voice tutor, and
-turning useful sessions into revision books.
-
-**Live:** <https://tutor-system-architecture.vercel.app/>
-
-<img src="https://raw.githubusercontent.com/MohamedFuad16/portfolio-mine/32d8ec630d54e703e65db9dafb3224bcf7648e3c/public/media/projects/tutor-en.png" alt="Tutor study workspace asking the learner to upload a first document" width="100%" />
-
-The app is built around one clear product loop:
-
-1. Open a local learner profile.
-2. Upload one or more PDFs into a learning book.
-3. Ask questions by typed chat or voice.
-4. Build a user-scoped context packet from PDFs, selected text, current page,
-   prior discussion, semantic memory, and learner state.
-5. Answer immediately in the foreground tutor.
-6. Delegate slow work to request-correlated background tasks.
-7. Store evidence, artifacts, corrections, and revision material for the active
-   learner.
-
-The learner brain is not hidden model memory. It is an auditable local system of
-records: books, PDFs, concepts, evidence, BKT mastery, artifacts, corrections,
-model runs, retrievals, and background jobs. Graphify is separate: it is the
-repository architecture graph for developers and agents.
-
-## Features
-
-- **Answers that keep their source**: each answer starts from the current page,
-  the selected text, the conversation history and the learner state, and cites
-  where it came from.
-- **Streaming chat**: Markdown, citations, Mermaid diagrams, math and code, with
-  optional read-aloud.
-- **Voice tutoring**: Deepgram speech through a local broker that shares context
-  with the chat, plus a switchable voice mode in Settings.
-- **Fast first, slow later**: quick answers come first, and slow retrieval or
-  tool work runs as request-correlated background tasks that stay traceable.
-- **Learner records you can inspect**: books, evidence, BKT mastery, artifacts
-  and corrections live in SQLite and files per user, with Dexie as a light
-  browser cache.
-- **Revision library and admin diagnostics** for reviewing what was learned and
-  how each answer was built.
-
-## Technology Stack
-
-| Layer              | Technologies                                                               |
-| ------------------ | -------------------------------------------------------------------------- |
-| Frontend           | React 19, TypeScript 5.8, Vite 6, Tailwind CSS 4                           |
-| State              | Zustand for app state, Dexie over IndexedDB for browser cache/offline rows |
-| PDF and documents  | `react-pdf`, PDF.js worker, Python extraction helpers, PyMuPDF4LLM flow    |
-| Rich output        | React Markdown, Mermaid, Shiki, KaTeX, Recharts                            |
-| Backend            | Node.js, Express, Server-Sent Events, WebSocket routes                     |
-| Learner store      | Per-user local folders, SQLite, document/extracted-text/artifact files     |
-| AI routes          | OpenRouter-compatible chat/vision routes, tool contracts, background jobs  |
-| Voice              | Deepgram STT/TTS, custom local broker, optional MisoTTS read-aloud path    |
-| Search             | Serper for explicit web/freshness requests                                 |
-| Architecture graph | Graphify artifacts in `graphify-out/`                                      |
-
-<p>
-  <img src="https://img.shields.io/badge/Node.js-22-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js 22" />
-  <img src="https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white" alt="Express" />
-  <img src="https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="SQLite" />
-  <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/Dexie_IndexedDB-7C3AED?style=flat-square" alt="Dexie IndexedDB" />
-  <img src="https://img.shields.io/badge/Deepgram-13EF93?style=flat-square&logo=deepgram&logoColor=07111F" alt="Deepgram" />
-</p>
-
-## Core Surfaces
-
-<table width="100%">
-  <tr>
-    <td width="50%" valign="top">
-      <h3>Study Workspace</h3>
-      <p>Interactive multi-PDF study surface using <code>react-pdf</code>. Desktop keeps the reader and tutor side by side; mobile opens chat first and treats PDFs as attached context until the learner chooses to view the page.</p>
-    </td>
-    <td width="50%" valign="top">
-      <h3>Streaming Chat Panel</h3>
-      <p>SSE tutor responses with Markdown, Mermaid diagrams, code rendering, TTS read-aloud, source-aware prompt context, and one persistent conversation thread per learning book.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>Voice Mode</h3>
-      <p>Deepgram or custom local broker voice sessions. The foreground tutor keeps the conversation moving while slow work is delegated into background tasks.</p>
-    </td>
-    <td width="50%" valign="top">
-      <h3>Learner Brain</h3>
-      <p>User-scoped memory for books, PDFs, concepts, semantic context, BKT evidence, mastery deltas, artifacts, and corrections.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>Revision Library</h3>
-      <p>Paper-style generated learning books, built-in architecture books, active recall, flashcards, code blocks, diagrams, and title-matched stored audio guides.</p>
-    </td>
-    <td width="50%" valign="top">
-      <h3>Admin Diagnostics</h3>
-      <p>Inspect request timelines, model runs, tool jobs, memory/retrieval injections, voice events, evidence rows, artifacts, corrections, and readiness checks.</p>
-    </td>
-  </tr>
-</table>
-
-## Architecture
+## Architecture at a glance
 
 ```mermaid
 flowchart LR
-  User["Learner"]
-  Profile["Local Profile userId"]
-  Study["Study + PDF Context"]
-  Chat["Foreground Tutor"]
-  Broker["Express Broker"]
-  Voice["Voice Broker / Deepgram"]
-  Background["Background Tasks"]
-  ServerStore["Server Learner Store<br/>SQLite + files"]
-  Cache["IndexedDB Cache<br/>Dexie"]
-  Revision["Revision"]
-  Admin["Admin"]
-  Graphify["Graphify Repo Brain"]
-
-  User --> Profile
-  Profile --> Study
-  Study --> Chat
-  Chat <--> Broker
-  Broker <--> Voice
-  Broker <--> Background
-  Broker --> ServerStore
-  Chat --> Cache
-  Cache <--> ServerStore
-  ServerStore --> Revision
-  ServerStore --> Admin
-  Graphify -. developer navigation .-> Broker
+  B["Browser: React SPA"] -- "REST + SSE" --> S["Node server"]
+  B -- "WebSocket: voice audio" --> S
+  S -- "fast + smart models" --> Z["Z.AI GLM-5.3-Flash / GLM-5.3"]
+  S -- "streaming STT / TTS" --> D["Deepgram Flux + Aura-2"]
+  S -- "web + images" --> W["Serper, or Wikipedia and Wikimedia"]
+  S --- DB[("SQLite WAL + FTS5")]
 ```
 
-The learner brain is scoped by `userId`. Durable learner data lives under:
+- **One lean Node process** serves the SPA, the API and voice. There is no
+  Python and no separate voice server.
+- **Priority queues per model.** Live voice beats typed chat, which beats
+  background work. Throttling (429 or Z.AI error 1302) halves concurrency
+  automatically, and it recovers as requests succeed.
+- **One source of truth.** SQLite on the server; the browser keeps only
+  preferences.
+- **Mock providers** make everything runnable and testable offline.
 
-```text
-data/users/<userId>/
-  brain.sqlite
-  documents/
-  extracted-text/
-  artifacts/
-  exports/
-```
+The full design, including data model, latency budget, security and the AWS
+deployment path, is in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
-IndexedDB is the browser's built-in structured storage system. Tutor uses Dexie
-to work with it. In this repo, IndexedDB is a cache and UI-state layer: metadata,
-small previews, active document state, and non-destructive migration fallback.
-It is not the durable owner of full PDFs or full extracted text.
+## Quick start
 
-SQLite is the local server database file for durable learner rows. The app keeps
-`user_id` on rows even inside each per-user database so the same shape can move
-to cloud Postgres/object storage later.
-
-## Learner Brain Rules
-
-- Local profiles provide stable user IDs; they are not production cloud auth.
-- Chat and voice share `src/memory/brain.context.ts` for user-scoped context
-  packets.
-- PDF files and extracted text are stored server-side; browser rows keep cache
-  metadata and previews.
-- Model summaries, transcripts, tool results, and artifacts are teaching/audit
-  context only.
-- BKT mastery changes require validated evidence such as evaluated answers or
-  flashcard reviews linked to real concepts.
-- Background tasks are request-correlated so Admin can follow one user action
-  across chat, voice, tools, retrieval, artifacts, and memory writes.
-
-## Voice Modes
-
-Voice mode is a **runtime setting** in Settings (no rebuild required):
-
-- **`deepgram-duplex` (default)** — the two-model "interaction" mimic of
-  Thinking Machines' interaction models. A fast foreground model
-  (`VOICE_FOREGROUND_MODEL`) keeps the live conversation moving while an async
-  background model (`VOICE_BACKGROUND_MODEL`) does web/code/PDF/tool heavy
-  lifting, whose result is stitched back in as a spoken aside. It runs inside
-  the same `npm run dev` / `npm start` Node process that serves the app — **no
-  separate server to spin up** — and needs only a **Deepgram key** (STT + Aura
-  TTS) plus an **LLM key**. The LLM key can be OpenAI **or** OpenRouter; the
-  broker auto-detects the provider from the key shape (`sk-or-…` → OpenRouter,
-  `sk-…` → OpenAI direct), so "just a Deepgram key + a ChatGPT key" works.
-- **`deepgram-agent`** — the single Deepgram Voice Agent path.
-- **`openai-realtime` (test / comparison only)** — connects the browser
-  straight to OpenAI's Realtime API over **WebRTC**, for a true full-duplex,
-  uninterrupted benchmark against the cheaper mimic. It needs **no persistent
-  server** (only a tiny `/api/realtime/token` endpoint that also runs on Vercel
-  serverless) and is BYOK-first (the browser's OpenAI key mints a short-lived
-  ephemeral secret; the standard key never reaches the WebRTC exchange). This is
-  intentionally **not** the default and is billed at premium realtime rates.
-
-- Background answers are cleaned before insertion so raw markdown such as
-  `**Apple**` is not read aloud.
-- MisoTTS is optional and experimental. The local broker only accepts loopback
-  Miso URLs such as `http://127.0.0.1:8080`; set `MISO_TTS_ALLOW_HEADER_URL=false`
-  on deployed hosts to ignore the client-supplied Miso URL header.
-- No route should claim a universal sub-200 ms guarantee. Report latency as
-  measured p50, p95, failure rate, route, provider, region, and hardware.
-- Deployments that terminate the voice WebSocket behind a proxy must strip any
-  inbound `X-Forwarded-Host` header so the same-origin broker check can't be
-  spoofed.
-
-## Getting Started
-
-Requirements:
-
-- Node.js 20.19 or later (`engines` in `package.json`)
-- npm
-- Python 3 for document extraction helpers
-- Optional provider keys: OpenRouter, Deepgram, Serper
-
-Install dependencies:
+Requirements: Node.js 20.19+ (22 recommended).
 
 ```bash
-npm ci
-pip install -r requirements.txt
+npm install
+cp .env.example .env      # add ZAI_API_KEY; DEEPGRAM_API_KEY and SERPER_API_KEY are optional
+npm run dev               # http://localhost:3000 (API, SPA with HMR, voice WebSocket)
 ```
 
-Create `.env` from `.env.example` and fill only the providers you need.
+With no keys at all, Tutor runs on an offline mock model and browser speech,
+so you can build UI without spending tokens.
 
-Run locally:
+### Keys and what they unlock
+
+| Variable           | Unlocks                                                                | Without it                            |
+| ------------------ | ---------------------------------------------------------------------- | ------------------------------------- |
+| `ZAI_API_KEY`      | Real tutoring, study guides, OCR, quiz grading                         | Offline mock model                    |
+| `DEEPGRAM_API_KEY` | Low-latency streaming voice (Flux STT, Aura-2 TTS), natural read-aloud | Browser speech recognition and voices |
+| `SERPER_API_KEY`   | Google web + image search                                              | Wikipedia + Wikimedia Commons (free)  |
+
+> **Z.AI plans.** The default endpoint is pay-as-you-go
+> (`https://api.z.ai/api/paas/v4`). The GLM **Coding Plan** endpoint
+> (`/api/coding/paas/v4`) only accepts Coding Plan keys, and Z.AI's plan
+> terms limit those keys to supported coding tools. Use a pay-as-you-go key
+> for this app.
+
+All other settings (models, concurrency, voice thresholds, limits) are
+documented in [`.env.example`](.env.example).
+
+## Scripts
+
+| Command                              | What it does                                                                  |
+| ------------------------------------ | ----------------------------------------------------------------------------- |
+| `npm run dev`                        | Dev server with Vite HMR and server reload                                    |
+| `npm run build`                      | SPA → `dist/client`, server bundle → `dist/server.mjs`                        |
+| `npm start`                          | Run the production build                                                      |
+| `npm run lint` / `npm run typecheck` | Strict TypeScript for web and server                                          |
+| `npm test`                           | Unit, provider, full HTTP + WebSocket integration and component tests         |
+| `npm run test:e2e`                   | Browser walkthrough of every screen (needs a running server; uses Playwright) |
+| `npm run format`                     | Prettier                                                                      |
+
+## Deploying
 
 ```bash
-npm run dev
+docker build -t tutor .
+docker run -p 3000:3000 -v tutor-data:/data --env-file .env tutor
 ```
 
-If port `3000` is busy:
+- The image runs as non-root, has a health check, and shuts down gracefully
+  (voice sessions drain on `SIGTERM`).
+- Voice needs a host that keeps WebSockets open: ECS/Fargate or EC2 behind an
+  ALB, Fly.io, Render and similar all work. Serverless platforms such as
+  Vercel functions do not.
+- The SPA can still be served from a CDN; set `VITE_API_BASE` and
+  `ALLOWED_ORIGINS`.
+- [docs/ARCHITECTURE.md §8](docs/ARCHITECTURE.md) covers the phase-1 single
+  instance and the phase-2 scale-out (RDS Postgres, S3, Redis, SQS).
 
-```bash
-npm run dev -- --host 127.0.0.1 --port 3100
+## Project layout
+
+```
+shared/     contracts shared by server and web (types, voice protocol, study-guide schema, speech normalisation)
+server/     Express + WebSocket server: providers, store, services, voice, http
+web/        React app (Vite root): app shell, features/{study,chat,voice,revision,analytics}, components, lib
+test/       vitest suites (server, shared, web) and the Playwright smoke walkthrough
+docs/       architecture
 ```
 
-## Environment
-
-| Variable                           | Purpose                                                                                         |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `OPENROUTER_API_KEY`               | Server-side OpenRouter key for chat and custom voice broker when fallback is enabled.           |
-| `ALLOW_SERVER_OPENROUTER_FALLBACK` | Must be `true` before browser requests may use the server OpenRouter key.                       |
-| `DEEPGRAM_API_KEY`                 | Deepgram STT/TTS key.                                                                           |
-| `ALLOW_SERVER_DEEPGRAM_FALLBACK`   | Must be `true` before browser requests may use the server Deepgram key.                         |
-| `SERPER_API_KEY`                   | Legacy typed-chat web search key. Custom voice background search uses OpenRouter tools instead. |
-| `ALLOW_SERVER_SERPER_FALLBACK`     | Must be `true` before browser requests may use the server Serper key.                           |
-| `OPENAI_API_KEY`                   | Optional OpenAI key for the read-aloud TTS route and server-minted `openai-realtime` secrets.   |
-| `ALLOW_SERVER_OPENAI_FALLBACK`     | Must be `true` before browser requests may use the server OpenAI key.                           |
-| `VITE_VOICE_BROKER_MODE`           | Legacy build-time default: `deepgram` starts in `deepgram-agent`; otherwise `deepgram-duplex`.  |
-| `VOICE_FOREGROUND_MODEL`           | Fast teaching model, for example `openai/gpt-4o-mini`.                                          |
-| `VOICE_BACKGROUND_MODEL`           | Provider-valid background model id for web/search/code/PDF/tool work.                           |
-| `VOICE_BROKER_STT_MODEL`           | Deepgram STT model, default `nova-3`.                                                           |
-| `VOICE_BROKER_TTS_MODEL`           | Deepgram Aura TTS model.                                                                        |
-| `MISO_TTS_API_URL`                 | Optional loopback-only local Miso endpoint.                                                     |
-
-## Architecture Docs
-
-- [System architecture](./TUTOR_ARCHITECTURE.md)
-- [Learner brain architecture](./docs/learner-brain-architecture.md)
-- [Agent workflow instructions](./AGENTS.md)
-
-## Graphify Workflow
-
-Use Graphify before broad code reads:
-
-```bash
-graphify query "how does the voice broker connect to ChatPanel?" --budget 2000 --graph graphify-out/graph.json
-graphify path "ChatPanel" "server.ts" --graph graphify-out/graph.json
-npm run graphify:tree
-```
-
-Do not regenerate `graphify-out` automatically after ordinary edits. Refresh
-Graphify artifacts only when graph maintenance is explicitly requested.
-
-## Verification
-
-Run the complete local gate before pushing:
-
-```bash
-npm run format:check
-npm run lint
-npm test
-npm run build
-npm run brain:postchange -- --reason readme-update
-```
-
-For UI changes, also open the running app in the browser and smoke-test Study,
-fullscreen chat, Revision, and Admin at desktop and mobile widths.
-
-## Local-Beta Boundaries
-
-- Local profiles provide stable user IDs, but they are not real cloud
-  authentication.
-- Durable local learner records live in server folders and SQLite. Production
-  tenancy, backups, retention, and organization administration are deferred.
-- IndexedDB is still used for local cache/UI state and non-destructive migration
-  fallback, but it should not be treated as the durable source for full PDFs or
-  full extracted text.
-- Voice provider combinations need measured real-key proof before any latency
-  promise is made.
-- Citation and artifact checks record provenance and local consistency; they do
-  not prove every generated claim is factually true.
+> The v1 sources (`src/`, `server.ts`, `api/`, `scripts/`, `tests/`) are no
+> longer referenced by the build and are scheduled for removal.
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE).
-
----
-
-<div align="center">
-Built by <a href="https://github.com/MohamedFuad16">Mohamed Fuad</a> · <a href="https://www.mohamedfuad.com">mohamedfuad.com</a>
-</div>
+[MIT](./LICENSE) · Built by <a href="https://github.com/MohamedFuad16">Mohamed Fuad</a> · <a href="https://www.mohamedfuad.com">mohamedfuad.com</a>

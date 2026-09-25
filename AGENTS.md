@@ -8,28 +8,31 @@ knowledge graph generation, and active recall revision.
 
 ## Design Philosophy
 
-- Visual theme: Cosmic Obsidian, with extremely dark surfaces (`#030303`,
-  `#0A0A0B`) and focused neon accents in violet, blue, and orange.
-- Micro-interactions: use fluid, motion-heavy interactions and physics-spring
-  motion for meaningful controls.
-- AI surfaces: use liquid glass effects for assistant elements.
-- Revision and notes: keep the classic analog book/notebook feel with paper
-  backgrounds, serif typography, and page texture.
-- Knowledge graph: render learner concepts as premium glass-orb style nodes
-  rather than hard geometric solids.
+- Visual theme: "Obsidian & Paper". Near-black obsidian surfaces (`ink-950`
+  `#050505` … `ink-500`) for the workspace, fog greys for text, one signal
+  colour (`#ff6e00`) for action, and aura light (violet, blue, cyan) only for
+  things the AI is doing. Tokens live in `web/src/styles.css`.
+- Micro-interactions: spring-driven (`motion/react`) presses and transitions.
+  Respect `useMotion()` and reduced motion.
+- AI surfaces use the `liquid-glass` utility and the voice orb.
+- Revision and notes use warm paper (`paper`, `paper-card`), serif typography
+  (Lora) and page grain.
+- Concept maps render concepts as glass orbs coloured by mastery.
 
 ## Core Product Boundaries
 
-- `PdfViewer`: PDF reading, selection, highlights, annotations, and overlay
-  controls.
-- `ChatPanel`: streaming tutor chat, source-aware reasoning, tool output, TTS,
-  and voice interactions.
-- `BrainView` / learner graph surfaces: the user-facing study concept graph.
-- `RevisionView`: paper-style review, generated learning books, notes, and
-  active recall.
+- `web/src/features/study`: intro hero, PDF reader (selection → Ask tutor,
+  persisted highlights), study layout.
+- `web/src/features/chat`: streaming tutor chat, message parts (sources,
+  images, diagrams, quiz cards), composer, notebook switcher.
+- `web/src/features/voice`: duplex voice client (`useVoiceSession`), orb,
+  visual stage.
+- `web/src/features/revision`: living study guide renderer, concept map,
+  spaced-repetition review, built-in books (`builtinBooks.ts`).
+- `web/src/features/analytics`: learner dashboard.
 
-Do not confuse the user-facing learner brain graph with the repository
-architecture graph. The repository architecture graph is Graphify.
+Do not confuse the learner concept map with the repository architecture
+graph. The repository architecture graph is Graphify.
 
 # Graphify-First Development
 
@@ -120,24 +123,42 @@ chat turn, local file change, commit, checkout, or GitHub push.
 For ordinary source changes, run:
 
 ```bash
-npm run lint
+npm run lint      # strict TypeScript, web + server
+npm test          # unit, provider, HTTP + WebSocket integration, components
 npm run build
 ```
 
-For visual changes, also verify the live app in the browser at relevant mobile
-and desktop viewports.
+For visual changes, also run the browser walkthrough against a server
+started with mock providers and check desktop and mobile screenshots:
+
+```bash
+npm run build
+NODE_ENV=production PORT=3300 SPEECH_PROVIDER=mock DATA_DIR=/tmp/tutor-e2e node dist/server.mjs &
+BASE_URL=http://localhost:3300 npm run test:e2e
+```
 
 ## Architecture Boundaries
 
-Treat these areas as high risk:
+`docs/ARCHITECTURE.md` is the design reference. Treat these areas as high risk:
 
-- Dexie schema in `src/memory/longterm.memory.ts`
-- Server routes, SSE event shapes, WebSocket paths, and API contracts in
-  `server.ts`
-- Zustand state fields in `src/store/index.ts`
-- Chat streaming parser and tool handling in `src/components/ChatPanel.tsx`
-- Document ingestion and Python extraction behavior
-- Generated Graphify artifacts in `graphify-out/`
+- Wire contracts in `shared/` (`types.ts`, `voice.ts`, `guide.ts`): change
+  server and web together.
+- SQLite schema and migrations in `server/store/db.ts`. Migrations are
+  append-only; never edit a shipped migration.
+- Model access in `server/providers/zai.ts` and `server/lib/limiter.ts`
+  (priorities, retries, thinking parameters).
+- The voice turn-taking state machine in `server/voice/session.ts`
+  (speculation, barge-in, injections) and its client counterpart in
+  `web/src/features/voice/useVoiceSession.ts`.
+- Study-guide merge rules in `server/services/guide.ts` (`applyGuideOps` is
+  unit-tested; keep it pure).
+- Prompts in `server/services/prompts.ts`.
+- Generated Graphify artifacts in `graphify-out/` (stale since the v2 rebuild;
+  refresh only when asked).
+
+Legacy v1 code (`src/`, `server.ts`, `server/learner-store.ts`,
+`server/web-search.ts`, `server/vercel-handler.ts`, `api/`, `scripts/`,
+`tests/`) is not referenced by the build and must not be extended.
 
 Keep edits scoped. Preserve existing app behavior unless the task explicitly
 requires a behavior change.

@@ -44,14 +44,14 @@ flowchart LR
   S --- F[(PDF files)]
 ```
 
-| Concern | Choice | Why |
-| --- | --- | --- |
-| Fast model | `glm-5.3-flash` (reasoning effort `low`) | Low time-to-first-token for voice and chat; natively multimodal, so it also does OCR |
-| Smart model | `glm-5.3` | Background delegation, study-guide synthesis, "deep" chat mode |
-| STT | Deepgram Flux (`flux-general-en`), Nova-3 for other languages | Native turn detection with **EagerEndOfTurn**, so replies can start speculatively |
-| TTS | Deepgram Aura-2, one request per phrase | Low time to first audio; exact per-phrase boundaries for captions, diagram-tour sync and barge-in truncation |
-| Retrieval | SQLite FTS5 BM25 (porter + trigram for CJK) | Sub-millisecond, free, deterministic; no vector DB to operate |
-| Search | Serper (web + `/images`) → Wikipedia / Wikimedia Commons fallback | Cheapest Google-quality results; free, openly licensed fallback when no key is set |
+| Concern     | Choice                                                            | Why                                                                                                          |
+| ----------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Fast model  | `glm-5.3-flash` (reasoning effort `low`)                          | Low time-to-first-token for voice and chat; natively multimodal, so it also does OCR                         |
+| Smart model | `glm-5.3`                                                         | Background delegation, study-guide synthesis, "deep" chat mode                                               |
+| STT         | Deepgram Flux (`flux-general-en`), Nova-3 for other languages     | Native turn detection with **EagerEndOfTurn**, so replies can start speculatively                            |
+| TTS         | Deepgram Aura-2, one request per phrase                           | Low time to first audio; exact per-phrase boundaries for captions, diagram-tour sync and barge-in truncation |
+| Retrieval   | SQLite FTS5 BM25 (porter + trigram for CJK)                       | Sub-millisecond, free, deterministic; no vector DB to operate                                                |
+| Search      | Serper (web + `/images`) → Wikipedia / Wikimedia Commons fallback | Cheapest Google-quality results; free, openly licensed fallback when no key is set                           |
 
 All providers sit behind interfaces (`LlmProvider`, `SpeechProvider`,
 `Search`), so switching vendor means changing one adapter.
@@ -119,7 +119,7 @@ sequenceDiagram
    highlighted passage, the top BM25 passages and the learner model (weak and
    strong concepts), within a character budget.
 2. The fast model streams the reply over SSE (`start → reasoning → delta →
-   part → done`). Tool rounds run **in parallel**, with a maximum of 3.
+part → done`). Tool rounds run **in parallel**, with a maximum of 3.
    - `search_document`, `web_search`, `show_images`, `create_quiz`, `make_flashcards`
    - Diagrams are inline Mermaid blocks. The client draws them in and can
      narrate them node by node ("Walk me through").
@@ -150,9 +150,9 @@ flowchart LR
   start saves 150–250 ms more. Then come the fast-model first token and first
   TTS audio (about 200 ms). A phrase chunker releases the first clause as soon
   as it has about 12 characters.
-- **Barge-in is two-stage.** `StartOfTurn` while the tutor talks only *ducks*
+- **Barge-in is two-stage.** `StartOfTurn` while the tutor talks only _ducks_
   playback, because it may be echo. Two real words, or an end of turn,
-  *clears* playback. The assistant message is then truncated to the
+  _clears_ playback. The assistant message is then truncated to the
   segments the learner actually heard, as reported by the client's playback
   events.
 - **Speech hygiene.** The voice prompt forbids markdown and code. A
@@ -230,17 +230,17 @@ flowchart TD
 
 ## 6. Data model (SQLite, WAL)
 
-| Table | Purpose |
-| --- | --- |
-| `users` | local learner profiles |
-| `books` | notebooks (title auto-suggested until the learner renames) |
-| `documents`, `pages` | PDFs and per-page text |
-| `chunks`, `chunks_fts`, `chunks_tri` | retrieval index (porter and trigram FTS5, synced by triggers) |
-| `messages` | one thread per book; `channel` = chat or voice; `parts_json` holds sources, images, diagrams, quizzes |
-| `guides` | versioned study-guide JSON + `covered_seq` cursor |
-| `concepts`, `attempts`, `quizzes`, `cards` | learner model, evidence, spaced repetition |
-| `annotations` | PDF highlights and notes |
-| `activity`, `llm_usage` | analytics and per-learner token accounting |
+| Table                                      | Purpose                                                                                               |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `users`                                    | local learner profiles                                                                                |
+| `books`                                    | notebooks (title auto-suggested until the learner renames)                                            |
+| `documents`, `pages`                       | PDFs and per-page text                                                                                |
+| `chunks`, `chunks_fts`, `chunks_tri`       | retrieval index (porter and trigram FTS5, synced by triggers)                                         |
+| `messages`                                 | one thread per book; `channel` = chat or voice; `parts_json` holds sources, images, diagrams, quizzes |
+| `guides`                                   | versioned study-guide JSON + `covered_seq` cursor                                                     |
+| `concepts`, `attempts`, `quizzes`, `cards` | learner model, evidence, spaced repetition                                                            |
+| `annotations`                              | PDF highlights and notes                                                                              |
+| `activity`, `llm_usage`                    | analytics and per-learner token accounting                                                            |
 
 Every row carries `user_id`, so the schema maps directly onto Postgres with
 row-level ownership.
@@ -288,12 +288,12 @@ flowchart LR
 
 ### Phase 2: horizontal scale (10k+ concurrent)
 
-| Swap | For | Effort |
-| --- | --- | --- |
-| SQLite | **RDS Postgres** (FTS via `tsvector` + `pg_trgm`, or `pgvector` for dense retrieval) | repository layer only |
-| Local PDF files | **S3** (`FileStore` interface) | one adapter |
-| In-process `EventHub` | **ElastiCache Redis** pub/sub | one class |
-| In-process ingest and guide queues | **SQS** + worker service | job handlers unchanged |
+| Swap                               | For                                                                                  | Effort                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------ | ---------------------- |
+| SQLite                             | **RDS Postgres** (FTS via `tsvector` + `pg_trgm`, or `pgvector` for dense retrieval) | repository layer only  |
+| Local PDF files                    | **S3** (`FileStore` interface)                                                       | one adapter            |
+| In-process `EventHub`              | **ElastiCache Redis** pub/sub                                                        | one class              |
+| In-process ingest and guide queues | **SQS** + worker service                                                             | job handlers unchanged |
 
 - Voice sessions are stateful per WebSocket. The ALB needs no stickiness
   because a session never outlives its connection.
