@@ -7,8 +7,8 @@ import { BookOpen, Check, ChevronLeft, ChevronRight, ExternalLink, Globe, Sparkl
 import { useState } from "react";
 import type { ChatMessage, MessagePart, QuizItem, QuizResult, SourceRef, WebImage, WebSource } from "@shared/types";
 import { Diagram } from "@/components/Diagram";
-import { ImageMosaic } from "@/components/fx/ImageMosaic";
-import { ThinkingOrb } from "@/components/fx/ThinkingOrb";
+import { ThinkingOrb } from "thinking-orbs";
+import { ImageReveal } from "@/components/fx/ImageReveal";
 import { Button, cx, spring, Spinner } from "@/components/ui";
 import { keys, queryClient, useAnswerQuiz } from "@/lib/queries";
 import { useApp } from "@/store/app";
@@ -115,15 +115,15 @@ export function ImageGallery({
               index === 0 && visible.length >= 3 && "col-span-2 row-span-2 aspect-auto",
             )}
           >
-            <ImageMosaic
-              src={image.thumbnailUrl}
-              alt={image.title}
-              tone={tone}
-              delay={index * 140}
-              className="!absolute inset-0"
-              imgClassName="transition-transform duration-500 group-hover:scale-105"
-              onError={() => setFailed((set) => new Set(set).add(image.imageUrl))}
-            />
+            <div className="absolute inset-0">
+              <ImageReveal
+                src={image.thumbnailUrl}
+                alt={image.title}
+                tone={tone}
+                delay={index * 140}
+                onError={() => setFailed((set) => new Set(set).add(image.imageUrl))}
+              />
+            </div>
           </motion.button>
         ))}
       </div>

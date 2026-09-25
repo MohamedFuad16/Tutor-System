@@ -10,13 +10,13 @@ import { AnimatePresence, motion } from "motion/react";
 import { Check, Copy, Mic, Square, Volume2 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import type { ChatMessage, MessagePart } from "@shared/types";
-import { BotAvatar } from "@/components/fx/BotAvatar";
-import { ThinkingOrb, type OrbState } from "@/components/fx/ThinkingOrb";
+import { ThinkingOrb, type OrbState } from "thinking-orbs";
 import { Markdown, type CitationDocs } from "@/components/Markdown";
 import { IconButton, spring } from "@/components/ui";
 import { speak, stopSpeaking } from "@/lib/speaker";
 import { useApp } from "@/store/app";
 import { Parts } from "./parts";
+import { TutorAvatar } from "./TutorAvatar";
 import type { Draft } from "./useChat";
 import { rememberReveal, takeReveal, useSmoothText } from "./useSmoothText";
 
@@ -43,10 +43,9 @@ function TutorHeader({
   animate: boolean;
   children?: React.ReactNode;
 }) {
-  const avatar = useApp((state) => state.tutorAvatar);
   return (
     <div className="mb-1.5 flex min-h-8 items-center gap-2.5">
-      <BotAvatar type={avatar} size={32} state={working ? "working" : "default"} paused={!animate} aria-hidden />
+      <TutorAvatar size={32} state={working ? "working" : "default"} paused={!animate} />
       <span className="text-[0.8rem] font-medium text-stone-800">Tutor</span>
       {children}
     </div>
@@ -201,7 +200,7 @@ export function DraftView({ draft, docs, bookId }: { draft: Draft; docs: Citatio
               exit={{ opacity: 0 }}
               className="flex min-w-0 items-center gap-1.5 text-xs text-stone-500"
             >
-              <ThinkingOrb state={orbStateFor(label, Boolean(draft.reasoning))} size={20} aria-hidden />
+              <ThinkingOrb state={orbStateFor(label, Boolean(draft.reasoning))} size={20} theme="light" aria-hidden />
               <span className="shimmer-text truncate">{label}</span>
             </motion.span>
           )}

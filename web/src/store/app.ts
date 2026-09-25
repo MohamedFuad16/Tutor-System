@@ -5,7 +5,7 @@
  */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { BotAvatarType } from "@/components/fx/BotAvatar";
+import type { BotAvatarFace, BotAvatarShading, BotAvatarType } from "bot-avatars";
 
 export type View = "study" | "revision" | "analytics";
 
@@ -28,8 +28,10 @@ type AppState = {
   deepMode: boolean;
   webMode: boolean;
   orbStyle: OrbStyle;
-  /** The tutor's avatar in chat. */
+  /** The tutor's avatar in chat: body, face and finish (libraries.dev bot-avatars). */
   tutorAvatar: BotAvatarType;
+  tutorFace: BotAvatarFace;
+  tutorShading: BotAvatarShading;
 
   view: View;
   activeBookId: string | null;
@@ -78,6 +80,8 @@ export const useApp = create<AppState>()(
       webMode: false,
       orbStyle: "siri",
       tutorAvatar: "clover",
+      tutorFace: "mouth",
+      tutorShading: "plastic",
 
       view: "study",
       activeBookId: null,
@@ -120,6 +124,8 @@ export const useApp = create<AppState>()(
         deepMode: state.deepMode,
         orbStyle: state.orbStyle,
         tutorAvatar: state.tutorAvatar,
+        tutorFace: state.tutorFace,
+        tutorShading: state.tutorShading,
         view: state.view,
         activeBookId: state.activeBookId,
         activeDocumentByBook: state.activeDocumentByBook,

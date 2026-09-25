@@ -141,24 +141,22 @@ part → done`). Tool rounds run **in parallel**, with a maximum of 3.
 
 ### 4.2a Presence effects (web)
 
-Effects are first-party components in `web/src/components/fx`, each tied to
-real state, never to timers:
+The AI-presence effects are the [libraries.dev](https://libraries.dev) React
+packages (all MIT), each tied to real state, never to timers:
 
-| Effect                                  | Where                                    | Driven by                                                               |
-| --------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
-| `BotAvatar` (8 bodies)                  | tutor turns, empty chat, Settings picker | streaming / settling flag; only the newest answer animates              |
-| `ThinkingOrb` (9 activities, 2D canvas) | status line, task chips, voice tasks     | the current status label / tool                                         |
-| `BorderBeam`                            | composer                                 | the in-flight request                                                   |
-| `ImageMosaic`                           | image galleries (chat, voice stage)      | the image's decode                                                      |
-| `VoiceGlow`                             | voice dock                               | mic level (listening), speech level (speaking), `processing` (thinking) |
-| `LiquidIndicator`                       | main navigation                          | the active view                                                         |
-| `MetalText` / `MetalBadge`              | empty-state headline, "New" badge        | static                                                                  |
+| Package                       | Where                                                              | Driven by                                                                                                 |
+| ----------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `bot-avatars` (`TutorAvatar`) | tutor turns, empty chat, Settings picker (18 bodies, face, finish) | streaming → `working`; idle → `default`; server unreachable → `sleeping`; only the newest answer animates |
+| `thinking-orbs`               | status line, task chips, voice background tasks                    | the current status label / tool                                                                           |
+| `border-beam`                 | composer                                                           | the in-flight request                                                                                     |
+| `img-fx` (`ImageReveal`)      | image galleries (chat, voice stage)                                | the image's decode; hands off to a plain `<img>` once revealed                                            |
+| `voice-glow` (`VoiceBeam`)    | voice dock                                                         | mic level (listening), speech level (speaking), `processing` (thinking)                                   |
+| `liquid-gooey`                | main navigation                                                    | the active view ("move" effect)                                                                           |
+| `metal-fx`                    | empty-state headline (`MetalText`), "New" badge                    | static                                                                                                    |
 
-They share the libraries.dev prop names (`type`, `state`, `size`, `paused`,
-`active`, `processing`, …) so the libraries.dev npm packages
-(`bot-avatars`, `thinking-orbs`, `border-beam`, `voice-glow`, `img-fx`,
-`liquid-gooey`, `metal-fx`) can replace them at the import site if installed.
-All respect reduced motion and pause offscreen or in hidden tabs.
+`img-fx` (with three.js) and `metal-fx` load lazily; the others ship in the
+main chunk. Surfaces pin `theme` explicitly (the chat rail is light inside a
+dark app), and reduced motion stills or skips every effect.
 
 The **voice orb** (`features/voice/orb`) is the WebGPU shader from
 LerSent001/orb (MIT; see `orb/NOTICE.md`): idle and active parameter

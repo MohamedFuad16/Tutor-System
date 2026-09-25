@@ -126,7 +126,7 @@ async function run(label, viewport) {
   );
   check(
     (await page.locator('[aria-label="Tutor chat"] .answer').count()) > 0 &&
-      (await page.locator('[aria-label="Tutor chat"] svg[viewBox="0 0 100 100"]').count()) > 0,
+      (await page.locator('[aria-label="Tutor chat"] .group\\/message canvas').count()) > 0,
     `${label}: tutor answers carry the avatar`,
   );
 

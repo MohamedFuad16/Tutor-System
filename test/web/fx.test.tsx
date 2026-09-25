@@ -1,10 +1,10 @@
 import { act, render, renderHook, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BotAvatar } from "@/components/fx/BotAvatar";
-import { ImageMosaic } from "@/components/fx/ImageMosaic";
-import { ThinkingOrb } from "@/components/fx/ThinkingOrb";
+import { ThinkingOrb } from "thinking-orbs";
 import { Markdown } from "@/components/Markdown";
 import { orbStateFor } from "@/features/chat/Message";
+import { TutorAvatar } from "@/features/chat/TutorAvatar";
+import { useApp } from "@/store/app";
 import { rememberReveal, takeReveal, useSmoothText } from "@/features/chat/useSmoothText";
 import { applyAudioUniforms } from "@/features/voice/orb/audio";
 import { styleFlowIndexes, stylePresets } from "@/features/voice/orb/presets";
@@ -158,17 +158,16 @@ describe("useSmoothText", () => {
 });
 
 describe("fx components", () => {
-  it("render accessible names", () => {
+  it("render the libraries.dev avatar and orb with accessible names", () => {
+    useApp.setState({ tutorAvatar: "star", tutorFace: "mouth", tutorShading: "crisp" });
     render(
       <>
-        <BotAvatar type="star" state="working" size={32} />
-        <ThinkingOrb state="searching" size={20} />
-        <ImageMosaic src="https://example.org/a.jpg" alt="A red panda" />
+        <TutorAvatar state="working" size={32} label="Your tutor" />
+        <ThinkingOrb state="searching" size={20} theme="light" />
       </>,
     );
-    expect(screen.getByRole("img", { name: "Star tutor, working" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Your tutor" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Searching…" })).toBeInTheDocument();
-    expect(screen.getByAltText("A red panda")).toBeInTheDocument();
   });
 
   it("maps status labels to orb activities", () => {

@@ -8,12 +8,12 @@ import { useEffect, useMemo, useRef } from "react";
 import type { StudyDocument } from "@shared/types";
 import { Button, IconButton, cx, spring, toast } from "@/components/ui";
 import { api } from "@/lib/api";
-import { keys, queryClient, useDocuments, useMessages } from "@/lib/queries";
+import { keys, queryClient, useDocuments, useHealth, useMessages } from "@/lib/queries";
 import { useApp } from "@/store/app";
 import { BookSwitcher } from "./BookSwitcher";
 import { Composer } from "./Composer";
-import { BotAvatar } from "@/components/fx/BotAvatar";
 import { DraftView, MessageView } from "./Message";
+import { TutorAvatar } from "./TutorAvatar";
 import { useChat } from "./useChat";
 
 function suggestions(docs: StudyDocument[], page: number) {
@@ -72,7 +72,8 @@ export function ChatPanel({ className }: { className?: string }) {
 
   const list = messages.data ?? [];
   const empty = !list.length && !draft;
-  const tutorAvatar = useApp((state) => state.tutorAvatar);
+  // The empty-state tutor naps while the server is unreachable.
+  const offline = useHealth().isError;
   const latestTutorId = draft ? null : [...list].reverse().find((message) => message.role === "assistant")?.id;
 
   return (
@@ -101,7 +102,7 @@ export function ChatPanel({ className }: { className?: string }) {
         {empty ? (
           <div className="flex h-full flex-col justify-center py-6">
             <div className="mb-5 flex items-center gap-4">
-              <BotAvatar type={tutorAvatar} size={64} aria-label="Your tutor" />
+              <TutorAvatar size={64} state={offline ? "sleeping" : "default"} label="Your tutor" />
               <div>
                 <h2 className="text-lg text-stone-900">What shall we learn?</h2>
                 <p className="text-sm text-stone-500">

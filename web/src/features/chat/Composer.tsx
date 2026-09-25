@@ -5,7 +5,7 @@
 import { motion } from "motion/react";
 import { ArrowUp, AudioLines, Brain, Globe, Quote, Square, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { BorderBeam } from "@/components/fx/BorderBeam";
+import { BorderBeam } from "border-beam";
 import { cx, spring } from "@/components/ui";
 import { useApp } from "@/store/app";
 
@@ -69,7 +69,13 @@ export function Composer({
         </motion.div>
       )}
       {/* A beam circles the composer while the tutor is working on an answer. */}
-      <BorderBeam active={busy} strength={0.9} className="shadow-[0_18px_40px_-20px_rgba(0,0,0,0.6)]">
+      <BorderBeam
+        active={busy}
+        size="md"
+        theme="dark"
+        strength={0.9}
+        className="shadow-[0_18px_40px_-20px_rgba(0,0,0,0.6)]"
+      >
       <div className="rounded-[1.6rem] bg-ink-900 p-1.5 ring-1 ring-black/20">
         <textarea
           ref={ref}

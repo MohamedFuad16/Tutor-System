@@ -1,40 +1,39 @@
 /**
- * Liquid-metal text and badge: a brushed chrome gradient with a slow
- * travelling sheen, for the one headline or badge on a screen that should
- * catch the eye. CSS only (background-clip text + an animated highlight),
- * with a static finish under reduced motion.
- *
- * First-party take on libraries.dev "Liquid metal" (metal-fx `MetalText`,
- * `MetalBadge`), without WebGL.
+ * Liquid-metal text and badge from libraries.dev (metal-fx, WebGL2), loaded
+ * on demand. Until it loads, and where WebGL2 is missing, the plain text or
+ * a quiet pill stands in, so nothing ever shifts or disappears.
  */
-import type { CSSProperties, ReactNode } from "react";
-import { cx } from "@/components/ui";
+import { lazy, Suspense } from "react";
+import { useMotion } from "@/store/app";
 
-export function MetalText({
-  children,
-  className,
-  style,
-}: {
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
-}) {
+const LazyMetalText = lazy(() => import("metal-fx").then((module) => ({ default: module.MetalText })));
+const LazyMetalBadge = lazy(() => import("metal-fx").then((module) => ({ default: module.MetalBadge })));
+
+export function MetalText({ children, font, color }: { children: string; font: string; color: string }) {
+  const motionOn = useMotion();
+  const plain = <span style={{ font, color, whiteSpace: "nowrap" }}>{children}</span>;
+  if (!motionOn) return plain;
   return (
-    <span className={cx("metal-text", className)} style={style}>
-      {children}
-    </span>
+    <Suspense fallback={plain}>
+      <LazyMetalText font={font} color={color} theme="dark">
+        {children}
+      </LazyMetalText>
+    </Suspense>
   );
 }
 
-export function MetalBadge({ children, className }: { children: ReactNode; className?: string }) {
+export function MetalBadge({ children }: { children: string }) {
   return (
-    <span
-      className={cx(
-        "metal-badge relative inline-flex items-center overflow-hidden rounded-full px-2 py-0.5 text-[0.62rem] font-semibold tracking-wide text-ink-900 uppercase",
-        className,
-      )}
+    <Suspense
+      fallback={
+        <span className="rounded-full bg-white/80 px-2 py-0.5 text-[0.62rem] font-semibold text-ink-900 uppercase">
+          {children}
+        </span>
+      }
     >
-      <span className="relative z-[1]">{children}</span>
-    </span>
+      <LazyMetalBadge theme="dark" scale={0.8}>
+        {children}
+      </LazyMetalBadge>
+    </Suspense>
   );
 }

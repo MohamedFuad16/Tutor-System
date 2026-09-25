@@ -4,10 +4,10 @@
  * target (click or drop a PDF). Everything is spring-driven and collapses to
  * the final state instantly when motion is off.
  */
-import { MetalText } from "@/components/fx/Metal";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { Layers, MessageSquare, UploadCloud } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { MetalText } from "@/components/fx/Metal";
 import { PatternCard, type CardTheme } from "@/components/PatternCard";
 import { Spinner, cx } from "@/components/ui";
 import { useT } from "@/lib/i18n";
@@ -56,6 +56,8 @@ function pose(step: number, index: number, compact: boolean): Target {
   ][index];
 }
 
+const HEADLINE_FONT = '400 clamp(1.25rem, 2.3vw, 2.05rem)/1.2 "Lora", ui-serif, Georgia, serif';
+
 function Headline({ text, onDone, animate }: { text: string; onDone: () => void; animate: boolean }) {
   const words = text.split(" ");
   useEffect(() => {
@@ -77,8 +79,8 @@ function Headline({ text, onDone, animate }: { text: string; onDone: () => void;
           transition={{ duration: 1.1, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="inline-block"
         >
-          {/* Liquid-metal finish; staggered delays make one sheen sweep across the sentence. */}
-          <MetalText className="inline-block" style={{ animationDelay: `${1.4 + index * 0.09}s` }}>
+          {/* libraries.dev liquid metal on the one headline of the screen. */}
+          <MetalText font={HEADLINE_FONT} color="#f4f4f1">
             {word}
           </MetalText>
         </motion.span>

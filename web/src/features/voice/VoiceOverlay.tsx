@@ -9,8 +9,8 @@ import { Hand, Keyboard, Mic, MicOff, Palette, PhoneOff, Send, X } from "lucide-
 import { useEffect, useMemo, useState } from "react";
 import type { VoiceVisual } from "@shared/voice";
 import { Diagram } from "@/components/Diagram";
-import { ThinkingOrb } from "@/components/fx/ThinkingOrb";
-import { VoiceGlow } from "@/components/fx/VoiceGlow";
+import { ThinkingOrb } from "thinking-orbs";
+import { VoiceBeam } from "voice-glow";
 import { Markdown } from "@/components/Markdown";
 import { IconButton, cx, softSpring, spring } from "@/components/ui";
 import { ImageGallery } from "@/features/chat/parts";
@@ -314,53 +314,56 @@ export function VoiceOverlay() {
 
           {/* Controls: a glass dock whose bottom edge glows with whoever is talking. */}
           <div className="relative flex justify-center px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-            <VoiceGlow
+            <VoiceBeam
               level={() => {
                 const { mic, out } = voice.levels();
                 return voice.state === "speaking" ? out : voice.state === "listening" ? mic : 0;
               }}
               processing={voice.state === "thinking"}
-              className="rounded-full bg-white/[0.04] ring-1 ring-white/10 backdrop-blur-xl"
+              theme="dark"
+              scale={0.85}
             >
-              <div className="flex items-center gap-2.5 p-2 sm:gap-3">
-                <IconButton
-                  label={voice.muted ? "Unmute microphone" : "Mute microphone"}
-                  tone="glass"
-                  size={52}
-                  active={voice.muted}
-                  onClick={voice.toggleMute}
-                >
-                  {voice.muted ? <MicOff className="size-5 text-red-300" /> : <Mic className="size-5" />}
-                </IconButton>
-                <IconButton
-                  label="Interrupt the tutor"
-                  tone="glass"
-                  size={52}
-                  onClick={voice.interrupt}
-                  disabled={voice.state !== "speaking"}
-                >
-                  <Hand className="size-5" />
-                </IconButton>
-                <IconButton
-                  label="Type a message"
-                  tone="glass"
-                  size={52}
-                  active={typing}
-                  onClick={() => setTyping((value) => !value)}
-                >
-                  <Keyboard className="size-5" />
-                </IconButton>
-                <motion.button
-                  whileTap={{ scale: 0.92 }}
-                  transition={spring}
-                  onClick={close}
-                  aria-label="End voice conversation"
-                  className="flex h-[52px] items-center gap-2 rounded-full bg-red-500/90 px-5 text-sm font-medium text-white hover:bg-red-500"
-                >
-                  <PhoneOff className="size-4" /> End
-                </motion.button>
+              <div className="rounded-full bg-white/[0.04] ring-1 ring-white/10 backdrop-blur-xl">
+                <div className="relative z-[5] flex items-center gap-2.5 p-2 sm:gap-3">
+                  <IconButton
+                    label={voice.muted ? "Unmute microphone" : "Mute microphone"}
+                    tone="glass"
+                    size={52}
+                    active={voice.muted}
+                    onClick={voice.toggleMute}
+                  >
+                    {voice.muted ? <MicOff className="size-5 text-red-300" /> : <Mic className="size-5" />}
+                  </IconButton>
+                  <IconButton
+                    label="Interrupt the tutor"
+                    tone="glass"
+                    size={52}
+                    onClick={voice.interrupt}
+                    disabled={voice.state !== "speaking"}
+                  >
+                    <Hand className="size-5" />
+                  </IconButton>
+                  <IconButton
+                    label="Type a message"
+                    tone="glass"
+                    size={52}
+                    active={typing}
+                    onClick={() => setTyping((value) => !value)}
+                  >
+                    <Keyboard className="size-5" />
+                  </IconButton>
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    transition={spring}
+                    onClick={close}
+                    aria-label="End voice conversation"
+                    className="flex h-[52px] items-center gap-2 rounded-full bg-red-500/90 px-5 text-sm font-medium text-white hover:bg-red-500"
+                  >
+                    <PhoneOff className="size-4" /> End
+                  </motion.button>
+                </div>
               </div>
-            </VoiceGlow>
+            </VoiceBeam>
           </div>
         </motion.div>
       )}

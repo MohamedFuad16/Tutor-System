@@ -9,7 +9,7 @@ import { Button, Modal, cx } from "@/components/ui";
 import { api } from "@/lib/api";
 import { LANGUAGES } from "@/lib/i18n";
 import { queryClient, useHealth } from "@/lib/queries";
-import { BOT_LABELS, BOT_TYPES, BotAvatar, type BotAvatarType } from "@/components/fx/BotAvatar";
+import { BotAvatar, botAvatarPresets, botAvatarTypes, type BotAvatarShading } from "bot-avatars";
 import { MetalBadge } from "@/components/fx/Metal";
 import { ORB_STYLES, ORB_STYLE_LABELS, orbSwatch } from "@/features/voice/orb/styles";
 import { useApp, type VoiceInputMode, type VoiceOutputMode } from "@/store/app";
@@ -67,29 +67,66 @@ function Segmented<T extends string>({
   );
 }
 
-/** All eight tutor bodies; the hovered one comes alive. */
-function AvatarPicker({ value, onChange }: { value: BotAvatarType; onChange: (value: BotAvatarType) => void }) {
-  const [hot, setHot] = useState<BotAvatarType | null>(null);
+const SHADINGS: Array<{ value: BotAvatarShading; label: string }> = [
+  { value: "plastic", label: "Gloss" },
+  { value: "crisp", label: "Crisp" },
+  { value: "smooth", label: "Soft" },
+  { value: "flat", label: "Flat" },
+];
+
+/**
+ * The tutor's look (libraries.dev bot avatars): every body, the face, and
+ * the finish. The hovered body comes alive; the chosen one idles.
+ */
+function AvatarPicker() {
+  const type = useApp((app) => app.tutorAvatar);
+  const face = useApp((app) => app.tutorFace);
+  const shading = useApp((app) => app.tutorShading);
+  const set = useApp((app) => app.set);
+  const [hot, setHot] = useState<string | null>(null);
   return (
-    <div className="grid grid-cols-8 gap-1 sm:w-[19rem]" role="radiogroup" aria-label="Tutor avatar">
-      {BOT_TYPES.map((type) => (
-        <button
-          key={type}
-          role="radio"
-          aria-checked={value === type}
-          aria-label={BOT_LABELS[type]}
-          title={BOT_LABELS[type]}
-          onClick={() => onChange(type)}
-          onPointerEnter={() => setHot(type)}
-          onPointerLeave={() => setHot(null)}
-          className={cx(
-            "flex items-center justify-center rounded-xl pt-2 pb-1 transition-colors",
-            value === type ? "bg-white/12 ring-1 ring-white/30" : "hover:bg-white/6",
-          )}
-        >
-          <BotAvatar type={type} size={28} state={hot === type ? "working" : "default"} paused={hot !== type && value !== type} aria-hidden />
-        </button>
-      ))}
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-6 gap-1 sm:w-[19rem]" role="radiogroup" aria-label="Tutor avatar">
+        {botAvatarTypes.map((body) => (
+          <button
+            key={body}
+            role="radio"
+            aria-checked={type === body}
+            aria-label={botAvatarPresets[body].label}
+            title={botAvatarPresets[body].label}
+            onClick={() => set({ tutorAvatar: body })}
+            onPointerEnter={() => setHot(body)}
+            onPointerLeave={() => setHot(null)}
+            className={cx(
+              "flex items-center justify-center rounded-xl pt-2.5 pb-1.5 transition-colors",
+              type === body ? "bg-white/12 ring-1 ring-white/30" : "hover:bg-white/6",
+            )}
+          >
+            <BotAvatar
+              type={body}
+              face={face}
+              shading={shading}
+              size={32}
+              theme="dark"
+              state={hot === body ? "working" : "default"}
+              paused={hot !== body && type !== body}
+              interactive={false}
+              aria-hidden
+            />
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Segmented
+          value={face}
+          onChange={(value) => set({ tutorFace: value })}
+          options={[
+            { value: "eyes", label: "Eyes" },
+            { value: "mouth", label: "Eyes + mouth" },
+          ]}
+        />
+        <Segmented value={shading} onChange={(value) => set({ tutorShading: value })} options={SHADINGS} />
+      </div>
     </div>
   );
 }
@@ -181,8 +218,8 @@ export function SettingsModal() {
             ]}
           />
         </Row>
-        <Row label="Tutor avatar" hint="Hops while it works on an answer. Hover to wake one up.">
-          <AvatarPicker value={state.tutorAvatar} onChange={(value) => state.set({ tutorAvatar: value })} />
+        <Row label="Tutor avatar" hint="Hops while it works on an answer and naps when it can't be reached. Hover to wake one.">
+          <AvatarPicker />
         </Row>
         <Row
           label="Voice orb"

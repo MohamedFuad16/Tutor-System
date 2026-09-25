@@ -889,7 +889,7 @@ const DESIGN_LANGUAGE: StudyGuide = {
       id: "tutor-avatar",
       label: "Tutor avatar",
       kind: "supporting",
-      blurb: "A glossy little character that hops while the tutor works and idles once the answer lands.",
+      blurb: "A glossy character that hops while the tutor works, idles once the answer lands and naps when offline.",
     },
     {
       id: "status-orbs",
@@ -1145,14 +1145,14 @@ const DESIGN_LANGUAGE: StudyGuide = {
       tldr: "The tutor shows up as a small living character, names what it is doing with a tiny orb, and writes at an even pace, so waiting always feels like watching someone work.",
       keyPoints: [
         "The tutor avatar hops while an answer is being written and idles, glancing and blinking, once it lands.",
-        "Eight bodies: clover, flower, star, ghost, mech, orbit, hex and block; pick one in Settings.",
+        "Eighteen bodies, from clover and star to droid, cat and cloud, each with an eyes-only or eyes-and-mouth face and a gloss, crisp, soft or flat finish; pick in Settings.",
         "Status orbs name the activity: searching, shaping a diagram, solving a quiz, weaving a plan, composing text.",
         "Answers stream at an even pace on word boundaries, and each new word fades in.",
         "A beam circles the composer while the tutor works; web images arrive as a soft mosaic that dissolves into the photo.",
         "Waits under two seconds get no effect at all, and each area of the screen carries at most one.",
       ],
       explanation:
-        "A good tutor is visibly *present*. Every tutor turn opens with the **avatar**, a glossy little character that hops while the answer is being written and settles into an idle rhythm once it lands. Its eyes follow your pointer, a click makes it jump, and only the newest answer's avatar stays alive, so a long thread never becomes a crowd.\n\nNext to it, a **status orb** says what is happening in one glance: a scan sweeping a dotted globe while it searches, an outline morphing from circle to triangle to square while it shapes a diagram, three strands plaiting while it plans. Then the words arrive. Models send text in bursts, so the reply is **paced**: revealed on word boundaries at an even rate that speeds up rather than ever lagging more than about half a second, with each new word fading in. When the stream ends, the saved answer carries on from exactly where the draft had reached, with no jump and no repeat.\n\nThe same restraint governs every other effect. A light travels around the composer only while the tutor is working. Web images load as a soft pixel mosaic that dissolves into the photo cell by cell. The navigation highlight moves between tabs like a drop of liquid. The one headline on the empty study screen has a liquid-metal sheen. Nothing appears for waits under two seconds, and no two effects share an area of the screen.",
+        "A good tutor is visibly *present*. Every tutor turn opens with the **avatar**, a glossy little character that hops while the answer is being written (with a whirl on every third spin) and settles into an idle rhythm once it lands. Its eyes follow your pointer, a click makes it jump, it naps when the server can't be reached, and only the newest answer's avatar stays alive, so a long thread never becomes a crowd.\n\nNext to it, a **status orb** says what is happening in one glance: a scan sweeping a dotted globe while it searches, an outline morphing from circle to triangle to square while it shapes a diagram, three strands plaiting while it plans. Then the words arrive. Models send text in bursts, so the reply is **paced**: revealed on word boundaries at an even rate that speeds up rather than ever lagging more than about half a second, with each new word fading in. When the stream ends, the saved answer carries on from exactly where the draft had reached, with no jump and no repeat.\n\nThe same restraint governs every other effect. A light travels around the composer only while the tutor is working. Web images load as a soft pixel mosaic that dissolves into the photo cell by cell. The navigation highlight moves between tabs like a drop of liquid. The one headline on the empty study screen has a liquid-metal sheen. Nothing appears for waits under two seconds, and no two effects share an area of the screen.",
       diagram: {
         mermaid: `flowchart LR
   A["You send"] --> B["Beam on composer"]
