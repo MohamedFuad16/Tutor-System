@@ -26,7 +26,9 @@
    work.
 2. **Ask questions** by typing or with voice. Answers are grounded in your
    document, and every claim cites its page as a clickable chip that jumps the
-   reader there.
+   reader there. Answers stream at an even, word-by-word pace, introduced
+   by the tutor's animated avatar and a small orb that names what it is doing
+   (presence effects from [libraries.dev](https://libraries.dev)).
 3. **See it.** Processes become compact **Mermaid diagrams that draw
    themselves in** and fit the chat. "Walk me through" narrates each node
    aloud while it is highlighted. Real photos appear when a picture helps,
@@ -39,8 +41,6 @@
    - A real-time **liquid glass orb** (WebGPU, six presets) rests while you
      talk, blooms when the tutor thinks or speaks, and moves with the live
      audio.
-     Typed answers stream at an even, word-by-word pace, introduced by the
-     tutor's animated avatar and a small orb that names what it is doing.
 5. **Learn for real.**
    - The tutor checks understanding with quiz cards, which are graded on the
      server.
