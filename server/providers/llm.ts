@@ -74,6 +74,8 @@ export interface LlmProvider {
   stream(request: LlmRequest): AsyncIterable<StreamEvent>;
   complete(request: LlmRequest): Promise<Completion>;
   stats(): unknown;
+  /** Opens a pooled connection ahead of a latency-critical request (optional). */
+  warm?(): void;
 }
 
 /** Normalised provider failure with enough detail to decide on retries and UX. */

@@ -258,6 +258,10 @@ export class VoiceSession {
       onError: (message) => this.send({ type: "error", message: `Speech output failed: ${message}`, fatal: false }),
     });
 
+    // Warm upstream connections now so the first turn doesn't pay TLS handshakes.
+    this.deps.llm.warm?.();
+    if (this.ttsMode === "server") speech?.warm?.();
+
     // Seed the conversation with the recent notebook thread so voice continues the chat.
     this.history = historyMessages(this.deps.store.messages.recent(this.userId, this.bookId, 10));
 
@@ -335,6 +339,8 @@ export class VoiceSession {
         }
         break;
       case "eager_end_of_turn":
+        // The tutor hearing its own voice is not a turn.
+        if (this.isTutorBusy() && this.isEcho(event.transcript)) break;
         if (this.current?.speculative && this.current.transcript === event.transcript) break;
         if (this.current?.speculative) this.cancelResponse();
         if (this.isTutorBusy()) this.bargeIn("speech");

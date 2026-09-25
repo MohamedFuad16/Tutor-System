@@ -125,6 +125,21 @@ export class ZaiProvider implements LlmProvider {
     return this.options.models[role];
   }
 
+  private warmedAt = 0;
+
+  /** Pre-opens the TLS connection so a voice session's first turn skips the handshake. */
+  warm() {
+    if (Date.now() - this.warmedAt < 60_000) return;
+    this.warmedAt = Date.now();
+    void this.fetchImpl(`${this.options.baseUrl}/models`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${this.options.apiKey}` },
+      signal: AbortSignal.timeout(5_000),
+    })
+      .then((response) => response.body?.cancel())
+      .catch(() => undefined);
+  }
+
   stats() {
     return {
       provider: this.name,

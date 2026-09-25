@@ -170,7 +170,8 @@ export function useVoiceSession() {
     [send],
   );
 
-  const stop = useCallback(() => {
+  /** Ends the session. `failed` keeps the overlay in an error state (with Reconnect) instead of idle. */
+  const stop = useCallback((failed = false) => {
     active.current = false;
     send({ type: "bye" });
     socket.current?.close();
@@ -182,7 +183,7 @@ export function useVoiceSession() {
     clearPlayback();
     player.current?.close();
     player.current = null;
-    setState("idle");
+    setState(failed ? "error" : "idle");
     const bookId = useApp.getState().activeBookId;
     if (bookId) {
       queryClient.invalidateQueries({ queryKey: keys.messages(bookId) });
@@ -297,14 +298,14 @@ export function useVoiceSession() {
             break;
           case "error":
             setError(message.message);
-            if (message.fatal) stop();
+            if (message.fatal) stop(true);
             break;
         }
       };
       ws.onclose = () => {
         if (active.current) {
           setError((current) => current ?? "The voice connection closed.");
-          stop();
+          stop(true);
         }
       };
     } catch (caught) {
@@ -339,7 +340,7 @@ export function useVoiceSession() {
     modes,
     muted,
     start,
-    stop,
+    stop: () => stop(false),
     interrupt: () => {
       clearPlayback();
       send({ type: "interrupt" });

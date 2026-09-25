@@ -40,6 +40,8 @@ export interface SpeechProvider {
     text: string,
     options: { language: string; voice?: string; sampleRate: number; signal?: AbortSignal },
   ): AsyncGenerator<Buffer>;
+  /** Pre-opens the TTS connection pool (optional). */
+  warm?(): void;
 }
 
 /** Default Aura-2 voice per language; override with VOICE_TTS_VOICE for English. */
@@ -178,9 +180,21 @@ export function createDeepgram(options: DeepgramOptions): SpeechProvider {
     return socket;
   }
 
+  let warmedAt = 0;
   return {
     name: "deepgram",
     available,
+
+    warm() {
+      if (!available || Date.now() - warmedAt < 60_000) return;
+      warmedAt = Date.now();
+      void fetch("https://api.deepgram.com/v1/projects", {
+        headers: { Authorization: `Token ${options.apiKey}` },
+        signal: AbortSignal.timeout(5_000),
+      })
+        .then((response) => response.body?.cancel())
+        .catch(() => undefined);
+    },
 
     openStt({ language, sampleRate, onEvent, keyterms = [] }) {
       const lang = (language || "en").slice(0, 2);

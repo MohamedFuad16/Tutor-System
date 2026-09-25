@@ -216,6 +216,14 @@ export function VoiceOverlay() {
               )}
             </AnimatePresence>
             {voice.error && <p className="mt-3 text-sm text-red-300">{voice.error}</p>}
+            {voice.state === "error" && (
+              <button
+                onClick={() => void voice.start()}
+                className="mt-3 rounded-full bg-white/10 px-4 py-1.5 text-sm text-white hover:bg-white/15"
+              >
+                Reconnect
+              </button>
+            )}
           </div>
 
           {/* Typed input */}
