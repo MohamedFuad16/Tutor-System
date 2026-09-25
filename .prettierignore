@@ -14,3 +14,13 @@ brain/verification
 brain/debug/runs
 brain/debug/backups
 package-lock.json
+
+# Legacy v1 sources (not part of the v2 build)
+src/
+tests/
+api/
+scripts/
+server.ts
+server/learner-store.ts
+server/web-search.ts
+server/vercel-handler.ts

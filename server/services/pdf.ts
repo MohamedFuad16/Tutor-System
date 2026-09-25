@@ -98,21 +98,33 @@ export async function extractPdfText(buffer: Buffer, maxPages = 2000): Promise<E
   }
 }
 
-/** Rasterises one page to PNG (for OCR / vision). Returns null if no canvas backend is available. */
-export async function renderPagePng(buffer: Buffer, pageNumber: number, maxWidth = 1400): Promise<Buffer | null> {
+/**
+ * Rasterises pages to PNG for OCR / vision, opening the document once.
+ * Yields nothing when no canvas backend is available.
+ */
+export async function* renderPagesPng(
+  buffer: Buffer,
+  pageNumbers: number[],
+  maxWidth = 1400,
+): AsyncGenerator<{ page: number; png: Buffer }> {
   const doc = await open(new Uint8Array(buffer));
   try {
-    const page = await doc.getPage(pageNumber);
-    const base = page.getViewport({ scale: 1 });
-    const viewport = page.getViewport({ scale: Math.min(2, maxWidth / base.width) });
     const factory = (doc as unknown as { canvasFactory?: any }).canvasFactory;
-    if (!factory) return null;
-    const { canvas, context } = factory.create(Math.ceil(viewport.width), Math.ceil(viewport.height));
-    await page.render({ canvasContext: context, viewport, canvas }).promise;
-    const png: Buffer = canvas.toBuffer("image/png");
-    return png;
-  } catch {
-    return null;
+    if (!factory) return;
+    for (const pageNumber of pageNumbers) {
+      try {
+        const page = await doc.getPage(pageNumber);
+        const base = page.getViewport({ scale: 1 });
+        const viewport = page.getViewport({ scale: Math.min(2, maxWidth / base.width) });
+        const { canvas, context } = factory.create(Math.ceil(viewport.width), Math.ceil(viewport.height));
+        await page.render({ canvasContext: context, viewport, canvas }).promise;
+        const png: Buffer = canvas.toBuffer("image/png");
+        page.cleanup();
+        yield { page: pageNumber, png };
+      } catch {
+        // Skip pages that fail to render; the rest still get OCR.
+      }
+    }
   } finally {
     await doc.destroy();
   }

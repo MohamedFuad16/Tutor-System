@@ -14,7 +14,7 @@ import type { LlmProvider } from "../providers/llm.js";
 import { parseJsonObject } from "../providers/llm.js";
 import type { Store } from "../store/index.js";
 import { chunkPages } from "../store/retrieval.js";
-import { extractPdfText, renderPagePng } from "./pdf.js";
+import { extractPdfText, renderPagesPng } from "./pdf.js";
 
 const MAX_OCR_PAGES = 30;
 
@@ -22,9 +22,7 @@ export function createIngestService(deps: { store: Store; llm: LlmProvider; even
   const { store, llm, events } = deps;
   const workers = new PriorityLimiter("ingest", 2);
 
-  async function ocrPage(userId: string, buffer: Buffer, page: number): Promise<string> {
-    const png = await renderPagePng(buffer, page);
-    if (!png) return "";
+  async function ocrImage(userId: string, png: Buffer): Promise<string> {
     const completion = await llm.complete({
       role: "vision",
       purpose: "ocr",
@@ -86,22 +84,24 @@ export function createIngestService(deps: { store: Store; llm: LlmProvider; even
       let ocrPages = 0;
       const toOcr = extracted.emptyPages.slice(0, MAX_OCR_PAGES);
       if (toOcr.length) {
+        // Render sequentially (one parse of the PDF), OCR up to two pages in parallel.
         const ocrLimiter = new PriorityLimiter("ocr", 2);
-        await Promise.all(
-          toOcr.map((page) =>
-            ocrLimiter.run(async () => {
-              try {
-                const text = await ocrPage(userId, buffer, page);
+        const inflight: Array<Promise<void>> = [];
+        for await (const { page, png } of renderPagesPng(buffer, toOcr)) {
+          const release = await ocrLimiter.acquire(Priority.batch);
+          inflight.push(
+            ocrImage(userId, png)
+              .then((text) => {
                 if (text) {
                   pages[page - 1] = text;
                   ocrPages += 1;
                 }
-              } catch (error) {
-                log.warn("ingest.ocr_failed", { documentId, page, error: errorMessage(error) });
-              }
-            }),
-          ),
-        );
+              })
+              .catch((error) => log.warn("ingest.ocr_failed", { documentId, page, error: errorMessage(error) }))
+              .finally(release),
+          );
+        }
+        await Promise.all(inflight);
       }
       const textChars = pages.reduce((sum, page) => sum + page.length, 0);
       if (textChars < 20) {

@@ -11,15 +11,16 @@ import { log } from "./lib/log.js";
 
 async function main() {
   const ctx = createContext(config);
-  const app = await createApp(ctx, { serveClient: process.env.SERVE_CLIENT !== "false" });
-  const server = http.createServer(app);
+  const server = http.createServer();
+  const app = await createApp(ctx, { serveClient: process.env.SERVE_CLIENT !== "false", httpServer: server });
+  server.on("request", app);
   server.keepAliveTimeout = 65_000; // longer than typical ALB idle timeout
   server.headersTimeout = 66_000;
 
   server.on("upgrade", (req, socket, head) => {
     if (ctx.voice.handleUpgrade(req, socket, head)) return;
-    // Vite HMR runs on its own port; anything else is not ours.
-    socket.destroy();
+    // In development Vite's HMR listener handles its own upgrades on this server.
+    if (config.isProduction) socket.destroy();
   });
 
   server.listen(config.port, config.host, () => {

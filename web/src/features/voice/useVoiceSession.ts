@@ -142,7 +142,7 @@ export function useVoiceSession() {
           const result = event.results[i];
           const transcript = String(result[0]?.transcript ?? "");
           if (result.isFinal) {
-            if (transcript.trim()) send({ type: "text", text: transcript.trim() });
+            if (transcript.trim()) send({ type: "text", text: transcript.trim(), spoken: true });
           } else interim += transcript;
         }
         if (interim.trim()) send({ type: "partial", text: interim.trim() });

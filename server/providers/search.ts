@@ -158,7 +158,8 @@ export function createSearch(options: SearchOptions) {
       .map(({ page, info }) => ({
         title: String(page.title ?? "")
           .replace(/^File:/, "")
-          .replace(/\.[a-z]+$/i, ""),
+          .replace(/\.[a-z]+$/i, "")
+          .replace(/_/g, " "),
         imageUrl: info.thumburl,
         thumbnailUrl: info.thumburl,
         sourceUrl: info.descriptionurl || info.url,

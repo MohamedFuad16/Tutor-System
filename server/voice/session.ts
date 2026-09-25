@@ -128,6 +128,8 @@ export class VoiceSession {
   private turnEndTimer: NodeJS.Timeout | null = null;
   private maxTimer: NodeJS.Timeout | null = null;
   private eotAt = 0;
+  /** What the tutor said recently, to recognise its own voice picked up by the mic. */
+  private recentSpeech: Array<{ text: string; at: number }> = [];
 
   constructor(
     private readonly socket: WebSocket,
@@ -162,7 +164,9 @@ export class VoiceSession {
   }
 
   private onAudio(chunk: Buffer) {
-    if (this.sttMode === "server" && this.stt) this.stt.sendAudio(chunk);
+    if (this.sttMode !== "server" || !this.stt) return;
+    metrics.increment("voice.audio_bytes_in", chunk.length);
+    this.stt.sendAudio(chunk);
   }
 
   private onMessage(raw: string) {
@@ -181,7 +185,8 @@ export class VoiceSession {
         this.focus = { documentId: message.documentId, page: message.page, selection: message.selection };
         break;
       case "text":
-        if (message.text?.trim()) this.handleFinalTranscript(message.text.trim().slice(0, 2000));
+        if (message.text?.trim())
+          this.handleFinalTranscript(message.text.trim().slice(0, 2000), Boolean(message.spoken));
         break;
       case "partial":
         this.onStt({ type: "update", transcript: String(message.text ?? "") });
@@ -228,6 +233,10 @@ export class VoiceSession {
       sampleRate: this.deps.outputSampleRate,
       sink: {
         announce: (segment) => {
+          this.recentSpeech = [
+            ...this.recentSpeech.filter((item) => Date.now() - item.at < 20_000),
+            { text: segment.text, at: Date.now() },
+          ].slice(-6);
           if (!this.speakingTurn) this.speakingTurn = segment.turnId;
           this.setState("speaking");
           this.send({
@@ -316,8 +325,14 @@ export class VoiceSession {
         break;
       case "update":
         this.send({ type: "user_partial", text: event.transcript });
-        // Two real words while the tutor talks = genuine interruption, not echo.
-        if (this.isTutorBusy() && event.transcript.split(/\s+/).filter(Boolean).length >= 2) this.bargeIn("speech");
+        // Two real words while the tutor talks = genuine interruption — unless it is the tutor's own voice.
+        if (
+          this.isTutorBusy() &&
+          event.transcript.split(/\s+/).filter(Boolean).length >= 2 &&
+          !this.isEcho(event.transcript)
+        ) {
+          this.bargeIn("speech");
+        }
         break;
       case "eager_end_of_turn":
         if (this.current?.speculative && this.current.transcript === event.transcript) break;
@@ -330,7 +345,7 @@ export class VoiceSession {
         break;
       case "end_of_turn":
         this.userSpeaking = false;
-        this.handleFinalTranscript(event.transcript);
+        this.handleFinalTranscript(event.transcript, true);
         break;
       case "error":
         this.send({ type: "error", message: event.message, fatal: false });
@@ -358,7 +373,32 @@ export class VoiceSession {
     return Boolean(this.speakingTurn) || Boolean(this.current && !this.current.speculative);
   }
 
-  private handleFinalTranscript(transcript: string) {
+  /**
+   * True when a transcript is mostly words the tutor just said: its own
+   * voice leaking from the speakers into the microphone.
+   */
+  private isEcho(transcript: string) {
+    const words = transcript.toLowerCase().match(/[\p{L}\p{N}']+/gu) ?? [];
+    if (words.length < 2 || !this.recentSpeech.length) return false;
+    const spoken = new Set(
+      this.recentSpeech
+        .filter((item) => Date.now() - item.at < 20_000)
+        .flatMap((item) => item.text.toLowerCase().match(/[\p{L}\p{N}']+/gu) ?? []),
+    );
+    const overlap = words.filter((word) => spoken.has(word)).length / words.length;
+    return overlap >= 0.8;
+  }
+
+  private handleFinalTranscript(transcript: string, spoken = false) {
+    if (spoken && this.isTutorBusy() && this.isEcho(transcript)) {
+      // Ignore the tutor hearing itself; restore volume and keep talking.
+      metrics.increment("voice.echo_ignored");
+      if (this.ducked) {
+        this.ducked = false;
+        this.send({ type: "duck", on: false });
+      }
+      return;
+    }
     this.userSpeaking = false;
     this.eotAt = Date.now();
     if (this.ducked) {

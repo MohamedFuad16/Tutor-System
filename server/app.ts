@@ -5,12 +5,16 @@
 import compression from "compression";
 import express, { type Express } from "express";
 import fs from "node:fs";
+import type http from "node:http";
 import path from "node:path";
 import type { AppContext } from "./context.js";
 import { createApiRouter } from "./http/routes.js";
 import { errorHandler } from "./http/middleware.js";
 
-export async function createApp(ctx: AppContext, options: { serveClient: boolean }): Promise<Express> {
+export async function createApp(
+  ctx: AppContext,
+  options: { serveClient: boolean; httpServer?: http.Server },
+): Promise<Express> {
   const app = express();
   app.disable("x-powered-by");
   app.set("trust proxy", 1);
@@ -48,7 +52,11 @@ export async function createApp(ctx: AppContext, options: { serveClient: boolean
   if (options.serveClient) {
     if (!ctx.config.isProduction) {
       const { createServer } = await import("vite");
-      const vite = await createServer({ server: { middlewareMode: true, hmr: { port: 24678 } }, appType: "spa" });
+      // HMR rides on the app's own HTTP server: one port, works behind proxies.
+      const vite = await createServer({
+        server: { middlewareMode: true, hmr: options.httpServer ? { server: options.httpServer } : undefined },
+        appType: "spa",
+      });
       app.use(vite.middlewares);
     } else {
       const dist = path.resolve(process.cwd(), "dist/client");

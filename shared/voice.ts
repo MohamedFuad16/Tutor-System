@@ -28,7 +28,8 @@ export type ClientVoiceMessage =
       focus?: { documentId?: string; page?: number; selection?: string };
     }
   | { type: "focus"; documentId?: string; page?: number; selection?: string }
-  | { type: "text"; text: string }
+  /** A finished learner utterance. `spoken` marks browser speech recognition (echo-checked). */
+  | { type: "text"; text: string; spoken?: boolean }
   /** Browser-STT only: the learner started talking (barge-in hint). */
   | { type: "speech_start" }
   /** Browser-STT only: interim transcript. */

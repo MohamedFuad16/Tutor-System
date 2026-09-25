@@ -74,7 +74,7 @@ export function createContext(config: AppConfig, overrides: ContextOverrides = {
     store,
     llm,
     search,
-    onTurnComplete: (userId, bookId) => guide.noteActivity(userId, bookId),
+    onTurnComplete: (userId, bookId, language) => guide.noteActivity(userId, bookId, language),
   });
   const ingest = createIngestService({ store, llm, events });
   const learning = createLearningService({ store, llm });

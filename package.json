@@ -21,7 +21,8 @@
     "graphify:update": "graphify update .",
     "graphify:query": "graphify query",
     "graphify:path": "graphify path",
-    "graphify:tree": "graphify tree --graph graphify-out/graph.json --output graphify-out/GRAPH_TREE.html --root . --label Tutor"
+    "graphify:tree": "graphify tree --graph graphify-out/graph.json --output graphify-out/GRAPH_TREE.html --root . --label Tutor",
+    "test:live": "tsx test/live/zai-live.ts"
   },
   "dependencies": {
     "@fontsource/geist-mono": "^5.3.0",

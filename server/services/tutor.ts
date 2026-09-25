@@ -63,7 +63,7 @@ export type TutorDeps = {
   store: Store;
   llm: LlmProvider;
   search: Search;
-  onTurnComplete: (userId: string, bookId: string) => void;
+  onTurnComplete: (userId: string, bookId: string, language?: string) => void;
 };
 
 export function createTutor(deps: TutorDeps) {
@@ -204,7 +204,7 @@ export function createTutor(deps: TutorDeps) {
         if (part.type === "quiz") store.learning.attachQuizMessage(part.quiz.id, assistant.id);
       }
       sse.send("done", { message: assistant });
-      deps.onTurnComplete(userId, bookId);
+      deps.onTurnComplete(userId, bookId, request.language);
     } catch (error) {
       const llmError = error instanceof LlmError ? error : null;
       if (sse.signal.aborted || llmError?.kind === "aborted") {
@@ -221,7 +221,7 @@ export function createTutor(deps: TutorDeps) {
             model,
             interrupted: true,
           });
-          deps.onTurnComplete(userId, bookId);
+          deps.onTurnComplete(userId, bookId, request.language);
         }
         return;
       }

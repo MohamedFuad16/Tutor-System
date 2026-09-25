@@ -133,6 +133,32 @@ describe("API", () => {
     expect(books.find((b) => b.id === bookId)?.title).toBe("Mock Study Topic");
   });
 
+  it("OCRs scanned pages that have no text layer", async () => {
+    const created = await json<{ id: string }>("POST", "/books", { title: "Scans" });
+    const form = new FormData();
+    form.append(
+      "file",
+      new Blob([fs.readFileSync(path.join(__dirname, "../fixtures/scanned.pdf"))], { type: "application/pdf" }),
+      "scanned.pdf",
+    );
+    const upload = await fetch(`${base}/api/books/${created.data.id}/documents`, {
+      method: "POST",
+      headers: { "x-user-id": USER },
+      body: form,
+    });
+    expect(upload.status).toBe(202);
+    await until(
+      async () =>
+        (await json<StudyDocument[]>("GET", `/books/${created.data.id}/documents`)).data[0]?.status !== "processing",
+    );
+    const [doc] = (await json<StudyDocument[]>("GET", `/books/${created.data.id}/documents`)).data;
+    expect(doc.status).toBe("ready");
+    expect(doc.ocrPages).toBe(1);
+    // The OCR text is now retrievable like any other page.
+    expect(ctx.store.library.getPageText(doc.id, 1)).toContain("Mock OCR transcription");
+    await fetch(`${base}/api/books/${created.data.id}`, { method: "DELETE", headers: headers() });
+  });
+
   it("rejects non-PDF uploads and hides other learners' data", async () => {
     const form = new FormData();
     form.append("file", new Blob(["hello"], { type: "text/plain" }), "notes.txt");
@@ -281,6 +307,9 @@ describe("API", () => {
     const ws = new WebSocket(`${base.replace("http", "ws")}${ticket.path}?ticket=${ticket.ticket}`);
     const messages: any[] = [];
     let audioFrames = 0;
+    // While `hold` is set, playback "end" is withheld: the tutor is audibly still talking.
+    let hold = false;
+    const held: number[] = [];
     ws.on("message", (data, isBinary) => {
       if (isBinary) {
         audioFrames += 1;
@@ -289,8 +318,10 @@ describe("API", () => {
       const message = JSON.parse(String(data));
       messages.push(message);
       if (message.type === "segment") ws.send(JSON.stringify({ type: "playback", seq: message.seq, state: "start" }));
-      if (message.type === "segment_end")
-        setTimeout(() => ws.send(JSON.stringify({ type: "playback", seq: message.seq, state: "end" })), 5);
+      if (message.type === "segment_end") {
+        if (hold) held.push(message.seq);
+        else setTimeout(() => ws.send(JSON.stringify({ type: "playback", seq: message.seq, state: "end" })), 5);
+      }
     });
     await new Promise((resolve) => ws.on("open", resolve));
     ws.send(JSON.stringify({ type: "hello", bookId, language: "en", stt: "server", tts: "server", sampleRate: 16000 }));
@@ -321,6 +352,26 @@ describe("API", () => {
     await until(() => messages.slice(before).some((m) => m.type === "turn_end"));
     const finals = messages.slice(before).filter((m) => m.type === "user_final");
     expect(finals.map((m) => m.text)).toEqual(["and what about the Calvin cycle"]);
+
+    // Echo guard: the mic hearing the tutor's own words must neither interrupt nor become a turn.
+    const echoStart = messages.length;
+    hold = true;
+    emit({ type: "end_of_turn", transcript: "tell me about the limiting factors" });
+    await until(() => messages.slice(echoStart).some((m) => m.type === "segment"));
+    const spoken = messages.slice(echoStart).find((m) => m.type === "segment").text as string;
+    const echo = spoken.split(/\s+/).slice(0, 6).join(" ");
+    emit({ type: "start_of_turn" });
+    emit({ type: "update", transcript: echo });
+    emit({ type: "end_of_turn", transcript: echo });
+    await new Promise((r) => setTimeout(r, 150));
+    const afterEcho = messages.slice(echoStart);
+    expect(afterEcho.some((m) => m.type === "clear")).toBe(false);
+    expect(afterEcho.filter((m) => m.type === "user_final").map((m) => m.text)).toEqual([
+      "tell me about the limiting factors",
+    ]);
+    // Real words from the learner still barge in.
+    emit({ type: "update", transcript: "hold on a second" });
+    await until(() => messages.slice(echoStart).some((m) => m.type === "clear"));
 
     ws.send(JSON.stringify({ type: "bye" }));
     await new Promise((resolve) => ws.on("close", resolve));
