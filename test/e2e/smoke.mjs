@@ -53,6 +53,32 @@ async function run(label, viewport) {
   await page.waitForTimeout(1500);
   if (label === "mobile") await shot("02-reader");
 
+  // Reader: select text → highlight (persisted across reload) → ask the tutor about it.
+  if (label === "desktop") {
+    const selectFirstLine = async () => {
+      const span = page.locator(".react-pdf__Page__textContent span").first();
+      await span.waitFor({ timeout: 15000 });
+      const box = await span.boundingBox();
+      await page.mouse.move(box.x + 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width - 2, box.y + box.height / 2, { steps: 8 });
+      await page.mouse.up();
+    };
+    await selectFirstLine();
+    await page.getByRole("button", { name: "Highlight" }).click();
+    await page.locator('[aria-label^="Highlighted:"]').first().waitFor({ timeout: 8000 });
+    await page.waitForTimeout(800);
+    await page.reload({ waitUntil: "load" });
+    await page.getByRole("button", { name: "Next page" }).waitFor({ timeout: 20000 });
+    const persisted = await page.locator('[aria-label^="Highlighted:"]').first().waitFor({ timeout: 10000 }).then(() => true, () => false);
+    check(persisted, `${label}: highlight persists across reload`);
+    await page.keyboard.press("Escape");
+    await selectFirstLine();
+    await page.getByRole("button", { name: "Ask tutor about the selection" }).click();
+    const chip = await page.getByRole("button", { name: "Remove highlighted passage" }).waitFor({ timeout: 5000 }).then(() => true, () => false);
+    check(chip, `${label}: selection becomes a quoted passage in the composer`);
+  }
+
   // Ask a question.
   if (label === "mobile") await page.getByRole("tab", { name: "Tutor" }).click();
   await page.waitForTimeout(400);
@@ -110,6 +136,17 @@ async function run(label, viewport) {
   await page.getByRole("button", { name: "Start voice conversation" }).click();
   await page.getByRole("dialog", { name: "Voice conversation" }).waitFor();
   await page.waitForTimeout(1500);
+  // Real microphone path: Chromium's fake device → AudioWorklet → 16 kHz PCM → server.
+  let audioIn = 0;
+  for (let attempt = 0; attempt < 10 && !audioIn; attempt += 1) {
+    await page.waitForTimeout(500);
+    audioIn = await page.evaluate(async () => {
+      const userId = JSON.parse(localStorage.getItem("tutor-app-v2") ?? "{}").state?.userId;
+      const response = await fetch("/api/system", { headers: { "x-user-id": userId } });
+      return (await response.json()).metrics.counters["voice.audio_bytes_in"] ?? 0;
+    });
+  }
+  check(audioIn > 0, `${label}: microphone audio reaches the server (${audioIn} bytes)`);
   await page.getByRole("button", { name: "Type a message" }).click();
   await page.getByRole("textbox", { name: "Type your message" }).fill("Can you draw a diagram of the Calvin cycle?");
   await page.getByRole("textbox", { name: "Type your message" }).press("Enter");
