@@ -26,6 +26,12 @@ const browser = await chromium.launch({
     "--use-fake-ui-for-media-stream",
     "--use-fake-device-for-media-stream",
     "--autoplay-policy=no-user-gesture-required",
+    // Software WebGPU so the voice orb's shader path is exercised headless.
+    "--enable-unsafe-webgpu",
+    "--enable-unsafe-swiftshader",
+    "--use-angle=swiftshader",
+    "--enable-features=Vulkan",
+    "--use-vulkan=swiftshader",
   ],
 });
 const failures = [];
@@ -70,12 +76,25 @@ async function run(label, viewport) {
     await page.waitForTimeout(800);
     await page.reload({ waitUntil: "load" });
     await page.getByRole("button", { name: "Next page" }).waitFor({ timeout: 20000 });
-    const persisted = await page.locator('[aria-label^="Highlighted:"]').first().waitFor({ timeout: 10000 }).then(() => true, () => false);
+    const persisted = await page
+      .locator('[aria-label^="Highlighted:"]')
+      .first()
+      .waitFor({ timeout: 10000 })
+      .then(
+        () => true,
+        () => false,
+      );
     check(persisted, `${label}: highlight persists across reload`);
     await page.keyboard.press("Escape");
     await selectFirstLine();
     await page.getByRole("button", { name: "Ask tutor about the selection" }).click();
-    const chip = await page.getByRole("button", { name: "Remove highlighted passage" }).waitFor({ timeout: 5000 }).then(() => true, () => false);
+    const chip = await page
+      .getByRole("button", { name: "Remove highlighted passage" })
+      .waitFor({ timeout: 5000 })
+      .then(
+        () => true,
+        () => false,
+      );
     check(chip, `${label}: selection becomes a quoted passage in the composer`);
   }
 
@@ -100,6 +119,16 @@ async function run(label, viewport) {
     `${label}: answer has page citation chip`,
   );
   check((await page.locator(".mermaid-host svg").count()) > 0, `${label}: diagram rendered`);
+  const diagramHeight = (await page.locator("figure:has(.mermaid-host)").first().boundingBox())?.height ?? 0;
+  check(
+    diagramHeight > 0 && diagramHeight < 340,
+    `${label}: chat diagram is compact (${Math.round(diagramHeight)} px tall)`,
+  );
+  check(
+    (await page.locator('[aria-label="Tutor chat"] .answer').count()) > 0 &&
+      (await page.locator('[aria-label="Tutor chat"] svg[viewBox="0 0 100 100"]').count()) > 0,
+    `${label}: tutor answers carry the avatar`,
+  );
 
   // Quiz.
   await box.fill("quiz me on this");
@@ -136,6 +165,8 @@ async function run(label, viewport) {
   await page.getByRole("button", { name: "Start voice conversation" }).click();
   await page.getByRole("dialog", { name: "Voice conversation" }).waitFor();
   await page.waitForTimeout(1500);
+  const orb = await page.locator("[data-orb]").first().getAttribute("data-orb");
+  check(orb === "webgpu" || orb === "css", `${label}: voice orb renders (${orb})`);
   // Real microphone path: Chromium's fake device → AudioWorklet → 16 kHz PCM → server.
   let audioIn = 0;
   for (let attempt = 0; attempt < 10 && !audioIn; attempt += 1) {

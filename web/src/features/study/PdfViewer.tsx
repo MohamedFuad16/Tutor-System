@@ -21,7 +21,7 @@ import { toast } from "@/components/ui";
 import { API_BASE, authHeaders } from "@/lib/api";
 import { useAnnotations } from "@/lib/queries";
 import { useApp, useMotion } from "@/store/app";
-import { AnnotationMarks, AnnotationPopover } from "./pdf/AnnotationOverlay";
+import { AnnotationMarks, AnnotationPopover, hitAnnotation } from "./pdf/AnnotationOverlay";
 import { ControlPill } from "./pdf/PageControls";
 import { SelectionMenu } from "./pdf/SelectionMenu";
 import { HIGHLIGHT_COLOR, UNDERLINE_COLOR, useAnnotationMutations } from "./pdf/annotations";
@@ -247,6 +247,16 @@ function PdfReader({ doc, onAsk }: { doc: StudyDocument; onAsk: PdfViewerProps["
                     ref={sheetRef}
                     role="group"
                     aria-label={`Page ${page}${total ? ` of ${total}` : ""}`}
+                    onClick={(event) => {
+                      // A click (not a drag-selection) on highlighted text opens that mark.
+                      if (!window.getSelection()?.isCollapsed || (event.target as Element).closest("a")) return;
+                      const hit = hitAnnotation(pageAnnotations, event.currentTarget, event.clientX, event.clientY);
+                      if (hit)
+                        setPopover({
+                          annotation: hit,
+                          anchor: { x: event.clientX, top: event.clientY - 6, bottom: event.clientY + 6 },
+                        });
+                    }}
                     className="relative overflow-hidden rounded-[3px] bg-white shadow-[0_28px_70px_-24px_rgba(0,0,0,0.9),0_8px_24px_-12px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.05)]"
                     style={{ width: pageWidth, height: sheetHeight }}
                   >

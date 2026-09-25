@@ -7,6 +7,26 @@ import { PENDING_PREFIX } from "./annotations";
 import { Floating } from "./Floating";
 import type { Anchor } from "./geometry";
 
+/**
+ * Marks never take pointer events, so highlighted text stays selectable; a
+ * plain click on the page is hit-tested here instead to open a mark.
+ */
+export function hitAnnotation(items: Annotation[], sheet: HTMLElement, clientX: number, clientY: number) {
+  const box = sheet.getBoundingClientRect();
+  if (!box.width || !box.height) return null;
+  const x = (clientX - box.left) / box.width;
+  const y = (clientY - box.top) / box.height;
+  return (
+    items.find(
+      (annotation) =>
+        !annotation.id.startsWith(PENDING_PREFIX) &&
+        annotation.rects.some(
+          (rect) => x >= rect.x && x <= rect.x + rect.width && y >= rect.y - 0.004 && y <= rect.y + rect.height + 0.004,
+        ),
+    ) ?? null
+  );
+}
+
 export function AnnotationMarks({
   items,
   onOpen,
@@ -48,7 +68,7 @@ export function AnnotationMarks({
                 onOpen(annotation, { x: box.left + box.width / 2, top: box.top, bottom: box.bottom });
               }}
               className={cx(
-                "pointer-events-auto absolute z-[4] cursor-pointer transition-opacity duration-200",
+                "pointer-events-none absolute z-[4] transition-opacity duration-200 focus-visible:outline-2 focus-visible:outline-signal",
                 underline ? "hover:bg-black/[0.04]" : "rounded-[2px] opacity-40 mix-blend-multiply hover:opacity-60",
                 pending && "animate-pulse",
               )}
