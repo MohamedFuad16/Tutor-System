@@ -12,7 +12,8 @@ import { keys, queryClient, useDocuments, useMessages } from "@/lib/queries";
 import { useApp } from "@/store/app";
 import { BookSwitcher } from "./BookSwitcher";
 import { Composer } from "./Composer";
-import { DraftView, MessageView, ThinkingOrb } from "./Message";
+import { BotAvatar } from "@/components/fx/BotAvatar";
+import { DraftView, MessageView } from "./Message";
 import { useChat } from "./useChat";
 
 function suggestions(docs: StudyDocument[], page: number) {
@@ -71,6 +72,8 @@ export function ChatPanel({ className }: { className?: string }) {
 
   const list = messages.data ?? [];
   const empty = !list.length && !draft;
+  const tutorAvatar = useApp((state) => state.tutorAvatar);
+  const latestTutorId = draft ? null : [...list].reverse().find((message) => message.role === "assistant")?.id;
 
   return (
     <section
@@ -97,8 +100,8 @@ export function ChatPanel({ className }: { className?: string }) {
       >
         {empty ? (
           <div className="flex h-full flex-col justify-center py-6">
-            <div className="mb-5 flex items-center gap-3">
-              <ThinkingOrb />
+            <div className="mb-5 flex items-center gap-4">
+              <BotAvatar type={tutorAvatar} size={64} aria-label="Your tutor" />
               <div>
                 <h2 className="text-lg text-stone-900">What shall we learn?</h2>
                 <p className="text-sm text-stone-500">
@@ -128,7 +131,13 @@ export function ChatPanel({ className }: { className?: string }) {
         ) : (
           <div className="mx-auto flex max-w-3xl flex-col gap-6">
             {list.map((message) => (
-              <MessageView key={message.id} message={message} docs={docs} bookId={bookId!} />
+              <MessageView
+                key={message.id}
+                message={message}
+                docs={docs}
+                bookId={bookId!}
+                latest={message.id === latestTutorId}
+              />
             ))}
             {draft && <DraftView draft={draft} docs={docs} bookId={bookId!} />}
             {error && (

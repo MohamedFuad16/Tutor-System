@@ -3,10 +3,12 @@
  * galleries, diagrams, interactive quiz cards and background task chips.
  */
 import { AnimatePresence, motion } from "motion/react";
-import { BookOpen, Check, ChevronLeft, ChevronRight, ExternalLink, Globe, Loader2, Sparkles, X } from "lucide-react";
+import { BookOpen, Check, ChevronLeft, ChevronRight, ExternalLink, Globe, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 import type { ChatMessage, MessagePart, QuizItem, QuizResult, SourceRef, WebImage, WebSource } from "@shared/types";
 import { Diagram } from "@/components/Diagram";
+import { ImageMosaic } from "@/components/fx/ImageMosaic";
+import { ThinkingOrb } from "@/components/fx/ThinkingOrb";
 import { Button, cx, spring, Spinner } from "@/components/ui";
 import { keys, queryClient, useAnswerQuiz } from "@/lib/queries";
 import { useApp } from "@/store/app";
@@ -102,22 +104,25 @@ export function ImageGallery({
         {visible.map((image, index) => (
           <motion.button
             key={image.imageUrl}
-            initial={{ opacity: 0, scale: 0.94, filter: "blur(8px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            transition={{ ...spring, delay: index * 0.06 }}
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...spring, delay: index * 0.05 }}
             onClick={() => setOpen(index)}
+            aria-label={`Open image: ${image.title}`}
             className={cx(
-              "relative aspect-[4/3] overflow-hidden rounded-xl bg-stone-200",
+              "group relative aspect-[4/3] overflow-hidden rounded-xl",
+              tone === "dark" ? "bg-white/5" : "bg-stone-100",
               index === 0 && visible.length >= 3 && "col-span-2 row-span-2 aspect-auto",
             )}
           >
-            <img
+            <ImageMosaic
               src={image.thumbnailUrl}
               alt={image.title}
-              loading="lazy"
-              referrerPolicy="no-referrer"
+              tone={tone}
+              delay={index * 140}
+              className="!absolute inset-0"
+              imgClassName="transition-transform duration-500 group-hover:scale-105"
               onError={() => setFailed((set) => new Set(set).add(image.imageUrl))}
-              className="size-full object-cover transition-transform duration-500 hover:scale-105"
             />
           </motion.button>
         ))}
@@ -354,6 +359,17 @@ export function QuizCard({
   );
 }
 
+const taskOrb = (title: string) =>
+  /search|web|image|photo|look/i.test(title)
+    ? "searching"
+    : /diagram|draw|sketch/i.test(title)
+      ? "shaping"
+      : /quiz|card|check/i.test(title)
+        ? "solving"
+        : /guide|note|organi/i.test(title)
+          ? "weaving"
+          : "working";
+
 export function TaskChip({
   title,
   status,
@@ -373,7 +389,7 @@ export function TaskChip({
       )}
     >
       {status === "running" ? (
-        <Loader2 className="size-3.5 animate-spin text-violet-500" />
+        <ThinkingOrb state={taskOrb(title)} size={20} theme={tone === "dark" ? "dark" : "light"} aria-hidden />
       ) : status === "done" ? (
         <Check className="size-3.5 text-emerald-500" />
       ) : (

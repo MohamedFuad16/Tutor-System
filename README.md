@@ -27,14 +27,20 @@
 2. **Ask questions** by typing or with voice. Answers are grounded in your
    document, and every claim cites its page as a clickable chip that jumps the
    reader there.
-3. **See it.** Processes become **Mermaid diagrams that draw themselves in**.
-   "Walk me through" narrates each node aloud while it is highlighted. Real
-   photos appear when a picture helps.
+3. **See it.** Processes become compact **Mermaid diagrams that draw
+   themselves in** and fit the chat. "Walk me through" narrates each node
+   aloud while it is highlighted. Real photos appear when a picture helps,
+   dissolving in from a soft pixel mosaic.
 4. **Talk it through.** Voice mode is a duplex "fast talker, slow thinker":
    - GLM-5.3-Flash keeps the conversation flowing.
    - GLM-5.3 works on diagrams and deep answers in the background, then
      presents them with a narrated tour.
    - You can interrupt at any time.
+   - A real-time **liquid glass orb** (WebGPU, six presets) rests while you
+     talk, blooms when the tutor thinks or speaks, and moves with the live
+     audio.
+     Typed answers stream at an even, word-by-word pace, introduced by the
+     tutor's animated avatar and a small orb that names what it is doing.
 5. **Learn for real.**
    - The tutor checks understanding with quiz cards, which are graded on the
      server.

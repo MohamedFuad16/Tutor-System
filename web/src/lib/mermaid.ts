@@ -10,29 +10,37 @@ let loader: Promise<Mermaid> | null = null;
 let queue: Promise<unknown> = Promise.resolve();
 let counter = 0;
 
+const SANS = "Geist Sans, ui-sans-serif, system-ui";
+
 const THEMES: Record<DiagramTheme, Record<string, string>> = {
   light: {
     background: "transparent",
-    primaryColor: "#fff7ef",
-    primaryBorderColor: "#ffb27a",
-    primaryTextColor: "#1c1917",
-    secondaryColor: "#f5f3ff",
-    tertiaryColor: "#f0f9ff",
+    primaryColor: "#ffffff",
+    primaryBorderColor: "#d6d3d1",
+    primaryTextColor: "#292524",
+    secondaryColor: "#fff7ed",
+    tertiaryColor: "#f5f5f4",
     lineColor: "#a8a29e",
-    textColor: "#292524",
-    fontFamily: "Geist Sans, ui-sans-serif, system-ui",
-    fontSize: "14px",
+    textColor: "#44403c",
+    clusterBkg: "#fafaf9",
+    clusterBorder: "#e7e5e4",
+    edgeLabelBackground: "#ffffff",
+    fontFamily: SANS,
+    fontSize: "13px",
   },
   dark: {
     background: "transparent",
-    primaryColor: "#17171b",
-    primaryBorderColor: "#ff8a3d",
+    primaryColor: "#16161a",
+    primaryBorderColor: "#3f3f46",
     primaryTextColor: "#f4f4f1",
     secondaryColor: "#1e1b2e",
     tertiaryColor: "#0f1d2e",
-    lineColor: "#6b6b74",
+    lineColor: "#71717a",
     textColor: "#e7e7e4",
-    fontFamily: "Geist Sans, ui-sans-serif, system-ui",
+    clusterBkg: "#111114",
+    clusterBorder: "#27272a",
+    edgeLabelBackground: "#0b0b0d",
+    fontFamily: SANS,
     fontSize: "15px",
   },
   paper: {
@@ -44,6 +52,9 @@ const THEMES: Record<DiagramTheme, Record<string, string>> = {
     tertiaryColor: "#f6f0e4",
     lineColor: "#9c8f7b",
     textColor: "#2b251d",
+    clusterBkg: "#f8f2e7",
+    clusterBorder: "#e3d6bf",
+    edgeLabelBackground: "#fffaf1",
     fontFamily: "Lora, Georgia, serif",
     fontSize: "14px",
   },
@@ -68,7 +79,30 @@ export function tidyMermaid(source: string) {
   );
 }
 
-export async function renderMermaid(source: string, theme: DiagramTheme): Promise<{ svg: string } | { error: string }> {
+const FLOW_HEADER = /^(\s*(?:flowchart|graph))(?:[ \t]+(TD|TB|BT|LR|RL))?[ \t]*(?=\n|$|;)/i;
+
+/** Flowchart direction ("TD", "LR", …), or null for other diagram types. */
+export function flowDirection(source: string): string | null {
+  const match = FLOW_HEADER.exec(tidyMermaid(source));
+  return match ? (match[2] ?? "TD").toUpperCase() : null;
+}
+
+/** Same flowchart laid out in another direction. */
+export function withDirection(source: string, direction: "LR" | "TD") {
+  return tidyMermaid(source).replace(FLOW_HEADER, (_m, head) => `${head} ${direction}`);
+}
+
+/** Natural size of a rendered SVG, from its viewBox. */
+export function svgSize(svg: string): { width: number; height: number } | null {
+  const box = /viewBox="([^"]+)"/.exec(svg)?.[1]?.split(/[\s,]+/).map(Number);
+  return box && box.length === 4 && box[2] > 0 && box[3] > 0 ? { width: box[2], height: box[3] } : null;
+}
+
+export async function renderMermaid(
+  source: string,
+  theme: DiagramTheme,
+  { compact = false }: { compact?: boolean } = {},
+): Promise<{ svg: string } | { error: string }> {
   const job = queue.then(async () => {
     const mermaid = await load();
     mermaid.initialize({
@@ -76,7 +110,9 @@ export async function renderMermaid(source: string, theme: DiagramTheme): Promis
       securityLevel: "strict",
       theme: "base",
       themeVariables: THEMES[theme],
-      flowchart: { curve: "basis", padding: 14, nodeSpacing: 36, rankSpacing: 46, htmlLabels: true },
+      flowchart: compact
+        ? { curve: "basis", padding: 10, nodeSpacing: 22, rankSpacing: 32, htmlLabels: true, wrappingWidth: 160 }
+        : { curve: "basis", padding: 14, nodeSpacing: 34, rankSpacing: 44, htmlLabels: true },
       sequence: { mirrorActors: false },
     });
     const code = tidyMermaid(source);
@@ -115,6 +151,20 @@ export function findNode(svg: SVGSVGElement, nodeId: string): SVGGElement | null
 }
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** House style on top of Mermaid's output: soft rounded nodes and hairline edges. */
+export function polishSvg(svg: SVGSVGElement) {
+  svg.querySelectorAll<SVGRectElement>("g.node rect").forEach((rect) => {
+    if (!Number(rect.getAttribute("rx"))) {
+      rect.setAttribute("rx", "9");
+      rect.setAttribute("ry", "9");
+    }
+  });
+  svg.querySelectorAll<SVGRectElement>("g.cluster rect").forEach((rect) => {
+    rect.setAttribute("rx", "12");
+    rect.setAttribute("ry", "12");
+  });
+}
 
 /** Adds staggered draw-in timing to edges and nodes. */
 export function prepareDrawIn(svg: SVGSVGElement) {

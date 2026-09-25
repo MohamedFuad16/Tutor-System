@@ -1,53 +1,120 @@
 /**
- * Mermaid diagram with the Tutor treatment: draws itself in, can spotlight
- * one node at a time (with a smooth camera move), and can narrate a guided
- * walk-through — highlighting each node while its explanation is spoken.
+ * Mermaid diagrams with the Tutor treatment: they draw themselves in, fit the
+ * space they're given (re-flowing a tall flowchart sideways when that reads
+ * better), spotlight one node at a time with a smooth camera move, and can
+ * narrate a guided walk-through that highlights each node as it's spoken.
+ *
+ * Variants:
+ *  - compact: chat. A bounded-height card on a dotted canvas; click to expand.
+ *  - card:    notebooks and study guides (paper theme), roomier.
+ *  - stage:   voice mode. Large, no chrome; the voice tour drives the focus.
  */
 import { AnimatePresence, motion } from "motion/react";
-import { Maximize2, Pause, Play, Sparkles } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Maximize2, Pause, Play, Workflow } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { DiagramStep } from "@shared/types";
 import { api } from "@/lib/api";
-import { findNode, prepareDrawIn, renderMermaid, type DiagramTheme } from "@/lib/mermaid";
+import {
+  findNode,
+  flowDirection,
+  polishSvg,
+  prepareDrawIn,
+  renderMermaid,
+  svgSize,
+  withDirection,
+  type DiagramTheme,
+} from "@/lib/mermaid";
 import { speak, stopSpeaking } from "@/lib/speaker";
 import { useApp, useMotion } from "@/store/app";
-import { Button, IconButton, Modal, Spinner, cx } from "./ui";
+import { IconButton, Modal, Spinner, cx } from "./ui";
 
-type Props = {
-  source: string;
-  theme?: DiagramTheme;
-  /** Node to spotlight (driven externally, e.g. by the voice tour). */
-  activeNode?: string | null;
-  /** Pre-computed tour steps (voice background results include them). */
-  steps?: DiagramStep[];
-  title?: string;
-  caption?: string;
-  /** Show the walk-through / enlarge controls. */
-  controls?: boolean;
-  /** Surrounding explanation, improves generated tour narration. */
-  context?: string;
-  className?: string;
-  maxHeight?: number;
+export type DiagramVariant = "compact" | "card" | "stage";
+
+type Fit = {
+  /** Tallest the diagram may be, in px. */
+  maxHeight: number;
+  /** Largest upscale for small diagrams (1 = never enlarge). */
+  maxScale: number;
+  /** Try the other flowchart direction when it fits the box noticeably better. */
+  reorient?: boolean;
+  compact?: boolean;
 };
+
+const FITS: Record<DiagramVariant, Fit> = {
+  compact: { maxHeight: 250, maxScale: 1, reorient: true, compact: true },
+  card: { maxHeight: 420, maxScale: 1.15, reorient: true },
+  stage: { maxHeight: 460, maxScale: 1.8, reorient: true },
+};
+
+/** Scale at which a w×h drawing fits the box. */
+const fitScale = (size: { width: number; height: number }, width: number, fit: Fit) =>
+  Math.min(fit.maxScale, width / size.width, fit.maxHeight / size.height);
+
+/** Is layout `a` a better fit than `b`? Larger text wins; near-ties go to the shorter drawing. */
+function betterFit(a: { width: number; height: number }, b: { width: number; height: number }, width: number, fit: Fit) {
+  const scaleA = fitScale(a, width, fit);
+  const scaleB = fitScale(b, width, fit);
+  if (scaleA > scaleB * 1.15) return true;
+  return scaleA >= scaleB * 0.92 && scaleA >= 0.75 && a.height * scaleA < b.height * scaleB * 0.8;
+}
 
 export function MermaidView({
   source,
   theme = "light",
   activeNode,
   className,
-  maxHeight = 520,
-}: Pick<Props, "source" | "theme" | "activeNode" | "className" | "maxHeight">) {
+  fit,
+  onRendered,
+}: {
+  source: string;
+  theme?: DiagramTheme;
+  activeNode?: string | null;
+  className?: string;
+  fit: Fit;
+  onRendered?: (info: { nodes: number }) => void;
+}) {
+  const frameRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const baseBox = useRef<[number, number, number, number] | null>(null);
   const [state, setState] = useState<{ status: "loading" | "ready" | "error"; error?: string }>({ status: "loading" });
   const motionOn = useMotion();
+  const onRenderedRef = useRef(onRendered);
+  onRenderedRef.current = onRendered;
+  const fitRef = useRef(fit);
+  fitRef.current = fit;
+
+  /** Sizes the SVG to fit the frame's current width (called on render and resize). */
+  const applyFit = useCallback(() => {
+    const svg = svgRef.current;
+    const box = baseBox.current;
+    const width = frameRef.current?.clientWidth ?? 0;
+    if (!svg || !box || !width) return;
+    const scale = fitScale({ width: box[2], height: box[3] }, width, fitRef.current);
+    svg.setAttribute("width", String(Math.round(box[2] * scale)));
+    svg.setAttribute("height", String(Math.round(box[3] * scale)));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     setState({ status: "loading" });
     const timer = window.setTimeout(async () => {
-      const result = await renderMermaid(source, theme);
+      const current = fitRef.current;
+      const width = frameRef.current?.clientWidth || 360;
+      let result = await renderMermaid(source, theme, { compact: current.compact });
+      // A tall flowchart in a wide, short box (or the reverse) often reads better re-flowed.
+      const direction = "svg" in result ? flowDirection(source) : null;
+      if (current.reorient && direction && "svg" in result) {
+        const size = svgSize(result.svg);
+        const tall = size && current.compact && !/LR|RL/.test(direction) && size.height * fitScale(size, width, current) > 170;
+        if (size && (fitScale(size, width, current) < 0.8 || tall)) {
+          const alt = await renderMermaid(withDirection(source, /LR|RL/.test(direction) ? "TD" : "LR"), theme, {
+            compact: current.compact,
+          });
+          const altSize = "svg" in alt ? svgSize(alt.svg) : null;
+          if (altSize && betterFit(altSize, size, width, current)) result = alt;
+        }
+      }
       if (cancelled || !hostRef.current) return;
       if ("error" in result) {
         setState({ status: "error", error: result.error });
@@ -56,25 +123,33 @@ export function MermaidView({
       hostRef.current.innerHTML = result.svg;
       const svg = hostRef.current.querySelector("svg");
       if (!svg) return;
-      svg.removeAttribute("height");
-      // Keep the diagram's natural size (never blow a 3-node chart up to full width).
-      const natural = parseFloat(svg.style.maxWidth) || Number(svg.getAttribute("viewBox")?.split(/[\s,]+/)[2]) || 0;
-      svg.style.maxWidth = natural ? `min(100%, ${Math.round(natural * (theme === "dark" ? 1.8 : 1.15))}px)` : "100%";
-      svg.style.maxHeight = `${maxHeight}px`;
+      svg.removeAttribute("style");
       const box = svg
         .getAttribute("viewBox")
         ?.split(/[\s,]+/)
         .map(Number);
       baseBox.current = box && box.length === 4 ? (box as [number, number, number, number]) : null;
       svgRef.current = svg;
+      polishSvg(svg);
+      applyFit();
       if (motionOn) prepareDrawIn(svg);
+      onRenderedRef.current?.({ nodes: svg.querySelectorAll("g.node").length });
       setState({ status: "ready" });
     }, 60);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [source, theme, maxHeight, motionOn]);
+  }, [source, theme, motionOn, applyFit]);
+
+  // Re-fit (not re-render) when the column is resized.
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => applyFit());
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, [applyFit]);
 
   // Spotlight + camera: animate the viewBox towards the active node.
   useEffect(() => {
@@ -129,55 +204,68 @@ export function MermaidView({
   }, [activeNode, state.status, motionOn]);
 
   return (
-    <div className={cx("relative", className)}>
-      <div ref={hostRef} className="mermaid-host flex justify-center [&_svg]:h-auto" />
-      {state.status === "loading" && (
-        <div className="flex items-center justify-center gap-2 py-10 text-sm opacity-60">
-          <Spinner /> Drawing diagram…
-        </div>
-      )}
+    <div ref={frameRef} className={cx("relative w-full", className)}>
+      <div ref={hostRef} data-theme={theme} className="mermaid-host flex justify-center" />
+      {state.status === "loading" && <DiagramSkeleton tone={theme === "dark" ? "dark" : "light"} />}
       {state.status === "error" && (
         <details className="rounded-xl border border-current/15 p-3 text-xs opacity-80">
           <summary className="cursor-pointer">This diagram couldn't be drawn ({state.error}). Show source</summary>
-          <pre className="mt-2 overflow-x-auto whitespace-pre-wrap font-mono">{source}</pre>
+          <pre className="mt-2 overflow-x-auto font-mono whitespace-pre-wrap">{source}</pre>
         </details>
       )}
     </div>
   );
 }
 
-/** Diagram card with narrated walk-through, used in chat, notebooks and voice. */
-export function Diagram({
-  source,
-  theme = "light",
-  activeNode,
-  steps,
-  title,
-  caption,
-  controls = true,
-  context,
-  className,
-  maxHeight,
-}: Props) {
+/** Placeholder while a diagram streams in or renders: three nodes being sketched. */
+export function DiagramSkeleton({ tone = "light", label }: { tone?: "light" | "dark"; label?: string }) {
+  const dark = tone === "dark";
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-6" role="status" aria-label={label ?? "Drawing diagram"}>
+      <div className="flex items-center">
+        {[0, 1, 2].map((index) => (
+          <div key={index} className="flex items-center">
+            {index > 0 && (
+              <span className={cx("h-px w-7 sm:w-10", dark ? "bg-white/15" : "bg-stone-300")}>
+                <span
+                  className="block h-full origin-left animate-[sketch-line_1.6s_ease-in-out_infinite] bg-signal/70"
+                  style={{ animationDelay: `${index * 0.25}s` }}
+                />
+              </span>
+            )}
+            <span
+              className={cx(
+                "h-8 w-14 animate-pulse rounded-[9px] ring-1 sm:w-16",
+                dark ? "bg-white/5 ring-white/12" : "bg-white ring-stone-300",
+              )}
+              style={{ animationDelay: `${index * 0.2}s` }}
+            />
+          </div>
+        ))}
+      </div>
+      {label && <span className={cx("shimmer-text text-xs", dark ? "text-fog-400" : "text-stone-500")}>{label}</span>}
+    </div>
+  );
+}
+
+function useTour(source: string, steps: DiagramStep[] | undefined, context: string | undefined) {
   const language = useApp((state) => state.language);
   const [tour, setTour] = useState<{ steps: DiagramStep[]; index: number } | null>(null);
-  const [loadingTour, setLoadingTour] = useState(false);
-  const [enlarged, setEnlarged] = useState(false);
+  const [loading, setLoading] = useState(false);
   const runId = useRef(0);
 
-  const stopTour = useCallback(() => {
+  const stop = useCallback(() => {
     runId.current += 1;
     stopSpeaking();
     setTour(null);
   }, []);
+  useEffect(() => () => stop(), [stop]);
 
-  useEffect(() => () => stopTour(), [stopTour]);
-
-  const startTour = useCallback(async () => {
+  const start = useCallback(async () => {
     const id = ++runId.current;
     let tourSteps = steps;
     if (!tourSteps?.length) {
-      setLoadingTour(true);
+      setLoading(true);
       try {
         tourSteps = (
           await api<{ steps: DiagramStep[] }>("/diagram/tour", {
@@ -188,7 +276,7 @@ export function Diagram({
       } catch {
         tourSteps = [];
       } finally {
-        setLoadingTour(false);
+        setLoading(false);
       }
     }
     if (!tourSteps.length || id !== runId.current) return;
@@ -200,90 +288,162 @@ export function Diagram({
     if (id === runId.current) setTour(null);
   }, [steps, source, context, language]);
 
+  return { tour, loading, start, stop, current: tour ? tour.steps[tour.index] : null };
+}
+
+/** Diagram card with a narrated walk-through, used in chat, notebooks and voice. */
+export function Diagram({
+  source,
+  theme = "light",
+  variant = theme === "light" ? "compact" : theme === "dark" ? "stage" : "card",
+  activeNode,
+  steps,
+  title,
+  caption,
+  controls = true,
+  context,
+  className,
+}: {
+  source: string;
+  theme?: DiagramTheme;
+  variant?: DiagramVariant;
+  /** Node to spotlight (driven externally, e.g. by the voice tour). */
+  activeNode?: string | null;
+  /** Pre-computed tour steps (voice background results include them). */
+  steps?: DiagramStep[];
+  title?: string;
+  caption?: string;
+  /** Show the walk-through / expand controls. */
+  controls?: boolean;
+  /** Surrounding explanation, improves generated tour narration. */
+  context?: string;
+  className?: string;
+}) {
+  const { tour, loading, start, stop, current } = useTour(source, steps, context);
+  const [expanded, setExpanded] = useState(false);
+  const [nodes, setNodes] = useState(0);
+  const focus = current?.node ?? activeNode;
   const dark = theme === "dark";
-  const current = tour ? tour.steps[tour.index] : null;
-  const body = (
-    <MermaidView
-      source={source}
-      theme={theme}
-      activeNode={current?.node ?? activeNode}
-      maxHeight={enlarged ? 900 : maxHeight}
-    />
-  );
+  const compact = variant === "compact";
+
+  if (variant === "stage") {
+    return (
+      <figure className={cx("w-full", className)}>
+        {title && (
+          <figcaption className="mb-3 flex items-center gap-2 text-xs tracking-wide text-fog-300 uppercase">
+            <Workflow className="size-3.5 text-signal" /> {title}
+          </figcaption>
+        )}
+        <MermaidView source={source} theme={theme} activeNode={focus} fit={FITS.stage} />
+      </figure>
+    );
+  }
 
   return (
     <figure
       className={cx(
-        "group/diagram my-2 overflow-hidden rounded-2xl",
-        dark
-          ? "bg-white/[0.03] ring-1 ring-white/8"
-          : theme === "paper"
-            ? "paper-card"
-            : "bg-[#fcfbf8] ring-1 ring-black/6",
+        "group/diagram relative my-3 overflow-hidden rounded-2xl",
+        theme === "paper" ? "paper-card" : dark ? "bg-white/[0.03] ring-1 ring-white/8" : "bg-white ring-1 ring-stone-200/90",
+        compact && "shadow-[0_1px_2px_rgba(28,25,23,0.04),0_8px_24px_-16px_rgba(28,25,23,0.18)]",
         className,
       )}
     >
-      {(title || controls) && (
-        <div className={cx("flex items-center gap-2 px-4 pt-3", dark ? "text-fog-200" : "text-stone-600")}>
-          <Sparkles className="size-3.5 text-signal" />
-          <span className="min-w-0 flex-1 truncate text-xs font-medium tracking-wide uppercase">
-            {title || "Diagram"}
+      <div
+        className={cx(
+          "flex items-center gap-2 px-3 py-2",
+          dark ? "text-fog-200" : "text-stone-600",
+          compact && "border-b border-stone-100",
+        )}
+      >
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-signal ring-1 ring-orange-100">
+          <Workflow className="size-3.5" />
+        </span>
+        <span className="min-w-0 flex-1 truncate text-[0.78rem] font-medium">{title || "Diagram"}</span>
+        {nodes > 0 && (
+          <span className="shrink-0 text-[0.68rem] text-stone-400 tabular-nums">
+            {nodes} {nodes === 1 ? "step" : "steps"}
           </span>
-          {controls && (
-            <>
-              <Button
-                size="sm"
-                variant={dark ? "dark" : "light"}
-                onClick={tour ? stopTour : startTour}
-                aria-label={tour ? "Stop walk-through" : "Walk me through this diagram"}
-              >
-                {loadingTour ? (
-                  <Spinner className="size-3.5" />
-                ) : tour ? (
-                  <Pause className="size-3.5" />
-                ) : (
-                  <Play className="size-3.5" />
-                )}
-                {tour ? "Stop" : "Walk me through"}
-              </Button>
-              <IconButton
-                label="Enlarge diagram"
-                size={32}
-                tone={dark ? "dark" : "light"}
-                onClick={() => setEnlarged(true)}
-              >
-                <Maximize2 className="size-3.5" />
-              </IconButton>
-            </>
-          )}
-        </div>
-      )}
-      <div className="px-3 py-3">{body}</div>
+        )}
+        {controls && (
+          <>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={tour ? stop : start}
+              aria-label={tour ? "Stop walk-through" : "Walk me through this diagram"}
+              className={cx(
+                "flex h-7 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[0.72rem] font-medium transition-colors",
+                tour
+                  ? "bg-signal text-white"
+                  : dark
+                    ? "bg-white/8 text-fog-100 hover:bg-white/14"
+                    : "bg-stone-100 text-stone-700 hover:bg-stone-200",
+              )}
+            >
+              {loading ? (
+                <Spinner className="size-3" />
+              ) : tour ? (
+                <Pause className="size-3 fill-current" />
+              ) : (
+                <Play className="size-3 fill-current" />
+              )}
+              {tour ? `${tour.index + 1}/${tour.steps.length}` : "Walk me through"}
+            </motion.button>
+            <IconButton
+              label="Expand diagram"
+              size={28}
+              tone={dark ? "dark" : "light"}
+              onClick={() => setExpanded(true)}
+            >
+              <Maximize2 className="size-3.5" />
+            </IconButton>
+          </>
+        )}
+      </div>
+      <div
+        className={cx("relative px-3 py-3", compact && "diagram-canvas cursor-zoom-in")}
+        onClick={compact && controls ? () => setExpanded(true) : undefined}
+      >
+        <MermaidView
+          source={source}
+          theme={theme}
+          activeNode={focus}
+          fit={FITS[variant]}
+          onRendered={({ nodes: count }) => setNodes(count)}
+        />
+      </div>
       <AnimatePresence>
-        {current && (
+        {current && tour && (
           <motion.figcaption
-            key={tour?.index}
+            key={tour.index}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             className={cx(
-              "mx-3 mb-3 rounded-xl px-4 py-2.5 text-sm leading-relaxed",
-              dark ? "bg-white/6 text-fog-50" : "bg-orange-50 text-stone-800",
+              "flex gap-2.5 border-t px-3 py-2.5 text-[0.82rem] leading-relaxed",
+              dark ? "border-white/8 text-fog-50" : "border-orange-100 bg-orange-50/70 text-stone-800",
             )}
           >
-            <span className="mr-2 font-mono text-xs text-signal">
-              {tour!.index + 1}/{tour!.steps.length}
+            <span className="mt-1 flex shrink-0 gap-0.5" aria-hidden>
+              {tour.steps.map((_, index) => (
+                <span
+                  key={index}
+                  className={cx(
+                    "h-1 rounded-full transition-all",
+                    index === tour.index ? "w-3 bg-signal" : "w-1 bg-stone-300",
+                  )}
+                />
+              ))}
             </span>
-            {current.say}
+            <span>{current.say}</span>
           </motion.figcaption>
         )}
       </AnimatePresence>
       {caption && !current && (
-        <figcaption className={cx("px-4 pb-3 text-xs", dark ? "text-fog-400" : "text-stone-500")}>{caption}</figcaption>
+        <figcaption className={cx("px-3 pb-2.5 text-xs", dark ? "text-fog-400" : "text-stone-500")}>{caption}</figcaption>
       )}
       <Modal
-        open={enlarged}
-        onClose={() => setEnlarged(false)}
+        open={expanded}
+        onClose={() => setExpanded(false)}
         title={title || "Diagram"}
         width={1100}
         tone={theme === "paper" ? "paper" : "dark"}
@@ -291,8 +451,8 @@ export function Diagram({
         <MermaidView
           source={source}
           theme={theme === "light" ? "dark" : theme}
-          activeNode={current?.node ?? activeNode}
-          maxHeight={900}
+          activeNode={focus}
+          fit={{ maxHeight: Math.round((typeof window === "undefined" ? 900 : window.innerHeight) * 0.7), maxScale: 1.6, reorient: true }}
         />
       </Modal>
     </figure>

@@ -1,9 +1,10 @@
 /**
- * Floating navigation pill with a spring-animated active indicator.
+ * Floating navigation pill; the active highlight moves between tabs like a
+ * drop of liquid.
  */
-import { motion } from "motion/react";
 import { BarChart3, BookOpen, Settings, Sparkles } from "lucide-react";
-import { IconButton, cx, spring } from "@/components/ui";
+import { LiquidIndicator } from "@/components/fx/LiquidIndicator";
+import { IconButton, cx } from "@/components/ui";
 import { useApp, type View } from "@/store/app";
 
 const ITEMS: Array<{ view: View; label: string; icon: typeof BookOpen }> = [
@@ -31,14 +32,16 @@ export function Navigation() {
         <span className="hidden font-display text-sm tracking-tight text-fog-200 sm:inline">Tutor</span>
       </div>
       <nav
-        className="glass pointer-events-auto flex items-center gap-1 rounded-full p-1 shadow-[var(--shadow-float)]"
+        className="glass pointer-events-auto relative flex items-center gap-1 rounded-full p-1 shadow-[var(--shadow-float)]"
         aria-label="Main"
       >
+        <LiquidIndicator active={view} />
         {ITEMS.map(({ view: item, label, icon: Icon }) => {
           const active = view === item;
           return (
             <button
               key={item}
+              data-liquid-key={item}
               onClick={() => setView(item)}
               aria-current={active ? "page" : undefined}
               className={cx(
@@ -46,13 +49,6 @@ export function Navigation() {
                 active ? "text-white" : "text-fog-400 hover:text-fog-50",
               )}
             >
-              {active && (
-                <motion.span
-                  layoutId="nav-active"
-                  transition={spring}
-                  className="absolute inset-0 rounded-full bg-white/12 ring-1 ring-white/10"
-                />
-              )}
               <Icon className={cx("relative size-3.5", active && "text-signal")} />
               <span className="relative">{label}</span>
             </button>

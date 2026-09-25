@@ -80,11 +80,15 @@ server/
 web/src/
   app/             shell, navigation, settings
   features/study   intro, PDF reader, chat panel
-  features/voice   voice overlay, session hook, visual stage
+  features/voice   voice overlay, session hook, visual stage,
+                   orb/ (WebGPU liquid orb, ported from LerSent001/orb, MIT)
   features/revision library, study-guide renderer, concept map, review
   features/analytics dashboard
   components/      UI primitives, Markdown, Diagram, PatternCard
-  lib/             api, queries, events, audio, speaker, mermaid
+  components/fx/   AI-presence effects: BotAvatar, ThinkingOrb, BorderBeam,
+                   VoiceGlow, ImageMosaic, LiquidIndicator, Metal
+  lib/             api, queries, events, audio, speaker, mermaid,
+                   rehype-stream-words
 ```
 
 No backend file is over about 600 lines. v1's `server.ts` was 6,600 lines, and
@@ -121,13 +125,48 @@ sequenceDiagram
 2. The fast model streams the reply over SSE (`start → reasoning → delta →
 part → done`). Tool rounds run **in parallel**, with a maximum of 3.
    - `search_document`, `web_search`, `show_images`, `create_quiz`, `make_flashcards`
-   - Diagrams are inline Mermaid blocks. The client draws them in and can
-     narrate them node by node ("Walk me through").
+   - Diagrams are inline Mermaid blocks. In chat they render as compact cards
+     that fit the rail's width in a bounded height (re-flowing a tall
+     flowchart sideways when that fits better), draw themselves in, expand on
+     click, and can be narrated node by node ("Walk me through").
+   - The client paces the stream (`useSmoothText`): an even reveal on word
+     boundaries that never trails the stream by more than ~0.6 s, with a
+     per-word fade (`rehype-stream-words`). When `done` arrives, the saved
+     message continues the reveal from the draft's position.
 3. Citations like `[D1 p.12]` are resolved to real pages and become clickable
    chips that jump the reader.
 4. If the client disconnects, the model stream is aborted and the partial
    answer is saved as `interrupted`.
 5. The turn triggers a debounced study-guide sync.
+
+### 4.2a Presence effects (web)
+
+Effects are first-party components in `web/src/components/fx`, each tied to
+real state, never to timers:
+
+| Effect                                  | Where                                    | Driven by                                                               |
+| --------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
+| `BotAvatar` (8 bodies)                  | tutor turns, empty chat, Settings picker | streaming / settling flag; only the newest answer animates              |
+| `ThinkingOrb` (9 activities, 2D canvas) | status line, task chips, voice tasks     | the current status label / tool                                         |
+| `BorderBeam`                            | composer                                 | the in-flight request                                                   |
+| `ImageMosaic`                           | image galleries (chat, voice stage)      | the image's decode                                                      |
+| `VoiceGlow`                             | voice dock                               | mic level (listening), speech level (speaking), `processing` (thinking) |
+| `LiquidIndicator`                       | main navigation                          | the active view                                                         |
+| `MetalText` / `MetalBadge`              | empty-state headline, "New" badge        | static                                                                  |
+
+They share the libraries.dev prop names (`type`, `state`, `size`, `paused`,
+`active`, `processing`, …) so the libraries.dev npm packages
+(`bot-avatars`, `thinking-orbs`, `border-beam`, `voice-glow`, `img-fx`,
+`liquid-gooey`, `metal-fx`) can replace them at the import site if installed.
+All respect reduced motion and pause offscreen or in hidden tabs.
+
+The **voice orb** (`features/voice/orb`) is the WebGPU shader from
+LerSent001/orb (MIT; see `orb/NOTICE.md`): idle and active parameter
+profiles per preset with eased transitions, and low/mid/high/overall audio
+bands from `MicCapture.bands()` (listening) or `PcmPlayer.bands()`
+(speaking) modulating contour, distortion and highlights. It loads with the
+lazily split voice chunk, and falls back to a CSS orb when WebGPU is missing
+or motion is reduced.
 
 ### 4.3 Voice: duplex "fast talker, slow thinker"
 

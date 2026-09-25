@@ -343,6 +343,7 @@ const HOW_TUTOR_WORKS: StudyGuide = {
         "Tools: search_document, show_images, web_search, create_quiz and make_flashcards.",
         "Tool calls in a round run in parallel, with at most three rounds.",
         "Diagrams arrive as Mermaid, draw themselves in, and can be narrated node by node.",
+        "The client paces streamed text on word boundaries and hands the reveal off to the saved answer, so nothing jumps.",
       ],
       explanation:
         "Every turn starts with `buildContext`, which assembles a **context packet** within a character budget: the notebook and its documents, the page you have open, your highlighted passage, the best BM25 passages from anywhere in the notebook, and the learner model, meaning which concepts are shaky and which are solid.\n\nThe fast model streams its answer over server-sent events. When it needs more, it calls tools, and every call in a round runs **in parallel**, for up to three rounds. Citations name a document and a page inside square brackets, and the client resolves them into clickable chips. If you close the tab mid-answer, the model stream is aborted and the partial reply is saved as *interrupted*, so nothing is lost.",
@@ -880,9 +881,27 @@ const DESIGN_LANGUAGE: StudyGuide = {
     },
     {
       id: "voice-orb",
-      label: "Voice orb",
+      label: "Liquid voice orb",
       kind: "supporting",
-      blurb: "The glass orb whose light shows who has the floor.",
+      blurb: "A real-time WebGPU glass sphere that rests, blooms and rides the live audio.",
+    },
+    {
+      id: "tutor-avatar",
+      label: "Tutor avatar",
+      kind: "supporting",
+      blurb: "A glossy little character that hops while the tutor works and idles once the answer lands.",
+    },
+    {
+      id: "status-orbs",
+      label: "Status orbs",
+      kind: "supporting",
+      blurb: "Tiny dotted orbs that name the activity: searching, drawing, writing, planning.",
+    },
+    {
+      id: "smooth-streaming",
+      label: "Smooth streaming",
+      kind: "example",
+      blurb: "Answers revealed at an even pace, word by word, with a soft fade.",
     },
     {
       id: "spring-motion",
@@ -940,6 +959,10 @@ const DESIGN_LANGUAGE: StudyGuide = {
     { from: "obsidian-and-paper", to: "study-split-view", label: "frames" },
     { from: "aura-light", to: "liquid-glass", label: "tints" },
     { from: "liquid-glass", to: "voice-orb", label: "shapes" },
+    { from: "aura-light", to: "status-orbs", label: "animates" },
+    { from: "tutor-avatar", to: "smooth-streaming", label: "presents" },
+    { from: "status-orbs", to: "tutor-avatar", label: "caption" },
+    { from: "reduced-motion", to: "tutor-avatar", label: "stills" },
     { from: "liquid-glass", to: "concept-orbs", label: "gives its sheen to" },
     { from: "dot-matrix", to: "pattern-cards", label: "signs" },
     { from: "spring-motion", to: "dot-matrix", label: "ripples in" },
@@ -1075,28 +1098,33 @@ const DESIGN_LANGUAGE: StudyGuide = {
       id: "liquid-glass-and-voice-orb",
       title: "Liquid Glass & the Voice Orb",
       icon: "beaker",
-      tldr: "Anything the AI is doing sits on liquid glass tinted with violet and blue light, and the voice orb shows its state at a glance.",
+      tldr: "Anything the AI is doing sits on liquid glass tinted with violet and blue light, and voice mode is led by a real-time liquid glass orb that moves with the conversation.",
       keyPoints: [
         "Liquid glass: violet light top-left, blue bottom-right, over 70% obsidian, 22 px blur.",
         "Plain frosted glass, with no aura tint, is for chrome that isn't AI, like toasts.",
-        "Listening: cyan light that swells with your microphone level.",
-        "Thinking: violet light that turns slowly while the model works.",
-        "Speaking: warm ember light, the one moment signal orange joins the aura, pulsing with the tutor's voice.",
-        "When playback ducks for a possible interruption, the orb dims with it.",
+        "The voice orb is a WebGPU shader: a fluid field refracted through a glass shell.",
+        "Waiting or listening, it rests in a dim, slow idle profile; thinking or speaking, it blooms into its active one.",
+        "Its contour, inner flow and highlights ride live audio: your mic while you talk, the tutor's voice while it speaks.",
+        "Six audio-reactive presets (Siri wave by default) can be picked in voice mode or Settings.",
+        "The dock under the orb glows along its bottom edge with whoever is talking, and sweeps while the tutor thinks.",
       ],
       explanation:
-        "**Liquid glass** is how the interface says *the AI is here*. It layers two soft radial lights, violet at 18% from the top-left and blue at 14% from the bottom-right, over obsidian at 70%, then blurs and saturates whatever sits behind. A hairline white border and a faint inner highlight give it an edge, and a deep floating shadow lifts it off the page. Assistant chrome, the voice overlay and AI panels use it; ordinary floating chrome uses plain frosted glass.\n\nThe **voice orb** is liquid glass with a pulse. Its light tells you who has the floor: **cyan** while it listens, **violet** while it thinks, **ember orange** while it speaks. Whenever sound is involved, the orb moves with the real audio level rather than a canned loop.",
+        "**Liquid glass** is how the interface says *the AI is here*. It layers two soft radial lights, violet at 18% from the top-left and blue at 14% from the bottom-right, over obsidian at 70%, then blurs and saturates whatever sits behind. A hairline white border and a faint inner highlight give it an edge, and a deep floating shadow lifts it off the page. Assistant chrome, the voice overlay and AI panels use it; ordinary floating chrome uses plain frosted glass.\n\nThe **voice orb** takes the idea all the way: a real-time WebGPU shader (ported from the open-source LerSent001 liquid orb) renders a fluid field seen through a refracting glass sphere. Each preset has two profiles. While the tutor waits or listens it **rests**, slower and dimmer; when it thinks or speaks it **blooms** into its vivid active profile in about a fifth of a second. On top of that, low, mid and high frequency bands of the *real* audio push the contour, the internal distortion and the highlights: your microphone while you talk, the tutor's own voice while it speaks. Browsers without WebGPU, or learners who turned motion down, get a light CSS orb in the same colours.",
       diagram: {
         mermaid: `flowchart LR
-  A["Connecting"] --> B["Listening: cyan"]
-  B -->|"end of turn"| C["Thinking: violet"]
-  C -->|"first phrase"| D["Speaking: ember"]
+  A["Connecting: rest"] --> B["Listening: rest, mic drives it"]
+  B -->|"end of turn"| C["Thinking: bloom"]
+  C -->|"first phrase"| D["Speaking: bloom, voice drives it"]
   D -->|"turn ends"| B
   D -->|"barge-in"| B`,
-        caption: "The orb's light always answers one question: who has the floor?",
+        caption: "The orb answers one question at a glance: who has the floor?",
       },
       callouts: [
         { kind: "tip", text: "Glass tint is a promise. Never put the aura on anything the AI isn't actually doing." },
+        {
+          kind: "remember",
+          text: "Audio is analysed locally in the browser for the orb and the glow; nothing extra is recorded or uploaded.",
+        },
       ],
       selfCheck: [
         {
@@ -1104,11 +1132,61 @@ const DESIGN_LANGUAGE: StudyGuide = {
           a: "Liquid glass adds violet and blue radial light, stronger blur and saturation, and an inner highlight. Plain glass is untinted frosted obsidian for non-AI chrome.",
         },
         {
-          q: "What colour is the orb while the tutor is thinking?",
-          a: "Aura violet, turning slowly until the first phrase is ready to speak.",
+          q: "What moves the orb while the tutor is speaking?",
+          a: "The frequency bands of the tutor's own voice, layered on top of the preset's active, bloomed profile.",
         },
       ],
       conceptIds: ["liquid-glass", "aura-light", "voice-orb"],
+    }),
+    section({
+      id: "ai-presence",
+      title: "AI Presence: Avatar, Orbs & Streaming",
+      icon: "idea",
+      tldr: "The tutor shows up as a small living character, names what it is doing with a tiny orb, and writes at an even pace, so waiting always feels like watching someone work.",
+      keyPoints: [
+        "The tutor avatar hops while an answer is being written and idles, glancing and blinking, once it lands.",
+        "Eight bodies: clover, flower, star, ghost, mech, orbit, hex and block; pick one in Settings.",
+        "Status orbs name the activity: searching, shaping a diagram, solving a quiz, weaving a plan, composing text.",
+        "Answers stream at an even pace on word boundaries, and each new word fades in.",
+        "A beam circles the composer while the tutor works; web images arrive as a soft mosaic that dissolves into the photo.",
+        "Waits under two seconds get no effect at all, and each area of the screen carries at most one.",
+      ],
+      explanation:
+        "A good tutor is visibly *present*. Every tutor turn opens with the **avatar**, a glossy little character that hops while the answer is being written and settles into an idle rhythm once it lands. Its eyes follow your pointer, a click makes it jump, and only the newest answer's avatar stays alive, so a long thread never becomes a crowd.\n\nNext to it, a **status orb** says what is happening in one glance: a scan sweeping a dotted globe while it searches, an outline morphing from circle to triangle to square while it shapes a diagram, three strands plaiting while it plans. Then the words arrive. Models send text in bursts, so the reply is **paced**: revealed on word boundaries at an even rate that speeds up rather than ever lagging more than about half a second, with each new word fading in. When the stream ends, the saved answer carries on from exactly where the draft had reached, with no jump and no repeat.\n\nThe same restraint governs every other effect. A light travels around the composer only while the tutor is working. Web images load as a soft pixel mosaic that dissolves into the photo cell by cell. The navigation highlight moves between tabs like a drop of liquid. The one headline on the empty study screen has a liquid-metal sheen. Nothing appears for waits under two seconds, and no two effects share an area of the screen.",
+      diagram: {
+        mermaid: `flowchart LR
+  A["You send"] --> B["Beam on composer"]
+  A --> C["Avatar hops"]
+  C --> D["Status orb names the step"]
+  D --> E["Words stream in, paced"]
+  E --> F["Answer lands: avatar idles"]`,
+        caption: "One turn, seen through the tutor's presence.",
+      },
+      example: {
+        title: "Asking for pictures",
+        body: 'You type *"show me a red panda"*. A beam starts circling the composer, the avatar begins to hop, and the status reads **Searching the web** beside a dotted globe with a sweeping scan. Two sentences stream in word by word; below them six tiles churn as a soft mosaic and dissolve, one after another, into photos. The beam fades, the avatar lands and glances around, and the reply is done.',
+      },
+      callouts: [
+        {
+          kind: "remember",
+          text: "Effects follow real state: the beam is tied to the request, the avatar to streaming, the orb to the current tool. None of them run on a timer.",
+        },
+        {
+          kind: "tip",
+          text: "With motion reduced, avatars and orbs hold a still pose, text appears whole, and images show without the mosaic.",
+        },
+      ],
+      selfCheck: [
+        {
+          q: "Why is streamed text paced instead of shown the moment it arrives?",
+          a: "Tokens arrive in uneven bursts. Revealing them at a steady, adaptive rate on word boundaries reads like fluent writing, and the pacing never lets the display trail the stream by more than about half a second.",
+        },
+        {
+          q: "Which avatar stays animated in a long conversation?",
+          a: "Only the one on the newest tutor answer (or the answer being written). Older avatars hold still.",
+        },
+      ],
+      conceptIds: ["tutor-avatar", "status-orbs", "smooth-streaming", "aura-light"],
     }),
     section({
       id: "motion-principles",
@@ -1119,6 +1197,7 @@ const DESIGN_LANGUAGE: StudyGuide = {
         "Presses use a crisp spring: stiffness 420, damping 30, mass 0.7.",
         "Cards, sheets and dots use a softer spring: stiffness 220, damping 26.",
         "Diagram edges draw in over 0.9 s; nodes pop in with a slight overshoot.",
+        "Chat diagrams are compact cards: they fit the rail's width, stay short, and re-flow sideways when that reads better.",
         "During a tour, other nodes dim to 38% and the active node glows orange.",
         "Reduced motion, from the OS or the in-app setting, makes every animation instant.",
       ],

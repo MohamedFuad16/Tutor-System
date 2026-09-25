@@ -4,6 +4,7 @@
  * target (click or drop a PDF). Everything is spring-driven and collapses to
  * the final state instantly when motion is off.
  */
+import { MetalText } from "@/components/fx/Metal";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { Layers, MessageSquare, UploadCloud } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -76,7 +77,10 @@ function Headline({ text, onDone, animate }: { text: string; onDone: () => void;
           transition={{ duration: 1.1, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="inline-block"
         >
-          {word}
+          {/* Liquid-metal finish; staggered delays make one sheen sweep across the sentence. */}
+          <MetalText className="inline-block" style={{ animationDelay: `${1.4 + index * 0.09}s` }}>
+            {word}
+          </MetalText>
         </motion.span>
       ))}
     </h1>

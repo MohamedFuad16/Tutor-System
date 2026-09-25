@@ -9,13 +9,29 @@ import { Button, Modal, cx } from "@/components/ui";
 import { api } from "@/lib/api";
 import { LANGUAGES } from "@/lib/i18n";
 import { queryClient, useHealth } from "@/lib/queries";
+import { BOT_LABELS, BOT_TYPES, BotAvatar, type BotAvatarType } from "@/components/fx/BotAvatar";
+import { MetalBadge } from "@/components/fx/Metal";
+import { ORB_STYLES, ORB_STYLE_LABELS, orbSwatch } from "@/features/voice/orb/styles";
 import { useApp, type VoiceInputMode, type VoiceOutputMode } from "@/store/app";
 
-function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+function Row({
+  label,
+  hint,
+  badge,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  badge?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <div className="text-sm text-fog-50">{label}</div>
+        <div className="flex items-center gap-2 text-sm text-fog-50">
+          {label}
+          {badge}
+        </div>
         {hint && <div className="text-xs text-fog-500">{hint}</div>}
       </div>
       <div className="shrink-0">{children}</div>
@@ -45,6 +61,33 @@ function Segmented<T extends string>({
           )}
         >
           {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** All eight tutor bodies; the hovered one comes alive. */
+function AvatarPicker({ value, onChange }: { value: BotAvatarType; onChange: (value: BotAvatarType) => void }) {
+  const [hot, setHot] = useState<BotAvatarType | null>(null);
+  return (
+    <div className="grid grid-cols-8 gap-1 sm:w-[19rem]" role="radiogroup" aria-label="Tutor avatar">
+      {BOT_TYPES.map((type) => (
+        <button
+          key={type}
+          role="radio"
+          aria-checked={value === type}
+          aria-label={BOT_LABELS[type]}
+          title={BOT_LABELS[type]}
+          onClick={() => onChange(type)}
+          onPointerEnter={() => setHot(type)}
+          onPointerLeave={() => setHot(null)}
+          className={cx(
+            "flex items-center justify-center rounded-xl pt-2 pb-1 transition-colors",
+            value === type ? "bg-white/12 ring-1 ring-white/30" : "hover:bg-white/6",
+          )}
+        >
+          <BotAvatar type={type} size={28} state={hot === type ? "working" : "default"} paused={hot !== type && value !== type} aria-hidden />
         </button>
       ))}
     </div>
@@ -137,6 +180,32 @@ export function SettingsModal() {
               { value: "browser", label: "Browser" },
             ]}
           />
+        </Row>
+        <Row label="Tutor avatar" hint="Hops while it works on an answer. Hover to wake one up.">
+          <AvatarPicker value={state.tutorAvatar} onChange={(value) => state.set({ tutorAvatar: value })} />
+        </Row>
+        <Row
+          label="Voice orb"
+          badge={<MetalBadge>New</MetalBadge>}
+          hint={`${ORB_STYLE_LABELS[state.orbStyle]} · reacts to your voice and the tutor's.`}
+        >
+          <div className="flex gap-1.5" role="radiogroup" aria-label="Voice orb style">
+            {ORB_STYLES.map((style) => (
+              <button
+                key={style}
+                role="radio"
+                aria-checked={state.orbStyle === style}
+                aria-label={ORB_STYLE_LABELS[style]}
+                title={ORB_STYLE_LABELS[style]}
+                onClick={() => state.set({ orbStyle: style })}
+                className={cx(
+                  "size-7 rounded-full ring-2 transition-transform hover:scale-110",
+                  state.orbStyle === style ? "ring-white/80" : "ring-white/10",
+                )}
+                style={{ background: orbSwatch(style) }}
+              />
+            ))}
+          </div>
         </Row>
         <Row label="Motion" hint="Animations and transitions.">
           <Segmented

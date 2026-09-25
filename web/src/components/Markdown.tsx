@@ -9,9 +9,10 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import type { PluggableList } from "unified";
 import type { WebSource } from "@shared/types";
+import { rehypeStreamWords } from "@/lib/rehype-stream-words";
 import { useApp } from "@/store/app";
 import { CodeBlock } from "./CodeBlock";
-import { Diagram } from "./Diagram";
+import { Diagram, DiagramSkeleton } from "./Diagram";
 import type { DiagramTheme } from "@/lib/mermaid";
 import { cx } from "./ui";
 
@@ -24,6 +25,8 @@ type Props = {
   web?: WebSource[];
   tone?: "light" | "dark" | "paper";
   streaming?: boolean;
+  /** Fade each newly arrived word in (streaming drafts). */
+  animateWords?: boolean;
   className?: string;
 };
 
@@ -135,6 +138,7 @@ export const Markdown = memo(function Markdown({
   web,
   tone = "light",
   streaming = false,
+  animateWords = false,
   className,
 }: Props) {
   const prepared = useMemo(() => {
@@ -142,7 +146,11 @@ export const Markdown = memo(function Markdown({
     return { source: linkCitations(visible), drawing };
   }, [text, streaming]);
 
-  const rehypePlugins = useRehypePlugins(text);
+  const mathPlugins = useRehypePlugins(text);
+  const rehypePlugins = useMemo<PluggableList>(
+    () => (animateWords ? [...mathPlugins, rehypeStreamWords] : mathPlugins),
+    [mathPlugins, animateWords],
+  );
   const diagramTheme: DiagramTheme = tone === "dark" ? "dark" : tone === "paper" ? "paper" : "light";
 
   const components = useMemo<Components>(
@@ -175,12 +183,13 @@ export const Markdown = memo(function Markdown({
         {prepared.source}
       </ReactMarkdown>
       {prepared.drawing && (
-        <div className="mt-3 flex items-center gap-2 rounded-2xl bg-orange-50 px-4 py-3 text-sm text-orange-900">
-          <span className="relative flex size-2.5">
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-signal opacity-60" />
-            <span className="relative inline-flex size-2.5 rounded-full bg-signal" />
-          </span>
-          Sketching a diagram…
+        <div
+          className={cx(
+            "my-3 overflow-hidden rounded-2xl",
+            tone === "dark" ? "bg-white/[0.03] ring-1 ring-white/8" : "diagram-canvas ring-1 ring-stone-200/90",
+          )}
+        >
+          <DiagramSkeleton tone={tone === "dark" ? "dark" : "light"} label="Sketching a diagram…" />
         </div>
       )}
     </div>
