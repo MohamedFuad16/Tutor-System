@@ -15,3 +15,4 @@ graphify-out/cache/
 graphify-out/memory/
 graphify-out/.graphify_root
 graphify-out/.rebuild.lock
+test/e2e/shots/

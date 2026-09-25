@@ -1,0 +1,18 @@
+node_modules
+dist
+data
+.git
+.env
+*.log
+test/e2e/shots
+graphify-out
+# Legacy v1 sources (unused by the v2 build)
+src
+tests
+api
+scripts
+server.ts
+public/audio-overviews
+.workflow
+.antigravity
+output

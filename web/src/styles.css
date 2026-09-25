@@ -1,0 +1,395 @@
+@import "tailwindcss";
+@import "@fontsource/geist-sans/300.css";
+@import "@fontsource/geist-sans/400.css";
+@import "@fontsource/geist-sans/500.css";
+@import "@fontsource/geist-sans/600.css";
+@import "@fontsource/space-grotesk/400.css";
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/lora/400.css";
+@import "@fontsource/lora/500.css";
+@import "@fontsource/lora/600.css";
+@import "@fontsource/lora/400-italic.css";
+@import "@fontsource/geist-mono/400.css";
+@import "katex/dist/katex.min.css";
+
+@plugin "@tailwindcss/typography";
+
+/*
+ * Design tokens — "Obsidian & Paper".
+ * Dark obsidian canvas for the workspace, one warm signal colour for action,
+ * violet/blue light for anything the AI is doing, warm paper for notebooks.
+ */
+@theme {
+  --font-sans: "Geist Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Lora", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --color-ink-950: #050505;
+  --color-ink-900: #0a0a0b;
+  --color-ink-850: #0f0f11;
+  --color-ink-800: #141417;
+  --color-ink-700: #1c1c21;
+  --color-ink-600: #26262d;
+  --color-ink-500: #3a3a43;
+
+  --color-fog-50: #f4f4f1;
+  --color-fog-200: #d4d4d0;
+  --color-fog-400: #a1a1a6;
+  --color-fog-500: #7c7c83;
+  --color-fog-600: #5b5b62;
+
+  --color-signal: #ff6e00;
+  --color-signal-soft: #ff9a4d;
+  --color-signal-deep: #d45700;
+
+  --color-aura-violet: #8b5cf6;
+  --color-aura-blue: #3b82f6;
+  --color-aura-cyan: #22d3ee;
+  --color-aura-pink: #f472b6;
+
+  --color-paper: #f7f3ec;
+  --color-paper-2: #efe9dd;
+  --color-paper-3: #e4dccd;
+  --color-paper-ink: #1f1b16;
+  --color-paper-muted: #6f675b;
+  --color-paper-line: #d8cfbf;
+
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
+  --color-bad: #f87171;
+
+  --radius-card: 1.75rem;
+  --shadow-float: 0 30px 80px -30px rgba(0, 0, 0, 0.85), 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  --shadow-paper: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 18px 40px -24px rgba(58, 42, 20, 0.45);
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-breathe: breathe 3.2s ease-in-out infinite;
+  --animate-spin-slow: spin 6s linear infinite;
+
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+  @keyframes breathe {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.85;
+    }
+    50% {
+      transform: scale(1.06);
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    background: var(--color-ink-950);
+    color: var(--color-fog-50);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    letter-spacing: -0.006em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    font-weight: 500;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--color-signal) 35%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 2px;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+  /* Thin, quiet scrollbars everywhere. */
+  .scroll-quiet {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(127, 127, 127, 0.35) transparent;
+  }
+  .scroll-quiet::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scroll-quiet::-webkit-scrollbar-thumb {
+    background: rgba(127, 127, 127, 0.35);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  /* Dark frosted surface used for floating chrome. */
+  .glass {
+    background: color-mix(in oklab, var(--color-ink-850) 78%, transparent);
+    backdrop-filter: blur(18px) saturate(1.3);
+    -webkit-backdrop-filter: blur(18px) saturate(1.3);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  /* Liquid glass for AI surfaces: light that shifts with an animated angle. */
+  .liquid-glass {
+    position: relative;
+    background:
+      radial-gradient(120% 120% at 20% 0%, rgba(139, 92, 246, 0.18), transparent 55%),
+      radial-gradient(120% 120% at 100% 100%, rgba(59, 130, 246, 0.14), transparent 55%),
+      color-mix(in oklab, var(--color-ink-850) 70%, transparent);
+    backdrop-filter: blur(22px) saturate(1.4);
+    -webkit-backdrop-filter: blur(22px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      var(--shadow-float);
+  }
+
+  /* Paper surface with a whisper of grain for notebooks and the study guide. */
+  .paper {
+    background-color: var(--color-paper);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .18 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    color: var(--color-paper-ink);
+  }
+  .paper-card {
+    background: color-mix(in oklab, #fffdf8 88%, var(--color-paper));
+    border: 1px solid var(--color-paper-line);
+    box-shadow: var(--shadow-paper);
+    border-radius: 1.25rem;
+  }
+
+  .shimmer-text {
+    background: linear-gradient(90deg, currentColor 20%, rgba(255, 255, 255, 0.95) 45%, currentColor 70%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: var(--animate-shimmer);
+  }
+
+  .kbd {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: 0.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Markdown answers (light chat surface). */
+.answer {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #1c1c1f;
+}
+.answer > * + * {
+  margin-top: 0.8em;
+}
+.answer h1,
+.answer h2,
+.answer h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 1.2em;
+}
+.answer h1 {
+  font-size: 1.25rem;
+}
+.answer h2 {
+  font-size: 1.12rem;
+}
+.answer h3 {
+  font-size: 1rem;
+}
+.answer strong {
+  font-weight: 600;
+  color: #0b0b0c;
+}
+.answer a {
+  color: var(--color-signal-deep);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.answer ul,
+.answer ol {
+  padding-left: 1.25rem;
+}
+.answer ul {
+  list-style: disc;
+}
+.answer ol {
+  list-style: decimal;
+}
+.answer li + li {
+  margin-top: 0.3em;
+}
+.answer li::marker {
+  color: #a8a29e;
+}
+.answer blockquote {
+  border-left: 3px solid var(--color-signal);
+  padding: 0.1rem 0 0.1rem 0.9rem;
+  color: #57534e;
+  font-style: italic;
+}
+.answer :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: #f1efe9;
+  border: 1px solid #e7e3da;
+  padding: 0.08rem 0.35rem;
+  border-radius: 0.35rem;
+}
+.answer table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  display: block;
+  overflow-x: auto;
+}
+.answer th,
+.answer td {
+  border-bottom: 1px solid #ebe7df;
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+}
+.answer th {
+  font-weight: 600;
+  background: #f7f5f0;
+}
+.answer hr {
+  border: 0;
+  border-top: 1px solid #ebe7df;
+}
+.answer .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0;
+}
+
+/* The same markdown on dark surfaces (voice stage, built-in books). */
+.answer-dark {
+  color: #e7e7e4;
+}
+.answer-dark strong {
+  color: #fff;
+}
+.answer-dark :not(pre) > code {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.answer-dark blockquote {
+  color: #b4b4b8;
+}
+.answer-dark th {
+  background: rgba(255, 255, 255, 0.04);
+}
+.answer-dark th,
+.answer-dark td {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Paper markdown (study guide). */
+.answer-paper {
+  color: var(--color-paper-ink);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+}
+.answer-paper strong {
+  color: #0f0c08;
+}
+.answer-paper :not(pre) > code {
+  background: #efe7d8;
+  border-color: #e0d5c1;
+}
+
+/* Mermaid diagrams. */
+.mermaid-host svg {
+  max-width: 100%;
+  height: auto;
+}
+.mermaid-host .node rect,
+.mermaid-host .node circle,
+.mermaid-host .node polygon,
+.mermaid-host .node path {
+  transition:
+    filter 0.35s ease,
+    stroke 0.35s ease,
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+.mermaid-host[data-touring="true"] .node:not([data-active="true"]),
+.mermaid-host[data-touring="true"] .edgePath,
+.mermaid-host[data-touring="true"] .flowchart-link {
+  opacity: 0.38;
+  transition: opacity 0.35s ease;
+}
+.mermaid-host .node[data-active="true"] rect,
+.mermaid-host .node[data-active="true"] circle,
+.mermaid-host .node[data-active="true"] polygon,
+.mermaid-host .node[data-active="true"] path {
+  stroke: var(--color-signal) !important;
+  stroke-width: 2.5px !important;
+  filter: drop-shadow(0 0 10px rgba(255, 110, 0, 0.55));
+}
+.mermaid-host .draw-in path.flowchart-link,
+.mermaid-host .draw-in .edgePath path {
+  stroke-dasharray: var(--len, 400);
+  stroke-dashoffset: var(--len, 400);
+  animation: draw-edge 0.9s ease forwards;
+  animation-delay: var(--delay, 0s);
+}
+.mermaid-host .draw-in .node,
+.mermaid-host .draw-in .edgeLabel {
+  opacity: 0;
+  animation: pop-node 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes draw-edge {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+/* Opacity only: SVG groups are positioned by their transform attribute, which a CSS transform would override. */
+@keyframes pop-node {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
