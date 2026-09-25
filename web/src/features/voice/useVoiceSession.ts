@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ClientVoiceMessage, ServerVoiceMessage, VoiceState, VoiceVisual } from "@shared/voice";
 import { unpackAudio } from "@shared/voice";
 import { api, wsUrl } from "@/lib/api";
-import { MicCapture, PcmPlayer } from "@/lib/audio";
+import { MicCapture, PcmPlayer, silentBands } from "@/lib/audio";
 import { keys, queryClient } from "@/lib/queries";
 import { useApp } from "@/store/app";
 
@@ -364,6 +364,8 @@ export function useVoiceSession() {
     },
     /** 0..1 levels for the orb (read inside animation frames, no re-render). */
     levels: () => ({ mic: Math.min(1, micLevel.current * 6), out: Math.min(1, (player.current?.loudness() ?? 0) * 5) }),
+    /** Per-band energy of the learner's mic and the tutor's voice (read per frame). */
+    bands: () => ({ mic: mic.current?.bands() ?? silentBands(), out: player.current?.bands() ?? silentBands() }),
   };
 }
 

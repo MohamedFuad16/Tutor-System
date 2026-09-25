@@ -5,11 +5,15 @@
  */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { BotAvatarType } from "@/components/fx/BotAvatar";
 
 export type View = "study" | "revision" | "analytics";
 
 export type VoiceInputMode = "auto" | "server" | "browser";
 export type VoiceOutputMode = "auto" | "server" | "browser";
+
+/** Liquid orb preset for voice mode (see features/voice/VoiceOrb). */
+export type OrbStyle = "siri" | "violetEmber" | "voiceWave" | "aurora" | "plasma" | "spectrum";
 
 export type PendingSelection = { documentId: string; page: number; text: string };
 
@@ -23,6 +27,9 @@ type AppState = {
   voiceOutput: VoiceOutputMode;
   deepMode: boolean;
   webMode: boolean;
+  orbStyle: OrbStyle;
+  /** The tutor's avatar in chat. */
+  tutorAvatar: BotAvatarType;
 
   view: View;
   activeBookId: string | null;
@@ -69,6 +76,8 @@ export const useApp = create<AppState>()(
       voiceOutput: "auto",
       deepMode: false,
       webMode: false,
+      orbStyle: "siri",
+      tutorAvatar: "clover",
 
       view: "study",
       activeBookId: null,
@@ -109,6 +118,8 @@ export const useApp = create<AppState>()(
         voiceInput: state.voiceInput,
         voiceOutput: state.voiceOutput,
         deepMode: state.deepMode,
+        orbStyle: state.orbStyle,
+        tutorAvatar: state.tutorAvatar,
         view: state.view,
         activeBookId: state.activeBookId,
         activeDocumentByBook: state.activeDocumentByBook,

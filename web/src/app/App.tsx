@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { Spinner, Toaster } from "@/components/ui";
 import { StudyView } from "@/features/study/StudyView";
-import { VoiceOverlay } from "@/features/voice/VoiceOverlay";
 import { api } from "@/lib/api";
 import { useServerEvents } from "@/lib/events";
 import { keys, queryClient, useBooks } from "@/lib/queries";
@@ -18,6 +17,21 @@ const RevisionView = lazy(() => import("@/features/revision/RevisionView").then(
 const AnalyticsView = lazy(() =>
   import("@/features/analytics/AnalyticsView").then((m) => ({ default: m.AnalyticsView })),
 );
+
+// Voice mode (and its WebGPU orb shader) loads on first use, prefetched when the app goes idle.
+const loadVoice = () => import("@/features/voice/VoiceOverlay");
+const VoiceOverlay = lazy(() => loadVoice().then((m) => ({ default: m.VoiceOverlay })));
+
+function useVoiceChunk() {
+  const open = useApp((state) => state.voiceOpen);
+  const mounted = useRef(false);
+  if (open) mounted.current = true;
+  useEffect(() => {
+    const idle = window.requestIdleCallback ?? ((fn: () => void) => window.setTimeout(fn, 2500));
+    idle(() => void loadVoice());
+  }, []);
+  return mounted.current;
+}
 
 /** Makes sure there is always an active notebook. */
 function useEnsureNotebook() {
@@ -77,6 +91,7 @@ export function App() {
   const motionOn = useMotion();
   useServerEvents();
   useEnsureNotebook();
+  const voiceMounted = useVoiceChunk();
   useStudyHeartbeat();
 
   useEffect(() => {
@@ -127,7 +142,11 @@ export function App() {
           </motion.div>
         </AnimatePresence>
       </main>
-      <VoiceOverlay />
+      {voiceMounted && (
+        <Suspense fallback={null}>
+          <VoiceOverlay />
+        </Suspense>
+      )}
       <SettingsModal />
       <Toaster />
     </div>

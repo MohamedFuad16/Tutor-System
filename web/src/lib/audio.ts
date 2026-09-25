@@ -53,10 +53,37 @@ registerProcessor("tutor-capture", Capture);
 
 let workletUrl: string | null = null;
 
+/** Smoothed-by-caller 0..1 energy per voice band, for audio-reactive visuals. */
+export type AudioBands = { low: number; mid: number; high: number; all: number };
+export const silentBands = (): AudioBands => ({ low: 0, mid: 0, high: 0, all: 0 });
+
+/** Low / mid / high band energy and overall RMS from an analyser (same scaling as the orb's reference). */
+function readBands(analyser: AnalyserNode, spectrum: Uint8Array<ArrayBuffer>, wave: Float32Array<ArrayBuffer>): AudioBands {
+  analyser.getByteFrequencyData(spectrum);
+  analyser.getFloatTimeDomainData(wave);
+  let sum = 0;
+  for (const value of wave) sum += value * value;
+  const all = Math.min(1, Math.max(0, Math.sqrt(sum / wave.length) - 0.004) * 5.5);
+  if (!all) return silentBands();
+  const nyquist = analyser.context.sampleRate / 2;
+  const bin = (hz: number) => Math.max(0, Math.min(spectrum.length - 1, Math.round((hz / nyquist) * spectrum.length)));
+  const average = (from: number, to: number) => {
+    const start = bin(from);
+    const end = bin(to);
+    let total = 0;
+    for (let i = start; i <= end; i += 1) total += spectrum[i];
+    return Math.min(1, (total / (end - start + 1) / 255) * 2);
+  };
+  return { low: average(30, 200), mid: average(200, 2000), high: average(2000, 12000), all };
+}
+
 export class MicCapture {
   private context: AudioContext | null = null;
   private stream: MediaStream | null = null;
   private node: AudioWorkletNode | null = null;
+  private analyser: AnalyserNode | null = null;
+  private spectrum = new Uint8Array(512);
+  private wave = new Float32Array(1024);
   muted = false;
 
   constructor(
@@ -80,14 +107,25 @@ export class MicCapture {
       this.onFrame(this.muted ? new ArrayBuffer(pcm.byteLength) : pcm, this.muted ? 0 : rms);
     };
     source.connect(this.node);
+    this.analyser = this.context.createAnalyser();
+    this.analyser.fftSize = 1024;
+    this.analyser.smoothingTimeConstant = 0.65;
+    source.connect(this.analyser);
     // Keep the graph pulling without making the mic audible.
     const sink = this.context.createGain();
     sink.gain.value = 0;
     this.node.connect(sink).connect(this.context.destination);
   }
 
+  /** Mic energy per band (zero while muted). */
+  bands(): AudioBands {
+    return this.analyser && !this.muted ? readBands(this.analyser, this.spectrum, this.wave) : silentBands();
+  }
+
   stop() {
     this.node?.disconnect();
+    this.analyser?.disconnect();
+    this.analyser = null;
     this.stream?.getTracks().forEach((track) => track.stop());
     void this.context?.close().catch(() => undefined);
     this.node = null;
@@ -109,6 +147,8 @@ export class PcmPlayer {
   private timers = new Set<number>();
   private dropped = new Set<number>();
   private level = new Uint8Array(128);
+  private spectrum = new Uint8Array(256);
+  private wave = new Float32Array(512);
   private leftover: Uint8Array | null = null;
 
   constructor(
@@ -118,7 +158,8 @@ export class PcmPlayer {
     this.context = new AudioContext();
     this.gain = this.context.createGain();
     this.analyser = this.context.createAnalyser();
-    this.analyser.fftSize = 256;
+    this.analyser.fftSize = 512;
+    this.analyser.smoothingTimeConstant = 0.6;
     this.gain.connect(this.analyser).connect(this.context.destination);
   }
 
@@ -214,6 +255,11 @@ export class PcmPlayer {
       sum += centered * centered;
     }
     return Math.sqrt(sum / this.level.length);
+  }
+
+  /** Output energy per band, for the orb while the tutor speaks. */
+  bands(): AudioBands {
+    return readBands(this.analyser, this.spectrum, this.wave);
   }
 
   close() {
