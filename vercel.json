@@ -6,8 +6,8 @@
   "outputDirectory": "deploy/vercel",
   "redirects": [
     {
-      "source": "/:path*",
-      "destination": "https://tutorsystem.mohamedfuad.com/:path*",
+      "source": "/(.*)",
+      "destination": "https://tutorsystem.mohamedfuad.com/$1",
       "permanent": false
     }
   ]
