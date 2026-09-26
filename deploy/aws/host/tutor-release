@@ -1,0 +1,41 @@
+#!/bin/bash
+# tutor-release [git-ref | --settings-only]
+#
+# Fetches a revision of the repository, then hands over to the checked-out
+# deploy/aws/host/release.sh, which builds, rolls out, health-checks and
+# rolls back. With no argument, it deploys the instance's TutorGitRef tag.
+# --settings-only re-applies SSM settings to the current revision.
+#
+# bootstrap.sh installs it to /usr/local/sbin; deploy.sh runs it through SSM.
+set -euo pipefail
+export PATH="$PATH:/snap/bin"
+
+# One release at a time. The lock fd is inherited by release.sh via exec.
+exec 9>/run/tutor-release.lock
+flock -n 9 || {
+  echo "[tutor-release] another release is already running"
+  exit 1
+}
+
+imds() {
+  local token
+  token=$(curl -sf -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' http://169.254.169.254/latest/api/token) || return 1
+  curl -sf -H "X-aws-ec2-metadata-token: $token" "http://169.254.169.254/latest/meta-data/$1"
+}
+
+cd /opt/tutor/src
+if [ "${1:-}" != "--settings-only" ]; then
+  ref=${1:-$(imds tags/instance/TutorGitRef)}
+  if ! [[ $ref =~ ^[A-Za-z0-9._/-]+$ ]]; then
+    echo "[tutor-release] invalid git ref: $ref"
+    exit 2
+  fi
+  git fetch -q --prune --tags origin '+refs/heads/*:refs/remotes/origin/*'
+  if git rev-parse -q --verify "origin/$ref^{commit}" >/dev/null; then
+    git checkout -q --detach "origin/$ref"
+  else
+    git checkout -q --detach "$ref"
+  fi
+  echo "[tutor-release] $ref -> $(git rev-parse --short=12 HEAD) $(git log -1 --format=%s)"
+fi
+exec bash deploy/aws/host/release.sh

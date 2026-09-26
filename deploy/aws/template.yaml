@@ -1,0 +1,366 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Tutor v2 single-node production host. A Graviton EC2 instance behind an
+  Elastic IP runs the app and Caddy (automatic HTTPS) with Docker Compose.
+  Learner data lives on a separate encrypted EBS volume with daily snapshots.
+  API keys live in SSM Parameter Store. Deploy with deploy/aws/deploy.sh.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label: { default: Host }
+        Parameters: [InstanceType, DataVolumeSize, AvailabilityZone, ImageId]
+      - Label: { default: Site }
+        Parameters: [DomainName, GitRepository, GitRef]
+      - Label: { default: Cost guardrail }
+        Parameters: [AlertEmail, MonthlyBudgetUsd]
+
+Parameters:
+  ImageId:
+    Type: AWS::EC2::Image::Id
+    Description: >-
+      Ubuntu 24.04 LTS arm64 AMI. deploy.sh resolves Canonical's current image
+      once and pins it, so later stack updates never replace the instance.
+  AvailabilityZone:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Description: Zone for the instance and its data volume (they must match).
+  InstanceType:
+    Type: String
+    Default: t4g.small
+    AllowedValues: [t4g.small, t4g.medium, t4g.large, t4g.xlarge]
+    Description: >-
+      Graviton burstable instance. t4g.small (2 vCPU, 2 GiB) is Free Tier
+      eligible for new accounts and fits a class-sized cohort.
+  DataVolumeSize:
+    Type: Number
+    Default: 20
+    MinValue: 8
+    MaxValue: 1024
+    Description: GiB for the SQLite database, uploaded PDFs and TLS certificates.
+  DomainName:
+    Type: String
+    Default: ""
+    AllowedPattern: ^$|^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$
+    Description: >-
+      Optional custom domain (point its A record at the PublicIp output).
+      Empty uses <ip>.sslip.io, which works immediately with a real certificate.
+  GitRepository:
+    Type: String
+    Default: https://github.com/MohamedFuad16/Tutor-System.git
+    AllowedPattern: ^https://\S+$
+    Description: Public Git repository the host builds from.
+  GitRef:
+    Type: String
+    Default: main
+    AllowedPattern: ^[A-Za-z0-9._/-]+$
+    Description: >-
+      Branch, tag or commit deployed on first boot and by a bare
+      "deploy.sh release". Changing it never restarts the instance.
+  AlertEmail:
+    Type: String
+    Default: ""
+    Description: Optional address for the monthly AWS budget alerts.
+  MonthlyBudgetUsd:
+    Type: Number
+    Default: 30
+    MinValue: 1
+    Description: Monthly account budget (USD) that triggers the alerts.
+
+Conditions:
+  HasDomain: !Not [!Equals [!Ref DomainName, ""]]
+  HasBudget: !Not [!Equals [!Ref AlertEmail, ""]]
+
+Resources:
+  # ---------------------------------------------------------------- network
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.42.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags: [{ Key: Name, Value: !Ref AWS::StackName }]
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags: [{ Key: Name, Value: !Ref AWS::StackName }]
+
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.42.1.0/24
+      AvailabilityZone: !Ref AvailabilityZone
+      MapPublicIpOnLaunch: false # Outbound and inbound traffic use the Elastic IP.
+      Tags: [{ Key: Name, Value: !Sub "${AWS::StackName}-public" }]
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags: [{ Key: Name, Value: !Sub "${AWS::StackName}-public" }]
+
+  DefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRoutes:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: HTTPS for learners (HTTP only redirects). No SSH; use Session Manager.
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - {
+            IpProtocol: tcp,
+            FromPort: 80,
+            ToPort: 80,
+            CidrIp: 0.0.0.0/0,
+            Description: ACME challenge and redirect to HTTPS,
+          }
+        - { IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0, Description: HTTPS and WebSocket voice }
+        - { IpProtocol: udp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0, Description: HTTP/3 }
+      SecurityGroupEgress:
+        - { IpProtocol: -1, CidrIp: 0.0.0.0/0, Description: Z.AI Deepgram search package mirrors and AWS APIs }
+      Tags: [{ Key: Name, Value: !Sub "${AWS::StackName}-web" }]
+
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayAttachment
+    Properties:
+      Domain: vpc
+      Tags: [{ Key: Name, Value: !Ref AWS::StackName }]
+
+  # ---------------------------------------------------------------- identity
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Tutor host. Session Manager, its own settings and its own log group only.
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: ec2.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: read-app-settings
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [ssm:GetParametersByPath, ssm:GetParameters, ssm:GetParameter]
+                Resource:
+                  - !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/tutor/${AWS::StackName}
+                  - !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/tutor/${AWS::StackName}/*
+        - PolicyName: write-own-logs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents, logs:DescribeLogStreams]
+                Resource: !GetAtt LogGroup.Arn
+              - Effect: Allow # The SSM agent checks the group exists before streaming command output.
+                Action: logs:DescribeLogGroups
+                Resource: "*"
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: [!Ref InstanceRole]
+
+  # ---------------------------------------------------------------- compute
+  # Editing the launch template replaces the instance. The data volume survives
+  # (it is separate), but prefer changing tags or InstanceType where possible.
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        MetadataOptions:
+          HttpEndpoint: enabled
+          HttpTokens: required # IMDSv2 only.
+          HttpPutResponseHopLimit: 1 # Containers cannot reach the instance role.
+          InstanceMetadataTags: enabled # Host scripts read TutorSite/TutorGitRef tags.
+        BlockDeviceMappings:
+          - DeviceName: /dev/sda1
+            Ebs: { VolumeSize: 20, VolumeType: gp3, Encrypted: true, DeleteOnTermination: true }
+
+  Instance:
+    Type: AWS::EC2::Instance
+    DependsOn: DefaultRoute
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      ImageId: !Ref ImageId
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref InstanceProfile
+      SubnetId: !Ref PublicSubnet
+      SecurityGroupIds: [!Ref WebSecurityGroup]
+      PropagateTagsToVolumeOnCreation: true
+      Tags:
+        - { Key: Name, Value: !Ref AWS::StackName }
+        # Mutable settings are tags, not user data: updating them never stops the instance.
+        - Key: TutorSite
+          Value: !If
+            - HasDomain
+            - !Ref DomainName
+            - !Join ["", [!Join ["-", !Split [".", !Ref ElasticIP]], ".sslip.io"]]
+        - { Key: TutorGitRepository, Value: !Ref GitRepository }
+        - { Key: TutorGitRef, Value: !Ref GitRef }
+      # Immutable facts only, so stack updates never change user data.
+      # Everything after the clone lives in deploy/aws/host/ in the repository.
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euo pipefail
+          exec > >(tee -a /var/log/tutor-bootstrap.log) 2>&1
+          echo "[tutor-bootstrap] first boot $(date -Is)"
+          install -d -m 0755 /opt/tutor
+          cat > /opt/tutor/host.env <<EOF
+          STACK_NAME=${AWS::StackName}
+          AWS_REGION=${AWS::Region}
+          LOG_GROUP=${LogGroup}
+          DATA_VOLUME_ID=${DataVolume}
+          PUBLIC_IP=${ElasticIP}
+          EOF
+          imds() {
+            local token
+            token=$(curl -sf -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' http://169.254.169.254/latest/api/token) || return 1
+            curl -sf -H "X-aws-ec2-metadata-token: $token" "http://169.254.169.254/latest/meta-data/$1"
+          }
+          # Internet access comes with the Elastic IP; wait for the association.
+          for _ in $(seq 1 120); do
+            [ "$(imds public-ipv4 || true)" = "${ElasticIP}" ] && break
+            sleep 5
+          done
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get -o DPkg::Lock::Timeout=900 -q update
+          apt-get -o DPkg::Lock::Timeout=900 -q install -y git
+          repo=$(imds tags/instance/TutorGitRepository)
+          ref=$(imds tags/instance/TutorGitRef)
+          git clone -q "$repo" /opt/tutor/src
+          git -C /opt/tutor/src checkout -q --detach "origin/$ref" 2>/dev/null || git -C /opt/tutor/src checkout -q --detach "$ref"
+          exec bash /opt/tutor/src/deploy/aws/host/bootstrap.sh
+
+  ElasticIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt ElasticIP.AllocationId
+      InstanceId: !Ref Instance
+
+  # ---------------------------------------------------------------- data
+  DataVolume:
+    Type: AWS::EC2::Volume
+    DeletionPolicy: Snapshot # Deleting the stack keeps a final snapshot of learner data.
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone
+      Size: !Ref DataVolumeSize
+      VolumeType: gp3
+      Encrypted: true
+      Tags:
+        - { Key: Name, Value: !Sub "${AWS::StackName}-data" }
+        - { Key: tutor-backup, Value: !Ref AWS::StackName }
+
+  DataVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: /dev/sdf
+      InstanceId: !Ref Instance
+      VolumeId: !Ref DataVolume
+
+  SnapshotRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: dlm.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSDataLifecycleManagerServiceRole
+
+  SnapshotPolicy:
+    Type: AWS::DLM::LifecyclePolicy
+    Properties:
+      Description: !Sub Tutor ${AWS::StackName} daily data snapshots
+      State: ENABLED
+      ExecutionRoleArn: !GetAtt SnapshotRole.Arn
+      PolicyDetails:
+        ResourceTypes: [VOLUME]
+        TargetTags:
+          - { Key: tutor-backup, Value: !Ref AWS::StackName }
+        Schedules:
+          - Name: Daily
+            CopyTags: true
+            CreateRule: { Interval: 24, IntervalUnit: HOURS, Times: ["18:00"] } # 03:00 JST
+            RetainRule: { Count: 7 }
+
+  # ---------------------------------------------------------------- operations
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /tutor/${AWS::StackName}
+      RetentionInDays: 30
+
+  Budget:
+    Type: AWS::Budgets::Budget
+    Condition: HasBudget
+    Properties:
+      Budget:
+        BudgetName: !Sub ${AWS::StackName}-monthly
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit: { Amount: !Ref MonthlyBudgetUsd, Unit: USD }
+      NotificationsWithSubscribers:
+        - Notification:
+            { NotificationType: ACTUAL, ComparisonOperator: GREATER_THAN, Threshold: 80, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref AlertEmail }]
+        - Notification:
+            {
+              NotificationType: FORECASTED,
+              ComparisonOperator: GREATER_THAN,
+              Threshold: 100,
+              ThresholdType: PERCENTAGE,
+            }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref AlertEmail }]
+
+Outputs:
+  Url:
+    Description: Where learners open the app.
+    Value: !Sub
+      - https://${Site}
+      - Site: !If
+          - HasDomain
+          - !Ref DomainName
+          - !Join ["", [!Join ["-", !Split [".", !Ref ElasticIP]], ".sslip.io"]]
+  PublicIp:
+    Description: Elastic IP (point a custom domain's A record here).
+    Value: !Ref ElasticIP
+  InstanceId:
+    Value: !Ref Instance
+  DataVolumeId:
+    Value: !Ref DataVolume
+  LogGroupName:
+    Value: !Ref LogGroup
+  SettingsPath:
+    Description: SSM Parameter Store path whose parameters become the app's environment.
+    Value: !Sub /tutor/${AWS::StackName}/

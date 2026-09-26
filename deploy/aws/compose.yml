@@ -1,0 +1,62 @@
+# Production runtime on the EC2 host (see deploy/aws/README.md).
+# release.sh sets TUTOR_IMAGE, SITE_ADDRESS and CADDYFILE_SHA; host.env,
+# written on first boot, supplies AWS_REGION and LOG_GROUP.
+name: tutor
+
+services:
+  app:
+    image: ${TUTOR_IMAGE:?set by release.sh}
+    restart: unless-stopped
+    env_file: /opt/tutor/app.env # Rendered from SSM Parameter Store, root-only.
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATA_DIR: /data
+    volumes:
+      - /srv/tutor-data/app:/data
+    expose: ["3000"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 4s
+      retries: 3
+      start_period: 20s
+    stop_grace_period: 15s # The server drains voice sessions on SIGTERM.
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: ${LOG_GROUP}
+        awslogs-stream: app
+
+  caddy:
+    image: caddy:2.11-alpine
+    restart: unless-stopped
+    depends_on: [app]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?set by release.sh}
+    labels:
+      tutor.caddyfile-sha: ${CADDYFILE_SHA:-unset} # Recreate Caddy when its config changes.
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - /srv/tutor-data/caddy/data:/data # Certificates survive restarts and rebuilds.
+      - /srv/tutor-data/caddy/config:/config
+    security_opt: ["no-new-privileges:true"]
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: ${LOG_GROUP}
+        awslogs-stream: caddy

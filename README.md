@@ -122,6 +122,18 @@ documented in [`.env.example`](.env.example).
 
 ## Deploying
 
+**AWS (recommended).** Run one command in AWS CloudShell and it deploys into
+your own account. You get a Graviton EC2 host, automatic HTTPS, API keys in
+SSM Parameter Store, daily snapshots of learner data, health-checked releases
+with automatic rollback, and costs of about $20 a month. See
+**[deploy/aws/README.md](deploy/aws/README.md)**.
+
+```bash
+./deploy/aws/deploy.sh up --email you@example.com   # in CloudShell, from a clone of this repo
+```
+
+**Any Docker host.**
+
 ```bash
 docker build -t tutor .
 docker run -p 3000:3000 -v tutor-data:/data --env-file .env tutor
@@ -129,13 +141,13 @@ docker run -p 3000:3000 -v tutor-data:/data --env-file .env tutor
 
 - The image runs as non-root, has a health check, and shuts down gracefully
   (voice sessions drain on `SIGTERM`).
-- Voice needs a host that keeps WebSockets open: ECS/Fargate or EC2 behind an
-  ALB, Fly.io, Render and similar all work. Serverless platforms such as
-  Vercel functions do not.
+- The server needs a long-running process and a persistent disk (SQLite and
+  PDFs), and it keeps voice WebSockets open. Serverless hosts such as Vercel
+  functions and free tiers that sleep or wipe the disk do not fit.
 - The SPA can still be served from a CDN; set `VITE_API_BASE` and
   `ALLOWED_ORIGINS`.
-- [docs/ARCHITECTURE.md §8](docs/ARCHITECTURE.md) covers the phase-1 single
-  instance and the phase-2 scale-out (RDS Postgres, S3, Redis, SQS).
+- [docs/ARCHITECTURE.md §8](docs/ARCHITECTURE.md) covers the single-instance
+  phase and the scale-out (RDS Postgres, S3, Redis, SQS).
 
 ## Project layout
 
@@ -146,7 +158,6 @@ web/        React app (Vite root): app shell, features/{study,chat,voice,revisio
 test/       vitest suites (server, shared, web) and the Playwright smoke walkthrough
 docs/       architecture
 ```
-
 
 ## License
 

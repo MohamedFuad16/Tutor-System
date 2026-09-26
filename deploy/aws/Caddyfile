@@ -1,0 +1,17 @@
+# TLS termination and reverse proxy for the Tutor app (see deploy/aws/README.md).
+# Caddy obtains and renews the certificate for SITE_ADDRESS automatically and
+# redirects HTTP to HTTPS. WebSocket upgrades (voice) pass through untouched.
+{
+	admin off
+}
+
+{$SITE_ADDRESS} {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	reverse_proxy app:3000 {
+		# Chat (SSE) and speech audio stream; never buffer them.
+		flush_interval -1
+	}
+}

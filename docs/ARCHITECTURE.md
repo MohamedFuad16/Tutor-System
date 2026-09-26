@@ -313,24 +313,34 @@ row-level ownership.
 
 ## 8. Deployment on AWS
 
-### Phase 1: single instance (up to about 1–2k concurrent learners)
+### Phase 1: single instance (implemented in `deploy/aws/`)
 
 ```mermaid
 flowchart LR
-  U[Users] --> CF[CloudFront]
-  CF --> ALB[ALB with WebSocket and 300 s idle timeout]
-  ALB --> ECS[ECS Fargate task or EC2 t4g.medium: Tutor container]
-  ECS --> EBS[(EBS gp3: SQLite + PDFs)]
-  ECS --> SM[Secrets Manager: ZAI, Deepgram, Serper keys]
-  ECS --> CW[CloudWatch logs and metrics]
+  U[Users] -->|HTTPS + WSS| EIP[Elastic IP]
+  EIP --> CADDY[Caddy: automatic TLS, HTTP/3]
+  CADDY --> APP[Tutor container on EC2 t4g, Ubuntu arm64]
+  APP --> EBS[(EBS gp3 data volume: SQLite + PDFs, DLM daily snapshots)]
+  APP --> SSM[SSM Parameter Store: ZAI, Deepgram, access code]
+  APP --> CW[CloudWatch Logs]
 ```
 
+- One CloudFormation stack (`deploy/aws/template.yaml`), driven from
+  CloudShell by `deploy/aws/deploy.sh`.
+- Releases build on the host from Git, roll out with Docker Compose and are
+  health-checked, with automatic rollback to the previous image. They run
+  through SSM Run Command, and there is no SSH.
 - The multi-stage `Dockerfile` builds the SPA and server bundle and runs as
   non-root with a `/api/health` check.
-- The server handles `SIGTERM` by draining voice sessions, so rolling deploys
-  don't cut learners off mid-sentence.
-- Cost is roughly $40–70 a month in infrastructure. Model, STT and TTS usage
-  dominates spend.
+- The server handles `SIGTERM` by draining voice sessions, so restarts don't
+  cut learners off mid-sentence.
+- Infrastructure costs about $20 a month. Model, STT and TTS usage dominates
+  spend.
+- **Phase 1b** keeps the app unchanged:
+  - builds move to GitHub Actions (OIDC → ECR);
+  - CloudFront and WAF go in front (the ALB is not needed until there are
+    several tasks);
+  - or the instance moves up to a larger `t4g`.
 
 ### Phase 2: horizontal scale (10k+ concurrent)
 
@@ -340,9 +350,12 @@ flowchart LR
 | Local PDF files                    | **S3** (`FileStore` interface)                                                       | one adapter            |
 | In-process `EventHub`              | **ElastiCache Redis** pub/sub                                                        | one class              |
 | In-process ingest and guide queues | **SQS** + worker service                                                             | job handlers unchanged |
+| In-memory voice tickets            | **HMAC-signed tickets** (or Redis)                                                   | `voice/gateway.ts`     |
 
 - Voice sessions are stateful per WebSocket. The ALB needs no stickiness
-  because a session never outlives its connection.
+  because a session never outlives its connection. The ticket, though, is
+  issued by a separate HTTP request that may land on another task, so it must
+  be verifiable anywhere.
 - Autoscale on active voice sessions and event-loop lag.
 
 ### Alternatives considered
@@ -354,9 +367,13 @@ flowchart LR
 - **Vector database** (Pinecone, OpenSearch). Not needed at notebook scale;
   BM25 over page-bounded chunks already grounds answers well. `pgvector` is
   the natural next step.
-- **Vercel / serverless.** No long-lived WebSockets, which duplex voice needs.
-  The SPA can still be served from a CDN with `VITE_API_BASE` pointing to the
-  API.
+- **Vercel / serverless.** Functions scale to zero, with no persistent local
+  disk for SQLite and PDFs and no shared memory for voice tickets and rate
+  limits across instances. The SPA can still be served from a CDN with
+  `VITE_API_BASE` pointing to the API.
+- **Free tiers.** Render and Koyeb free instances sleep and have no persistent
+  disk. Oracle's Always Free Arm VM fits, but it means capacity lotteries and
+  self-managed ops.
 
 ---
 
