@@ -76,67 +76,67 @@ export function Composer({
         strength={0.9}
         className="shadow-[0_18px_40px_-20px_rgba(0,0,0,0.6)]"
       >
-      <div className="rounded-[1.6rem] bg-ink-900 p-1.5 ring-1 ring-black/20">
-        <textarea
-          ref={ref}
-          value={text}
-          rows={1}
-          onChange={(event) => setText(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
-              event.preventDefault();
-              submit();
-            }
-          }}
-          placeholder={selection ? "Ask about the highlighted passage…" : placeholder}
-          aria-label="Message the tutor"
-          className="block max-h-[180px] w-full resize-none bg-transparent px-3.5 pt-2.5 pb-1 text-[0.95rem] text-fog-50 placeholder:text-fog-600 focus:outline-none"
-        />
-        <div className="flex items-center gap-1 px-1 pb-0.5">
-          <Toggle
-            active={deepMode}
-            onClick={() => set({ deepMode: !deepMode })}
-            label="Deep think"
-            hint="Use the stronger model and reason longer"
-          >
-            <Brain className="size-3.5" />
-          </Toggle>
-          <Toggle
-            active={webMode}
-            onClick={() => set({ webMode: !webMode })}
-            label="Web"
-            hint="Let the tutor search the web this turn"
-          >
-            <Globe className="size-3.5" />
-          </Toggle>
-          <div className="flex-1" />
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            transition={spring}
-            onClick={onVoice}
-            aria-label="Start voice conversation"
-            title="Talk with your tutor"
-            className="relative flex size-9 items-center justify-center overflow-hidden rounded-full text-white"
-          >
-            <span className="absolute inset-0 animate-spin-slow bg-[conic-gradient(from_0deg,#8b5cf6,#3b82f6,#22d3ee,#ff6e00,#8b5cf6)] opacity-90" />
-            <span className="absolute inset-[2px] rounded-full bg-ink-800" />
-            <AudioLines className="relative size-4" />
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            transition={spring}
-            onClick={busy ? onStop : submit}
-            disabled={!busy && !text.trim() && !selection}
-            aria-label={busy ? "Stop answer" : "Send message"}
-            className={cx(
-              "flex size-9 items-center justify-center rounded-full transition-colors",
-              busy ? "bg-white text-ink-900" : "bg-signal text-white disabled:bg-ink-600 disabled:text-fog-500",
-            )}
-          >
-            {busy ? <Square className="size-3.5 fill-current" /> : <ArrowUp className="size-4" />}
-          </motion.button>
+        <div className="rounded-[1.6rem] bg-ink-900 p-1.5 ring-1 ring-black/20">
+          <textarea
+            ref={ref}
+            value={text}
+            rows={1}
+            onChange={(event) => setText(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                event.preventDefault();
+                submit();
+              }
+            }}
+            placeholder={selection ? "Ask about the highlighted passage…" : placeholder}
+            aria-label="Message the tutor"
+            className="block max-h-[180px] w-full resize-none bg-transparent px-3.5 pt-2.5 pb-1 text-[0.95rem] text-fog-50 placeholder:text-fog-600 focus:outline-none"
+          />
+          <div className="flex items-center gap-1 px-1 pb-0.5">
+            <Toggle
+              active={deepMode}
+              onClick={() => set({ deepMode: !deepMode })}
+              label="Deep think"
+              hint="Use the stronger model and reason longer"
+            >
+              <Brain className="size-3.5" />
+            </Toggle>
+            <Toggle
+              active={webMode}
+              onClick={() => set({ webMode: !webMode })}
+              label="Web"
+              hint="Let the tutor search the web this turn"
+            >
+              <Globe className="size-3.5" />
+            </Toggle>
+            <div className="flex-1" />
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              transition={spring}
+              onClick={onVoice}
+              aria-label="Start voice conversation"
+              title="Talk with your tutor"
+              className="relative flex size-9 items-center justify-center overflow-hidden rounded-full text-white"
+            >
+              <span className="absolute inset-0 animate-spin-slow bg-[conic-gradient(from_0deg,#8b5cf6,#3b82f6,#22d3ee,#ff6e00,#8b5cf6)] opacity-90" />
+              <span className="absolute inset-[2px] rounded-full bg-ink-800" />
+              <AudioLines className="relative size-4" />
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              transition={spring}
+              onClick={busy ? onStop : submit}
+              disabled={!busy && !text.trim() && !selection}
+              aria-label={busy ? "Stop answer" : "Send message"}
+              className={cx(
+                "flex size-9 items-center justify-center rounded-full transition-colors",
+                busy ? "bg-white text-ink-900" : "bg-signal text-white disabled:bg-ink-600 disabled:text-fog-500",
+              )}
+            >
+              {busy ? <Square className="size-3.5 fill-current" /> : <ArrowUp className="size-4" />}
+            </motion.button>
+          </div>
         </div>
-      </div>
       </BorderBeam>
     </div>
   );

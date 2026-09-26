@@ -58,7 +58,11 @@ export type AudioBands = { low: number; mid: number; high: number; all: number }
 export const silentBands = (): AudioBands => ({ low: 0, mid: 0, high: 0, all: 0 });
 
 /** Low / mid / high band energy and overall RMS from an analyser (same scaling as the orb's reference). */
-function readBands(analyser: AnalyserNode, spectrum: Uint8Array<ArrayBuffer>, wave: Float32Array<ArrayBuffer>): AudioBands {
+function readBands(
+  analyser: AnalyserNode,
+  spectrum: Uint8Array<ArrayBuffer>,
+  wave: Float32Array<ArrayBuffer>,
+): AudioBands {
   analyser.getByteFrequencyData(spectrum);
   analyser.getFloatTimeDomainData(wave);
   let sum = 0;

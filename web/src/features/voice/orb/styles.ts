@@ -23,4 +23,3 @@ export function orbSwatch(style: OrbStyle) {
   const p = stylePresets[style];
   return `radial-gradient(circle at 32% 28%, ${p.highlightColor}cc, transparent 38%), conic-gradient(from 200deg, ${p.colorB}, ${p.colorC}, ${p.colorD}, ${p.colorA}, ${p.colorB})`;
 }
-

@@ -219,7 +219,10 @@ function CssOrb({
     >
       <motion.div
         className="absolute -inset-[35%] rounded-full blur-3xl"
-        style={{ opacity: glow, background: `radial-gradient(circle, ${p.glowColor}66 0%, ${p.colorC}33 40%, transparent 70%)` }}
+        style={{
+          opacity: glow,
+          background: `radial-gradient(circle, ${p.glowColor}66 0%, ${p.colorC}33 40%, transparent 70%)`,
+        }}
       />
       <motion.div
         className="absolute inset-[4%] rounded-full"
@@ -243,4 +246,3 @@ function CssOrb({
     </motion.div>
   );
 }
-

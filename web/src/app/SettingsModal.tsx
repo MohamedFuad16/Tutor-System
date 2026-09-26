@@ -218,7 +218,10 @@ export function SettingsModal() {
             ]}
           />
         </Row>
-        <Row label="Tutor avatar" hint="Hops while it works on an answer and naps when it can't be reached. Hover to wake one.">
+        <Row
+          label="Tutor avatar"
+          hint="Hops while it works on an answer and naps when it can't be reached. Hover to wake one."
+        >
           <AvatarPicker />
         </Row>
         <Row

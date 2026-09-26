@@ -7,17 +7,7 @@
  * This file is the composition root; panels, primitives, tokens and
  * formatting helpers live in sibling modules.
  */
-import {
-  ArrowRight,
-  CircleCheck,
-  Clock,
-  Flame,
-  Gauge,
-  GraduationCap,
-  Layers,
-  MessagesSquare,
-  Mic,
-} from "lucide-react";
+import { ArrowRight, CircleCheck, Clock, Flame, Gauge, GraduationCap, Layers, MessagesSquare, Mic } from "lucide-react";
 import { cx } from "@/components/ui";
 import { useAnalytics } from "@/lib/queries";
 import { useApp, useMotion } from "@/store/app";

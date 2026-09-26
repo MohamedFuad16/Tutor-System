@@ -19,8 +19,12 @@ export const audioRules = [
 ] as const;
 
 export const audioStyleStrengths: Partial<Record<StyleName, number>> = {
-  siri: 0.8, voiceWave: 1, aurora: 0.65,
-  plasma: 0.65, spectrum: 0.75, violetEmber: 0.7,
+  siri: 0.8,
+  voiceWave: 1,
+  aurora: 0.65,
+  plasma: 0.65,
+  spectrum: 0.75,
+  violetEmber: 0.7,
 };
 export const audioFlowStrengths: Record<number, number> = Object.fromEntries(
   Object.entries(audioStyleStrengths).map(([style, strength]) => [styleFlowIndexes[style as StyleName], strength]),
@@ -33,6 +37,9 @@ export function applyAudioUniforms(values: Float32Array, bands: AudioBands): voi
     const input = bands[band];
     const level = (Number.isFinite(input) ? Math.max(0, Math.min(1, input)) : 0) * strength;
     if (!level) continue;
-    values[index] = Math.min(Math.max(ceiling, values[index]), values[index] * (1 + proportional * level) + additive * level);
+    values[index] = Math.min(
+      Math.max(ceiling, values[index]),
+      values[index] * (1 + proportional * level) + additive * level,
+    );
   }
 }

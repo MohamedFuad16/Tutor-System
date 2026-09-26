@@ -94,7 +94,10 @@ export function withDirection(source: string, direction: "LR" | "TD") {
 
 /** Natural size of a rendered SVG, from its viewBox. */
 export function svgSize(svg: string): { width: number; height: number } | null {
-  const box = /viewBox="([^"]+)"/.exec(svg)?.[1]?.split(/[\s,]+/).map(Number);
+  const box = /viewBox="([^"]+)"/
+    .exec(svg)?.[1]
+    ?.split(/[\s,]+/)
+    .map(Number);
   return box && box.length === 4 && box[2] > 0 && box[3] > 0 ? { width: box[2], height: box[3] } : null;
 }
 

@@ -171,26 +171,29 @@ export function useVoiceSession() {
   );
 
   /** Ends the session. `failed` keeps the overlay in an error state (with Reconnect) instead of idle. */
-  const stop = useCallback((failed = false) => {
-    active.current = false;
-    send({ type: "bye" });
-    socket.current?.close();
-    socket.current = null;
-    mic.current?.stop();
-    mic.current = null;
-    recognition.current?.abort();
-    recognition.current = null;
-    clearPlayback();
-    player.current?.close();
-    player.current = null;
-    setState(failed ? "error" : "idle");
-    const bookId = useApp.getState().activeBookId;
-    if (bookId) {
-      queryClient.invalidateQueries({ queryKey: keys.messages(bookId) });
-      queryClient.invalidateQueries({ queryKey: keys.guide(bookId) });
-    }
-    queryClient.invalidateQueries({ queryKey: keys.analytics });
-  }, [send, clearPlayback]);
+  const stop = useCallback(
+    (failed = false) => {
+      active.current = false;
+      send({ type: "bye" });
+      socket.current?.close();
+      socket.current = null;
+      mic.current?.stop();
+      mic.current = null;
+      recognition.current?.abort();
+      recognition.current = null;
+      clearPlayback();
+      player.current?.close();
+      player.current = null;
+      setState(failed ? "error" : "idle");
+      const bookId = useApp.getState().activeBookId;
+      if (bookId) {
+        queryClient.invalidateQueries({ queryKey: keys.messages(bookId) });
+        queryClient.invalidateQueries({ queryKey: keys.guide(bookId) });
+      }
+      queryClient.invalidateQueries({ queryKey: keys.analytics });
+    },
+    [send, clearPlayback],
+  );
 
   const start = useCallback(async () => {
     const app = useApp.getState();

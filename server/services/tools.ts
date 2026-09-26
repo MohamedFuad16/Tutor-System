@@ -200,13 +200,11 @@ export const TOOLS: Record<string, Tool> = {
     status: () => "Saving flashcards",
     async run(args, ctx) {
       const cards = Array.isArray(args.cards)
-        ? args.cards
-            .slice(0, 20)
-            .map((card: any) => ({
-              front: str(card?.front, 500),
-              back: str(card?.back, 1200),
-              concept: str(card?.concept, 80) || undefined,
-            }))
+        ? args.cards.slice(0, 20).map((card: any) => ({
+            front: str(card?.front, 500),
+            back: str(card?.back, 1200),
+            concept: str(card?.concept, 80) || undefined,
+          }))
         : [];
       const added = ctx.store.learning.addCards(ctx.userId, ctx.bookId, cards);
       return {

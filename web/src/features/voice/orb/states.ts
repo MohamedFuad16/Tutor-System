@@ -30,19 +30,9 @@ export const orbStateNumericKeys = [
   "edgeGlow",
 ] as const;
 
-export const orbStateColorKeys = [
-  "colorA",
-  "colorB",
-  "colorC",
-  "colorD",
-  "highlightColor",
-  "glowColor",
-] as const;
+export const orbStateColorKeys = ["colorA", "colorB", "colorC", "colorD", "highlightColor", "glowColor"] as const;
 
-export const orbStateProfileKeys = [
-  ...orbStateNumericKeys,
-  ...orbStateColorKeys,
-] as const;
+export const orbStateProfileKeys = [...orbStateNumericKeys, ...orbStateColorKeys] as const;
 
 export type OrbStateNumericKey = (typeof orbStateNumericKeys)[number];
 export type OrbStateColorKey = (typeof orbStateColorKeys)[number];
@@ -92,8 +82,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.68 },
     },
     colors: {
-      colorA: "#B5A674", colorB: "#5E8794", colorC: "#9A648A",
-      colorD: "#635B8A", highlightColor: "#B6C4D2", glowColor: "#6C688F",
+      colorA: "#B5A674",
+      colorB: "#5E8794",
+      colorC: "#9A648A",
+      colorD: "#635B8A",
+      highlightColor: "#B6C4D2",
+      glowColor: "#6C688F",
     },
   },
   voiceWave: {
@@ -106,8 +100,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.62 },
     },
     colors: {
-      colorA: "#08050B", colorB: "#6A2F69", colorC: "#8C4652",
-      colorD: "#55467F", highlightColor: "#B58AA5", glowColor: "#6C3E72",
+      colorA: "#08050B",
+      colorB: "#6A2F69",
+      colorC: "#8C4652",
+      colorD: "#55467F",
+      highlightColor: "#B58AA5",
+      glowColor: "#6C3E72",
     },
   },
   blueDrop: {
@@ -121,8 +119,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.66 },
     },
     colors: {
-      colorA: "#020812", colorB: "#0A2C5A", colorC: "#24678A",
-      colorD: "#A4C3CA", highlightColor: "#9FC8D5", glowColor: "#1F5076",
+      colorA: "#020812",
+      colorB: "#0A2C5A",
+      colorC: "#24678A",
+      colorD: "#A4C3CA",
+      highlightColor: "#9FC8D5",
+      glowColor: "#1F5076",
     },
   },
   violetEmber: {
@@ -136,8 +138,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.64 },
     },
     colors: {
-      colorA: "#0B0310", colorB: "#2B1748", colorC: "#593078",
-      colorD: "#9B78A8", highlightColor: "#BCA6C2", glowColor: "#593273",
+      colorA: "#0B0310",
+      colorB: "#2B1748",
+      colorC: "#593078",
+      colorD: "#9B78A8",
+      highlightColor: "#BCA6C2",
+      glowColor: "#593273",
     },
   },
   refractiveBlob: {
@@ -151,8 +157,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.68 },
     },
     colors: {
-      colorA: "#0F0B16", colorB: "#403552", colorC: "#776990",
-      colorD: "#AEA4BD", highlightColor: "#C9C4D1", glowColor: "#6E6185",
+      colorA: "#0F0B16",
+      colorB: "#403552",
+      colorC: "#776990",
+      colorD: "#AEA4BD",
+      highlightColor: "#C9C4D1",
+      glowColor: "#6E6185",
     },
   },
   particleRibbon: {
@@ -165,8 +175,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.68 },
     },
     colors: {
-      colorA: "#3A6068", colorB: "#375D78", colorC: "#594E83",
-      colorD: "#854C7A", highlightColor: "#B9CCD1", glowColor: "#514C78",
+      colorA: "#3A6068",
+      colorB: "#375D78",
+      colorC: "#594E83",
+      colorD: "#854C7A",
+      highlightColor: "#B9CCD1",
+      glowColor: "#514C78",
     },
   },
   chromaticMetal: {
@@ -181,8 +195,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.72 },
     },
     colors: {
-      colorA: "#B8BCBA", colorB: "#666B69", colorC: "#9EA3A1",
-      colorD: "#282B2D", highlightColor: "#D1D5D3", glowColor: "#78898F",
+      colorA: "#B8BCBA",
+      colorB: "#666B69",
+      colorC: "#9EA3A1",
+      colorD: "#282B2D",
+      highlightColor: "#D1D5D3",
+      glowColor: "#78898F",
     },
   },
   aurora: {
@@ -196,8 +214,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.62 },
     },
     colors: {
-      colorA: "#02050C", colorB: "#1D6659", colorC: "#285D78",
-      colorD: "#533E75", highlightColor: "#92B6B3", glowColor: "#286A62",
+      colorA: "#02050C",
+      colorB: "#1D6659",
+      colorC: "#285D78",
+      colorD: "#533E75",
+      highlightColor: "#92B6B3",
+      glowColor: "#286A62",
     },
   },
   frost: {
@@ -211,8 +233,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.72 },
     },
     colors: {
-      colorA: "#C3CDD5", colorB: "#9AABB8", colorC: "#768D9E",
-      colorD: "#536985", highlightColor: "#D6DEE5", glowColor: "#697D91",
+      colorA: "#C3CDD5",
+      colorB: "#9AABB8",
+      colorC: "#768D9E",
+      colorD: "#536985",
+      highlightColor: "#D6DEE5",
+      glowColor: "#697D91",
     },
   },
   chrome: {
@@ -225,8 +251,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.72 },
     },
     colors: {
-      colorA: "#A7AAA9", colorB: "#6E7273", colorC: "#363A3D",
-      colorD: "#101213", highlightColor: "#CBCFCE", glowColor: "#747A7B",
+      colorA: "#A7AAA9",
+      colorB: "#6E7273",
+      colorC: "#363A3D",
+      colorD: "#101213",
+      highlightColor: "#CBCFCE",
+      glowColor: "#747A7B",
     },
   },
   opal: {
@@ -239,8 +269,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.68 },
     },
     colors: {
-      colorA: "#C9C3BC", colorB: "#6E9E91", colorC: "#A17496",
-      colorD: "#68608E", highlightColor: "#E1DCD5", glowColor: "#82799B",
+      colorA: "#C9C3BC",
+      colorB: "#6E9E91",
+      colorC: "#A17496",
+      colorD: "#68608E",
+      highlightColor: "#E1DCD5",
+      glowColor: "#82799B",
     },
   },
   spectrum: {
@@ -253,8 +287,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.62 },
     },
     colors: {
-      colorA: "#B4BBC2", colorB: "#285D8F", colorC: "#91506F",
-      colorD: "#3F8873", highlightColor: "#D8DDE1", glowColor: "#386789",
+      colorA: "#B4BBC2",
+      colorB: "#285D8F",
+      colorC: "#91506F",
+      colorD: "#3F8873",
+      highlightColor: "#D8DDE1",
+      glowColor: "#386789",
     },
   },
   plasma: {
@@ -268,8 +306,12 @@ const idleProfilesByStyle: Record<StyleName, IdleStyleProfile> = {
       exposure: { scale: 0.6 },
     },
     colors: {
-      colorA: "#04020A", colorB: "#084772", colorC: "#1C5790",
-      colorD: "#174B84", highlightColor: "#A5BBD0", glowColor: "#14577F",
+      colorA: "#04020A",
+      colorB: "#084772",
+      colorC: "#1C5790",
+      colorD: "#174B84",
+      highlightColor: "#A5BBD0",
+      glowColor: "#14577F",
     },
   },
 };
@@ -284,9 +326,7 @@ export function splitOrbParams(params: OrbParams): {
   shared: OrbSharedParams;
   profile: OrbStateProfile;
 } {
-  const profile = Object.fromEntries(
-    orbStateProfileKeys.map((key) => [key, params[key]]),
-  ) as OrbStateProfile;
+  const profile = Object.fromEntries(orbStateProfileKeys.map((key) => [key, params[key]])) as OrbStateProfile;
   const shared = { ...params } as Partial<OrbParams>;
   for (const key of orbStateProfileKeys) delete shared[key];
 
@@ -300,9 +340,7 @@ function createIdleParams(thinkingParams: OrbParams): OrbParams {
   const idleParams = { ...thinkingParams };
   const profile = idleProfilesByStyle[thinkingParams.style];
 
-  for (const [key, transform] of Object.entries(profile.numeric) as Array<
-    [OrbStateNumericKey, NumericTransform]
-  >) {
+  for (const [key, transform] of Object.entries(profile.numeric) as Array<[OrbStateNumericKey, NumericTransform]>) {
     idleParams[key] = thinkingParams[key] * transform.scale + (transform.offset ?? 0);
   }
   for (const key of orbStateColorKeys) idleParams[key] = profile.colors[key];
@@ -340,10 +378,7 @@ export function createPresetOrbStateConfiguration(style: StyleName): OrbStateCon
   return createOrbStateConfiguration({ style, ...stylePresets[style] });
 }
 
-export function resolveOrbStateParams(
-  configuration: OrbStateConfiguration,
-  state: OrbStateName,
-): OrbParams {
+export function resolveOrbStateParams(configuration: OrbStateConfiguration, state: OrbStateName): OrbParams {
   return {
     ...configuration.shared,
     ...configuration.profiles[state],
@@ -391,15 +426,11 @@ function parseHexColor(hex: string): [number, number, number] {
 }
 
 function srgbToLinear(value: number): number {
-  return value <= 0.04045
-    ? value / 12.92
-    : ((value + 0.055) / 1.055) ** 2.4;
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
 }
 
 function linearToSrgb(value: number): number {
-  return value <= 0.0031308
-    ? value * 12.92
-    : 1.055 * value ** (1 / 2.4) - 0.055;
+  return value <= 0.0031308 ? value * 12.92 : 1.055 * value ** (1 / 2.4) - 0.055;
 }
 
 function mixHexColor(from: string, to: string, progress: number): string {
@@ -409,8 +440,7 @@ function mixHexColor(from: string, to: string, progress: number): string {
   const fromRgb = parseHexColor(from);
   const toRgb = parseHexColor(to);
   const mixed = fromRgb.map((channel, index) => {
-    const linear = srgbToLinear(channel)
-      + (srgbToLinear(toRgb[index]) - srgbToLinear(channel)) * progress;
+    const linear = srgbToLinear(channel) + (srgbToLinear(toRgb[index]) - srgbToLinear(channel)) * progress;
     return Math.min(255, Math.max(0, Math.round(linearToSrgb(linear) * 255)));
   });
 
@@ -427,11 +457,7 @@ export function activeOrbTransitionProgress(progress: number): number {
   return 1 - (1 - clamped) ** 3;
 }
 
-export function interpolateOrbParams(
-  from: OrbParams,
-  to: OrbParams,
-  progress: number,
-): OrbParams {
+export function interpolateOrbParams(from: OrbParams, to: OrbParams, progress: number): OrbParams {
   const clamped = Math.min(1, Math.max(0, progress));
   if (clamped === 0) return { ...from };
   if (clamped === 1) return { ...to };
@@ -460,9 +486,8 @@ export function createOrbTransitionController(initialTarget: OrbRenderTarget): {
     if (durationMs === 0) return { ...targetParams };
     const elapsed = Math.max(0, nowMs - startedAtMs);
     const rawProgress = elapsed / durationMs;
-    const progress = targetState === "thinking"
-      ? activeOrbTransitionProgress(rawProgress)
-      : smoothOrbTransitionProgress(rawProgress);
+    const progress =
+      targetState === "thinking" ? activeOrbTransitionProgress(rawProgress) : smoothOrbTransitionProgress(rawProgress);
     return interpolateOrbParams(fromParams, targetParams, progress);
   }
 
@@ -476,9 +501,7 @@ export function createOrbTransitionController(initialTarget: OrbRenderTarget): {
         startedAtMs = nowMs;
         durationMs = Math.max(
           0,
-          (nextTarget.state === "thinking"
-            ? nextTarget.activationDuration
-            : nextTarget.transitionDuration) * 1000,
+          (nextTarget.state === "thinking" ? nextTarget.activationDuration : nextTarget.transitionDuration) * 1000,
         );
         state = nextTarget.state;
       } else {

@@ -31,7 +31,12 @@ function wrap(node: Node) {
         next.push(
           /^\s+$/.test(part)
             ? { type: "text", value: part }
-            : { type: "element", tagName: "span", properties: { className: ["sw"] }, children: [{ type: "text", value: part }] },
+            : {
+                type: "element",
+                tagName: "span",
+                properties: { className: ["sw"] },
+                children: [{ type: "text", value: part }],
+              },
         );
       }
       continue;

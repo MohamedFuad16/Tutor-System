@@ -51,7 +51,12 @@ const fitScale = (size: { width: number; height: number }, width: number, fit: F
   Math.min(fit.maxScale, width / size.width, fit.maxHeight / size.height);
 
 /** Is layout `a` a better fit than `b`? Larger text wins; near-ties go to the shorter drawing. */
-function betterFit(a: { width: number; height: number }, b: { width: number; height: number }, width: number, fit: Fit) {
+function betterFit(
+  a: { width: number; height: number },
+  b: { width: number; height: number },
+  width: number,
+  fit: Fit,
+) {
   const scaleA = fitScale(a, width, fit);
   const scaleB = fitScale(b, width, fit);
   if (scaleA > scaleB * 1.15) return true;
@@ -106,7 +111,8 @@ export function MermaidView({
       const direction = "svg" in result ? flowDirection(source) : null;
       if (current.reorient && direction && "svg" in result) {
         const size = svgSize(result.svg);
-        const tall = size && current.compact && !/LR|RL/.test(direction) && size.height * fitScale(size, width, current) > 170;
+        const tall =
+          size && current.compact && !/LR|RL/.test(direction) && size.height * fitScale(size, width, current) > 170;
         if (size && (fitScale(size, width, current) < 0.8 || tall)) {
           const alt = await renderMermaid(withDirection(source, /LR|RL/.test(direction) ? "TD" : "LR"), theme, {
             compact: current.compact,
@@ -221,7 +227,11 @@ export function MermaidView({
 export function DiagramSkeleton({ tone = "light", label }: { tone?: "light" | "dark"; label?: string }) {
   const dark = tone === "dark";
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-6" role="status" aria-label={label ?? "Drawing diagram"}>
+    <div
+      className="flex flex-col items-center justify-center gap-3 py-6"
+      role="status"
+      aria-label={label ?? "Drawing diagram"}
+    >
       <div className="flex items-center">
         {[0, 1, 2].map((index) => (
           <div key={index} className="flex items-center">
@@ -343,7 +353,11 @@ export function Diagram({
     <figure
       className={cx(
         "group/diagram relative my-3 overflow-hidden rounded-2xl",
-        theme === "paper" ? "paper-card" : dark ? "bg-white/[0.03] ring-1 ring-white/8" : "bg-white ring-1 ring-stone-200/90",
+        theme === "paper"
+          ? "paper-card"
+          : dark
+            ? "bg-white/[0.03] ring-1 ring-white/8"
+            : "bg-white ring-1 ring-stone-200/90",
         compact && "shadow-[0_1px_2px_rgba(28,25,23,0.04),0_8px_24px_-16px_rgba(28,25,23,0.18)]",
         className,
       )}
@@ -439,7 +453,9 @@ export function Diagram({
         )}
       </AnimatePresence>
       {caption && !current && (
-        <figcaption className={cx("px-3 pb-2.5 text-xs", dark ? "text-fog-400" : "text-stone-500")}>{caption}</figcaption>
+        <figcaption className={cx("px-3 pb-2.5 text-xs", dark ? "text-fog-400" : "text-stone-500")}>
+          {caption}
+        </figcaption>
       )}
       <Modal
         open={expanded}
@@ -452,7 +468,11 @@ export function Diagram({
           source={source}
           theme={theme === "light" ? "dark" : theme}
           activeNode={focus}
-          fit={{ maxHeight: Math.round((typeof window === "undefined" ? 900 : window.innerHeight) * 0.7), maxScale: 1.6, reorient: true }}
+          fit={{
+            maxHeight: Math.round((typeof window === "undefined" ? 900 : window.innerHeight) * 0.7),
+            maxScale: 1.6,
+            reorient: true,
+          }}
         />
       </Modal>
     </figure>
