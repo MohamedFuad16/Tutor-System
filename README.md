@@ -129,7 +129,7 @@ with automatic rollback, and costs of about $20 a month. See
 **[deploy/aws/README.md](deploy/aws/README.md)**.
 
 ```bash
-./deploy/aws/deploy.sh up --email you@example.com   # in CloudShell, from a clone of this repo
+./deploy/aws/deploy.sh up --domain tutorsystem.mohamedfuad.com --email you@example.com   # in CloudShell
 ```
 
 **Any Docker host.**
@@ -146,6 +146,8 @@ docker run -p 3000:3000 -v tutor-data:/data --env-file .env tutor
   functions and free tiers that sleep or wipe the disk do not fit.
 - The SPA can still be served from a CDN; set `VITE_API_BASE` and
   `ALLOWED_ORIGINS`.
+- The old Vercel project no longer builds the app. Its `vercel.json` redirects
+  every path to the AWS site at `tutorsystem.mohamedfuad.com`.
 - [docs/ARCHITECTURE.md §8](docs/ARCHITECTURE.md) covers the single-instance
   phase and the scale-out (RDS Postgres, S3, Redis, SQS).
 

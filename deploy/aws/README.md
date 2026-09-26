@@ -60,22 +60,52 @@ need the phase-2 changes described below.
    git checkout claude/zealous-galileo-fmhpib   # until v2 is merged into main
    ```
 
-3. Deploy. Add `--email` to get budget alerts at 80% and at the forecast 100%
-   of $30/month:
+3. Deploy. `--domain` is optional; without it the site gets an
+   `<ip>.sslip.io` address. `--email` sends budget alerts at 80% and at the
+   forecast 100% of $30/month:
 
    ```bash
-   ./deploy/aws/deploy.sh up --email you@example.com
+   ./deploy/aws/deploy.sh up --domain tutorsystem.mohamedfuad.com --email you@example.com
    ```
 
    You will be asked for the Z.AI key, the endpoint, the Deepgram key and an
    access code (press Enter to generate one). Typed keys are hidden and are
    stored straight into SSM Parameter Store.
 
-4. When it prints `Tutor is live: https://…sslip.io`, open the URL and enter
-   the access code. Share both with your testers.
+4. With a domain, add the DNS record as soon as the script prints the Elastic
+   IP, while the instance is still building. The steps are in the next
+   section. The script watches DNS and tells you if the record is missing or
+   proxied.
+5. When it prints `Tutor is live: https://…`, open the URL and enter the
+   access code. Share both with your testers.
 
 If CloudShell times out while you wait, nothing is lost. The stack keeps
 building. Run `./deploy/aws/deploy.sh status` later.
+
+### Custom domain on Cloudflare DNS
+
+For `tutorsystem.mohamedfuad.com`: in the Cloudflare dashboard, open
+**mohamedfuad.com → DNS → Records → Add record** and enter:
+
+| Type | Name          | IPv4 address                     | Proxy status              | TTL  |
+| ---- | ------------- | -------------------------------- | ------------------------- | ---- |
+| A    | `tutorsystem` | the Elastic IP the script prints | **DNS only** (grey cloud) | Auto |
+
+- **Why DNS only.** Caddy proves it owns the name to Let's Encrypt by
+  answering on ports 80 and 443 itself. Cloudflare's proxy (orange cloud) sits
+  in the way. With "Always Use HTTPS" on, certificate issuance and renewal
+  fail. Putting Cloudflare's proxy and WAF in front is a later hardening step:
+  Caddy then needs a DNS-01 challenge with a Cloudflare API token, or a
+  Cloudflare Origin CA certificate.
+- **Add the record before opening the URL.** A lookup of a name that does not
+  exist yet is cached as "no such host" for up to 30 minutes (the zone's
+  negative TTL). The script's own health check connects by IP, so it is not
+  affected.
+- **Nothing else changes.** `www.mohamedfuad.com` and the apex keep pointing
+  at Vercel.
+- **Switching domains later.** Run `deploy.sh up --domain <new name>`, update
+  the record, then run `deploy.sh apply`. Caddy obtains the new certificate
+  within a minute.
 
 ## Operating it
 
@@ -89,7 +119,7 @@ building. Run `./deploy/aws/deploy.sh status` later.
 | Health and settings at a glance | `deploy.sh status`                                                                                                                      |
 | First-boot log                  | `deploy.sh bootlog`                                                                                                                     |
 | Root shell (no SSH, audited)    | `deploy.sh shell`                                                                                                                       |
-| Custom domain                   | `deploy.sh up --domain tutor.example.com`, point an A record at the Elastic IP, then `deploy.sh apply`                                  |
+| Custom domain                   | `deploy.sh up --domain tutor.example.com`, add the A record (see above), then `deploy.sh apply`                                         |
 | Bigger instance                 | `deploy.sh up --size t4g.medium` (a stop/start, about 1 minute)                                                                         |
 | More disk                       | `deploy.sh up --disk 50`, then over `deploy.sh shell`: `resize2fs /dev/disk/by-label/tutor-data`                                        |
 | Tear down                       | `deploy.sh down` (keeps a final snapshot of the data volume and asks before deleting the keys)                                          |

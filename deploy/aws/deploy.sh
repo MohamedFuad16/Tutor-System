@@ -106,19 +106,66 @@ run_on_host() { # command, timeout-seconds
   fi
 }
 
-wait_for_site() { # url, minutes
-  local deadline=$((SECONDS + $2 * 60))
-  printf 'Waiting for %s ' "$1"
-  until curl -fsS --max-time 5 "$1/api/health" >/dev/null 2>&1; do
+# Health of the server itself. Connects straight to the Elastic IP, so a
+# DNS record that is missing (or negatively cached for up to 30 minutes)
+# cannot hide a healthy site.
+site_healthy() {
+  local url host
+  url=$(output Url)
+  host=${url#https://}
+  curl -fsS --max-time 10 --resolve "$host:443:$(output PublicIp)" "$url/api/health" >/dev/null 2>&1
+}
+
+# What public DNS says about a custom domain: ok | missing | <other address>.
+# Asks the zone's authoritative server when dig is available (no caching).
+dns_status() { # host, expected-ip
+  local answer ns
+  if command -v dig >/dev/null; then
+    ns=$(dig +short NS "${1#*.}" 2>/dev/null | head -n 1 || true)
+    answer=$(dig +short A "$1" ${ns:+@"$ns"} 2>/dev/null | grep -E '^[0-9.]+$' | head -n 1 || true)
+  else
+    answer=$(getent ahostsv4 "$1" 2>/dev/null | awk 'NR == 1 {print $1}' || true)
+  fi
+  if [ -z "$answer" ]; then echo missing; elif [ "$answer" = "$2" ]; then echo ok; else echo "$answer"; fi
+}
+
+dns_advice() { # host, expected-ip, status
+  case $3 in
+    ok) say "DNS: $1 -> $2 (ok)" ;;
+    missing) warn "DNS: $1 has no A record yet. Add: type A, name ${1%%.*}, value $2, DNS only (grey cloud)." ;;
+    *) warn "DNS: $1 points to $3, not $2. In Cloudflare, set the record's value to $2 and Proxy status to DNS only." ;;
+  esac
+}
+
+wait_for_site() { # minutes, [custom domain]
+  local deadline=$((SECONDS + $1 * 60)) ip dns="" last=""
+  ip=$(output PublicIp)
+  printf 'Waiting for %s ' "$(output Url)"
+  until site_healthy; do
+    if [ -n "${2:-}" ]; then
+      dns=$(dns_status "$2" "$ip")
+      if [ "$dns" != "$last" ]; then
+        echo
+        dns_advice "$2" "$ip" "$dns"
+        last=$dns
+      fi
+    fi
     if ((SECONDS > deadline)); then
       echo
-      warn "Not up after $2 minutes. See what the instance is doing: $0 bootlog"
+      warn "Not up after $1 minutes. See what the instance is doing: $0 bootlog"
       return 1
     fi
     printf '.'
     sleep 10
   done
   echo " up."
+}
+
+custom_domain() { # prints the stack's custom domain, if any
+  local host
+  host=$(output Url)
+  host=${host#https://}
+  [[ $host == *.sslip.io ]] || echo "$host"
 }
 
 # ------------------------------------------------------------------ commands
@@ -216,12 +263,14 @@ cmd_up() {
   if [ "$status" = NONE ]; then
     say "Infrastructure is ready. The instance is now installing Docker and building the app (about 10-15 minutes)."
     if [ -n "$domain" ]; then
-      say "Point an A record for $domain at $(output PublicIp) now; the certificate is issued once it resolves."
+      say "Add this DNS record now (Cloudflare: DNS > Records > Add record), before opening the site:"
+      echo "  Type A   Name ${domain%%.*}   IPv4 $(output PublicIp)   Proxy status: DNS only (grey cloud)"
+      echo "The certificate is issued automatically once the record resolves."
     fi
-    wait_for_site "$url" 30 || exit 1
+    wait_for_site 30 "$domain" || exit 1
   elif [ -n "$domain" ]; then
-    say "Point an A record for $domain at $(output PublicIp), then switch the site over:"
-    echo "  $0 apply"
+    say "Add or update this DNS record, then switch the site over with '$0 apply':"
+    echo "  Type A   Name ${domain%%.*}   IPv4 $(output PublicIp)   Proxy status: DNS only (grey cloud)"
     return
   fi
   say "Tutor is live: $url"
@@ -245,10 +294,15 @@ cmd_apply() {
 }
 
 report_health() {
-  if curl -fsS --max-time 10 "$(output Url)/api/health" >/dev/null 2>&1; then
+  local domain
+  domain=$(custom_domain)
+  if site_healthy; then
     say "Healthy: $(output Url)"
   else
     warn "$(output Url) is not answering yet (a new certificate can take a minute)."
+  fi
+  if [ -n "$domain" ] && [ "$(dns_status "$domain" "$(output PublicIp)")" != ok ]; then
+    dns_advice "$domain" "$(output PublicIp)" "$(dns_status "$domain" "$(output PublicIp)")"
   fi
 }
 
@@ -275,7 +329,10 @@ cmd_status() {
     --query 'Reservations[0].Instances[0].[InstanceType, State.Name]' --output text | tr '\t' ' ')"
   echo "Settings  $(aws ssm get-parameters-by-path --path "$PARAMS/" --query 'Parameters[].Name' --output text |
     tr '\t' '\n' | sed "s|$PARAMS/||" | paste -sd ' ' -)"
-  if curl -fsS --max-time 5 "$url/api/health" >/dev/null 2>&1; then echo "Health    ok"; else echo "Health    not responding"; fi
+  if site_healthy; then echo "Health    ok"; else echo "Health    not responding"; fi
+  local domain
+  domain=$(custom_domain)
+  if [ -n "$domain" ]; then echo "DNS       $(dns_status "$domain" "$(output PublicIp)") (expected A $(output PublicIp))"; fi
 }
 
 cmd_logs() {

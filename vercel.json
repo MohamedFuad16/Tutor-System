@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "true",
+  "buildCommand": "true",
+  "outputDirectory": "deploy/vercel",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "destination": "https://tutorsystem.mohamedfuad.com/:path*",
+      "permanent": false
+    }
+  ]
+}
