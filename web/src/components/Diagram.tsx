@@ -1,8 +1,11 @@
 /**
- * Mermaid diagrams with the Tutor treatment: they draw themselves in, fit the
- * space they're given (re-flowing a tall flowchart sideways when that reads
- * better), spotlight one node at a time with a smooth camera move, and can
- * narrate a guided walk-through that highlights each node as it's spoken.
+ * Diagrams with the Tutor treatment. Flowcharts (most of what the tutor draws)
+ * go through Tutor's own branded renderer (./flow/FlowChart.tsx); other
+ * Mermaid types (sequence, state, class, mindmap) render with Mermaid. Both
+ * draw themselves in, fit the space they're given (re-flowing a tall
+ * flowchart sideways when that reads better), spotlight one node at a time
+ * with a smooth camera move, and can narrate a guided walk-through that
+ * highlights each node as it's spoken.
  *
  * Variants:
  *  - compact: chat. A bounded-height card on a dotted canvas; click to expand.
@@ -11,9 +14,10 @@
  */
 import { AnimatePresence, motion } from "motion/react";
 import { Maximize2, Pause, Play, Workflow } from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DiagramStep } from "@shared/types";
 import { api } from "@/lib/api";
+import { parseFlowchart } from "@/lib/flow/parse";
 import {
   findNode,
   flowDirection,
@@ -26,19 +30,11 @@ import {
 } from "@/lib/mermaid";
 import { speak, stopSpeaking } from "@/lib/speaker";
 import { useApp, useMotion } from "@/store/app";
+import { betterFit, fitScale, useViewBoxCamera, type Box, type Fit } from "./flow/fit";
+import { FlowChartView } from "./flow/FlowChart";
 import { IconButton, Modal, Spinner, cx } from "./ui";
 
 export type DiagramVariant = "compact" | "card" | "stage";
-
-type Fit = {
-  /** Tallest the diagram may be, in px. */
-  maxHeight: number;
-  /** Largest upscale for small diagrams (1 = never enlarge). */
-  maxScale: number;
-  /** Try the other flowchart direction when it fits the box noticeably better. */
-  reorient?: boolean;
-  compact?: boolean;
-};
 
 const FITS: Record<DiagramVariant, Fit> = {
   compact: { maxHeight: 250, maxScale: 1, reorient: true, compact: true },
@@ -46,21 +42,19 @@ const FITS: Record<DiagramVariant, Fit> = {
   stage: { maxHeight: 460, maxScale: 1.8, reorient: true },
 };
 
-/** Scale at which a w×h drawing fits the box. */
-const fitScale = (size: { width: number; height: number }, width: number, fit: Fit) =>
-  Math.min(fit.maxScale, width / size.width, fit.maxHeight / size.height);
-
-/** Is layout `a` a better fit than `b`? Larger text wins; near-ties go to the shorter drawing. */
-function betterFit(
-  a: { width: number; height: number },
-  b: { width: number; height: number },
-  width: number,
-  fit: Fit,
-) {
-  const scaleA = fitScale(a, width, fit);
-  const scaleB = fitScale(b, width, fit);
-  if (scaleA > scaleB * 1.15) return true;
-  return scaleA >= scaleB * 0.92 && scaleA >= 0.75 && a.height * scaleA < b.height * scaleB * 0.8;
+/** Picks the renderer: Tutor's own for flowcharts, Mermaid for everything else. */
+export function DiagramView(props: {
+  source: string;
+  theme?: DiagramTheme;
+  activeNode?: string | null;
+  className?: string;
+  fit: Fit;
+  title?: string;
+  onRendered?: (info: { nodes: number }) => void;
+}) {
+  const chart = useMemo(() => parseFlowchart(props.source), [props.source]);
+  if (chart) return <FlowChartView chart={chart} {...props} />;
+  return <MermaidView {...props} />;
 }
 
 export function MermaidView({
@@ -81,7 +75,7 @@ export function MermaidView({
   const frameRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const baseBox = useRef<[number, number, number, number] | null>(null);
+  const baseBox = useRef<Box | null>(null);
   const [state, setState] = useState<{ status: "loading" | "ready" | "error"; error?: string }>({ status: "loading" });
   const motionOn = useMotion();
   const onRenderedRef = useRef(onRendered);
@@ -134,7 +128,7 @@ export function MermaidView({
         .getAttribute("viewBox")
         ?.split(/[\s,]+/)
         .map(Number);
-      baseBox.current = box && box.length === 4 ? (box as [number, number, number, number]) : null;
+      baseBox.current = box && box.length === 4 ? (box as Box) : null;
       svgRef.current = svg;
       polishSvg(svg);
       applyFit();
@@ -157,61 +151,20 @@ export function MermaidView({
     return () => observer.disconnect();
   }, [applyFit]);
 
-  // Spotlight + camera: animate the viewBox towards the active node.
-  useEffect(() => {
-    const svg = svgRef.current;
-    const host = hostRef.current;
-    if (!svg || !host || state.status !== "ready") return;
-    svg.querySelectorAll("[data-active]").forEach((node) => node.removeAttribute("data-active"));
-    const base = baseBox.current;
-    const node = activeNode ? findNode(svg, activeNode) : null;
-    host.dataset.touring = node ? "true" : "false";
-    if (!base) return;
-    let target = base;
-    if (node) {
-      node.setAttribute("data-active", "true");
-      try {
-        // Map the node's local box into root viewBox units (robust to nested transforms).
-        const bbox = node.getBBox();
-        const toRoot = svg.getScreenCTM()!.inverse().multiply(node.getScreenCTM()!);
-        const a = new DOMPoint(bbox.x, bbox.y).matrixTransform(toRoot);
-        const b = new DOMPoint(bbox.x + bbox.width, bbox.y + bbox.height).matrixTransform(toRoot);
-        const nodeX = Math.min(a.x, b.x);
-        const nodeY = Math.min(a.y, b.y);
-        const nodeWidth = Math.abs(b.x - a.x);
-        const nodeHeight = Math.abs(b.y - a.y);
-        // Zoom keeps the base aspect ratio so the element never resizes mid-tour.
-        const scale = Math.min(1, Math.max(0.45, (nodeWidth * 3) / base[2], (nodeHeight * 3.5) / base[3]));
-        const width = base[2] * scale;
-        const height = base[3] * scale;
-        const tx = Math.min(Math.max(base[0], nodeX + nodeWidth / 2 - width / 2), base[0] + base[2] - width);
-        const ty = Math.min(Math.max(base[1], nodeY + nodeHeight / 2 - height / 2), base[1] + base[3] - height);
-        target = [tx, ty, width, height];
-      } catch {
-        target = base;
-      }
-    }
-    const from = (svg.getAttribute("viewBox") ?? base.join(" ")).split(/[\s,]+/).map(Number);
-    if (!motionOn) {
-      svg.setAttribute("viewBox", target.join(" "));
-      return;
-    }
-    let frame = 0;
-    const start = performance.now();
-    const duration = 650;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / duration);
-      const eased = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
-      svg.setAttribute("viewBox", from.map((value, index) => value + (target[index] - value) * eased).join(" "));
-      if (t < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [activeNode, state.status, motionOn]);
+  // Spotlight + camera: ease the viewBox towards the active node.
+  useViewBoxCamera({
+    svg: svgRef,
+    host: hostRef,
+    base: baseBox,
+    activeNode,
+    ready: state.status === "ready",
+    motion: motionOn,
+    locate: findNode,
+  });
 
   return (
     <div ref={frameRef} className={cx("relative w-full", className)}>
-      <div ref={hostRef} data-theme={theme} className="mermaid-host flex justify-center" />
+      <div ref={hostRef} data-theme={theme} className="mermaid-host diagram-host flex justify-center" />
       {state.status === "loading" && <DiagramSkeleton tone={theme === "dark" ? "dark" : "light"} />}
       {state.status === "error" && (
         <details className="rounded-xl border border-current/15 p-3 text-xs opacity-80">
@@ -344,7 +297,7 @@ export function Diagram({
             <Workflow className="size-3.5 text-signal" /> {title}
           </figcaption>
         )}
-        <MermaidView source={source} theme={theme} activeNode={focus} fit={FITS.stage} />
+        <DiagramView source={source} theme={theme} activeNode={focus} fit={FITS.stage} title={title} />
       </figure>
     );
   }
@@ -417,11 +370,12 @@ export function Diagram({
         className={cx("relative px-3 py-3", compact && "diagram-canvas cursor-zoom-in")}
         onClick={compact && controls ? () => setExpanded(true) : undefined}
       >
-        <MermaidView
+        <DiagramView
           source={source}
           theme={theme}
           activeNode={focus}
           fit={FITS[variant]}
+          title={title}
           onRendered={({ nodes: count }) => setNodes(count)}
         />
       </div>
@@ -464,8 +418,9 @@ export function Diagram({
         width={1100}
         tone={theme === "paper" ? "paper" : "dark"}
       >
-        <MermaidView
+        <DiagramView
           source={source}
+          title={title}
           theme={theme === "light" ? "dark" : theme}
           activeNode={focus}
           fit={{

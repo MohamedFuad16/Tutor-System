@@ -85,10 +85,11 @@ web/src/
   features/revision library, study-guide renderer, concept map, review
   features/analytics dashboard
   components/      UI primitives, Markdown, Diagram, PatternCard
+  components/flow/ branded flowchart renderer (FlowChart) + fit/camera helpers
   components/fx/   AI-presence effects: BotAvatar, ThinkingOrb, BorderBeam,
                    VoiceGlow, ImageMosaic, LiquidIndicator, Metal
   lib/             api, queries, events, audio, speaker, mermaid,
-                   rehype-stream-words
+                   rehype-stream-words, flow (Mermaid-flowchart parser + dagre layout)
 ```
 
 No backend file is over about 600 lines. v1's `server.ts` was 6,600 lines, and
@@ -125,10 +126,18 @@ sequenceDiagram
 2. The fast model streams the reply over SSE (`start → reasoning → delta →
 part → done`). Tool rounds run **in parallel**, with a maximum of 3.
    - `search_document`, `web_search`, `show_images`, `create_quiz`, `make_flashcards`
-   - Diagrams are inline Mermaid blocks. In chat they render as compact cards
-     that fit the rail's width in a bounded height (re-flowing a tall
-     flowchart sideways when that fits better), draw themselves in, expand on
-     click, and can be narrated node by node ("Walk me through").
+   - Diagrams are inline Mermaid blocks. Flowcharts, which are most of them,
+     render through Tutor's own branded renderer: `lib/flow` parses the
+     Mermaid flowchart subset and lays it out with dagre, and
+     `components/flow/FlowChart.tsx` draws it. It has numbered step cards,
+     signal start/end pills, violet decision chevrons with colour-coded
+     yes/no chips, data and I/O tints, and dashed groups with legends. Other
+     diagram types, and any flowchart it can't parse, fall back to Mermaid.
+     In chat, diagrams render as compact cards that fit the rail's width in a
+     bounded height (re-flowing a tall flowchart sideways when that fits
+     better). They draw themselves in, expand on click, and can be narrated
+     node by node ("Walk me through") with a spotlight and camera move.
+     `#flowlab` on the dev server is the design bench for all three surfaces.
    - The client paces the stream (`useSmoothText`): an even reveal on word
      boundaries that never trails the stream by more than ~0.6 s, with a
      per-word fade (`rehype-stream-words`). When `done` arrives, the saved

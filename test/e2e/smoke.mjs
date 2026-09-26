@@ -118,8 +118,8 @@ async function run(label, viewport) {
       .isVisible(),
     `${label}: answer has page citation chip`,
   );
-  check((await page.locator(".mermaid-host svg").count()) > 0, `${label}: diagram rendered`);
-  const diagramHeight = (await page.locator("figure:has(.mermaid-host)").first().boundingBox())?.height ?? 0;
+  check((await page.locator(".diagram-host svg").count()) > 0, `${label}: diagram rendered`);
+  const diagramHeight = (await page.locator("figure:has(.diagram-host)").first().boundingBox())?.height ?? 0;
   check(
     diagramHeight > 0 && diagramHeight < 340,
     `${label}: chat diagram is compact (${Math.round(diagramHeight)} px tall)`,
@@ -181,7 +181,7 @@ async function run(label, viewport) {
   await page.getByRole("button", { name: "Type a message" }).click();
   await page.getByRole("textbox", { name: "Type your message" }).fill("Can you draw a diagram of the Calvin cycle?");
   await page.getByRole("textbox", { name: "Type your message" }).press("Enter");
-  await page.locator(".mermaid-host svg").last().waitFor({ timeout: 20000 });
+  await page.locator(".diagram-host svg").last().waitFor({ timeout: 20000 });
   await page.waitForTimeout(2500);
   await shot("05-voice");
   check(true, `${label}: voice delegated diagram shown`);

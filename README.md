@@ -29,8 +29,10 @@
    reader there. Answers stream at an even, word-by-word pace, introduced
    by the tutor's animated avatar and a small orb that names what it is doing
    (presence effects from [libraries.dev](https://libraries.dev)).
-3. **See it.** Processes become compact **Mermaid diagrams that draw
-   themselves in** and fit the chat. "Walk me through" narrates each node
+3. **See it.** Processes become **branded flowcharts that draw themselves
+   in** and fit the chat. They have numbered step cards, decision chevrons
+   with yes/no chips and start/end pills (Mermaid covers the other diagram
+   types). "Walk me through" narrates each node
    aloud while it is highlighted. Real photos appear when a picture helps,
    dissolving in from a soft pixel mosaic.
 4. **Talk it through.** Voice mode is a duplex "fast talker, slow thinker":

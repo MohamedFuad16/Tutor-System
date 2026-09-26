@@ -426,6 +426,324 @@
   }
 }
 
+/* ------------------------------------------------------------------
+   Tutor flowcharts (components/flow/FlowChart.tsx). One design, three
+   surfaces: chat (light), voice stage (dark glass), notebooks (paper).
+   ------------------------------------------------------------------ */
+.flow {
+  --flow-text: #292524;
+  --flow-muted: #78716c;
+  --flow-node-a: #ffffff;
+  --flow-node-b: #fafaf9;
+  --flow-node-stroke: #e2ddd8;
+  --flow-decision-a: #faf8ff;
+  --flow-decision-b: #f1ecff;
+  --flow-decision-stroke: #c9b8fb;
+  --flow-decision-text: #3f2d78;
+  --flow-terminal-a: #ff8f3d;
+  --flow-terminal-b: #ff6e00;
+  --flow-terminal-stroke: #f26600;
+  --flow-data-a: #f5fcff;
+  --flow-data-b: #e6f6fd;
+  --flow-data-stroke: #a5dcf0;
+  --flow-io-a: #f7faff;
+  --flow-io-b: #eaf1fe;
+  --flow-io-stroke: #b3cdf6;
+  --flow-edge: #a8a098;
+  --flow-arrow: #8a8279;
+  --flow-lit: var(--color-signal);
+  --flow-badge: var(--color-signal);
+  --flow-badge-text: #ffffff;
+  --flow-badge-ring: #ffffff;
+  --flow-label-bg: #ffffff;
+  --flow-label-stroke: #e7e3de;
+  --flow-label-text: #6b635b;
+  --flow-yes: #c2410c;
+  --flow-yes-bg: #fff4ea;
+  --flow-yes-stroke: #fed7b5;
+  --flow-no: #57534e;
+  --flow-no-bg: #f5f4f2;
+  --flow-no-stroke: #e2ddd8;
+  --flow-group-bg: rgba(250, 249, 247, 0.72);
+  --flow-group-stroke: #d9d3cc;
+  --flow-group-chip: #ffffff;
+  --flow-shadow: drop-shadow(0 1px 1px rgba(28, 25, 23, 0.05)) drop-shadow(0 6px 14px rgba(28, 25, 23, 0.07));
+  --flow-lift: drop-shadow(0 2px 3px rgba(28, 25, 23, 0.08)) drop-shadow(0 12px 22px rgba(28, 25, 23, 0.12));
+}
+.flow[data-theme="paper"] {
+  --flow-text: #2b251d;
+  --flow-muted: #6f675b;
+  --flow-node-a: #fffdf8;
+  --flow-node-b: #f9f1e3;
+  --flow-node-stroke: #dccbad;
+  --flow-decision-a: #fbf8ff;
+  --flow-decision-b: #f1eafc;
+  --flow-decision-stroke: #cdb9ef;
+  --flow-data-a: #f6fbfb;
+  --flow-data-b: #e8f3f4;
+  --flow-data-stroke: #b3d6dc;
+  --flow-io-a: #f8f9fd;
+  --flow-io-b: #edf0fa;
+  --flow-io-stroke: #c0cbe8;
+  --flow-edge: #ab9b80;
+  --flow-arrow: #8c7f6b;
+  --flow-badge-ring: #fffaf1;
+  --flow-label-bg: #fffaf1;
+  --flow-label-stroke: #e3d6bf;
+  --flow-label-text: #6f675b;
+  --flow-yes-bg: #fff3e4;
+  --flow-no-bg: #f3ecdf;
+  --flow-no-stroke: #e3d6bf;
+  --flow-group-bg: rgba(243, 233, 216, 0.5);
+  --flow-group-stroke: #d6c3a3;
+  --flow-group-chip: #fbf6ec;
+  --flow-shadow: drop-shadow(0 1px 1px rgba(60, 45, 20, 0.06)) drop-shadow(0 6px 14px rgba(60, 45, 20, 0.08));
+  --flow-lift: drop-shadow(0 2px 3px rgba(60, 45, 20, 0.1)) drop-shadow(0 12px 22px rgba(60, 45, 20, 0.14));
+}
+.flow[data-theme="dark"] {
+  --flow-text: #f4f4f1;
+  --flow-muted: #a1a1a6;
+  --flow-node-a: rgba(255, 255, 255, 0.085);
+  --flow-node-b: rgba(255, 255, 255, 0.03);
+  --flow-node-stroke: rgba(255, 255, 255, 0.15);
+  --flow-decision-a: rgba(139, 92, 246, 0.22);
+  --flow-decision-b: rgba(139, 92, 246, 0.07);
+  --flow-decision-stroke: rgba(167, 139, 250, 0.6);
+  --flow-decision-text: #ede9fe;
+  --flow-data-a: rgba(34, 211, 238, 0.18);
+  --flow-data-b: rgba(34, 211, 238, 0.05);
+  --flow-data-stroke: rgba(103, 232, 249, 0.5);
+  --flow-io-a: rgba(59, 130, 246, 0.2);
+  --flow-io-b: rgba(59, 130, 246, 0.06);
+  --flow-io-stroke: rgba(147, 197, 253, 0.5);
+  --flow-edge: rgba(255, 255, 255, 0.32);
+  --flow-arrow: rgba(255, 255, 255, 0.62);
+  --flow-badge-ring: #0a0a0b;
+  --flow-label-bg: #121215;
+  --flow-label-stroke: rgba(255, 255, 255, 0.14);
+  --flow-label-text: #d4d4d0;
+  --flow-yes: #ffb27a;
+  --flow-yes-bg: rgba(255, 110, 0, 0.14);
+  --flow-yes-stroke: rgba(255, 154, 77, 0.45);
+  --flow-no: #d4d4d0;
+  --flow-no-bg: rgba(255, 255, 255, 0.06);
+  --flow-no-stroke: rgba(255, 255, 255, 0.16);
+  --flow-group-bg: rgba(255, 255, 255, 0.025);
+  --flow-group-stroke: rgba(255, 255, 255, 0.13);
+  --flow-group-chip: #0f0f11;
+  --flow-shadow: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45));
+  --flow-lift: drop-shadow(0 0 14px rgba(139, 92, 246, 0.35)) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.5));
+}
+.flow-svg {
+  display: block;
+  max-width: 100%;
+  overflow: visible;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Nodes */
+.flow-node {
+  cursor: default;
+}
+.flow-node-body {
+  filter: var(--flow-shadow);
+  transition: filter 0.3s ease;
+}
+.flow-shape {
+  stroke: var(--flow-node-stroke);
+  stroke-width: 1;
+  transition:
+    stroke 0.3s ease,
+    stroke-width 0.3s ease;
+}
+.flow-label {
+  fill: var(--flow-text);
+  letter-spacing: -0.005em;
+}
+.flow-lid {
+  stroke: var(--flow-data-stroke);
+  stroke-width: 1;
+}
+.flow-node[data-kind="decision"] .flow-shape {
+  stroke: var(--flow-decision-stroke);
+}
+.flow-node[data-kind="decision"] .flow-label {
+  fill: var(--flow-decision-text, var(--flow-text));
+}
+.flow-node[data-kind="terminal"] .flow-shape {
+  stroke: var(--flow-terminal-stroke, var(--flow-terminal-b));
+}
+.flow-node[data-kind="terminal"] .flow-label {
+  fill: #ffffff;
+  letter-spacing: 0.005em;
+}
+.flow-node[data-kind="terminal"] .flow-node-body {
+  filter: drop-shadow(0 4px 10px rgba(255, 110, 0, 0.28));
+}
+.flow-node[data-kind="data"] .flow-shape {
+  stroke: var(--flow-data-stroke);
+}
+.flow-node[data-kind="io"] .flow-shape {
+  stroke: var(--flow-io-stroke);
+}
+.flow-badge circle {
+  fill: var(--flow-badge);
+  stroke: var(--flow-badge-ring);
+  stroke-width: 2;
+}
+.flow-badge text {
+  fill: var(--flow-badge-text);
+  font-variant-numeric: tabular-nums;
+}
+.flow-node[data-kind="decision"] .flow-badge circle {
+  fill: var(--color-aura-violet);
+}
+.flow-node[data-hover] .flow-node-body,
+.flow-node[data-active="true"] .flow-node-body {
+  filter: var(--flow-lift);
+}
+.flow-node[data-hover] .flow-shape {
+  stroke: var(--flow-lit);
+}
+.flow-node[data-active="true"] .flow-shape {
+  stroke: var(--flow-lit);
+  stroke-width: 2.25;
+}
+.flow-node[data-active="true"] .flow-node-body {
+  filter: drop-shadow(0 0 12px rgba(255, 110, 0, 0.45)) var(--flow-lift);
+}
+.flow-slot {
+  transition: opacity 0.3s ease;
+}
+.flow[data-touring="true"] .flow-slot[data-dim] {
+  opacity: 0.32;
+}
+.flow[data-touring="false"] .flow-slot[data-dim] {
+  opacity: 0.62;
+}
+
+/* Edges */
+.flow-edge-line {
+  stroke: var(--flow-edge);
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  transition:
+    stroke 0.3s ease,
+    opacity 0.3s ease;
+}
+.flow-edge[data-stroke="thick"] .flow-edge-line {
+  stroke-width: 2.75;
+}
+.flow-edge[data-stroke="dotted"] .flow-edge-line {
+  stroke-dasharray: 2 5;
+}
+.flow-arrow {
+  fill: var(--flow-arrow);
+}
+.flow-cross {
+  stroke: var(--flow-arrow);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.flow[data-focus="true"] .flow-edge:not([data-lit]) .flow-edge-line {
+  opacity: 0.45;
+}
+.flow-edge[data-lit] .flow-edge-line {
+  stroke: var(--flow-lit);
+  stroke-width: 2;
+}
+.flow-edge-flow {
+  stroke: #ffffff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 2 11;
+  opacity: 0.85;
+  animation: flow-march 0.9s linear infinite;
+  pointer-events: none;
+}
+.flow[data-theme="dark"] .flow-edge-flow {
+  stroke: #ffe3cc;
+}
+@keyframes flow-march {
+  to {
+    stroke-dashoffset: -13;
+  }
+}
+
+/* Edge labels */
+.flow-edge-label rect {
+  fill: var(--flow-label-bg);
+  stroke: var(--flow-label-stroke);
+  stroke-width: 1;
+}
+.flow-edge-label text {
+  fill: var(--flow-label-text);
+  letter-spacing: 0.01em;
+}
+.flow-edge-label[data-tone="yes"] rect {
+  fill: var(--flow-yes-bg);
+  stroke: var(--flow-yes-stroke);
+}
+.flow-edge-label[data-tone="yes"] text {
+  fill: var(--flow-yes);
+}
+.flow-edge-label[data-tone="no"] rect {
+  fill: var(--flow-no-bg);
+  stroke: var(--flow-no-stroke);
+}
+.flow-edge-label[data-tone="no"] text {
+  fill: var(--flow-no);
+}
+
+/* Subgraphs */
+.flow-group > rect {
+  fill: var(--flow-group-bg);
+  stroke: var(--flow-group-stroke);
+  stroke-width: 1;
+  stroke-dasharray: 5 5;
+}
+.flow-group-legend rect {
+  fill: var(--flow-group-chip);
+  stroke: var(--flow-group-stroke);
+  stroke-width: 1;
+}
+.flow-group-legend text {
+  fill: var(--flow-muted);
+  letter-spacing: 0.08em;
+}
+
+/* Draw-in: steps pop in reading order, edges draw after their source. */
+.flow-svg[data-draw="true"] .flow-node {
+  animation: flow-pop 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+  animation-delay: calc(var(--i, 1) * 70ms);
+}
+.flow-svg[data-draw="true"] .flow-edge[data-stroke="solid"] .flow-edge-line,
+.flow-svg[data-draw="true"] .flow-edge[data-stroke="thick"] .flow-edge-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: flow-draw 0.7s ease forwards;
+  animation-delay: 0.25s;
+}
+.flow-svg[data-draw="true"] .flow-edge[data-stroke="dotted"],
+.flow-svg[data-draw="true"] .flow-edge-label,
+.flow-svg[data-draw="true"] .flow-group {
+  animation: pop-node 0.5s ease both;
+  animation-delay: 0.35s;
+}
+@keyframes flow-pop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes flow-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

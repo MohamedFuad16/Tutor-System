@@ -18,6 +18,9 @@ knowledge graph generation, and active recall revision.
 - Revision and notes use warm paper (`paper`, `paper-card`), serif typography
   (Lora) and page grain.
 - Concept maps render concepts as glass orbs coloured by mastery.
+- Flowcharts use Tutor's own renderer (`web/src/components/flow`,
+  `web/src/lib/flow`), not Mermaid's look. Iterate on it with `#flowlab` on the
+  dev server; other diagram types fall back to Mermaid.
 
 ## Core Product Boundaries
 
