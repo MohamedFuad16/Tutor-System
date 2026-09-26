@@ -1,5 +1,5 @@
 /**
- * Settings: profile, language, voice routing, motion, access code, and a
+ * Settings: profile, language, voice routing, motion, and a
  * read-only system panel showing which models and providers are live.
  */
 import { useQuery } from "@tanstack/react-query";
@@ -160,10 +160,9 @@ export function SettingsModal() {
     refetchInterval: open ? 5000 : false,
   });
   const [name, setName] = useState(state.learnerName);
-  const [code, setCode] = useState(state.accessCode);
 
   const save = async () => {
-    state.set({ learnerName: name.trim() || "Learner", accessCode: code.trim() });
+    state.set({ learnerName: name.trim() || "Learner" });
     await api("/profile", { method: "POST", json: { name: name.trim() } }).catch(() => undefined);
     queryClient.invalidateQueries();
     state.set({ settingsOpen: false });
@@ -257,16 +256,6 @@ export function SettingsModal() {
             ]}
           />
         </Row>
-        {h?.accessCodeRequired && (
-          <Row label="Access code" hint="Required by this deployment.">
-            <input
-              type="password"
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-              className="w-56 rounded-xl bg-white/6 px-3 py-2 text-sm outline-none ring-1 ring-white/8"
-            />
-          </Row>
-        )}
       </section>
 
       <section className="mt-5 rounded-2xl bg-white/[0.03] p-4 ring-1 ring-white/6">

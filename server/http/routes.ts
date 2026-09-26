@@ -35,13 +35,12 @@ export function createApiRouter(ctx: AppContext) {
         provider: ctx.speech?.name ?? "browser",
       },
       search: { web: true, images: true, provider: `${ctx.search.providers.web}+${ctx.search.providers.images}` },
-      accessCodeRequired: Boolean(config.accessCode),
     };
     res.json(health);
   });
 
-  // Everything below needs a learner identity.
-  api.use(identity({ accessCode: config.accessCode }));
+  // Everything below needs a learner identity (the site is public: no access code).
+  api.use(identity());
   const limited = rateLimit(config.limits.userRequestsPerMinute);
 
   api.get("/system", (_req, res) => {

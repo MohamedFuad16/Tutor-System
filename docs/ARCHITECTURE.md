@@ -305,8 +305,8 @@ row-level ownership.
 ## 7. Security
 
 - **Identity.** Each browser gets a local learner profile ID, sent as
-  `X-User-Id`. An optional `ACCESS_CODE` protects a deployment. For
-  production, put OIDC in front (Cognito or Auth0) and map the verified
+  `X-User-Id`. The site is public: there is no access code. When accounts
+  are needed, put OIDC in front (Cognito or Auth0) and map the verified
   subject to the learner ID. Routes already scope every query by `userId`.
 - **Voice.** Browsers can't set WebSocket headers, so the client gets a
   **single-use, 60-second ticket** over authenticated HTTP. The WebSocket
@@ -330,7 +330,7 @@ flowchart LR
   EIP --> CADDY[Caddy: automatic TLS, HTTP/3]
   CADDY --> APP[Tutor container on EC2 t4g, Ubuntu arm64]
   APP --> EBS[(EBS gp3 data volume: SQLite + PDFs, DLM daily snapshots)]
-  APP --> SSM[SSM Parameter Store: ZAI, Deepgram, access code]
+  APP --> SSM[SSM Parameter Store: ZAI and Deepgram keys]
   APP --> CW[CloudWatch Logs]
 ```
 

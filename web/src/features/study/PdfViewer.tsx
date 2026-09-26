@@ -82,7 +82,7 @@ function PdfReader({ doc, onAsk }: { doc: StudyDocument; onAsk: PdfViewerProps["
   const numPagesRef = useRef(0);
   const restoredRef = useRef(false);
 
-  // `attempt` re-reads identity headers on retry (e.g. after an access code was entered).
+  // `attempt` re-reads identity headers on retry.
   const file = useMemo(
     () => ({ url: `${API_BASE}/api/documents/${encodeURIComponent(doc.id)}/file`, httpHeaders: authHeaders() }),
     [doc.id, attempt],

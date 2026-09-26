@@ -10,7 +10,6 @@ import { keys, queryClient } from "./queries";
 
 export function useServerEvents() {
   const userId = useApp((state) => state.userId);
-  const accessCode = useApp((state) => state.accessCode);
 
   useEffect(() => {
     let source: EventSource | null = null;
@@ -70,5 +69,5 @@ export function useServerEvents() {
       source?.close();
       window.clearTimeout(timer);
     };
-  }, [userId, accessCode]);
+  }, [userId]);
 }

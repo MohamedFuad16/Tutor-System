@@ -69,7 +69,6 @@ beforeAll(async () => {
     ...loadConfig(),
     dataDir,
     allowedOrigins: [],
-    accessCode: "",
     guide: { debounceMs: 30, maxPendingMessages: 50 },
   };
   speech = createMockSpeech();

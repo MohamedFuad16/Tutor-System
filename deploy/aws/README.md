@@ -115,7 +115,7 @@ For `tutorsystem.mohamedfuad.com`: in the Cloudflare dashboard, open
 | Roll back                       | `deploy.sh release <previous sha>`. It is instant when that image is still on the host, and a failed health check rolls back on its own |
 | Rotate keys                     | `deploy.sh secrets`. Changes apply immediately without a rebuild                                                                        |
 | Change any server setting       | `deploy.sh set USER_REQUESTS_PER_MINUTE` (any name from `.env.example`)                                                                 |
-| Remove a server setting         | `deploy.sh unset NAME`, e.g. `deploy.sh unset ACCESS_CODE` to make the site public                                                      |
+| Remove a server setting         | `deploy.sh unset NAME` (any name from `.env.example`)                                                                                   |
 | Follow logs                     | `deploy.sh logs` (app stream; `--since 2h` etc. are passed through)                                                                     |
 | Health and settings at a glance | `deploy.sh status`                                                                                                                      |
 | First-boot log                  | `deploy.sh bootlog`                                                                                                                     |
@@ -165,8 +165,7 @@ Deleting the stack leaves a final snapshot.
   limits (`USER_REQUESTS_PER_MINUTE`) and origin checks on the voice socket.
   Because anyone can use it, model and speech usage bills to your Z.AI and
   Deepgram keys: keep the budget alert on and set usage limits in those
-  consoles. `deploy.sh set ACCESS_CODE` puts a gate back;
-  `deploy.sh unset ACCESS_CODE` removes it.
+  consoles.
 
 ## Cost (on-demand, approximate)
 

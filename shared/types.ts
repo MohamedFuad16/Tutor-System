@@ -219,5 +219,4 @@ export type HealthInfo = {
   llm: { provider: string; fastModel: string; smartModel: string; visionModel: string };
   speech: { stt: boolean; tts: boolean; provider: string };
   search: { web: boolean; images: boolean; provider: string };
-  accessCodeRequired: boolean;
 };

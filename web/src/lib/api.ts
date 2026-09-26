@@ -18,21 +18,16 @@ export class ApiError extends Error {
 }
 
 export function authHeaders(): Record<string, string> {
-  const { userId, learnerName, accessCode } = useApp.getState();
-  const headers: Record<string, string> = {
+  const { userId, learnerName } = useApp.getState();
+  return {
     "X-User-Id": userId,
     "X-User-Name": encodeURIComponent(learnerName).slice(0, 120),
   };
-  if (accessCode) headers["X-Access-Code"] = accessCode;
-  return headers;
 }
 
 /** Query-string identity for transports that cannot set headers (EventSource, PDF worker fetch). */
 export function authQuery() {
-  const { userId, accessCode } = useApp.getState();
-  const params = new URLSearchParams({ u: userId });
-  if (accessCode) params.set("code", accessCode);
-  return params.toString();
+  return new URLSearchParams({ u: useApp.getState().userId }).toString();
 }
 
 async function readError(response: Response) {

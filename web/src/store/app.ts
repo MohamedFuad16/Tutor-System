@@ -21,7 +21,6 @@ type AppState = {
   userId: string;
   learnerName: string;
   language: string;
-  accessCode: string;
   motion: boolean;
   voiceInput: VoiceInputMode;
   voiceOutput: VoiceOutputMode;
@@ -72,7 +71,6 @@ export const useApp = create<AppState>()(
       userId: makeUserId(),
       learnerName: "Learner",
       language: browserLanguage(),
-      accessCode: "",
       motion: true,
       voiceInput: "auto",
       voiceOutput: "auto",
@@ -117,7 +115,6 @@ export const useApp = create<AppState>()(
         userId: state.userId,
         learnerName: state.learnerName,
         language: state.language,
-        accessCode: state.accessCode,
         motion: state.motion,
         voiceInput: state.voiceInput,
         voiceOutput: state.voiceOutput,

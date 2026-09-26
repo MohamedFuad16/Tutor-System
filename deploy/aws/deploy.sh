@@ -8,7 +8,7 @@
 #   deploy.sh release [REF] build and roll out a revision (default: the stack's GitRef)
 #   deploy.sh secrets       set or rotate the API keys, then apply them
 #   deploy.sh set NAME      set any other server setting from .env.example, then apply it
-#   deploy.sh unset NAME    remove a server setting, then apply (e.g. unset ACCESS_CODE)
+#   deploy.sh unset NAME    remove a server setting, then apply it
 #   deploy.sh apply         re-apply settings and the site address without changing the code
 #   deploy.sh status        stack, instance and health at a glance
 #   deploy.sh logs [ARGS]   follow the app log (extra args go to "aws logs tail")
@@ -190,8 +190,7 @@ cmd_secrets() {
   prompt_secret DEEPGRAM_API_KEY "Deepgram API key (server voice; empty keeps browser speech)"
   [ -n "$REPLY" ] && put_param DEEPGRAM_API_KEY "$REPLY"
 
-  # The site is public: no access code is created, so anyone with the URL can
-  # use it. (To gate it again later: deploy.sh set ACCESS_CODE.)
+  # The site is public: the app has no access code, so anyone with the URL can use it.
 }
 
 cmd_up() {
@@ -268,9 +267,6 @@ cmd_up() {
     return
   fi
   say "Tutor is live: $url"
-  if param_exists ACCESS_CODE; then
-    echo "An access code is still set; make the site public with: $0 unset ACCESS_CODE"
-  fi
 }
 
 cmd_release() {
@@ -315,7 +311,7 @@ cmd_set() {
 cmd_unset() {
   require_stack
   local name=${1:-}
-  [[ $name =~ ^[A-Z][A-Z0-9_]*$ ]] || die "Usage: $0 unset NAME   (e.g. ACCESS_CODE)"
+  [[ $name =~ ^[A-Z][A-Z0-9_]*$ ]] || die "Usage: $0 unset NAME   (NAME from .env.example)"
   if param_exists "$name"; then
     aws ssm delete-parameter --name "$PARAMS/$name" >/dev/null
     say "Removed $name."

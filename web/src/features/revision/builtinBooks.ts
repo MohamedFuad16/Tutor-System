@@ -631,7 +631,7 @@ const HOW_TUTOR_WORKS: StudyGuide = {
         "SQLite in WAL mode is the single source of truth; the browser keeps only preferences.",
         "Every row carries user_id, so the schema maps directly onto Postgres ownership.",
         "Voice WebSockets need a single-use, 60-second ticket and pass an origin check.",
-        "An optional ACCESS_CODE protects a deployment; OIDC can sit in front in production.",
+        "The site is public (no access code); OIDC can sit in front when accounts are needed.",
         "Model-backed routes have a per-learner token bucket, 30 requests a minute by default.",
         "Uploads are PDF only, magic-byte checked, size-limited and stored under opaque ids.",
       ],

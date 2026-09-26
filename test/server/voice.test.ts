@@ -66,7 +66,7 @@ const until = async (check: () => boolean | Promise<boolean>, timeout = 10_000) 
 
 beforeAll(async () => {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "tutor-voice-"));
-  const config = { ...loadConfig(), dataDir, allowedOrigins: [], accessCode: "" };
+  const config = { ...loadConfig(), dataDir, allowedOrigins: [] };
   speech = createMockSpeech();
   // 200 ms per token: the first word arrives after ~1 s, well past the acknowledgement delay.
   const llm = createMockLlm({ tokenDelayMs: 200 });

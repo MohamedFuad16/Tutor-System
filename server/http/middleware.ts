@@ -1,9 +1,8 @@
 /**
- * Cross-cutting HTTP concerns: learner identity, optional access code,
- * per-learner rate limiting, async error handling.
+ * Cross-cutting HTTP concerns: learner identity, per-learner rate limiting,
+ * async error handling. The site is public: there is no access code.
  */
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import { timingSafeEqual } from "node:crypto";
 import { errorMessage, log } from "../lib/log.js";
 
 const USER_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{5,63}$/;
@@ -27,24 +26,14 @@ declare global {
   }
 }
 
-const safeEqual = (a: string, b: string) => {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
-  return left.length === right.length && timingSafeEqual(left, right);
-};
-
 /**
  * Local learner profiles: the browser generates a stable id and sends it as
  * X-User-Id (EventSource cannot set headers, so `?u=` is accepted too). This
  * is identity, not authentication — production deployments put real auth
  * (e.g. Cognito/OIDC) in front and map the verified subject to this id.
  */
-export function identity(options: { accessCode: string }): RequestHandler {
+export function identity(): RequestHandler {
   return (req, _res, next) => {
-    if (options.accessCode) {
-      const code = String(req.header("x-access-code") ?? req.query.code ?? "");
-      if (!code || !safeEqual(code, options.accessCode)) return next(new HttpError(401, "Access code required"));
-    }
     const userId = String(req.header("x-user-id") ?? req.query.u ?? "");
     if (!USER_ID.test(userId)) return next(new HttpError(400, "Missing or invalid learner id"));
     req.userId = userId;

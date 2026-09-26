@@ -31,8 +31,6 @@ export function loadConfig() {
     dataDir: path.resolve(str("DATA_DIR", "./data")),
     /** Browser origins allowed to open cross-origin API and voice connections. */
     allowedOrigins: list("ALLOWED_ORIGINS"),
-    /** Optional shared access code; when set every API call must present it. */
-    accessCode: str("ACCESS_CODE"),
 
     llm: {
       /** "zai" talks to Z.AI; "mock" is a deterministic offline provider for dev/tests. */
