@@ -367,24 +367,47 @@ export function createGuideService(deps: {
     const docList = docs.map((doc, index) => `D${index + 1}: ${doc.title}`).join("\n") || "(no documents)";
     const started = Date.now();
     try {
-      const completion = await llm.complete({
-        role: "smart",
+      const request = {
+        role: "smart" as const,
         purpose: "guide.sync",
         userId: owner.userId,
         priority: Priority.batch,
-        reasoning: "low",
+        reasoning: "low" as const,
         temperature: 0.3,
         maxTokens: 6000,
         json: true,
         messages: [
-          { role: "system", content: guideSyncPrompt(owner.language) },
+          { role: "system" as const, content: guideSyncPrompt(owner.language) },
           {
-            role: "user",
+            role: "user" as const,
             content: `Documents:\n${docList}\n\nCurrent guide:\n${JSON.stringify(compactGuide(guide))}\n\nNew messages:\n${text}`,
           },
         ],
-      });
-      const parsed = parseJsonObject<{ ops?: GuideOp[] }>(completion.text);
+      };
+      const completion = await llm.complete(request);
+      let parsed = parseJsonObject<{ ops?: GuideOp[] }>(completion.text);
+      if (!parsed) {
+        // Usually a stray unescaped quote (e.g. inside Mermaid labels): ask once for a clean reply.
+        log.warn("guide.sync_bad_json", {
+          bookId,
+          chars: completion.text.length,
+          head: completion.text.slice(0, 160),
+          tail: completion.text.slice(-160),
+        });
+        const retry = await llm.complete({
+          ...request,
+          messages: [
+            ...request.messages,
+            { role: "assistant", content: completion.text.slice(0, 12_000) },
+            {
+              role: "user",
+              content:
+                "That was not valid JSON. Reply again with ONLY the JSON object, escaping every double quote inside strings (use single quotes in Mermaid labels).",
+            },
+          ],
+        });
+        parsed = parseJsonObject<{ ops?: GuideOp[] }>(retry.text);
+      }
       if (!parsed) throw new Error("Guide sync returned no JSON");
       let next = applyGuideOps(guide, arr(parsed.ops) as GuideOp[], docLabels);
       next.bookId = bookId;

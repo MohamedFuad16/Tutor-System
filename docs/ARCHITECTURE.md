@@ -178,15 +178,24 @@ flowchart LR
   C -- no --> FG2[fresh reply]
   FG -- phrases --> Q[Speech queue: 2 phrases in flight]
   Q --> SPK[Speaker]
-  FG -- delegate --> BG[Smart model: diagram / deep answer / research]
+  FG -- "[[deep …]] tag" --> BG[Smart model: diagram / deep answer / research]
   BG -- result --> INJ[Woven in when idle: intro + narrated diagram tour]
   INJ --> Q
 ```
 
 - **Latency budget.** STT end of turn takes about 260 ms (Flux p50). An eager
   start saves 150–250 ms more. Then come the fast-model first token and first
-  TTS audio (about 200 ms). A phrase chunker releases the first clause as soon
-  as it has about 12 characters.
+  TTS audio (about 200–500 ms). A phrase chunker releases the first clause as
+  soon as it has about 12 characters.
+- **Measured live (GLM Coding Plan endpoint, Deepgram, peak hours).** The fast
+  model's first token takes 1.5–4 s, and declaring tools on the request adds
+  about 3 s, so the realtime request declares **no tools**: the model asks for
+  side work with silent inline tags (`[[images: …]]`, `[[deep diagram: …]]`,
+  parsed by `server/voice/actions.ts` and never spoken). If a confirmed turn
+  is still silent after 700 ms, a short pre-synthesized **acknowledgement**
+  ("Hmm, good one.") plays from a shared phrase cache. Measured end of turn →
+  first audio: **~0.85 s p50**; first answer words ~3.5 s after end of turn.
+  Every turn says something even if its only request found nothing.
 - **Barge-in is two-stage.** `StartOfTurn` while the tutor talks only _ducks_
   playback, because it may be echo. Two real words, or an end of turn,
   _clears_ playback. The assistant message is then truncated to the

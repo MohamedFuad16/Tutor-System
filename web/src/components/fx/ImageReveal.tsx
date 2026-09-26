@@ -35,6 +35,7 @@ export function ImageReveal({
   alt,
   tone = "light",
   delay = 0,
+  effect = true,
   className,
   onError,
 }: {
@@ -43,6 +44,8 @@ export function ImageReveal({
   tone?: "light" | "dark";
   /** Stagger (ms) before this tile reveals, for a cascading gallery. */
   delay?: number;
+  /** False: skip the WebGL mosaic and fade the photo in (keeps the GPU free for other work). */
+  effect?: boolean;
   className?: string;
   onError?: () => void;
 }) {
@@ -80,6 +83,21 @@ export function ImageReveal({
   }, [src, delay]);
 
   const box = cx("relative size-full overflow-hidden rounded-xl", className);
+  if (!effect) {
+    return (
+      <div className={cx(box, tone === "dark" ? "bg-white/5" : "bg-stone-100")}>
+        <img
+          src={src}
+          alt={alt}
+          referrerPolicy="no-referrer"
+          className={cx(
+            "size-full object-cover transition-opacity duration-500",
+            ready || !motionOn ? "opacity-100" : "opacity-0",
+          )}
+        />
+      </div>
+    );
+  }
   if (!motionOn || settled) return <Plain src={src} alt={alt} className={box} />;
   return (
     <Suspense fallback={<div className={cx(box, tone === "dark" ? "bg-white/5" : "bg-stone-100")} />}>

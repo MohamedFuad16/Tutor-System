@@ -29,13 +29,7 @@ import { PhraseChunker, estimateSpeechMs, toSpeakableText } from "../../shared/s
 import { Priority } from "../lib/limiter.js";
 import { errorMessage, log } from "../lib/log.js";
 import { metrics } from "../lib/metrics.js";
-import {
-  LlmError,
-  parseJsonObject,
-  type ChatMessage as LlmMessage,
-  type LlmProvider,
-  type ToolDefinition,
-} from "../providers/llm.js";
+import { LlmError, parseJsonObject, type ChatMessage as LlmMessage, type LlmProvider } from "../providers/llm.js";
 import type { SpeechProvider, SttEvent, SttSession } from "../providers/deepgram.js";
 import type { Search } from "../providers/search.js";
 import { newId } from "../store/db.js";
@@ -44,38 +38,38 @@ import { buildContext, CHAT_BUDGET, VOICE_BUDGET } from "../services/context.js"
 import { mermaidNodes } from "../services/learning.js";
 import { voiceBackgroundPrompt, voiceForegroundPrompt } from "../services/prompts.js";
 import { historyMessages } from "../services/tutor.js";
+import { ActionTagFilter, type VoiceAction } from "./actions.js";
 import { SpeechQueue } from "./speech-queue.js";
 
-const FOREGROUND_TOOLS: ToolDefinition[] = [
-  {
-    name: "delegate",
-    description:
-      "Hand a task to your background specialist (it has more time and a stronger model). Use for: diagrams/flowcharts of a process, detailed or multi-step explanations, web lookups, comparing sections, careful reasoning. The result shows on screen and is narrated when ready.",
-    parameters: {
-      type: "object",
-      properties: {
-        task: { type: "string", description: "Self-contained description of what to produce, including the topic." },
-        kind: { type: "string", enum: ["diagram", "explain", "research", "compare"] },
-      },
-      required: ["task", "kind"],
-    },
-  },
-  {
-    name: "show_images",
-    description:
-      "Show real photos of something concrete (organisms, places, devices, artworks) on the learner's screen right away.",
-    parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
-  },
-];
-
-const BRIDGES: Record<string, { delegate: string; images: string; ready: string }> = {
+const BRIDGES: Record<string, { delegate: string; images: string; ready: string; missed: string }> = {
   en: {
     delegate: "Let me work that out for you, one moment.",
     images: "Here are some pictures.",
     ready: "Okay, it's ready.",
+    missed: "Sorry, could you say that again?",
   },
-  ja: { delegate: "少し考えてみますね。", images: "写真を表示しますね。", ready: "準備ができました。" },
+  ja: {
+    delegate: "少し考えてみますね。",
+    images: "写真を表示しますね。",
+    ready: "準備ができました。",
+    missed: "すみません、もう一度言ってもらえますか？",
+  },
 };
+
+/**
+ * Short acknowledgements played when a reply is slow to start (the model's
+ * first token can take seconds), so the learner hears the tutor react
+ * instead of silence. Pre-synthesized per session language.
+ */
+const ACKS: Record<string, string[]> = {
+  en: ["Mm, let me think.", "Okay.", "Hmm, good one.", "Right.", "Let me see."],
+  ja: ["ええと。", "なるほど。", "そうですね。"],
+  es: ["Mm, déjame pensar.", "Vale.", "A ver."],
+  fr: ["Hmm, voyons.", "D'accord.", "Alors."],
+  de: ["Hmm, mal sehen.", "Okay.", "Also."],
+};
+/** How long a confirmed turn may stay silent before the tutor acknowledges it. */
+const ACK_DELAY_MS = 700;
 
 type Response = {
   id: string;
@@ -91,6 +85,8 @@ type Response = {
   delegated: string[];
   /** Side effects of a speculative turn wait until the turn is confirmed. */
   deferred: Array<() => void>;
+  /** A short acknowledgement was played while the reply was still coming. */
+  acked?: boolean;
 };
 
 type Injection = { taskId: string; speech: string; visual?: VoiceVisual; diagram?: Diagram; parts: MessagePart[] };
@@ -128,6 +124,7 @@ export class VoiceSession {
   private turnEndTimer: NodeJS.Timeout | null = null;
   private maxTimer: NodeJS.Timeout | null = null;
   private eotAt = 0;
+  private lastAck = -1;
   /** What the tutor said recently, to recognise its own voice picked up by the mic. */
   private recentSpeech: Array<{ text: string; at: number }> = [];
 
@@ -258,9 +255,13 @@ export class VoiceSession {
       onError: (message) => this.send({ type: "error", message: `Speech output failed: ${message}`, fatal: false }),
     });
 
-    // Warm upstream connections now so the first turn doesn't pay TLS handshakes.
+    // Warm upstream connections now so the first turn doesn't pay TLS handshakes,
+    // and pre-synthesize the acknowledgements so they play without a TTS round trip.
     this.deps.llm.warm?.();
-    if (this.ttsMode === "server") speech?.warm?.();
+    if (this.ttsMode === "server") {
+      speech?.warm?.();
+      void this.queue.warm(ACKS[this.language] ?? []);
+    }
 
     // Seed the conversation with the recent notebook thread so voice continues the chat.
     this.history = historyMessages(this.deps.store.messages.recent(this.userId, this.bookId, 10));
@@ -431,6 +432,7 @@ export class VoiceSession {
       for (const phrase of this.current.held.splice(0)) this.queue.enqueue(this.current.id, phrase.text);
       for (const effect of this.current.deferred.splice(0)) effect();
       if (this.current.generationDone) this.maybeFinishTurn();
+      else this.scheduleAck(this.current);
       return;
     }
     if (this.current?.speculative) {
@@ -438,6 +440,22 @@ export class VoiceSession {
       this.cancelResponse();
     }
     this.startResponse(transcript, false);
+    if (this.current) this.scheduleAck(this.current);
+  }
+
+  /** If the confirmed reply hasn't started speaking soon, acknowledge the learner first. */
+  private scheduleAck(response: Response) {
+    const acks = ACKS[this.language];
+    if (!acks?.length) return;
+    const timer = setTimeout(() => {
+      if (this.closed || this.current !== response || response.speculative || response.abort.signal.aborted) return;
+      if (response.text.trim() || this.queue.lastSeqOf(response.id)) return;
+      this.lastAck = (this.lastAck + 1 + Math.floor(Math.random() * (acks.length - 1))) % acks.length;
+      response.acked = true;
+      metrics.increment("voice.ack");
+      this.queue.enqueue(response.id, acks[this.lastAck]);
+    }, ACK_DELAY_MS);
+    timer.unref?.();
   }
 
   /** Stops the tutor: cancels generation and audio, keeps only what the learner heard. */
@@ -530,7 +548,15 @@ export class VoiceSession {
       { role: "user", content: response.transcript },
     ];
     const chunker = new PhraseChunker({ firstMinChars: 12, minChars: 50 });
-    const toolCalls: Array<{ name: string; arguments: string }> = [];
+    const tags = new ActionTagFilter();
+    const pending: Array<Promise<void>> = [];
+    const onText = (text: string) => {
+      if (!text) return;
+      response.text += text;
+      for (const phrase of chunker.push(text)) this.speak(response, phrase);
+    };
+    // No tool declarations here: they add seconds of time-to-first-token on
+    // GLM. The model requests side work with silent inline tags instead.
     for await (const event of this.deps.llm.stream({
       role: "fast",
       purpose: "voice.fg",
@@ -540,53 +566,46 @@ export class VoiceSession {
       temperature: 0.6,
       maxTokens: 400,
       messages,
-      tools: FOREGROUND_TOOLS,
       signal: response.abort.signal,
     })) {
       if (response.abort.signal.aborted) return;
-      if (event.type === "text") {
-        response.text += event.delta;
-        for (const phrase of chunker.push(event.delta)) this.speak(response, phrase);
-      } else if (event.type === "tool_call") {
-        toolCalls.push(event.call);
-      }
+      if (event.type !== "text") continue;
+      const out = tags.push(event.delta);
+      onText(out.text);
+      for (const action of out.actions) pending.push(this.runAction(response, action));
     }
+    onText(tags.flush());
     for (const phrase of chunker.flush()) this.speak(response, phrase);
+    await Promise.all(pending);
     if (response.abort.signal.aborted) return;
 
-    const bridge = BRIDGES[this.language] ?? BRIDGES.en;
-    for (const call of toolCalls) {
-      let args: Record<string, unknown> = {};
-      try {
-        args = JSON.parse(call.arguments || "{}");
-      } catch {
-        args = {};
-      }
-      if (call.name === "delegate") {
-        const task = String(args.task ?? response.transcript).slice(0, 1200);
-        if (!response.text.trim()) {
-          response.text = bridge.delegate;
-          this.speak(response, bridge.delegate);
-        }
-        response.delegated.push(task);
-        const kind = String(args.kind ?? "explain");
-        this.whenConfirmed(response, () => this.startBackgroundTask(task, kind));
-      } else if (call.name === "show_images") {
-        const query = String(args.query ?? "").slice(0, 200);
-        const images = await this.deps.search.images(query, 6).catch(() => []);
-        if (images.length) {
-          const visual: VoiceVisual = { id: newId("vis"), kind: "images", query, images };
-          this.whenConfirmed(response, () => this.send({ type: "visual", visual }));
-          response.parts.push({ type: "images", query, images });
-          if (!response.text.trim()) {
-            response.text = bridge.images;
-            this.speak(response, bridge.images);
-          }
-        }
-      }
+    // Every turn says something, even when the model only asked for side work.
+    if (!response.text.trim()) {
+      const bridge = BRIDGES[this.language] ?? BRIDGES.en;
+      const line = response.delegated.length
+        ? bridge.delegate
+        : response.parts.some((part) => part.type === "images")
+          ? bridge.images
+          : bridge.missed;
+      response.text = line;
+      this.speak(response, line);
     }
     response.generationDone = true;
     if (!response.speculative) this.maybeFinishTurn();
+  }
+
+  /** Side work requested by a voice action tag (see ./actions.ts). */
+  private async runAction(response: Response, action: VoiceAction) {
+    if (action.kind === "deep") {
+      response.delegated.push(action.task);
+      this.whenConfirmed(response, () => this.startBackgroundTask(action.task, action.mode));
+      return;
+    }
+    const images = await this.deps.search.images(action.query, 6).catch(() => []);
+    if (!images.length || response.abort.signal.aborted) return;
+    const visual: VoiceVisual = { id: newId("vis"), kind: "images", query: action.query, images };
+    this.whenConfirmed(response, () => this.send({ type: "visual", visual }));
+    response.parts.push({ type: "images", query: action.query, images });
   }
 
   /** A turn ends when generation is done and the client finished playing its last segment. */

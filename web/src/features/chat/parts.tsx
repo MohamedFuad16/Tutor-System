@@ -81,10 +81,13 @@ export function ImageGallery({
   images,
   query,
   tone = "light",
+  effect = true,
 }: {
   images: WebImage[];
   query: string;
   tone?: "light" | "dark";
+  /** The WebGL mosaic reveal; off where the GPU is already busy (the voice stage runs the orb). */
+  effect?: boolean;
 }) {
   const [open, setOpen] = useState<number | null>(null);
   const [failed, setFailed] = useState<Set<string>>(new Set());
@@ -121,6 +124,7 @@ export function ImageGallery({
                 alt={image.title}
                 tone={tone}
                 delay={index * 140}
+                effect={effect}
                 onError={() => setFailed((set) => new Set(set).add(image.imageUrl))}
               />
             </div>

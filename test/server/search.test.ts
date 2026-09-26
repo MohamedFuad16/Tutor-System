@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createSearch } from "../../server/providers/search";
+import { createSearch, imageKeywords } from "../../server/providers/search";
 
 type Handler = (url: string, init?: RequestInit) => Response | Promise<Response>;
 const json = (body: unknown, status = 200) =>
@@ -132,5 +132,37 @@ describe("search", () => {
     });
     await search.web("光合成", 3, "ja");
     expect(calls[0]).toContain("https://ja.wikipedia.org/w/api.php");
+  });
+
+  it("retries Commons with the subject when a conversational query finds nothing", async () => {
+    const calls: string[] = [];
+    const search = createSearch({
+      cacheTtlMs: 0,
+      fetchImpl: fakeFetch(
+        {
+          "https://commons.wikimedia.org": (url) => {
+            const query = new URL(url).searchParams.get("gsrsearch") ?? "";
+            if (!/^neuron/.test(query)) return json({});
+            return json({
+              query: {
+                pages: {
+                  "1": {
+                    index: 1,
+                    title: "File:Neuron.jpg",
+                    imageinfo: [{ mime: "image/jpeg", thumburl: "https://upload.wikimedia.org/n.jpg" }],
+                  },
+                },
+              },
+            });
+          },
+        },
+        calls,
+      ),
+    });
+    expect(imageKeywords("Show me pictures of a neuron?")).toBe("neuron");
+    expect(imageKeywords("photos of the Calvin cycle")).toBe("Calvin cycle");
+    const images = await search.images("Show me pictures of a neuron", 4);
+    expect(images.map((image) => image.title)).toEqual(["Neuron"]);
+    expect(calls).toHaveLength(2);
   });
 });

@@ -37,6 +37,7 @@
     "d3-force": "^3.0.0",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
+    "https-proxy-agent": "^7.0.6",
     "img-fx": "^0.5.1",
     "katex": "^0.18.9",
     "liquid-gooey": "^0.2.2",

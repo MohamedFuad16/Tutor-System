@@ -129,12 +129,12 @@ function scriptFor(request: LlmRequest): Script {
     };
   }
   if (purpose === "voice.fg") {
-    if (hasToolResult(request)) return { text: "Sure." };
+    // The voice model requests side work with silent inline tags (server/voice/actions.ts).
     if (/diagram|flowchart|draw|sketch|research|in depth/.test(q)) {
-      return {
-        text: "Good question, let me sketch that out for you.",
-        tools: [{ name: "delegate", args: { task: question, kind: "diagram" } }],
-      };
+      return { text: `Let me sketch that out for you. [[deep diagram: ${question}]]` };
+    }
+    if (/\b(image|picture|photo)s?\b/.test(q)) {
+      return { text: `Here's what it looks like. [[images: ${question.slice(0, 60)}]]` };
     }
     if (/background result|result is ready/i.test(question))
       return { text: "Okay, it's ready. Take a look at the screen." };

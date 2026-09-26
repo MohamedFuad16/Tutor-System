@@ -128,9 +128,11 @@ describe("API", () => {
 
     const file = await fetch(`${base}/api/documents/${documentId}/file`, { headers: { "x-user-id": USER } });
     expect(file.headers.get("content-type")).toContain("application/pdf");
-    // The notebook took its name from the document.
-    const books = (await json<Array<{ id: string; title: string }>>("GET", "/books")).data;
-    expect(books.find((b) => b.id === bookId)?.title).toBe("Mock Study Topic");
+    // The notebook takes its name from the document (named just after the document is ready).
+    const bookTitle = async () =>
+      (await json<Array<{ id: string; title: string }>>("GET", "/books")).data.find((b) => b.id === bookId)?.title;
+    await until(async () => (await bookTitle()) === "Mock Study Topic");
+    expect(await bookTitle()).toBe("Mock Study Topic");
   });
 
   it("OCRs scanned pages that have no text layer", async () => {

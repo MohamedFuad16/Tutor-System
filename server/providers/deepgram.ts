@@ -10,8 +10,25 @@
  * phrase requests give exact segment boundaries for captions, diagram-tour
  * sync and barge-in truncation, and let us pipeline phrase N+1 while N plays.
  */
+import { HttpsProxyAgent } from "https-proxy-agent";
 import WebSocket from "ws";
 import { errorMessage, log } from "../lib/log.js";
+
+/**
+ * Deployments behind an egress proxy: `ws` doesn't read HTTPS_PROXY, so
+ * streaming STT gets an explicit CONNECT agent. (REST calls go through
+ * fetch; enable Node's env-proxy support there with NODE_USE_ENV_PROXY=1.)
+ */
+function proxyAgent(host: string) {
+  const proxy = process.env.HTTPS_PROXY ?? process.env.https_proxy;
+  if (!proxy) return undefined;
+  const bypass = (process.env.NO_PROXY ?? process.env.no_proxy ?? "")
+    .split(",")
+    .map((entry) => entry.trim().replace(/^\*?\./, ""))
+    .filter(Boolean);
+  if (bypass.some((suffix) => host === suffix || host.endsWith(`.${suffix}`))) return undefined;
+  return new HttpsProxyAgent(proxy);
+}
 
 export type SttEvent =
   | { type: "start_of_turn" }
@@ -81,6 +98,7 @@ export function createDeepgram(options: DeepgramOptions): SpeechProvider {
     for (const term of keyterms.slice(0, 20)) params.append("keyterm", term);
     const socket = new WebSocket(`wss://api.deepgram.com/v2/listen?${params}`, {
       headers: { Authorization: `Token ${options.apiKey}` },
+      agent: proxyAgent("api.deepgram.com"),
     });
     socket.on("message", (data, isBinary) => {
       if (isBinary) return;
@@ -137,6 +155,7 @@ export function createDeepgram(options: DeepgramOptions): SpeechProvider {
     for (const term of keyterms.slice(0, 20)) params.append("keyterm", term);
     const socket = new WebSocket(`wss://api.deepgram.com/v1/listen?${params}`, {
       headers: { Authorization: `Token ${options.apiKey}` },
+      agent: proxyAgent("api.deepgram.com"),
     });
     let finals: string[] = [];
     let inTurn = false;

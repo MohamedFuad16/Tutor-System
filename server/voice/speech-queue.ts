@@ -26,6 +26,24 @@ type Slot = Segment & {
   started: boolean;
 };
 
+/**
+ * Synthesized audio for short, recurring phrases (acknowledgements, bridges),
+ * shared by every session: a cache hit plays with no TTS round trip.
+ */
+const PHRASE_CACHE_MAX = 64;
+const PHRASE_MAX_CHARS = 60;
+const phraseCache = new Map<string, Buffer[]>();
+
+function cacheKey(voice: string, language: string, sampleRate: number, text: string) {
+  return `${voice}|${language}|${sampleRate}|${text}`;
+}
+
+function remember(key: string, chunks: Buffer[]) {
+  phraseCache.delete(key);
+  phraseCache.set(key, chunks);
+  if (phraseCache.size > PHRASE_CACHE_MAX) phraseCache.delete(phraseCache.keys().next().value!);
+}
+
 export type SpeechSink = {
   announce(segment: Segment): void;
   audio(seq: number, pcm: Buffer): void;
@@ -107,6 +125,36 @@ export class SpeechQueue {
       .join(" ");
   }
 
+  /** Pre-synthesizes short phrases into the shared cache (e.g. acknowledgements), one at a time. */
+  async warm(texts: string[]) {
+    const speech = this.options.speech;
+    if (!speech) return;
+    for (const text of texts) {
+      const key = this.key(text);
+      if (!key || phraseCache.has(key)) continue;
+      try {
+        const chunks: Buffer[] = [];
+        for await (const chunk of speech.synthesize(text, {
+          language: this.options.language,
+          sampleRate: this.options.sampleRate,
+          signal: AbortSignal.timeout(10_000),
+        })) {
+          chunks.push(chunk);
+        }
+        if (chunks.length) remember(key, chunks);
+      } catch (error) {
+        log.debug("voice.tts_warm_failed", { error: errorMessage(error) });
+      }
+    }
+  }
+
+  private key(text: string) {
+    const speech = this.options.speech;
+    return speech && text.length <= PHRASE_MAX_CHARS
+      ? cacheKey(speech.name, this.options.language, this.options.sampleRate, text)
+      : null;
+  }
+
   /** Barge-in: abort synthesis and drop everything not yet delivered. */
   cancel() {
     for (const slot of this.slots) slot.abort.abort();
@@ -132,7 +180,12 @@ export class SpeechQueue {
 
   private async synthesize(slot: Slot) {
     try {
-      if (this.options.speech) {
+      const key = this.key(slot.text);
+      const cached = key ? phraseCache.get(key) : undefined;
+      if (cached) {
+        slot.chunks.push(...cached);
+      } else if (this.options.speech) {
+        const produced: Buffer[] = [];
         for await (const chunk of this.options.speech.synthesize(slot.text, {
           language: this.options.language,
           sampleRate: this.options.sampleRate,
@@ -140,8 +193,10 @@ export class SpeechQueue {
         })) {
           if (slot.abort.signal.aborted) return;
           slot.chunks.push(chunk);
+          produced.push(chunk);
           this.flush();
         }
+        if (key && produced.length && !slot.abort.signal.aborted) remember(key, produced);
       }
     } catch (error) {
       if (!slot.abort.signal.aborted) {

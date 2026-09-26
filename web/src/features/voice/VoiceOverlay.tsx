@@ -40,7 +40,8 @@ function Stage({ visual, focusNode }: { visual: VoiceVisual; focusNode: string |
       />
     );
   }
-  if (visual.kind === "images") return <ImageGallery images={visual.images} query={visual.query} tone="dark" />;
+  if (visual.kind === "images")
+    return <ImageGallery images={visual.images} query={visual.query} tone="dark" effect={false} />;
   return (
     <div className="scroll-quiet max-h-[60vh] overflow-y-auto">
       <h3 className="mb-3 text-sm tracking-wide text-fog-400 uppercase">{visual.title}</h3>

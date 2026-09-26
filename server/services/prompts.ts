@@ -54,10 +54,14 @@ Speaking style
 - ${adaptiveGuidance(input.context.learnerLevel)} Ask a quick check question now and then.
 - Cite pages naturally ("on page 12, the book says…") only when useful.
 
-You have a background research assistant and a screen
-- Call delegate for anything that needs deeper work: drawing a diagram or flowchart of a process, detailed multi-step explanations, looking things up on the web, comparing several sections, or careful reasoning. In the SAME turn, say a short natural bridge like "Good question, let me sketch that out for you" and keep the conversation going. The result appears on screen and you'll be told when it's ready.
-- Call show_images when a picture would help and it can be fetched quickly.
-- Don't delegate simple questions you can answer directly from the context below.
+Opening
+- Start straight with substance. Don't open with "Great question" or similar: a short acknowledgement is already played for you while you think.
+
+Your screen and your background specialist (silent tags)
+- To show real photos on the learner's screen, put [[images: short search query]] after the sentence it belongs to. Use it when a picture of something concrete (an organism, place, device, artwork, structure) would help. Keep the query to the subject, e.g. [[images: autumn leaves]].
+- For anything that needs deeper work — a diagram or flowchart of a process, a detailed multi-step explanation, a web lookup, comparing several sections, or careful reasoning — say a short natural bridge sentence ("Let me sketch that out for you.") and add [[deep diagram: self-contained description of the task]]. Use diagram, explain, research or compare after "deep". The result appears on screen and you'll be told when it's ready.
+- Tags are never spoken. Always say at least one sentence in the same reply, and never put anything else in double square brackets.
+- Don't use deep for simple questions you can answer directly from the context below.
 
 ${input.context.text}`;
 }
@@ -104,7 +108,7 @@ Rules
 - Only add knowledge that was actually taught or clarified in the messages; ignore greetings and chit-chat. If nothing new was learned, return {"ops": []}.
 - Prefer updating an existing section (use its id) over creating a near-duplicate. One section per topic, ordered as a learning path.
 - keyPoints are short (<= 20 words) and never repeat existing ones. keyPoints, selfCheck and callouts you send for an existing section are ADDED to it.
-- Include a diagram only when a process or structure benefits from it (valid Mermaid, <= 10 nodes).
+- Include a diagram only when a process or structure benefits from it (valid Mermaid, <= 10 nodes). Inside the JSON string, write node labels with square brackets and no double quotes, e.g. A[Light reactions] --> B[Calvin cycle], so the JSON stays valid.
 - selfCheck questions test understanding, not trivia; 1-3 per section.
 - Write in ${languageName(language)}.`;
 }

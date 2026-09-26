@@ -12,7 +12,8 @@ import { log, errorMessage } from "../lib/log.js";
 
 type SearchOptions = { serperKey?: string; cacheTtlMs: number; fetchImpl?: typeof fetch };
 
-const USER_AGENT = "TutorLearningApp/2.0 (educational study assistant)";
+// Wikimedia asks API clients to identify themselves with contact details, or they may be throttled (HTTP 429).
+const USER_AGENT = "TutorLearningApp/2.0 (https://github.com/MohamedFuad16/Tutor-System; educational study assistant)";
 
 class TtlCache<T> {
   private map = new Map<string, { value: T; expires: number }>();
@@ -214,10 +215,15 @@ export function createSearch(options: SearchOptions) {
         }
       }
       if (!results.length) {
-        try {
-          results = await commonsImages(q, count);
-        } catch (error) {
-          log.warn("search.commons_failed", { error: errorMessage(error) });
+        // Commons matches file titles, so a conversational query ("show me
+        // pictures of a neuron") finds nothing; fall back to its keywords.
+        for (const attempt of [...new Set([q, imageKeywords(q)])].filter(Boolean)) {
+          try {
+            results = await commonsImages(attempt, count);
+          } catch (error) {
+            log.warn("search.commons_failed", { error: errorMessage(error) });
+          }
+          if (results.length) break;
         }
       }
       imageCache.set(key, results);
@@ -227,3 +233,15 @@ export function createSearch(options: SearchOptions) {
 }
 
 export type Search = ReturnType<typeof createSearch>;
+
+const FILLER =
+  /\b(?:please|can|could|would|you|show|me|us|some|find|get|give|display|pictures?|photos?|photographs?|images?|pics?|of|an?|the|what|does|do|look|looks|like|real|actual|for)\b/gi;
+
+/** The subject of an image request: "Show me pictures of a neuron" → "neuron". */
+export function imageKeywords(query: string) {
+  return query
+    .replace(/[?!.,]/g, " ")
+    .replace(FILLER, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
