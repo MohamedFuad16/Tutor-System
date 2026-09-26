@@ -68,16 +68,16 @@ need the phase-2 changes described below.
    ./deploy/aws/deploy.sh up --domain tutorsystem.mohamedfuad.com --email you@example.com
    ```
 
-   You will be asked for the Z.AI key, the endpoint, the Deepgram key and an
-   access code (press Enter to generate one). Typed keys are hidden and are
-   stored straight into SSM Parameter Store.
+   You will be asked for the Z.AI key, the endpoint and the Deepgram key.
+   Typed keys are hidden and are stored straight into SSM Parameter Store.
+   The site is **public**: there is no access code, so anyone with the URL
+   can use it.
 
 4. With a domain, add the DNS record as soon as the script prints the Elastic
    IP, while the instance is still building. The steps are in the next
    section. The script watches DNS and tells you if the record is missing or
    proxied.
-5. When it prints `Tutor is live: https://…`, open the URL and enter the
-   access code. Share both with your testers.
+5. When it prints `Tutor is live: https://…`, open the URL and share it.
 
 If CloudShell times out while you wait, nothing is lost. The stack keeps
 building. Run `./deploy/aws/deploy.sh status` later.
@@ -113,8 +113,9 @@ For `tutorsystem.mohamedfuad.com`: in the Cloudflare dashboard, open
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Ship new code                   | `deploy.sh release` (the stack's branch) or `deploy.sh release <branch/tag/sha>`                                                        |
 | Roll back                       | `deploy.sh release <previous sha>`. It is instant when that image is still on the host, and a failed health check rolls back on its own |
-| Rotate keys or the access code  | `deploy.sh secrets`. Changes apply immediately without a rebuild                                                                        |
+| Rotate keys                     | `deploy.sh secrets`. Changes apply immediately without a rebuild                                                                        |
 | Change any server setting       | `deploy.sh set USER_REQUESTS_PER_MINUTE` (any name from `.env.example`)                                                                 |
+| Remove a server setting         | `deploy.sh unset NAME`, e.g. `deploy.sh unset ACCESS_CODE` to make the site public                                                      |
 | Follow logs                     | `deploy.sh logs` (app stream; `--since 2h` etc. are passed through)                                                                     |
 | Health and settings at a glance | `deploy.sh status`                                                                                                                      |
 | First-boot log                  | `deploy.sh bootlog`                                                                                                                     |
@@ -160,8 +161,12 @@ Deleting the stack leaves a final snapshot.
   `live-restore`, so daemon upgrades don't restart the app.
 - **Encryption at rest:** the root and data volumes are EBS-encrypted.
 - **Transport:** TLS 1.2+/1.3 from Caddy, with HSTS.
-- **App-level:** the `ACCESS_CODE` gate, per-user rate limits (`USER_REQUESTS_PER_MINUTE`)
-  and origin checks on the voice socket.
+- **App-level:** the site is public (no access code), with per-user rate
+  limits (`USER_REQUESTS_PER_MINUTE`) and origin checks on the voice socket.
+  Because anyone can use it, model and speech usage bills to your Z.AI and
+  Deepgram keys: keep the budget alert on and set usage limits in those
+  consoles. `deploy.sh set ACCESS_CODE` puts a gate back;
+  `deploy.sh unset ACCESS_CODE` removes it.
 
 ## Cost (on-demand, approximate)
 

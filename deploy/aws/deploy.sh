@@ -6,8 +6,9 @@
 #   deploy.sh up [--ref REF] [--domain NAME] [--email ADDR] [--budget USD] [--size TYPE] [--disk GIB]
 #                           create the stack, or update it with the given options
 #   deploy.sh release [REF] build and roll out a revision (default: the stack's GitRef)
-#   deploy.sh secrets       set or rotate the API keys and the access code, then apply them
+#   deploy.sh secrets       set or rotate the API keys, then apply them
 #   deploy.sh set NAME      set any other server setting from .env.example, then apply it
+#   deploy.sh unset NAME    remove a server setting, then apply (e.g. unset ACCESS_CODE)
 #   deploy.sh apply         re-apply settings and the site address without changing the code
 #   deploy.sh status        stack, instance and health at a glance
 #   deploy.sh logs [ARGS]   follow the app log (extra args go to "aws logs tail")
@@ -189,15 +190,8 @@ cmd_secrets() {
   prompt_secret DEEPGRAM_API_KEY "Deepgram API key (server voice; empty keeps browser speech)"
   [ -n "$REPLY" ] && put_param DEEPGRAM_API_KEY "$REPLY"
 
-  prompt_secret ACCESS_CODE "Access code learners must enter (empty generates one)"
-  if [ -n "$REPLY" ]; then
-    put_param ACCESS_CODE "$REPLY"
-  elif ! param_exists ACCESS_CODE; then
-    local code
-    code=$(head -c 256 /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | cut -c1-12)
-    put_param ACCESS_CODE "$code"
-    say "Generated access code: $code (share it only with your testers)"
-  fi
+  # The site is public: no access code is created, so anyone with the URL can
+  # use it. (To gate it again later: deploy.sh set ACCESS_CODE.)
 }
 
 cmd_up() {
@@ -274,7 +268,9 @@ cmd_up() {
     return
   fi
   say "Tutor is live: $url"
-  if param_exists ACCESS_CODE; then echo "Learners need the access code (change it with: $0 secrets)."; fi
+  if param_exists ACCESS_CODE; then
+    echo "An access code is still set; make the site public with: $0 unset ACCESS_CODE"
+  fi
 }
 
 cmd_release() {
@@ -313,6 +309,19 @@ cmd_set() {
   read -r -s -p "Value for $name: " REPLY
   echo
   put_param "$name" "$REPLY"
+  cmd_apply
+}
+
+cmd_unset() {
+  require_stack
+  local name=${1:-}
+  [[ $name =~ ^[A-Z][A-Z0-9_]*$ ]] || die "Usage: $0 unset NAME   (e.g. ACCESS_CODE)"
+  if param_exists "$name"; then
+    aws ssm delete-parameter --name "$PARAMS/$name" >/dev/null
+    say "Removed $name."
+  else
+    say "$name is not set."
+  fi
   cmd_apply
 }
 
@@ -380,6 +389,7 @@ case $command in
     ;;
   apply) cmd_apply ;;
   set) cmd_set "$@" ;;
+  unset) cmd_unset "$@" ;;
   status) cmd_status ;;
   logs) cmd_logs "$@" ;;
   bootlog) cmd_bootlog ;;
