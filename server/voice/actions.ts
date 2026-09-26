@@ -72,3 +72,20 @@ export class ActionTagFilter {
     return rest;
   }
 }
+
+/** An action in the form the model writes it, kept in history so the model sees its own tag use. */
+export function actionTag(action: VoiceAction) {
+  return action.kind === "images"
+    ? `[[images: ${action.query}]]`
+    : `[[deep ${action.mode}: ${action.task.slice(0, 200)}]]`;
+}
+
+/**
+ * Rewrites chat-history notes ("[showed images: X]", "[quiz on …]") for the
+ * voice model. Image notes become real tags, so the model sees how it shows
+ * photos; everything else goes in double brackets, which are never spoken
+ * even if the model imitates them.
+ */
+export function asVoiceNotes(content: string) {
+  return content.replace(/^\[showed images: (.+)\]$/gm, "[[images: $1]]").replace(/^\[(?!\[)(.+)\]$/gm, "[[$1]]");
+}

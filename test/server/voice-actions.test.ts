@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ActionTagFilter, parseActionTag } from "../../server/voice/actions";
+import { ActionTagFilter, actionTag, asVoiceNotes, parseActionTag } from "../../server/voice/actions";
 
 describe("voice action tags", () => {
   it("parses image and deep-work tags", () => {
@@ -43,5 +43,29 @@ describe("voice action tags", () => {
     expect(filter.flush()).toBe("");
     const b = new ActionTagFilter();
     expect(b.push("Unknown [[tag]] here").text).toBe("Unknown  here");
+  });
+});
+
+describe("voice history notes", () => {
+  it("writes actions back in the model's own tag format", () => {
+    expect(actionTag({ kind: "images", query: "Tokyo" })).toBe("[[images: Tokyo]]");
+    expect(actionTag({ kind: "deep", mode: "diagram", task: "Draw the Krebs cycle" })).toBe(
+      "[[deep diagram: Draw the Krebs cycle]]",
+    );
+  });
+
+  it("turns chat notes into tags or unspoken double-bracket notes", () => {
+    const content =
+      'Here you go.\n[showed images: Nikola Tesla]\n[quiz on Energy: "What is ATP?" — learner was correct]';
+    expect(asVoiceNotes(content)).toBe(
+      'Here you go.\n[[images: Nikola Tesla]]\n[[quiz on Energy: "What is ATP?" — learner was correct]]',
+    );
+    // Inline citations are left alone.
+    expect(asVoiceNotes("It says so [D1 p.4] here.")).toBe("It says so [D1 p.4] here.");
+    // Whatever the model imitates from those notes is filtered out of speech.
+    const filter = new ActionTagFilter();
+    const out = filter.push('Sure. [[quiz on Energy: "x"]] Next.');
+    expect(`${out.text}${filter.flush()}`).toBe("Sure.  Next.");
+    expect(out.actions).toEqual([]);
   });
 });

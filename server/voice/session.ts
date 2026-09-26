@@ -38,7 +38,8 @@ import { buildContext, CHAT_BUDGET, VOICE_BUDGET } from "../services/context.js"
 import { mermaidNodes } from "../services/learning.js";
 import { voiceBackgroundPrompt, voiceForegroundPrompt } from "../services/prompts.js";
 import { historyMessages } from "../services/tutor.js";
-import { ActionTagFilter, type VoiceAction } from "./actions.js";
+import { ActionTagFilter, actionTag, asVoiceNotes, type VoiceAction } from "./actions.js";
+import { detectImageIntent } from "./intent.js";
 import { SpeechQueue } from "./speech-queue.js";
 
 const BRIDGES: Record<string, { delegate: string; images: string; ready: string; missed: string }> = {
@@ -87,6 +88,12 @@ type Response = {
   deferred: Array<() => void>;
   /** A short acknowledgement was played while the reply was still coming. */
   acked?: boolean;
+  /** Side work this turn performed, kept in history as tags (see actionTag). */
+  actions: VoiceAction[];
+  /** The one photo search this turn shows (the learner's explicit request wins). */
+  imageQuery?: string;
+  /** A model image tag that lost to the learner's request, tried if that search finds nothing. */
+  imageFallback?: string;
 };
 
 type Injection = { taskId: string; speech: string; visual?: VoiceVisual; diagram?: Diagram; parts: MessagePart[] };
@@ -264,7 +271,9 @@ export class VoiceSession {
     }
 
     // Seed the conversation with the recent notebook thread so voice continues the chat.
-    this.history = historyMessages(this.deps.store.messages.recent(this.userId, this.bookId, 10));
+    this.history = historyMessages(this.deps.store.messages.recent(this.userId, this.bookId, 10)).map((message) =>
+      message.role === "assistant" ? { ...message, content: asVoiceNotes(String(message.content)) } : message,
+    );
 
     if (this.sttMode === "server" && speech) {
       const keyterms = this.deps.store.learning
@@ -504,6 +513,7 @@ export class VoiceSession {
       parts: [],
       delegated: [],
       deferred: [],
+      actions: [],
     };
     this.current = response;
     if (!speculative) this.setState("thinking");
@@ -550,6 +560,10 @@ export class VoiceSession {
     const chunker = new PhraseChunker({ firstMinChars: 12, minChars: 50 });
     const tags = new ActionTagFilter();
     const pending: Array<Promise<void>> = [];
+    // "Pull up Tokyo" / "yes please" (to an offer): search now, in parallel with
+    // the model, so photos appear fast even if the model forgets its tag.
+    const intent = detectImageIntent(response.transcript, this.lastAssistantText());
+    if (intent) pending.push(this.showImages(response, intent, "intent"));
     const onText = (text: string) => {
       if (!text) return;
       response.text += text;
@@ -598,14 +612,43 @@ export class VoiceSession {
   private async runAction(response: Response, action: VoiceAction) {
     if (action.kind === "deep") {
       response.delegated.push(action.task);
+      response.actions.push(action);
       this.whenConfirmed(response, () => this.startBackgroundTask(action.task, action.mode));
       return;
     }
-    const images = await this.deps.search.images(action.query, 6).catch(() => []);
-    if (!images.length || response.abort.signal.aborted) return;
-    const visual: VoiceVisual = { id: newId("vis"), kind: "images", query: action.query, images };
+    await this.showImages(response, action.query, "tag");
+  }
+
+  /** Shows one set of photos per turn; the learner's explicit request wins over the model's tag. */
+  private async showImages(response: Response, query: string, source: "intent" | "tag") {
+    if (response.imageQuery) {
+      if (source === "tag") response.imageFallback ??= query;
+      return;
+    }
+    response.imageQuery = query;
+    const images = await this.deps.search.images(query, 6).catch(() => []);
+    if (response.abort.signal.aborted) return;
+    if (!images.length) {
+      response.imageQuery = undefined;
+      const fallback = response.imageFallback;
+      response.imageFallback = undefined;
+      if (fallback && fallback !== query) await this.showImages(response, fallback, "tag");
+      return;
+    }
+    const visual: VoiceVisual = { id: newId("vis"), kind: "images", query, images };
     this.whenConfirmed(response, () => this.send({ type: "visual", visual }));
-    response.parts.push({ type: "images", query: action.query, images });
+    response.parts.push({ type: "images", query, images });
+    response.actions.push({ kind: "images", query });
+    metrics.increment(`voice.images.${source}`);
+  }
+
+  /** The tutor's previous turn, to resolve "yes please" against what it offered. */
+  private lastAssistantText() {
+    for (let index = this.history.length - 1; index >= 0; index--) {
+      const message = this.history[index];
+      if (message.role === "assistant") return typeof message.content === "string" ? message.content : "";
+    }
+    return undefined;
   }
 
   /** A turn ends when generation is done and the client finished playing its last segment. */
@@ -656,9 +699,13 @@ export class VoiceSession {
   }
 
   private commitAssistant(response: Response, content: string, interrupted: boolean) {
-    const notes = response.delegated.map((task) => `[started background task: ${task.slice(0, 120)}]`);
+    // History keeps the tags this turn used, so the model sees itself showing photos
+    // and delegating (and keeps doing it). Double brackets are never spoken.
     this.history.push({ role: "user", content: response.transcript });
-    this.history.push({ role: "assistant", content: [content || "(interrupted)", ...notes].join("\n") });
+    this.history.push({
+      role: "assistant",
+      content: [content || "(interrupted)", ...response.actions.map(actionTag)].join(" "),
+    });
     if (!content && !response.parts.length) return;
     this.deps.store.messages.add({
       userId: this.userId,
@@ -812,7 +859,7 @@ export class VoiceSession {
     const spoken = [injection.speech, ...(injection.diagram?.steps ?? []).map((step) => step.say)].join(" ");
     this.history.push({
       role: "assistant",
-      content: `${spoken}${injection.diagram ? `\n[showed diagram: ${injection.diagram.title}]` : ""}`,
+      content: `${spoken}${injection.diagram ? ` [[shown on screen: diagram "${injection.diagram.title}"]]` : ""}`,
     });
     this.deps.store.messages.add({
       userId: this.userId,
