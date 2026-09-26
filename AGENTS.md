@@ -156,9 +156,8 @@ BASE_URL=http://localhost:3300 npm run test:e2e
 - Generated Graphify artifacts in `graphify-out/` (stale since the v2 rebuild;
   refresh only when asked).
 
-Legacy v1 code (`src/`, `server.ts`, `server/learner-store.ts`,
-`server/web-search.ts`, `server/vercel-handler.ts`, `api/`, `scripts/`,
-`tests/`) is not referenced by the build and must not be extended.
+The v1 code base (the old `src/` app, the monolithic `server.ts`, `api/`,
+`scripts/`, `tests/`) has been removed; it remains in git history only.
 
 Keep edits scoped. Preserve existing app behavior unless the task explicitly
 requires a behavior change.

@@ -15,6 +15,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["server/**/*.ts", "shared/**/*.ts"],
-  "exclude": ["server/learner-store.ts", "server/web-search.ts", "server/vercel-handler.ts"]
+  "include": ["server/**/*.ts", "shared/**/*.ts"]
 }

@@ -4,7 +4,7 @@
 
   <p><strong>Bring a document. Ask by typing or talking. Watch it get explained, drawn and turned into a living study guide.</strong></p>
 
-  <img alt="Tutor banner" src="public/banner.png" width="100%" />
+  <img alt="Tutor banner" src="docs/assets/banner.png" width="100%" />
 
   <p>
     <img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
@@ -147,8 +147,6 @@ test/       vitest suites (server, shared, web) and the Playwright smoke walkthr
 docs/       architecture
 ```
 
-> The v1 sources (`src/`, `server.ts`, `api/`, `scripts/`, `tests/`) are no
-> longer referenced by the build and are scheduled for removal.
 
 ## License
 
