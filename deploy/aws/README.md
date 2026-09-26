@@ -205,7 +205,9 @@ releases.
 
 - **The site never comes up.** Run `deploy.sh bootlog`. The first boot
   installs Docker, clones the repo and builds, which takes 10–15 minutes.
-  If the build is killed for memory, use `--size t4g.medium`.
+  `JavaScript heap out of memory` during `npm run build` means the image
+  was built from a revision older than the Dockerfile's `BUILD_HEAP_MB`
+  setting. Run `deploy.sh release` to rebuild from the current branch.
 - **Certificate errors on a custom domain.** The A record must resolve to the
   Elastic IP, and port 80 must be reachable. Caddy retries on its own; then
   run `deploy.sh apply`.

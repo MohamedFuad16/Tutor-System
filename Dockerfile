@@ -8,7 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 make g+
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-RUN npm run build && npm prune --omit=dev
+# The web build needs about 1.5 GB of V8 heap. Node's default limit on a 2 GB
+# host (t4g.small) is about 0.9 GB, and swap does not raise it. This caps
+# growth; it does not reserve memory.
+ARG BUILD_HEAP_MB=2048
+RUN NODE_OPTIONS="--max-old-space-size=${BUILD_HEAP_MB}" npm run build && npm prune --omit=dev
 
 FROM node:22-bookworm-slim AS runtime
 ENV NODE_ENV=production \
