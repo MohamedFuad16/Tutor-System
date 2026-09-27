@@ -1,11 +1,17 @@
 /**
- * Silent action tags for the fast voice model.
+ * Silent action tags for the fast voice model: its "tool calls".
  *
  * Declaring tools on the realtime request costs seconds of time-to-first-token
  * on GLM (measured ~3 s on the Coding Plan endpoint), so the voice model asks
  * for side work with inline tags instead:
  *
- *   [[images: red panda]]              show real photos now
+ *   [[images: red panda]]              show one real photo now
+ *   [[close]]                          clear the screen
+ *   [[focus: B]]                       point at a diagram node, board line or 3D part
+ *   [[view: zoom in]]                  zoom in/out, reset, rotate, stop, next, previous,
+ *                                      sideways, upright, ar
+ *   [[board: solve x^2 - 5x + 6 = 0]]  magic pen: working written step by step
+ *   [[build: a 3D solar system]]       a 3D model or a web page, built live (or edited)
  *   [[deep diagram: <task>]]           hand a task to the background specialist
  *   (kinds: diagram | explain | research | compare)
  *
@@ -13,16 +19,54 @@
  * them is ever spoken) and reports the actions as they complete, even when a
  * tag arrives split across stream deltas.
  */
+import type { StageView } from "../../shared/voice.js";
 
-export type DeepMode = "diagram" | "explain" | "research" | "compare";
-export type VoiceAction = { kind: "images"; query: string } | { kind: "deep"; mode: DeepMode; task: string };
+export type DeepMode = "diagram" | "explain" | "research" | "compare" | "board" | "build";
+export type VoiceAction =
+  | { kind: "images"; query: string }
+  | { kind: "deep"; mode: DeepMode; task: string }
+  | { kind: "close" }
+  | { kind: "focus"; target: string }
+  | { kind: "view"; view: StageView };
 
-const MODES = new Set<string>(["diagram", "explain", "research", "compare"]);
+const MODES = new Set<string>(["diagram", "explain", "research", "compare", "board", "build"]);
 /** A tag longer than this is not a tag: release it as text rather than hold speech forever. */
 const MAX_TAG = 600;
 
+/** "zoom in", "spin it", "LR" → a stage view, or null. */
+export function parseView(phrase: string): StageView | null {
+  const text = phrase.toLowerCase().replace(/[_-]/g, " ").trim();
+  if (/\bzoom(?:ed)? ?in\b|\bcloser\b|\bbigger\b|\benlarge\b/.test(text)) return "zoom_in";
+  if (/\bzoom(?:ed)? ?out\b|\bfurther\b|\bsmaller\b|\bwhole thing\b/.test(text)) return "zoom_out";
+  if (/\breset\b|\brecent(?:er|re)\b|\boriginal\b|\bdefault\b/.test(text)) return "reset";
+  if (/\bstop\b|\bpause\b|\bfreeze\b|\bhold still\b/.test(text)) return "stop";
+  if (/\brotat|\bspin|\bturn (?:it )?around\b|\borbit\b/.test(text)) return "rotate";
+  if (/\bnext\b|\banother\b|\bdifferent\b/.test(text)) return "next";
+  if (/\bprevious\b|\bback\b|\blast one\b/.test(text)) return "previous";
+  if (/\bsideways\b|\bhorizontal|\bleft to right\b|^lr$/.test(text)) return "sideways";
+  if (/\bupright\b|\bvertical|\btop to bottom\b|^(?:td|tb)$/.test(text)) return "upright";
+  if (/\bar\b|\baugmented\b|\bcamera\b|\bin my room\b/.test(text)) return "ar";
+  return null;
+}
+
 export function parseActionTag(body: string): VoiceAction | null {
-  const match = /^\s*(images?|deep)(?:\s+([a-z]+))?\s*:\s*([\s\S]+?)\s*$/i.exec(body);
+  const text = body.trim();
+  if (/^(?:close|clear|hide|dismiss)(?:\s*:.*)?$/i.test(text)) return { kind: "close" };
+  const named = /^(focus|highlight|point|view|board|pen|whiteboard|build|make|model)\s*:\s*([\s\S]+?)\s*$/i.exec(text);
+  if (named) {
+    const [, name, payload] = named;
+    const tool = name.toLowerCase();
+    if (tool === "focus" || tool === "highlight" || tool === "point")
+      return { kind: "focus", target: payload.slice(0, 120) };
+    if (tool === "view") {
+      const view = parseView(payload);
+      return view ? { kind: "view", view } : null;
+    }
+    if (tool === "board" || tool === "pen" || tool === "whiteboard")
+      return { kind: "deep", mode: "board", task: payload.slice(0, 1200) };
+    return { kind: "deep", mode: "build", task: payload.slice(0, 1200) };
+  }
+  const match = /^\s*(images?|deep)(?:\s+([a-z]+))?\s*:\s*([\s\S]+?)\s*$/i.exec(text);
   if (!match) return null;
   const [, name, mode, payload] = match;
   if (/^image/i.test(name)) return { kind: "images", query: payload.slice(0, 200) };
@@ -75,9 +119,20 @@ export class ActionTagFilter {
 
 /** An action in the form the model writes it, kept in history so the model sees its own tag use. */
 export function actionTag(action: VoiceAction) {
-  return action.kind === "images"
-    ? `[[images: ${action.query}]]`
-    : `[[deep ${action.mode}: ${action.task.slice(0, 200)}]]`;
+  switch (action.kind) {
+    case "images":
+      return `[[images: ${action.query}]]`;
+    case "close":
+      return "[[close]]";
+    case "focus":
+      return `[[focus: ${action.target}]]`;
+    case "view":
+      return `[[view: ${action.view.replace("_", " ")}]]`;
+    case "deep":
+      return action.mode === "board" || action.mode === "build"
+        ? `[[${action.mode}: ${action.task.slice(0, 200)}]]`
+        : `[[deep ${action.mode}: ${action.task.slice(0, 200)}]]`;
+  }
 }
 
 /**

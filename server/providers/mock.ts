@@ -128,8 +128,84 @@ function scriptFor(request: LlmRequest): Script {
       }),
     };
   }
+  if (purpose === "voice.board") {
+    return {
+      text: JSON.stringify({
+        title: "Solving a quadratic",
+        speech: "Let's solve it together on the board.",
+        items: [
+          { latex: "x^2 - 5x + 6 = 0", say: "Here's our equation.", note: "start" },
+          {
+            text: "Two numbers: product 6, sum -5",
+            say: "We need two numbers that multiply to six and add to minus five.",
+          },
+          { latex: "(x - 2)(x - 3) = 0", say: "Minus two and minus three work, so it factors like this." },
+          {
+            plot: {
+              fns: ["x^2 - 5*x + 6"],
+              xMin: -1,
+              xMax: 6,
+              points: [
+                { x: 2, y: 0, label: "x = 2" },
+                { x: 3, y: 0, label: "x = 3" },
+              ],
+            },
+            say: "On the graph, the curve crosses zero at two and three.",
+          },
+          { latex: "x = 2 \\text{ or } x = 3", say: "So x is two or three.", box: true },
+        ],
+      }),
+    };
+  }
+  if (purpose === "voice.build") {
+    if (/website|web page|landing|app\b/i.test(question)) {
+      return {
+        text: JSON.stringify({
+          type: "web",
+          title: "Mock landing page",
+          speech: "Here's your page. It's live, so try the button.",
+          html: "<!doctype html><html><head><title>Mock landing page</title><style>body{font-family:system-ui;margin:0;display:grid;place-items:center;min-height:100vh;background:#0b0b0d;color:#f4f4f1}button{background:#ff6e00;color:#fff;border:0;border-radius:999px;padding:12px 20px}</style></head><body><main><h1>Hello from Tutor</h1><button onclick=\"this.textContent='Clicked'\">Try me</button></main></body></html>",
+        }),
+      };
+    }
+    return {
+      text: JSON.stringify({
+        type: "scene",
+        title: "Mock solar system",
+        speech: "Here's a little solar system. Spin it around and tap a planet.",
+        scene: {
+          mood: "space",
+          camera: { position: [0, 8, 18], target: [0, 0, 0] },
+          objects: [
+            { id: "sun", shape: "sphere", label: "Sun", info: "A star.", size: 2, color: "#ffb347", glow: true },
+            {
+              id: "earth",
+              shape: "sphere",
+              label: "Earth",
+              info: "Our home.",
+              size: 0.6,
+              color: "#3b82f6",
+              orbit: { center: "sun", radius: 7, speed: 6 },
+            },
+            { id: "orbit", shape: "ring", size: 7, color: "#ffffff", opacity: 0.2, rotation: [90, 0, 0] },
+          ],
+        },
+        steps: [
+          { focus: "sun", say: "In the middle is the Sun." },
+          { focus: "earth", say: "And this is Earth, going around it." },
+        ],
+      }),
+    };
+  }
   if (purpose === "voice.fg") {
     // The voice model requests side work with silent inline tags (server/voice/actions.ts).
+    if (/\b(?:close it|clear the screen)\b/.test(q)) return { text: "Okay, cleared. [[close]]" };
+    if (/\b(?:solve|equation|formula|whiteboard)\b/.test(q)) {
+      return { text: `Let me grab my pen. [[board: ${question}]]` };
+    }
+    if (/\b(?:build|3d|website|model of)\b/.test(q)) {
+      return { text: `Let me build that for you. [[build: ${question}]]` };
+    }
     if (/diagram|flowchart|draw|sketch|research|in depth/.test(q)) {
       return { text: `Let me sketch that out for you. [[deep diagram: ${question}]]` };
     }

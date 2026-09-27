@@ -13,7 +13,10 @@
  * to the tutor's own offer ("I can pull up Tokyo if you want" → "yes please").
  * Explanations ("show me how mitosis works") are left to the model.
  */
+import type { VoiceVisual } from "../../shared/voice.js";
 import { imageKeywords } from "../providers/search.js";
+import { parseView, type VoiceAction } from "./actions.js";
+import { matchStageTarget } from "./stage.js";
 
 const IMAGE_NOUN = String.raw`(?:pictures?|photos?|photographs?|images?|pics?|snapshots?)`;
 /** Filler the learner may say before the request: "Okay, so, can you…". */
@@ -101,5 +104,62 @@ export function detectImageIntent(utterance: string, lastAssistant?: string): st
 
   // "Yes please" right after the tutor offered to show something.
   if (text.split(" ").length <= 6 && AFFIRMATIVE.test(text)) return offeredSubject(lastAssistant) || null;
+  return null;
+}
+
+// ---------------------------------------------------------------- stage commands
+
+/**
+ * "Close it", "zoom in", "next one", "highlight the database step": direct
+ * commands about what is on screen. They run the moment the turn ends, so
+ * the screen reacts instantly and whether or not the model remembers its
+ * tag. `pure` means the utterance is only the command: the tutor answers
+ * with a short acknowledgement and skips the model entirely.
+ */
+export type StageIntent = { actions: VoiceAction[]; pure: boolean };
+
+const TRAIL =
+  /(?:\s+(?:please|now|for me|a bit|a little|again|then|right now|off (?:the )?screen|from (?:the )?screen))+$/i;
+const CLOSE =
+  /^(?:close|hide|remove|clear|dismiss|minimi[sz]e|get rid of|take (?:it|that|this|them) (?:away|down|off)|put (?:it|that|this) away)(?:\s+(?:it|that|this|them|everything|all|(?:the|this|that) (?:\w+\s?){1,2}))?$/i;
+const CLOSE_PHRASE =
+  /^(?:that'?s enough|i'?m done with (?:it|that|this)|go away|close|all done|we'?re done with (?:it|that|this))$/i;
+const VIEW_COMMAND =
+  /^(?:zoom (?:in|out)|rotate(?: it| that)?|spin(?: it| that)?|turn it around|stop(?: rotating| spinning| it| moving)?|reset(?: the view| it| the camera)?|(?:show (?:me )?)?(?:the )?(?:next|another|a different) (?:one|image|picture|photo|pic)|(?:go )?back|(?:show (?:me )?)?(?:the )?previous(?: one| image| picture| photo)?|turn it sideways|make it (?:horizontal|vertical|sideways|upright)|(?:show (?:it|that) |put (?:it|that) )?in (?:ar|augmented reality|my room)|(?:open|turn on|use) (?:the |my )?camera)$/i;
+const FOCUS_COMMAND =
+  /^(?:highlight|point (?:to|at|out)|focus on|zoom (?:in )?on|go to|circle|underline|show me where(?: is)?|where(?:'s| is))\s+(.+)$/i;
+
+function commandText(utterance: string) {
+  return utterance
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[?!.,]+$/g, "")
+    .replace(new RegExp(`${LEAD}${POLITE}`, "i"), "")
+    .replace(/,/g, "")
+    .replace(TRAIL, "")
+    .trim();
+}
+
+export function detectStageIntent(utterance: string, stage: VoiceVisual | null): StageIntent | null {
+  if (!stage) return null;
+  const whole = utterance.trim().replace(/[?!.]+$/, "");
+  if (!whole || NEGATION.test(whole)) return null;
+  // "Close it and show me Tokyo": act on the first clause, let the model handle the rest.
+  const [first, ...rest] = whole.split(/\s*(?:,\s*)?\b(?:and then|and|then)\b\s*/i);
+  const text = commandText(first);
+  const alone = rest.join(" ").trim() === "";
+
+  if (CLOSE.test(text) || CLOSE_PHRASE.test(text)) return { actions: [{ kind: "close" }], pure: alone };
+
+  if (VIEW_COMMAND.test(text)) {
+    const view = parseView(text);
+    if (view) return { actions: [{ kind: "view", view }], pure: alone };
+  }
+
+  const focus = FOCUS_COMMAND.exec(text);
+  if (focus) {
+    const target = matchStageTarget(stage, focus[1]);
+    if (target) return { actions: [{ kind: "focus", target }], pure: false };
+  }
   return null;
 }

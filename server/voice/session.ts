@@ -22,6 +22,8 @@ import {
   packAudio,
   type ClientVoiceMessage,
   type ServerVoiceMessage,
+  type StageCommand,
+  type VisualKind,
   type VoiceState,
   type VoiceVisual,
 } from "../../shared/voice.js";
@@ -36,11 +38,25 @@ import { newId } from "../store/db.js";
 import type { Store } from "../store/index.js";
 import { buildContext, CHAT_BUDGET, VOICE_BUDGET } from "../services/context.js";
 import { mermaidNodes } from "../services/learning.js";
-import { voiceBackgroundPrompt, voiceForegroundPrompt } from "../services/prompts.js";
+import {
+  voiceBackgroundPrompt,
+  voiceBoardPrompt,
+  voiceBuildPrompt,
+  voiceForegroundPrompt,
+} from "../services/prompts.js";
 import { historyMessages } from "../services/tutor.js";
-import { ActionTagFilter, actionTag, asVoiceNotes, type VoiceAction } from "./actions.js";
-import { detectImageIntent } from "./intent.js";
+import { ActionTagFilter, actionTag, asVoiceNotes, type DeepMode, type VoiceAction } from "./actions.js";
+import { detectImageIntent, detectStageIntent } from "./intent.js";
 import { SpeechQueue } from "./speech-queue.js";
+import {
+  matchStageTarget,
+  rankImages,
+  sanitizeBoard,
+  sanitizeHtml,
+  sanitizeScene,
+  stageNote,
+  stageSource,
+} from "./stage.js";
 
 const BRIDGES: Record<string, { delegate: string; images: string; ready: string; missed: string }> = {
   en: {
@@ -72,6 +88,36 @@ const ACKS: Record<string, string[]> = {
 /** How long a confirmed turn may stay silent before the tutor acknowledges it. */
 const ACK_DELAY_MS = 700;
 
+/** Spoken replies to plain screen commands ("close it", "zoom in"), which skip the model. English only. */
+const COMMAND_REPLIES: Record<string, string[]> = {
+  close: ["Done.", "Okay, cleared.", "Sure, it's gone."],
+  zoom_in: ["Zooming in."],
+  zoom_out: ["Zooming out."],
+  reset: ["Back to the start."],
+  rotate: ["Spinning it for you."],
+  stop: ["Okay, holding still."],
+  next: ["Here's another one."],
+  previous: ["Here's the previous one."],
+  sideways: ["Turned it sideways."],
+  upright: ["Turned it upright."],
+  ar: ["Opening your camera. Point it at a clear space."],
+};
+
+const TASK_TITLES: Record<DeepMode, string> = {
+  diagram: "Drawing a diagram",
+  explain: "Working on a detailed answer",
+  research: "Looking it up",
+  compare: "Comparing",
+  board: "Writing on the board",
+  build: "Building it",
+};
+
+/** Transcripts equal up to case and punctuation ("Close it." vs "close it"). */
+const sameWords = (a: string, b: string) => {
+  const words = (text: string) => (text.toLowerCase().match(/[\p{L}\p{N}']+/gu) ?? []).join(" ");
+  return words(a) === words(b);
+};
+
 type Response = {
   id: string;
   transcript: string;
@@ -96,7 +142,17 @@ type Response = {
   imageFallback?: string;
 };
 
-type Injection = { taskId: string; speech: string; visual?: VoiceVisual; diagram?: Diagram; parts: MessagePart[] };
+/** Finished background work, waiting for a quiet moment to be presented. */
+type Injection = {
+  taskId: string;
+  speech: string;
+  visual?: VoiceVisual;
+  /** Narrated stops: each is spoken while its part (node, board line, 3D object) is highlighted. */
+  tour?: { visualId: string; steps: Array<{ node: string; say: string }> };
+  /** What the chat thread keeps (the spoken text plus anything worth reading later). */
+  content: string;
+  parts: MessagePart[];
+};
 
 export type VoiceDeps = {
   store: Store;
@@ -134,6 +190,13 @@ export class VoiceSession {
   private lastAck = -1;
   /** What the tutor said recently, to recognise its own voice picked up by the mic. */
   private recentSpeech: Array<{ text: string; at: number }> = [];
+  /** What the learner sees right now, and the recent visuals they can go back to. */
+  private stage: VoiceVisual | null = null;
+  private shown = new Map<string, VoiceVisual>();
+  /** Server speech recognition: bumped per connection so a replaced one's events are ignored. */
+  private sttGeneration = 0;
+  private sttReopens: number[] = [];
+  private sttOptions: { sampleRate: number; keyterms: string[] } = { sampleRate: 16_000, keyterms: [] };
 
   constructor(
     private readonly socket: WebSocket,
@@ -209,6 +272,10 @@ export class VoiceSession {
         }
         if (message.state === "end") this.maybeFinishTurn();
         break;
+      case "stage":
+        // The learner closed the visual or went back to an earlier one.
+        this.stage = message.visualId ? (this.shown.get(String(message.visualId)) ?? null) : null;
+        break;
       case "bye":
         this.close("client bye");
         break;
@@ -276,16 +343,14 @@ export class VoiceSession {
     );
 
     if (this.sttMode === "server" && speech) {
-      const keyterms = this.deps.store.learning
-        .conceptsForBook(this.userId, this.bookId)
-        .slice(0, 20)
-        .map((concept) => concept.name);
-      this.stt = speech.openStt({
-        language: this.language,
+      this.sttOptions = {
         sampleRate: Math.min(48_000, Math.max(8_000, Number(hello.sampleRate) || 16_000)),
-        onEvent: (event) => this.onStt(event),
-        keyterms,
-      });
+        keyterms: this.deps.store.learning
+          .conceptsForBook(this.userId, this.bookId)
+          .slice(0, 20)
+          .map((concept) => concept.name),
+      };
+      this.openServerStt();
     }
     this.send({
       type: "ready",
@@ -351,7 +416,7 @@ export class VoiceSession {
       case "eager_end_of_turn":
         // The tutor hearing its own voice is not a turn.
         if (this.isTutorBusy() && this.isEcho(event.transcript)) break;
-        if (this.current?.speculative && this.current.transcript === event.transcript) break;
+        if (this.current?.speculative && sameWords(this.current.transcript, event.transcript)) break;
         if (this.current?.speculative) this.cancelResponse();
         if (this.isTutorBusy()) this.bargeIn("speech");
         this.startResponse(event.transcript, true);
@@ -364,25 +429,59 @@ export class VoiceSession {
         this.handleFinalTranscript(event.transcript, true);
         break;
       case "error":
-        this.send({ type: "error", message: event.message, fatal: false });
-        if (event.fatal) {
-          // Fall back to browser recognition rather than killing the session.
-          this.stt?.close();
-          this.stt = null;
-          this.sttMode = "browser";
-          this.send({
-            type: "ready",
-            sessionId: this.id,
-            stt: "browser",
-            tts: this.ttsMode,
-            outputSampleRate: this.deps.outputSampleRate,
-            models: { fast: this.deps.llm.modelFor("fast"), smart: this.deps.llm.modelFor("smart") },
-          });
-        }
+        if (event.fatal) this.recoverStt(event.message);
+        else this.send({ type: "error", message: event.message, fatal: false });
         break;
       case "closed":
+        // The recognition connection dropped (network blip, provider timeout): without
+        // a new one the tutor would silently stop hearing the learner.
+        this.recoverStt("connection closed");
         break;
     }
+  }
+
+  private openServerStt() {
+    const speech = this.deps.speech?.available ? this.deps.speech : null;
+    if (!speech || this.closed) return;
+    const generation = ++this.sttGeneration;
+    this.stt = speech.openStt({
+      language: this.language,
+      sampleRate: this.sttOptions.sampleRate,
+      keyterms: this.sttOptions.keyterms,
+      onEvent: (event) => {
+        if (generation === this.sttGeneration) this.onStt(event);
+      },
+    });
+  }
+
+  /** Reconnects server speech recognition; after repeated failures, falls back to the browser's. */
+  private recoverStt(reason: string) {
+    if (this.closed || this.sttMode !== "server") return;
+    const now = Date.now();
+    this.sttReopens = this.sttReopens.filter((at) => now - at < 120_000);
+    this.sttGeneration += 1; // ignore anything more from the broken connection
+    this.stt?.close();
+    this.stt = null;
+    this.userSpeaking = false;
+    if (this.sttReopens.length < 4 && this.deps.speech?.available) {
+      this.sttReopens.push(now);
+      metrics.increment("voice.stt_reconnect");
+      log.warn("voice.stt_reconnect", { sessionId: this.id, reason, attempt: this.sttReopens.length });
+      const retry = setTimeout(() => this.openServerStt(), (this.sttReopens.length - 1) * 500);
+      retry.unref?.();
+      return;
+    }
+    log.warn("voice.stt_fallback", { sessionId: this.id, reason });
+    this.send({ type: "error", message: reason, fatal: false });
+    this.sttMode = "browser";
+    this.send({
+      type: "ready",
+      sessionId: this.id,
+      stt: "browser",
+      tts: this.ttsMode,
+      outputSampleRate: this.deps.outputSampleRate,
+      models: { fast: this.deps.llm.modelFor("fast"), smart: this.deps.llm.modelFor("smart") },
+    });
   }
 
   private isTutorBusy() {
@@ -433,7 +532,7 @@ export class VoiceSession {
     });
     this.deps.store.activity.record(this.userId, "chat", 1, this.bookId);
 
-    if (this.current?.speculative && this.current.transcript.trim() === transcript.trim()) {
+    if (this.current?.speculative && sameWords(this.current.transcript, transcript)) {
       // Speculation confirmed: release the audio we have been holding back.
       this.current.speculative = false;
       metrics.increment("voice.speculation_hit");
@@ -542,6 +641,26 @@ export class VoiceSession {
   }
 
   private async generate(response: Response) {
+    const pending: Array<Promise<void>> = [];
+    // "Close it", "zoom in", "highlight the database step": act on the screen right away.
+    const command = detectStageIntent(response.transcript, this.stage);
+    const done: string[] = [];
+    for (const action of command?.actions ?? []) {
+      if (action.kind !== "close" && action.kind !== "focus" && action.kind !== "view") continue;
+      const note = this.stageAction(response, action);
+      if (note) done.push(note);
+    }
+    const replies = command?.pure && this.language === "en" ? this.commandReplies(command.actions) : null;
+    if (replies) {
+      // A plain command needs no model: acknowledge it and listen again.
+      const line = replies[Math.floor(Math.random() * replies.length)];
+      response.text = line;
+      this.speak(response, line);
+      response.generationDone = true;
+      if (!response.speculative) this.maybeFinishTurn();
+      return;
+    }
+
     const context = buildContext(this.deps.store, {
       userId: this.userId,
       bookId: this.bookId,
@@ -552,17 +671,29 @@ export class VoiceSession {
     const messages: LlmMessage[] = [
       {
         role: "system",
-        content: voiceForegroundPrompt({ learnerName: this.learnerName, language: this.language, context }),
+        content: voiceForegroundPrompt({
+          learnerName: this.learnerName,
+          language: this.language,
+          context,
+          stage: stageNote(this.stage),
+        }),
       },
       ...this.history.slice(-16),
-      { role: "user", content: response.transcript },
+      {
+        role: "user",
+        content: done.length
+          ? `${response.transcript}\n(Already done on screen: ${done.join("; ")}.)`
+          : response.transcript,
+      },
     ];
     const chunker = new PhraseChunker({ firstMinChars: 12, minChars: 50 });
     const tags = new ActionTagFilter();
-    const pending: Array<Promise<void>> = [];
     // "Pull up Tokyo" / "yes please" (to an offer): search now, in parallel with
-    // the model, so photos appear fast even if the model forgets its tag.
-    const intent = detectImageIntent(response.transcript, this.lastAssistantText());
+    // the model, so a photo appears fast even if the model forgets its tag.
+    // Pointing at something already on screen is not a photo request.
+    const intent = command?.actions.some((action) => action.kind === "focus")
+      ? null
+      : detectImageIntent(response.transcript, this.lastAssistantText());
     if (intent) pending.push(this.showImages(response, intent, "intent"));
     const onText = (text: string) => {
       if (!text) return;
@@ -611,32 +742,89 @@ export class VoiceSession {
   /** Side work requested by a voice action tag (see ./actions.ts). */
   private async runAction(response: Response, action: VoiceAction) {
     if (action.kind === "deep") {
+      // One piece of deep work per reply: a second tag would only race the first.
+      if (response.delegated.length) return;
       response.delegated.push(action.task);
       response.actions.push(action);
       this.whenConfirmed(response, () => this.startBackgroundTask(action.task, action.mode));
       return;
     }
-    await this.showImages(response, action.query, "tag");
+    if (action.kind === "images") {
+      await this.showImages(response, action.query, "tag");
+      return;
+    }
+    // The server already acted on an explicit command this turn; the model's matching tag is a repeat.
+    if (response.actions.some((done) => done.kind === action.kind)) return;
+    this.stageAction(response, action);
   }
 
-  /** Shows one set of photos per turn; the learner's explicit request wins over the model's tag. */
+  /** Close, point or move the view. Returns a short note of what was done, or null if nothing applied. */
+  private stageAction(response: Response, action: Extract<VoiceAction, { kind: "close" | "focus" | "view" }>) {
+    const visual = this.stage;
+    if (!visual) return null;
+    let command: StageCommand;
+    let note: string;
+    if (action.kind === "close") {
+      command = { kind: "close" };
+      note = "cleared the screen";
+    } else if (action.kind === "view") {
+      command = { kind: "view", visualId: visual.id, view: action.view };
+      note = `view ${action.view.replace("_", " ")}`;
+    } else {
+      const target = matchStageTarget(visual, action.target);
+      if (!target) return null;
+      command = { kind: "focus", visualId: visual.id, target };
+      note = `highlighted ${target}`;
+    }
+    response.actions.push(command.kind === "focus" ? { kind: "focus", target: command.target } : action);
+    this.whenConfirmed(response, () => {
+      if (command.kind === "close") this.stage = null;
+      this.send({ type: "stage", command });
+    });
+    metrics.increment(`voice.stage.${action.kind}`);
+    return note;
+  }
+
+  private commandReplies(actions: VoiceAction[]) {
+    const action = actions[0];
+    if (!action || actions.length > 1) return null;
+    if (action.kind === "close") return COMMAND_REPLIES.close;
+    if (action.kind === "view") return COMMAND_REPLIES[action.view] ?? null;
+    return null;
+  }
+
+  /** Puts a visual on screen and remembers it as what the learner is looking at. */
+  private showVisual(visual: VoiceVisual) {
+    this.stage = visual;
+    this.shown.set(visual.id, visual);
+    for (const key of [...this.shown.keys()].slice(0, -8)) this.shown.delete(key);
+    this.send({ type: "visual", visual });
+  }
+
+  /** Shows one photo per turn (best result first); the learner's explicit request wins over the model's tag. */
   private async showImages(response: Response, query: string, source: "intent" | "tag") {
     if (response.imageQuery) {
       if (source === "tag") response.imageFallback ??= query;
       return;
     }
     response.imageQuery = query;
-    const images = await this.deps.search.images(query, 6).catch(() => []);
+    const id = newId("vis");
+    this.whenConfirmed(response, () =>
+      this.send({ type: "stage", command: { kind: "pending", id, visual: "images", title: query } }),
+    );
+    const found = await this.deps.search.images(query, 8).catch(() => []);
     if (response.abort.signal.aborted) return;
-    if (!images.length) {
+    if (!found.length) {
+      this.whenConfirmed(response, () => this.send({ type: "stage", command: { kind: "settled", id } }));
       response.imageQuery = undefined;
       const fallback = response.imageFallback;
       response.imageFallback = undefined;
       if (fallback && fallback !== query) await this.showImages(response, fallback, "tag");
       return;
     }
-    const visual: VoiceVisual = { id: newId("vis"), kind: "images", query, images };
-    this.whenConfirmed(response, () => this.send({ type: "visual", visual }));
+    const images = rankImages(found, query).slice(0, 6);
+    const visual: VoiceVisual = { id, kind: "images", query, images };
+    this.whenConfirmed(response, () => this.showVisual(visual));
     response.parts.push({ type: "images", query, images });
     response.actions.push({ kind: "images", query });
     metrics.increment(`voice.images.${source}`);
@@ -723,23 +911,33 @@ export class VoiceSession {
 
   // ---------------------------------------------------------------- background
 
-  private startBackgroundTask(task: string, kind: string) {
+  private startBackgroundTask(task: string, mode: DeepMode) {
     const id = newId("task");
+    // The visual's id is fixed now, so the placeholder on screen turns into the result.
+    const visualId = newId("vis");
     const controller = new AbortController();
     this.tasks.set(id, controller);
-    const title =
-      kind === "diagram" ? "Drawing a diagram" : kind === "research" ? "Looking it up" : "Working on a detailed answer";
+    const title = TASK_TITLES[mode] ?? TASK_TITLES.explain;
+    const placeholder: VisualKind | "build" =
+      mode === "board" ? "board" : mode === "build" ? "build" : mode === "diagram" ? "diagram" : "markdown";
     this.send({ type: "task", id, title, status: "running" });
+    this.send({
+      type: "stage",
+      command: { kind: "pending", id: visualId, visual: placeholder, title: task.slice(0, 120) },
+    });
     void (async () => {
       try {
-        const injection = await this.runBackground(id, task, kind, controller.signal);
+        const injection = await this.runBackground(id, visualId, task, mode, controller.signal);
         if (controller.signal.aborted) return;
-        this.send({ type: "task", id, title, status: "done", summary: injection.diagram?.title });
+        const summary = injection.visual && "title" in injection.visual ? injection.visual.title : undefined;
+        this.send({ type: "task", id, title, status: "done", summary });
+        if (!injection.visual) this.send({ type: "stage", command: { kind: "settled", id: visualId } });
         this.injections.push(injection);
         this.deliverInjections();
       } catch (error) {
         if (controller.signal.aborted) return;
-        log.warn("voice.background_failed", { error: errorMessage(error) });
+        log.warn("voice.background_failed", { mode, error: errorMessage(error) });
+        this.send({ type: "stage", command: { kind: "settled", id: visualId } });
         this.send({
           type: "task",
           id,
@@ -753,7 +951,13 @@ export class VoiceSession {
     })();
   }
 
-  private async runBackground(taskId: string, task: string, kind: string, signal: AbortSignal): Promise<Injection> {
+  private async runBackground(
+    taskId: string,
+    visualId: string,
+    task: string,
+    mode: DeepMode,
+    signal: AbortSignal,
+  ): Promise<Injection> {
     const context = buildContext(this.deps.store, {
       userId: this.userId,
       bookId: this.bookId,
@@ -761,8 +965,21 @@ export class VoiceSession {
       focus: this.focus,
       budget: CHAT_BUDGET,
     });
+    // Edits ("make the sun bigger") need what is on screen now, when it is the same kind of thing.
+    const current = this.stage;
+    const editable =
+      current &&
+      ((mode === "board" && current.kind === "board") ||
+        (mode === "build" && (current.kind === "scene" || current.kind === "web")) ||
+        (mode === "diagram" && current.kind === "diagram"))
+        ? stageSource(current)
+        : "";
+    const stage = [`On the learner's screen now: ${stageNote(current)}`, editable].filter(Boolean).join("\n\n");
+    if (mode === "board") return this.runBoard(taskId, visualId, task, context, stage, signal);
+    if (mode === "build") return this.runBuild(taskId, visualId, task, context, stage, signal);
+
     let webNotes = "";
-    if (kind === "research" || /\b(latest|current|news|look up|search)\b/i.test(task)) {
+    if (mode === "research" || /\b(latest|current|news|look up|search)\b/i.test(task)) {
       const results = await this.deps.search.web(task, 5, this.language).catch(() => []);
       if (results.length) {
         webNotes = `\n\nWeb results:\n${results.map((r, i) => `[W${i + 1}] ${r.title}: ${r.snippet ?? ""}`).join("\n")}`;
@@ -786,9 +1003,9 @@ export class VoiceSession {
       json: true,
       signal,
       messages: [
-        { role: "system", content: voiceBackgroundPrompt({ language: this.language, context }) },
+        { role: "system", content: voiceBackgroundPrompt({ language: this.language, context, stage }) },
         ...this.history.slice(-8),
-        { role: "user", content: `Task (${kind}): ${task}${webNotes}` },
+        { role: "user", content: `Task (${mode}): ${task}${webNotes}` },
       ],
     });
     const result = parseJsonObject<{
@@ -805,7 +1022,7 @@ export class VoiceSession {
     if (result.diagram?.mermaid) {
       const valid = new Set(mermaidNodes(result.diagram.mermaid).map((node) => node.id));
       diagram = {
-        id: newId("dia"),
+        id: visualId,
         title: String(result.diagram.title ?? "Diagram").slice(0, 120),
         mermaid: String(result.diagram.mermaid).slice(0, 4000),
         steps: (result.diagram.steps ?? [])
@@ -816,36 +1033,145 @@ export class VoiceSession {
           .filter((step) => step.say && (!valid.size || valid.has(step.node)))
           .slice(0, 12),
       };
-      visual = { id: diagram.id, kind: "diagram", diagram };
+      visual = { id: visualId, kind: "diagram", diagram };
       parts.push({ type: "diagram", diagram });
     }
     if (result.image_query) {
-      const images = await this.deps.search.images(String(result.image_query), 6).catch(() => []);
-      if (images.length) {
-        const imageVisual: VoiceVisual = {
-          id: newId("vis"),
-          kind: "images",
-          query: String(result.image_query),
-          images,
-        };
-        this.send({ type: "visual", visual: imageVisual });
-        parts.push({ type: "images", query: String(result.image_query), images });
+      const found = await this.deps.search.images(String(result.image_query), 8).catch(() => []);
+      if (found.length) {
+        const images = rankImages(found, String(result.image_query)).slice(0, 6);
+        const query = String(result.image_query);
+        if (!visual) visual = { id: visualId, kind: "images", query, images };
+        else this.showVisual({ id: newId("vis"), kind: "images", query, images });
+        parts.push({ type: "images", query, images });
       }
     }
     if (result.display?.trim() && !visual) {
-      visual = {
-        id: newId("vis"),
-        kind: "markdown",
-        title: task.slice(0, 80),
-        markdown: result.display.slice(0, 6000),
-      };
+      visual = { id: visualId, kind: "markdown", title: task.slice(0, 80), markdown: result.display.slice(0, 6000) };
     }
+    const speech = toSpeakableText(result.speech ?? "") || (BRIDGES[this.language] ?? BRIDGES.en).ready;
+    const tourSteps = diagram?.steps ?? [];
     return {
       taskId,
-      speech: toSpeakableText(result.speech ?? "") || (BRIDGES[this.language] ?? BRIDGES.en).ready,
+      speech,
       visual,
-      diagram,
+      tour: diagram && tourSteps.length ? { visualId, steps: tourSteps } : undefined,
+      content:
+        visual?.kind === "markdown"
+          ? `${speech}\n\n${visual.markdown}`
+          : [speech, ...tourSteps.map((step) => step.say)].join(" "),
       parts,
+    };
+  }
+
+  /** Magic pen: working written line by line, each line narrated as it appears. */
+  private async runBoard(
+    taskId: string,
+    visualId: string,
+    task: string,
+    context: ReturnType<typeof buildContext>,
+    stage: string,
+    signal: AbortSignal,
+  ): Promise<Injection> {
+    const completion = await this.deps.llm.complete({
+      role: "smart",
+      purpose: "voice.board",
+      userId: this.userId,
+      priority: Priority.background,
+      reasoning: "low",
+      temperature: 0.3,
+      maxTokens: 5000,
+      json: true,
+      signal,
+      messages: [
+        { role: "system", content: voiceBoardPrompt({ language: this.language, context, stage }) },
+        ...this.history.slice(-6),
+        { role: "user", content: `Board task: ${task}` },
+      ],
+    });
+    const board = sanitizeBoard(parseJsonObject(completion.text));
+    if (!board) throw new Error("The board came back empty");
+    const steps = board.steps
+      .map((step) => ({ node: step.node, say: toSpeakableText(step.say) }))
+      .filter((step) => step.say);
+    const speech = toSpeakableText(board.speech) || "Okay, let's work through it on the board.";
+    const written = board.value.items
+      .map((item) =>
+        item.kind === "math"
+          ? `$$${item.latex}$$`
+          : item.kind === "text"
+            ? item.text
+            : `(graph of ${item.plot?.fns.join(", ")})`,
+      )
+      .join("\n\n");
+    return {
+      taskId,
+      speech,
+      visual: { id: visualId, kind: "board", board: board.value },
+      tour: steps.length ? { visualId, steps } : undefined,
+      content: `${speech}\n\n**${board.value.title}**\n\n${written}`,
+      parts: [],
+    };
+  }
+
+  /** Builds a 3D scene or a web page (or edits the one on screen). */
+  private async runBuild(
+    taskId: string,
+    visualId: string,
+    task: string,
+    context: ReturnType<typeof buildContext>,
+    stage: string,
+    signal: AbortSignal,
+  ): Promise<Injection> {
+    const completion = await this.deps.llm.complete({
+      role: "smart",
+      purpose: "voice.build",
+      userId: this.userId,
+      priority: Priority.background,
+      reasoning: "low",
+      temperature: 0.5,
+      maxTokens: 16_000,
+      json: true,
+      signal,
+      messages: [
+        { role: "system", content: voiceBuildPrompt({ language: this.language, context, stage }) },
+        ...this.history.slice(-6),
+        { role: "user", content: `Build task: ${task}` },
+      ],
+    });
+    const result = parseJsonObject<{ type?: string; title?: string; speech?: string; html?: string }>(completion.text);
+    const looksLikePage = /<!doctype html|<html[\s>]/i.test(completion.text);
+    if (result?.type === "web" || (!result && looksLikePage)) {
+      // A page is sometimes returned raw (or with broken JSON escaping): take the document itself.
+      const raw = result?.html ?? /<!doctype html[\s\S]*<\/html>|<html[\s\S]*<\/html>/i.exec(completion.text)?.[0];
+      const html = sanitizeHtml(raw);
+      if (!html) throw new Error("The web page came back empty");
+      const title = String(result?.title ?? /<title>([^<]{1,120})<\/title>/i.exec(html)?.[1] ?? "Web page").slice(
+        0,
+        120,
+      );
+      const speech = toSpeakableText(result?.speech ?? "") || "Here it is. It's live, so try clicking around.";
+      return {
+        taskId,
+        speech,
+        visual: { id: visualId, kind: "web", title, html },
+        content: `${speech}\n\n(Built a web page: ${title})`,
+        parts: [],
+      };
+    }
+    const scene = sanitizeScene(result);
+    if (!scene) throw new Error("The model came back empty");
+    const steps = scene.steps
+      .map((step) => ({ node: step.node, say: toSpeakableText(step.say) }))
+      .filter((step) => step.say);
+    const speech = toSpeakableText(scene.speech) || "Here it is. You can spin it around and tap any part.";
+    return {
+      taskId,
+      speech,
+      visual: { id: visualId, kind: "scene", scene: scene.value },
+      tour: steps.length ? { visualId, steps } : undefined,
+      content: `${[speech, ...steps.map((step) => step.say)].join(" ")}\n\n(Built a 3D model: ${scene.value.title})`,
+      parts: [],
     };
   }
 
@@ -856,29 +1182,41 @@ export class VoiceSession {
     const injection = this.injections.shift()!;
     const turnId = newId("turn");
     this.speakingTurn = turnId;
-    if (injection.visual) this.send({ type: "visual", visual: injection.visual });
+    if (injection.visual) this.showVisual(injection.visual);
     const chunker = new PhraseChunker({ firstMinChars: 12, minChars: 50 });
     const phrases = [...chunker.push(injection.speech), ...chunker.flush()];
     for (const phrase of phrases) this.queue.enqueue(turnId, phrase);
-    // Narrated tour: each step is its own segment, highlighting its node while spoken.
-    for (const step of injection.diagram?.steps ?? []) {
-      this.queue.enqueue(turnId, step.say, { visualId: injection.diagram!.id, node: step.node });
-    }
-    const spoken = [injection.speech, ...(injection.diagram?.steps ?? []).map((step) => step.say)].join(" ");
-    this.history.push({
-      role: "assistant",
-      content: `${spoken}${injection.diagram ? ` [[shown on screen: diagram "${injection.diagram.title}"]]` : ""}`,
-    });
+    // Narrated tour: each stop is its own segment, highlighting its part while spoken.
+    const tour = injection.tour;
+    for (const step of tour?.steps ?? [])
+      this.queue.enqueue(turnId, step.say, { visualId: tour!.visualId, node: step.node });
+    const spoken = [injection.speech, ...(tour?.steps ?? []).map((step) => step.say)].join(" ");
+    const visual = injection.visual;
+    const label =
+      visual?.kind === "diagram"
+        ? `diagram "${visual.diagram.title}"`
+        : visual?.kind === "board"
+          ? `board "${visual.board.title}"`
+          : visual?.kind === "scene"
+            ? `3D model "${visual.scene.title}"`
+            : visual?.kind === "web"
+              ? `web page "${visual.title}"`
+              : visual?.kind === "images"
+                ? `photo "${visual.query}"`
+                : visual
+                  ? `notes "${visual.title}"`
+                  : "";
+    this.history.push({ role: "assistant", content: `${spoken}${label ? ` [[shown on screen: ${label}]]` : ""}` });
     this.deps.store.messages.add({
       userId: this.userId,
       bookId: this.bookId,
       role: "assistant",
       channel: "voice",
-      content: injection.visual?.kind === "markdown" ? `${injection.speech}\n\n${injection.visual.markdown}` : spoken,
+      content: injection.content,
       parts: injection.parts,
       model: this.deps.llm.modelFor("smart"),
     });
     this.deps.onTurnComplete(this.userId, this.bookId, this.language);
-    if (!phrases.length && !injection.diagram?.steps.length) this.finishSpeaking(turnId);
+    if (!phrases.length && !tour?.steps.length) this.finishSpeaking(turnId);
   }
 }
