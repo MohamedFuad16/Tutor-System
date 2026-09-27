@@ -17,6 +17,15 @@ if (import.meta.env.DEV && location.hash === "#flowlab") {
       </MotionConfig>,
     ),
   );
+} else if (import.meta.env.DEV && location.hash.startsWith("#stagelab")) {
+  // Dev-only voice stage bench (web/src/dev/StageLab.tsx); dropped from production builds.
+  void import("./dev/StageLab").then(({ StageLab }) =>
+    root.render(
+      <MotionConfig reducedMotion="user">
+        <StageLab />
+      </MotionConfig>,
+    ),
+  );
 } else {
   root.render(
     <StrictMode>

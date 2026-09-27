@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@dagrejs/dagre": "^3.1.1",
+    "@fontsource/caveat": "^5.3.0",
     "@fontsource/geist-mono": "^5.3.0",
     "@fontsource/geist-sans": "^5.2.5",
     "@fontsource/lora": "^5.3.0",
@@ -76,6 +77,7 @@
     "@types/multer": "^2.1.0",
     "@types/node": "^22.14.0",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.186.0",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^5.0.4",
     "esbuild": "^0.25.0",

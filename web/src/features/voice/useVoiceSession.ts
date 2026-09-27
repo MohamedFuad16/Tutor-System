@@ -8,7 +8,14 @@
  * what was heard, and diagram-tour highlights stay in sync with the audio.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ClientVoiceMessage, ServerVoiceMessage, VoiceState, VoiceVisual } from "@shared/voice";
+import type {
+  ClientVoiceMessage,
+  ServerVoiceMessage,
+  StageView,
+  VisualKind,
+  VoiceState,
+  VoiceVisual,
+} from "@shared/voice";
 import { unpackAudio } from "@shared/voice";
 import { api, wsUrl } from "@/lib/api";
 import { MicCapture, PcmPlayer, silentBands } from "@/lib/audio";
@@ -17,6 +24,8 @@ import { useApp } from "@/store/app";
 
 type Caption = { role: "user" | "tutor"; text: string; final: boolean };
 export type VoiceTask = { id: string; title: string; status: "running" | "done" | "failed"; summary?: string };
+/** Something on its way to the stage (a photo being found, a model being built). */
+export type StagePendingItem = { id: string; visual: VisualKind | "build"; title: string };
 
 type SpeechRecognitionLike = {
   lang: string;
@@ -55,6 +64,12 @@ export function useVoiceSession() {
   });
   const [visuals, setVisuals] = useState<VoiceVisual[]>([]);
   const [focus, setFocus] = useState<{ visualId: string; node: string } | null>(null);
+  /** A part the tutor pointed at with a stage command; stays lit until something else is shown. */
+  const [pinned, setPinned] = useState<{ visualId: string; node: string } | null>(null);
+  const [view, setView] = useState<{ visualId: string; view: StageView; nonce: number } | null>(null);
+  const [pending, setPending] = useState<StagePendingItem[]>([]);
+  /** Bumped when the tutor clears the screen. */
+  const [closed, setClosed] = useState(0);
   const [tasks, setTasks] = useState<VoiceTask[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
@@ -202,6 +217,8 @@ export function useVoiceSession() {
     active.current = true;
     setError(null);
     setVisuals([]);
+    setPending([]);
+    setPinned(null);
     setTasks([]);
     setCaptions({ user: null, tutor: null });
     setState("connecting");
@@ -287,9 +304,29 @@ export function useVoiceSession() {
             break;
           case "visual":
             setVisuals((current) =>
-              [...current.filter((visual) => visual.id !== message.visual.id), message.visual].slice(-6),
+              [...current.filter((visual) => visual.id !== message.visual.id), message.visual].slice(-8),
             );
+            setPending((current) => current.filter((item) => item.id !== message.visual.id));
+            setPinned(null);
             break;
+          case "stage": {
+            const command = message.command;
+            if (command.kind === "close") {
+              setPinned(null);
+              setPending([]);
+              setClosed((value) => value + 1);
+            } else if (command.kind === "focus") setPinned({ visualId: command.visualId, node: command.target });
+            else if (command.kind === "view")
+              setView({ visualId: command.visualId, view: command.view, nonce: Date.now() + Math.random() });
+            else if (command.kind === "pending")
+              setPending((current) => [
+                ...current.filter((item) => item.id !== command.id),
+                { id: command.id, visual: command.visual, title: command.title },
+              ]);
+            else if (command.kind === "settled")
+              setPending((current) => current.filter((item) => item.id !== command.id));
+            break;
+          }
           case "task":
             setTasks((current) => [
               ...current.filter((task) => task.id !== message.id),
@@ -338,6 +375,10 @@ export function useVoiceSession() {
     captions,
     visuals,
     focus,
+    pinned,
+    view,
+    pending,
+    closed,
     tasks,
     error,
     modes,
@@ -349,6 +390,11 @@ export function useVoiceSession() {
       send({ type: "interrupt" });
     },
     sendText: (text: string) => send({ type: "text", text }),
+    /** Tells the tutor what the learner is looking at after they close or bring back a visual. */
+    sendStage: (visualId: string | null) => {
+      setPinned(null);
+      send({ type: "stage", visualId });
+    },
     toggleMute: () => {
       const next = !muted;
       mutedRef.current = next;

@@ -78,12 +78,15 @@ function FlowNodeView({
   hovered,
   active,
   onHover,
+  onSelect,
 }: {
   node: LaidNode;
   fills: Record<LaidNode["kind"], string>;
   hovered: boolean;
   active: boolean;
   onHover: (id: string | null) => void;
+  /** Makes the node a button (voice stage: tap a step to ask about it). */
+  onSelect?: (node: LaidNode) => void;
 }) {
   const metrics = useMetrics();
   const lineHeight = metrics.fontSize * metrics.lineHeight;
@@ -99,9 +102,23 @@ function FlowNodeView({
       data-hover={hovered || undefined}
       data-active={active ? "true" : undefined}
       transform={`translate(${node.x},${node.y})`}
-      style={{ "--i": node.step } as CSSProperties}
+      style={{ "--i": node.step, cursor: onSelect ? "pointer" : undefined } as CSSProperties}
       onMouseEnter={() => onHover(node.id)}
       onMouseLeave={() => onHover(null)}
+      {...(onSelect
+        ? {
+            role: "button",
+            tabIndex: 0,
+            "aria-label": node.lines.join(" "),
+            onClick: () => onSelect(node),
+            onKeyDown: (event: React.KeyboardEvent) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(node);
+              }
+            },
+          }
+        : {})}
     >
       <g className="flow-node-body">
         <NodeShape node={node} fill={fills[node.kind]} />
@@ -208,6 +225,7 @@ export function FlowChartView({
   title,
   className,
   onRendered,
+  onNodeClick,
 }: {
   chart: Flowchart;
   theme?: DiagramTheme;
@@ -216,6 +234,7 @@ export function FlowChartView({
   title?: string;
   className?: string;
   onRendered?: (info: FlowRendered) => void;
+  onNodeClick?: (id: string, label: string) => void;
 }) {
   const uid = useId().replace(/:/g, "");
   const frameRef = useRef<HTMLDivElement>(null);
@@ -422,6 +441,7 @@ export function FlowChartView({
                   hovered={hovered === node.id}
                   active={activeNode === node.id}
                   onHover={setHovered}
+                  onSelect={onNodeClick ? (picked) => onNodeClick(picked.id, picked.lines.join(" ")) : undefined}
                 />
               </g>
             ))}

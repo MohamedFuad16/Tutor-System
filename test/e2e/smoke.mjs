@@ -185,6 +185,36 @@ async function run(label, viewport) {
   await page.waitForTimeout(2500);
   await shot("05-voice");
   check(true, `${label}: voice delegated diagram shown`);
+
+  // Stage tools: "close it" clears the screen (the orb returns to the centre), the
+  // magic pen writes a board, and the tutor builds a 3D model.
+  const typeToTutor = async (text) => {
+    await page.getByRole("textbox", { name: "Type your message" }).fill(text);
+    await page.getByRole("textbox", { name: "Type your message" }).press("Enter");
+  };
+  const stageGone = async () => {
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      if ((await page.locator(".stage-panel").count()) === 0) return true;
+      await page.waitForTimeout(250);
+    }
+    return false;
+  };
+  await typeToTutor("Can you close it?");
+  check(await stageGone(), `${label}: "close it" clears the voice stage`);
+  await typeToTutor("Solve x squared minus 5x plus 6 equals 0 on the board");
+  await page.locator(".stage-board [data-line]").first().waitFor({ timeout: 30000 });
+  await page.waitForTimeout(4000);
+  await shot("05b-voice-board");
+  check(true, `${label}: magic pen board writes its lines`);
+  await typeToTutor("Build a 3D model of the solar system");
+  await page.locator("canvas.scene-canvas").waitFor({ timeout: 30000 });
+  await page.waitForTimeout(4000);
+  await shot("05c-voice-scene");
+  check(true, `${label}: 3D model built on the stage`);
+  await typeToTutor("close it");
+  check(await stageGone(), `${label}: stage closes again`);
+  await page.waitForTimeout(1200);
+  await shot("05d-voice-closed");
   await page.getByRole("button", { name: "End voice conversation" }).first().click();
   await page.waitForTimeout(800);
 

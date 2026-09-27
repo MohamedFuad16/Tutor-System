@@ -16,6 +16,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Maximize2, Pause, Play, Workflow } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DiagramStep } from "@shared/types";
+import type { StageView } from "@shared/voice";
 import { api } from "@/lib/api";
 import { parseFlowchart } from "@/lib/flow/parse";
 import {
@@ -51,10 +52,12 @@ export function DiagramView(props: {
   fit: Fit;
   title?: string;
   onRendered?: (info: { nodes: number }) => void;
+  onNodeClick?: (id: string, label: string) => void;
 }) {
   const chart = useMemo(() => parseFlowchart(props.source), [props.source]);
   if (chart) return <FlowChartView chart={chart} {...props} />;
-  return <MermaidView {...props} />;
+  const { onNodeClick: _unused, ...rest } = props;
+  return <MermaidView {...rest} />;
 }
 
 export function MermaidView({
@@ -254,6 +257,90 @@ function useTour(source: string, steps: DiagramStep[] | undefined, context: stri
   return { tour, loading, start, stop, current: tour ? tour.steps[tour.index] : null };
 }
 
+/**
+ * Voice stage: large, and steerable by voice. "Turn it sideways" re-lays a
+ * flowchart left to right, "zoom in" enlarges it (drag to pan), and tapping
+ * a step asks the tutor about it.
+ */
+function StageDiagram({
+  source,
+  theme,
+  focus,
+  title,
+  className,
+  onNodeClick,
+  view,
+}: {
+  source: string;
+  theme: DiagramTheme;
+  focus: string | null;
+  title?: string;
+  className?: string;
+  onNodeClick?: (id: string, label: string) => void;
+  view: { view: StageView; nonce: number } | null;
+}) {
+  const [direction, setDirection] = useState<"LR" | "TD" | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [height, setHeight] = useState(() => (typeof window === "undefined" ? 800 : window.innerHeight));
+  useEffect(() => {
+    const onResize = () => setHeight(window.innerHeight);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  useEffect(() => {
+    if (!view) return;
+    if (view.view === "sideways") setDirection("LR");
+    else if (view.view === "upright") setDirection("TD");
+    else if (view.view === "zoom_in") setZoom((value) => Math.min(2.2, value * 1.35));
+    else if (view.view === "zoom_out") setZoom((value) => Math.max(1, value / 1.35));
+    else if (view.view === "reset") {
+      setZoom(1);
+      setDirection(null);
+    }
+    // Only a new command changes the view.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view?.nonce]);
+  const shown = direction && flowDirection(source) ? withDirection(source, direction) : source;
+  // Use the room the stage has: the diagram is the main event here.
+  const fit = useMemo<Fit>(
+    () => ({ ...FITS.stage, maxHeight: Math.max(360, Math.round(height * 0.56)), reorient: direction === null }),
+    [height, direction],
+  );
+  return (
+    <figure className={cx("w-full", className)}>
+      {title && (
+        <figcaption className="mb-3 flex items-center gap-2 text-xs tracking-wide text-fog-300 uppercase">
+          <Workflow className="size-3.5 text-signal" /> {title}
+          {onNodeClick && (
+            <span className="ml-auto hidden text-[0.68rem] tracking-normal text-fog-500 normal-case sm:inline">
+              Tap a step to ask about it
+            </span>
+          )}
+        </figcaption>
+      )}
+      <div
+        className={cx("scroll-quiet relative", zoom > 1 ? "overflow-auto" : "overflow-hidden")}
+        style={{ maxHeight: fit.maxHeight + 24 }}
+      >
+        <motion.div
+          animate={{ scale: zoom }}
+          transition={{ type: "spring", stiffness: 140, damping: 22 }}
+          style={{ transformOrigin: "50% 0%" }}
+        >
+          <DiagramView
+            source={shown}
+            theme={theme}
+            activeNode={focus}
+            fit={fit}
+            title={title}
+            onNodeClick={onNodeClick}
+          />
+        </motion.div>
+      </div>
+    </figure>
+  );
+}
+
 /** Diagram card with a narrated walk-through, used in chat, notebooks and voice. */
 export function Diagram({
   source,
@@ -266,12 +353,18 @@ export function Diagram({
   controls = true,
   context,
   className,
+  onNodeClick,
+  view,
 }: {
   source: string;
   theme?: DiagramTheme;
   variant?: DiagramVariant;
   /** Node to spotlight (driven externally, e.g. by the voice tour). */
   activeNode?: string | null;
+  /** Stage only: tapping a node (flowcharts) reports it. */
+  onNodeClick?: (id: string, label: string) => void;
+  /** Stage only: the latest voice view command (sideways, upright, zoom), with a nonce so repeats register. */
+  view?: { view: StageView; nonce: number } | null;
   /** Pre-computed tour steps (voice background results include them). */
   steps?: DiagramStep[];
   title?: string;
@@ -291,14 +384,15 @@ export function Diagram({
 
   if (variant === "stage") {
     return (
-      <figure className={cx("w-full", className)}>
-        {title && (
-          <figcaption className="mb-3 flex items-center gap-2 text-xs tracking-wide text-fog-300 uppercase">
-            <Workflow className="size-3.5 text-signal" /> {title}
-          </figcaption>
-        )}
-        <DiagramView source={source} theme={theme} activeNode={focus} fit={FITS.stage} title={title} />
-      </figure>
+      <StageDiagram
+        source={source}
+        theme={theme}
+        focus={focus ?? null}
+        title={title}
+        className={className}
+        onNodeClick={onNodeClick}
+        view={view ?? null}
+      />
     );
   }
 

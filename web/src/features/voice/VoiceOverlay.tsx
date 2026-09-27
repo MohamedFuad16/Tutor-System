@@ -1,20 +1,37 @@
 /**
  * Voice mode: a full-screen conversation space. The orb breathes with the
- * dialogue, live captions show both sides, and anything the background
- * specialist produces (diagrams with a narrated, highlighted tour; images;
- * detailed notes) appears on the stage while the tutor talks about it.
+ * dialogue, live captions show both sides, and the stage shows whatever the
+ * tutor puts up while it talks: one good photo, a narrated diagram, the
+ * magic-pen whiteboard, a 3D model or a live web page. The tutor controls
+ * the stage by voice (show, point at, zoom, turn, close); when it clears the
+ * screen the orb glides back to the centre and grows. Placeholders animate
+ * while something is being fetched or built and turn into the result.
  */
 import { AnimatePresence, motion } from "motion/react";
-import { Hand, Keyboard, Mic, MicOff, Palette, PhoneOff, Send, X } from "lucide-react";
+import {
+  Box,
+  Globe,
+  Hand,
+  Image as ImageIcon,
+  Keyboard,
+  Mic,
+  MicOff,
+  Palette,
+  PenLine,
+  PhoneOff,
+  Send,
+  StickyNote,
+  Workflow,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { VoiceVisual } from "@shared/voice";
-import { Diagram } from "@/components/Diagram";
 import { ThinkingOrb } from "thinking-orbs";
 import { VoiceBeam } from "voice-glow";
-import { Markdown } from "@/components/Markdown";
 import { IconButton, cx, softSpring, spring } from "@/components/ui";
-import { ImageGallery } from "@/features/chat/parts";
 import { useApp } from "@/store/app";
+import { StageContent, visualTitle } from "./stage/Stage";
+import { StagePending } from "./stage/StagePending";
 import { useVoiceSession } from "./useVoiceSession";
 import { ORB_STYLES, ORB_STYLE_LABELS, VoiceOrb, orbSwatch } from "./VoiceOrb";
 
@@ -27,27 +44,32 @@ const STATE_LABEL: Record<string, string> = {
   error: "Something went wrong",
 };
 
-function Stage({ visual, focusNode }: { visual: VoiceVisual; focusNode: string | null }) {
-  if (visual.kind === "diagram") {
-    return (
-      <Diagram
-        source={visual.diagram.mermaid}
-        title={visual.diagram.title}
-        steps={visual.diagram.steps}
-        activeNode={focusNode}
-        theme="dark"
-        variant="stage"
-      />
-    );
-  }
-  if (visual.kind === "images")
-    return <ImageGallery images={visual.images} query={visual.query} tone="dark" effect={false} />;
-  return (
-    <div className="scroll-quiet max-h-[60vh] overflow-y-auto">
-      <h3 className="mb-3 text-sm tracking-wide text-fog-400 uppercase">{visual.title}</h3>
-      <Markdown text={visual.markdown} tone="dark" />
-    </div>
-  );
+const KIND_ICONS: Record<VoiceVisual["kind"], typeof ImageIcon> = {
+  images: ImageIcon,
+  diagram: Workflow,
+  board: PenLine,
+  scene: Box,
+  web: Globe,
+  markdown: StickyNote,
+};
+
+/** Orb sizes: large and centred when the stage is empty, small beside a visual. */
+function useOrbSizes() {
+  const measure = () => {
+    if (typeof window === "undefined") return { big: 320, small: 120 };
+    const short = Math.min(window.innerWidth, window.innerHeight);
+    return {
+      big: Math.round(Math.min(380, Math.max(220, short * 0.46))),
+      small: window.innerWidth >= 1024 ? 132 : 84,
+    };
+  };
+  const [sizes, setSizes] = useState(measure);
+  useEffect(() => {
+    const onResize = () => setSizes(measure());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return sizes;
 }
 
 function OrbPicker() {
@@ -106,6 +128,9 @@ export function VoiceOverlay() {
   const [typing, setTyping] = useState(false);
   const [text, setText] = useState("");
   const [shownVisual, setShownVisual] = useState<string | null>(null);
+  /** Visuals brought back from history show at once, without their build-up. */
+  const [replayed, setReplayed] = useState<string | null>(null);
+  const orb = useOrbSizes();
 
   useEffect(() => {
     if (open && voice.state === "idle") void voice.start();
@@ -113,19 +138,52 @@ export function VoiceOverlay() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // Show the newest visual; the focus of a narrated step pins its diagram.
+  // Show the newest visual (or what is on its way); the focus of a narrated step pins its visual.
   useEffect(() => {
     const latest = voice.visuals[voice.visuals.length - 1];
     if (latest) setShownVisual(latest.id);
   }, [voice.visuals]);
+  const lastPending = voice.pending[voice.pending.length - 1];
+  useEffect(() => {
+    if (lastPending) setShownVisual(lastPending.id);
+  }, [lastPending]);
   useEffect(() => {
     if (voice.focus) setShownVisual(voice.focus.visualId);
   }, [voice.focus]);
+  useEffect(() => {
+    if (voice.pinned) setShownVisual(voice.pinned.visualId);
+  }, [voice.pinned]);
+  useEffect(() => {
+    if (voice.closed) setShownVisual(null);
+  }, [voice.closed]);
 
   const visual = useMemo(
     () => voice.visuals.find((item) => item.id === shownVisual) ?? null,
     [voice.visuals, shownVisual],
   );
+  const placeholder = !visual ? (voice.pending.find((item) => item.id === shownVisual) ?? null) : null;
+  const staged = Boolean(visual || placeholder);
+  const focusNode =
+    visual && voice.focus?.visualId === visual.id
+      ? voice.focus.node
+      : visual && voice.pinned?.visualId === visual.id
+        ? voice.pinned.node
+        : null;
+  const view = visual && voice.view?.visualId === visual.id ? { view: voice.view.view, nonce: voice.view.nonce } : null;
+  const recent = voice.visuals
+    .filter((item) => item.id !== visual?.id)
+    .slice(-4)
+    .reverse();
+
+  const hide = () => {
+    setShownVisual(null);
+    voice.sendStage(null);
+  };
+  const bringBack = (id: string) => {
+    setReplayed(id);
+    setShownVisual(id);
+    voice.sendStage(id);
+  };
   const close = () => set({ voiceOpen: false });
 
   useEffect(() => {
@@ -137,6 +195,8 @@ export function VoiceOverlay() {
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  const orbSize = staged ? orb.small : orb.big;
 
   return (
     <AnimatePresence>
@@ -208,38 +268,87 @@ export function VoiceOverlay() {
           {/* Stage */}
           <div
             className={cx(
-              "relative flex min-h-0 flex-1 items-center justify-center gap-8 px-5 sm:px-10",
-              visual ? "flex-col lg:flex-row" : "flex-col",
+              "relative flex min-h-0 flex-1 items-center justify-center gap-6 px-4 sm:px-10 lg:gap-10",
+              staged ? "flex-col lg:flex-row" : "flex-col",
             )}
           >
-            <motion.div layout transition={softSpring} className="flex shrink-0 items-center justify-center">
-              <VoiceOrb
-                state={voice.state}
-                bands={voice.bands}
-                levels={voice.levels}
-                style={orbStyle}
-                size={visual ? 140 : 300}
-              />
+            {/* The orb animates its box and its scale, so it glides and grows instead of jumping. */}
+            <motion.div
+              layout
+              className="relative flex shrink-0 items-center justify-center"
+              animate={{ width: orbSize, height: orbSize }}
+              transition={staged ? softSpring : { type: "spring", stiffness: 110, damping: 13, mass: 0.9 }}
+            >
+              <motion.div
+                className="absolute top-1/2 left-1/2"
+                style={{ width: orb.big, height: orb.big, x: "-50%", y: "-50%" }}
+                animate={{ scale: orbSize / orb.big }}
+                transition={staged ? softSpring : { type: "spring", stiffness: 110, damping: 13, mass: 0.9 }}
+              >
+                <VoiceOrb
+                  state={voice.state}
+                  bands={voice.bands}
+                  levels={voice.levels}
+                  style={orbStyle}
+                  size={orb.big}
+                />
+              </motion.div>
             </motion.div>
-            <AnimatePresence mode="wait">
-              {visual && (
+            <AnimatePresence mode="popLayout">
+              {staged && (
                 <motion.div
-                  key={visual.id}
+                  key={visual?.id ?? placeholder!.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
+                  initial={{ opacity: 0, scale: 0.9, y: 24, filter: "blur(12px)" }}
+                  animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, scale: 0.94, y: 10, filter: "blur(10px)" }}
                   transition={softSpring}
-                  className="liquid-glass relative w-full max-w-4xl rounded-[2rem] p-4 sm:p-6"
+                  className="liquid-glass stage-panel relative w-full max-w-5xl rounded-[2rem] p-3 sm:p-5"
                 >
                   <button
-                    onClick={() => setShownVisual(null)}
+                    onClick={hide}
                     aria-label="Hide visual"
-                    className="absolute top-3 right-3 z-10 rounded-full p-1.5 text-fog-500 hover:bg-white/10 hover:text-white"
+                    className="absolute top-2.5 right-2.5 z-20 rounded-full bg-black/30 p-1.5 text-fog-400 backdrop-blur-md hover:bg-white/10 hover:text-white"
                   >
                     <X className="size-4" />
                   </button>
-                  <Stage visual={visual} focusNode={voice.focus?.visualId === visual.id ? voice.focus.node : null} />
+                  {visual ? (
+                    <StageContent
+                      visual={visual}
+                      focus={focusNode}
+                      view={view}
+                      instant={replayed === visual.id}
+                      onAsk={(question) => voice.sendText(question)}
+                    />
+                  ) : (
+                    <StagePending kind={placeholder!.visual} title={placeholder!.title} />
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {/* With the stage clear, earlier visuals stay one tap away. */}
+            <AnimatePresence>
+              {!staged && recent.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: 0.35 }}
+                  className="absolute bottom-2 left-1/2 flex max-w-[calc(100%-2rem)] -translate-x-1/2 flex-wrap justify-center gap-2"
+                >
+                  {recent.map((item) => {
+                    const Icon = KIND_ICONS[item.kind];
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => bringBack(item.id)}
+                        className="flex max-w-56 items-center gap-1.5 rounded-full bg-white/6 px-3 py-1.5 text-xs text-fog-300 ring-1 ring-white/8 transition-colors hover:bg-white/12 hover:text-white"
+                      >
+                        <Icon className="size-3.5 shrink-0 text-signal-soft" />
+                        <span className="truncate">{visualTitle(item)}</span>
+                      </button>
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
