@@ -10,6 +10,7 @@ import type { Board } from "@shared/voice";
 import StageBoard from "@/features/voice/stage/StageBoard";
 import { StageImage } from "@/features/voice/stage/StageImage";
 import { StagePending } from "@/features/voice/stage/StagePending";
+import { bounds, locate } from "@/features/voice/stage/pageText";
 import { niceStep, plotGeometry } from "@/features/voice/stage/plot";
 import { useApp } from "@/store/app";
 
@@ -120,5 +121,33 @@ describe("placeholders", () => {
     expect(screen.getByRole("status", { name: "Finding the best photo: Tokyo" })).toBeInTheDocument();
     render(<StagePending kind="build" title="solar system" />);
     expect(screen.getByRole("status", { name: "Building it: solar system" })).toBeInTheDocument();
+  });
+});
+
+describe("document page text layer", () => {
+  // Two lines of a page as pdf.js reports them: runs with positions.
+  const runs = [
+    {
+      str: "Water molecules are split in a process called photolysis, releasing oxygen as a by-product. The energy of the excited",
+      x: 40,
+      y: 100,
+      width: 520,
+      height: 12,
+    },
+    { str: "electrons is used to make ATP and NADPH.", x: 40, y: 116, width: 190, height: 12 },
+  ];
+
+  it("finds a quote across a line break, one rectangle per line", () => {
+    const rects = locate(runs, "The energy of the excited electrons is used to make ATP and NADPH.");
+    expect(rects).toHaveLength(2);
+    expect(rects[0].y).toBe(100);
+    expect(rects[0].x).toBeGreaterThan(300);
+    expect(rects[1]).toMatchObject({ x: 40, y: 116 });
+    expect(bounds(rects)).toMatchObject({ y: 100, height: 28 });
+  });
+
+  it("ignores punctuation and case, and gives up cleanly when the words aren't there", () => {
+    expect(locate(runs, "water molecules are split in a process called photolysis")).toHaveLength(1);
+    expect(locate(runs, "the French revolution")).toEqual([]);
   });
 });

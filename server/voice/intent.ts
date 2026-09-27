@@ -16,6 +16,7 @@
 import type { VoiceVisual } from "../../shared/voice.js";
 import { imageKeywords } from "../providers/search.js";
 import { parseView, type VoiceAction } from "./actions.js";
+import { readNumber } from "./pages.js";
 import { matchStageTarget } from "./stage.js";
 
 const IMAGE_NOUN = String.raw`(?:pictures?|photos?|photographs?|images?|pics?|snapshots?)`;
@@ -161,5 +162,64 @@ export function detectStageIntent(utterance: string, stage: VoiceVisual | null):
     const target = matchStageTarget(stage, focus[1]);
     if (target) return { actions: [{ kind: "focus", target }], pure: false };
   }
+  return null;
+}
+
+// ---------------------------------------------------------------- the learner's documents
+
+const NUMBER = String.raw`(\d{1,5}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)`;
+const WHICH_DOC = String.raw`(?:\s+(?:of|in|from)\s+(?:the\s+)?(?:(first|second|third)\s+(?:document|doc|pdf|file)|(?:document|doc|pdf|file)\s+(\d{1,2}|one|two|three)|d(\d{1,2})))?`;
+const OPEN_VERB = String.raw`(?:show(?: me)?|open|go to|turn to|flip to|jump to|take me to|bring up|pull up|put up|display|let me see|let's look at)`;
+const PAGE_OPEN = new RegExp(String.raw`^(?:${OPEN_VERB}\s+)?(?:the\s+)?page\s+${NUMBER}${WHICH_DOC}$`, "i");
+const PAGE_NEXT = /^(?:(?:go to|show me|turn to|flip to)\s+)?(?:the\s+)?next page$|^turn the page$/i;
+const PAGE_BACK =
+  /^(?:(?:go (?:back )?to|show me|turn to|flip to)\s+)?(?:the\s+)?(?:previous|last) page$|^go back a page$|^back a page$/i;
+const PAGE_CURRENT = new RegExp(
+  String.raw`^${OPEN_VERB}\s+(?:this|the current|my current|my|the)\s+page(?:\s+(?:i'?m|i am)\s+(?:on|reading|looking at|at))?(?:\s+on (?:the )?screen)?$`,
+  "i",
+);
+const PAGE_READ = new RegExp(
+  String.raw`^(?:read|walk me through|go through|take me through|explain|let's read|can we read|read through)\s+(?:(?:this|the current|my)\s+page|page\s+${NUMBER}${WHICH_DOC})(?:\s+(?:with me|together|for me|line by line|step by step))*$`,
+  "i",
+);
+const LINE_FIND =
+  /^(?:where does it (?:say|talk about|mention)|find (?:the (?:line|part|sentence) (?:about|that says|where it says) )?|show me where it (?:says|talks about|mentions))\s+(.{3,})$/i;
+const LINE_MARK =
+  /^(?:highlight|underline|point (?:to|at|out)|circle|mark)\s+(?:the (?:line|sentence|part|bit|paragraph) (?:about|that says|where it says|on|that talks about|mentioning)\s+)?(.{3,})$/i;
+
+function docOf(match: RegExpExecArray, offset: number): number | undefined {
+  return readNumber(match[offset]) ?? readNumber(match[offset + 1]) ?? readNumber(match[offset + 2]);
+}
+
+/**
+ * "Show me page 12", "next page", "show me this page", "walk me through page
+ * 3", "highlight the line about photolysis", "where does it say that light
+ * excites electrons?": commands about the learner's own documents.
+ */
+export function detectPageIntent(
+  utterance: string,
+  input: { hasDocuments: boolean; stage: VoiceVisual | null },
+): StageIntent | null {
+  if (!input.hasDocuments) return null;
+  const whole = utterance.trim().replace(/[?!.]+$/, "");
+  if (!whole || NEGATION.test(whole)) return null;
+  const text = commandText(whole);
+  const onPage = input.stage?.kind === "page";
+
+  const open = PAGE_OPEN.exec(text);
+  if (open) return { actions: [{ kind: "page", ref: { page: readNumber(open[1]), doc: docOf(open, 2) } }], pure: true };
+  if (onPage && PAGE_NEXT.test(text)) return { actions: [{ kind: "page", ref: { relative: 1 } }], pure: true };
+  if (onPage && PAGE_BACK.test(text)) return { actions: [{ kind: "page", ref: { relative: -1 } }], pure: true };
+  if (PAGE_CURRENT.test(text)) return { actions: [{ kind: "page", ref: { current: true } }], pure: true };
+
+  const read = PAGE_READ.exec(text);
+  if (read) {
+    return { actions: [{ kind: "deep", mode: "read", task: whole.slice(0, 300) }], pure: false };
+  }
+
+  const find = LINE_FIND.exec(text);
+  if (find) return { actions: [{ kind: "page", ref: { quote: find[1], describe: true } }], pure: false };
+  const mark = onPage ? LINE_MARK.exec(text) : null;
+  if (mark) return { actions: [{ kind: "page", ref: { current: true, quote: mark[1], describe: true } }], pure: false };
   return null;
 }

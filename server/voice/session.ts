@@ -44,10 +44,12 @@ import {
   voiceBoardPrompt,
   voiceBuildPrompt,
   voiceForegroundPrompt,
+  voiceReadPrompt,
 } from "../services/prompts.js";
 import { historyMessages } from "../services/tutor.js";
 import { ActionTagFilter, actionTag, asVoiceNotes, type DeepMode, type VoiceAction } from "./actions.js";
-import { detectImageIntent, detectStageIntent } from "./intent.js";
+import { detectImageIntent, detectPageIntent, detectStageIntent } from "./intent.js";
+import { readNumber, sameQuote, snapQuote, type PageRef } from "./pages.js";
 import { SpeechQueue } from "./speech-queue.js";
 import {
   matchStageTarget,
@@ -117,7 +119,10 @@ const TASK_TITLES: Record<DeepMode, string> = {
   compare: "Comparing",
   board: "Writing on the board",
   build: "Building it",
+  read: "Opening your document",
 };
+
+type PageVisual = Extract<VoiceVisual, { kind: "page" }>;
 
 /** Transcripts equal up to case and punctuation ("Close it." vs "close it"). */
 const sameWords = (a: string, b: string) => {
@@ -147,6 +152,10 @@ type Response = {
   imageQuery?: string;
   /** A model image tag that lost to the learner's request, tried if that search finds nothing. */
   imageFallback?: string;
+  /** Document pages shown this turn, kept as citations ("[D1 p.12]") in the notebook thread. */
+  cites: string[];
+  /** The page a plain "show me page 12" command opened, for its spoken reply. */
+  pageShown?: number;
 };
 
 /** Finished background work, waiting for a quiet moment to be presented. */
@@ -279,10 +288,21 @@ export class VoiceSession {
         }
         if (message.state === "end") this.maybeFinishTurn();
         break;
-      case "stage":
-        // The learner closed the visual or went back to an earlier one.
-        this.stage = message.visualId ? (this.shown.get(String(message.visualId)) ?? null) : null;
+      case "stage": {
+        // The learner closed the visual, went back to an earlier one, or turned a document page.
+        const visual = message.visualId ? (this.shown.get(String(message.visualId)) ?? null) : null;
+        const turnedTo = Math.floor(Number(message.page));
+        if (visual?.kind === "page" && turnedTo > 0 && turnedTo !== visual.page) {
+          const turned: PageVisual = {
+            ...visual,
+            page: Math.min(turnedTo, Math.max(1, visual.pageCount)),
+            highlights: [],
+          };
+          this.shown.set(turned.id, turned);
+          this.stage = turned;
+        } else this.stage = visual;
         break;
+      }
       case "bye":
         this.close("client bye");
         break;
@@ -620,6 +640,7 @@ export class VoiceSession {
       delegated: [],
       deferred: [],
       actions: [],
+      cites: [],
     };
     this.current = response;
     if (!speculative) this.setState("thinking");
@@ -650,15 +671,27 @@ export class VoiceSession {
 
   private async generate(response: Response) {
     const pending: Array<Promise<void>> = [];
-    // "Close it", "zoom in", "highlight the database step": act on the screen right away.
-    const command = detectStageIntent(response.transcript, this.stage);
+    // "Close it", "zoom in", "show me page 12", "highlight the line about osmosis": act on the screen right away.
+    const command =
+      detectStageIntent(response.transcript, this.stage) ??
+      detectPageIntent(response.transcript, { hasDocuments: this.documents().length > 0, stage: this.stage });
     const done: string[] = [];
+    let handled = true;
     for (const action of command?.actions ?? []) {
-      if (action.kind !== "close" && action.kind !== "focus" && action.kind !== "view") continue;
-      const note = this.stageAction(response, action);
+      const note =
+        action.kind === "page"
+          ? this.showPage(response, action.ref)
+          : action.kind === "deep"
+            ? (void pending.push(this.runAction(response, action)),
+              `started ${action.mode === "read" ? "a guided reading of the page" : action.mode}; say one short bridge sentence only`)
+            : action.kind === "images"
+              ? null
+              : this.stageAction(response, action);
       if (note) done.push(note);
+      else handled = false;
     }
-    const replies = command?.pure && this.language === "en" ? this.commandReplies(command.actions) : null;
+    const replies =
+      command?.pure && handled && this.language === "en" ? this.commandReplies(response, command.actions) : null;
     if (replies) {
       // A plain command needs no model: acknowledge it and listen again.
       const line = replies[Math.floor(Math.random() * replies.length)];
@@ -683,7 +716,12 @@ export class VoiceSession {
           learnerName: this.learnerName,
           language: this.language,
           context,
-          stage: stageNote(this.stage),
+          stage: stageNote(this.stage, {
+            pageText:
+              this.stage?.kind === "page"
+                ? this.deps.store.library.getPageText(this.stage.documentId, this.stage.page)
+                : undefined,
+          }),
         }),
       },
       ...this.history.slice(-16),
@@ -699,7 +737,7 @@ export class VoiceSession {
     // "Pull up Tokyo" / "yes please" (to an offer): search now, in parallel with
     // the model, so a photo appears fast even if the model forgets its tag.
     // Pointing at something already on screen is not a photo request.
-    const intent = command?.actions.some((action) => action.kind === "focus")
+    const intent = command?.actions.some((action) => action.kind === "focus" || action.kind === "page")
       ? null
       : detectImageIntent(response.transcript, this.lastAssistantText());
     if (intent) pending.push(this.showImages(response, intent, "intent"));
@@ -770,6 +808,10 @@ export class VoiceSession {
       await this.showImages(response, action.query, "tag");
       return;
     }
+    if (action.kind === "page") {
+      this.showPage(response, action.ref);
+      return;
+    }
     // The server already acted on an explicit command this turn; the model's matching tag is a repeat.
     if (response.actions.some((done) => done.kind === action.kind)) return;
     this.stageAction(response, action);
@@ -785,6 +827,9 @@ export class VoiceSession {
       command = { kind: "close" };
       note = "cleared the screen";
     } else if (action.kind === "view") {
+      if (visual.kind === "page" && (action.view === "next" || action.view === "previous")) {
+        return this.showPage(response, { relative: action.view === "next" ? 1 : -1 });
+      }
       command = { kind: "view", visualId: visual.id, view: action.view };
       note = `view ${action.view.replace("_", " ")}`;
     } else {
@@ -802,12 +847,126 @@ export class VoiceSession {
     return note;
   }
 
-  private commandReplies(actions: VoiceAction[]) {
+  private commandReplies(response: Response, actions: VoiceAction[]) {
     const action = actions[0];
     if (!action || actions.length > 1) return null;
     if (action.kind === "close") return COMMAND_REPLIES.close;
+    if (response.pageShown) return [`Here's page ${response.pageShown}.`];
     if (action.kind === "view") return COMMAND_REPLIES[action.view] ?? null;
     return null;
+  }
+
+  // ---------------------------------------------------------------- the learner's documents
+
+  /** Ready documents with their citation labels, in the same order as the context packet. */
+  private documents() {
+    return this.deps.store.library
+      .listDocuments(this.userId, this.bookId)
+      .filter((doc) => doc.status === "ready")
+      .map((doc, index) => ({ doc, label: `D${index + 1}` }));
+  }
+
+  /** Finds the page a line (or a description of one) is on, preferring one document. */
+  private findQuote(text: string, preferDocId?: string): { documentId: string; page: number } | null {
+    const hits = this.deps.store.retrieval
+      .search(this.userId, this.bookId, text, 8)
+      .sort((a, b) => Number(b.documentId === preferDocId) - Number(a.documentId === preferDocId));
+    for (const hit of hits) {
+      if (snapQuote(this.deps.store.library.getPageText(hit.documentId, hit.page), text)) {
+        return { documentId: hit.documentId, page: hit.page };
+      }
+    }
+    return null;
+  }
+
+  /** Resolves a page reference to a document page and (if asked) the exact line to highlight on it. */
+  private resolvePage(ref: PageRef) {
+    const docs = this.documents();
+    if (!docs.length) return null;
+    const onStage = this.stage?.kind === "page" ? this.stage : null;
+    const byId = (id?: string) => (id ? docs.find((entry) => entry.doc.id === id) : undefined);
+    let entry = ref.doc ? docs[ref.doc - 1] : undefined;
+    let page = ref.page;
+    if (ref.relative && onStage && !page) {
+      entry ??= byId(onStage.documentId);
+      page = onStage.page + ref.relative;
+    }
+    if (ref.current && !page) {
+      // "This page": the one on the stage, else the one open in the reader.
+      const source =
+        onStage ?? (this.focus.documentId ? { documentId: this.focus.documentId, page: this.focus.page } : null);
+      if (source) {
+        entry ??= byId(source.documentId);
+        page = source.page;
+      }
+    }
+    if (ref.quote && !page) {
+      const found = this.findQuote(ref.quote, entry?.doc.id ?? onStage?.documentId ?? this.focus.documentId);
+      if (found) {
+        entry ??= byId(found.documentId);
+        page = found.page;
+      }
+    }
+    entry ??= byId(onStage?.documentId) ?? byId(this.focus.documentId) ?? docs[0];
+    if (!page) {
+      page =
+        onStage?.documentId === entry.doc.id
+          ? onStage.page
+          : this.focus.documentId === entry.doc.id
+            ? (this.focus.page ?? 1)
+            : 1;
+    }
+    page = Math.min(Math.max(1, Math.floor(page)), Math.max(1, entry.doc.pageCount));
+    const quote = ref.quote
+      ? (snapQuote(this.deps.store.library.getPageText(entry.doc.id, page), ref.quote, { sentence: ref.describe }) ??
+        undefined)
+      : undefined;
+    return { entry, page, quote, missed: Boolean(ref.quote && !quote) };
+  }
+
+  /**
+   * Puts a page of the learner's document on the stage, highlighting the line
+   * being discussed. Pointing at another line of the page on screen adds a
+   * highlight to it in place, so the light moves line by line as the tutor talks.
+   */
+  private showPage(response: Response, ref: PageRef): string | null {
+    const target = this.resolvePage(ref);
+    if (!target) return null;
+    const { entry, page, quote } = target;
+    const onStage = this.stage?.kind === "page" ? this.stage : null;
+    let visual: PageVisual;
+    let highlight: string | undefined;
+    if (onStage && onStage.documentId === entry.doc.id && onStage.page === page) {
+      visual = onStage;
+      const existing = quote ? onStage.highlights.find((item) => sameQuote(item.quote, quote)) : undefined;
+      highlight = existing?.id;
+      if (quote && !existing) {
+        highlight = `H${Math.max(0, ...onStage.highlights.map((item) => Number(item.id.slice(1)) || 0)) + 1}`;
+        visual = { ...onStage, highlights: [...onStage.highlights, { id: highlight, quote }].slice(-8) };
+      }
+    } else {
+      visual = {
+        id: newId("vis"),
+        kind: "page",
+        documentId: entry.doc.id,
+        label: entry.label,
+        title: entry.doc.title,
+        page,
+        pageCount: Math.max(1, entry.doc.pageCount),
+        highlights: quote ? [{ id: "H1", quote }] : [],
+      };
+      highlight = quote ? "H1" : undefined;
+    }
+    const docNumber = Number(entry.label.slice(1));
+    response.actions.push({ kind: "page", ref: { doc: docNumber, page, quote } });
+    response.cites.push(`[${entry.label} p.${page}]`);
+    response.pageShown = page;
+    this.whenConfirmed(response, () => {
+      if (visual !== this.stage) this.showVisual(visual);
+      if (highlight) this.send({ type: "stage", command: { kind: "focus", visualId: visual.id, target: highlight } });
+    });
+    metrics.increment("voice.stage.page");
+    return `showed ${entry.label} page ${page}${quote ? ` with this line highlighted: "${quote.slice(0, 120)}"` : ""}${target.missed ? " (the line asked for is not on this page)" : ""}`;
   }
 
   /** Puts a visual on screen and remembers it as what the learner is looking at. */
@@ -912,12 +1071,14 @@ export class VoiceSession {
       content: [content || "(interrupted)", ...response.actions.map(actionTag)].join(" "),
     });
     if (!content && !response.parts.length) return;
+    // Pages shown become citation chips in the notebook thread.
+    const cites = [...new Set(response.cites)].join(" ");
     this.deps.store.messages.add({
       userId: this.userId,
       bookId: this.bookId,
       role: "assistant",
       channel: "voice",
-      content: content || "…",
+      content: `${content || "…"}${cites ? ` ${cites}` : ""}`,
       parts: response.parts,
       model: this.deps.llm.modelFor("fast"),
       latencyMs: response.firstAudioAt ? response.firstAudioAt - response.startedAt : undefined,
@@ -941,7 +1102,15 @@ export class VoiceSession {
     ]);
     const title = TASK_TITLES[mode] ?? TASK_TITLES.explain;
     const placeholder: VisualKind | "build" =
-      mode === "board" ? "board" : mode === "build" ? "build" : mode === "diagram" ? "diagram" : "markdown";
+      mode === "board"
+        ? "board"
+        : mode === "build"
+          ? "build"
+          : mode === "diagram"
+            ? "diagram"
+            : mode === "read"
+              ? "page"
+              : "markdown";
     this.send({ type: "task", id, title, status: "running" });
     this.send({
       type: "stage",
@@ -1002,6 +1171,7 @@ export class VoiceSession {
         : "";
     const stage = [`On the learner's screen now: ${stageNote(current)}`, editable].filter(Boolean).join("\n\n");
     if (mode === "board") return this.runBoard(taskId, visualId, task, context, stage, signal);
+    if (mode === "read") return this.runRead(taskId, visualId, task, context, signal);
     if (mode === "build") return this.runBuild(taskId, visualId, task, context, stage, signal);
 
     let webNotes = "";
@@ -1145,6 +1315,117 @@ export class VoiceSession {
     };
   }
 
+  /** Pages worth reading for a task: the one on screen or asked for, the one open, the best matches. */
+  private readCandidates(task: string) {
+    const docs = this.documents();
+    const picks: Array<{ entry: (typeof docs)[number]; page: number }> = [];
+    const add = (documentId: string | undefined, page: number | undefined) => {
+      const entry = docs.find((item) => item.doc.id === documentId);
+      if (!entry || !page || picks.some((pick) => pick.entry === entry && pick.page === page)) return;
+      picks.push({ entry, page: Math.min(Math.max(1, page), Math.max(1, entry.doc.pageCount)) });
+    };
+    const asked = /\bpage\s+(\d{1,5}|[a-z]+)/i.exec(task);
+    if (asked && readNumber(asked[1])) {
+      const docMatch = /\b(?:d(\d)|(first|second|third)\s+(?:document|doc|pdf|file))\b/i.exec(task);
+      const docNumber = readNumber(docMatch?.[1]) ?? readNumber(docMatch?.[2]);
+      const onStage = this.stage?.kind === "page" ? this.stage.documentId : undefined;
+      const documentId = docNumber
+        ? docs[docNumber - 1]?.doc.id
+        : (onStage ?? this.focus.documentId ?? docs[0]?.doc.id);
+      add(documentId, readNumber(asked[1]));
+    }
+    if (this.stage?.kind === "page") add(this.stage.documentId, this.stage.page);
+    add(this.focus.documentId, this.focus.page);
+    for (const hit of this.deps.store.retrieval.search(this.userId, this.bookId, task, 4))
+      add(hit.documentId, hit.page);
+    return picks
+      .slice(0, 3)
+      .map((pick) => ({ ...pick, text: this.deps.store.library.getPageText(pick.entry.doc.id, pick.page) }))
+      .filter((pick) => pick.text.trim());
+  }
+
+  /** Close reading: the key lines of a page, highlighted one by one as they are explained. */
+  private async runRead(
+    taskId: string,
+    visualId: string,
+    task: string,
+    context: ReturnType<typeof buildContext>,
+    signal: AbortSignal,
+  ): Promise<Injection> {
+    const pages = this.readCandidates(task);
+    if (!pages.length) throw new Error("No readable document pages");
+    const completion = await this.deps.llm.complete({
+      role: "smart",
+      purpose: "voice.read",
+      userId: this.userId,
+      priority: Priority.background,
+      reasoning: "low",
+      temperature: 0.3,
+      maxTokens: 4000,
+      json: true,
+      signal,
+      messages: [
+        {
+          role: "system",
+          content: voiceReadPrompt({
+            language: this.language,
+            context,
+            pages: pages.map((pick) => ({ ref: `${pick.entry.label} p.${pick.page}`, text: pick.text })),
+          }),
+        },
+        ...this.history.slice(-6),
+        { role: "user", content: `Reading task: ${task}` },
+      ],
+    });
+    const result = parseJsonObject<{
+      doc?: string;
+      page?: number;
+      speech?: string;
+      highlights?: Array<{ quote?: string; say?: string; note?: string }>;
+    }>(completion.text);
+    if (!result) throw new Error("The reading came back empty");
+    const chosen =
+      pages.find(
+        (pick) => pick.entry.label === String(result.doc ?? "").toUpperCase() && pick.page === Number(result.page),
+      ) ??
+      pages.find((pick) => pick.page === Number(result.page)) ??
+      pages[0];
+    const highlights: PageVisual["highlights"] = [];
+    const steps: Array<{ node: string; say: string }> = [];
+    for (const item of Array.isArray(result.highlights) ? result.highlights.slice(0, 8) : []) {
+      const quote = snapQuote(chosen.text, String(item?.quote ?? ""));
+      if (!quote || highlights.some((existing) => sameQuote(existing.quote, quote))) continue;
+      const id = `H${highlights.length + 1}`;
+      const note = typeof item.note === "string" ? item.note.trim().slice(0, 40) : "";
+      highlights.push({ id, quote, ...(note ? { note } : {}) });
+      const say = toSpeakableText(String(item.say ?? ""));
+      if (say) steps.push({ node: id, say });
+    }
+    if (!highlights.length) {
+      log.warn("voice.read_unusable", { chars: completion.text.length, head: completion.text.slice(0, 160) });
+      throw new Error("No lines to read on that page");
+    }
+    const speech = toSpeakableText(result.speech ?? "") || `Let's read page ${chosen.page} together.`;
+    const visual: PageVisual = {
+      id: visualId,
+      kind: "page",
+      documentId: chosen.entry.doc.id,
+      label: chosen.entry.label,
+      title: chosen.entry.doc.title,
+      page: chosen.page,
+      pageCount: Math.max(1, chosen.entry.doc.pageCount),
+      highlights,
+    };
+    return {
+      taskId,
+      speech,
+      visual,
+      tour: steps.length ? { visualId, steps } : undefined,
+      content: `${[speech, ...steps.map((step) => step.say)].join(" ")} [${chosen.entry.label} p.${chosen.page}]`,
+      parts: [],
+    };
+  }
+
   /** Builds a 3D scene or a web page (or edits the one on screen). */
   private async runBuild(
     taskId: string,
@@ -1237,9 +1518,11 @@ export class VoiceSession {
               ? `web page "${visual.title}"`
               : visual?.kind === "images"
                 ? `photo "${visual.query}"`
-                : visual
-                  ? `notes "${visual.title}"`
-                  : "";
+                : visual?.kind === "page"
+                  ? `page ${visual.label} p.${visual.page}`
+                  : visual
+                    ? `notes "${visual.title}"`
+                    : "";
     this.history.push({ role: "assistant", content: `${spoken}${label ? ` [[shown on screen: ${label}]]` : ""}` });
     this.deps.store.messages.add({
       userId: this.userId,

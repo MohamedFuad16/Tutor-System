@@ -10,6 +10,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import {
   Box,
+  FileText,
   Globe,
   Hand,
   Image as ImageIcon,
@@ -51,6 +52,7 @@ const KIND_ICONS: Record<VoiceVisual["kind"], typeof ImageIcon> = {
   scene: Box,
   web: Globe,
   markdown: StickyNote,
+  page: FileText,
 };
 
 /** Orb sizes: large and centred when the stage is empty, small beside a visual. */
@@ -174,6 +176,15 @@ export function VoiceOverlay() {
     .filter((item) => item.id !== visual?.id)
     .slice(-4)
     .reverse();
+
+  // The reader behind the overlay follows the document page on the stage.
+  const jump = useApp((state) => state.jump);
+  const readerPage = visual?.kind === "page" ? `${visual.documentId}:${visual.page}` : null;
+  useEffect(() => {
+    if (visual?.kind === "page") jump(visual.documentId, visual.page);
+    // Only when the page itself changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readerPage]);
 
   const hide = () => {
     setShownVisual(null);
@@ -319,6 +330,10 @@ export function VoiceOverlay() {
                       view={view}
                       instant={replayed === visual.id}
                       onAsk={(question) => voice.sendText(question)}
+                      onTurnPage={(page) => {
+                        voice.sendStage(visual.id, page);
+                        if (visual.kind === "page") jump(visual.documentId, page);
+                      }}
                     />
                   ) : (
                     <StagePending kind={placeholder!.visual} title={placeholder!.title} />

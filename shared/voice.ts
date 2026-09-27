@@ -88,6 +88,9 @@ export type Scene = {
   objects: SceneObject[];
 };
 
+/** A line on a document page the tutor is pointing at (exact words from the page). */
+export type PageHighlight = { id: string; quote: string; note?: string };
+
 export type VoiceVisual =
   | { id: string; kind: "diagram"; diagram: Diagram }
   | { id: string; kind: "images"; query: string; images: WebImage[] }
@@ -95,7 +98,19 @@ export type VoiceVisual =
   | { id: string; kind: "board"; board: Board }
   | { id: string; kind: "scene"; scene: Scene }
   /** A generated web page, rendered in a sandboxed frame with an opaque origin. */
-  | { id: string; kind: "web"; title: string; html: string };
+  | { id: string; kind: "web"; title: string; html: string }
+  /** A page of one of the learner's own documents, with the lines being discussed highlighted. */
+  | {
+      id: string;
+      kind: "page";
+      documentId: string;
+      /** Citation label ("D1"). */
+      label: string;
+      title: string;
+      page: number;
+      pageCount: number;
+      highlights: PageHighlight[];
+    };
 
 export type VisualKind = VoiceVisual["kind"];
 
@@ -158,8 +173,8 @@ export type ClientVoiceMessage =
   | { type: "partial"; text: string }
   | { type: "interrupt" }
   | { type: "playback"; seq: number; state: "start" | "end" }
-  /** The learner changed what is on screen (closed it, or went back to an earlier visual). */
-  | { type: "stage"; visualId: string | null }
+  /** The learner changed what is on screen (closed it, went back to an earlier visual, turned a document page). */
+  | { type: "stage"; visualId: string | null; page?: number }
   | { type: "bye" };
 
 export type VoiceState = "connecting" | "listening" | "thinking" | "speaking";

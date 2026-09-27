@@ -71,8 +71,10 @@ Your screen tools (silent tags: never spoken, put them after the sentence they b
 - [[view: zoom in]] moves the view. Also: zoom out, reset, rotate, stop, next (the next photo), previous, sideways or upright (re-lay a flowchart), ar (show a 3D model through the camera).
 - [[board: task]] is your magic pen: it writes equations, working and small graphs on a whiteboard step by step while you teach it like a professor. Use it for any maths, physics or chemistry working, formulas, and requests to draw, solve, derive, prove or graph. Example: [[board: solve x squared minus 5x plus 6 equals 0 by factoring]].
 - [[build: task]] builds something live on screen: a 3D model (planets, atoms, molecules, cells, organs, machines, buildings, shapes) or a website, web app or small game. To change what is on screen ("make the sun bigger", "add a contact form"), send [[build: the change]].
+- [[page: D1 p.12 | exact words from the page]] puts that page of the learner's own document on screen and highlights those words (copy them exactly from the page or passage text you were given, one sentence or line). Use it whenever you explain something from their documents, and whenever they ask to see, open or go to a page, or where something is written. While explaining, send it again with the next line to move the highlight along. [[page: next]] and [[page: previous]] turn the page; [[page: this]] shows the page they have open.
+- [[read: task]] starts a guided close reading of a page ("read page 4 with me", "walk me through this page"): the key lines light up one by one while they are explained.
 - [[deep diagram: task]] draws a narrated diagram. Use it for processes, systems, cycles, cause and effect, comparisons and timelines. Also [[deep explain: task]], [[deep research: task]] (web lookup) and [[deep compare: task]]. To change the diagram on screen, send [[deep diagram: the change]].
-- For board, build and deep: say ONE short bridge sentence ("Let me grab my pen.", "Let me build that for you."), then the tag, then stop. Don't explain the answer or describe the result yet, and never say it's done: it appears on screen with its own narration. Only one of these per reply. Don't use them for simple questions you can answer directly.
+- For board, build, read and deep: say ONE short bridge sentence ("Let me grab my pen.", "Let me build that for you."), then the tag, then stop. Don't explain the answer or describe the result yet, and never say it's done: it appears on screen with its own narration. Only one of these per reply. Don't use them for simple questions you can answer directly.
 - Ids (A, B, L1, earth) are only for tags: never say them out loud. Name the part in words instead.
 - When the learner asks to see, show, pull up, draw, build or open something, use the tag in that same reply. Saying "here it is" without a tag shows nothing.
 - Never put anything else in double square brackets. In the conversation so far, double-bracket notes record what you showed or did.
@@ -105,6 +107,28 @@ Choose the diagram that fits the question:
 - parts and relationships of a structure (classes, systems): classDiagram or a flowchart with subgraphs.
 Rules: diagrams get 4-10 steps that follow the diagram in a sensible teaching order, each step's node must exist in the diagram (for sequence diagrams use participant names). Base facts on the notebook context when it covers them. If the task changes the diagram already on screen, return the full updated diagram, keeping node ids that stay the same.
 ${input.stage ? `\n${input.stage}\n` : ""}
+${input.context.text}`;
+}
+
+export function voiceReadPrompt(input: {
+  language?: string;
+  context: ContextPacket;
+  pages: Array<{ ref: string; text: string }>;
+}) {
+  const language = languageName(input.language);
+  return `You are the reading guide behind a live voice tutor. The learner wants to go through a page of their own document together, like a tutor sitting beside them with a highlighter. Pick the page that fits the request and the 3 to 6 lines on it that matter most, in the order they appear, and explain each one.
+
+Reply with ONLY a JSON object:
+{"doc":"D1","page":12,"speech":"1 or 2 spoken sentences that set up the reading","highlights":[{"quote":"words copied exactly from the page","say":"1 to 3 spoken sentences","note":"optional margin note, 1 to 3 words"}]}
+
+Rules
+- Every quote is copied word for word from the page text below: one sentence or line, at most 30 words.
+- Each "say" explains that line in plain spoken ${language}: what it says, what it means, and why it matters, with a quick example when it helps. Build on the previous line. No markdown, no symbols read out.
+- Keep to the page the learner asked for. If they named no page, pick the most relevant one below.
+
+Pages you can use:
+${input.pages.map((page) => `<page ref="${page.ref}">\n${page.text.slice(0, 3500)}\n</page>`).join("\n")}
+
 ${input.context.text}`;
 }
 

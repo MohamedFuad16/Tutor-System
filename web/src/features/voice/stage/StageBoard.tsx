@@ -13,37 +13,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode }
 import type { Board, BoardItem, BoardPlot } from "@shared/voice";
 import { cx } from "@/components/ui";
 import { useMotion } from "@/store/app";
+import { Nib } from "./ink";
 import { formatTick, plotGeometry } from "./plot";
 
 const PEN_EASE = [0.42, 0.02, 0.28, 1] as const;
 const CURVE_COLORS = ["#67e8f9", "#ff9a4d", "#c4b5fd"];
-
-/** The nib: a glowing tip with a comet tail and a few sparks. */
-function Nib({ className, style }: { className?: string; style?: React.ComponentProps<typeof motion.span>["style"] }) {
-  return (
-    <motion.span aria-hidden className={cx("pen-nib", className)} style={style}>
-      <svg className="pen-body" viewBox="0 0 24 64" width="14" height="38">
-        <defs>
-          <linearGradient id="pen-grad" x1="0" x2="1">
-            <stop offset="0" stopColor="#e9e4ff" />
-            <stop offset="1" stopColor="#8b5cf6" />
-          </linearGradient>
-        </defs>
-        <path d="M12 64 L5 44 L5 6 Q12 0 19 6 L19 44 Z" fill="url(#pen-grad)" opacity="0.92" />
-        <path d="M12 64 L8.5 50 L15.5 50 Z" fill="#fff" />
-      </svg>
-      <span className="spark" style={{ ["--dx" as string]: "-14px", ["--dy" as string]: "-10px" }} />
-      <span
-        className="spark"
-        style={{ ["--dx" as string]: "-22px", ["--dy" as string]: "8px", animationDelay: "0.18s" }}
-      />
-      <span
-        className="spark"
-        style={{ ["--dx" as string]: "-8px", ["--dy" as string]: "14px", animationDelay: "0.34s" }}
-      />
-    </motion.span>
-  );
-}
 
 /** Reveals its content left to right behind the nib, like ink leaving a pen. */
 function Ink({ children, animate, onDone }: { children: ReactNode; animate: boolean; onDone?: () => void }) {

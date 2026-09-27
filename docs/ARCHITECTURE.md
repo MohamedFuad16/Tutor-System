@@ -228,8 +228,24 @@ flowchart LR
     flowchart sideways or upright.
   - `[[board: …]]` is the magic pen: working written line by line.
   - `[[build: …]]` builds a 3D scene or a web page, or edits the one shown.
-  - Plain commands ("close it", "zoom in", "highlight the database step") are
-    matched by the server and act instantly; a pure command skips the model.
+  - `[[page: D1 p.12 | exact line]]` opens a page of the learner's own
+    document and highlights that line. Sending it again with the next line
+    moves the highlight in place, so the light follows the explanation.
+    `[[page: next]]` and `[[page: this]]` also work.
+  - `[[read: …]]` starts a guided close reading. The specialist picks the key
+    lines of a page, and each is swept and explained in turn.
+  - Quotes are snapped to the exact words on the page on the server
+    (`server/voice/pages.ts`), so the model can paraphrase: a description
+    ("the line about osmosis") lights the best matching sentence.
+  - The client renders the page with pdf.js and finds the words in its text
+    layer (`web/src/features/voice/stage/pageText.ts`). A highlighter sweep
+    runs along each line with the pen's nib, the rest of the page dims and
+    the camera eases in.
+  - The reader behind the overlay follows along, and pages shown become
+    citation chips in the notebook thread.
+  - Plain commands are matched by the server and act instantly: "close it",
+    "zoom in", "highlight the database step", "show me page 12", "next page",
+    "where does it say …". A pure command skips the model.
   - The prompt carries a note of what is on screen, with the ids to point at.
   - Background results arrive as `visual` messages (diagram, images,
     markdown, board, scene, web). A `stage` `pending` command shows a

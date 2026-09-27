@@ -211,6 +211,14 @@ async function run(label, viewport) {
   await page.waitForTimeout(4000);
   await shot("05c-voice-scene");
   check(true, `${label}: 3D model built on the stage`);
+  // The learner's own document on the stage, with a line highlighted.
+  await typeToTutor("Show me page 2");
+  await page.locator(".stage-page canvas").waitFor({ timeout: 30000 });
+  await typeToTutor("Highlight the line about photolysis");
+  await page.locator(".stage-page [data-mark]").first().waitFor({ timeout: 30000 });
+  await page.waitForTimeout(3500);
+  await shot("05e-voice-page");
+  check(true, `${label}: document page shown with the line highlighted`);
   await typeToTutor("close it");
   check(await stageGone(), `${label}: stage closes again`);
   await page.waitForTimeout(1200);

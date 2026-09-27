@@ -13,6 +13,7 @@ import { StagePending } from "./StagePending";
 const StageBoard = lazy(() => import("./StageBoard"));
 const StageScene = lazy(() => import("./StageScene"));
 const StageWeb = lazy(() => import("./StageWeb"));
+const StagePage = lazy(() => import("./StagePage"));
 
 export type StageViewCommand = { view: StageView; nonce: number } | null;
 
@@ -26,6 +27,8 @@ export function visualTitle(visual: VoiceVisual) {
       return visual.board.title;
     case "scene":
       return visual.scene.title;
+    case "page":
+      return `${visual.label} page ${visual.page}`;
     default:
       return visual.title;
   }
@@ -37,6 +40,7 @@ export function StageContent({
   view,
   instant,
   onAsk,
+  onTurnPage,
 }: {
   visual: VoiceVisual;
   /** The part being talked about (node id, board line, 3D part). */
@@ -45,6 +49,8 @@ export function StageContent({
   /** Shown again from history: no build-up animation. */
   instant: boolean;
   onAsk: (text: string) => void;
+  /** A document page was turned with the arrows. */
+  onTurnPage?: (page: number) => void;
 }) {
   switch (visual.kind) {
     case "diagram":
@@ -78,6 +84,12 @@ export function StageContent({
       return (
         <Suspense fallback={<StagePending kind="web" title={visual.title} />}>
           <StageWeb title={visual.title} html={visual.html} />
+        </Suspense>
+      );
+    case "page":
+      return (
+        <Suspense fallback={<StagePending kind="page" title={`${visual.label} page ${visual.page}`} />}>
+          <StagePage visual={visual} focus={focus} view={view} onTurn={(page) => onTurnPage?.(page)} />
         </Suspense>
       );
     case "markdown":

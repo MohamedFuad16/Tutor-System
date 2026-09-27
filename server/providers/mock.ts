@@ -189,6 +189,28 @@ function scriptFor(request: LlmRequest): Script {
       }),
     };
   }
+  if (purpose === "voice.read") {
+    // Quotes lightly paraphrased (case, punctuation) the way real models do; the server snaps them to the page.
+    return {
+      text: JSON.stringify({
+        doc: "D1",
+        page: 2,
+        speech: "Let's read this page together.",
+        highlights: [
+          {
+            quote: "the light dependent reactions happen in the thylakoid membranes",
+            say: "First, where it happens: the thylakoid membranes.",
+            note: "where",
+          },
+          {
+            quote: "Water molecules are split in a process called photolysis",
+            say: "Then water is split. That's photolysis.",
+          },
+          { quote: "a sentence that is not on this page at all", say: "This one should be dropped." },
+        ],
+      }),
+    };
+  }
   if (purpose === "voice.build") {
     if (/impossible/i.test(question)) return { text: "{}" };
     if (/website|web page|landing|app\b/i.test(question)) {
@@ -233,6 +255,11 @@ function scriptFor(request: LlmRequest): Script {
   if (purpose === "voice.fg") {
     // The voice model requests side work with silent inline tags (server/voice/actions.ts).
     if (/\b(?:close it|clear the screen)\b/.test(q)) return { text: "Okay, cleared. [[close]]" };
+    if (/\bin my notes\b/.test(q)) {
+      return {
+        text: "Look at this line. [[page: D1 p.2 | water molecules are split in a process called photolysis]] That's where oxygen comes from. [[page: D1 p.2 | The energy of the excited electrons is used to make ATP and NADPH]] And this is where the energy goes.",
+      };
+    }
     if (/\b(?:solve|equation|formula|whiteboard)\b/.test(q)) {
       // Real models sometimes keep talking after the tag; the session must cut that off.
       return { text: `Let me grab my pen. [[board: ${question}]] So the answer is two or three.` };

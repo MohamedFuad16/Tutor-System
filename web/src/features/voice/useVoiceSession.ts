@@ -391,9 +391,9 @@ export function useVoiceSession() {
     },
     sendText: (text: string) => send({ type: "text", text }),
     /** Tells the tutor what the learner is looking at after they close or bring back a visual. */
-    sendStage: (visualId: string | null) => {
+    sendStage: (visualId: string | null, page?: number) => {
       setPinned(null);
-      send({ type: "stage", visualId });
+      send({ type: "stage", visualId, ...(page ? { page } : {}) });
     },
     toggleMute: () => {
       const next = !muted;

@@ -9,7 +9,8 @@ import type { WebImage } from "../../shared/types";
 import type { VoiceVisual } from "../../shared/voice";
 import { undash } from "../../shared/speech";
 import { ActionTagFilter, actionTag, parseActionTag, parseView } from "../../server/voice/actions";
-import { detectStageIntent } from "../../server/voice/intent";
+import { detectPageIntent, detectStageIntent } from "../../server/voice/intent";
+import { parsePageRef, snapQuote } from "../../server/voice/pages";
 import {
   matchStageTarget,
   rankImages,
@@ -275,5 +276,83 @@ describe("spoken captions", () => {
     );
     expect(undash("Pages 12–14 cover it")).toBe("Pages 12 to 14 cover it");
     expect(undash("— and that's it —.")).toBe("and that's it.");
+  });
+});
+
+describe("document pages", () => {
+  const PAGE =
+    "The light-dependent reactions\n\nThe light-dependent reactions happen in the thylakoid membranes. Chlorophyll absorbs light, which excites electrons.\nWater molecules are split in a process called photolysis, releasing oxygen as a by-product. The energy of the excited\nelectrons is used to make ATP and NADPH.";
+
+  it("reads page references from tags", () => {
+    expect(parsePageRef("D2 p.12 | Water is split")).toEqual({ doc: 2, page: 12, quote: "Water is split" });
+    expect(parsePageRef('page 3 "the first law"')).toEqual({ page: 3, quote: "the first law" });
+    expect(parsePageRef("next")).toEqual({ relative: 1 });
+    expect(parsePageRef("this")).toEqual({ current: true });
+    expect(parsePageRef("7")).toEqual({ page: 7 });
+    expect(parsePageRef("the definition of osmosis")).toEqual({ quote: "the definition of osmosis" });
+    expect(parseActionTag("page: D1 p.2 | photolysis")).toEqual({
+      kind: "page",
+      ref: { doc: 1, page: 2, quote: "photolysis" },
+    });
+    expect(parseActionTag("read: page 4 with me")).toEqual({ kind: "deep", mode: "read", task: "page 4 with me" });
+  });
+
+  it("snaps quotes to the exact words, across line breaks and punctuation", () => {
+    expect(snapQuote(PAGE, "water molecules are split in a process called photolysis")).toBe(
+      "Water molecules are split in a process called photolysis",
+    );
+    expect(snapQuote(PAGE, "The energy of the excited electrons is used to make ATP and NADPH")).toBe(
+      "The energy of the excited electrons is used to make ATP and NADPH.",
+    );
+    // A description lights the whole sentence, not the heading above it.
+    expect(snapQuote(PAGE, "thylakoid membranes", { sentence: true })).toBe(
+      "The light-dependent reactions happen in the thylakoid membranes.",
+    );
+    // Paraphrase: the best matching sentence.
+    expect(snapQuote(PAGE, "chlorophyll takes in light and that excites the electrons")).toBe(
+      "Chlorophyll absorbs light, which excites electrons.",
+    );
+    expect(snapQuote(PAGE, "the French revolution began in 1789")).toBeNull();
+  });
+
+  it("recognises page commands", () => {
+    const docs = { hasDocuments: true, stage: null };
+    const onPage = {
+      hasDocuments: true,
+      stage: {
+        id: "v",
+        kind: "page" as const,
+        documentId: "d",
+        label: "D1",
+        title: "Notes",
+        page: 2,
+        pageCount: 3,
+        highlights: [],
+      },
+    };
+    expect(detectPageIntent("Show me page 12", docs)).toEqual({
+      actions: [{ kind: "page", ref: { page: 12 } }],
+      pure: true,
+    });
+    expect(detectPageIntent("can you go to page three of the second document", docs)?.actions).toEqual([
+      { kind: "page", ref: { page: 3, doc: 2 } },
+    ]);
+    expect(detectPageIntent("show me the page I'm reading", docs)?.actions).toEqual([
+      { kind: "page", ref: { current: true } },
+    ]);
+    expect(detectPageIntent("next page", docs)).toBeNull();
+    expect(detectPageIntent("next page", onPage)?.actions).toEqual([{ kind: "page", ref: { relative: 1 } }]);
+    expect(detectPageIntent("Walk me through page 4 with me", docs)?.actions[0]).toMatchObject({
+      kind: "deep",
+      mode: "read",
+    });
+    expect(detectPageIntent("where does it say that light excites electrons?", docs)?.actions).toEqual([
+      { kind: "page", ref: { quote: "that light excites electrons", describe: true } },
+    ]);
+    expect(detectPageIntent("highlight the line about photolysis", onPage)?.actions).toEqual([
+      { kind: "page", ref: { current: true, quote: "photolysis", describe: true } },
+    ]);
+    expect(detectPageIntent("show me page 12", { hasDocuments: false, stage: null })).toBeNull();
+    expect(detectPageIntent("what is on page 12 about?", docs)).toBeNull();
   });
 });

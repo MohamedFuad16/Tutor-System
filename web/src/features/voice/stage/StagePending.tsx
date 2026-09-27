@@ -16,6 +16,7 @@ const LABELS: Record<string, string> = {
   scene: "Building it",
   web: "Building it",
   markdown: "Working on it",
+  page: "Opening your document",
 };
 
 function Iris() {

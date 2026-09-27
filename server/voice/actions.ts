@@ -12,6 +12,8 @@
  *                                      sideways, upright, ar
  *   [[board: solve x^2 - 5x + 6 = 0]]  magic pen: working written step by step
  *   [[build: a 3D solar system]]       a 3D model or a web page, built live (or edited)
+ *   [[page: D1 p.12 | exact line]]     a page of the learner's document, that line highlighted
+ *   [[read: page 12 with me]]          guided close reading: key lines lit one by one
  *   [[deep diagram: <task>]]           hand a task to the background specialist
  *   (kinds: diagram | explain | research | compare)
  *
@@ -20,16 +22,18 @@
  * tag arrives split across stream deltas.
  */
 import type { StageView } from "../../shared/voice.js";
+import { parsePageRef, type PageRef } from "./pages.js";
 
-export type DeepMode = "diagram" | "explain" | "research" | "compare" | "board" | "build";
+export type DeepMode = "diagram" | "explain" | "research" | "compare" | "board" | "build" | "read";
 export type VoiceAction =
   | { kind: "images"; query: string }
   | { kind: "deep"; mode: DeepMode; task: string }
   | { kind: "close" }
   | { kind: "focus"; target: string }
-  | { kind: "view"; view: StageView };
+  | { kind: "view"; view: StageView }
+  | { kind: "page"; ref: PageRef };
 
-const MODES = new Set<string>(["diagram", "explain", "research", "compare", "board", "build"]);
+const MODES = new Set<string>(["diagram", "explain", "research", "compare", "board", "build", "read"]);
 /** A tag longer than this is not a tag: release it as text rather than hold speech forever. */
 const MAX_TAG = 600;
 
@@ -52,7 +56,10 @@ export function parseView(phrase: string): StageView | null {
 export function parseActionTag(body: string): VoiceAction | null {
   const text = body.trim();
   if (/^(?:close|clear|hide|dismiss)(?:\s*:.*)?$/i.test(text)) return { kind: "close" };
-  const named = /^(focus|highlight|point|view|board|pen|whiteboard|build|make|model)\s*:\s*([\s\S]+?)\s*$/i.exec(text);
+  const named =
+    /^(focus|highlight|point|view|board|pen|whiteboard|build|make|model|page|pages|doc|document|read|reading)\s*:\s*([\s\S]+?)\s*$/i.exec(
+      text,
+    );
   if (named) {
     const [, name, payload] = named;
     const tool = name.toLowerCase();
@@ -64,6 +71,9 @@ export function parseActionTag(body: string): VoiceAction | null {
     }
     if (tool === "board" || tool === "pen" || tool === "whiteboard")
       return { kind: "deep", mode: "board", task: payload.slice(0, 1200) };
+    if (tool === "page" || tool === "pages" || tool === "doc" || tool === "document")
+      return { kind: "page", ref: parsePageRef(payload) };
+    if (tool === "read" || tool === "reading") return { kind: "deep", mode: "read", task: payload.slice(0, 1200) };
     return { kind: "deep", mode: "build", task: payload.slice(0, 1200) };
   }
   const match = /^\s*(images?|deep)(?:\s+([a-z]+))?\s*:\s*([\s\S]+?)\s*$/i.exec(text);
@@ -128,8 +138,18 @@ export function actionTag(action: VoiceAction) {
       return `[[focus: ${action.target}]]`;
     case "view":
       return `[[view: ${action.view.replace("_", " ")}]]`;
+    case "page": {
+      const { doc, page, quote, relative, current } = action.ref;
+      const where = [
+        doc ? `D${doc}` : "",
+        page ? `p.${page}` : relative === 1 ? "next" : relative === -1 ? "previous" : current ? "this" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      return `[[page: ${where}${quote ? ` | ${quote.slice(0, 160)}` : ""}]]`;
+    }
     case "deep":
-      return action.mode === "board" || action.mode === "build"
+      return action.mode === "board" || action.mode === "build" || action.mode === "read"
         ? `[[${action.mode}: ${action.task.slice(0, 200)}]]`
         : `[[deep ${action.mode}: ${action.task.slice(0, 200)}]]`;
   }

@@ -1088,6 +1088,62 @@
   }
 }
 
+/* The learner's document on the stage: a paper sheet, highlighter marks, the sweep and a margin note. */
+.stage-page {
+  background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.04), transparent 60%), rgba(0, 0, 0, 0.25);
+}
+.page-sheet {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 40px 90px -30px rgba(0, 0, 0, 0.9),
+    0 12px 30px -12px rgba(0, 0, 0, 0.6);
+}
+.page-mark {
+  position: absolute;
+  border-radius: 4px;
+  background: rgba(255, 214, 10, 0.3);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  transition: background 0.4s;
+}
+.page-mark.is-focus {
+  background: transparent;
+  mix-blend-mode: normal;
+  box-shadow:
+    0 0 0 1.5px rgba(255, 170, 0, 0.55),
+    0 0 26px rgba(255, 160, 0, 0.45);
+}
+.page-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(255, 196, 0, 0.5), rgba(255, 222, 70, 0.55));
+  mix-blend-mode: multiply;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-mark.is-focus {
+    background: rgba(255, 200, 0, 0.5);
+    mix-blend-mode: multiply;
+  }
+}
+.page-note {
+  position: absolute;
+  font-family: var(--font-hand);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: #d45700;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+}
+.page-quote {
+  background: linear-gradient(transparent 55%, rgba(255, 196, 0, 0.45) 55%);
+  color: inherit;
+  padding: 0 2px;
+}
+
 /* 3D stage labels (CSS2DRenderer). */
 .scene-canvas {
   position: absolute;

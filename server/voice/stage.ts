@@ -258,7 +258,7 @@ export function sanitizeHtml(raw: unknown): string | null {
 const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 1)}…` : text);
 
 /** One short paragraph telling the voice model what the learner sees, with the ids it can point at. */
-export function stageNote(visual: VoiceVisual | null): string {
+export function stageNote(visual: VoiceVisual | null, extra: { pageText?: string } = {}): string {
   if (!visual) return "Nothing is on the screen; only you (the orb) are visible.";
   switch (visual.kind) {
     case "images": {
@@ -289,6 +289,16 @@ export function stageNote(visual: VoiceVisual | null): string {
       return `A web page you built, "${visual.title}", running live in a preview window.`;
     case "markdown":
       return `Notes: "${visual.title}".`;
+    case "page": {
+      const lit = visual.highlights.map((item) => `${item.id} = "${clip(item.quote, 90)}"`);
+      return (
+        `Page ${visual.page} of ${visual.pageCount} of the learner's document ${visual.label} "${visual.title}"` +
+        `${lit.length ? `, highlighted: ${lit.join("; ")}` : ""}.` +
+        (extra.pageText
+          ? `\n<page ref="${visual.label} p.${visual.page}">\n${clip(extra.pageText, 1600)}\n</page>`
+          : "")
+      );
+    }
   }
 }
 
@@ -356,6 +366,8 @@ function targets(visual: VoiceVisual): Array<{ id: string; label: string }> {
       }));
     case "scene":
       return visual.scene.objects.map((object) => ({ id: object.id, label: `${object.label ?? ""} ${object.id}` }));
+    case "page":
+      return visual.highlights.map((item) => ({ id: item.id, label: item.quote }));
     default:
       return [];
   }

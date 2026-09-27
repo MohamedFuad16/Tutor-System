@@ -133,7 +133,7 @@ async function openSession(title: string) {
     speech.lastSession!.emit({ type: "end_of_turn", transcript });
     await until(() => turnEnds() >= before + turns);
   };
-  return { ws, messages, say };
+  return { ws, messages, say, bookId: book.id };
 }
 
 const stage = (messages: any[], kind: string) =>
@@ -226,4 +226,70 @@ it("reconnects speech recognition when its connection drops", async () => {
   const heard = messages.filter((m) => m.type === "user_final").map((m) => m.text);
   expect(heard).toEqual(["are you still there?"]);
   expect(messages.some((m) => m.type === "ready" && m.stt === "browser")).toBe(false);
+});
+
+it("puts the learner's document on screen and highlights the lines it explains", async () => {
+  const { ws, messages, say, bookId } = await openSession("Photosynthesis notes");
+  const form = new FormData();
+  form.append(
+    "file",
+    new Blob([fs.readFileSync(path.join(__dirname, "../fixtures/photosynthesis.pdf"))], { type: "application/pdf" }),
+    "photosynthesis.pdf",
+  );
+  await fetch(`${base}/api/books/${bookId}/documents`, { method: "POST", headers: { "x-user-id": USER }, body: form });
+  let ready = false;
+  for (let attempt = 0; attempt < 200 && !ready; attempt += 1) {
+    const docs = await api<Array<{ status: string }>>("GET", `/books/${bookId}/documents`);
+    ready = docs[0]?.status === "ready";
+    if (!ready) await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  expect(ready).toBe(true);
+
+  // A plain command opens the page at once, without the model.
+  const asked = requests.length;
+  await say("Show me page 2");
+  const pages = () => messages.filter((m) => m.type === "visual" && m.visual.kind === "page").map((m) => m.visual);
+  expect(pages().at(-1)).toMatchObject({ kind: "page", label: "D1", page: 2, pageCount: 3, highlights: [] });
+  expect(requests.length).toBe(asked);
+  expect(messages.filter((m) => m.type === "segment").at(-1)!.text).toBe("Here's page 2.");
+
+  // The model points at lines; each is snapped to the exact words and lit in turn, on the same page.
+  await say("explain what happens to water in my notes");
+  const lit = pages().at(-1)!;
+  expect(lit.id).toBe(pages()[0].id);
+  expect(lit.highlights.map((item: { quote: string }) => item.quote)).toEqual([
+    "Water molecules are split in a process called photolysis",
+    "The energy of the excited electrons is used to make ATP and NADPH.",
+  ]);
+  expect(
+    stage(messages, "focus")
+      .slice(-2)
+      .map((command) => command.target),
+  ).toEqual(["H1", "H2"]);
+
+  // "Highlight the line about …" finds the sentence on the page by meaning.
+  await say("highlight the line about the thylakoid membranes");
+  expect(pages().at(-1)!.highlights.at(-1).quote).toBe(
+    "The light-dependent reactions happen in the thylakoid membranes.",
+  );
+
+  // Next page, then a guided reading with the key lines lit one by one.
+  await say("next page");
+  expect(pages().at(-1)).toMatchObject({ page: 3, highlights: [] });
+  await say("walk me through page 2", 2);
+  ws.close();
+  const reading = pages().at(-1)!;
+  expect(reading).toMatchObject({ page: 2, label: "D1" });
+  expect(reading.highlights.map((item: { id: string }) => item.id)).toEqual(["H1", "H2"]);
+  expect(reading.highlights[0]).toMatchObject({
+    quote: "The light-dependent reactions happen in the thylakoid membranes.",
+    note: "where",
+  });
+  expect(
+    messages.filter((m) => m.type === "segment" && m.focus?.visualId === reading.id).map((m) => m.focus.node),
+  ).toEqual(["H1", "H2"]);
+
+  // The notebook thread keeps page citations, so the chat can jump to them.
+  const thread = await api<Array<{ role: string; content: string }>>("GET", `/books/${bookId}/messages?limit=30`);
+  expect(thread.some((message) => message.role === "assistant" && message.content.includes("[D1 p.2]"))).toBe(true);
 });
