@@ -63,7 +63,7 @@ export function StageImage({
 
   return (
     <figure className="relative">
-      <div className="stage-photo relative isolate flex h-[min(58vh,560px)] items-center justify-center overflow-hidden rounded-[1.4rem] bg-black/40">
+      <div className="stage-photo relative isolate flex h-[40vh] sm:h-[min(58vh,560px)] items-center justify-center overflow-hidden rounded-[1.4rem] bg-black/40">
         {/* The same photo, blurred, fills the frame behind it. */}
         <AnimatePresence>
           <motion.img

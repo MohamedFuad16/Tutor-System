@@ -171,6 +171,8 @@ it("writes a board line by line while narrating it, and points at a line on requ
     .filter((m) => m.type === "segment" && m.focus?.visualId === board.id)
     .map((m) => m.focus.node);
   expect(focused).toEqual(["L1", "L2", "L3", "L4", "L5"]);
+  // After handing the work to the pen, the fast model's extra talk is cut off (no double narration).
+  expect(messages.some((m) => m.type === "segment" && /answer is two or three/.test(m.text))).toBe(false);
 
   requests.length = 0;
   await say("highlight the answer");
@@ -198,6 +200,17 @@ it("builds a 3D model, then a web page that sees what is on screen", async () =>
   expect(web.html).toContain("Hello from Tutor");
   const build = requests.find((request) => request.purpose === "voice.build")!;
   expect(String(build.messages[0].content)).toContain("Current 3D scene JSON");
+});
+
+it("says so when a build fails, instead of leaving the learner waiting", async () => {
+  const { ws, messages, say } = await openSession("Broken build");
+  await say("build an impossible model", 2);
+  ws.close();
+  const pending = stage(messages, "pending").find((command) => command.visual === "build");
+  expect(stage(messages, "settled").map((command) => command.id)).toContain(pending.id);
+  expect(messages.some((m) => m.type === "visual")).toBe(false);
+  const spoken = messages.filter((m) => m.type === "segment").map((m) => m.text as string);
+  expect(spoken.slice(-2).join(" ")).toMatch(/^Sorry, I couldn't finish that one\. Want me to try again/);
 });
 
 it("reconnects speech recognition when its connection drops", async () => {

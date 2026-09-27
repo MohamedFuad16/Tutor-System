@@ -89,6 +89,15 @@ function speakUrl(url: string): string {
  * Normalises a complete piece of text for speech. Idempotent: running it twice
  * gives the same result, so callers can safely apply it at several layers.
  */
+/** Dashes read as pauses anyway; captions stay plain ("3–5" becomes "3 to 5"). */
+export function undash(text: string) {
+  return text
+    .replace(/(\d)\s*[–—]\s*(\d)/g, "$1 to $2")
+    .replace(/\s*[—–]\s*/g, ", ")
+    .replace(/^,\s*/, "")
+    .replace(/,\s*([.,!?;:])/g, "$1");
+}
+
 export function toSpeakableText(input: string): string {
   if (!input) return "";
   let text = input.replace(/\r\n?/g, "\n");
@@ -162,7 +171,7 @@ export function toSpeakableText(input: string): string {
     .map((line) => (/[.!?:;,。！？]$/.test(line) ? line : `${line}.`))
     .join(" ");
 
-  return text
+  return undash(text)
     .replace(/\s+([.,!?;:])/g, "$1")
     .replace(/\s{2,}/g, " ")
     .trim();

@@ -218,9 +218,32 @@ flowchart LR
   - LaTeX is read in words
   - URLs become domains
   - citations are dropped
-- **Visual channel.** Background results arrive as `visual` messages
-  (diagram, images, markdown). Narrated diagram steps are TTS segments with a
-  `focus` node, so the node highlight is in sync with the audio.
+- **Voice stage.** What the learner sees while talking
+  (`server/voice/stage.ts`, `web/src/features/voice/stage`). The voice model's
+  "tool calls" are silent tags:
+  - `[[images: …]]` shows one photo, ranked for size, source and topic.
+  - `[[close]]` clears the screen; the orb glides back to the centre.
+  - `[[focus: id]]` points at a diagram node, board line or 3D part.
+  - `[[view: …]]` zooms, rotates, shows the next photo, or turns a
+    flowchart sideways or upright.
+  - `[[board: …]]` is the magic pen: working written line by line.
+  - `[[build: …]]` builds a 3D scene or a web page, or edits the one shown.
+  - Plain commands ("close it", "zoom in", "highlight the database step") are
+    matched by the server and act instantly; a pure command skips the model.
+  - The prompt carries a note of what is on screen, with the ids to point at.
+  - Background results arrive as `visual` messages (diagram, images,
+    markdown, board, scene, web). A `stage` `pending` command shows a
+    placeholder with the same id, so the result replaces it in place.
+  - Narrated steps are TTS segments with a `focus` target, so each node,
+    board line or 3D part lights up while it is spoken.
+  - Once work is handed off, the fast model is stopped, so the result is
+    never narrated twice.
+  - Background work has a hard deadline (100 to 150 s) and a spoken apology
+    on failure.
+- **Recognition recovery.** If the Deepgram connection drops, the session
+  reopens it (up to 4 times in 2 minutes). Events from the dead connection
+  are ignored. After that it falls back to browser recognition, so the tutor
+  never silently stops listening.
 - **Fallbacks.** Without Deepgram, the same session runs with browser speech
   recognition and synthesis. The server duplex brain is unchanged.
 
@@ -242,6 +265,21 @@ flowchart TD
   size stays flat as the guide grows.
 - Operations: `set_overview`, `upsert_section`, `add_concepts`,
   `add_glossary`, `add_misconceptions`, `set_next_steps`.
+- **Writing style and formats.** Each section declares a subject format
+  (`concept`, `math`, `science`, `process`, `history`, `language` or `code`)
+  and fills what that format needs:
+  - an objective and key terms;
+  - formulas with every symbol explained;
+  - a worked example with labelled steps;
+  - a timeline and common mistakes.
+
+  Prose follows plain-language rules: short sentences, and no em or en
+  dashes (`plainText` in `shared/guide.ts`, also applied at render time).
+  `GUIDE_STYLE` versions the style: an older guide is rewritten once by the
+  consolidation pass, on its next sync or on Refresh.
+- Diagram sources are repaired before storing and rendering
+  (`shared/mermaid.ts`): a missing `flowchart` header is added, and a literal
+  `\n` inside a label becomes a line break.
 - The merge is pure and unit-tested:
   - title similarity matching prevents near-duplicate sections
   - key points, callouts and self-checks are de-duplicated and capped
@@ -318,6 +356,17 @@ row-level ownership.
   opaque IDs.
 - **Secrets.** Provider keys live only on the server. The logger redacts
   anything that looks like a credential.
+- **Generated content on the voice stage.**
+  - 3D scenes are declarative data validated on the server: known shapes,
+    bounded numbers, at most 160 objects. No model-written code runs.
+  - Board graphs are compiled by a small expression parser
+    (`shared/expr.ts`), never `eval`.
+  - Generated web pages run in an `<iframe sandbox="allow-scripts
+    allow-forms allow-modals">` with no `allow-same-origin`. The page gets
+    an opaque origin, so it can't read the app's storage, the learner id or
+    the parent window, and it can't navigate the app.
+  - `Permissions-Policy` allows the camera for this origin only, for the 3D
+    stage's AR mode.
 
 ---
 

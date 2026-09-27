@@ -7,6 +7,7 @@
 import { describe, expect, it } from "vitest";
 import type { WebImage } from "../../shared/types";
 import type { VoiceVisual } from "../../shared/voice";
+import { undash } from "../../shared/speech";
 import { ActionTagFilter, actionTag, parseActionTag, parseView } from "../../server/voice/actions";
 import { detectStageIntent } from "../../server/voice/intent";
 import {
@@ -264,5 +265,15 @@ describe("photo ranking", () => {
     );
     expect(ranked[0].domain).toBe("en.wikipedia.org");
     expect(ranked.at(-1)?.domain).not.toBe("en.wikipedia.org");
+  });
+});
+
+describe("spoken captions", () => {
+  it("have no dashes", () => {
+    expect(undash("The server does its work — often that means a query.")).toBe(
+      "The server does its work, often that means a query.",
+    );
+    expect(undash("Pages 12–14 cover it")).toBe("Pages 12 to 14 cover it");
+    expect(undash("— and that's it —.")).toBe("and that's it.");
   });
 });

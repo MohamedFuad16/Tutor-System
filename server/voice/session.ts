@@ -27,7 +27,8 @@ import {
   type VoiceState,
   type VoiceVisual,
 } from "../../shared/voice.js";
-import { PhraseChunker, estimateSpeechMs, toSpeakableText } from "../../shared/speech.js";
+import { repairMermaid } from "../../shared/mermaid.js";
+import { PhraseChunker, estimateSpeechMs, toSpeakableText, undash } from "../../shared/speech.js";
 import { Priority } from "../lib/limiter.js";
 import { errorMessage, log } from "../lib/log.js";
 import { metrics } from "../lib/metrics.js";
@@ -58,20 +59,26 @@ import {
   stageSource,
 } from "./stage.js";
 
-const BRIDGES: Record<string, { delegate: string; images: string; ready: string; missed: string }> = {
+const BRIDGES: Record<string, { delegate: string; images: string; ready: string; missed: string; failed: string }> = {
   en: {
     delegate: "Let me work that out for you, one moment.",
-    images: "Here are some pictures.",
+    images: "Here it is.",
     ready: "Okay, it's ready.",
     missed: "Sorry, could you say that again?",
+    failed: "Sorry, I couldn't finish that one. Want me to try again, or try it a different way?",
   },
   ja: {
     delegate: "少し考えてみますね。",
     images: "写真を表示しますね。",
     ready: "準備ができました。",
     missed: "すみません、もう一度言ってもらえますか？",
+    failed: "すみません、うまくできませんでした。もう一度試しましょうか？",
   },
 };
+
+/** Longest a piece of background work may take before the tutor gives up and says so. */
+const TASK_DEADLINE_MS: Partial<Record<DeepMode, number>> = { build: 150_000, research: 120_000 };
+const DEFAULT_TASK_DEADLINE_MS = 100_000;
 
 /**
  * Short acknowledgements played when a reply is slow to start (the model's
@@ -628,7 +635,8 @@ export class VoiceSession {
     });
   }
 
-  private speak(response: Response, phrase: string) {
+  private speak(response: Response, raw: string) {
+    const phrase = undash(raw);
     if (!phrase) return;
     if (response.speculative) response.held.push({ text: phrase });
     else this.queue.enqueue(response.id, phrase);
@@ -700,6 +708,10 @@ export class VoiceSession {
       response.text += text;
       for (const phrase of chunker.push(text)) this.speak(response, phrase);
     };
+    // Once work is handed to the specialist, the rest of this reply would only
+    // pre-empt its narrated result, so the model is stopped there.
+    const handoff = new AbortController();
+    let handedOff = false;
     // No tool declarations here: they add seconds of time-to-first-token on
     // GLM. The model requests side work with silent inline tags instead.
     for await (const event of this.deps.llm.stream({
@@ -711,15 +723,20 @@ export class VoiceSession {
       temperature: 0.6,
       maxTokens: 400,
       messages,
-      signal: response.abort.signal,
+      signal: AbortSignal.any([response.abort.signal, handoff.signal]),
     })) {
       if (response.abort.signal.aborted) return;
       if (event.type !== "text") continue;
       const out = tags.push(event.delta);
       onText(out.text);
       for (const action of out.actions) pending.push(this.runAction(response, action));
+      if (out.actions.some((action) => action.kind === "deep")) {
+        handedOff = true;
+        handoff.abort();
+        break;
+      }
     }
-    onText(tags.flush());
+    if (!handedOff) onText(tags.flush());
     for (const phrase of chunker.flush()) this.speak(response, phrase);
     await Promise.all(pending);
     if (response.abort.signal.aborted) return;
@@ -917,6 +934,11 @@ export class VoiceSession {
     const visualId = newId("vis");
     const controller = new AbortController();
     this.tasks.set(id, controller);
+    // Provider timeouts only cover the first byte: a model that keeps thinking must still be cut off.
+    const signal = AbortSignal.any([
+      controller.signal,
+      AbortSignal.timeout(TASK_DEADLINE_MS[mode] ?? DEFAULT_TASK_DEADLINE_MS),
+    ]);
     const title = TASK_TITLES[mode] ?? TASK_TITLES.explain;
     const placeholder: VisualKind | "build" =
       mode === "board" ? "board" : mode === "build" ? "build" : mode === "diagram" ? "diagram" : "markdown";
@@ -927,7 +949,7 @@ export class VoiceSession {
     });
     void (async () => {
       try {
-        const injection = await this.runBackground(id, visualId, task, mode, controller.signal);
+        const injection = await this.runBackground(id, visualId, task, mode, signal);
         if (controller.signal.aborted) return;
         const summary = injection.visual && "title" in injection.visual ? injection.visual.title : undefined;
         this.send({ type: "task", id, title, status: "done", summary });
@@ -936,8 +958,12 @@ export class VoiceSession {
         this.deliverInjections();
       } catch (error) {
         if (controller.signal.aborted) return;
-        log.warn("voice.background_failed", { mode, error: errorMessage(error) });
+        log.warn("voice.background_failed", { mode, timedOut: signal.aborted, error: errorMessage(error) });
         this.send({ type: "stage", command: { kind: "settled", id: visualId } });
+        // Say so, rather than leave the learner waiting on something that never comes.
+        const sorry = (BRIDGES[this.language] ?? BRIDGES.en).failed;
+        this.injections.push({ taskId: id, speech: sorry, content: sorry, parts: [] });
+        this.deliverInjections();
         this.send({
           type: "task",
           id,
@@ -1020,11 +1046,13 @@ export class VoiceSession {
     let diagram: Diagram | undefined;
     let visual: VoiceVisual | undefined;
     if (result.diagram?.mermaid) {
-      const valid = new Set(mermaidNodes(result.diagram.mermaid).map((node) => node.id));
+      // Models sometimes drop the header line or escape newlines twice: fix before anything reads it.
+      const source = repairMermaid(String(result.diagram.mermaid)).slice(0, 4000);
+      const valid = new Set(mermaidNodes(source).map((node) => node.id));
       diagram = {
         id: visualId,
         title: String(result.diagram.title ?? "Diagram").slice(0, 120),
-        mermaid: String(result.diagram.mermaid).slice(0, 4000),
+        mermaid: source,
         steps: (result.diagram.steps ?? [])
           .map((step) => ({
             node: String(step.node ?? "").trim(),
@@ -1090,7 +1118,10 @@ export class VoiceSession {
       ],
     });
     const board = sanitizeBoard(parseJsonObject(completion.text));
-    if (!board) throw new Error("The board came back empty");
+    if (!board) {
+      log.warn("voice.board_unusable", { chars: completion.text.length, head: completion.text.slice(0, 160) });
+      throw new Error("The board came back empty");
+    }
     const steps = board.steps
       .map((step) => ({ node: step.node, say: toSpeakableText(step.say) }))
       .filter((step) => step.say);
@@ -1130,7 +1161,7 @@ export class VoiceSession {
       priority: Priority.background,
       reasoning: "low",
       temperature: 0.5,
-      maxTokens: 16_000,
+      maxTokens: 12_000,
       json: true,
       signal,
       messages: [
@@ -1160,7 +1191,10 @@ export class VoiceSession {
       };
     }
     const scene = sanitizeScene(result);
-    if (!scene) throw new Error("The model came back empty");
+    if (!scene) {
+      log.warn("voice.build_unusable", { chars: completion.text.length, head: completion.text.slice(0, 160) });
+      throw new Error("The model came back empty");
+    }
     const steps = scene.steps
       .map((step) => ({ node: step.node, say: toSpeakableText(step.say) }))
       .filter((step) => step.say);

@@ -545,7 +545,7 @@ function Section({
             animate={{ scaleY: 1, opacity: 1 }}
             exit={motionOn ? { scaleY: 0, opacity: 0 } : undefined}
             transition={softSpring}
-            className="absolute top-16 bottom-0 -left-3 w-0.5 origin-top rounded-full bg-signal/70 sm:-left-5"
+            className="absolute top-16 bottom-0 -left-3 w-0.5 origin-top rounded-full bg-signal/40 sm:-left-5"
           />
         )}
       </AnimatePresence>

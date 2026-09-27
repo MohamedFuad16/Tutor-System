@@ -190,6 +190,7 @@ function scriptFor(request: LlmRequest): Script {
     };
   }
   if (purpose === "voice.build") {
+    if (/impossible/i.test(question)) return { text: "{}" };
     if (/website|web page|landing|app\b/i.test(question)) {
       return {
         text: JSON.stringify({
@@ -233,7 +234,8 @@ function scriptFor(request: LlmRequest): Script {
     // The voice model requests side work with silent inline tags (server/voice/actions.ts).
     if (/\b(?:close it|clear the screen)\b/.test(q)) return { text: "Okay, cleared. [[close]]" };
     if (/\b(?:solve|equation|formula|whiteboard)\b/.test(q)) {
-      return { text: `Let me grab my pen. [[board: ${question}]]` };
+      // Real models sometimes keep talking after the tag; the session must cut that off.
+      return { text: `Let me grab my pen. [[board: ${question}]] So the answer is two or three.` };
     }
     if (/\b(?:build|3d|website|model of)\b/.test(q)) {
       return { text: `Let me build that for you. [[build: ${question}]]` };

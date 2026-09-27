@@ -134,7 +134,7 @@ export default function StageScene({
 
   if (failed) {
     return (
-      <div className="flex h-[min(58vh,540px)] items-center justify-center rounded-[1.4rem] bg-black/30 p-8 text-center text-sm text-fog-400">
+      <div className="flex h-[40vh] sm:h-[min(58vh,540px)] items-center justify-center rounded-[1.4rem] bg-black/30 p-8 text-center text-sm text-fog-400">
         This device can't show 3D right now. Ask the tutor to draw it as a diagram instead.
       </div>
     );
@@ -144,7 +144,7 @@ export default function StageScene({
     <figure className="relative">
       <div
         className={cx(
-          "stage-scene relative h-[min(58vh,560px)] overflow-hidden rounded-[1.4rem]",
+          "stage-scene relative h-[42vh] sm:h-[min(58vh,560px)] overflow-hidden rounded-[1.4rem]",
           ar
             ? "bg-black"
             : scene.mood === "space"

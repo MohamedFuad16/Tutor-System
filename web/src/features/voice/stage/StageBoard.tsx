@@ -475,7 +475,7 @@ export default function StageBoard({
           <RotateCcw className="size-3.5" />
         </button>
       </header>
-      <div className="board-scroll scroll-quiet relative max-h-[min(58vh,560px)] overflow-y-auto px-6 pt-4 pb-7 sm:px-10">
+      <div className="board-scroll scroll-quiet relative max-h-[42vh] sm:max-h-[min(58vh,560px)] overflow-y-auto px-6 pt-4 pb-7 sm:px-10">
         <ol className="space-y-4">
           {board.items.slice(0, revealed).map((item) => (
             <BoardLine

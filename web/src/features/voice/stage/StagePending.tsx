@@ -90,7 +90,9 @@ export function StagePending({ kind, title }: { kind: VisualKind | "build"; titl
     );
   return (
     <div role="status" aria-label={`${LABELS[kind] ?? "Working"}: ${title}`}>
-      <div className="relative h-[min(46vh,420px)] overflow-hidden rounded-[1.4rem] bg-black/25">{body}</div>
+      <div className="relative h-[34vh] sm:h-[min(46vh,420px)] overflow-hidden rounded-[1.4rem] bg-black/25">
+        {body}
+      </div>
       <div className="mt-3 flex items-center gap-2 px-1 text-xs">
         <span className="shimmer-text text-fog-300">{LABELS[kind] ?? "Working on it"}</span>
         <span className="min-w-0 truncate text-fog-500">· {title}</span>

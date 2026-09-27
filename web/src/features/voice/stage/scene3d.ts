@@ -564,7 +564,10 @@ export class SceneView {
     if (!part) return;
     this.goal = {
       target: part.root.getWorldPosition(new THREE.Vector3()),
-      distance: Math.min(this.radius * 2.2, Math.max(part.radius * 6, this.radius * 0.35)),
+      // Narrow (portrait) screens need more distance to fit the same width.
+      distance:
+        Math.min(this.radius * 2.2, Math.max(part.radius * 6, this.radius * 0.35)) /
+        Math.min(1, this.camera.aspect) ** 0.8,
       follow: part.spec.orbit ? part.spec.id : undefined,
     };
   }

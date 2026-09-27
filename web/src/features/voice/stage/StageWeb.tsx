@@ -95,7 +95,7 @@ export default function StageWeb({ title, html }: { title: string; html: string 
             </button>
           </div>
         </div>
-        <div className="relative h-[min(56vh,540px)]">
+        <div className="relative h-[42vh] sm:h-[min(56vh,540px)]">
           <AnimatePresence mode="wait">
             {phase === "building" || source ? (
               <motion.pre
