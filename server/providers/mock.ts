@@ -87,12 +87,44 @@ function scriptFor(request: LlmRequest): Script {
             op: "upsert_section",
             title: topic.slice(0, 60),
             icon: "idea",
+            format: "science",
+            objective: `Explain ${topic} and work out a rate from two numbers`,
             tldr: `A plain summary of ${topic}.`,
             keyPoints: [`Key point about ${topic}`, "A second key point"],
-            explanation: `**${topic}** explained briefly.`,
+            explanation: `**${topic}** explained briefly.\n\nA rate tells you how much changes in each unit of time.`,
+            terms: [
+              { term: "Rate", definition: "How much something changes in one unit of time." },
+              { term: "Core idea", definition: "The main concept of this section." },
+            ],
+            formulas: [
+              {
+                name: "Rate",
+                latex: "r = \\frac{\\Delta x}{\\Delta t}",
+                symbols: [
+                  { symbol: "r", meaning: "the rate" },
+                  { symbol: "\\Delta x", meaning: "how much the amount changed" },
+                  { symbol: "\\Delta t", meaning: "how long the change took, in seconds" },
+                ],
+              },
+            ],
+            worked: {
+              problem: "A tank fills from 20 L to 80 L in 30 seconds. What is the rate?",
+              steps: [
+                { label: "Find the change in amount", work: "$\\Delta x = 80 - 20 = 60$ L" },
+                { label: "Find the time taken", work: "$\\Delta t = 30$ s" },
+                { label: "Divide the change by the time", work: "$r = \\frac{60}{30} = 2$ L/s" },
+              ],
+              answer: "2 litres per second",
+            },
             diagram: { mermaid: "flowchart LR\n  A[Question] --> B[Answer]", caption: "From question to answer" },
             callouts: [{ kind: "tip", text: "Review this tomorrow." }],
-            selfCheck: [{ q: `What is ${topic}?`, a: "The core idea." }],
+            mistakes: [
+              { wrong: "Divide the time by the change", right: "Divide the change by the time: litres per second." },
+            ],
+            selfCheck: [
+              { q: `What is ${topic}?`, a: "The core idea." },
+              { q: "A tank gains 10 L in 5 s. What is the rate?", a: "10 divided by 5 is 2 litres per second." },
+            ],
             concepts: ["Core idea"],
             pages: [{ doc: "D1", page: 1 }],
           },
