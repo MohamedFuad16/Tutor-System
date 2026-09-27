@@ -405,6 +405,10 @@ flowchart LR
 - Releases build on the host from Git, roll out with Docker Compose and are
   health-checked, with automatic rollback to the previous image. They run
   through SSM Run Command, and there is no SSH.
+- **Automatic releases.** A host timer (`tutor-autodeploy`) polls `main`
+  every 2 minutes and releases each new commit once. It is pull-based: no
+  inbound access and no cloud keys in GitHub. The Phase 1b move to CI
+  builds would add test-gated, push-based deploys.
 - The multi-stage `Dockerfile` builds the SPA and server bundle and runs as
   non-root with a `/api/health` check.
 - The server handles `SIGTERM` by draining voice sessions, so restarts don't

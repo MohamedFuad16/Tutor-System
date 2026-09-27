@@ -1,0 +1,46 @@
+#!/bin/bash
+# tutor-autodeploy: automatic releases. tutor-autodeploy.timer runs this every
+# two minutes. When the watched branch on GitHub has a new commit, it hands
+# that exact commit to tutor-release, which builds, health-checks and rolls
+# back on failure. Each commit is tried once: a failed one is not retried in
+# a loop, the next push is the next attempt (or run tutor-release by hand).
+#
+# Watched branch: REF in /opt/tutor/autodeploy.conf (default main).
+# REF=off pauses automatic releases. Logs: journalctl -u tutor-autodeploy
+#
+# release.sh installs this script and its systemd units on every release.
+set -euo pipefail
+export PATH="$PATH:/snap/bin"
+log() { echo "[tutor-autodeploy] $*"; }
+
+conf=/opt/tutor/autodeploy.conf
+last=/opt/tutor/autodeploy-last
+[ -f "$conf" ] || echo "REF=main" >"$conf"
+ref=$(sed -n 's/^REF=//p' "$conf" | tail -n 1)
+ref=${ref:-main}
+[ "$ref" = off ] && exit 0
+if ! [[ $ref =~ ^[A-Za-z0-9._/-]+$ ]]; then
+  log "invalid REF in $conf: $ref"
+  exit 2
+fi
+
+# A release already running (by hand or from an earlier tick): check next time.
+flock -n /run/tutor-release.lock true || exit 0
+
+cd /opt/tutor/src
+remote=$(timeout 30 git ls-remote origin "refs/heads/$ref" | cut -f1)
+if ! [[ $remote =~ ^[0-9a-f]{40}$ ]]; then
+  log "could not read branch $ref from $(git remote get-url origin)"
+  exit 0
+fi
+
+# First run: what is live counts as already released.
+if [ ! -s "$last" ]; then
+  live=$(sed -n 's/^tutor://p' /opt/tutor/current-image 2>/dev/null || true)
+  if [ -n "$live" ] && [[ $remote == "$live"* ]]; then echo "$remote" >"$last"; fi
+fi
+[ "$(cat "$last" 2>/dev/null || true)" = "$remote" ] && exit 0
+
+log "$ref moved to ${remote:0:12}; releasing it"
+echo "$remote" >"$last"
+exec /usr/local/sbin/tutor-release "$remote"

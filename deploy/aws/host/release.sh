@@ -88,4 +88,17 @@ docker image ls tutor --format '{{.Repository}}:{{.Tag}}' |
   grep -vxF -e "$image" -e "${previous:-none}" | xargs -r docker image rm -f >/dev/null 2>&1 || true
 docker builder prune --force --filter until=168h >/dev/null 2>&1 || true
 install -m 0755 deploy/aws/host/tutor-release /usr/local/sbin/tutor-release
+
+# 6. Automatic releases: every push to the watched branch (main by default) goes
+#    live on its own. Installed or updated here, so any release turns it on.
+git rev-parse HEAD >/opt/tutor/autodeploy-last
+install -m 0755 deploy/aws/host/tutor-autodeploy /usr/local/sbin/tutor-autodeploy
+install -m 0644 deploy/aws/host/tutor-autodeploy.service deploy/aws/host/tutor-autodeploy.timer /etc/systemd/system/
+systemctl daemon-reload
+if systemctl enable --now tutor-autodeploy.timer >/dev/null 2>&1; then
+  watched=$(sed -n 's/^REF=//p' /opt/tutor/autodeploy.conf 2>/dev/null | tail -n 1 || true)
+  log "automatic releases on: watching ${watched:-main}, checked every 2 minutes"
+else
+  log "warning: could not enable tutor-autodeploy.timer"
+fi
 log "done"

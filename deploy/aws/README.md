@@ -111,7 +111,7 @@ For `tutorsystem.mohamedfuad.com`: in the Cloudflare dashboard, open
 
 | Task                            | Command                                                                                                                                 |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Ship new code                   | `deploy.sh release` (the stack's branch) or `deploy.sh release <branch/tag/sha>`                                                        |
+| Ship new code                   | Automatic: every push to `main` goes live (see below). By hand: `deploy.sh release` or `deploy.sh release <branch/tag/sha>`             |
 | Roll back                       | `deploy.sh release <previous sha>`. It is instant when that image is still on the host, and a failed health check rolls back on its own |
 | Rotate keys                     | `deploy.sh secrets`. Changes apply immediately without a rebuild                                                                        |
 | Change any server setting       | `deploy.sh set USER_REQUESTS_PER_MINUTE` (any name from `.env.example`)                                                                 |
@@ -143,6 +143,31 @@ Wikimedia Commons. For Google-quality results and images, create a key at
      `/usr/local/sbin/tutor-release --settings-only`).
 
 The tutor reads the best result pages itself in either case (`read_webpage`).
+
+### Automatic releases
+
+Once on, every push to `main` goes live without anyone touching the server.
+
+- **How it works.** A timer on the host (`tutor-autodeploy.timer`) checks
+  GitHub every 2 minutes. When `main` has a new commit, it runs
+  `tutor-release` for that exact commit. That builds the image, health-checks
+  it, and rolls back to the previous image if it doesn't come up.
+- **Timing.** A push is live about 5 to 8 minutes later: up to 2 minutes to
+  notice, then the build.
+- **Failures.** Each commit is tried once. If one fails, the site stays on
+  the previous version, and the next push is the next attempt.
+- **Security.** Nothing new is exposed. The host only reads the public
+  repository, and no keys are stored in GitHub.
+
+Setup and control:
+
+- **Turn it on** with any release (it installs itself):
+  `/usr/local/sbin/tutor-release main`.
+- **Watch it:** `journalctl -u tutor-autodeploy`. Check the timer with
+  `systemctl list-timers tutor-autodeploy.timer`.
+- **Change branch or pause:** edit `REF=` in `/opt/tutor/autodeploy.conf`.
+  It defaults to `main`; use `REF=off` to pause.
+- **Turn it off for good:** `systemctl disable --now tutor-autodeploy.timer`.
 
 ### Releasing without a terminal
 

@@ -1,0 +1,11 @@
+# Every two minutes after the previous check finished (a release in progress delays the next check).
+[Unit]
+Description=Check GitHub for new Tutor commits every two minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=2min
+RandomizedDelaySec=20s
+
+[Install]
+WantedBy=timers.target

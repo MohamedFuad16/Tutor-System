@@ -1,0 +1,10 @@
+# Checks GitHub for a new commit and releases it (see tutor-autodeploy).
+[Unit]
+Description=Tutor automatic release check
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/tutor-autodeploy
+TimeoutStartSec=45min
