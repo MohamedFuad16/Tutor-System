@@ -72,7 +72,6 @@ export function loadConfig() {
 
     search: {
       serperKey: str("SERPER_API_KEY"),
-      braveKey: str("BRAVE_API_KEY"),
       cacheTtlMs: int("SEARCH_CACHE_TTL_MS", 15 * 60_000, 0),
     },
 

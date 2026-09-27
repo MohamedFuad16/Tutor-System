@@ -124,6 +124,46 @@ export const TOOLS: Record<string, Tool> = {
     },
   },
 
+  read_webpage: {
+    definition: {
+      name: "read_webpage",
+      description:
+        "Open a web page (usually a result from web_search, or a link the learner gave) and read its full text. Search snippets are too short to rely on: read the most relevant page before answering anything detailed from the web.",
+      parameters: {
+        type: "object",
+        properties: { url: { type: "string", description: "Full http(s) URL of the page." } },
+        required: ["url"],
+      },
+    },
+    status: (args) => {
+      try {
+        return `Reading ${new URL(str(args.url, 2000)).hostname.replace(/^www\./, "")}`;
+      } catch {
+        return "Reading a web page";
+      }
+    },
+    async run(args, ctx) {
+      const url = str(args.url, 2000);
+      try {
+        const page = await ctx.search.readPage(url);
+        if (!page.text) return { content: `The page at ${page.url} has no readable text.` };
+        return {
+          content: `Page: ${page.title} (${page.domain})\n${page.url}\n\n${page.text}${page.truncated ? "\n\n[page truncated]" : ""}\n\nCite facts from this page with its title or domain.`,
+          parts: [
+            {
+              type: "web",
+              sources: [{ title: page.title, url: page.url, domain: page.domain, snippet: page.text.slice(0, 280) }],
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: `Couldn't read that page (${error instanceof Error ? error.message : "error"}). Try another result.`,
+        };
+      }
+    },
+  },
+
   create_quiz: {
     definition: {
       name: "create_quiz",
@@ -226,6 +266,7 @@ export const CHAT_TOOL_NAMES = [
   "search_document",
   "show_images",
   "web_search",
+  "read_webpage",
   "create_quiz",
   "make_flashcards",
 ] as const;

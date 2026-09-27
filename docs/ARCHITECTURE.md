@@ -125,7 +125,8 @@ sequenceDiagram
    strong concepts), within a character budget.
 2. The fast model streams the reply over SSE (`start → reasoning → delta →
 part → done`). Tool rounds run **in parallel**, with a maximum of 3.
-   - `search_document`, `web_search`, `show_images`, `create_quiz`, `make_flashcards`
+   - `search_document`, `web_search`, `read_webpage` (reads a result page's full
+     text; SSRF-guarded), `show_images`, `create_quiz`, `make_flashcards`
    - Diagrams are inline Mermaid blocks. Flowcharts, which are most of them,
      render through Tutor's own branded renderer: `lib/flow` parses the
      Mermaid flowchart subset and lays it out with dagre, and

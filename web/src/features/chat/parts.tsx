@@ -152,6 +152,11 @@ export function ImageGallery({
                 src={visible[open].imageUrl}
                 alt={visible[open].title}
                 referrerPolicy="no-referrer"
+                // Some sites block hot-linking the full image: fall back to the thumbnail, which always loads.
+                onError={(event) => {
+                  const thumbnail = visible[open].thumbnailUrl;
+                  if (thumbnail && event.currentTarget.src !== thumbnail) event.currentTarget.src = thumbnail;
+                }}
                 className="max-h-[78vh] rounded-2xl object-contain"
               />
               <figcaption className="mt-3 flex items-center justify-between gap-3 text-sm text-fog-200">

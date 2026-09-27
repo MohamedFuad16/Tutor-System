@@ -128,6 +128,29 @@ For `tutorsystem.mohamedfuad.com`: in the Cloudflare dashboard, open
 Use `STACK=tutor-staging ./deploy/aws/deploy.sh up --ref <branch>` to run a
 second, fully isolated stack (for example, staging).
 
+### Web search and images (Serper)
+
+Without a key, web search covers only Wikipedia and pictures come from
+Wikimedia Commons. For Google-quality results and images, create a key at
+[serper.dev](https://serper.dev) (2,500 free searches, then about $1 per
+1,000) and add it:
+
+- **CloudShell:** `./deploy/aws/deploy.sh set SERPER_API_KEY`
+- **Console only:**
+  1. Systems Manager → Parameter Store → _Create parameter_: name
+     `/tutor/tutor/SERPER_API_KEY`, type **SecureString**, value = the key.
+  2. Apply it with Run Command (next section's steps, command
+     `/usr/local/sbin/tutor-release --settings-only`).
+
+The tutor reads the best result pages itself in either case (`read_webpage`).
+
+### Releasing without a terminal
+
+AWS console → Systems Manager → **Run Command** → _Run command_ →
+**AWS-RunShellScript**. Set the command to `/usr/local/sbin/tutor-release` (new
+code; about 5 minutes) or `/usr/local/sbin/tutor-release --settings-only`
+(settings only). Choose the `tutor` instance manually, then **Run**.
+
 ### Restoring learner data
 
 Snapshots run every day at 18:00 UTC (03:00 JST) and the last 7 are kept.

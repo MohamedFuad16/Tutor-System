@@ -764,8 +764,16 @@ export class VoiceSession {
     let webNotes = "";
     if (kind === "research" || /\b(latest|current|news|look up|search)\b/i.test(task)) {
       const results = await this.deps.search.web(task, 5, this.language).catch(() => []);
-      if (results.length)
+      if (results.length) {
         webNotes = `\n\nWeb results:\n${results.map((r, i) => `[W${i + 1}] ${r.title}: ${r.snippet ?? ""}`).join("\n")}`;
+        // Read the top pages too: snippets alone are too thin for a real answer.
+        const pages = await Promise.all(
+          results.slice(0, 2).map((result) => this.deps.search.readPage(result.url).catch(() => null)),
+        );
+        for (const [index, page] of pages.entries()) {
+          if (page?.text) webNotes += `\n\n[W${index + 1}] full text (${page.domain}):\n${page.text.slice(0, 5000)}`;
+        }
+      }
     }
     const completion = await this.deps.llm.complete({
       role: "smart",
