@@ -8,6 +8,7 @@ import { newId } from "../store/db.js";
 import type { Store } from "../store/index.js";
 import type { Search } from "../providers/search.js";
 import type { ToolDefinition } from "../providers/llm.js";
+import { rankImages } from "./images.js";
 
 export type ToolContext = {
   userId: string;
@@ -75,7 +76,7 @@ export const TOOLS: Record<string, Tool> = {
     definition: {
       name: "show_images",
       description:
-        "Find and show real pictures to the learner (e.g. anatomy, organisms, places, artworks, devices, historical photos, physical phenomena). Only when seeing it genuinely helps.",
+        "Find and show real pictures to the learner (e.g. anatomy, organisms, places, artworks, devices, historical photos, physical phenomena). Only when seeing it genuinely helps. Shows the single best picture unless you ask for more.",
       parameters: {
         type: "object",
         properties: {
@@ -83,17 +84,28 @@ export const TOOLS: Record<string, Tool> = {
             type: "string",
             description: "Concrete image search query, e.g. 'mitochondria electron micrograph'.",
           },
+          count: {
+            type: "integer",
+            description:
+              "How many pictures: 1 (the default) for 'show me X' or a specific thing. 2 to 6 only when the learner asks for several pictures or a comparison.",
+          },
         },
         required: ["query"],
       },
     },
-    status: (args) => `Finding images of ${str(args.query, 60)}`,
+    status: (args) => `Finding ${Number(args.count) > 1 ? "pictures" : "a picture"} of ${str(args.query, 60)}`,
     async run(args, ctx) {
       const query = str(args.query, 200);
-      const images = await ctx.search.images(query, 6);
-      if (!images.length) return { content: `No images found for "${query}".` };
+      const count = Math.min(6, Math.max(1, Math.floor(Number(args.count)) || 1));
+      const found = await ctx.search.images(query, 8);
+      if (!found.length) return { content: `No images found for "${query}".` };
+      // Best first: large, reputable, on topic (server/services/images.ts).
+      const images = rankImages(found, query).slice(0, count);
       return {
-        content: `Showing ${images.length} images to the learner: ${images.map((image) => image.title).join("; ")}. Refer to them naturally; do not list URLs.`,
+        content:
+          images.length === 1
+            ? `Showing one picture to the learner: ${images[0].title}. Refer to it naturally; do not list URLs.`
+            : `Showing ${images.length} pictures to the learner: ${images.map((image) => image.title).join("; ")}. Refer to them naturally; do not list URLs.`,
         parts: [{ type: "images", query, images }],
       };
     },

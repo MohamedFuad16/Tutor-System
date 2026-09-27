@@ -5,7 +5,8 @@
  * pages from the specialist, and ranking photos so one good one shows.
  */
 import { describe, expect, it } from "vitest";
-import type { WebImage } from "../../shared/types";
+import type { MessagePart, WebImage } from "../../shared/types";
+import { TOOLS, type ToolContext } from "../../server/services/tools";
 import type { VoiceVisual } from "../../shared/voice";
 import { undash } from "../../shared/speech";
 import { ActionTagFilter, actionTag, parseActionTag, parseView } from "../../server/voice/actions";
@@ -354,5 +355,49 @@ describe("document pages", () => {
     ]);
     expect(detectPageIntent("show me page 12", { hasDocuments: false, stage: null })).toBeNull();
     expect(detectPageIntent("what is on page 12 about?", docs)).toBeNull();
+  });
+});
+
+describe("chat photos", () => {
+  const found = (query: string): WebImage[] => [
+    {
+      title: `${query} stock`,
+      imageUrl: "https://www.shutterstock.com/a.jpg",
+      thumbnailUrl: "https://www.shutterstock.com/a-t.jpg",
+      sourceUrl: "https://www.shutterstock.com/a",
+      domain: "www.shutterstock.com",
+      width: 1500,
+      height: 1000,
+    },
+    {
+      title: `${query} tiny`,
+      imageUrl: "https://example.com/b.jpg",
+      thumbnailUrl: "https://example.com/b-t.jpg",
+      sourceUrl: "https://example.com/b",
+      domain: "example.com",
+      width: 160,
+      height: 120,
+    },
+    {
+      title: query,
+      imageUrl: "https://upload.wikimedia.org/c.jpg",
+      thumbnailUrl: "https://upload.wikimedia.org/c-t.jpg",
+      sourceUrl: "https://commons.wikimedia.org/c",
+      domain: "commons.wikimedia.org",
+      width: 1800,
+      height: 1200,
+    },
+  ];
+  const ctx = { search: { images: async (query: string) => found(query) } } as unknown as ToolContext;
+
+  it("shows one picture, the best one, unless more are asked for", async () => {
+    const one = await TOOLS.show_images.run({ query: "iPhone 15 Pro" }, ctx);
+    const part = one.parts?.[0] as Extract<MessagePart, { type: "images" }>;
+    expect(part.images).toHaveLength(1);
+    expect(part.images[0].domain).toBe("commons.wikimedia.org");
+    expect(one.content).toMatch(/^Showing one picture/);
+
+    const several = await TOOLS.show_images.run({ query: "iPhone 15 Pro", count: 3 }, ctx);
+    expect((several.parts?.[0] as Extract<MessagePart, { type: "images" }>).images).toHaveLength(3);
   });
 });

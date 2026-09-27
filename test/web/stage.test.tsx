@@ -7,6 +7,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Board } from "@shared/voice";
+import { ImageGallery } from "@/features/chat/parts";
 import StageBoard from "@/features/voice/stage/StageBoard";
 import { StageImage } from "@/features/voice/stage/StageImage";
 import { StagePending } from "@/features/voice/stage/StagePending";
@@ -149,5 +150,36 @@ describe("document page text layer", () => {
   it("ignores punctuation and case, and gives up cleanly when the words aren't there", () => {
     expect(locate(runs, "water molecules are split in a process called photolysis")).toHaveLength(1);
     expect(locate(runs, "the French revolution")).toEqual([]);
+  });
+});
+
+describe("chat photos", () => {
+  // jsdom has no image decoding; the reveal effect waits on it.
+  HTMLImageElement.prototype.decode ??= () => Promise.resolve();
+
+  const photo = (name: string) => ({
+    title: `Photo ${name}`,
+    imageUrl: `https://example.com/${name}.jpg`,
+    thumbnailUrl: `https://example.com/${name}-t.jpg`,
+    sourceUrl: `https://example.com/${name}`,
+    domain: "example.com",
+    width: 1600,
+    height: 1000,
+  });
+
+  it("shows a single picture large, with its title and source", () => {
+    useApp.setState({ motion: false });
+    render(<ImageGallery images={[photo("one")]} query="iPhone 15 Pro" effect={false} />);
+    expect(screen.getByText("Photo · iPhone 15 Pro")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Open image/ })).toHaveLength(1);
+    expect(screen.getByText("Photo one")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /example\.com/ })).toHaveAttribute("href", "https://example.com/one");
+  });
+
+  it("keeps the grid when several were asked for", () => {
+    useApp.setState({ motion: false });
+    render(<ImageGallery images={[photo("one"), photo("two"), photo("three")]} query="phones" effect={false} />);
+    expect(screen.getByText("Images · phones")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Open image/ })).toHaveLength(3);
   });
 });

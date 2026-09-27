@@ -91,8 +91,12 @@ export function ImageGallery({
 }) {
   const [open, setOpen] = useState<number | null>(null);
   const [failed, setFailed] = useState<Set<string>>(new Set());
+  // A lone photo shows at full size; if the site blocks hot-linking it, the thumbnail stands in.
+  const [thumbnailOnly, setThumbnailOnly] = useState(false);
   const visible = images.filter((image) => !failed.has(image.imageUrl)).slice(0, 6);
   if (!visible.length) return null;
+  const hero = visible.length === 1 ? visible[0] : null;
+  const heroRatio = hero?.width && hero.height ? Math.min(2.2, Math.max(0.6, hero.width / hero.height)) : 4 / 3;
   return (
     <div>
       <div
@@ -101,36 +105,83 @@ export function ImageGallery({
           tone === "dark" ? "text-fog-400" : "text-stone-500",
         )}
       >
-        Images · {query}
+        {hero ? "Photo" : "Images"} · {query}
       </div>
-      <div className="grid grid-cols-3 gap-1.5">
-        {visible.map((image, index) => (
+      {hero ? (
+        <figure>
           <motion.button
-            key={image.imageUrl}
-            initial={{ opacity: 0, scale: 0.97 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ ...spring, delay: index * 0.05 }}
-            onClick={() => setOpen(index)}
-            aria-label={`Open image: ${image.title}`}
+            transition={spring}
+            onClick={() => setOpen(0)}
+            aria-label={`Open image: ${hero.title}`}
             className={cx(
-              "group relative aspect-[4/3] overflow-hidden rounded-xl",
+              "group relative block overflow-hidden rounded-2xl",
               tone === "dark" ? "bg-white/5" : "bg-stone-100",
-              index === 0 && visible.length >= 3 && "col-span-2 row-span-2 aspect-auto",
             )}
+            style={{ aspectRatio: heroRatio, width: `min(100%, ${Math.round(400 * heroRatio)}px)` }}
           >
             <div className="absolute inset-0">
               <ImageReveal
-                src={image.thumbnailUrl}
-                alt={image.title}
+                src={thumbnailOnly ? hero.thumbnailUrl : hero.imageUrl}
+                alt={hero.title}
                 tone={tone}
-                delay={index * 140}
                 effect={effect}
-                onError={() => setFailed((set) => new Set(set).add(image.imageUrl))}
+                onError={() =>
+                  thumbnailOnly || !hero.thumbnailUrl
+                    ? setFailed((set) => new Set(set).add(hero.imageUrl))
+                    : setThumbnailOnly(true)
+                }
               />
             </div>
           </motion.button>
-        ))}
-      </div>
+          <figcaption
+            className={cx(
+              "mt-1.5 flex items-center gap-2 text-[0.72rem]",
+              tone === "dark" ? "text-fog-400" : "text-stone-500",
+            )}
+          >
+            <span className="min-w-0 truncate">{hero.title}</span>
+            <a
+              href={hero.sourceUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="flex shrink-0 items-center gap-1 hover:underline"
+            >
+              {hero.domain} <ExternalLink className="size-3" />
+            </a>
+          </figcaption>
+        </figure>
+      ) : (
+        <div className={cx("grid gap-1.5", visible.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
+          {visible.map((image, index) => (
+            <motion.button
+              key={image.imageUrl}
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ ...spring, delay: index * 0.05 }}
+              onClick={() => setOpen(index)}
+              aria-label={`Open image: ${image.title}`}
+              className={cx(
+                "group relative aspect-[4/3] overflow-hidden rounded-xl",
+                tone === "dark" ? "bg-white/5" : "bg-stone-100",
+                index === 0 && visible.length >= 3 && "col-span-2 row-span-2 aspect-auto",
+              )}
+            >
+              <div className="absolute inset-0">
+                <ImageReveal
+                  src={image.thumbnailUrl}
+                  alt={image.title}
+                  tone={tone}
+                  delay={index * 140}
+                  effect={effect}
+                  onError={() => setFailed((set) => new Set(set).add(image.imageUrl))}
+                />
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      )}
       <AnimatePresence>
         {open !== null && visible[open] && (
           <motion.div
