@@ -3,6 +3,10 @@
  * signature cards deal themselves into a fan. The ember card is the upload
  * target (click or drop a PDF). Everything is spring-driven and collapses to
  * the final state instantly when motion is off.
+ *
+ * With room (≥ 880 px) the final fan spreads so every card reads in full.
+ * Narrower, the cards stack and the two behind show only pattern and icon, so
+ * no title is ever cut off by the card in front of it.
  */
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { Layers, MessageSquare, UploadCloud } from "lucide-react";
@@ -15,8 +19,11 @@ import { useMotion } from "@/store/app";
 
 type Target = { opacity: number; x: string; y: number; scale: number; rotate: number; filter: string };
 
+/** Width at which the final fan spreads out instead of stacking. */
+const SPREAD_MIN_WIDTH = 880;
+
 /** Card poses per choreography step (0 hidden → 4 final fan). */
-function pose(step: number, index: number, compact: boolean): Target {
+function pose(step: number, index: number, compact: boolean, spread: boolean): Target {
   const hidden = (x: string, rotate: number): Target => ({
     opacity: 0,
     x,
@@ -33,6 +40,10 @@ function pose(step: number, index: number, compact: boolean): Target {
     rotate,
     filter: "blur(0px)",
   });
+  if (step >= 4 && spread) {
+    // Overlap only at the pattern edges, never over another card's text.
+    return [at("-142%", 16, 0.94, -5), at("-50%", 4, 0.97, -1.2), at("42%", 0, 1, 3)][index];
+  }
   if (step >= 4) {
     return [
       at(compact ? "-62%" : "-74%", compact ? 12 : 18, compact ? 0.88 : 0.9, compact ? -4 : -5),
@@ -159,6 +170,8 @@ export function IntroSplash({
   const [step, setStep] = useState(animate ? 1 : 4);
   const [dragging, setDragging] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  const root = useRef<HTMLDivElement>(null);
+  const [spread, setSpread] = useState(false);
   const [compact, setCompact] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches,
   );
@@ -169,6 +182,19 @@ export function IntroSplash({
     query.addEventListener("change", update);
     return () => query.removeEventListener("change", update);
   }, []);
+
+  useEffect(() => {
+    const element = root.current;
+    if (!element) return;
+    const measure = () => setSpread(element.clientWidth >= SPREAD_MIN_WIDTH);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const finalStep = (animate ? step : 4) >= 4;
 
   const advance = () => {
     if (!animate) return;
@@ -203,7 +229,10 @@ export function IntroSplash({
   ];
 
   return (
-    <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden px-4 pt-20 pb-10">
+    <div
+      ref={root}
+      className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden px-4 pt-20 pb-10"
+    >
       <DotField />
       <div className="relative z-10 flex min-h-[6.5rem] items-end justify-center">
         <AnimatePresence mode="wait">
@@ -213,12 +242,12 @@ export function IntroSplash({
         </AnimatePresence>
       </div>
 
-      <div className="relative z-10 mt-8 h-[23rem] w-full max-w-3xl sm:h-[25rem]">
+      <div className="relative z-10 mt-8 h-[25.5rem] w-full max-w-3xl sm:h-[26rem]">
         {cards.map((card, i) => (
           <TiltCard
             key={card.theme}
             className="absolute top-0 left-1/2 w-[15.5rem] sm:w-[18rem]"
-            style={pose(animate ? step : 4, i, compact)}
+            style={pose(animate ? step : 4, i, compact, spread)}
           >
             {i === 2 ? (
               <div
@@ -247,7 +276,7 @@ export function IntroSplash({
                   subtitle={card.body}
                   icon={card.icon}
                   onClick={() => !uploading && input.current?.click()}
-                  className="h-[21rem] w-full sm:h-[23rem]"
+                  className="min-h-[21rem] w-full sm:min-h-[23rem]"
                 />
               </div>
             ) : (
@@ -257,7 +286,8 @@ export function IntroSplash({
                 title={card.title}
                 subtitle={card.body}
                 icon={card.icon}
-                className="h-[21rem] w-full sm:h-[23rem]"
+                quiet={finalStep && !spread}
+                className="min-h-[21rem] w-full sm:min-h-[23rem]"
               />
             )}
           </TiltCard>

@@ -141,6 +141,7 @@ export function PatternCard({
   className,
   children,
   compact,
+  quiet = false,
 }: {
   theme: CardTheme;
   pattern?: number;
@@ -152,6 +153,8 @@ export function PatternCard({
   className?: string;
   children?: ReactNode;
   compact?: boolean;
+  /** Hide the title and text (a card peeking from behind others shows only its pattern and icon). */
+  quiet?: boolean;
 }) {
   const t = THEMES[theme];
   const Tag = onClick ? motion.button : motion.div;
@@ -181,7 +184,7 @@ export function PatternCard({
       <div className="relative">
         <DotMatrix pattern={pattern} color={t.dot} size={compact ? 70 : 100} />
       </div>
-      <div className="relative mt-auto pt-6">
+      <div className="relative mt-auto pt-6 pr-1">
         {icon && (
           <div
             className="mb-4 flex size-10 items-center justify-center rounded-full"
@@ -190,12 +193,15 @@ export function PatternCard({
             {icon}
           </div>
         )}
-        <h3 className={cx("leading-[1.05]", compact ? "text-xl" : "text-[1.7rem]")}>{title}</h3>
-        {subtitle && (
-          <p className="mt-2 text-sm leading-relaxed" style={{ color: t.sub }}>
-            {subtitle}
-          </p>
-        )}
+        {/* Balanced wrapping keeps lines even and avoids a lone last word ("one."). */}
+        <div className={cx("transition-opacity duration-500", quiet && "opacity-0")} aria-hidden={quiet || undefined}>
+          <h3 className={cx("leading-[1.05] text-balance", compact ? "text-xl" : "text-[1.7rem]")}>{title}</h3>
+          {subtitle && (
+            <p className="mt-2 text-sm leading-relaxed text-balance" style={{ color: t.sub }}>
+              {subtitle}
+            </p>
+          )}
+        </div>
         {children}
         {footer && <div className="mt-4">{footer}</div>}
       </div>
