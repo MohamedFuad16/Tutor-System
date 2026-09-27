@@ -118,4 +118,14 @@ describe("parseFlowchart", () => {
     expect(edgesOf("```mermaid\nflowchart LR\nA --> B\n```")).toEqual(["A>B"]);
     expect(edgesOf("---\ntitle: Demo\n---\nflowchart LR\nA --> B")).toEqual(["A>B"]);
   });
+
+  it("draws model output with a missing header and an escaped newline in a label", () => {
+    // The study guide once showed "No diagram type detected" for exactly this source.
+    const chart = parseFlowchart(String.raw`A[Input data] --> B[Forward pass\nprediction]`)!;
+    expect(chart).not.toBeNull();
+    expect(chart.direction).toBe("TB");
+    expect(chart.nodes.map((node) => node.label)).toEqual(["Input data", "Forward pass\nprediction"]);
+    expect(chart.edges.map((edge) => `${edge.from}>${edge.to}`)).toEqual(["A>B"]);
+    expect(edgesOf(String.raw`flowchart LR\nA[One] --> B[Two]\nB --> C[Three]`)).toEqual(["A>B", "B>C"]);
+  });
 });

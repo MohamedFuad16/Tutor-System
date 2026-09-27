@@ -16,6 +16,7 @@ import {
   type GuideSection,
   type StudyGuide,
 } from "../../shared/guide.js";
+import { repairMermaid } from "../../shared/mermaid.js";
 import type { ChatMessage } from "../../shared/types.js";
 import { KeyedDebouncer, type EventHub } from "../lib/events.js";
 import { Priority } from "../lib/limiter.js";
@@ -151,9 +152,8 @@ export function applyGuideOps(guide: StudyGuide, ops: GuideOp[], docLabels: DocL
         if (s(op.explanation, 1600)) section.explanation = s(op.explanation, 1600);
         section.keyPoints = mergeStrings(section.keyPoints, op.keyPoints, LIMITS.keyPoints);
         const diagram = op.diagram as { mermaid?: unknown; caption?: unknown } | null | undefined;
-        if (diagram && s(diagram.mermaid, 4000)) {
-          section.diagram = { mermaid: s(diagram.mermaid, 4000), caption: s(diagram.caption, 200) };
-        }
+        const mermaid = diagram ? repairMermaid(s(diagram.mermaid, 4000)) : "";
+        if (diagram && mermaid) section.diagram = { mermaid, caption: s(diagram.caption, 200) };
         const example = op.example as { title?: unknown; body?: unknown } | null | undefined;
         if (example && s(example.body, 2000)) {
           section.example = { title: s(example.title, 120) || "Example", body: s(example.body, 2000) };

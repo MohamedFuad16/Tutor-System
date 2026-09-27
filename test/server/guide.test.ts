@@ -80,6 +80,20 @@ describe("applyGuideOps", () => {
     expect(guide.sections).toHaveLength(0);
   });
 
+  it("repairs a section diagram before storing it", () => {
+    const guide = applyGuideOps(base(), [
+      {
+        op: "upsert_section",
+        title: "Training loop",
+        diagram: { mermaid: String.raw`A[Input data] --> B[Forward pass\nprediction]`, caption: "One step" },
+      },
+    ]);
+    expect(guide.sections[0].diagram).toEqual({
+      mermaid: "flowchart TD\nA[Input data] --> B[Forward pass<br/>prediction]",
+      caption: "One step",
+    });
+  });
+
   it("caps key points per section", () => {
     const guide = applyGuideOps(base(), [
       {
