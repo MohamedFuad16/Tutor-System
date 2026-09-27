@@ -7,15 +7,27 @@
  * (stable ids, de-duplication, caps), so the guide grows coherently instead of
  * being regenerated. Every few syncs a consolidation pass rewrites the guide
  * into a clean learning path. One sync per book at a time (KeyedDebouncer).
+ *
+ * Every prose field is stored without em or en dashes (plainText), and a
+ * guide written in an older style (StudyGuide.style) is rewritten once by a
+ * consolidation pass on its next sync.
  */
 import {
+  GUIDE_FORMATS,
+  GUIDE_STYLE,
   normalizeKey,
+  plainText,
   slugify,
   type GuideCallout,
   type GuideConcept,
+  type GuideFormat,
+  type GuideFormula,
   type GuideSection,
+  type GuideTerm,
+  type GuideWorked,
   type StudyGuide,
 } from "../../shared/guide.js";
+import { repairMermaid } from "../../shared/mermaid.js";
 import type { ChatMessage } from "../../shared/types.js";
 import { KeyedDebouncer, type EventHub } from "../lib/events.js";
 import { Priority } from "../lib/limiter.js";
@@ -35,6 +47,12 @@ const LIMITS = {
   misconceptions: 20,
   goals: 6,
   nextSteps: 5,
+  terms: 8,
+  formulas: 4,
+  formulaSymbols: 8,
+  workedSteps: 8,
+  timeline: 12,
+  mistakes: 4,
   promptChars: 16_000,
 };
 
@@ -54,7 +72,18 @@ const ICONS = new Set([
 ]);
 
 const s = (value: unknown, max: number) => (typeof value === "string" ? value.trim().slice(0, max) : "");
+/** Prose: trimmed, capped and written without em or en dashes. */
+const p = (value: unknown, max: number, mode: "prose" | "title" = "prose") => plainText(s(value, max), mode);
 const arr = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+/** Array items as records, so a stray null or string never throws. */
+const records = (value: unknown) =>
+  arr(value).map((item) => (item && typeof item === "object" ? item : {}) as Record<string, unknown>);
+/** LaTeX as the renderer wants it: no surrounding $…$, \(…\) or \[…\]. */
+const bareLatex = (value: unknown, max: number) =>
+  s(value, max)
+    .replace(/^\$+|\$+$/g, "")
+    .replace(/^\\[([]|\\[)\]]$/g, "")
+    .trim();
 
 /** Token-set similarity used to match near-duplicate titles and points. */
 export function similarity(a: string, b: string) {
@@ -77,12 +106,101 @@ export function similarity(a: string, b: string) {
 function mergeStrings(existing: string[], incoming: unknown, max: number, maxLen = 240) {
   const out = [...existing];
   for (const raw of arr(incoming)) {
-    const value = s(raw, maxLen);
+    const value = p(raw, maxLen);
     if (!value) continue;
     if (out.some((item) => normalizeKey(item) === normalizeKey(value) || similarity(item, value) > 0.85)) continue;
     out.push(value);
   }
   return out.slice(-max);
+}
+
+/** Terms and glossary entries: keyed by the term, a repeated term updates its definition. */
+function mergeTerms(existing: GuideTerm[], incoming: unknown, max: number, termMax: number, definitionMax: number) {
+  const out = existing.map((entry) => ({ ...entry }));
+  for (const item of records(incoming)) {
+    const term = p(item.term, termMax);
+    const definition = p(item.definition, definitionMax);
+    if (!term || !definition) continue;
+    const found = out.find((entry) => normalizeKey(entry.term) === normalizeKey(term));
+    if (found) found.definition = definition;
+    else out.push({ term, definition });
+  }
+  return out.slice(-max);
+}
+
+/** Mistakes and misconceptions: a near-duplicate wrong belief is skipped. */
+function mergeMistakes(
+  existing: Array<{ wrong: string; right: string }>,
+  incoming: unknown,
+  max: number,
+  wrongMax: number,
+  rightMax: number,
+) {
+  const out = [...existing];
+  for (const item of records(incoming)) {
+    const wrong = p(item.wrong, wrongMax);
+    const right = p(item.right, rightMax);
+    if (!wrong || !right || out.some((entry) => similarity(entry.wrong, wrong) > 0.8)) continue;
+    out.push({ wrong, right });
+  }
+  return out.slice(-max);
+}
+
+/** Formulas are keyed by their LaTeX (ignoring spaces); a repeat refreshes its name and symbols. */
+function mergeFormulas(existing: GuideFormula[], incoming: unknown) {
+  const out = existing.map((formula) => ({ ...formula }));
+  const key = (latex: string) => latex.replace(/\s+/g, "");
+  for (const item of records(incoming)) {
+    const latex = bareLatex(item.latex, 400);
+    if (!latex) continue;
+    const name = p(item.name, 80);
+    const symbols = records(item.symbols)
+      .map((symbol) => ({ symbol: bareLatex(symbol.symbol, 40), meaning: p(symbol.meaning, 160) }))
+      .filter((symbol) => symbol.symbol && symbol.meaning)
+      .slice(0, LIMITS.formulaSymbols);
+    const found = out.find((formula) => key(formula.latex) === key(latex));
+    if (found) {
+      if (name) found.name = name;
+      if (symbols.length) found.symbols = symbols;
+    } else {
+      out.push(name ? { name, latex, symbols } : { latex, symbols });
+    }
+  }
+  return out.slice(-LIMITS.formulas);
+}
+
+/** A worked example is replaced as a whole, and only by one with a problem and at least one step. */
+function readWorked(value: unknown): GuideWorked | null {
+  if (!value || typeof value !== "object") return null;
+  const item = value as Record<string, unknown>;
+  const problem = p(item.problem, 600);
+  const steps = records(item.steps)
+    .map((step) => ({ label: p(step.label, 90), work: p(step.work, 600) }))
+    .filter((step) => step.label || step.work)
+    .slice(0, LIMITS.workedSteps);
+  if (!problem || !steps.length) return null;
+  return { problem, steps, answer: p(item.answer, 300) };
+}
+
+const YEAR = /\b(\d{3,4})\b/;
+const BEFORE_COMMON_ERA = /\bB\.?\s?C\.?(?:E\.?)?(?=[\s,.;)]|$)/i;
+
+/** Timeline events are added (skipping repeats), then kept in year order when every event has one. */
+function mergeTimeline(existing: Array<{ when: string; what: string }>, incoming: unknown) {
+  const out = [...existing];
+  for (const item of records(incoming)) {
+    const when = p(item.when, 40);
+    const what = p(item.what, 240);
+    if (!when || !what) continue;
+    if (out.some((entry) => normalizeKey(entry.when) === normalizeKey(when) && similarity(entry.what, what) > 0.8)) {
+      continue;
+    }
+    out.push({ when, what });
+  }
+  const capped = out.slice(-LIMITS.timeline);
+  const sortable = capped.every((entry) => YEAR.test(entry.when) && !BEFORE_COMMON_ERA.test(entry.when));
+  const year = (when: string) => Number(YEAR.exec(when)?.[1] ?? 0);
+  return sortable ? [...capped].sort((a, b) => year(a.when) - year(b.when)) : capped;
 }
 
 type DocLabelMap = Map<string, string>;
@@ -99,14 +217,14 @@ export function applyGuideOps(guide: StudyGuide, ops: GuideOp[], docLabels: DocL
     if (!label) return null;
     const existing = next.concepts.find((concept) => normalizeKey(concept.label) === normalizeKey(label));
     if (existing) {
-      if (!existing.blurb && blurb) existing.blurb = s(blurb, 200);
+      if (!existing.blurb && blurb) existing.blurb = p(blurb, 200);
       if (kind === "core" && existing.kind !== "core") existing.kind = "core";
       return existing;
     }
     if (next.concepts.length >= LIMITS.concepts) return null;
     let id = slugify(label, "concept");
     while (next.concepts.some((concept) => concept.id === id)) id = `${id}-2`;
-    const concept: GuideConcept = { id, label, kind, blurb: s(blurb, 200) };
+    const concept: GuideConcept = { id, label, kind, blurb: p(blurb, 200) };
     next.concepts.push(concept);
     return concept;
   };
@@ -114,13 +232,15 @@ export function applyGuideOps(guide: StudyGuide, ops: GuideOp[], docLabels: DocL
   for (const op of ops) {
     switch (op.op) {
       case "set_overview": {
-        if (s(op.title, 80)) next.title = s(op.title, 80);
-        if (s(op.summary, 800)) next.summary = s(op.summary, 800);
+        const title = p(op.title, 80, "title");
+        const summary = p(op.summary, 800);
+        if (title) next.title = title;
+        if (summary) next.summary = summary;
         if (arr(op.goals).length) next.goals = mergeStrings([], op.goals, LIMITS.goals, 160);
         break;
       }
       case "upsert_section": {
-        const title = s(op.title, 90);
+        const title = p(op.title, 90, "title");
         const id = s(op.id, 80);
         let section =
           (id && next.sections.find((candidate) => candidate.id === id)) ||
@@ -128,7 +248,8 @@ export function applyGuideOps(guide: StudyGuide, ops: GuideOp[], docLabels: DocL
           null;
         if (!section) {
           if (!title || next.sections.length >= LIMITS.sections) break;
-          let newId = slugify(title, "section");
+          // A given id is kept (consolidation preserves ids, so saved self-check ratings survive).
+          let newId = slugify(id || title, "section");
           while (next.sections.some((candidate) => candidate.id === newId)) newId = `${newId}-2`;
           section = {
             id: newId,
@@ -147,20 +268,34 @@ export function applyGuideOps(guide: StudyGuide, ops: GuideOp[], docLabels: DocL
         }
         const icon = s(op.icon, 20);
         if (ICONS.has(icon)) section.icon = icon;
-        if (s(op.tldr, 300)) section.tldr = s(op.tldr, 300);
-        if (s(op.explanation, 1600)) section.explanation = s(op.explanation, 1600);
+        const format = s(op.format, 20) as GuideFormat;
+        if (GUIDE_FORMATS.includes(format)) section.format = format;
+        const objective = p(op.objective, 200);
+        if (objective) section.objective = objective;
+        const tldr = p(op.tldr, 300);
+        if (tldr) section.tldr = tldr;
+        const explanation = p(op.explanation, 1600);
+        if (explanation) section.explanation = explanation;
         section.keyPoints = mergeStrings(section.keyPoints, op.keyPoints, LIMITS.keyPoints);
+        const terms = mergeTerms(section.terms ?? [], op.terms, LIMITS.terms, 80, 300);
+        if (terms.length) section.terms = terms;
+        const formulas = mergeFormulas(section.formulas ?? [], op.formulas);
+        if (formulas.length) section.formulas = formulas;
+        const worked = readWorked(op.worked);
+        if (worked) section.worked = worked;
+        const timeline = mergeTimeline(section.timeline ?? [], op.timeline);
+        if (timeline.length) section.timeline = timeline;
+        const mistakes = mergeMistakes(section.mistakes ?? [], op.mistakes, LIMITS.mistakes, 240, 300);
+        if (mistakes.length) section.mistakes = mistakes;
         const diagram = op.diagram as { mermaid?: unknown; caption?: unknown } | null | undefined;
-        if (diagram && s(diagram.mermaid, 4000)) {
-          section.diagram = { mermaid: s(diagram.mermaid, 4000), caption: s(diagram.caption, 200) };
-        }
+        const mermaid = diagram ? repairMermaid(s(diagram.mermaid, 4000)) : "";
+        if (diagram && mermaid) section.diagram = { mermaid, caption: p(diagram.caption, 200) };
         const example = op.example as { title?: unknown; body?: unknown } | null | undefined;
         if (example && s(example.body, 2000)) {
-          section.example = { title: s(example.title, 120) || "Example", body: s(example.body, 2000) };
+          section.example = { title: p(example.title, 120) || "Example", body: p(example.body, 2000) };
         }
-        for (const raw of arr(op.callouts)) {
-          const callout = raw as { kind?: unknown; text?: unknown };
-          const text = s(callout.text, 300);
+        for (const callout of records(op.callouts)) {
+          const text = p(callout.text, 300);
           const kind = (
             ["tip", "warning", "remember"].includes(String(callout.kind)) ? callout.kind : "tip"
           ) as GuideCallout["kind"];
@@ -168,10 +303,9 @@ export function applyGuideOps(guide: StudyGuide, ops: GuideOp[], docLabels: DocL
           section.callouts.push({ kind, text });
         }
         section.callouts = section.callouts.slice(-LIMITS.callouts);
-        for (const raw of arr(op.selfCheck)) {
-          const item = raw as { q?: unknown; a?: unknown };
-          const q = s(item.q, 300);
-          const a = s(item.a, 600);
+        for (const item of records(op.selfCheck)) {
+          const q = p(item.q, 300);
+          const a = p(item.a, 600);
           if (!q || !a || section.selfCheck.some((existing) => similarity(existing.q, q) > 0.8)) continue;
           section.selfCheck.push({ q, a });
         }
@@ -213,27 +347,11 @@ export function applyGuideOps(guide: StudyGuide, ops: GuideOp[], docLabels: DocL
         break;
       }
       case "add_glossary": {
-        for (const raw of arr(op.items)) {
-          const item = raw as { term?: unknown; definition?: unknown };
-          const term = s(item.term, 80);
-          const definition = s(item.definition, 400);
-          if (!term || !definition) continue;
-          const existing = next.glossary.find((entry) => normalizeKey(entry.term) === normalizeKey(term));
-          if (existing) existing.definition = definition;
-          else next.glossary.push({ term, definition });
-        }
-        next.glossary = next.glossary.slice(-LIMITS.glossary);
+        next.glossary = mergeTerms(next.glossary, op.items, LIMITS.glossary, 80, 400);
         break;
       }
       case "add_misconceptions": {
-        for (const raw of arr(op.items)) {
-          const item = raw as { wrong?: unknown; right?: unknown };
-          const wrong = s(item.wrong, 300);
-          const right = s(item.right, 400);
-          if (!wrong || !right || next.misconceptions.some((entry) => similarity(entry.wrong, wrong) > 0.8)) continue;
-          next.misconceptions.push({ wrong, right });
-        }
-        next.misconceptions = next.misconceptions.slice(-LIMITS.misconceptions);
+        next.misconceptions = mergeMistakes(next.misconceptions, op.items, LIMITS.misconceptions, 300, 400);
         break;
       }
       case "set_next_steps": {
@@ -269,14 +387,22 @@ export function sanitizeConsolidated(original: StudyGuide, candidate: unknown): 
       },
       ...arr(raw.sections).map((section: any) => ({
         op: "upsert_section",
+        id: section?.id,
         title: section?.title,
         icon: section?.icon,
+        format: section?.format,
+        objective: section?.objective,
         tldr: section?.tldr,
         keyPoints: section?.keyPoints,
         explanation: section?.explanation,
+        terms: section?.terms,
+        formulas: section?.formulas,
+        worked: section?.worked,
+        timeline: section?.timeline,
         diagram: section?.diagram,
         example: section?.example,
         callouts: section?.callouts,
+        mistakes: section?.mistakes,
         selfCheck: section?.selfCheck,
         concepts: arr(section?.conceptIds).map(
           (id) => (arr(raw.concepts).find((c: any) => c?.id === id) as any)?.label ?? id,
@@ -287,9 +413,11 @@ export function sanitizeConsolidated(original: StudyGuide, candidate: unknown): 
       { op: "set_next_steps", items: raw.nextSteps },
     ],
   );
-  // Keep source pages from the original sections that survived by title.
+  // Keep source pages from the original sections that survived (same id, or a similar title).
   for (const section of rebuilt.sections) {
-    const before = original.sections.find((old) => similarity(old.title, section.title) >= 0.75);
+    const before =
+      original.sections.find((old) => old.id === section.id) ??
+      original.sections.find((old) => similarity(old.title, section.title) >= 0.75);
     if (before) {
       section.sourcePages = before.sourcePages;
       if (!section.diagram && before.diagram) section.diagram = before.diagram;
@@ -300,17 +428,26 @@ export function sanitizeConsolidated(original: StudyGuide, candidate: unknown): 
   return rebuilt;
 }
 
+/** What the sync model sees of the current guide: enough to update it, not the full text. Empty fields are left out. */
 function compactGuide(guide: StudyGuide) {
+  const some = <T>(items: T[] | undefined) => (items?.length ? items : undefined);
   return {
     title: guide.title,
     summary: guide.summary,
     sections: guide.sections.map((section) => ({
       id: section.id,
       title: section.title,
+      format: section.format,
+      objective: section.objective,
       tldr: section.tldr,
       keyPoints: section.keyPoints,
       explanation: section.explanation.slice(0, 300),
+      terms: some(section.terms?.map((entry) => entry.term)),
+      formulas: some(section.formulas?.map((formula) => formula.name || formula.latex)),
+      hasWorked: section.worked ? true : undefined,
+      timelineEvents: section.timeline?.length || undefined,
       hasDiagram: Boolean(section.diagram),
+      mistakes: some(section.mistakes?.map((entry) => entry.wrong)),
       selfCheck: section.selfCheck.map((item) => item.q),
     })),
     concepts: guide.concepts.map((concept) => concept.label),
@@ -350,6 +487,8 @@ export function createGuideService(deps: {
 }) {
   const { store, llm, events } = deps;
   const owners = new Map<string, { userId: string; language: string }>();
+  /** Books whose one-time rewrite into the current style failed: not retried until restart. */
+  const restyleTried = new Set<string>();
 
   async function sync(bookId: string) {
     const owner = owners.get(bookId);
@@ -358,7 +497,12 @@ export function createGuideService(deps: {
     if (!book) return;
     const { guide, coveredSeq, syncs } = store.guides.get(bookId, book.title);
     const fresh = store.messages.since(bookId, coveredSeq, 80);
-    if (!fresh.length) return;
+    // A guide written in an older style is rewritten once in the current one.
+    const restyle = (guide.style ?? 1) < GUIDE_STYLE && guide.sections.length > 0 && !restyleTried.has(bookId);
+    if (!fresh.length) {
+      if (restyle) await restyleOnly(owner, bookId, guide, coveredSeq, syncs);
+      return;
+    }
     events.publish(owner.userId, { type: "guide.syncing", bookId });
 
     const { text, lastIncluded } = transcript(fresh, LIMITS.promptChars);
@@ -416,8 +560,12 @@ export function createGuideService(deps: {
       next.messagesCovered = guide.messagesCovered + lastIncluded + 1;
       if (!next.title || next.title === "Study guide") next.title = book.title;
 
-      // Periodic consolidation keeps the guide tidy as it grows.
-      if ((syncs + 1) % 6 === 0 && next.sections.length >= 5) next = await consolidate(owner, next);
+      // Periodic consolidation keeps the guide tidy as it grows (and rewrites an old style).
+      if (restyle || ((syncs + 1) % 6 === 0 && next.sections.length >= 5)) {
+        const consolidated = await consolidate(owner, next);
+        if (consolidated !== next) next = { ...consolidated, style: GUIDE_STYLE };
+        else if (restyle) restyleTried.add(bookId);
+      }
 
       const newSeq = (fresh[lastIncluded] as ChatMessage & { seq: number }).seq;
       store.guides.save(owner.userId, next, newSeq, syncs + 1);
@@ -448,15 +596,20 @@ export function createGuideService(deps: {
         priority: Priority.batch,
         reasoning: "low",
         temperature: 0.2,
-        maxTokens: 12000,
+        maxTokens: 16000,
         json: true,
         messages: [
           { role: "system", content: guideConsolidatePrompt(owner.language) },
-          { role: "user", content: JSON.stringify({ ...guide, bookId: undefined, version: undefined }) },
+          {
+            role: "user",
+            content: JSON.stringify({ ...guide, bookId: undefined, version: undefined, style: undefined }),
+          },
         ],
       });
       const candidate = parseJsonObject(completion.text);
       const result = sanitizeConsolidated(guide, candidate);
+      // Rejected rewrite: hand back the very same object so callers can tell.
+      if (result === guide) return guide;
       return {
         ...result,
         bookId: guide.bookId,
@@ -468,6 +621,30 @@ export function createGuideService(deps: {
       log.warn("guide.consolidate_failed", { error: errorMessage(error) });
       return guide;
     }
+  }
+
+  /** No new messages, but the guide is in an older style: rewrite it once, keeping what it covers. */
+  async function restyleOnly(
+    owner: { userId: string; language: string },
+    bookId: string,
+    guide: StudyGuide,
+    coveredSeq: number,
+    syncs: number,
+  ) {
+    events.publish(owner.userId, { type: "guide.syncing", bookId });
+    const started = Date.now();
+    const rewritten = await consolidate(owner, guide);
+    if (rewritten === guide) {
+      restyleTried.add(bookId);
+      log.warn("guide.restyle_failed", { bookId });
+      events.publish(owner.userId, { type: "guide.updated", bookId, version: guide.version });
+      return;
+    }
+    const next: StudyGuide = { ...rewritten, style: GUIDE_STYLE, version: guide.version + 1, updatedAt: Date.now() };
+    store.guides.save(owner.userId, next, coveredSeq, syncs);
+    mirrorToLearnerModel(owner.userId, bookId, next);
+    events.publish(owner.userId, { type: "guide.updated", bookId, version: next.version });
+    log.info("guide.restyled", { bookId, version: next.version, ms: Date.now() - started });
   }
 
   /** Concepts and self-check questions become learner-model rows and flashcards. */

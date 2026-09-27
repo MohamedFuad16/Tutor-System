@@ -2,8 +2,8 @@
  * Built-in books shown in the Revision library. They explain Tutor itself:
  * how the v2 system works end to end, and the design language it is built
  * with. Both are plain StudyGuide data, so they render through exactly the
- * same study-guide renderer (concept map, section cards, self-check flip
- * cards) as the learner's own living notebooks.
+ * same study-guide renderer (concept map, numbered sections, key terms,
+ * questions to check yourself) as the learner's own living notebooks.
  *
  * Keep the facts in sync with docs/ARCHITECTURE.md and web/src/styles.css.
  * Writing rules for the content:
@@ -195,6 +195,22 @@ const HOW_TUTOR_WORKS: StudyGuide = {
       id: "big-picture",
       title: "The Big Picture",
       icon: "idea",
+      format: "concept",
+      objective: "Name the parts of Tutor and say what each one does.",
+      terms: [
+        {
+          term: "Provider",
+          definition: "An outside service Tutor talks to, such as the language model, speech or web search.",
+        },
+        {
+          term: "Mock provider",
+          definition: "A built-in stand-in for a provider, so Tutor runs and can be tested without any API key.",
+        },
+        {
+          term: "SQLite",
+          definition: "A small database kept in files on the server. Tutor stores all learner data in it.",
+        },
+      ],
       tldr: "Tutor is one lean Node server that reads your documents, teaches from them by text or voice, and keeps a living study guide.",
       keyPoints: [
         "One Node process serves the web app, the REST and SSE API, and the voice WebSocket.",
@@ -238,6 +254,20 @@ const HOW_TUTOR_WORKS: StudyGuide = {
       id: "study-loop",
       title: "The Study Loop",
       icon: "flow",
+      format: "process",
+      objective: "Trace one lap of the study loop, from uploading a PDF to a new guide section.",
+      terms: [
+        { term: "Grounded answer", definition: "A reply that cites real pages from your own documents." },
+        {
+          term: "Context packet",
+          definition:
+            "What the tutor sees for one turn: your open page, your highlight, the best passages and your learner model.",
+        },
+        {
+          term: "Mastery",
+          definition: "How well Tutor thinks you know a concept. Only graded answers and reviews move it.",
+        },
+      ],
       tldr: "Upload, ask, get a grounded answer, check your understanding, and watch the study guide grow, then go round again.",
       keyPoints: [
         "Upload a PDF and it becomes searchable, page by page, in the background.",

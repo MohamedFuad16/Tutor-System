@@ -53,8 +53,8 @@ function NotebookGuide({ book, onBack }: { book: Book; onBack: () => void }) {
             <Sparkles className="size-7 text-signal" />
             <h2 className="font-serif text-2xl">This guide writes itself as you learn.</h2>
             <p className="max-w-xl text-paper-muted">
-              Every conversation in this notebook — typed or spoken — is distilled here into a visual guide: a concept
-              map, key points, diagrams, worked examples and questions to check yourself.
+              Every conversation in this notebook, typed or spoken, turns into revision notes here: a concept map, key
+              ideas in plain words, diagrams, worked examples and questions to check yourself.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button

@@ -3,6 +3,8 @@
  * first diagram. Renders are serialised because mermaid's config is global
  * and each surface (chat paper, dark voice stage, notebook) has its own theme.
  */
+import { repairMermaid } from "@shared/mermaid";
+
 type Mermaid = typeof import("mermaid").default;
 export type DiagramTheme = "light" | "dark" | "paper";
 
@@ -65,17 +67,17 @@ function load() {
   return loader;
 }
 
-/** Light cleanup of common LLM Mermaid mistakes before parsing. */
+/**
+ * Light cleanup of common LLM Mermaid mistakes before parsing: fences, smart
+ * quotes and arrows, then the shared repairs (escaped "\n", missing header),
+ * which also fix guides stored before the server repaired them.
+ */
 export function tidyMermaid(source: string) {
-  return (
+  return repairMermaid(
     source
-      .replace(/^```(?:mermaid)?\s*/i, "")
-      .replace(/```\s*$/, "")
-      .replace(/\r\n?/g, "\n")
       // Smart quotes and arrows confuse the parser.
       .replace(/[“”]/g, '"')
-      .replace(/→/g, "-->")
-      .trim()
+      .replace(/→/g, "-->"),
   );
 }
 

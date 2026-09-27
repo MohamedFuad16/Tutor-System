@@ -168,31 +168,67 @@ Follow the diagram's logical order, 3-10 steps, only node ids that exist in the 
 export const GRADE_PROMPT = `You grade a learner's short answer against the reference answer. Be fair: accept paraphrases and partially correct answers with partial credit.
 Reply as JSON: {"score": number between 0 and 1, "feedback": "1-2 encouraging sentences: what was right, what was missing"}`;
 
+/** Study-guide formats: how a section is written depends on its subject. */
+const GUIDE_FORMATS = `Formats: pick the one that fits each section's subject and fill in what that format needs.
+- math: formulas with every symbol explained, a worked example with 3 to 6 labelled steps, practice questions that need a calculation.
+- science (physics, chemistry, biology): the key law or equation with its units, the process in steps or a diagram, a worked calculation when numbers are involved, common mistakes.
+- process (how something works, algorithms, systems, life cycles): the steps in order, a flowchart, an everyday analogy.
+- history (history, politics, economics, social studies): a timeline, causes and effects, key people and terms.
+- language (literature, languages, arts, philosophy): themes or rules, examples from the text, how to use them.
+- code: what the code does, a short code block with a walkthrough (use worked for the walkthrough), common bugs as mistakes.
+- concept (anything else): a plain definition, an everyday analogy, 2 or 3 concrete examples.`;
+
+/** Plain-language writing rules for everything in the study guide. */
+const GUIDE_STYLE_RULES = `Writing rules
+- Write so a beginner understands on the first read. Use plain, everyday words.
+- Keep most sentences under 20 words and none over 25. Use the active voice and talk to the learner as "you".
+- Explain the idea before you give its name. Define each new term the first time you use it, and add it to terms.
+- One point per paragraph, 2 to 4 sentences each. No filler and no hype. Never write "In this section".
+- NEVER use em dashes or en dashes. Use a full stop, a comma, a colon or brackets instead, and write ranges as "3 to 5".
+- Give concrete examples with real numbers, names or objects.
+- Math uses LaTeX: $...$ inline and $$...$$ for a formula on its own line. Escape every backslash in JSON ("\\\\frac").
+- Worked examples: each step label says the goal of the step ("Find the total distance") and the work shows how. Keep the final step small so the learner can try it.
+- selfCheck: 2 or 3 questions per section that make the learner recall or apply the idea (why, how, what if, calculate). Answers are 1 to 3 sentences. No yes/no or trivia questions.
+- keyPoints are the few facts worth memorising, not a repeat of the explanation.`;
+
 export function guideSyncPrompt(language?: string) {
-  return `You maintain a learner's living visual study guide for one notebook. You receive the current guide (compact JSON) and the newest conversation messages between the learner and their tutor. Fold the NEW knowledge into the guide with minimal, precise edits, keeping it coherent and non-repetitive.
+  return `You write and maintain a learner's study guide for one notebook, like a good teacher's revision notes. You receive the current guide (compact JSON) and the newest conversation messages between the learner and their tutor. Fold the NEW knowledge into the guide with small, precise edits, so it stays clear and never repeats itself.
 
 Return ONLY JSON: {"ops": [ ... ]} using these operations:
-- {"op":"set_overview","title":"notebook title (2-6 words)","summary":"2-3 sentence big picture","goals":["what the learner is working towards", ...]}
-- {"op":"upsert_section","id":"existing section id to update, or omit for a new section","title":"...","icon":"one of: idea, flow, code, math, book, cpu, globe, beaker, layers, chart, clock, puzzle","tldr":"one plain sentence","keyPoints":["crisp fact", ...],"explanation":"short markdown, <=120 words","diagram":null or {"mermaid":"...","caption":"..."},"example":null or {"title":"...","body":"markdown"},"callouts":[{"kind":"tip|warning|remember","text":"..."}],"selfCheck":[{"q":"...","a":"..."}],"concepts":["concept names covered"],"pages":[{"doc":"D1","page":12}]}
+- {"op":"set_overview","title":"notebook title (2 to 6 words)","summary":"the big picture in 2 or 3 plain sentences","goals":["By the end you can ...", ...]}
+- {"op":"upsert_section","id":"existing section id to update, or omit for a new section","title":"...","format":"concept|math|science|process|history|language|code","objective":"what the learner can do after this section, e.g. Calculate speed from distance and time","icon":"one of: idea, flow, code, math, book, cpu, globe, beaker, layers, chart, clock, puzzle","tldr":"the idea in one plain sentence","explanation":"markdown, 2 or 3 short paragraphs, at most 150 words","keyPoints":["a fact worth memorising", ...],"terms":[{"term":"...","definition":"one plain sentence"}],"formulas":[{"name":"...","latex":"v = \\\\frac{d}{t}","symbols":[{"symbol":"v","meaning":"speed in metres per second"}]}],"worked":{"problem":"...","steps":[{"label":"the goal of this step","work":"how, with the numbers"}],"answer":"..."},"timeline":[{"when":"1914","what":"..."}],"diagram":{"mermaid":"...","caption":"..."},"example":{"title":"...","body":"markdown"},"callouts":[{"kind":"tip|warning|remember","text":"..."}],"mistakes":[{"wrong":"the tempting wrong belief","right":"the correction"}],"selfCheck":[{"q":"...","a":"..."}],"concepts":["concept names covered"],"pages":[{"doc":"D1","page":12}]}
+  Send only the fields that fit the section and its format; omit the rest.
 - {"op":"add_concepts","concepts":[{"name":"...","kind":"core|supporting|example","blurb":"one-line definition"}],"links":[{"from":"concept name","to":"concept name","label":"requires|is part of|causes|example of|contrasts with"}]}
 - {"op":"add_glossary","items":[{"term":"...","definition":"..."}]}
-- {"op":"add_misconceptions","items":[{"wrong":"the tempting wrong belief","right":"the correction"}]}
 - {"op":"set_next_steps","items":["what to study or practise next", ...]}
+
+${GUIDE_FORMATS}
+
+${GUIDE_STYLE_RULES}
 
 Rules
 - Only add knowledge that was actually taught or clarified in the messages; ignore greetings and chit-chat. If nothing new was learned, return {"ops": []}.
 - Prefer updating an existing section (use its id) over creating a near-duplicate. One section per topic, ordered as a learning path.
-- keyPoints are short (<= 20 words) and never repeat existing ones. keyPoints, selfCheck and callouts you send for an existing section are ADDED to it.
-- Include a diagram only when a process or structure benefits from it (valid Mermaid, <= 10 nodes). Inside the JSON string, write node labels with square brackets and no double quotes, e.g. A[Light reactions] --> B[Calvin cycle], so the JSON stays valid.
-- selfCheck questions test understanding, not trivia; 1-3 per section.
+- keyPoints, terms, selfCheck, mistakes, timeline and callouts you send for an existing section are ADDED to it. Every other field replaces what is there.
+- Put a common mistake in the section it belongs to (mistakes), not in a separate list.
+- Add a diagram only when a process or structure really benefits from one. ALWAYS start the Mermaid source with a header line: flowchart TD (or flowchart LR). Use short ids (A, B, C), square-bracket labels of at most 5 words on one line, at most 10 nodes and no double quotes, so the JSON stays valid. For example: "flowchart TD\\nA[Light reactions] --> B[Calvin cycle]"
 - Write in ${languageName(language)}.`;
 }
 
 export function guideConsolidatePrompt(language?: string) {
-  return `You are editing a learner's study guide that has grown through many incremental updates. Rewrite it into a clean, coherent learning path WITHOUT losing knowledge:
-- merge overlapping or duplicate sections, order sections from foundations to advanced,
-- deduplicate key points, glossary terms, concepts and misconceptions,
-- keep section ids where a section survives (so links stay stable), keep diagrams that are still relevant,
-- keep every section's selfCheck (max 3 each).
-Return ONLY the full guide JSON with the same shape as the input. Write in ${languageName(language)}.`;
+  return `You are editing a learner's study guide that grew through many small updates. Rewrite it into clean revision notes, like a good teacher's, WITHOUT losing any knowledge:
+- merge overlapping or duplicate sections, and order them from foundations to advanced,
+- remove repeats in key points, terms, glossary, concepts and mistakes,
+- keep section ids where a section survives (so links stay stable),
+- keep the diagrams that still help, and make sure each one starts with a header line such as flowchart TD,
+- give every section a format and an objective, and fill in what its format needs,
+- rewrite all text by the writing rules below,
+- give every section 2 or 3 selfCheck questions,
+- move each common mistake into the section it belongs to (its mistakes).
+
+${GUIDE_FORMATS}
+
+${GUIDE_STYLE_RULES}
+
+Return ONLY the full guide JSON with the same top-level shape as the input. Each section uses these fields: id, title, format, objective, icon, tldr, explanation, keyPoints, terms, formulas (name, latex, symbols), worked (problem, steps with label and work, answer), timeline (when, what), diagram (mermaid, caption), example (title, body), callouts, mistakes (wrong, right), selfCheck (q, a), conceptIds. Write in ${languageName(language)}.`;
 }
